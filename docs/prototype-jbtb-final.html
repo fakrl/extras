@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prototype JBTB Casting — Final (layout ala Nobiplay, skin terang)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#15803D;--primary-light:#22C55E;--brand-dark:#0B1A12;--success:#16A34A;--success-bg:#DCFCE7;
+    --warning:#D97706;--warning-bg:#FEF3C7;--danger:#DC2626;--danger-bg:#FEE2E2;--info:#0284C7;--info-bg:#E0F2FE;
+    --purple:#7C3AED;--purple-bg:#EDE9FE;
+    --n900:#111827;--n700:#374151;--n500:#6B7280;--n300:#D1D5DB;--n100:#F3F4F6;--n50:#F9FAFB;
+    --radius:16px;--shadow:0 2px 10px rgba(0,0,0,.06);--sb:236px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--n50);color:var(--n900);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+  .hidden{display:none !important;}
+  /* polish: transitions, focus (aksesibilitas), press feedback */
+  a,button,.mcard,.tcard,.lcard,.nav-item,.role-btn{transition:background .15s,color .15s,transform .1s,box-shadow .15s,border-color .15s;}
+  :focus-visible{outline:3px solid #93c5fd;outline-offset:2px;border-radius:8px;}
+  .btn{min-height:48px;} .btn:hover{filter:brightness(.97);} .btn:active{transform:scale(.985);}
+  .nav-item:active,.lcard:active{transform:scale(.995);}
+  .mcard:focus-visible,.tcard:focus-visible,.lcard:focus-visible{outline:3px solid #93c5fd;outline-offset:2px;}
+  ::selection{background:#bfdbfe;}
+  /* LOGIN */
+  .login-bg{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#0B1A12,#15803D);}
+  .login-card{background:#fff;border-radius:22px;padding:30px 26px;width:100%;max-width:410px;box-shadow:0 20px 50px rgba(0,0,0,.25);}
+  .login-card .logo{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:21px;margin:0 auto 14px;}
+  .login-card h1{text-align:center;font-size:21px;margin:0 0 4px;} .login-card .tag{text-align:center;color:var(--n500);font-size:14px;margin-bottom:18px;}
+  .field label{display:block;font-size:13px;color:var(--n500);font-weight:600;margin:11px 0 5px;} .field input{width:100%;padding:13px;border:1.5px solid var(--n300);border-radius:12px;font-size:16px;font-family:inherit;}
+  .roles{margin-top:16px;display:grid;gap:10px;} .divider-txt{text-align:center;color:var(--n500);font-size:13px;margin:16px 0 2px;}
+  .role-btn{display:flex;align-items:center;gap:12px;padding:13px;border:1.5px solid var(--n300);border-radius:14px;background:#fff;cursor:pointer;font-family:inherit;text-align:left;transition:.15s;}
+  .role-btn:hover{border-color:var(--primary);background:var(--info-bg);}
+  .role-btn .ic{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;flex-shrink:0;}
+  .role-btn .t{font-weight:700;font-size:15px;} .role-btn .s{font-size:12px;color:var(--n500);}
+  /* SHELL w/ sidebar (admin & ph) */
+  .shell{display:flex;min-height:100vh;}
+  .sidebar{width:var(--sb);background:#fff;border-right:1px solid var(--n100);position:fixed;top:0;bottom:0;left:0;display:flex;flex-direction:column;padding:16px 12px;z-index:25;}
+  .sb-brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px;color:var(--primary);padding:6px 8px 16px;}
+  .sb-brand .logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;}
+  .nav-item{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:11px;color:var(--n700);font-weight:600;font-size:14.5px;cursor:pointer;border:none;background:none;font-family:inherit;width:100%;text-align:left;}
+  .nav-item svg{width:19px;height:19px;flex-shrink:0;} .nav-item:hover{background:var(--n50);} .nav-item.on{background:var(--info-bg);color:var(--primary);}
+  .sb-foot{margin-top:auto;border-top:1px solid var(--n100);padding-top:12px;}
+  .sb-role{font-size:11.5px;font-weight:700;padding:6px 10px;border-radius:8px;display:inline-block;margin:0 4px 8px;}
+  .pill-admin{background:var(--info-bg);color:var(--primary);} .pill-ph{background:var(--purple-bg);color:var(--purple);}
+  .main{flex:1;margin-left:var(--sb);padding:22px 26px 100px;max-width:960px;}
+  /* top bar (extras) */
+  .topbar{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--n100);display:flex;align-items:center;gap:14px;padding:11px 20px;}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:16px;color:var(--primary);}
+  .brand .logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;}
+  .topnav{display:flex;gap:3px;margin-left:6px;} .topnav button{background:none;border:none;font-family:inherit;font-size:14.5px;font-weight:600;color:var(--n500);padding:8px 12px;border-radius:9px;cursor:pointer;} .topnav button.on{color:var(--primary);background:var(--info-bg);}
+  .topbar .right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+  .avatar{border-radius:11px;background:linear-gradient(135deg,var(--primary),var(--primary-light));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex-shrink:0;}
+  .search{flex:1;max-width:340px;background:var(--n100);border:none;border-radius:11px;padding:10px 14px;font-family:inherit;font-size:14px;}
+  .logout{background:var(--n100);border:none;border-radius:10px;padding:8px 11px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;color:var(--n700);}
+  .xwrap{max-width:900px;margin:0 auto;padding:20px 16px 100px;}
+  .pagehead{display:flex;align-items:center;gap:12px;margin-bottom:14px;} .pagehead .back{display:none;background:var(--n100);border:none;width:38px;height:38px;border-radius:11px;font-size:22px;cursor:pointer;color:var(--n700);}
+  .pagehead h1{font-size:22px;margin:0;font-weight:800;} .pagehead .sub{color:var(--n500);font-size:13.5px;margin-top:2px;}
+  .screen{display:none;} .screen.active{display:block;}
+  /* generic */
+  .box{background:#fff;border:1px solid var(--n100);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:16px;}
+  h2.sec{font-size:12.5px;color:var(--n500);margin:6px 0 9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+  .row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--n100);font-size:14.5px;} .row:last-child{border-bottom:none;} .row .lbl{color:var(--n500);} .row .val{font-weight:600;text-align:right;}
+  .money{font-weight:700;font-variant-numeric:tabular-nums;} .big-money{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;}
+  .b-success{background:var(--success-bg);color:var(--success);} .b-warning{background:var(--warning-bg);color:var(--warning);} .b-danger{background:var(--danger-bg);color:var(--danger);} .b-info{background:var(--info-bg);color:var(--info);} .b-purple{background:var(--purple-bg);color:var(--purple);}
+  .btn{border:none;border-radius:12px;padding:13px 16px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;} .btn-primary{background:var(--primary);color:#fff;} .btn-ghost{background:var(--n100);color:var(--n700);} .btn-purple{background:var(--purple);color:#fff;} .btn-block{display:block;width:100%;margin-top:10px;}
+  .note{background:var(--info-bg);color:#075985;border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.5;margin-bottom:14px;} .note.warn{background:var(--warning-bg);color:#92400e;} .note.lock{background:var(--purple-bg);color:#5b21b6;}
+  .proof{width:100%;border-radius:12px;border:1px dashed var(--n300);background:var(--n100);padding:20px;text-align:center;color:var(--n500);font-size:13.5px;} .proof.filled{border-style:solid;border-color:var(--success);background:var(--success-bg);color:var(--success);font-weight:600;}
+  /* FEED (extras, sosmed style) */
+  .hero{border-radius:20px;padding:22px;color:#fff;background:linear-gradient(120deg,#0B1A12,#15803D,#166534);margin-bottom:22px;position:relative;overflow:hidden;}
+  .hero h2{margin:0 0 5px;font-size:22px;font-weight:800;} .hero p{margin:0 0 14px;font-size:14px;opacity:.92;}
+  .hero .btn{display:inline-block;width:auto;background:#fff;color:var(--primary);margin:0;}
+  .section{margin-bottom:24px;} .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;} .section-title{font-size:17px;font-weight:800;} .section-header a{font-size:13px;color:var(--primary);font-weight:600;cursor:pointer;}
+  .cards-row{display:flex;gap:14px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory;} .cards-row::-webkit-scrollbar{height:6px;} .cards-row::-webkit-scrollbar-thumb{background:var(--n300);border-radius:9px;}
+  .mcard{min-width:230px;max-width:230px;background:#fff;border:1px solid var(--n100);border-radius:15px;box-shadow:var(--shadow);overflow:hidden;cursor:pointer;scroll-snap-align:start;transition:.15s;} .mcard:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.1);}
+  .mposter{height:120px;color:#fff;display:flex;flex-direction:column;justify-content:flex-end;padding:12px;position:relative;} .mposter .kind{position:absolute;top:10px;left:12px;background:rgba(255,255,255,.22);padding:3px 9px;border-radius:999px;font-size:10.5px;font-weight:700;} .mposter h3{margin:0;font-size:15px;font-weight:800;line-height:1.15;text-shadow:0 1px 3px rgba(0,0,0,.3);}
+  .mbody{padding:11px 13px 13px;} .mmeta{color:var(--n500);font-size:12px;margin-bottom:8px;} .mfee{display:flex;align-items:center;justify-content:space-between;} .mfee .amt{font-weight:800;color:var(--success);font-size:15px;} .mfee .q{font-size:11px;color:var(--warning);font-weight:700;}
+  /* card list (project saya) */
+  .lcard{background:#fff;border:1px solid var(--n100);border-radius:15px;box-shadow:var(--shadow);margin-bottom:14px;padding:15px;cursor:pointer;}
+  /* KPI */
+  .kpigrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;} .kpi{background:#fff;border:1px solid var(--n100);border-radius:13px;box-shadow:var(--shadow);padding:14px;} .kpi .n{font-size:22px;font-weight:800;} .kpi .t{font-size:11.5px;color:var(--n500);font-weight:600;margin-top:2px;} .kpi.alert{background:#fffdf5;border-color:var(--warning-bg);} .kpi.alert .n{color:var(--warning);} .kpi.money-k{background:#f0fdf4;border-color:var(--success-bg);} .kpi.money-k .n{color:var(--success);font-size:17px;}
+  .tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;} .tabs button{white-space:nowrap;background:#fff;border:1.5px solid var(--n300);border-radius:999px;padding:8px 13px;font-family:inherit;font-weight:600;font-size:13px;color:var(--n700);cursor:pointer;} .tabs button.on{background:var(--primary);border-color:var(--primary);color:#fff;}
+  .prow{display:flex;align-items:center;gap:11px;padding:12px 15px;border-bottom:1px solid var(--n100);} .prow:last-child{border-bottom:none;}
+  .thumb{width:46px;height:60px;border-radius:9px;flex-shrink:0;display:flex;align-items:flex-end;justify-content:center;padding:4px;color:#fff;font-size:9px;font-weight:600;} .thumb.sq{width:44px;height:44px;border-radius:11px;}
+  .match{font-size:11.5px;font-weight:700;color:var(--success);} .internal{font-size:10px;font-weight:700;color:var(--danger);background:var(--danger-bg);padding:2px 7px;border-radius:6px;}
+  .feegrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;margin-top:6px;} .feegrid .c{background:var(--n50);border-radius:9px;padding:8px 4px;} .feegrid .c .l{font-size:10.5px;color:var(--n500);font-weight:600;} .feegrid .c .v{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .talentgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;} .tcard{background:#fff;border:1px solid var(--n100);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;cursor:pointer;} .tphoto{aspect-ratio:3/4;display:flex;align-items:flex-end;padding:8px;color:#fff;font-size:11px;font-weight:600;} .tinfo{padding:10px 12px;} .tinfo .nm{font-weight:700;font-size:14px;} .tinfo .mt{font-size:11.5px;color:var(--n500);}
+  .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;} .gphoto{aspect-ratio:3/4;border-radius:9px;}
+  .video{aspect-ratio:16/9;border-radius:13px;background:#111827;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;} .play{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.9);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .cover{height:100px;border-radius:var(--radius) var(--radius) 0 0;} .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;} .photo{aspect-ratio:3/4;border-radius:11px;display:flex;align-items:flex-end;justify-content:center;padding:7px;font-size:11px;font-weight:600;}
+  .toast{position:fixed;top:74px;left:50%;transform:translateX(-50%);background:var(--n900);color:#fff;padding:11px 17px;border-radius:12px;font-size:13.5px;opacity:0;transition:.3s;z-index:60;pointer-events:none;box-shadow:var(--shadow);text-align:center;max-width:90%;} .toast.show{opacity:1;}
+  .botnav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--n100);padding:7px 2px 9px;z-index:30;} .botnav button{flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;color:var(--n500);cursor:pointer;font-family:inherit;font-weight:600;} .botnav button.on{color:var(--primary);} .botnav svg{width:21px;height:21px;}
+  @media(max-width:820px){
+    .sidebar{transform:translateX(-100%);transition:.2s;} .sidebar.open{transform:none;} .main{margin-left:0;padding:18px 16px 100px;}
+    .topnav{display:none;} .search{display:none;} .hide-sm{display:none;} .botnav{display:flex;} .pagehead .back.show{display:flex;} .kpigrid{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<!-- ===== LOGIN ===== -->
+<div id="login" class="login-bg">
+  <div class="login-card">
+    <div class="logo">JB</div><h1>JBTB Casting</h1><div class="tag">Masuk untuk lanjut</div>
+    <div class="field"><label>Email</label><input value="user@email.com"><label>Password</label><input type="password" value="••••••••"></div>
+    <div class="divider-txt">— masuk sebagai (demo) —</div>
+    <div class="roles">
+      <button class="role-btn" onclick="enter('extras')"><div class="ic" style="background:linear-gradient(135deg,#16A34A,#22c55e)">🧑</div><div><div class="t">Extras / Talent</div><div class="s">Feed casting ala sosmed · Persona: Cika</div></div></button>
+      <button class="role-btn" onclick="enter('admin')"><div class="ic" style="background:linear-gradient(135deg,#1E3A8A,#3B82F6)">🛠️</div><div><div class="t">Admin Agensi (CMS)</div><div class="s">Sidebar CMS: event, seleksi, keuangan, invoice</div></div></button>
+      <button class="role-btn" onclick="enter('ph')"><div class="ic" style="background:linear-gradient(135deg,#7C3AED,#a855f7)">🎬</div><div><div class="t">Client / Casting Director</div><div class="s">Board talent by alias & visual — tanpa kontak</div></div></button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EXTRAS (topbar + feed sosmed) ===== -->
+<div id="app-extras" class="hidden">
+  <div class="topbar"><div class="brand"><span class="logo">JB</span>JBTB</div>
+    <input class="search" placeholder="Cari casting, rumah produksi…">
+    <div class="topnav"><button class="on" data-xnav="x-feed" onclick="xgo('x-feed')">Beranda</button><button data-xnav="x-riwayat" onclick="xgo('x-riwayat')">Riwayat</button><button data-xnav="x-profil" onclick="xgo('x-profil')">Profil</button></div>
+    <div class="right"><div class="avatar hide-sm" style="width:36px;height:36px;">CA</div><button class="logout" onclick="logout()">Keluar</button></div></div>
+  <div class="xwrap">
+    <div class="screen active" id="x-feed">
+      <div class="section" id="urgent-sec"><div class="section-header"><div class="section-title" style="color:var(--danger)">🚨 Butuh Dadakan</div><a style="color:var(--n500)">tampil hanya kalau ada</a></div>
+        <div class="cards-row">
+          <div class="mcard" style="border:2px solid var(--danger)" onclick="xgo('x-detail')"><div class="mposter" style="background:linear-gradient(135deg,#DC2626,#f97316)"><span class="kind">⚡ SHOOTING BESOK</span><h3>Figuran Kondangan</h3></div><div class="mbody"><div class="mmeta">Capo Dei Capi · 22 Jul · Depok</div><div class="mfee"><span class="amt">Rp 500rb</span><span class="q" style="color:var(--danger)">butuh 5 lagi!</span></div></div></div>
+          <div class="mcard" style="border:2px solid var(--danger)" onclick="xgo('x-detail')"><div class="mposter" style="background:linear-gradient(135deg,#b91c1c,#ef4444)"><span class="kind">⚡ HARI INI</span><h3>Penonton Konser</h3></div><div class="mbody"><div class="mmeta">Starvision · 21 Jul · Jakarta</div><div class="mfee"><span class="amt">Rp 300rb</span><span class="q" style="color:var(--danger)">butuh 12 lagi!</span></div></div></div>
+        </div></div>
+      <div class="hero"><h2>Halo, Cika 👋</h2><p>Ada 5 casting baru yang cocok sama profil kamu hari ini.</p><button class="btn" onclick="xgo('x-detail')">Lihat casting unggulan</button></div>
+      <div class="section"><div class="section-header"><div class="section-title">🔥 Lagi dibuka buat kamu</div><a>Lihat semua</a><span style="font-size:11px;color:var(--n500);margin-left:8px">↕ diurut fee terbesar</span></div>
+        <div class="cards-row">
+          <div class="mcard" onclick="xgo('x-detail')"><div class="mposter" style="background:linear-gradient(135deg,#0f766e,#14b8a6)"><span class="kind">🎞️ Film</span><h3>Jalan Pulang</h3></div><div class="mbody"><div class="mmeta">Kinema · 10 Agu · Bogor</div><div class="mfee"><span class="amt">Rp 950rb</span><span class="q">8/15</span></div></div></div>
+          <div class="mcard" onclick="xgo('x-detail')"><div class="mposter" style="background:linear-gradient(135deg,#1E3A8A,#3B82F6)"><span class="kind">🎬 Iklan</span><h3>Kopi Pagi Hangat</h3></div><div class="mbody"><div class="mmeta">Capo Dei Capi · 28 Jul · Bandung</div><div class="mfee"><span class="amt">Rp 800rb</span><span class="q">12/20</span></div></div></div>
+          <div class="mcard" onclick="xgo('x-detail')"><div class="mposter" style="background:linear-gradient(135deg,#7C3AED,#a855f7)"><span class="kind">📺 Sinetron</span><h3>Kado Untuk Ibu</h3></div><div class="mbody"><div class="mmeta">Starvision · 11–19 Mei · Depok</div><div class="mfee"><span class="amt">Rp 200rb<span style="font-size:11px;color:var(--n500);font-weight:600">/hari</span></span><span class="q">24/30</span></div></div></div>
+        </div></div>
+      <div class="section"><div class="section-header"><div class="section-title">🎬 Iklan / TVC</div><a>Lihat semua</a></div>
+        <div class="cards-row">
+          <div class="mcard" onclick="xgo('x-detail')"><div class="mposter" style="background:linear-gradient(135deg,#f59e0b,#f97316)"><span class="kind">🎬 Iklan</span><h3>Teh Segar Alami</h3></div><div class="mbody"><div class="mmeta">Starvision · 20 Jun · Jakarta</div><div class="mfee"><span class="amt">Rp 1,2jt</span></div></div></div>
+          <div class="mcard" onclick="xgo('x-detail')"><div class="mposter" style="background:linear-gradient(135deg,#0284C7,#38bdf8)"><span class="kind">🎬 Iklan</span><h3>Motor Cepat X</h3></div><div class="mbody"><div class="mmeta">Persuaseni · 2 Jul · Bekasi</div><div class="mfee"><span class="amt">Rp 600rb</span></div></div></div>
+          <div class="mcard" onclick="xgo('x-detail')"><div class="mposter" style="background:linear-gradient(135deg,#db2777,#f472b6)"><span class="kind">🎬 Iklan</span><h3>Sabun Wangi</h3></div><div class="mbody"><div class="mmeta">Persuaseni · 5 Jul · Depok</div><div class="mfee"><span class="amt">Rp 500rb</span></div></div></div>
+        </div></div>
+      <div class="section"><div class="section-header"><div class="section-title">📺 Sinetron & Series</div><a>Lihat semua</a></div>
+        <div class="cards-row">
+          <div class="mcard" onclick="xgo('x-detail')"><div class="mposter" style="background:linear-gradient(135deg,#7C3AED,#c084fc)"><span class="kind">📺 Series</span><h3>Kos-kosan Ceria</h3></div><div class="mbody"><div class="mmeta">Kinema · 5 Agu · Jakarta</div><div class="mfee"><span class="amt">Rp 300rb<span style="font-size:11px;color:var(--n500);font-weight:600">/hari</span></span></div></div></div>
+          <div class="mcard" onclick="xgo('x-detail')"><div class="mposter" style="background:linear-gradient(135deg,#4338ca,#6366f1)"><span class="kind">📺 Sinetron</span><h3>Rumah Kita</h3></div><div class="mbody"><div class="mmeta">Starvision · 12 Agu · Bogor</div><div class="mfee"><span class="amt">Rp 250rb<span style="font-size:11px;color:var(--n500);font-weight:600">/hari</span></span></div></div></div>
+        </div></div>
+    </div>
+    <div class="screen" id="x-detail">
+      <div class="pagehead"><button class="back show" onclick="xback()">‹</button><h1>Detail Casting</h1></div>
+      <div class="box" style="padding:0;overflow:hidden;"><div class="mposter" style="height:150px;background:linear-gradient(135deg,#7C3AED,#a855f7)"><span class="kind">📺 Sinetron</span><h3 style="font-size:20px">Kado Untuk Ibu</h3></div>
+        <div style="padding:15px"><div class="row"><span class="lbl">Rumah produksi</span><span class="val">Starvision</span></div><div class="row"><span class="lbl">Peran</span><span class="val">Pengunjung pasar (dewasa)</span></div><div class="row"><span class="lbl">Hari shooting</span><span class="val">11–19 Mei 2026</span></div><div class="row"><span class="lbl">Kuota</span><span class="val">24 / 30 terisi</span></div><div class="row"><span class="lbl">Fee kamu</span><span class="val money" style="color:var(--success)">Rp 200.000/hari</span></div></div></div>
+      <div class="note warn">🕵️ Saat profil kamu ditunjukkan ke rumah produksi, yang tampil <b>nama panggung</b> — bukan nama & kontak asli. Urusan kontak & bayaran lewat JBTB.</div>
+      <div class="box field"><div style="font-weight:700;font-size:15px;">Rekening penerima (rahasia)</div><label>Bank</label><input value="BCA"><label>Nomor rekening</label><input value="6042021157"><label>Atas nama</label><input value="Cika Amelia"></div>
+      <button class="btn btn-primary btn-block" onclick="xdaftar()">Kirim Pendaftaran</button>
+    </div>
+    <div class="screen" id="x-pay">
+      <div class="pagehead"><button class="back show" onclick="xback()">‹</button><h1>Rincian Pembayaran</h1></div>
+      <div class="box"><h3 style="margin:0 0 3px;font-size:17px;">"Kado Untuk Ibu" — Day 1</h3><div style="color:var(--n500);font-size:13px;">🎬 Starvision · Grade A ·Selesai 11 Mei 2026</div></div>
+      <div class="box" style="text-align:center;"><div style="color:var(--n500);font-size:14px;">Fee kamu</div><div class="big-money">Rp 200.000</div><span class="badge b-warning" id="x-pay-status" style="margin-top:6px;">⏳ Belum dibayar</span></div>
+      <div class="note">✅ Ini fee <b>bersih</b> buat kamu. JBTB tidak menampilkan biaya dari rumah produksi — itu urusan internal agensi.</div>
+      <h2 class="sec">Status Transfer</h2>
+      <div class="box"><div class="row"><span class="lbl">Dikirim ke</span><span class="val">BCA ••••1157<br><span style="font-weight:400;color:var(--n500);font-size:12.5px">a.n. Cika Amelia</span></span></div><div class="row"><span class="lbl">Tanggal transfer</span><span class="val" id="x-pay-date">—</span></div>
+        <div style="margin-top:11px;"><div style="font-size:13px;color:var(--n500);margin-bottom:7px;font-weight:600;">Bukti transfer</div><div class="proof" id="x-pay-proof">Belum ada — pembayaran belum dilakukan</div></div></div>
+      <div class="note" id="x-pay-help">Kalau lewat tanggal & belum berubah, tekan "Hubungi Admin". Semua tercatat — nggak perlu chat WA bolak-balik.</div>
+      <button class="btn btn-ghost btn-block">Hubungi Admin</button>
+    </div>
+    <div class="screen" id="x-riwayat">
+      <div class="pagehead"><div><h1>Riwayat</h1><div class="sub">Project berjalan, status bayar & pendapatan</div></div></div>
+      <h2 class="sec">Sedang berjalan</h2>
+      <div class="lcard" onclick="xgo('x-pay')"><h3 style="margin:0 0 3px;font-size:16px;">"Kado Untuk Ibu" — Day 1</h3><div style="color:var(--n500);font-size:13px;">🎬 Starvision · Grade A ·11 Mei 2026</div><div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:11px;"><span class="badge b-success">✓ Selesai</span><span class="badge b-warning" id="x-badge">⏳ Belum dibayar</span></div></div>
+      <div class="lcard"><h3 style="margin:0 0 3px;font-size:16px;">Web Series "Kos-kosan"</h3><div style="color:var(--n500);font-size:13px;">🎬 Kinema · 5 Agu 2026</div><div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:11px;"><span class="badge b-info">Terpilih — menunggu shooting</span></div></div>
+      <h2 class="sec">Total pendapatan</h2>
+      <div class="box" style="background:linear-gradient(135deg,#16A34A,#22c55e);color:#fff;border:none;"><div style="font-size:13.5px;opacity:.9;">Total pendapatan dari JBTB</div><div style="font-size:28px;font-weight:800;">Rp 4.360.000</div><div style="font-size:12.5px;opacity:.9;">dari 12 hari shooting</div></div>
+      <h2 class="sec">Project selesai</h2>
+      <div class="box"><div class="row"><span><b>Iklan "Teh Segar"</b><br><span style="color:var(--n500);font-size:12.5px">Starvision · Jun 2026</span></span><span class="val money" style="color:var(--success)">Rp 960rb</span></div><div class="row"><span><b>"Rumah Kita" (3 hari)</b><br><span style="color:var(--n500);font-size:12.5px">Starvision · Apr 2026</span></span><span class="val money" style="color:var(--success)">Rp 600rb</span></div></div>
+    </div>
+    <div class="screen" id="x-profil">
+      <div class="box" style="padding:0;overflow:hidden;"><div class="cover" style="background:linear-gradient(135deg,#16A34A,#22c55e)"></div>
+        <div style="padding:0 16px 16px;margin-top:-36px;"><div class="avatar" style="width:78px;height:78px;border-radius:20px;border:4px solid #fff;font-size:30px;">CA</div><div style="margin-top:8px;"><div style="font-size:19px;font-weight:800;">Cika Amelia</div><div style="color:var(--n500);font-size:13px;">Depok · 26 th</div></div></div></div>
+      <div class="box"><div class="row"><span class="lbl">Nama panggung (dilihat PH)</span><span class="val">Bunga Melati 🎭</span></div><div class="row"><span class="lbl">Nama asli (rahasia)</span><span class="val">Cika Amelia 🔒</span></div><div class="row"><span class="lbl">Tarif harapan/hari</span><span class="val">Rp 250.000</span></div></div>
+      <div class="note lock">🔒 Nama asli, NIK & kontak kamu tidak pernah ditampilkan ke rumah produksi. Mereka cuma lihat nama panggung & foto/video.</div>
+      <h2 class="sec">🎥 Video Perkenalan</h2><div class="box" style="padding:0;overflow:hidden;"><div class="video"><div class="play">▶</div><div style="font-size:12.5px;opacity:.85;">Perkenalan · 0:40</div></div></div>
+      <h2 class="sec">📸 Foto Grid</h2><div class="box"><div class="grid3"><div class="photo" style="background:linear-gradient(135deg,#c7d2fe,#a5b4fc);color:#3730a3">Depan</div><div class="photo" style="background:linear-gradient(135deg,#fbcfe8,#f9a8d4);color:#9d174d">Samping</div><div class="photo" style="background:linear-gradient(135deg,#bbf7d0,#86efac);color:#166534">Senyum</div><div class="photo" style="background:linear-gradient(135deg,#fde68a,#fcd34d);color:#92400e">Full</div><div class="photo" style="background:linear-gradient(135deg,#bae6fd,#7dd3fc);color:#075985">Kasual</div><div class="photo" style="background:linear-gradient(135deg,#ddd6fe,#c4b5fd);color:#5b21b6">Formal</div></div></div>
+      <h2 class="sec">💼 Pengalaman lain (di luar JBTB)</h2>
+      <div class="box"><div class="row"><span><b>Iklan Layanan Masyarakat</b><br><span style="color:var(--n500);font-size:12.5px">produksi mandiri · 2024</span></span><span class="badge b-info">figuran</span></div><div class="row"><span><b>Video Klip "Senja"</b><br><span style="color:var(--n500);font-size:12.5px">indie · 2023</span></span><span class="badge b-info">pemeran pendukung</span></div><button class="btn btn-ghost btn-block" onclick="toast('(demo) tambah pengalaman')">+ Tambah pengalaman</button></div>
+      <div class="note">Pengalaman di luar JBTB kamu input sendiri di sini — nambah kredibilitas profil buat casting director.</div>
+      <h2 class="sec">🔗 Portofolio & Tautan</h2>
+      <div class="box field">
+        <label>Instagram</label><input value="@cika.amelia">
+        <label>TikTok / YouTube</label><input value="tiktok.com/@cikaamelia">
+        <label>Link portofolio (Drive / website / showreel)</label><input value="drive.google.com/cika-portofolio">
+        <button class="btn btn-ghost btn-block" onclick="toast('(demo) tautan disimpan')">Simpan tautan</button>
+      </div>
+      <div class="note lock">🔒 Tautan ini cuma dilihat <b>kamu & admin JBTB</b>. Ke rumah produksi, JBTB tampilin karya/showreel kamu <b>tanpa akun kontak langsung</b> — biar kamu nggak di-DM langsung & semua tetap lewat agensi.</div>
+    </div>
+  </div>
+  <div class="botnav">
+    <button class="on" data-xnav="x-feed" onclick="xgo('x-feed')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Beranda</button>
+    <button data-xnav="x-riwayat" onclick="xgo('x-riwayat')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l3 3"/></svg>Riwayat</button>
+    <button data-xnav="x-profil" onclick="xgo('x-profil')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a7 7 0 0 1 14 0v1"/></svg>Profil</button>
+  </div>
+</div>
+
+<!-- ===== ADMIN (sidebar CMS) ===== -->
+<div id="app-admin" class="hidden"><div class="shell">
+  <div class="sidebar" id="a-sb">
+    <div class="sb-brand"><span class="logo">JB</span>JBTB CMS</div>
+    <button class="nav-item on" data-anav="a-dash" onclick="ago('a-dash')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</button>
+    <button class="nav-item" data-anav="a-event" onclick="ago('a-event')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5"/></svg>Event & Lowongan</button>
+    <button class="nav-item" data-anav="a-bayar" onclick="ago('a-bayar')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Pembayaran</button>
+    <button class="nav-item" data-anav="a-cashflow" onclick="ago('a-cashflow')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>Keuangan</button>
+    <button class="nav-item" data-anav="a-invoice" onclick="ago('a-invoice')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/></svg>Invoice</button>
+    <div class="sb-foot"><span class="sb-role pill-admin">Admin — lihat semua</span><button class="nav-item" onclick="logout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Keluar</button></div>
+  </div>
+  <div class="main">
+    <button class="logout hide-lg" onclick="document.getElementById('a-sb').classList.toggle('open')" style="margin-bottom:12px;">☰ Menu</button>
+    <div class="screen active" id="a-dash">
+      <div class="pagehead"><div><h1>Dashboard</h1><div class="sub">Ringkasan operasional & keuangan</div></div></div>
+      <div class="kpigrid"><div class="kpi"><div class="n">1</div><div class="t">Event aktif</div></div><div class="kpi"><div class="n">47</div><div class="t">Pendaftar</div></div><div class="kpi alert"><div class="n" id="a-kpi-unpaid">2</div><div class="t">Belum dibayar</div></div><div class="kpi money-k"><div class="n">Rp 21,7jt</div><div class="t">Margin bulan ini</div></div></div>
+      <h2 class="sec">Perlu tindakan</h2>
+      <div class="box" style="padding:0;"><div class="prow"><div class="thumb sq" style="background:linear-gradient(135deg,#f59e0b,#f97316)">💸</div><div style="flex:1"><div style="font-weight:700">Bayar extras — "Kado Untuk Ibu" Day 1</div><div style="color:var(--n500);font-size:12.5px">Cika (Bunga Melati) · Rp 200.000 · <span id="a-dash-paystat">belum ditransfer</span></div></div><button class="btn btn-primary" style="padding:9px 13px;font-size:13.5px" onclick="ago('a-bayar')">Proses</button></div>
+        <div class="prow"><div class="thumb sq" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">🎯</div><div style="flex:1"><div style="font-weight:700">Seleksi pendaftar — Kado Untuk Ibu</div><div style="color:var(--n500);font-size:12.5px">8 pendaftar belum dinilai</div></div><button class="btn btn-ghost" style="padding:9px 13px;font-size:13.5px" onclick="ago('a-seleksi')">Buka</button></div></div>
+    </div>
+    <div class="screen" id="a-event">
+      <div class="pagehead" style="justify-content:space-between"><div><h1>Event & Lowongan</h1><div class="sub">Casting yang kamu kelola · buka & kelola pendaftar</div></div><button class="btn btn-primary" style="padding:10px 14px;font-size:14px" onclick="ago('a-post')">➕ Buka Lowongan</button></div>
+      <div class="box" style="padding:0;">
+        <div class="prow"><div class="thumb sq" style="background:linear-gradient(135deg,#7C3AED,#a855f7)">📺</div><div style="flex:1"><div style="font-weight:700">Kado Untuk Ibu</div><div style="color:var(--n500);font-size:12.5px">Starvision · 47 pendaftar · kuota 48</div></div><span class="badge b-info">Dibuka</span></div>
+        <div style="padding:0 15px 14px;display:flex;gap:9px"><button class="btn btn-ghost" style="flex:1;padding:9px;font-size:13px" onclick="ago('a-eventdetail')">Detail Event</button><button class="btn btn-primary" style="flex:1;padding:9px;font-size:13px" onclick="ago('a-seleksi')">👥 Pendaftar & Seleksi</button></div>
+        <div class="prow" style="border-top:1px solid var(--n100)"><div class="thumb sq" style="background:linear-gradient(135deg,#1E3A8A,#3B82F6)">🎬</div><div style="flex:1"><div style="font-weight:700">Iklan Kopi Pagi Hangat</div><div style="color:var(--n500);font-size:12.5px">Capo Dei Capi · 12 pendaftar · kuota 20</div></div><span class="badge b-info">Dibuka</span></div>
+        <div style="padding:0 15px 14px;display:flex;gap:9px"><button class="btn btn-ghost" style="flex:1;padding:9px;font-size:13px" onclick="ago('a-eventdetail')">Detail Event</button><button class="btn btn-primary" style="flex:1;padding:9px;font-size:13px" onclick="ago('a-seleksi')">👥 Pendaftar & Seleksi</button></div>
+        <div class="prow" style="border-top:1px solid var(--n100)"><div class="thumb sq" style="background:linear-gradient(135deg,#0f766e,#14b8a6)">🎞️</div><div style="flex:1"><div style="font-weight:700">Film "Jalan Pulang"</div><div style="color:var(--n500);font-size:12.5px">Kinema · 18 pendaftar · kuota 15</div></div><span class="badge b-warning">Segera tutup</span></div>
+        <div style="padding:0 15px 14px;display:flex;gap:9px"><button class="btn btn-ghost" style="flex:1;padding:9px;font-size:13px" onclick="ago('a-eventdetail')">Detail Event</button><button class="btn btn-primary" style="flex:1;padding:9px;font-size:13px" onclick="ago('a-seleksi')">👥 Pendaftar & Seleksi</button></div>
+      </div>
+    </div>
+    <div class="screen" id="a-eventdetail">
+      <div class="pagehead"><button class="back show" onclick="ago('a-event')">‹</button><div><h1>Kado Untuk Ibu</h1><div class="sub">Starvision · 9 hari shooting</div></div></div>
+      <h2 class="sec">Kriteria dibutuhkan (sesuai client)</h2>
+      <div class="box">
+        <div class="row"><span class="lbl">Set</span><span class="val">Pasar tradisional</span></div>
+        <div class="row"><span class="lbl">Ibu-ibu</span><span class="val">usia 29–50 th</span></div>
+        <div class="row"><span class="lbl">Bapak-bapak</span><span class="val">usia 29–50 th</span></div>
+        <div class="row"><span class="lbl">Look</span><span class="val" style="font-weight:500;color:var(--n500);max-width:60%">sederhana, pakaian pasar, natural</span></div>
+        <div class="row"><span class="lbl">Jumlah dibutuhkan</span><span class="val">48 extras</span></div>
+      </div>
+      <div class="note warn">💰 Fee <b>tidak dipatok per kelas</b> — ditentukan per-extras saat seleksi, mulai dari rate card mereka. Grade (A/B/C) = penilaian kualitas admin, bukan tarif. Fee client & margin cuma tampil di sisi Admin.</div>
+      <h2 class="sec">Hari shooting</h2><div class="tabs"><button class="on">Day 1 · 11 Mei</button><button>Day 2</button><button>Day 3</button><button>…</button></div>
+      <div class="box"><div class="row"><span class="lbl">Set</span><span class="val">Pasar</span></div><div class="row"><span class="lbl">Extras terpilih</span><span class="val">33 orang</span></div><div class="row"><span class="lbl">Total payout hari ini</span><span class="val money">Rp 11.875.000</span></div></div>
+      <button class="btn btn-primary btn-block" onclick="ago('a-seleksi')">👥 Lihat Pendaftar & Seleksi</button>
+      <button class="btn btn-ghost btn-block" onclick="ago('a-approved')">✅ Extras Approved (dari CD)</button>
+    </div>
+    <div class="screen" id="a-post">
+      <div class="pagehead"><button class="back show" onclick="ago('a-event')">‹</button><div><h1>Buka Lowongan Casting</h1><div class="sub">Isi detail → langsung tayang di feed Extras</div></div></div>
+      <div class="note">📢 Kayak buka lowongan: begitu diposting, muncul sebagai kartu di beranda Extras — lengkap dengan kriteria & bayaran.</div>
+      <div class="box field">
+        <label>Judul lowongan</label><input placeholder="mis. Iklan Kopi Pagi Hangat">
+        <label>Rumah produksi (client)</label><input placeholder="mis. Capo Dei Capi Films">
+        <label>Jenis produksi</label><select style="width:100%;padding:13px;border:1.5px solid var(--n300);border-radius:12px;font-size:16px;font-family:inherit;background:#fff;"><option>Iklan / TVC</option><option>Sinetron / Series</option><option>Film</option><option>Lainnya</option></select>
+        <label>Tanggal & lokasi shooting</label><input placeholder="mis. 28 Juli 2026, Bandung">
+        <label>Batas pendaftaran</label><input placeholder="mis. 25 Juli 2026">
+        <label>Deskripsi & kriteria</label><textarea rows="3" placeholder="mis. Butuh figuran pengunjung kafe, usia 20–35, tinggi 160–175cm, bisa akting natural…" style="width:100%;padding:13px;border:1.5px solid var(--n300);border-radius:12px;font-size:15px;font-family:inherit;resize:vertical;"></textarea>
+      </div>
+      <h2 class="sec">Kelas peran, fee & kuota</h2>
+      <div class="note warn">🔒 "Fee client" & margin cuma buat internal admin. Extras nanti cuma lihat "Fee payout".</div>
+      <div class="box" style="padding:12px;">
+        <div class="prow" style="gap:8px;flex-wrap:wrap;padding:8px 0;border:none;"><input placeholder="Nama kelas (mis. Kelas A)" style="flex:2;min-width:120px;padding:10px;border:1.5px solid var(--n300);border-radius:10px;font-family:inherit;font-size:14px;"><input placeholder="Fee client" style="flex:1;min-width:90px;padding:10px;border:1.5px solid var(--n300);border-radius:10px;font-family:inherit;font-size:14px;"><input placeholder="Fee payout" style="flex:1;min-width:90px;padding:10px;border:1.5px solid var(--n300);border-radius:10px;font-family:inherit;font-size:14px;"><input placeholder="Kuota" style="width:74px;padding:10px;border:1.5px solid var(--n300);border-radius:10px;font-family:inherit;font-size:14px;"></div>
+        <div class="prow" style="gap:8px;flex-wrap:wrap;padding:8px 0;border:none;"><input placeholder="Nama kelas (mis. Kelas B)" style="flex:2;min-width:120px;padding:10px;border:1.5px solid var(--n300);border-radius:10px;font-family:inherit;font-size:14px;"><input placeholder="Fee client" style="flex:1;min-width:90px;padding:10px;border:1.5px solid var(--n300);border-radius:10px;font-family:inherit;font-size:14px;"><input placeholder="Fee payout" style="flex:1;min-width:90px;padding:10px;border:1.5px solid var(--n300);border-radius:10px;font-family:inherit;font-size:14px;"><input placeholder="Kuota" style="width:74px;padding:10px;border:1.5px solid var(--n300);border-radius:10px;font-family:inherit;font-size:14px;"></div>
+        <button class="btn btn-ghost btn-block" style="margin-top:6px" onclick="toast('(demo) tambah baris kelas')">+ Tambah kelas</button>
+      </div>
+      <div class="box"><label style="display:flex;align-items:center;gap:11px;cursor:pointer;font-weight:600;font-size:14.5px;"><input type="checkbox" style="width:22px;height:22px;"> 🚨 Tandai "Butuh Dadakan" — tampil di section urgent paling atas feed Extras</label></div>
+      <button class="btn btn-primary btn-block" onclick="apost()">Posting Lowongan</button>
+      <button class="btn btn-ghost btn-block" onclick="ago('a-event')">Batal</button>
+    </div>
+    <div class="screen" id="a-seleksi">
+      <div class="pagehead"><button class="back show" onclick="ago('a-event')">‹</button><div><h1>Pendaftar — Kado Untuk Ibu</h1><div class="sub">Klik pendaftar buat lihat profil lengkap & nilai</div></div></div>
+      <div class="tabs"><button class="on" onclick="gradePick(this)">Semua (47)</button><button onclick="gradePick(this)">Grade A</button><button onclick="gradePick(this)">Grade B</button><button onclick="gradePick(this)">Grade C</button><button onclick="gradePick(this)">Belum dinilai</button></div>
+      <div class="note">👁️ <b>Grade = penilaian kualitas kamu</b> (A = terbaik). Fee diset saat seleksi, mulai dari rate card extras. Nama asli, rekening, sosmed & porto cuma kelihatan di sisi admin.</div>
+      <div class="box" style="padding:0;">
+        <div class="prow" style="cursor:pointer" onclick="ago('a-pprofil')"><div class="thumb" style="background:linear-gradient(135deg,#c7d2fe,#a5b4fc)">Foto</div><div style="flex:1"><div style="font-weight:700">Cika Amelia <span style="color:var(--n500);font-weight:500">· "Bunga Melati"</span></div><div style="color:var(--n500);font-size:12.5px">26 th · rate card Rp 250rb · ⭐ langganan Grade A</div></div><span class="badge b-info">Lihat & nilai ›</span></div>
+        <div class="prow" style="cursor:pointer" onclick="ago('a-pprofil')"><div class="thumb" style="background:linear-gradient(135deg,#fbcfe8,#f9a8d4)">Foto</div><div style="flex:1"><div style="font-weight:700">Aji Santoso <span style="color:var(--n500);font-weight:500">· "Rangga"</span></div><div style="color:var(--n500);font-size:12.5px">29 th · rate card Rp 200rb · belum dinilai</div></div><span class="badge b-info">Lihat & nilai ›</span></div>
+        <div class="prow" style="cursor:pointer" onclick="ago('a-pprofil')"><div class="thumb" style="background:linear-gradient(135deg,#fde68a,#fcd34d)">Foto</div><div style="flex:1"><div style="font-weight:700">Rina Wati <span style="color:var(--n500);font-weight:500">· "Sekar"</span></div><div style="color:var(--n500);font-size:12.5px">31 th · rate card Rp 175rb · belum dinilai</div></div><span class="badge b-info">Lihat & nilai ›</span></div>
+      </div>
+    </div>
+    <div class="screen" id="a-pprofil">
+      <div class="pagehead"><button class="back show" onclick="ago('a-seleksi')">‹</button><div><h1>Cika Amelia</h1><div class="sub">"Bunga Melati" · profil lengkap (admin)</div></div></div>
+      <div class="box"><div class="row"><span class="lbl">Nama asli</span><span class="val">Cika Amelia 🔒</span></div><div class="row"><span class="lbl">Nama panggung</span><span class="val">Bunga Melati</span></div><div class="row"><span class="lbl">Usia / Tinggi / Baju</span><span class="val">26 · 160cm · M</span></div><div class="row"><span class="lbl">Rate card (harapan)</span><span class="val money">Rp 250.000</span></div><div class="row"><span class="lbl">Rekening</span><span class="val">BCA ••1157 · Cika Amelia 🔒</span></div><div class="row"><span class="lbl">Sosmed & porto</span><span class="val" style="font-weight:500">IG @cika.amelia · drive.../porto 🔒</span></div></div>
+      <h2 class="sec">🎥 Video & Foto</h2>
+      <div class="box" style="padding:0;overflow:hidden;"><div class="video"><div class="play">▶</div><div style="font-size:12.5px;opacity:.85;">Perkenalan · 0:40</div></div></div>
+      <div class="box"><div class="gallery"><div class="gphoto" style="background:linear-gradient(135deg,#c7d2fe,#a5b4fc)"></div><div class="gphoto" style="background:linear-gradient(135deg,#fbcfe8,#f9a8d4)"></div><div class="gphoto" style="background:linear-gradient(135deg,#bbf7d0,#86efac)"></div></div></div>
+      <h2 class="sec">Keputusan seleksi (admin)</h2>
+      <div class="box">
+        <div style="font-size:13.5px;color:var(--n500);font-weight:600;margin-bottom:7px;">Grade kualitas</div>
+        <div class="tabs" style="margin-bottom:14px"><button class="on" onclick="gradePick(this)">A · terbaik</button><button onclick="gradePick(this)">B</button><button onclick="gradePick(this)">C</button></div>
+        <div class="field"><label>Fee tawaran (mulai dari rate card — nego via WA sampai cocok)</label><input value="Rp 250.000"></div>
+        <a class="btn" style="display:block;text-align:center;background:#25D366;color:#fff;text-decoration:none;margin-top:8px;" href="https://wa.me/6287800000000?text=Halo%20Bunga%20Melati%2C%20untuk%20casting%20Kado%20Untuk%20Ibu%20kami%20tawarkan%20fee%20Rp250.000%2Fhari.%20Cocok%3F" target="_blank">💬 Kontak langsung — nego fee (WA)</a>
+        <div style="font-size:12px;color:var(--n500);margin:7px 0 2px;">Nego lewat WA sampai sepakat, update fee di atas, lalu Present ke CD.</div>
+        <div class="field"><label>Keterangan (admin only — extras tidak lihat)</label><textarea rows="2" placeholder="mis. improve bagus, cocok peran ibu pasar" style="width:100%;padding:12px;border:1.5px solid var(--n300);border-radius:12px;font-size:14px;font-family:inherit;resize:vertical;"></textarea></div>
+        <div style="display:flex;gap:9px;margin-top:12px;"><button class="btn btn-primary" style="flex:2" onclick="toast('📤 Cika di-Present ke Casting Director — nunggu approve CD')">📤 Present ke CD</button><button class="btn btn-ghost" style="flex:1;color:var(--danger)" onclick="toast('Ditolak — extras tidak lolos')">Tolak</button></div>
+      </div>
+      <div class="note">🔄 <b>Alur:</b> Kontak/nego fee (WA) → deal → <b>Present ke CD</b> → CD approve → masuk <b>"Extras Approved"</b> di dashboard admin → admin kabari extras (WA "lolos, lengkapi data") → extras lengkapi KTP+rekening → <b>auto-generate kontrak</b> (harga = fee sepakat).</div>
+      <div class="note lock">🔒 Grade, fee & keterangan = internal admin. Extras cuma lihat status: <b>Sedang direview / Lolos / Ditolak</b>.</div>
+    </div>
+    <div class="screen" id="a-approved">
+      <div class="pagehead"><button class="back show" onclick="ago('a-eventdetail')">‹</button><div><h1>Extras Approved</h1><div class="sub">Disetujui CD · Kado Untuk Ibu · siap dikabari</div></div></div>
+      <div class="note">✅ Hasil approve dari Casting Director. Kabari extras kalau lolos & minta lengkapi data (KTP + rekening) → lanjut kontrak.</div>
+      <div class="box" style="padding:0;">
+        <div class="prow"><div class="avatar" style="width:42px;height:42px;">CA</div><div style="flex:1"><div style="font-weight:700">Cika Amelia <span style="color:var(--n500);font-weight:500;font-size:12px">· "Bunga Melati" · Grade A</span></div><div style="color:var(--n500);font-size:12px">fee sepakat Rp 250rb · approved CD ✓</div></div><a class="btn" style="background:#25D366;color:#fff;text-decoration:none;padding:9px 12px;font-size:13px" href="https://wa.me/6287800000000?text=Halo%20Bunga%20Melati%2C%20Anda%20dinyatakan%20LOLOS%20casting%20Kado%20Untuk%20Ibu.%20Silakan%20lengkapi%20data%20(KTP%20%26%20rekening)%20di%20aplikasi." target="_blank">💬 Kabari lolos</a></div>
+        <div class="prow"><div class="avatar" style="width:42px;height:42px;background:linear-gradient(135deg,#f472b6,#ec4899)">AS</div><div style="flex:1"><div style="font-weight:700">Aji Santoso <span style="color:var(--n500);font-weight:500;font-size:12px">· "Rangga" · Grade B</span></div><div style="color:var(--n500);font-size:12px">fee sepakat Rp 200rb · approved CD ✓</div></div><a class="btn" style="background:#25D366;color:#fff;text-decoration:none;padding:9px 12px;font-size:13px" href="#" onclick="toast('WA notif lolos dikirim ke Aji')">💬 Kabari lolos</a></div>
+      </div>
+      <div class="note lock">🔒 Extras yang dikabari lihat status "Lolos — lengkapi data". Grade & fee tetap internal.</div>
+    </div>
+    <div class="screen" id="a-bayar">
+      <div class="pagehead"><div><h1>Pembayaran — Day 1</h1><div class="sub">Tandai transfer & upload bukti → muncul di akun extras</div></div></div>
+      <div class="box" id="a-pay-card">
+        <div style="display:flex;align-items:center;gap:11px;margin-bottom:8px;"><div class="avatar" style="width:42px;height:42px;">CA</div><div style="flex:1"><div style="font-weight:700;font-size:15px;">Cika Amelia <span style="color:var(--n500);font-weight:500;font-size:13px">· "Bunga Melati"</span></div><div style="color:var(--n500);font-size:12.5px;">Grade A · BCA ••1157 a.n. Cika Amelia</div></div><span class="badge b-warning" id="a-pay-badge">⏳ Belum dibayar</span></div>
+        <div class="feegrid"><div class="c"><div class="l">Fee client <span class="internal">internal</span></div><div class="v" style="color:var(--n700)">Rp 200rb</div></div><div class="c"><div class="l">Bayar ke extras</div><div class="v" style="color:var(--success)">Rp 150rb</div></div><div class="c"><div class="l">Margin <span class="internal">internal</span></div><div class="v" style="color:var(--danger)">Rp 50rb</div></div></div>
+        <div id="a-pay-form" style="margin-top:13px;"><div style="font-size:13px;color:var(--n500);font-weight:600;margin-bottom:7px;">Upload bukti transfer</div><div class="proof" style="cursor:pointer" onclick="toast('(demo) pilih file bukti')">📎 Ketuk untuk pilih file bukti</div><button class="btn btn-primary btn-block" onclick="adminMarkPaid()">✓ Tandai Sudah Ditransfer</button></div>
+        <div id="a-pay-done" class="hidden" style="margin-top:13px;"><div class="proof filled">📄 Bukti transfer terunggah ✓ · 21 Jul 14:32</div><div class="note" style="margin-top:11px;margin-bottom:0;">Extras (Cika) sekarang lihat "Sudah dibayar" + bukti. Coba: Keluar → masuk Extras → Project Saya.</div></div>
+      </div>
+    </div>
+    <div class="screen" id="a-cashflow">
+      <div class="pagehead"><div><h1>Catatan Keuangan</h1><div class="sub">Rekonsiliasi harian: uang masuk vs pengeluaran</div></div></div>
+      <div class="kpigrid"><div class="kpi money-k"><div class="n">Rp 79,5jt</div><div class="t">Uang masuk (client)</div></div><div class="kpi"><div class="n" style="color:var(--danger)">Rp 57,8jt</div><div class="t">Payout extras</div></div><div class="kpi money-k"><div class="n">Rp 21,7jt</div><div class="t">Margin agensi</div></div><div class="kpi"><div class="n">9</div><div class="t">Hari shooting</div></div></div>
+      <div class="box" style="padding:0;">
+        <div class="prow"><div style="flex:1"><b>Day 1</b><div style="color:var(--n500);font-size:12px">masuk 15,4jt · keluar 11,875jt</div></div><span class="badge b-success">AMAN · sisa 3,5jt</span></div>
+        <div class="prow"><div style="flex:1"><b>Day 4</b><div style="color:var(--n500);font-size:12px">masuk 12jt · keluar 8,525jt</div></div><span class="badge b-info">PLUS · +828rb</span></div>
+        <div class="prow"><div style="flex:1"><b>Day 8</b><div style="color:var(--n500);font-size:12px">masuk 3,65jt · keluar 2,85jt</div></div><span class="badge b-warning">MINUS · −150rb</span></div>
+      </div>
+      <div class="note warn">Menggantikan sheet "Catatan Keuangan Admin per Day" yang tadinya manual di Excel.</div>
+    </div>
+    <div class="screen" id="a-invoice">
+      <div class="pagehead"><div><h1>Invoice ke Client</h1><div class="sub">Tagihan agensi ke rumah produksi (client)</div></div></div>
+      <div class="box"><div style="display:flex;justify-content:space-between;"><div><div style="font-weight:800;color:var(--primary)">JBTB CASTING & AGENCY</div><div style="font-size:12px;color:var(--n500)">Sawangan, Depok</div></div><span class="badge b-warning">Belum dibayar PH</span></div>
+        <div class="row" style="margin-top:10px"><span class="lbl">No. Invoice</span><span class="val">202605-11</span></div><div class="row"><span class="lbl">Kepada</span><span class="val">Client: Starvision (Up: Erik Arfin)</span></div><div class="row"><span class="lbl">Project</span><span class="val">Kado Untuk Ibu · 9 hari</span></div><div class="row"><span class="lbl">Total tagihan</span><span class="val money" style="font-size:18px">Rp 79.550.000</span></div><div class="row"><span class="lbl">Rekening</span><span class="val">BCA 4731824694<br><span style="font-weight:400;color:var(--n500);font-size:12px">a.n. Jestika Aisya Kordak</span></span></div>
+        <button class="btn btn-primary btn-block" onclick="toast('(demo) invoice PDF di-generate & dikirim')">Generate & Kirim Invoice</button></div>
+    </div>
+  </div>
+</div></div>
+
+<!-- ===== PH / CD (sidebar + talent board) ===== -->
+<div id="app-ph" class="hidden"><div class="shell">
+  <div class="sidebar" id="p-sb">
+    <div class="sb-brand"><span class="logo">JB</span>Talent Board</div>
+    <button class="nav-item on" data-pnav="p-list" onclick="pgo('p-list')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1a6 6 0 0 1 12 0v1"/></svg>Talent Pilihan</button>
+    <button class="nav-item" data-pnav="p-riwayat" onclick="pgo('p-riwayat')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l3 3"/></svg>Riwayat Casting</button>
+    <button class="nav-item" data-pnav="p-detail" onclick="pgo('p-detail')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Detail Talent</button>
+    <div class="sb-foot"><span class="sb-role pill-ph">Client / Casting Director</span><button class="nav-item" onclick="logout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Keluar</button></div>
+  </div>
+  <div class="main">
+    <button class="logout hide-lg" onclick="document.getElementById('p-sb').classList.toggle('open')" style="margin-bottom:12px;">☰ Menu</button>
+    <div class="screen active" id="p-list">
+      <div class="pagehead"><div><h1>Calon Talent — "Kado Untuk Ibu"</h1><div class="sub">Di-present Admin JBTB · approve yang cocok</div></div></div>
+      <div class="note lock">🔒 Ini calon yang <b>di-present Admin JBTB</b> — kamu tinggal approve yang cocok. Cuma lihat nama panggung & visual; kontak & data pribadi dikelola JBTB (anti-poaching).</div>
+      <div class="talentgrid">
+        <div class="tcard" onclick="pgo('p-detail')"><div class="tphoto" style="background:linear-gradient(135deg,#c7d2fe,#a5b4fc)">▶ video</div><div class="tinfo"><div class="nm">Bunga Melati</div><div class="mt">Wanita · 20-an · 160cm</div><span class="match">cocok 95%</span><div style="margin-top:5px"><span class="badge b-info" style="font-size:10px">⭐ pernah kamu pakai</span></div></div></div>
+        <div class="tcard" onclick="pgo('p-detail')"><div class="tphoto" style="background:linear-gradient(135deg,#fbcfe8,#f9a8d4)">▶ video</div><div class="tinfo"><div class="nm">Rangga</div><div class="mt">Pria · 30-an · 172cm</div><span class="match">cocok 88%</span></div></div>
+        <div class="tcard" onclick="pgo('p-detail')"><div class="tphoto" style="background:linear-gradient(135deg,#fde68a,#fcd34d)">▶ video</div><div class="tinfo"><div class="nm">Bagas</div><div class="mt">Pria · 30-an · 175cm</div><span style="color:var(--warning);font-size:11.5px;font-weight:700">cocok 70%</span></div></div>
+        <div class="tcard" onclick="pgo('p-detail')"><div class="tphoto" style="background:linear-gradient(135deg,#bbf7d0,#86efac)">▶ video</div><div class="tinfo"><div class="nm">Sari Indah</div><div class="mt">Wanita · 20-an · 158cm</div><span class="match">cocok 91%</span></div></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px"><button class="btn btn-purple" style="flex:1" onclick="toast('✅ Approved → masuk menu Extras Approved di admin JBTB')">✅ Approve Terpilih</button><button class="btn btn-ghost" style="flex:1" onclick="toast('Permintaan ganti talent dikirim ke admin')">Minta Ganti</button></div>
+    </div>
+    <div class="screen" id="p-riwayat">
+      <div class="pagehead"><div><h1>Riwayat Casting</h1><div class="sub">Talent yang pernah kamu pakai — bisa diambil lagi buat project baru</div></div></div>
+      <div class="note lock">🔁 Mau repeat casting yang sama? Ambil dari sini. Kontak tetap lewat JBTB — tinggal kirim permintaan re-book ke admin.</div>
+      <h2 class="sec">Project selesai</h2>
+      <div class="box">
+        <div style="font-weight:700;font-size:15px;">Iklan "Teh Segar"</div>
+        <div style="color:var(--n500);font-size:12.5px;margin-bottom:10px">Jun 2026 · 6 talent</div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px"><span class="chip">Bunga Melati</span><span class="chip">Rangga</span><span class="chip">Sari Indah</span><span class="chip">+3</span></div>
+        <button class="btn btn-purple btn-block" onclick="toast('🔁 Re-book: talent Teh Segar diminta buat project baru → dikirim ke JBTB')">🔁 Ambil lagi buat project baru</button>
+      </div>
+      <div class="box">
+        <div style="font-weight:700;font-size:15px;">Sinetron "Rumah Kita"</div>
+        <div style="color:var(--n500);font-size:12.5px;margin-bottom:10px">Apr 2026 · 12 talent</div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px"><span class="chip">Bunga Melati</span><span class="chip">Bagas</span><span class="chip">+10</span></div>
+        <button class="btn btn-purple btn-block" onclick="toast('🔁 Re-book: talent Rumah Kita diminta buat project baru → dikirim ke JBTB')">🔁 Ambil lagi buat project baru</button>
+      </div>
+      <h2 class="sec">⭐ Talent sering kamu pakai</h2>
+      <div class="box" style="padding:0;">
+        <div class="prow"><div class="thumb sq" style="background:linear-gradient(135deg,#c7d2fe,#a5b4fc)">🎭</div><div style="flex:1"><div style="font-weight:700">Bunga Melati</div><div style="color:var(--n500);font-size:12.5px">dipakai 3x · Kelas B</div></div><button class="btn btn-purple" style="padding:8px 12px;font-size:13px" onclick="toast('Booking Bunga Melati → dikirim ke JBTB')">Booking lagi</button></div>
+        <div class="prow"><div class="thumb sq" style="background:linear-gradient(135deg,#fbcfe8,#f9a8d4)">🎭</div><div style="flex:1"><div style="font-weight:700">Rangga</div><div style="color:var(--n500);font-size:12.5px">dipakai 2x · Kelas B</div></div><button class="btn btn-purple" style="padding:8px 12px;font-size:13px" onclick="toast('Booking Rangga → dikirim ke JBTB')">Booking lagi</button></div>
+      </div>
+    </div>
+    <div class="screen" id="p-detail">
+      <div class="pagehead"><button class="back show" onclick="pback()">‹</button><h1>Bunga Melati</h1></div>
+      <div class="note lock">🔒 Data kontak & identitas asli tidak tersedia. Komunikasi lewat JBTB Casting.</div>
+      <div class="box"><div class="row"><span class="lbl">Nama panggung</span><span class="val">Bunga Melati</span></div><div class="row"><span class="lbl">Kelas</span><span class="val">B — Pengunjung dewasa</span></div><div class="row"><span class="lbl">Gender / Usia</span><span class="val">Wanita · 20-an</span></div><div class="row"><span class="lbl">Tinggi / Baju</span><span class="val">160 cm · M</span></div><div class="row"><span class="lbl">Kecocokan</span><span class="val" style="color:var(--success)">95%</span></div></div>
+      <h2 class="sec">🎥 Video Perkenalan</h2><div class="box" style="padding:0;overflow:hidden;"><div class="video"><div class="play">▶</div><div style="font-size:12.5px;opacity:.85;">Perkenalan · 0:40</div></div></div>
+      <h2 class="sec">📸 Foto</h2><div class="box"><div class="gallery"><div class="gphoto" style="background:linear-gradient(135deg,#c7d2fe,#a5b4fc)"></div><div class="gphoto" style="background:linear-gradient(135deg,#fbcfe8,#f9a8d4)"></div><div class="gphoto" style="background:linear-gradient(135deg,#bbf7d0,#86efac)"></div></div></div>
+      <button class="btn btn-purple btn-block" onclick="toast('✅ Approved → masuk menu Extras Approved di dashboard admin')">✅ Approve Talent Ini</button>
+    </div>
+  </div>
+</div></div>
+
+<script>
+  const state={paid:false};
+  let xhist=['x-feed'],ahist=['a-dash'],phist=['p-list'];
+  function enter(role){
+    document.getElementById('login').classList.add('hidden');
+    document.getElementById('app-extras').classList.toggle('hidden',role!=='extras');
+    document.getElementById('app-admin').classList.toggle('hidden',role!=='admin');
+    document.getElementById('app-ph').classList.toggle('hidden',role!=='ph');
+    if(role==='extras'){xhist=['x-feed'];xshow('x-feed');}else if(role==='admin'){ahist=['a-dash'];ashow('a-dash');}else{phist=['p-list'];pshow('p-list');}
+    applyPaid();window.scrollTo(0,0);
+  }
+  function logout(){['app-extras','app-admin','app-ph'].forEach(i=>document.getElementById(i).classList.add('hidden'));document.getElementById('login').classList.remove('hidden');window.scrollTo(0,0);}
+  function xshow(id){document.querySelectorAll('#app-extras .screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('[data-xnav]').forEach(b=>b.classList.toggle('on',b.dataset.xnav===id));window.scrollTo(0,0);}
+  function xgo(id){xhist.push(id);xshow(id);}function xback(){if(xhist.length>1){xhist.pop();xshow(xhist[xhist.length-1]);}}
+  function xdaftar(){toast('Pendaftaran terkirim! Cek di Riwayat.');setTimeout(()=>{xhist=['x-feed','x-riwayat'];xshow('x-riwayat');},900);}
+  function ashow(id){document.querySelectorAll('#app-admin .screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('[data-anav]').forEach(b=>b.classList.toggle('on',b.dataset.anav===id));document.getElementById('a-sb').classList.remove('open');window.scrollTo(0,0);}
+  function ago(id){ahist.push(id);ashow(id);}
+  function apost(){toast('✅ Lowongan diposting — langsung muncul di feed Extras!');setTimeout(()=>ago('a-dash'),1000);}
+  function gradePick(b){b.parentNode.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');}
+  function pshow(id){document.querySelectorAll('#app-ph .screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('[data-pnav]').forEach(b=>b.classList.toggle('on',b.dataset.pnav===id));document.getElementById('p-sb').classList.remove('open');window.scrollTo(0,0);}
+  function pgo(id){phist.push(id);pshow(id);}function pback(){if(phist.length>1){phist.pop();pshow(phist[phist.length-1]);}}
+  function adminMarkPaid(){state.paid=true;applyPaid();toast('✓ LUNAS + bukti terunggah. Extras langsung lihat.');}
+  function applyPaid(){
+    const ab=document.getElementById('a-pay-badge');if(ab&&state.paid){ab.className='badge b-success';ab.textContent='✓ Sudah dibayar';}
+    const af=document.getElementById('a-pay-form'),ad=document.getElementById('a-pay-done');if(af&&ad){af.classList.toggle('hidden',state.paid);ad.classList.toggle('hidden',!state.paid);}
+    const ds=document.getElementById('a-dash-paystat');if(ds&&state.paid)ds.textContent='sudah ditransfer ✓';
+    const ku=document.getElementById('a-kpi-unpaid');if(ku)ku.textContent=state.paid?'1':'2';
+    const xs=document.getElementById('x-pay-status');if(xs){xs.className=state.paid?'badge b-success':'badge b-warning';xs.textContent=state.paid?'✓ Sudah dibayar':'⏳ Belum dibayar';}
+    const xd=document.getElementById('x-pay-date');if(xd)xd.textContent=state.paid?'21 Juli 2026, 14:32':'—';
+    const xp=document.getElementById('x-pay-proof');if(xp){if(state.paid){xp.className='proof filled';xp.textContent='📄 Bukti transfer terlampir — ketuk untuk lihat';}else{xp.className='proof';xp.textContent='Belum ada — pembayaran belum dilakukan';}}
+    const xh=document.getElementById('x-pay-help');if(xh)xh.style.display=state.paid?'none':'block';
+    const xb=document.getElementById('x-badge');if(xb){xb.className=state.paid?'badge b-success':'badge b-warning';xb.textContent=state.paid?'✓ Sudah dibayar':'⏳ Belum dibayar';}
+  }
+  function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+  // show hamburger only on small screens
+  const mq=matchMedia('(max-width:820px)');function hb(){document.querySelectorAll('.hide-lg').forEach(b=>b.style.display=mq.matches?'inline-block':'none');}mq.addListener(hb);hb();
+</script>
+</body>
+</html>
