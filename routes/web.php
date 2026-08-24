@@ -1,0 +1,190 @@
+<?php
+
+use App\Http\Controllers\Admin\ApplicantController;
+use App\Http\Controllers\Admin\CastingProjectController as AdminCastingProjectController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\FeeNegotiationController as AdminFeeNegotiationController;
+use App\Http\Controllers\Admin\RecapController;
+use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\Admin\WorkHistoryController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Cd\DashboardController as CdDashboardController;
+use App\Http\Controllers\Cd\ReviewController;
+use App\Http\Controllers\ContractController;
+use App\Http\Controllers\Extras\CastingProjectController as ExtrasCastingProjectController;
+use App\Http\Controllers\Extras\DashboardController as ExtrasDashboardController;
+use App\Http\Controllers\Extras\FeeNegotiationController as ExtrasFeeNegotiationController;
+use App\Http\Controllers\Extras\ProfileController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\SuperAdmin\AdminManagementController;
+use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
+use App\Http\Controllers\SuperAdmin\MonitoringController;
+use App\Http\Controllers\SuperAdmin\ProjectAssignmentController;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/', function () {
+    return redirect('/login');
+});
+
+// ==================== AUTH ====================
+
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [LoginController::class, 'show'])->name('login');
+    Route::post('/login', [LoginController::class, 'login']);
+
+    // RF-01: registrasi Extras, publik.
+    Route::get('/register', [RegisterController::class, 'showExtras'])->name('register');
+    Route::post('/register', [RegisterController::class, 'registerExtras']);
+
+    // RF-02: registrasi Casting Director — URL ini TIDAK ditautkan dari
+    // halaman publik mana pun, dibagikan manual oleh Admin ke pihak client/PH.
+    Route::get('/register/casting-director', [RegisterController::class, 'showCastingDirector'])
+        ->name('register.cd');
+    Route::post('/register/casting-director', [RegisterController::class, 'registerCastingDirector']);
+});
+
+Route::post('/logout', [LoginController::class, 'logout'])
+    ->middleware('auth')
+    ->name('logout');
+
+// ==================== EXTRAS ====================
+
+Route::middleware(['auth', 'role:extras'])->prefix('extras')->group(function () {
+    Route::get('/dashboard', [ExtrasDashboardController::class, 'index'])->name('extras.dashboard');
+
+    Route::get('/profil', [ProfileController::class, 'show'])->name('extras.profile.show');
+    Route::get('/profil/lengkapi', [ProfileController::class, 'edit'])->name('extras.profile.edit');
+    Route::put('/profil', [ProfileController::class, 'update'])->name('extras.profile.update');
+    Route::post('/profil/foto', [ProfileController::class, 'uploadFoto'])->name('extras.profile.foto');
+    Route::post('/profil/video', [ProfileController::class, 'uploadVideo'])->name('extras.profile.video');
+    Route::post('/profil/foto-tambahan/{slot}', [ProfileController::class, 'uploadFotoTambahan'])
+        ->whereNumber('slot')->name('extras.profile.foto-tambahan');
+    Route::delete('/profil/foto-tambahan/{slot}', [ProfileController::class, 'hapusFotoTambahan'])
+        ->whereNumber('slot')->name('extras.profile.foto-tambahan.hapus');
+
+    Route::get('/lowongan', [ExtrasCastingProjectController::class, 'index'])->name('extras.projects.index');
+    Route::get('/lowongan/{castingProject}', [ExtrasCastingProjectController::class, 'show'])->name('extras.projects.show');
+    Route::post('/lowongan/{castingProject}/daftar', [ExtrasCastingProjectController::class, 'apply'])->name('extras.projects.apply');
+
+    Route::get('/nego/{application}', [ExtrasFeeNegotiationController::class, 'show'])->name('extras.negotiations.show');
+    Route::post('/nego/{application}/terima', [ExtrasFeeNegotiationController::class, 'terima'])->name('extras.negotiations.terima');
+    Route::post('/nego/{application}/counter', [ExtrasFeeNegotiationController::class, 'counter'])->name('extras.negotiations.counter');
+});
+
+// ==================== ADMIN (Default + sub-role) ====================
+
+Route::middleware(['auth', 'role:admin_default,admin_talco,admin_korlap,admin_sosmed'])
+    ->prefix('admin')
+    ->group(function () {
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+
+        // RF-43/RF-44: Riwayat Kerja & Status Gaji — akses SEMUA tipe Admin,
+        // termasuk Talco/Sosmed yang read-only footprint-nya cuma di sini.
+        Route::get('/riwayat-kerja', [WorkHistoryController::class, 'index'])->name('admin.work-history');
+
+        // RF-05: khusus Admin Default — dicek lagi di controller karena
+        // sub-role (Talco/Korlap/Sosmed) tidak boleh kelola akun CD/Extras.
+        Route::middleware('role:admin_default')->group(function () {
+            Route::get('/users', [UserManagementController::class, 'index'])->name('admin.users.index');
+            Route::patch('/users/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])
+                ->name('admin.users.toggle-status');
+
+            Route::get('/projects', [AdminCastingProjectController::class, 'index'])->name('admin.projects.index');
+            Route::get('/projects/create', [AdminCastingProjectController::class, 'create'])->name('admin.projects.create');
+            Route::post('/projects', [AdminCastingProjectController::class, 'store'])->name('admin.projects.store');
+            Route::patch('/projects/{castingProject}/toggle-status', [AdminCastingProjectController::class, 'toggleStatus'])
+                ->name('admin.projects.toggle-status');
+            Route::get('/projects/{castingProject}/applicants', [AdminCastingProjectController::class, 'showApplicants'])
+                ->name('admin.projects.applicants');
+
+            Route::patch('/applications/{application}/grade', [ApplicantController::class, 'setGrade'])
+                ->name('admin.applications.grade');
+
+            Route::patch('/applications/{application}/reject', [ApplicantController::class, 'reject'])
+                ->name('admin.applications.reject');
+
+            Route::get('/applications/{application}/nego', [AdminFeeNegotiationController::class, 'show'])
+                ->name('admin.negotiations.show');
+            Route::post('/applications/{application}/nego/ajukan', [AdminFeeNegotiationController::class, 'ajukanAwal'])
+                ->name('admin.negotiations.ajukan');
+            Route::post('/applications/{application}/nego/counter', [AdminFeeNegotiationController::class, 'counter'])
+                ->name('admin.negotiations.counter');
+            Route::post('/applications/{application}/nego/terima', [AdminFeeNegotiationController::class, 'terima'])
+                ->name('admin.negotiations.terima');
+            Route::post('/applications/{application}/nego/tolak', [AdminFeeNegotiationController::class, 'tolak'])
+                ->name('admin.negotiations.tolak');
+            Route::post('/applications/{application}/ajukan-ke-cd', [AdminFeeNegotiationController::class, 'ajukanKeCd'])
+                ->name('admin.negotiations.ajukan-ke-cd');
+
+            Route::get('/recap', [RecapController::class, 'index'])->name('admin.recap.index');
+            Route::get('/recap/export', [RecapController::class, 'export'])->name('admin.recap.export');
+        });
+    });
+
+// ==================== SUPER ADMIN ====================
+
+Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(function () {
+    Route::get('/dashboard', [SuperAdminDashboardController::class, 'index'])->name('super-admin.dashboard');
+
+    Route::get('/monitoring', [MonitoringController::class, 'index'])->name('super-admin.monitoring');
+
+    Route::get('/admins', [AdminManagementController::class, 'index'])->name('super-admin.admins.index');
+    Route::get('/admins/create', [AdminManagementController::class, 'create'])->name('super-admin.admins.create');
+    Route::post('/admins', [AdminManagementController::class, 'store'])->name('super-admin.admins.store');
+    Route::patch('/admins/{user}/honor', [AdminManagementController::class, 'updateHonor'])->name('super-admin.admins.honor');
+
+    Route::post('/projects/{castingProject}/assign', [ProjectAssignmentController::class, 'assign'])
+        ->name('super-admin.assignments.assign');
+    Route::post('/assignments/{assignment}/complete', [ProjectAssignmentController::class, 'markComplete'])
+        ->name('super-admin.assignments.complete');
+    Route::post('/payrolls/{payroll}/addon', [ProjectAssignmentController::class, 'addAddon'])
+        ->name('super-admin.payrolls.addon');
+});
+
+// ==================== CASTING DIRECTOR ====================
+
+Route::middleware(['auth', 'role:casting_director'])->prefix('cd')->group(function () {
+    Route::get('/dashboard', [CdDashboardController::class, 'index'])->name('cd.dashboard');
+
+    Route::get('/reviews', [ReviewController::class, 'index'])->name('cd.reviews.index');
+    Route::post('/reviews', [ReviewController::class, 'review'])->name('cd.reviews.review');
+});
+
+// ==================== KONTRAK (lintas role: Admin Default & Extras) ====================
+// RF-25/26/27: satu resource yang diakses dua pihak berbeda, otorisasi
+// granular ditegakkan di dalam ContractController, bukan lewat role middleware.
+
+Route::middleware('auth')->prefix('kontrak')->group(function () {
+    Route::get('/{application}', [ContractController::class, 'show'])->name('contracts.show');
+    Route::post('/{application}/sign', [ContractController::class, 'sign'])->name('contracts.sign');
+});
+
+// ==================== INVOICE (lintas role: Admin Default & CD) ====================
+
+Route::middleware('auth')->prefix('invoice')->group(function () {
+    Route::get('/{castingProject}', [InvoiceController::class, 'show'])->name('invoices.show');
+    Route::post('/{castingProject}/sign', [InvoiceController::class, 'sign'])->name('invoices.sign');
+});
+
+// ==================== PEMBAYARAN EXTRAS (lintas role: Admin Default & Extras) ====================
+
+Route::middleware('auth')->prefix('pembayaran')->group(function () {
+    Route::get('/{application}', [PaymentController::class, 'show'])->name('payments.show');
+    Route::post('/{application}/transfer', [PaymentController::class, 'tandaiTransfer'])->name('payments.transfer');
+    Route::post('/{application}/konfirmasi', [PaymentController::class, 'konfirmasi'])->name('payments.confirm');
+    Route::post('/{application}/addon', [PaymentController::class, 'addAddon'])->name('payments.addon');
+});
+
+// ==================== MEDIA PROFIL EXTRAS (lintas role: pemilik, Admin, CD) ====================
+// RF-14 & CLAUDE.md §5: foto/video boleh dilihat pemilik, Admin, maupun CD —
+// otorisasi granular ditegakkan di ProfileController::pastikanBolehLihatMedia(),
+// bukan lewat role middleware, karena resource yang sama diakses 3 pihak berbeda.
+
+Route::middleware('auth')->prefix('media')->group(function () {
+    Route::get('/foto/{extrasProfile}', [ProfileController::class, 'fotoStream'])->name('extras.media.foto');
+    Route::get('/video/{extrasProfile}', [ProfileController::class, 'videoStream'])->name('extras.media.video');
+    Route::get('/foto-tambahan/{extrasProfile}/{slot}', [ProfileController::class, 'fotoTambahanStream'])
+        ->whereNumber('slot')->name('extras.media.foto-tambahan');
+});
