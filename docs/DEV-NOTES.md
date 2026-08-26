@@ -63,6 +63,27 @@ Semua 6 sprint dikerjakan berurutan tanpa checkpoint manual di tengah jalan (kep
 
 ---
 
+## Session 2 — Ponytail Cleanup + Fix ParseError (26 Agustus 2026)
+
+### Perubahan
+
+Ponytail review & cleanup atas commit `1af2ced` (Sprint 1–6 + UI):
+
+- `PasswordResetController.php` — drop `$status =` assignment yang tidak dipakai di `sendResetLink()`.
+- `AppServiceProvider.php` — pangkas komentar 8-baris jadi 1 baris.
+- `applicants.blade.php` — hapus second `@foreach` loop untuk dialog reject; sekarang inline di loop utama (tidak ada constraint `<table>` di card layout).
+- `password-input.blade.php` — hapus `uniqid()` dari `$inputId`; `pwd-{name}` sudah unik per halaman karena name beda.
+
+**Fix ParseError:** komentar CSS di `app.blade.php` berisi `<x-password-input>` (tanpa `/>`). Blade parsing ini sebagai opening component tag → emit `if ($component->shouldRender()):` tanpa `endif` → unclosed `if` → "unexpected EOF, expecting endif" saat render halaman apapun yang pakai layout ini. Fix: hapus angle bracket dari komentar (tulis `x-password-input`, bukan `<x-password-input>`). Juga clear view cache (`php artisan view:clear`).
+
+**Root CLAUDE.md dibuat** — biar Claude Code auto-load konvensi kerja (ponytail + caveman wajib tiap sesi coding). `docs/CLAUDE.md` juga diupdate dengan §14 Konvensi Coding.
+
+### Catatan Penting
+
+`<x-component>` di dalam komentar CSS atau teks Blade (termasuk di dalam `/* */` style block) **tetap diparse Blade sebagai component opening tag** kalau tidak ada `/` sebelum `>`. Selalu tulis tanpa angle bracket di komentar, atau pakai `{{-- --}}` Blade comment kalau perlu mention nama komponen.
+
+---
+
 ## Cara Pakai File Ini
 
 Update di sini tiap sesi kerja modul (bukan hanya task besar) — beda dari project lain yang lebih strict soal token, project ini prioritaskan jejak proses untuk bimbingan (minimal 8x tercatat) dan laporan akhir nanti.
