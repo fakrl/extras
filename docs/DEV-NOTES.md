@@ -82,6 +82,8 @@ Ponytail review & cleanup atas commit `1af2ced` (Sprint 1–6 + UI):
 
 `<x-component>` di dalam komentar CSS atau teks Blade (termasuk di dalam `/* */` style block) **tetap diparse Blade sebagai component opening tag** kalau tidak ada `/` sebelum `>`. Selalu tulis tanpa angle bracket di komentar, atau pakai `{{-- --}}` Blade comment kalau perlu mention nama komponen.
 
+**Catatan debugging (sesi paralel via Cowork, sebelum root cause di atas ketemu):** sempat salah curiga ke `@tabler` di URL CDN Tabler Icons (`.../npm/@tabler/icons-webfont@latest/...`) sebagai penyebab, karena `@` diikuti huruf juga pola directive Blade. Di-escape jadi `@@tabler` di `app.blade.php` & `auth.blade.php` (commit `95bc5ac`) — itu perbaikan yang sah untuk mencegah masalah serupa di masa depan (biarkan tetap ter-escape), tapi BUKAN akar masalah ParseError yang sebenarnya. Root cause asli adalah `<x-password-input>` di komentar CSS (lihat fix di atas, commit `395ca0d`). Pelajaran: kalau ada 2+ pola `@`/`<x-...>` mencurigakan di file yang sama, cek satu-satu sampai tuntas — jangan berhenti di kecurigaan pertama yang "masuk akal".
+
 ---
 
 ## Cara Pakai File Ini
