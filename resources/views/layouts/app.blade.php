@@ -298,7 +298,7 @@
         .input-inline { width: auto; flex: 1; margin-bottom: 0; min-width: 0; }
 
         /* Input password dengan tombol show/hide (ikon mata) — dipakai lewat
-           komponen <x-password-input>, sama dengan layouts/auth.blade.php */
+           komponen x-password-input, sama dengan layouts/auth.blade.php */
         .password-field { position: relative; }
         .password-field input { padding-right: 44px; margin-bottom: 0; }
         .password-toggle {

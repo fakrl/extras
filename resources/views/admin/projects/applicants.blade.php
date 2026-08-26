@@ -101,14 +101,7 @@
             </div>
         </div>
     </div>
-@empty
-    <div class="card" style="text-align:center; color: var(--text-muted); padding: 30px 0;">
-        Belum ada pendaftar.
-    </div>
-@endforelse
 
-{{-- Dialog konfirmasi reject-dini --}}
-@foreach ($applicants as $app)
     @if (in_array($app->status_partisipasi, ['diajukan', 'direview_admin'], true))
         <dialog id="reject-dialog-{{ $app->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
             <form method="POST" action="{{ route('admin.applications.reject', $app) }}" style="padding: 18px;">
@@ -122,5 +115,9 @@
             </form>
         </dialog>
     @endif
-@endforeach
+@empty
+    <div class="card" style="text-align:center; color: var(--text-muted); padding: 30px 0;">
+        Belum ada pendaftar.
+    </div>
+@endforelse
 @endsection

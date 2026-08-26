@@ -219,3 +219,14 @@ Prototype UI **sudah selesai tugasnya** (bukti visual visi). Berhenti nambah lay
 3. **Rencana Sprint** — pecah per modul, urut dependency (auth dulu), selaras alur Jira + spec→dev→tester→reviewer tim.
 
 > **Risiko #1 = scope, bukan teknis.** 70 RF untuk solo dev + AI dalam 2–4 bulan itu berat. Disiplin MVP = kunci lulus + sistem kepakai.
+
+---
+
+## 14. Konvensi Coding (berlaku setiap sesi)
+
+Dua skill wajib aktif di setiap sesi coding:
+
+- **`/ponytail`** — shortest solution that works. Stdlib dulu, native platform dulu, hapus sebelum tambah. Enforced via hook.
+- **`/caveman`** — jawaban pendek, no prose. Enforced via hook.
+
+Lihat `CLAUDE.md` (root project) untuk ringkasan konvensi per sesi.

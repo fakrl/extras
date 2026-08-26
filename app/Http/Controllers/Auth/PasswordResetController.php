@@ -25,11 +25,9 @@ class PasswordResetController extends Controller
     {
         $request->validate(['email' => ['required', 'email']]);
 
-        $status = Password::sendResetLink($request->only('email'));
+        Password::sendResetLink($request->only('email'));
 
-        // Pesan sukses ditampilkan terlepas email ditemukan atau tidak,
-        // supaya orang lain tidak bisa "menebak" email mana yang terdaftar
-        // di sistem cuma dari respons form ini (praktik umum, bukan berlebihan).
+        // Pesan generik — tidak ungkap apakah email terdaftar atau tidak.
         return back()->with('status', 'Kalau email tersebut terdaftar, link reset password sudah dikirim. Cek inbox (atau folder spam) kamu.');
     }
 

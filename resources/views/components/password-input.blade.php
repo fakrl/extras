@@ -1,7 +1,7 @@
 @props(['name' => 'password', 'label' => 'Password', 'required' => true, 'minlength' => null])
 
 @php
-    $inputId = 'pwd-' . $name . '-' . uniqid();
+    $inputId = 'pwd-' . $name;
 @endphp
 
 <label for="{{ $inputId }}">{{ $label }}</label>
