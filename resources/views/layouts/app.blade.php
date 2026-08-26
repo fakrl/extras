@@ -208,6 +208,67 @@
             .step-bar-label { font-size: 10px; }
         }
 
+        /* Card grid untuk daftar Proyek Casting & Pendaftar — desktop/iPad-first
+           (Admin pakai perangkat itu), tapi tetap collapse rapi ke 1 kolom di
+           mobile karena CD kadang buka dari HP juga. */
+        .entity-card-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 14px; align-items: start;
+        }
+        .entity-card {
+            border: 1px solid var(--border-color); border-radius: 12px;
+            background: var(--bg-card); padding: 16px;
+        }
+        .entity-card-title { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+        .entity-card-sub { font-size: 12.5px; color: var(--text-secondary); margin-bottom: 12px; }
+        .entity-card-row {
+            display: flex; justify-content: space-between; gap: 10px;
+            font-size: 13px; padding: 5px 0; border-bottom: 1px solid var(--border-color);
+        }
+        .entity-card-row:last-of-type { border-bottom: none; }
+        .entity-card-row-label { color: var(--text-secondary); }
+        .entity-card-row-value { font-weight: 500; text-align: right; }
+        .entity-card-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+
+        /* Card kandidat di halaman Pendaftar — foto besar kiri, info+aksi kanan.
+           Di mobile stack jadi 1 kolom (foto di atas). */
+        .applicant-card {
+            display: grid; grid-template-columns: 120px 1fr; gap: 14px;
+            border: 1px solid var(--border-color); border-radius: 12px;
+            background: var(--bg-card); padding: 14px; margin-bottom: 14px;
+        }
+        .applicant-card-photo img, .applicant-card-photo .thumb-photo-empty {
+            width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 10px; display: block;
+        }
+        .applicant-card-photo .thumb-photo-empty {
+            display: flex; align-items: center; justify-content: center;
+            background: var(--bg-nav-active); color: var(--text-muted); font-size: 24px;
+        }
+        .applicant-card-extra-photos { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+        @media (max-width: 640px) {
+            .applicant-card { grid-template-columns: 1fr; }
+            .applicant-card-photo { max-width: 160px; }
+        }
+
+        /* Grid dashboard 2 kolom (Super Admin, dll) — collapse ke 1 kolom di
+           mobile supaya chart tidak diperas jadi sempit & tinggi tidak proporsional. */
+        .dashboard-grid-2col { display: grid; gap: 16px; margin-bottom: 16px; align-items: start; }
+        .dashboard-grid-2col.is-wide-narrow { grid-template-columns: 1.4fr 1fr; }
+        .dashboard-grid-2col.is-even { grid-template-columns: 1fr 1fr; }
+
+        /* Wrapper canvas Chart.js — tinggi dikontrol lewat CSS (bukan attribute
+           height di <canvas>), dipasangkan dengan maintainAspectRatio:false di
+           JS supaya chart selalu proporsional dengan lebar container-nya. */
+        .chart-box { position: relative; height: 240px; width: 100%; }
+
+        @media (max-width: 860px) {
+            .dashboard-grid-2col.is-wide-narrow,
+            .dashboard-grid-2col.is-even {
+                grid-template-columns: 1fr;
+            }
+            .chart-box { height: 200px; }
+        }
+
         /* Baris tampilan read-only (halaman "Lihat Profil") */
         .profile-view-row {
             display: flex; justify-content: space-between; gap: 12px;
@@ -235,6 +296,19 @@
         /* Override untuk input yang sengaja sejajar tombol dalam satu baris
            (form nego fee, tambah komponen pembayaran, dsb) — bukan full-width */
         .input-inline { width: auto; flex: 1; margin-bottom: 0; min-width: 0; }
+
+        /* Input password dengan tombol show/hide (ikon mata) — dipakai lewat
+           komponen <x-password-input>, sama dengan layouts/auth.blade.php */
+        .password-field { position: relative; }
+        .password-field input { padding-right: 44px; margin-bottom: 0; }
+        .password-toggle {
+            position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+            width: 36px; height: 36px; border: none; background: transparent;
+            color: var(--text-secondary); cursor: pointer; display: flex;
+            align-items: center; justify-content: center; font-size: 17px;
+        }
+        .password-toggle:hover { color: var(--text-primary); }
+        .password-field-wrap { margin-bottom: 14px; }
 
         /* Form profil Extras — grouping per section biar nggak berasa panjang/berat */
         .profile-section {

@@ -34,7 +34,7 @@ class LoginController extends Controller
         // dari URL apa yang sempat dicoba diakses sebelum login (mis. Extras
         // yang tadinya nyasar ke /admin/dashboard dan kena redirect ke /login,
         // begitu berhasil login jangan dibalikin lagi ke /admin/dashboard).
-        return redirect($this->dashboardRouteFor(Auth::user()->role));
+        return redirect(Auth::user()->dashboardUrl());
     }
 
     public function logout(Request $request): RedirectResponse
@@ -44,20 +44,5 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/login');
-    }
-
-    /**
-     * RF-03: tiap role diarahkan ke dashboard masing-masing setelah login,
-     * bukan satu dashboard generic yang sama untuk semua orang.
-     */
-    private function dashboardRouteFor(string $role): string
-    {
-        return match ($role) {
-            'super_admin' => '/super-admin/dashboard',
-            'admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed' => '/admin/dashboard',
-            'casting_director' => '/cd/dashboard',
-            'extras' => '/extras/dashboard',
-            default => '/',
-        };
     }
 }

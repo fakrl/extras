@@ -1,8 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Review Kandidat')
+@section('title', 'Greenlight — Review Kandidat')
 
 @section('content')
+<div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">Greenlight</div>
+<p style="color: var(--text-secondary); margin: 0 0 16px; font-size: 13.5px;">
+    Kandidat yang sudah Deal fee-nya, siap kamu approve atau reject.
+</p>
 <form method="POST" action="{{ route('cd.reviews.review') }}">
     @csrf
 
@@ -53,7 +57,7 @@
 
     @if ($applications->isNotEmpty())
         <div style="margin-top: 14px; display: flex; gap: 8px;">
-            <button type="submit" name="keputusan" value="approve" class="btn btn-brand">Approve Terpilih</button>
+            <button type="submit" name="keputusan" value="approve" class="btn btn-brand">Greenlight Terpilih</button>
             <button type="submit" name="keputusan" value="reject" class="btn btn-danger-outline">Reject Terpilih</button>
         </div>
     @endif

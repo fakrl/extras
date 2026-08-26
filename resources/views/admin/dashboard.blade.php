@@ -19,7 +19,7 @@
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; margin-bottom: 20px; align-items: start;">
+    <div class="dashboard-grid-2col is-wide-narrow">
         <div class="card">
             <div class="card-title">Tahapan Partisipasi Kandidat</div>
             @php $maxPartisipasi = max($chartStatusPartisipasi['data']) ?: 1; @endphp
@@ -38,7 +38,7 @@
         </div>
         <div class="card">
             <div class="card-title">Status Pembayaran Extras</div>
-            <canvas id="chartPembayaran" height="220"></canvas>
+            <div class="chart-box"><canvas id="chartPembayaran"></canvas></div>
         </div>
     </div>
 
@@ -79,6 +79,8 @@
             }]
         },
         options: {
+            responsive: true,
+            maintainAspectRatio: false,
             plugins: { legend: { position: 'bottom', labels: { color: textColor } } }
         }
     });

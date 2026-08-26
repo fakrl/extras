@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\RecapController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\WorkHistoryController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Cd\DashboardController as CdDashboardController;
 use App\Http\Controllers\Cd\ReviewController;
@@ -24,9 +25,18 @@ use App\Http\Controllers\SuperAdmin\MonitoringController;
 use App\Http\Controllers\SuperAdmin\ProjectAssignmentController;
 use Illuminate\Support\Facades\Route;
 
+// Landing page publik — compro/informasi singkat + tombol Masuk. Bukan auth
+// gate: tetap tampil apa pun status login user, sesuai request "simpel aja".
 Route::get('/', function () {
-    return redirect('/login');
-});
+    return view('welcome');
+})->name('home');
+
+// Pintu masuk universal setelah login (dipakai mis. link "kembali ke
+// dashboard" generik) — lempar ke dashboard sesuai role via
+// User::dashboardUrl(), satu-satunya sumber kebenaran mapping role→URL.
+Route::middleware('auth')->get('/dashboard', function () {
+    return redirect(auth()->user()->dashboardUrl());
+})->name('dashboard');
 
 // ==================== AUTH ====================
 
@@ -43,7 +53,20 @@ Route::middleware('guest')->group(function () {
     Route::get('/register/casting-director', [RegisterController::class, 'showCastingDirector'])
         ->name('register.cd');
     Route::post('/register/casting-director', [RegisterController::class, 'registerCastingDirector']);
+
+    Route::get('/forgot-password', [PasswordResetController::class, 'showForgotForm'])
+        ->name('password.request');
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])
+        ->name('password.email');
+    Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])
+        ->name('password.reset');
+    Route::post('/reset-password', [PasswordResetController::class, 'reset'])
+        ->name('password.update');
 });
+
+Route::get('/privacy-policy', function () {
+    return view('privacy-policy');
+})->name('privacy-policy');
 
 Route::post('/logout', [LoginController::class, 'logout'])
     ->middleware('auth')

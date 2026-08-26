@@ -26,7 +26,7 @@
     </div>
 </div>
 
-<div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; margin-bottom: 16px; align-items: start;">
+<div class="dashboard-grid-2col is-wide-narrow">
     <div class="card">
         <div class="card-title">Tahapan Partisipasi Kandidat</div>
         @php $maxPartisipasi = max($chartStatusPartisipasi['data']) ?: 1; @endphp
@@ -45,14 +45,14 @@
     </div>
     <div class="card">
         <div class="card-title">Status Keaktifan Extras</div>
-        <canvas id="chartStatusExtras" height="220"></canvas>
+        <div class="chart-box"><canvas id="chartStatusExtras"></canvas></div>
     </div>
 </div>
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; align-items: start;">
+<div class="dashboard-grid-2col is-even">
     <div class="card">
         <div class="card-title">Jumlah Akun per Role</div>
-        <canvas id="chartAkunRole" height="220"></canvas>
+        <div class="chart-box"><canvas id="chartAkunRole"></canvas></div>
     </div>
     <div class="card">
         <div class="card-title">Penugasan Admin Selesai</div>
@@ -90,6 +90,8 @@
             }]
         },
         options: {
+            responsive: true,
+            maintainAspectRatio: false,
             plugins: { legend: { position: 'bottom', labels: { color: textColor } } }
         }
     });
@@ -106,6 +108,8 @@
             }]
         },
         options: {
+            responsive: true,
+            maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
                 x: { ticks: { color: textColor, maxRotation: 30, minRotation: 30 }, grid: { display: false } },

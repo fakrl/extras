@@ -16,9 +16,9 @@
         <div class="alert-success">{{ session('status') }}</div>
     @endif
 
-    {{-- ===== Foto & Video — bagian paling penting, ditaruh atas ===== --}}
+    {{-- ===== Reel (Foto & Video) — bagian paling penting, ditaruh atas ===== --}}
     <div class="profile-section">
-        <div class="profile-section-title">Foto & Video</div>
+        <div class="profile-section-title">Reel (Foto & Video)</div>
         <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-start;">
             <div style="width: 130px; flex-shrink: 0;">
                 @if ($profile->foto_profil_path)

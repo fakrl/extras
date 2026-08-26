@@ -15,7 +15,7 @@
     <i class="ti ti-users"></i> Kelola Akun
 </a>
 <a href="{{ url('/admin/projects') }}" class="sidebar-link {{ str_starts_with($route, 'admin/projects') ? 'active' : '' }}">
-    <i class="ti ti-movie"></i> Proyek Casting
+    <i class="ti ti-movie"></i> Callsheet
 </a>
 <a href="{{ url('/admin/recap') }}" class="sidebar-link {{ str_starts_with($route, 'admin/recap') ? 'active' : '' }}">
     <i class="ti ti-report"></i> Rekap Extras

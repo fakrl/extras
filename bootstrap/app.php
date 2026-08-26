@@ -15,6 +15,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => CheckRole::class,
         ]);
+
+        // Percaya semua proxy di depan aplikasi (ngrok, dsb) supaya Laravel
+        // baca header X-Forwarded-Proto dengan benar dan tahu request aslinya
+        // HTTPS — tanpa ini, request lewat ngrok bisa memicu redirect loop
+        // karena Laravel salah kira koneksinya HTTP biasa.
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
