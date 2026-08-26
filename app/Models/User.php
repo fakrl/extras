@@ -70,4 +70,22 @@ class User extends Authenticatable
     {
         return $this->role === 'casting_director';
     }
+
+    /**
+     * RF-03: satu-satunya sumber kebenaran untuk "role ini dashboard-nya
+     * di mana" — dipakai LoginController (setelah login), AppServiceProvider
+     * (redirect kalau user yang sudah login coba akses /login), dan route
+     * /dashboard (pintu masuk universal). Jangan duplikasi mapping ini di
+     * tempat lain; kalau ada role baru, cukup ubah di sini.
+     */
+    public function dashboardUrl(): string
+    {
+        return match ($this->role) {
+            'super_admin' => '/super-admin/dashboard',
+            'admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed' => '/admin/dashboard',
+            'casting_director' => '/cd/dashboard',
+            'extras' => '/extras/dashboard',
+            default => '/login',
+        };
+    }
 }

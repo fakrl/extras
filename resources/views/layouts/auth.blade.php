@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'SIM Casting JBTB')</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     <style>
         :root[data-theme="dark"] {
             --bg-page: #0d1b12;
@@ -84,7 +85,28 @@
             background: rgba(239,68,68,0.12); color: var(--danger);
             padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 13.5px;
         }
+        .alert-success {
+            background: rgba(34,197,94,0.12); color: var(--accent);
+            padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 13.5px;
+        }
+        .checkbox-row {
+            display: flex; align-items: flex-start; gap: 8px; margin-bottom: 16px;
+        }
+        .checkbox-row input[type="checkbox"] { width: auto; min-height: auto; margin: 3px 0 0; }
+        .checkbox-row label { margin-bottom: 0; font-size: 12.5px; line-height: 1.5; }
         hr { border: none; border-top: 1px solid var(--border-color); margin: 20px 0; }
+
+        /* Input password dengan tombol show/hide (ikon mata) */
+        .password-field { position: relative; }
+        .password-field input { padding-right: 44px; margin-bottom: 0; }
+        .password-toggle {
+            position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+            width: 36px; height: 36px; border: none; background: transparent;
+            color: var(--text-secondary); cursor: pointer; display: flex;
+            align-items: center; justify-content: center; font-size: 17px;
+        }
+        .password-toggle:hover { color: var(--text-primary); }
+        .password-field-wrap { margin-bottom: 14px; }
     </style>
 </head>
 <body>
@@ -95,5 +117,6 @@
         </div>
         @yield('content')
     </div>
+    @stack('scripts')
 </body>
 </html>

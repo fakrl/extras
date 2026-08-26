@@ -9,5 +9,5 @@
 
 <div class="sidebar-group-label">Operasional</div>
 <a href="{{ url('/cd/reviews') }}" class="sidebar-link {{ str_starts_with($route, 'cd/reviews') ? 'active' : '' }}">
-    <i class="ti ti-clipboard-check"></i> Review Kandidat
+    <i class="ti ti-clipboard-check"></i> Greenlight
 </a>

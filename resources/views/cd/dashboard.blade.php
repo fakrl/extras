@@ -14,13 +14,13 @@
     </div>
 </div>
 
-<div style="display: grid; grid-template-columns: 1fr 1.4fr; gap: 16px; margin-bottom: 20px;">
+<div class="dashboard-grid-2col is-even">
     <div class="card">
-        <div class="card-title">Keputusan Review Saya</div>
-        <canvas id="chartKeputusan" height="220"></canvas>
+        <div class="card-title">Keputusan Greenlight Saya</div>
+        <div class="chart-box"><canvas id="chartKeputusan"></canvas></div>
     </div>
     <div class="card" style="display: flex; align-items: center; justify-content: center;">
-        <a href="{{ route('cd.reviews.index') }}" class="btn btn-brand">Review Kandidat</a>
+        <a href="{{ route('cd.reviews.index') }}" class="btn btn-brand">Buka Greenlight</a>
     </div>
 </div>
 @endsection
@@ -41,6 +41,8 @@
             }]
         },
         options: {
+            responsive: true,
+            maintainAspectRatio: false,
             plugins: { legend: { position: 'bottom', labels: { color: textColor } } }
         }
     });

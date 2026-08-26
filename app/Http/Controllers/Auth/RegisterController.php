@@ -26,6 +26,7 @@ class RegisterController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'confirmed', 'min:8'],
+            'setuju_privasi' => ['accepted'],
         ]);
 
         $user = User::create([
@@ -64,6 +65,7 @@ class RegisterController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'confirmed', 'min:8'],
+            'setuju_privasi' => ['accepted'],
         ]);
 
         $user = User::create([

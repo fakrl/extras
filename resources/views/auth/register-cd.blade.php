@@ -25,11 +25,15 @@
     <label>Email</label>
     <input type="email" name="email" value="{{ old('email') }}" required>
 
-    <label>Password</label>
-    <input type="password" name="password" required minlength="8">
+    <x-password-input name="password" label="Password" :minlength="8" />
+    <x-password-input name="password_confirmation" label="Konfirmasi Password" :minlength="8" />
 
-    <label>Konfirmasi Password</label>
-    <input type="password" name="password_confirmation" required minlength="8">
+    <div class="checkbox-row">
+        <input type="checkbox" name="setuju_privasi" id="setuju_privasi" required>
+        <label for="setuju_privasi">
+            Saya sudah membaca dan menyetujui <a href="{{ route('privacy-policy') }}" target="_blank">Kebijakan Privasi</a>.
+        </label>
+    </div>
 
     <button type="submit" class="btn-brand">Daftar sebagai Casting Director</button>
 </form>

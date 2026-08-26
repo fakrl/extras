@@ -26,7 +26,7 @@
 
     {{-- ===== Foto & Video: paling penting buat Casting Director, taruh paling atas ===== --}}
     <div class="profile-section">
-        <div class="profile-section-title">1. Foto Profil</div>
+        <div class="profile-section-title">1. Reel — Foto Profil</div>
         <p class="field-hint" style="margin-top: -4px;">Ini yang pertama dilihat Casting Director. Pakai foto wajah yang jelas & terang.</p>
 
         <form method="POST" action="{{ route('extras.profile.foto') }}" enctype="multipart/form-data">
@@ -49,7 +49,7 @@
     </div>
 
     <div class="profile-section">
-        <div class="profile-section-title">2. Video Perkenalan</div>
+        <div class="profile-section-title">2. Reel — Video Perkenalan</div>
         <p class="field-hint" style="margin-top: -4px;">Video singkat (30-60 detik) memperkenalkan diri. Boleh direkam pakai HP.</p>
 
         <form method="POST" action="{{ route('extras.profile.video') }}" enctype="multipart/form-data">
@@ -74,7 +74,7 @@
     </div>
 
     <div class="profile-section">
-        <div class="profile-section-title">3. Foto Tambahan</div>
+        <div class="profile-section-title">3. Reel — Foto Tambahan</div>
         <p class="field-hint" style="margin-top: -4px;">Foto lain buat Admin menilai — misal dari sisi samping, badan penuh, atau gaya lain. Boleh diisi sebagian, boleh diganti kapan saja.</p>
 
         <div class="photo-slot-grid">
