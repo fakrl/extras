@@ -1,6 +1,8 @@
 # User Flow Documentation
 ## Sistem Informasi Manajemen Casting Talent dan Extras Berbasis Web dengan Fitur Negosiasi Fee Digital
 
+> **⚠️ SUPERSEDED (sebagian).** Flow berbasis desain 3-aktor lama (fee fixed, TTD upload scan, dsb). Acuan terkini: state machine `docs/CLAUDE.md` §6 (7 aktor, nego fee InDrive, canvas signature). Struktur/pola dokumentasi flow (preconditions, alternative/exception flow) masih berguna sebagai referensi format, tapi isi aktor/alur bisnisnya jangan dipakai langsung.
+
 Dokumen ini mendefinisikan 9 user flow utama sistem, masing-masing dengan Flow Name, Actor, Trigger, Preconditions, Main Flow, Alternative Flow, Exception Flow, Validation Rules, Error Scenario, Post Conditions, dan Mermaid Flowchart.
 
 ---

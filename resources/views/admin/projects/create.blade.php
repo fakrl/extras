@@ -30,6 +30,13 @@
 
         <div class="form-row">
             <div>
+                <label>Link Grup WhatsApp <span style="color: var(--text-muted); font-weight: 400;">(opsional)</span></label>
+                <input type="url" name="wa_group_link" value="{{ old('wa_group_link') }}" placeholder="https://chat.whatsapp.com/...">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div>
                 <label>Deadline Pendaftaran</label>
                 <input type="date" name="deadline" value="{{ old('deadline') }}" required>
             </div>

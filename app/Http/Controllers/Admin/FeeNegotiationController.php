@@ -62,7 +62,7 @@ class FeeNegotiationController extends Controller
 
         $application->terimaFee('admin', $data['nominal']);
 
-        return back()->with('status', 'Fee Deal! Nominal terkunci di ' . number_format($data['nominal'], 0, ',', '.'));
+        return back()->with('status', 'Fee Deal! Nominal terkunci di '.number_format($data['nominal'], 0, ',', '.'));
     }
 
     /**
@@ -85,12 +85,34 @@ class FeeNegotiationController extends Controller
     public function ajukanKeCd(ProjectApplication $application): RedirectResponse
     {
         try {
-            $application->ajukanKeCd();
+            $adaBentrok = $application->ajukanKeCd();
         } catch (\LogicException $e) {
             return back()->with('status', $e->getMessage());
         }
 
-        return back()->with('status', 'Kandidat diajukan ke Casting Director.');
+        $pesan = $adaBentrok
+            ? '⚠️ Kandidat diajukan ke Casting Director, tapi ada tanggal yang bertabrakan dengan proyek lain yang sedang diikuti. Silakan cek kembali komitmennya.'
+            : 'Kandidat diajukan ke Casting Director.';
+
+        return back()->with('status', $pesan);
+    }
+
+    /**
+     * RF-33: Admin membatalkan aplikasi yang sudah Deal.
+     */
+    public function batalkan(Request $request, ProjectApplication $application): RedirectResponse
+    {
+        $data = $request->validate([
+            'alasan' => ['required', 'string'],
+        ]);
+
+        try {
+            $application->batalkan('admin', $data['alasan']);
+        } catch (\LogicException $e) {
+            return back()->with('status', $e->getMessage());
+        }
+
+        return back()->with('status', 'Aplikasi dibatalkan.');
     }
 
     private function pastikanMasihBisaNego(ProjectApplication $application): void

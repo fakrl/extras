@@ -1,7 +1,7 @@
 # CLAUDE.md — SIM Casting JBTB (Project Work / Skripsi Pengganti)
 
 > **Fungsi file ini:** handoff konteks lengkap dari sesi diskusi sebelumnya. Baca ini dulu sebelum lanjut. Semua keputusan, model bisnis, alur, dan backlog ada di sini.
-> **Terakhir diperbarui:** 22 Agustus 2026 · **Status:** proposal Bab 1-3 dalam finalisasi (belum sempro), scope diperluas hasil bimbingan dosen pembimbing (RBAC 7 aktor + modul karyawan). Lihat `BAB-3-DRAFT.md` untuk draft resmi Bab 3 dan `OPEN-QUESTIONS-PROPOSAL.md` untuk riwayat keputusan lengkap.
+> **Terakhir diperbarui:** 29 Agustus 2026 · **Status:** coding aktif, 9 sesi dev selesai (lihat `DEV-NOTES.md`) — RF-01 s.d. RF-52 mayoritas sudah dibangun+tes (auth RBAC, profil, proyek, nego fee, review CD, kontrak+TTD, pembayaran, karyawan+payroll, WA Gateway self-hosted). Sisa: RF-04 (validasi duplikat NIK), RF-30 (rekap margin), RF-35 (catatan Korlap), RF-38 (link grup WA). Proposal Bab 1-3 pra-sempro (target 1 Sept 2026) berjalan paralel — lihat `BAB-3-DRAFT.md` & `OPEN-QUESTIONS-PROPOSAL.md`.
 
 ---
 
@@ -95,7 +95,7 @@ Admin Default POSTING LOWONGAN (menu Event & Lowongan; toggle "Butuh Dadakan/urg
         • 📤 PRESENT ke CD (hanya kandidat yang sudah Deal)  (atau  ✕ Tolak)
         → Sistem tampilkan ulang warning bentrok jadwal ke Admin saat present, kalau relevan
    → CD: review kandidat yang di-present → ✅ Approve/❌ Reject (individual atau massal)
-   → ADMIN kabari extras lolos (notif in-app + email + WA gateway berbayar)
+   → ADMIN kabari extras lolos (notif in-app + email + WA self-hosted whatsapp-web.js, gratis)
    → EXTRAS lengkapi KTP + konfirmasi rekening
    → AUTO-GENERATE KONTRAK (Talent Release), HARGA = fee hasil nego (Deal)
    → TTD via CANVAS SIGNATURE (gambar langsung di browser, bukan upload scan, bukan PSrE) — Admin Default & Extras
@@ -149,7 +149,7 @@ Satu file HTML clickable, 3 peran (login demo → pilih peran; **di produksi TID
 ## 8. Keputusan Desain (Decision Log)
 
 1. **Login:** produksi = login email/password, role dibaca dari akun. Registrasi yang membedakan: Extras (bebas) · Client/CD (**butuh kode undangan admin**) · Admin (dibuat manual IT). Role-picker prototype = demo only.
-2. **Warna:** brand ijo-hitam (primary hijau `#15803D`, gelap `#0B1A12`) di login/hero/tombol; **konten tetap terang** demi keterbacaan semua umur. ⚠️ Hijau brand & hijau "success" mirip — kalau ganggu, bedain shade.
+2. **Warna:** brand ijo-hitam (primary hijau `#15803D`, gelap `#0B1A12`) di login/hero/tombol. **Update 28 Agu 2026:** konten/dashboard pakai dark/light toggle (bukan terang paksa) — user pilih sendiri, tersimpan `localStorage`; "semua umur" dipenuhi lewat kontras cukup di kedua tema, lihat `UI-GUIDELINES.md`. ⚠️ Hijau brand & hijau "success" mirip — kalau ganggu, bedain shade.
 3. **Usability "semua umur":** tombol besar (≥48px), bahasa polos, status warna konsisten (hijau=beres, kuning=nunggu, merah=batal/tolak), focus ring keyboard.
 4. **Data minimization (UU PDP):** NIK/KTP **hanya diminta saat deal/mau dibayar**, bukan saat registrasi. **NIK JANGAN dipakai jadi login/primary key** — login = email, PK = auto-increment, NIK = field unik tervalidasi (1 NIK = 1 akun).
 5. **Buka Lowongan** hanya di menu Event & Lowongan (dihapus dari dashboard).
@@ -161,22 +161,24 @@ Satu file HTML clickable, 3 peran (login demo → pilih peran; **di produksi TID
 
 ---
 
-## 9. Backlog Build (belum ada di prototype / perlu dibangun)
+## 9. Backlog Build (status per 29 Agustus 2026 — lihat `DEV-NOTES.md` untuk detail sesi)
 
-- [ ] Layar **auto-generate kontrak Talent Release** (harga = fee hasil nego Deal; TTD = **canvas signature**, digambar langsung di browser, bukan upload scan, bukan e-signature tersertifikasi PSrE).
-- [ ] Modul **Negosiasi Fee in-app** (ala InDrive, multi-round, tercatat) — menggantikan alur WA manual admin↔extras.
-- [ ] **Deteksi bentrok jadwal** (soft-warning, 2 checkpoint: saat apply & saat present ke CD) — butuh tabel `event_shooting_dates`.
-- [ ] **WhatsApp Gateway** (Fonnte/Wablas — berbayar, bukan whatsapp-web.js) untuk notif otomatis (apply, hasil seleksi, reminder H-1, kontrak siap TTD). WA jadi kanal pelengkap, email tetap primer.
-- [ ] Menu **Kelola Extras** (aktif/nonaktif + apresiasi + rekap sering-lock).
-- [ ] **Rekap extras & rekap project** di dashboard admin (extras paling sering dipilih, funnel per proyek, rekap fee/margin).
-- [ ] **Modul Manajemen Karyawan** (Super Admin nambah Admin + sub-role Talco/Korlap/Sosmed + set nominal honor).
-- [ ] **Absensi staf** (log aktivitas per proyek, bukan geolocation) + **auto-generate slip honor PDF** per Admin per proyek Selesai.
-- [ ] **Riwayat Kerja** unified untuk semua tipe Admin + akses read-only "Riwayat Kerja & Status Gaji Saya" buat Talco/Sosmed.
-- [ ] **Inbox "Permintaan Client"** (re-book) di admin.
-- [ ] **Ekspor rekap ke Excel** (Admin Default/Super Admin).
-- [ ] Notifikasi email (queued, SMTP Gmail) + reminder deadline.
-- [ ] Grade filter (sudah ada tab, perlu logika filter).
-- [ ] Checklist keamanan pre-launch — lihat `SECURITY-CHECKLIST.md` (RBAC via Policy/Gate, encrypted cast NIK, mass-assignment protection, private disk storage, API Resource transformer, dst).
+- [x] Layar **auto-generate kontrak Talent Release** (canvas signature, vanilla JS, tanpa library) — Sprint 4.
+- [x] Modul **Negosiasi Fee in-app** (ala InDrive, multi-round, tercatat) — Sprint 3, sempat 500 total gara-gara bug `$fillable` (Session 4), fixed & verified Session 5.
+- [x] **Deteksi bentrok jadwal** (soft-warning, 2 checkpoint: saat apply & saat present ke CD) — Sprint 2 (apply), Session 5 (RF-22, checkpoint present-ke-CD yang sempat kelewat).
+- [x] **WhatsApp Gateway** (`whatsapp-web.js` self-hosted) untuk notif otomatis (apply, hasil seleksi, reminder H-1, kontrak siap TTD) — Session 8-9, termasuk fix bind-localhost & queue job biar bulk-approve nggak blocking.
+- [ ] Menu **Kelola Extras** (aktif/nonaktif + apresiasi + rekap sering-lock) — belum ada sesi yang menyentuh ini.
+- [x] **Rekap extras** (extras paling sering dipilih) + [x] **Ekspor rekap ke Excel** — Sprint 6 (RF-51/52). **Rekap margin per-project (RF-30)** — BELUM, beda dari rekap extras, masih di backlog.
+- [x] **Modul Manajemen Karyawan** (Super Admin nambah Admin + sub-role + honor) — Sprint 5.
+- [x] **Absensi staf** (log aktivitas) + **auto-generate slip honor PDF** — Sprint 5.
+- [x] **Riwayat Kerja** unified + akses read-only Talco/Sosmed — Sprint 5 (RF-43/44).
+- [ ] **Inbox "Permintaan Client"** (re-book) di admin — belum ada sesi yang menyentuh ini.
+- [x] Notifikasi email (queued) — Session 4 (RF-36).
+- [ ] Grade filter (tab sudah ada, logika filter belum) — belum dikonfirmasi built.
+- [ ] **RF-04** (validasi duplikat NIK saat lolos seleksi) — belum dibangun. **Catatan arsitektur:** `nik` di-cast `encrypted` (IV random tiap enkripsi) sekaligus `unique` di `DATABASE-SCHEMA.md` — `UNIQUE` constraint DB biasa TIDAK bisa mendeteksi duplikat di kolom terenkripsi non-deterministik (ciphertext beda tiap kali walau plaintext sama). Butuh kolom hash deterministik terpisah (HMAC) buat lookup, `nik` tetap `encrypted` buat display.
+- [ ] **RF-35** (catatan/sanksi Korlap) — tabel `field_notes` sudah ada sejak Sprint 1, controller/UI belum dibangun.
+- [ ] **RF-38** (link grup WA per proyek) — sengaja di luar scope task WhatsApp Gateway (Session 8), belum dikerjakan.
+- [ ] Checklist keamanan pre-launch — `SECURITY-CHECKLIST.md` sudah ada kolom Status terverifikasi kode (bukan cuma rencana), tapi masih ada beberapa poin BACKLOG (rate limit, CAPTCHA, security headers, force HTTPS, dependency scan) — cek dokumen itu langsung buat status per-poin.
 
 ---
 
@@ -184,7 +186,7 @@ Satu file HTML clickable, 3 peran (login demo → pilih peran; **di produksi TID
 
 - **Backend:** Laravel (PHP) + **MySQL**. Ikuti pola tim (queued Mailable + SMTP Gmail seperti Nobel Akademi). **INGAT: restart `queue:work` tiap deploy/ubah kode job** — kalau tidak, worker pakai versi lama. Untuk tes email tanpa DNS: `MAIL_MAILER=log`.
 - **Frontend:** Blade + **Bootstrap 5** (rekomendasi Design System doc; banyak template admin gratis: AdminLTE/SB Admin/CoreUI) ATAU Livewire/Alpine (pola Nobiplay). Terapkan design token dari `19-Design-System.md` tapi warna disesuaikan ke brand ijo-hitam.
-- **WhatsApp:** gateway pihak ketiga berbayar (**Fonnte/Wablas**, bukan `whatsapp-web.js`/sesi unofficial — risiko banned tinggi di volume notifikasi ke banyak nomor unik). WA jadi kanal pelengkap; email tetap primer.
+- **WhatsApp:** `whatsapp-web.js` self-hosted (revisi 28 Agu 2026 — Fonnte/Wablas dicek ke sumbernya sendiri, TERNYATA juga "unofficial"/risiko banned sama, tidak ada keuntungan bayar; detail lihat `OPEN-QUESTIONS-PROPOSAL.md` poin 3). Jalan sebagai proses Node.js/Express terpisah 24/7 (port lokal, mis. 3001), Laravel panggil via `Http::post()`. Mitigasi wajib: nomor khusus sistem, volume rendah non-broadcast, WA kanal pelengkap — email tetap primer.
 - **Hosting:** shared hosting / VPS. Domain/SSL/akun infra **harus atas nama agensi** (biar sistem nggak mati pas developer lulus/cabut).
 - **Deployment/ops:** environment terpisah (dev/staging/prod, apalagi ada data KTP asli), backup terjadwal + tes restore, handover + manual admin (admin non-teknis).
 
@@ -211,14 +213,14 @@ Satu file HTML clickable, 3 peran (login demo → pilih peran; **di produksi TID
 
 ---
 
-## 13. Langkah Berikutnya (rekomendasi)
+## 13. Langkah Berikutnya (status 29 Agustus 2026)
 
-Prototype UI **sudah selesai tugasnya** (bukti visual visi). Berhenti nambah layar. Lanjut:
-1. **Dokumen Blueprint / Requirement Update v3** — konsolidasi semua di file ini jadi acuan tunggal: model data final (ERD revisi: Grade, fee dinamis, margin, alias, event/lowongan, present→approve, re-book, portofolio), state machine §6, tembok visibilitas §5.
-2. **Garis MVP** — saring 70 RF ke inti happy-path (auth, profil+rate card+alias, posting lowongan, daftar, seleksi+grade+WA nego, present→CD approve, KTP+rekening, kontrak, pembayaran+bukti, dashboard/rekap basic). Buang/tunda: Web Push, SLA cron rumit, audit log lengkap, dsb.
-3. **Rencana Sprint** — pecah per modul, urut dependency (auth dulu), selaras alur Jira + spec→dev→tester→reviewer tim.
+Section ini sejarahnya rekomendasi pra-coding (22 Agu) — sudah dieksekusi: MVP sudah disaring & di-Sprint (lihat §9, `DEV-NOTES.md` Session 1-9), bukan lagi rencana. Sisa kerja riil per hari ini:
+1. **Modul belum dibangun**: RF-04 (validasi duplikat NIK), RF-30 (rekap margin), RF-35 (catatan Korlap), RF-38 (link grup WA) — kandidat task berikutnya, lihat `SPEC.md` untuk yang sedang aktif.
+2. **Belum end-to-end tested secara menyeluruh** di luar yang sudah lewat pipeline dev→tester→reviewer (lihat DEV-NOTES per modul mana yang sudah/belum).
+3. **Concern produksi §11** masih perlu klarifikasi tim bisnis (Jestika/Erlina) sebelum benar-benar launch — bukan blocking buat lanjut coding modul lain.
 
-> **Risiko #1 = scope, bukan teknis.** 70 RF untuk solo dev + AI dalam 2–4 bulan itu berat. Disiplin MVP = kunci lulus + sistem kepakai.
+> Risiko scope besar (70 RF SRS lama) sudah dimitigasi — scope final ada di `BAB-3-DRAFT.md` (~52 RF, 7 aktor), bukan 70 RF SRS lama yang sudah SUPERSEDED.
 
 ---
 
@@ -230,3 +232,13 @@ Dua skill wajib aktif di setiap sesi coding:
 - **`/caveman`** — jawaban pendek, no prose. Enforced via hook.
 
 Lihat `CLAUDE.md` (root project) untuk ringkasan konvensi per sesi.
+
+### 14.1 Stop-and-report sebelum eksekusi (26 Agu 2026)
+
+Kejadian nyata: subagent verifikasi RBAC nemu bug kritis (`User::$fillable` nggak include `role`/`status`, bikin semua akun baru ke-DB jadi `super_admin`), lalu FIX DULU baru lapor — dan di jalan yang sama, langsung bikin 7 akun test baru di database asli tanpa nanya dulu. Fix bug-nya sendiri secara teknis benar (sudah diverifikasi aman dari mass-assignment sebelum diterapkan), tapi urutan kerjanya salah.
+
+Aturan tambahan, berlaku di atas aturan eskalasi yang sudah ada di README/CLAUDE.local.md:
+
+- **Nemu bug di modul auth/RBAC/pembayaran/kontrak saat sedang mengerjakan task LAIN** (misal task-nya "verifikasi migration", tapi ketemu bug fillable) → LAPOR DULU sebelum fix, meski fix-nya kelihatan jelas dan aman. Bug di modul ini selalu masuk kategori "subagent wajib" sesuai Root `CLAUDE.md`, dan itu berarti juga wajib dikonfirmasi ke Fakrul dulu sebelum diterapkan — bukan cuma soal siapa yang ngerjain, tapi juga soal siapa yang approve.
+- **Membuat/mengubah/menghapus data di database asli** (akun user, project, dsb — bukan migration/schema) untuk keperluan testing/verifikasi → tanya dulu, sebutkan konkret apa yang mau dibuat (berapa akun, role apa, data apa), baru eksekusi. Jangan asumsikan "ini kan cuma buat testing, aman" — database dev ini juga dipakai buat demo ke tim non-teknis (Erlina, Imanisa, mitra), jadi akun asing yang muncul tiba-tiba bisa membingungkan.
+- Kalau menemukan efek samping dari sebuah fix (mis. akun lama yang datanya jadi salah gara-gara bug lama) — boleh lanjut cek/diagnosa datanya (read-only), tapi JANGAN ubah data itu sampai dikonfirmasi user, sesuai yang sudah dilakukan dengan benar di kasus 26 Agu ini.

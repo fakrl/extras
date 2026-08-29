@@ -51,11 +51,13 @@ class CastingProjectController extends Controller
         $tanggalBentrok = $profile->activeShootingDates()->intersect($tanggalProyekIni);
         $adaBentrok = $tanggalBentrok->isNotEmpty();
 
-        $castingProject->applications()->create([
+        $application = $castingProject->applications()->create([
             'extras_id' => $profile->id,
             'status_partisipasi' => 'diajukan',
             'bentrok_jadwal_flag' => $adaBentrok,
         ]);
+
+        $application->kirimKonfirmasiApply();
 
         $pesan = $adaBentrok
             ? '⚠️ Pendaftaran berhasil, tapi ada tanggal yang bertabrakan dengan proyek lain yang sedang kamu ikuti. Silakan cek kembali komitmenmu.'

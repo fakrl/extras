@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ApplicantController;
 use App\Http\Controllers\Admin\CastingProjectController as AdminCastingProjectController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\FeeNegotiationController as AdminFeeNegotiationController;
+use App\Http\Controllers\Admin\MarginRecapController;
 use App\Http\Controllers\Admin\RecapController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\WorkHistoryController;
@@ -42,22 +43,23 @@ Route::middleware('auth')->get('/dashboard', function () {
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'show'])->name('login');
-    Route::post('/login', [LoginController::class, 'login']);
+    Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:5,1');
 
     // RF-01: registrasi Extras, publik.
     Route::get('/register', [RegisterController::class, 'showExtras'])->name('register');
-    Route::post('/register', [RegisterController::class, 'registerExtras']);
+    Route::post('/register', [RegisterController::class, 'registerExtras'])->middleware('throttle:5,1');
 
     // RF-02: registrasi Casting Director — URL ini TIDAK ditautkan dari
     // halaman publik mana pun, dibagikan manual oleh Admin ke pihak client/PH.
     Route::get('/register/casting-director', [RegisterController::class, 'showCastingDirector'])
         ->name('register.cd');
-    Route::post('/register/casting-director', [RegisterController::class, 'registerCastingDirector']);
+    Route::post('/register/casting-director', [RegisterController::class, 'registerCastingDirector'])
+        ->middleware('throttle:5,1');
 
     Route::get('/forgot-password', [PasswordResetController::class, 'showForgotForm'])
         ->name('password.request');
     Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])
-        ->name('password.email');
+        ->middleware('throttle:5,1')->name('password.email');
     Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])
         ->name('password.reset');
     Route::post('/reset-password', [PasswordResetController::class, 'reset'])
@@ -89,11 +91,17 @@ Route::middleware(['auth', 'role:extras'])->prefix('extras')->group(function () 
 
     Route::get('/lowongan', [ExtrasCastingProjectController::class, 'index'])->name('extras.projects.index');
     Route::get('/lowongan/{castingProject}', [ExtrasCastingProjectController::class, 'show'])->name('extras.projects.show');
-    Route::post('/lowongan/{castingProject}/daftar', [ExtrasCastingProjectController::class, 'apply'])->name('extras.projects.apply');
+    Route::post('/lowongan/{castingProject}/daftar', [ExtrasCastingProjectController::class, 'apply'])
+        ->middleware('throttle:5,1')->name('extras.projects.apply');
 
     Route::get('/nego/{application}', [ExtrasFeeNegotiationController::class, 'show'])->name('extras.negotiations.show');
     Route::post('/nego/{application}/terima', [ExtrasFeeNegotiationController::class, 'terima'])->name('extras.negotiations.terima');
     Route::post('/nego/{application}/counter', [ExtrasFeeNegotiationController::class, 'counter'])->name('extras.negotiations.counter');
+    Route::post('/nego/{application}/batalkan', [ExtrasFeeNegotiationController::class, 'batalkan'])->name('extras.negotiations.batalkan');
+
+    Route::get('/kontrak/{application}/lengkapi-ktp', [ProfileController::class, 'lengkapiKtp'])->name('extras.kontrak.lengkapi-ktp');
+    Route::post('/kontrak/{application}/lengkapi-ktp', [ProfileController::class, 'simpanKtp'])
+        ->middleware('throttle:5,1')->name('extras.kontrak.simpan-ktp');
 });
 
 // ==================== ADMIN (Default + sub-role) ====================
@@ -140,11 +148,33 @@ Route::middleware(['auth', 'role:admin_default,admin_talco,admin_korlap,admin_so
                 ->name('admin.negotiations.tolak');
             Route::post('/applications/{application}/ajukan-ke-cd', [AdminFeeNegotiationController::class, 'ajukanKeCd'])
                 ->name('admin.negotiations.ajukan-ke-cd');
+            Route::post('/applications/{application}/batalkan', [AdminFeeNegotiationController::class, 'batalkan'])
+                ->name('admin.negotiations.batalkan');
 
             Route::get('/recap', [RecapController::class, 'index'])->name('admin.recap.index');
             Route::get('/recap/export', [RecapController::class, 'export'])->name('admin.recap.export');
         });
+
+        // RF-35: Korlap DAN Admin Default boleh nulis catatan lapangan —
+        // beda dari grup role:admin_default murni di atas, jadi route
+        // sendiri dengan whitelist role eksplisit (Talco/Sosmed tidak boleh).
+        Route::middleware('role:admin_default,admin_korlap')->group(function () {
+            Route::post('/applications/{application}/catatan', [ApplicantController::class, 'tambahCatatan'])
+                ->name('admin.applications.catatan');
+        });
     });
+
+// RF-30: rekap margin — RAHASIA bisnis inti, cuma Admin Default & Super
+// Admin (BUKAN sub-role admin manapun). Grup role sendiri, jangan nested di
+// grup admin umum (line ~106, isinya termasuk sub-role) atau grup
+// role:admin_default murni (tidak termasuk super_admin).
+Route::middleware(['auth', 'role:admin_default,super_admin'])->prefix('admin')->group(function () {
+    Route::get('/rekap-margin', [MarginRecapController::class, 'index'])->name('admin.recap-margin');
+});
+
+Route::middleware(['auth', 'role:admin_default,super_admin'])->prefix('super-admin')->group(function () {
+    Route::get('/rekap-margin', [MarginRecapController::class, 'index'])->name('super-admin.recap-margin');
+});
 
 // ==================== SUPER ADMIN ====================
 

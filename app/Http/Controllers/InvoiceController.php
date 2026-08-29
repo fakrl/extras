@@ -16,9 +16,7 @@ use Illuminate\Support\Str;
  */
 class InvoiceController extends Controller
 {
-    public function __construct(private PdfGeneratorService $pdfGenerator)
-    {
-    }
+    public function __construct(private PdfGeneratorService $pdfGenerator) {}
 
     public function show(Request $request, CastingProject $castingProject)
     {
@@ -38,7 +36,7 @@ class InvoiceController extends Controller
         $data = $request->validate(['signature' => ['required', 'string']]);
 
         $role = $request->user()->role === 'casting_director' ? 'cd' : 'admin';
-        $filename = "invoices/signatures/{$castingProject->id}-{$role}-" . Str::random(8) . '.png';
+        $filename = "invoices/signatures/{$castingProject->id}-{$role}-".Str::random(8).'.png';
 
         $base64 = preg_replace('#^data:image/\w+;base64,#', '', $data['signature']);
         Storage::disk('local')->put($filename, base64_decode($base64));

@@ -1,6 +1,8 @@
 # Information Architecture
 ## Sistem Informasi Manajemen Casting Talent dan Extras Berbasis Web dengan Fitur Negosiasi Fee Digital
 
+> **⚠️ SUPERSEDED (sebagian).** IA berbasis desain 3-aktor lama. Acuan terkini untuk struktur navigasi/menu: `docs/UI-GUIDELINES.md` (7 aktor, sidebar per role) & implementasi nyata di `resources/views/partials/sidebar-*.blade.php`. Struktur umum (grouping, hierarki) masih relevan sebagai referensi, tapi cross-check daftar menu per role ke dokumen terkini.
+
 ---
 
 ## 1. Sitemap

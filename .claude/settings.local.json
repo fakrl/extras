@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(xargs -I{} git show -s --format=\"%H %b\" {})",
+      "Bash(xargs '-I{}' sh -c 'body=$\\(git show -s --format=\"%b\" {}\\); echo \"$body\" | grep -qi \"co-authored\" && echo {}')",
+      "Bash(git filter-branch *)",
+      "Bash(git stash *)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch -f --msg-filter 'grep -v \"Co-Authored-By: Claude\"' 395ca0d~1..HEAD)",
+      "Bash(Remove-Item *)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch *)",
+      "Bash(git update-ref *)"
+    ]
+  }
+}

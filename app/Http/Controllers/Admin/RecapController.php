@@ -36,6 +36,6 @@ class RecapController extends Controller
      */
     public function export()
     {
-        return Excel::download(new ExtrasRecapExport, 'rekap-extras-' . now()->format('Y-m-d') . '.xlsx');
+        return Excel::download(new ExtrasRecapExport, 'rekap-extras-'.now()->format('Y-m-d').'.xlsx');
     }
 }

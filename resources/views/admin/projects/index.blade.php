@@ -27,6 +27,15 @@
                 </div>
                 <div class="entity-card-sub">{{ $project->client_ph }}</div>
 
+                @if ($project->wa_group_link)
+                    <div class="entity-card-row">
+                        <span class="entity-card-row-label">Grup WA</span>
+                        <span class="entity-card-row-value">
+                            <a href="{{ $project->wa_group_link }}" target="_blank">Buka Link</a>
+                        </span>
+                    </div>
+                @endif
+
                 <div class="entity-card-row">
                     <span class="entity-card-row-label">Deadline</span>
                     <span class="entity-card-row-value">{{ $project->deadline->format('d M Y') }}</span>

@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Exceptions\NikDuplikatException;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 // 'status' & 'cancel_count' SENGAJA tidak masuk $fillable — itu hasil
@@ -55,6 +59,35 @@ class ExtrasProfile extends Model
         ];
     }
 
+    /**
+     * RF-04: satu-satunya titik yang mengisi nik_hash — kolom teknis untuk
+     * lookup duplikat, karena `nik` di-cast `encrypted` (IV random, tidak
+     * bisa di-WHERE). Set-only (tidak ada `get`) supaya cast `encrypted`
+     * bawaan tetap jalan normal saat baca. Return array men-set kedua kolom
+     * sekaligus (lihat HasAttributes::setAttributeMarkedMutatedAttributeValue).
+     */
+    protected function nik(): Attribute
+    {
+        return Attribute::make(
+            set: function (?string $value) {
+                if (! $value) {
+                    return ['nik' => null, 'nik_hash' => null];
+                }
+
+                $digits = preg_replace('/\D/', '', $value);
+
+                if (strlen($digits) !== 16) {
+                    throw new \InvalidArgumentException('NIK harus berupa 16 digit angka.');
+                }
+
+                return [
+                    'nik' => $this->castAttributeAsEncryptedString('nik', $digits),
+                    'nik_hash' => hash_hmac('sha256', $digits, config('app.nik_hash_key')),
+                ];
+            },
+        );
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -79,10 +112,11 @@ class ExtrasProfile extends Model
      * (Deal ke atas, belum selesai/batal/ditolak) — dipakai untuk deteksi
      * bentrok jadwal saat extras mau apply ke proyek baru.
      */
-    public function activeShootingDates(): \Illuminate\Support\Collection
+    public function activeShootingDates(?int $excludeApplicationId = null): Collection
     {
         return $this->applications()
             ->whereIn('status_partisipasi', ['deal', 'diajukan_ke_cd', 'direview_cd', 'lolos', 'kontrak_ditandatangani'])
+            ->when($excludeApplicationId, fn ($q, $id) => $q->where('id', '!=', $id))
             ->with('castingProject.shootingDates')
             ->get()
             ->flatMap(fn ($app) => $app->castingProject->shootingDates->pluck('tanggal'))
@@ -92,14 +126,43 @@ class ExtrasProfile extends Model
     /**
      * RF-08: 3x pembatalan mendadak pada proyek berbeda -> status "melanggar".
      * Dipanggil dari logic Cancellation, bukan dari request user langsung.
+     * forceFill() sengaja dipakai di sini (bukan update()) — 'status' memang
+     * sengaja tidak masuk $fillable (lihat komentar di atas), jadi update()
+     * biasa cuma mendiskard perubahan ini diam-diam tanpa efek apa pun. Bug
+     * ini ditemukan & diperbaiki 29 Agu 2026 saat verifikasi trigger RF-08.
      */
     public function recordCancellation(): void
     {
         $this->increment('cancel_count');
 
         if ($this->cancel_count >= 3) {
-            $this->update(['status' => 'melanggar']);
+            $this->forceFill(['status' => 'melanggar'])->save();
         }
+    }
+
+    /**
+     * RF-04: dipanggil setelah Extras dinyatakan lolos, sebelum kontrak bisa
+     * di-generate (gate di ContractController::show()). Satu-satunya
+     * pemanggil sah untuk mengisi nik+rekening di titik ini — format NIK
+     * (16 digit) diasumsikan sudah divalidasi form request di controller.
+     */
+    public function lengkapiKtp(string $nik, ?string $rekening): void
+    {
+        $hash = hash_hmac('sha256', preg_replace('/\D/', '', $nik), config('app.nik_hash_key'));
+
+        if (static::where('nik_hash', $hash)->where('id', '!=', $this->id)->exists()) {
+            Log::warning('RF-04: percobaan simpan NIK duplikat', ['user_id' => $this->user_id]);
+
+            throw new NikDuplikatException('NIK ini sudah terdaftar di akun lain, hubungi Admin kalau ini kesalahan.');
+        }
+
+        $this->nik = $nik;
+
+        if ($rekening) {
+            $this->rekening = $rekening;
+        }
+
+        $this->save();
     }
 
     /**
@@ -112,7 +175,7 @@ class ExtrasProfile extends Model
             Storage::disk('local')->delete($this->foto_profil_path);
         }
 
-        $path = $file->store('extras/' . $this->id . '/foto', 'local');
+        $path = $file->store('extras/'.$this->id.'/foto', 'local');
         $this->update(['foto_profil_path' => $path]);
     }
 
@@ -126,7 +189,7 @@ class ExtrasProfile extends Model
             Storage::disk('local')->delete($this->video_profil_path);
         }
 
-        $path = $file->store('extras/' . $this->id . '/video', 'local');
+        $path = $file->store('extras/'.$this->id.'/video', 'local');
         $this->update(['video_profil_path' => $path]);
     }
 
@@ -146,7 +209,7 @@ class ExtrasProfile extends Model
             Storage::disk('local')->delete($existing->path);
         }
 
-        $path = $file->store('extras/' . $this->id . '/foto-tambahan', 'local');
+        $path = $file->store('extras/'.$this->id.'/foto-tambahan', 'local');
 
         // updateOrCreate supaya aman kalau slot belum ada barisnya sama sekali
         // (belum pernah diisi) maupun sudah ada (replace).

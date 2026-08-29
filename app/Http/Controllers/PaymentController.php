@@ -64,10 +64,13 @@ class PaymentController extends Controller
 
     /**
      * RF-32: add-on/reimburse manual pada catatan pembayaran Extras.
+     * Admin Default (siapa pun) atau Extras pemilik aplikasi bisa menambahkan.
      */
     public function addAddon(Request $request, ProjectApplication $application): RedirectResponse
     {
-        abort_unless($request->user()->role === 'admin_default', 403);
+        $this->pastikanBolehLihat($request, $application);
+
+        abort_if($application->payment->status === 'dikonfirmasi_diterima', 422, 'Pembayaran sudah selesai, tidak bisa menambah komponen lagi.');
 
         $data = $request->validate([
             'label' => ['required', 'string', 'max:255'],

@@ -138,7 +138,7 @@ Modul Notifikasi
 | Kode | Kebutuhan | Aktor |
 |---|---|---|
 | RF-36 | Sistem mengirimkan notifikasi email untuk hasil seleksi, permintaan konfirmasi fee, dan permintaan tanda tangan kontrak | Sistem |
-| RF-37 | Sistem mengirimkan notifikasi WhatsApp otomatis melalui layanan gateway pihak ketiga berbayar sebagai kanal pelengkap, untuk konfirmasi apply, hasil seleksi, pengingat jadwal shooting (H-1), dan pemberitahuan kontrak siap ditandatangani | Sistem |
+| RF-37 | Sistem mengirimkan notifikasi WhatsApp otomatis melalui `whatsapp-web.js` self-hosted (gratis, bukan gateway pihak ketiga berbayar) sebagai kanal pelengkap, untuk konfirmasi apply, hasil seleksi, pengingat jadwal shooting (H-1), dan pemberitahuan kontrak siap ditandatangani | Sistem |
 | RF-38 | Admin Default dapat menginput tautan grup WhatsApp untuk setiap proyek sebagai kanal informasi lanjutan | Admin Default |
 
 Modul Dashboard, Riwayat Kerja, dan Laporan
@@ -170,7 +170,7 @@ Modul Dashboard, Riwayat Kerja, dan Laporan
 2. Production House (PH) sebagai entitas tidak memiliki akun pada sistem; PH diwakili oleh Casting Director yang memiliki akun melalui tautan registrasi terpisah.
 3. Sistem tidak memproses pembayaran (bukan payment gateway); transfer dilakukan di luar sistem, dan sistem hanya mencatat status pembayaran.
 4. Tanda tangan kontrak berupa canvas signature (tanda tangan digital yang digambar pada peramban), bukan tanda tangan elektronik tersertifikasi (PSrE).
-5. Notifikasi WhatsApp menggunakan layanan gateway pihak ketiga berbayar, bukan integrasi API resmi WhatsApp Business maupun otomasi tidak resmi berbasis sesi pribadi.
+5. Notifikasi WhatsApp menggunakan `whatsapp-web.js` self-hosted (otomasi sesi WhatsApp Web pribadi, gratis), bukan integrasi API resmi WhatsApp Business maupun layanan gateway pihak ketiga berbayar — konsisten dengan RF-37.
 6. Deteksi bentrok jadwal bersifat peringatan (warning) dan tidak melakukan pemblokiran otomatis.
 7. Validasi NIK dilakukan secara internal melalui pengecekan duplikasi pada basis data, tanpa integrasi dengan API Dukcapil.
 8. Karyawan sub-role Admin (Talco, Korlap, Sosial Media/Multimedia) bukan merupakan karyawan tetap agensi; penugasan dan honor bersifat per-proyek, bukan gaji bulanan, dan tidak mencakup perhitungan potongan pajak maupun BPJS.

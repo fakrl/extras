@@ -65,7 +65,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => env('APP_TIMEZONE', 'Asia/Jakarta'),
 
     /*
     |--------------------------------------------------------------------------
@@ -104,6 +104,10 @@ return [
             explode(',', (string) env('APP_PREVIOUS_KEYS', ''))
         ),
     ],
+
+    // RF-04: key HMAC terpisah dari APP_KEY untuk blind index nik_hash
+    // (ExtrasProfile) — lihat SECURITY-CHECKLIST.md poin 5.
+    'nik_hash_key' => env('NIK_HASH_KEY'),
 
     /*
     |--------------------------------------------------------------------------

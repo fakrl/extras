@@ -1,15 +1,15 @@
 # TECH-STACK.md — SIM Casting JBTB
 
-> Aturan main teknis. Baca ini sebelum generate kode apa pun — biar AI/dev nggak nebak-nebak versi/pola yang dipakai. Belum ada kode berjalan per 22 Agu 2026 (masih tahap proposal) — beberapa keputusan di bawah masih **rencana**, ditandai eksplisit.
+> Aturan main teknis. Baca ini sebelum generate kode apa pun — biar AI/dev nggak nebak-nebak versi/pola yang dipakai. Status per 29 Agu 2026: coding aktif, 9 sesi dev selesai — semua keputusan di bawah sudah final & terverifikasi jalan di kode nyata, bukan rencana lagi (lihat `DEV-NOTES.md`).
 
 ## Stack Wajib
 
 - **Backend:** Laravel 13 (PHP 8.3+), MySQL 8, timezone Asia/Jakarta. (Revisi 22 Agu 2026: awalnya ditulis Laravel 11 mengikuti pola Nobel Akademi, tapi itu keliru — Laravel 11 security fixes sudah berakhir 12 Maret 2026, EOL. Laravel 13 dipilih meski paling baru — pertimbangan: breaking changes minimal dari 12→13, PHP 8.3.31 di environment dev sudah mendukung.)
-- **Frontend:** Blade + Bootstrap 5 (rekomendasi, sejalan RNF-08 kebutuhan compatibility desktop+mobile). Livewire/Alpine BOLEH dipakai kalau butuh interaktivitas tanpa reload (misal negosiasi fee multi-round, canvas signature) — keputusan final nanti pas Sprint 1, catat di sini begitu fix.
+- **Frontend:** Blade + custom CSS design system (bukan Bootstrap/Tailwind, bukan Livewire/Alpine) — **keputusan final Sprint 1** (22 Agu 2026), lihat `resources/views/partials/theme-style.blade.php` & `docs/UI-GUIDELINES.md`. Nego fee multi-round & canvas signature (RF-16-20, RF-26) dibangun pakai POST form biasa + vanilla JS canvas, bukan library reaktif.
 - **Session/Cache/Queue:** database-backed (pola sama seperti Nobel Akademi) kecuali ada alasan spesifik buat pindah ke Redis.
 - **PDF:** `barryvdh/laravel-dompdf` (kontrak, invoice, slip honor) — 3 dokumen ini SATU infrastruktur PDF yang di-reuse, jangan bikin 3 generator beda.
-- **Canvas signature:** library JS signature-pad (belum dipilih spesifik — cari yang lightweight, nggak perlu backend service terpisah). TTD disematkan ke PDF sebagai image, bukan field terpisah.
-- **WhatsApp Gateway:** Fonnte atau Wablas (berbayar). **DILARANG** pakai `whatsapp-web.js`/sesi unofficial — risiko banned tinggi di volume notifikasi (lihat `OPEN-QUESTIONS-PROPOSAL.md` poin 3).
+- **Canvas signature:** vanilla JS (bukan library) — keputusan final Sprint 4, lihat `resources/views/components/signature-pad.blade.php`. TTD disematkan ke PDF sebagai image, bukan field terpisah.
+- **WhatsApp Gateway:** `whatsapp-web.js` self-hosted (revisi 28 Agu 2026 — Fonnte/Wablas TERNYATA juga "unofficial"/risiko banned sama, dicek langsung ke fonnte.com FAQ; lihat `OPEN-QUESTIONS-PROPOSAL.md` poin 3 untuk detail). Jalan sebagai proses Node.js/Express terpisah (24/7, port lokal misal 3001), Laravel panggil lewat `Http::post()` — Laravel tidak perlu tahu detail Puppeteer/WhatsApp Web. Mitigasi wajib: nomor khusus sistem (bukan nomor admin pribadi), volume rendah non-broadcast, WA cuma kanal pelengkap (email tetap primer).
 - **Email:** queued Mailable + SMTP (pola Nobel Akademi). `MAIL_MAILER=log` buat dev tanpa DNS.
 - **Hosting:** shared hosting/VPS, domain+SSL atas nama agensi (JBTB), bukan atas nama developer — biar sistem nggak mati pas developer lulus.
 
@@ -18,7 +18,8 @@
 - Payment gateway (Midtrans/Tripay) — ditolak, lihat `CLAUDE.md` §"Keputusan Desain" poin 10.
 - E-signature tersertifikasi (PSrE) — canvas signature aja, bukan tanda tangan elektronik legal formal.
 - Geolocation/foto check-in — absensi staf cuma log status "proyek selesai".
-- API resmi WhatsApp Business (360dialog/Twilio) — overhead kebesaran buat timeline 2-4 bulan solo-dev, gateway berbayar biasa udah cukup.
+- API resmi WhatsApp Business (360dialog/Twilio) — overhead kebesaran buat timeline 2-4 bulan solo-dev.
+- Gateway berbayar (Fonnte/Wablas) — revisi 28 Agu 2026: TERNYATA sama-sama "unofficial"/risiko banned dengan `whatsapp-web.js` (dicek FAQ resmi fonnte.com), jadi tidak ada alasan bayar hanya demi kemudahan infrastruktur. Lihat baris WhatsApp Gateway di atas & `OPEN-QUESTIONS-PROPOSAL.md` poin 3.
 
 ## Struktur Folder (rencana, ikuti konvensi Laravel default + pola Nobel Akademi)
 
@@ -51,16 +52,14 @@ resources/views/
 - **API Resource/transformer** kalau ada endpoint yang return data ke role terbatas (misal Extras jangan pernah nerima field margin/fee-client mentah).
 - **Encrypted cast** untuk NIK (`'nik' => 'encrypted'`), private disk storage untuk upload KTP/kontrak/bukti transfer — lihat `SECURITY-CHECKLIST.md` buat checklist lengkap.
 
-## Commands (isi begitu project di-scaffold)
+## Commands (sudah di-scaffold — Laravel 13, lihat README.md untuk setup lokal lengkap)
 
 ```bash
-composer create-project laravel/laravel . "^11.0"
 php artisan serve
-npm run dev
-php artisan queue:listen --tries=1
 php artisan migrate
-php artisan db:seed
+php artisan test
 ./vendor/bin/pint       # code formatting
+cd whatsapp-service && node server.js   # WA gateway, terpisah dari Laravel — lihat README.md-nya
 ```
 
 ## Environment yang Dibutuhkan
@@ -68,10 +67,10 @@ php artisan db:seed
 ```
 DB_* (MySQL)
 MAIL_MAILER, MAIL_HOST, dst (SMTP)
-FONNTE_TOKEN / WABLAS_TOKEN (WA Gateway — pilih salah satu, jangan implement dua-duanya)
+WHATSAPP_SERVICE_URL / WHATSAPP_SERVICE_TOKEN (endpoint + shared-secret ke `whatsapp-service/` self-hosted, lihat `whatsapp-service/README.md`)
 APP_TIMEZONE=Asia/Jakarta
 ```
 
 ## Catatan
 
-File ini akan diperbarui begitu keputusan teknis konkret diambil pas Sprint 1 (misal: Bootstrap vs Livewire/Alpine, library signature-pad spesifik). Update di sini, jangan bikin file stack baru terpisah.
+Semua keputusan "rencana" dari draft awal sudah final (lihat catatan revisi per baris di atas). Update file ini kalau ada keputusan teknis baru — jangan bikin file stack baru terpisah.

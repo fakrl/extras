@@ -1,6 +1,8 @@
 # Design System
 ## Sistem Informasi Manajemen Casting Talent dan Extras Berbasis Web dengan Fitur Negosiasi Fee Digital
 
+> **⚠️ SUPERSEDED (khusus keputusan visual/warna/ikon).** Palet warna biru `#1E3A8A` (§4, §11) dan Lucide Icons (§9) di dokumen ini sudah diganti brand ijo-hitam + Tabler Icons — lihat `docs/UI-GUIDELINES.md` sebagai acuan visual terkini. Bagian IA/flow/prinsip UX generik di bawah masih bisa jadi referensi, tapi jangan pakai warna/ikon dari dokumen ini.
+
 ---
 
 ## 1. Design Principles

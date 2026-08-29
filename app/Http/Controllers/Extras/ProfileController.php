@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers\Extras;
 
+use App\Exceptions\NikDuplikatException;
 use App\Http\Controllers\Controller;
+use App\Models\ExtrasProfile;
+use App\Models\ProjectApplication;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -44,7 +48,7 @@ class ProfileController extends Controller
      * Array 4 slot (index 1-4), isi ExtrasPhoto kalau ada atau null kalau
      * kosong — biar view tinggal loop 1..4 tanpa perlu cek collection manual.
      */
-    private function fotoTambahanPerSlot(\App\Models\ExtrasProfile $profile): array
+    private function fotoTambahanPerSlot(ExtrasProfile $profile): array
     {
         $bySlot = $profile->photos->keyBy('urutan');
 
@@ -95,6 +99,44 @@ class ProfileController extends Controller
         $request->user()->extrasProfile->update($dataDisimpan);
 
         return redirect('/extras/profil')->with('status', 'Profil berhasil disimpan. Begini tampilannya buat Admin & Casting Director:');
+    }
+
+    /**
+     * RF-04: form KTP+rekening, cuma muncul setelah Extras dinyatakan lolos
+     * (ContractController::show() redirect ke sini kalau data belum lengkap).
+     * SENGAJA terpisah dari profile-edit biasa (data minimization UU PDP).
+     */
+    public function lengkapiKtp(Request $request, ProjectApplication $application)
+    {
+        $this->pastikanMilikSendiri($request, $application);
+
+        return view('extras.lengkapi-ktp', compact('application'));
+    }
+
+    public function simpanKtp(Request $request, ProjectApplication $application): RedirectResponse
+    {
+        $this->pastikanMilikSendiri($request, $application);
+
+        $data = $request->validate([
+            'nik' => ['required', 'digits:16'],
+            'rekening' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        try {
+            $application->extras->lengkapiKtp($data['nik'], $data['rekening'] ?? null);
+        } catch (NikDuplikatException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        } catch (UniqueConstraintViolationException) {
+            return back()->withInput()->with('error', 'NIK ini sudah terdaftar di akun lain, hubungi Admin kalau ini kesalahan.');
+        }
+
+        return redirect()->route('contracts.show', $application)->with('status', 'NIK & rekening berhasil disimpan.');
+    }
+
+    private function pastikanMilikSendiri(Request $request, ProjectApplication $application): void
+    {
+        abort_unless($application->extras_id === $request->user()->extrasProfile->id, 403);
+        abort_unless($application->status_partisipasi === 'lolos', 403);
     }
 
     /**
@@ -158,7 +200,7 @@ class ProfileController extends Controller
      * Serve foto tambahan (slot 1-4) dari private disk. Otorisasi sama
      * seperti foto profil utama (pemilik/Admin/CD).
      */
-    public function fotoTambahanStream(Request $request, \App\Models\ExtrasProfile $extrasProfile, int $slot): StreamedResponse
+    public function fotoTambahanStream(Request $request, ExtrasProfile $extrasProfile, int $slot): StreamedResponse
     {
         $this->pastikanBolehLihatMedia($request, $extrasProfile);
 
@@ -174,7 +216,7 @@ class ProfileController extends Controller
      * pemilik sendiri, Admin (semua), atau Casting Director (RF-14 & CLAUDE.md
      * §5 — foto/video boleh dilihat CD, beda dari sosmed/portofolio yang tidak).
      */
-    public function fotoStream(Request $request, \App\Models\ExtrasProfile $extrasProfile): StreamedResponse
+    public function fotoStream(Request $request, ExtrasProfile $extrasProfile): StreamedResponse
     {
         $this->pastikanBolehLihatMedia($request, $extrasProfile);
 
@@ -186,7 +228,7 @@ class ProfileController extends Controller
     /**
      * Serve video perkenalan dari private disk. Otorisasi sama seperti foto.
      */
-    public function videoStream(Request $request, \App\Models\ExtrasProfile $extrasProfile): StreamedResponse
+    public function videoStream(Request $request, ExtrasProfile $extrasProfile): StreamedResponse
     {
         $this->pastikanBolehLihatMedia($request, $extrasProfile);
 
@@ -195,7 +237,7 @@ class ProfileController extends Controller
         return Storage::disk('local')->response($extrasProfile->video_profil_path);
     }
 
-    private function pastikanBolehLihatMedia(Request $request, \App\Models\ExtrasProfile $extrasProfile): void
+    private function pastikanBolehLihatMedia(Request $request, ExtrasProfile $extrasProfile): void
     {
         $user = $request->user();
 

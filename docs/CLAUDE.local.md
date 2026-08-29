@@ -8,7 +8,7 @@
 
 ## Model Kerja Agent
 
-Per 22 Agustus 2026, project masih pra-development (proposal belum sempro). Struktur di bawah **disiapkan dari sekarang** tapi subagent baru benar-benar dipanggil pas coding beneran mulai (pasca sidang judul di-acc, ±3 September 2026).
+Update 29 Agustus 2026: coding sudah jalan sejak 22 Agu (9 sesi, lihat `DEV-NOTES.md`) — jauh lebih cepat dari perkiraan "pasca sidang ±3 Sept" di bawah. Struktur developer/tester/reviewer di bawah **sudah aktif dipakai nyata**, bukan lagi rencana — tiap modul non-trivial (SPEC.md) lewat pipeline penuh, termasuk reviewer yang beberapa kali nemu bug/inkonsistensi nyata sebelum ticket ditutup.
 
 - **Orchestrator = sesi utama** (Fakrul ngobrol langsung dengan Claude/Cowork). Brainstorming, keputusan arsitektur, dan penulisan dokumen akademik terjadi di sini.
 - **developer** (subagent) — eksekusi koding per modul, baca `SPEC.md` (per-task, dibuat begitu modul mulai) + `TECH-STACK.md` + `DATABASE-SCHEMA.md`.

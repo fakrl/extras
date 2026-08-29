@@ -34,6 +34,7 @@ class CastingProjectController extends Controller
         $data = $request->validate([
             'nama_produksi' => ['required', 'string', 'max:255'],
             'client_ph' => ['required', 'string', 'max:255'],
+            'wa_group_link' => ['nullable', 'url'],
             'deadline' => ['required', 'date'],
             'kuota' => ['required', 'integer', 'min:1'],
             'is_urgent' => ['nullable', 'boolean'],
@@ -48,6 +49,7 @@ class CastingProjectController extends Controller
         $project = $request->user()->castingProjects()->create([
             'nama_produksi' => $data['nama_produksi'],
             'client_ph' => $data['client_ph'],
+            'wa_group_link' => $data['wa_group_link'] ?? null,
             'deadline' => $data['deadline'],
             'kuota' => $data['kuota'],
             'is_urgent' => $request->boolean('is_urgent'),
@@ -80,13 +82,17 @@ class CastingProjectController extends Controller
     /**
      * RF-14/RF-15: Admin Default memfilter pendaftar dan menetapkan Grade.
      */
-    public function showApplicants(CastingProject $castingProject)
+    public function showApplicants(Request $request, CastingProject $castingProject)
     {
+        $grade = $request->query('grade');
+
         $applicants = $castingProject->applications()
-            ->with('extras', 'extras.photos')
+            ->with('extras', 'extras.photos', 'fieldNotes.korlap')
+            ->when($grade === 'belum', fn ($q) => $q->whereNull('grade'))
+            ->when(in_array($grade, ['A', 'B', 'C'], true), fn ($q) => $q->where('grade', $grade))
             ->latest()
             ->get();
 
-        return view('admin.projects.applicants', compact('castingProject', 'applicants'));
+        return view('admin.projects.applicants', compact('castingProject', 'applicants', 'grade'));
     }
 }

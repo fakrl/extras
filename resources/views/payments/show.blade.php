@@ -29,18 +29,18 @@
     @endif
 </div>
 
-@if (auth()->user()->role === 'admin_default')
-    @if ($application->payment->status === 'belum_dibayar')
-        <div class="card" style="margin-bottom: 14px;">
-            <form method="POST" action="{{ route('payments.transfer', $application) }}" enctype="multipart/form-data">
-                @csrf
-                <label>Unggah Bukti Transfer</label>
-                <input type="file" name="bukti_transfer" accept=".jpg,.jpeg,.png,.pdf" required style="margin-bottom: 10px;">
-                <button type="submit" class="btn btn-brand">Tandai Sudah Ditransfer</button>
-            </form>
-        </div>
-    @endif
+@if (auth()->user()->role === 'admin_default' && $application->payment->status === 'belum_dibayar')
+    <div class="card" style="margin-bottom: 14px;">
+        <form method="POST" action="{{ route('payments.transfer', $application) }}" enctype="multipart/form-data">
+            @csrf
+            <label>Unggah Bukti Transfer</label>
+            <input type="file" name="bukti_transfer" accept=".jpg,.jpeg,.png,.pdf" required style="margin-bottom: 10px;">
+            <button type="submit" class="btn btn-brand">Tandai Sudah Ditransfer</button>
+        </form>
+    </div>
+@endif
 
+@if (in_array(auth()->user()->role, ['admin_default', 'extras']) && $application->payment->status !== 'dikonfirmasi_diterima')
     <form method="POST" action="{{ route('payments.addon', $application) }}" style="display: flex; gap: 8px; margin-bottom: 14px;">
         @csrf
         <input type="text" name="label" class="input-inline" placeholder="Label (misal: Reimburse transport)" required>

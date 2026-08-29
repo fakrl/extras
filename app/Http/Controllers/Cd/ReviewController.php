@@ -42,6 +42,7 @@ class ReviewController extends Controller
 
         $applications = ProjectApplication::whereIn('id', $data['application_ids'])
             ->where('status_partisipasi', 'diajukan_ke_cd')
+            ->with('extras.user', 'castingProject')
             ->get();
 
         foreach ($applications as $application) {
@@ -54,6 +55,8 @@ class ReviewController extends Controller
             $application->update([
                 'status_partisipasi' => $data['keputusan'] === 'approve' ? 'lolos' : 'ditolak',
             ]);
+
+            $application->kirimNotifikasiHasil();
         }
 
         $jumlah = $applications->count();

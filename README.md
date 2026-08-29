@@ -1,58 +1,48 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SIM Casting JBTB
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistem Informasi Manajemen Casting Talent & Extras Berbasis Web dengan Fitur Negosiasi Fee Digital — studi kasus **JBTB Casting** (agensi milik Jestika Aisya Kordak, brand *Jbtb.Casting*, Depok).
 
-## About Laravel
+Proyek ini menggantikan proses rekrutmen extras/figuran yang masih manual (grup WhatsApp, Excel, Google Drive) dengan sistem terpusat: seleksi kandidat, negosiasi fee digital ala InDrive (multi-round, tercatat), kontrak digital dengan tanda tangan canvas, dan pelacakan status pembayaran transparan — untuk menghilangkan kesalahpahaman fee dan konflik "sudah kerja belum dibayar".
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Ini adalah **project work pengganti skripsi** (bukan proyek open-source publik). Konteks bisnis, aktor (7 role), alur, dan backlog lengkap ada di `docs/CLAUDE.md`; MVP distilasi di `docs/PRD-LITE.md`.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Tech Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Backend:** Laravel 13, PHP 8.3+
+- **Database:** MySQL 8
+- **Frontend:** Blade + custom CSS design system (bukan Bootstrap/Tailwind — lihat `resources/views/partials/theme-style.blade.php`), dark/light theme, Inter font
+- **PDF:** `barryvdh/laravel-dompdf` (kontrak, invoice, slip honor)
+- **Timezone:** Asia/Jakarta
 
-## Learning Laravel
+Detail & keputusan teknis lengkap ada di `docs/TECH-STACK.md`.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Setup Lokal
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer install
+cp .env.example .env
+php artisan key:generate
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Set koneksi database di `.env` (MySQL, bukan SQLite default):
 
-## Contributing
+```
+DB_CONNECTION=mysql
+DB_DATABASE=jbtb
+DB_USERNAME=root
+DB_PASSWORD=
+APP_TIMEZONE=Asia/Jakarta
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Lalu jalankan migration dan server dev:
 
-## Code of Conduct
+```bash
+php artisan migrate
+php artisan serve
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Catatan Penting
 
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- **Storage upload private:** foto/video profil, KTP, tanda tangan, bukti transfer disimpan di disk `local` (`storage/app/private`), bukan `public` — jangan diubah tanpa alasan kuat, ini keputusan keamanan (lihat `docs/SECURITY-CHECKLIST.md`).
+- Data sensitif (NIK, nama asli, rekening) di-enkripsi di level model (`encrypted` cast).
+- Dokumentasi lengkap ada di folder `docs/` — baca `docs/CLAUDE.md` dan `docs/DEV-NOTES.md` sebelum mulai kerja modul baru.
