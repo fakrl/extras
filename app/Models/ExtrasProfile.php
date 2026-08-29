@@ -82,7 +82,7 @@ class ExtrasProfile extends Model
 
                 return [
                     'nik' => $this->castAttributeAsEncryptedString('nik', $digits),
-                    'nik_hash' => hash_hmac('sha256', $digits, config('app.nik_hash_key')),
+                    'nik_hash' => static::nikHash($digits),
                 ];
             },
         );
@@ -115,7 +115,7 @@ class ExtrasProfile extends Model
     public function activeShootingDates(?int $excludeApplicationId = null): Collection
     {
         return $this->applications()
-            ->whereIn('status_partisipasi', ['deal', 'diajukan_ke_cd', 'direview_cd', 'lolos', 'kontrak_ditandatangani'])
+            ->whereIn('status_partisipasi', ProjectApplication::STATUS_AKTIF)
             ->when($excludeApplicationId, fn ($q, $id) => $q->where('id', '!=', $id))
             ->with('castingProject.shootingDates')
             ->get()
@@ -148,7 +148,7 @@ class ExtrasProfile extends Model
      */
     public function lengkapiKtp(string $nik, ?string $rekening): void
     {
-        $hash = hash_hmac('sha256', preg_replace('/\D/', '', $nik), config('app.nik_hash_key'));
+        $hash = static::nikHash(preg_replace('/\D/', '', $nik));
 
         if (static::where('nik_hash', $hash)->where('id', '!=', $this->id)->exists()) {
             Log::warning('RF-04: percobaan simpan NIK duplikat', ['user_id' => $this->user_id]);
@@ -165,18 +165,18 @@ class ExtrasProfile extends Model
         $this->save();
     }
 
+    private static function nikHash(string $digits): string
+    {
+        return hash_hmac('sha256', $digits, config('app.nik_hash_key'));
+    }
+
     /**
      * RF-06: simpan foto profil ke private disk. Menghapus foto lama kalau
      * ada, supaya storage tidak menumpuk file yatim tiap kali Extras ganti foto.
      */
     public function simpanFoto(UploadedFile $file): void
     {
-        if ($this->foto_profil_path) {
-            Storage::disk('local')->delete($this->foto_profil_path);
-        }
-
-        $path = $file->store('extras/'.$this->id.'/foto', 'local');
-        $this->update(['foto_profil_path' => $path]);
+        $this->simpanMedia('foto_profil_path', $file, 'foto');
     }
 
     /**
@@ -185,12 +185,17 @@ class ExtrasProfile extends Model
      */
     public function simpanVideo(UploadedFile $file): void
     {
-        if ($this->video_profil_path) {
-            Storage::disk('local')->delete($this->video_profil_path);
+        $this->simpanMedia('video_profil_path', $file, 'video');
+    }
+
+    private function simpanMedia(string $field, UploadedFile $file, string $folder): void
+    {
+        if ($this->{$field}) {
+            Storage::disk('local')->delete($this->{$field});
         }
 
-        $path = $file->store('extras/'.$this->id.'/video', 'local');
-        $this->update(['video_profil_path' => $path]);
+        $path = $file->store('extras/'.$this->id.'/'.$folder, 'local');
+        $this->update([$field => $path]);
     }
 
     /**

@@ -45,7 +45,7 @@ class FeeNegotiationController extends Controller
             'nominal' => ['required', 'numeric', 'min:0'],
         ]);
 
-        $this->pastikanMasihBisaNego($application);
+        $application->pastikanMasihBisaNego();
 
         $application->counterFee('admin', $data['nominal']);
 
@@ -58,7 +58,7 @@ class FeeNegotiationController extends Controller
             'nominal' => ['required', 'numeric', 'min:0'],
         ]);
 
-        $this->pastikanMasihBisaNego($application);
+        $application->pastikanMasihBisaNego();
 
         $application->terimaFee('admin', $data['nominal']);
 
@@ -70,7 +70,7 @@ class FeeNegotiationController extends Controller
      */
     public function tolak(ProjectApplication $application): RedirectResponse
     {
-        $this->pastikanMasihBisaNego($application);
+        $application->pastikanMasihBisaNego();
 
         $application->tolakNegosiasi('admin');
 
@@ -113,14 +113,5 @@ class FeeNegotiationController extends Controller
         }
 
         return back()->with('status', 'Aplikasi dibatalkan.');
-    }
-
-    private function pastikanMasihBisaNego(ProjectApplication $application): void
-    {
-        abort_if(
-            in_array($application->status_partisipasi, ['deal', 'ditolak', 'diajukan_ke_cd', 'direview_cd', 'lolos'], true),
-            422,
-            'Negosiasi untuk pendaftar ini sudah tidak aktif.'
-        );
     }
 }

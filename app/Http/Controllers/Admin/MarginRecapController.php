@@ -4,11 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CastingProject;
+use App\Models\ProjectApplication;
 
 class MarginRecapController extends Controller
 {
-    private const STATUS_LOLOS_KE_ATAS = ['lolos', 'kontrak_ditandatangani', 'selesai_produksi'];
-
     /**
      * RF-30: margin = rahasia bisnis inti, hanya Admin Default & Super Admin
      * (route middleware role:admin_default,super_admin, bukan grup admin umum).
@@ -23,7 +22,7 @@ class MarginRecapController extends Controller
     public function index()
     {
         $projects = CastingProject::with(['applications' => function ($q) {
-            $q->whereIn('status_partisipasi', self::STATUS_LOLOS_KE_ATAS)->with('castingProjectClass');
+            $q->whereIn('status_partisipasi', ProjectApplication::STATUS_LOLOS_KE_ATAS)->with('castingProjectClass');
         }])->get()->map(fn (CastingProject $project) => $this->hitungMargin($project));
 
         return view('admin.recap.margin', compact('projects'));

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Exports\ExtrasRecapExport;
 use App\Http\Controllers\Controller;
 use App\Models\ExtrasProfile;
+use App\Models\ProjectApplication;
 use Maatwebsite\Excel\Facades\Excel;
 
 class RecapController extends Controller
@@ -16,9 +17,7 @@ class RecapController extends Controller
     public function index()
     {
         $extrasPalingSering = ExtrasProfile::withCount([
-            'applications' => fn ($q) => $q->whereIn('status_partisipasi', [
-                'lolos', 'kontrak_ditandatangani', 'selesai_produksi',
-            ]),
+            'applications' => fn ($q) => $q->whereIn('status_partisipasi', ProjectApplication::STATUS_LOLOS_KE_ATAS),
         ])
             ->orderByDesc('applications_count')
             ->take(10)

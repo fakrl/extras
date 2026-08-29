@@ -505,7 +505,21 @@ Audit kedua (fokus dead code/duplikasi, bukan bug) — semua temuan AMAN untuk d
 - 10 test file reimplement `buatAplikasi()`/`buatProyek()` manual karena `ExtrasProfile`/`CastingProject` belum punya Eloquent factory (cuma `User` yang punya) — worth ditambahin kalau butuh nulis banyak test lagi ke depan.
 - Estimasi: -60 baris, 0 dependency yang bisa dicabut (semua dependency yang ada sudah earning its place).
 
-**File berubah sesi ini:** `app/Models/Payment.php`, `app/Models/Contract.php`, `app/Models/AdminProjectAssignment.php`, `app/Models/StaffPayroll.php`, `app/Models/AdminProfile.php`, `app/Services/WhatsAppService.php`, `resources/views/extras/projects/index.blade.php`, `resources/views/extras/projects/show.blade.php`, plus 3 file test baru.
+**Update sesi ini (lanjutan, masih malam yang sama):** 5 dari 6 item ponytail-audit di atas dieksekusi (semua pure refactor, zero behavior change, tes ulang tiap item):
+1. `pastikanBolehLihat()` (Contract/PaymentController) → `ProjectApplication::bolehDilihatOleh(User $user): bool`.
+2. `pastikanMasihBisaNego()` (2x FeeNegotiationController) → `ProjectApplication::pastikanMasihBisaNego(): void` (self-abort).
+3. `STATUS_AKTIF`/`STATUS_LOLOS_KE_ATAS` jadi konstanta publik di `ProjectApplication`, 6 call site diarahkan ke situ (ReminderH1ShootingCommand, CastingProject, ExtrasProfile, ExtrasRecapExport, MarginRecapController, RecapController).
+4. 3 selector CSS mati (`.badge-status-aktif/-pending/-tolak`) dihapus dari `layouts/app.blade.php` — sudah di-grep ulang, nol pemakaian di Blade manapun.
+5. `ExtrasProfile::simpanFoto()`/`simpanVideo()` konsolidasi ke `simpanMedia()` private, dua method publik jadi thin wrapper (dicek dulu — dipanggil by name dari `Extras\ProfileController`, jadi nama publiknya dipertahankan).
+6. `nik_hash` (hash_hmac duplikat di `lengkapiKtp()` & mutator `nik()`) → helper `ExtrasProfile::nikHash()`.
+
+Item factory test (`ExtrasProfile`/`CastingProject` belum punya Eloquent factory) sengaja TIDAK disentuh — lebih invasif, prioritas lebih rendah, ditinggal untuk sesi lain.
+
+**Hasil:** `php artisan test` tetap **96 passed** (223 assertions) di tiap checkpoint, tidak ada regresi. `./vendor/bin/pint`: passed, tidak ada file yang perlu diformat ulang.
+
+**File berubah (bagian refactor ini):** `app/Models/ProjectApplication.php`, `app/Models/ExtrasProfile.php`, `app/Models/CastingProject.php`, `app/Http/Controllers/ContractController.php`, `app/Http/Controllers/PaymentController.php`, `app/Http/Controllers/Admin/FeeNegotiationController.php`, `app/Http/Controllers/Extras/FeeNegotiationController.php`, `app/Console/Commands/ReminderH1ShootingCommand.php`, `app/Exports/ExtrasRecapExport.php`, `app/Http/Controllers/Admin/MarginRecapController.php`, `app/Http/Controllers/Admin/RecapController.php`, `resources/views/layouts/app.blade.php`.
+
+**File berubah sesi ini (bug-fix, di atas):** `app/Models/Payment.php`, `app/Models/Contract.php`, `app/Models/AdminProjectAssignment.php`, `app/Models/StaffPayroll.php`, `app/Models/AdminProfile.php`, `app/Services/WhatsAppService.php`, `resources/views/extras/projects/index.blade.php`, `resources/views/extras/projects/show.blade.php`, plus 3 file test baru.
 
 ---
 
