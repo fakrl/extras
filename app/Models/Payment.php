@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-#[Fillable(['project_application_id', 'status', 'bukti_transfer_path'])]
+#[Fillable(['project_application_id', 'status', 'bukti_transfer_path', 'ditransfer_at', 'dikonfirmasi_at'])]
 class Payment extends Model
 {
     protected function casts(): array

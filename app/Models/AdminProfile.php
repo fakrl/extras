@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['user_id', 'honor_nominal', 'created_by'])]
+#[Fillable(['user_id', 'honor_nominal', 'created_by', 'honor_updated_at'])]
 class AdminProfile extends Model
 {
     protected function casts(): array

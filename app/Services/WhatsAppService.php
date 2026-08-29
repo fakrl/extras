@@ -37,6 +37,14 @@ class WhatsAppService
      * kalau nomor_wa belum diisi (in-process, murah). Kirim aktualnya
      * di-dispatch ke queue biar HTTP call ke Node tidak blocking request
      * (terutama bulk approve/reject CD).
+     *
+     * dispatch() sendiri dibungkus try/catch (bukan cuma di dalam job) —
+     * audit 30 Agu 2026 nemu: kalau tabel `jobs` gagal di-insert (DB
+     * lock/down), dispatch() throw SEBELUM job sempat jalan, jadi
+     * try/catch di WhatsAppService::kirim()/job handle() nggak kepakai.
+     * Notifikasi WA harus tetap best-effort di titik manapun bisa gagal,
+     * termasuk saat enqueue — jangan sampai gagal kirim WA gagalkan aksi
+     * utama pemanggil (approve CD, dsb).
      */
     public function kirimNotifikasi(User $user, string $jenis, string $pesan): void
     {
@@ -46,6 +54,11 @@ class WhatsAppService
             return;
         }
 
-        SendWhatsAppNotification::dispatch($user, $jenis, $pesan);
+        try {
+            SendWhatsAppNotification::dispatch($user, $jenis, $pesan);
+        } catch (\Throwable $e) {
+            Log::warning('WhatsAppService::kirimNotifikasi gagal dispatch', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+            NotificationLog::catat($user->id, $jenis, false, 'whatsapp');
+        }
     }
 }

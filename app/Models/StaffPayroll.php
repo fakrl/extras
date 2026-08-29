@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-#[Fillable(['admin_project_assignment_id', 'nominal_pokok', 'pdf_slip_path'])]
+#[Fillable(['admin_project_assignment_id', 'nominal_pokok', 'pdf_slip_path', 'generated_at'])]
 class StaffPayroll extends Model
 {
     protected function casts(): array

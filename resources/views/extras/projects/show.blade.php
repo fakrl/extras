@@ -19,12 +19,12 @@
 <div class="card" style="margin-bottom: 16px;">
     <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Kelas / Kriteria</div>
     <table>
-        <thead><tr><th>Kelas</th><th>Budget</th><th>Kuota</th></tr></thead>
+        <thead><tr><th>Kelas</th><th>Kriteria</th><th>Kuota</th></tr></thead>
         <tbody>
             @foreach ($castingProject->classes as $class)
                 <tr>
                     <td>{{ $class->nama_kelas }}</td>
-                    <td>Rp {{ number_format($class->budget_client, 0, ',', '.') }}</td>
+                    <td>{{ $class->kriteria ? implode(', ', $class->kriteria) : '-' }}</td>
                     <td>{{ $class->kuota_kelas }}</td>
                 </tr>
             @endforeach
