@@ -27,6 +27,26 @@
                     <td>Rp {{ number_format($row->margin, 0, ',', '.') }}</td>
                     <td>{{ number_format($row->margin_persen, 1) }}%</td>
                 </tr>
+                @if ($row->breakdown->count() > 1 || $row->belum_terklasifikasi)
+                    @foreach ($row->breakdown as $kelas)
+                        <tr style="color: var(--text-secondary); font-size: 12.5px;">
+                            <td style="padding-left: 24px;">&mdash; {{ $kelas->kelas->nama_kelas }} ({{ $kelas->jumlah_aplikasi }} orang)</td>
+                            <td>Rp {{ number_format($kelas->total_fee_client, 0, ',', '.') }}</td>
+                            <td>Rp {{ number_format($kelas->total_payout, 0, ',', '.') }}</td>
+                            <td>Rp {{ number_format($kelas->margin, 0, ',', '.') }}</td>
+                            <td>&mdash;</td>
+                        </tr>
+                    @endforeach
+                    @if ($row->belum_terklasifikasi)
+                        <tr style="color: var(--text-secondary); font-size: 12.5px;">
+                            <td style="padding-left: 24px;">&mdash; Belum terklasifikasi ({{ $row->belum_terklasifikasi->jumlah_aplikasi }} orang)</td>
+                            <td>Rp 0</td>
+                            <td>Rp {{ number_format($row->belum_terklasifikasi->total_payout, 0, ',', '.') }}</td>
+                            <td>Rp {{ number_format(-$row->belum_terklasifikasi->total_payout, 0, ',', '.') }}</td>
+                            <td>&mdash;</td>
+                        </tr>
+                    @endif
+                @endif
             @empty
                 <tr><td colspan="5" style="text-align:center; color: var(--text-muted);">Belum ada proyek casting.</td></tr>
             @endforelse

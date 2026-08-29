@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CastingProject;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 class CastingProjectController extends Controller
 {
@@ -68,7 +69,91 @@ class CastingProjectController extends Controller
     }
 
     /**
-     * RF-10: Admin Default mengedit atau menutup proyek casting.
+     * RF-10: Admin Default mengedit proyek casting yang sudah dibuat.
+     */
+    public function edit(CastingProject $castingProject)
+    {
+        $castingProject->load('classes', 'shootingDates');
+
+        $applicantsCount = $castingProject->applications()->count();
+
+        return view('admin.projects.edit', compact('castingProject', 'applicantsCount'));
+    }
+
+    /**
+     * RF-10: kalau proyek sudah punya pendaftar, kelas yang sudah ada TIDAK
+     * boleh dihapus (di-update in-place) — cegah project_applications
+     * (via casting_project_class_id, RF-30) jadi merujuk kelas yang hilang.
+     * Kelas baru tetap boleh ditambah. Proyek tanpa pendaftar: delete-recreate
+     * biasa, sama seperti store().
+     */
+    public function update(Request $request, CastingProject $castingProject): RedirectResponse
+    {
+        $data = $request->validate([
+            'nama_produksi' => ['required', 'string', 'max:255'],
+            'client_ph' => ['required', 'string', 'max:255'],
+            'wa_group_link' => ['nullable', 'url'],
+            'deadline' => ['required', 'date'],
+            'kuota' => ['required', 'integer', 'min:1'],
+            'is_urgent' => ['nullable', 'boolean'],
+            'tanggal_shooting' => ['required', 'array', 'min:1'],
+            'tanggal_shooting.*' => ['required', 'date'],
+            'kelas' => ['required', 'array', 'min:1'],
+            'kelas.*.id' => ['nullable', 'integer'],
+            'kelas.*.nama_kelas' => ['required', 'string'],
+            'kelas.*.budget_client' => ['required', 'numeric', 'min:0'],
+            'kelas.*.kuota_kelas' => ['required', 'integer', 'min:1'],
+        ]);
+
+        $hasApplicants = $castingProject->applications()->exists();
+
+        if ($hasApplicants) {
+            $existingIds = $castingProject->classes()->pluck('id');
+            $submittedIds = collect($data['kelas'])->pluck('id')->filter();
+
+            if ($existingIds->diff($submittedIds)->isNotEmpty()) {
+                return back()->withErrors([
+                    'kelas' => 'Proyek ini sudah punya pendaftar, kelas yang sudah ada tidak bisa dihapus.',
+                ])->withInput();
+            }
+        }
+
+        $castingProject->update([
+            'nama_produksi' => $data['nama_produksi'],
+            'client_ph' => $data['client_ph'],
+            'wa_group_link' => $data['wa_group_link'] ?? null,
+            'deadline' => $data['deadline'],
+            'kuota' => $data['kuota'],
+            'is_urgent' => $request->boolean('is_urgent'),
+        ]);
+
+        $castingProject->shootingDates()->delete();
+        foreach (array_unique($data['tanggal_shooting']) as $tanggal) {
+            $castingProject->shootingDates()->create(['tanggal' => $tanggal]);
+        }
+
+        if ($hasApplicants) {
+            foreach ($data['kelas'] as $kelas) {
+                $kelasData = Arr::except($kelas, 'id');
+
+                if (! empty($kelas['id'])) {
+                    $castingProject->classes()->whereKey($kelas['id'])->update($kelasData);
+                } else {
+                    $castingProject->classes()->create($kelasData);
+                }
+            }
+        } else {
+            $castingProject->classes()->delete();
+            foreach ($data['kelas'] as $kelas) {
+                $castingProject->classes()->create(Arr::except($kelas, 'id'));
+            }
+        }
+
+        return redirect()->route('admin.projects.index')->with('status', 'Proyek casting berhasil diperbarui.');
+    }
+
+    /**
+     * RF-10: Admin Default menutup/membuka proyek casting.
      */
     public function toggleStatus(CastingProject $castingProject): RedirectResponse
     {

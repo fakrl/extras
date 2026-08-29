@@ -55,7 +55,7 @@ class MarginRecapTest extends TestCase
         return $cases;
     }
 
-    public function test_margin_dihitung_benar_dari_budget_client_dan_fee_final(): void
+    public function test_margin_dihitung_benar_per_kelas_bukan_dikali_kuota(): void
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
 
@@ -64,35 +64,98 @@ class MarginRecapTest extends TestCase
             'nama_produksi' => 'Proyek Margin Test',
             'client_ph' => 'PH Test',
             'deadline' => now()->addDays(7),
-            'kuota' => 3,
+            'kuota' => 5,
         ]);
 
-        $project->classes()->create([
+        $kelasA = $project->classes()->create([
             'nama_kelas' => 'Ibu-ibu',
             'budget_client' => 400000,
-            'kuota_kelas' => 3,
+            'kuota_kelas' => 5,
         ]);
 
-        foreach (range(1, 3) as $i) {
-            $extrasUser = User::factory()->create(['role' => 'extras']);
-            $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => "Extras {$i}"]);
+        $kelasB = $project->classes()->create([
+            'nama_kelas' => 'Bapak-bapak',
+            'budget_client' => 600000,
+            'kuota_kelas' => 5,
+        ]);
 
-            ProjectApplication::create([
-                'casting_project_id' => $project->id,
-                'extras_id' => $extras->id,
-                'status_partisipasi' => 'lolos',
-                'fee_final' => 250000,
-            ]);
-        }
+        $extrasA = ExtrasProfile::create(['user_id' => User::factory()->create(['role' => 'extras'])->id, 'alias' => 'Extras A']);
+        $extrasB = ExtrasProfile::create(['user_id' => User::factory()->create(['role' => 'extras'])->id, 'alias' => 'Extras B']);
+
+        ProjectApplication::create([
+            'casting_project_id' => $project->id,
+            'extras_id' => $extrasA->id,
+            'casting_project_class_id' => $kelasA->id,
+            'status_partisipasi' => 'lolos',
+            'fee_final' => 250000,
+        ]);
+
+        ProjectApplication::create([
+            'casting_project_id' => $project->id,
+            'extras_id' => $extrasB->id,
+            'casting_project_class_id' => $kelasB->id,
+            'status_partisipasi' => 'lolos',
+            'fee_final' => 300000,
+        ]);
 
         $response = $this->actingAs($admin)->get('/admin/rekap-margin');
 
         $response->assertOk();
-        // total fee client = 400000 x 3 = 1.200.000, payout = 250000 x 3 = 750.000
-        // margin = 450.000 = 150.000 x 3 heads
-        $response->assertSee('1.200.000');
-        $response->assertSee('750.000');
+        // kelas A: 400.000 - 250.000 = 150.000 | kelas B: 600.000 - 300.000 = 300.000
+        // total fee client = 1.000.000, payout = 550.000, margin = 450.000
+        // (BUKAN budget_client x kuota_kelas seperti pendekatan lama)
+        $response->assertSee('1.000.000');
+        $response->assertSee('550.000');
         $response->assertSee('450.000');
+    }
+
+    public function test_aplikasi_tanpa_kelas_tetap_masuk_total_sebagai_belum_terklasifikasi(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin_default']);
+
+        $project = CastingProject::create([
+            'admin_id' => $admin->id,
+            'nama_produksi' => 'Proyek Margin Legacy',
+            'client_ph' => 'PH Test',
+            'deadline' => now()->addDays(7),
+            'kuota' => 2,
+        ]);
+
+        $kelas = $project->classes()->create([
+            'nama_kelas' => 'Ibu-ibu',
+            'budget_client' => 400000,
+            'kuota_kelas' => 2,
+        ]);
+
+        $extrasKelas = ExtrasProfile::create(['user_id' => User::factory()->create(['role' => 'extras'])->id, 'alias' => 'Extras Kelas']);
+        $extrasLegacy = ExtrasProfile::create(['user_id' => User::factory()->create(['role' => 'extras'])->id, 'alias' => 'Extras Legacy']);
+
+        ProjectApplication::create([
+            'casting_project_id' => $project->id,
+            'extras_id' => $extrasKelas->id,
+            'casting_project_class_id' => $kelas->id,
+            'status_partisipasi' => 'lolos',
+            'fee_final' => 250000,
+        ]);
+
+        // Data lama/belum dimigrasi: casting_project_class_id null. Harus
+        // tetap ikut ke total (bukan silently di-drop), lewat baris terpisah.
+        ProjectApplication::create([
+            'casting_project_id' => $project->id,
+            'extras_id' => $extrasLegacy->id,
+            'status_partisipasi' => 'lolos',
+            'fee_final' => 200000,
+        ]);
+
+        $response = $this->actingAs($admin)->get('/admin/rekap-margin');
+
+        $response->assertOk();
+        $response->assertSee('Belum terklasifikasi');
+        // fee client = 400.000 (cuma dari kelas), payout = 250.000 + 200.000 = 450.000
+        // margin = 400.000 - 450.000 = -50.000 (payout legacy tetap mengurangi
+        // margin, tidak menghilang dari total)
+        $response->assertSee('450.000');
+        $response->assertSee('-50.000');
     }
 
     public function test_aplikasi_ditolak_tidak_dihitung_sebagai_payout(): void

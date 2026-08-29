@@ -405,6 +405,38 @@ Batch kecepatan (keputusan Fakrul, sama pola Session 12): 4 poin `SECURITY-CHECK
 
 ---
 
+## Session 16 — SPEC.md Bagian A: RF-10 Edit Proyek Casting (30 Agustus 2026)
+
+Hasil audit kepatuhan scope (SPEC.md, ditulis Fakrul) nemu 1 gap nyata: `toggleStatus()` sudah ada tapi edit proyek tidak ada sama sekali. Bagian B (RF-30 margin per-kepala) di SPEC.md yang sama SENGAJA belum dikerjakan sesi ini — lebih berisiko (nyentuh `project_applications`, dipakai 9+ file test), Fakrul minta dipisah biar gampang rollback kalau ada masalah.
+
+- `Admin\CastingProjectController` — tambah `edit()`/`update()`. Validasi sama seperti `store()`.
+- Routes baru: `GET /admin/projects/{castingProject}/edit`, `PATCH /admin/projects/{castingProject}`, grup middleware `role:admin_default` yang sama.
+- View baru `admin/projects/edit.blade.php` — mirror `create.blade.php`, pre-filled, tombol "Edit" ditambah di `admin/projects/index.blade.php`.
+- **Penyesuaian scope (didokumentasikan, bukan bug):** SPEC minta proteksi hapus **per-kelas** ("kelas yang sudah punya pendaftar tidak boleh dihapus"), tapi link `project_applications` → kelas spesifik (`casting_project_class_id`) baru ditambahkan di Bagian B yang belum dikerjakan. Solusi sementara: proteksi di level **proyek** — kalau proyek punya pendaftar sama sekali (`applications()->exists()`), semua kelas existing di-update in-place (tidak bisa dihapus, boleh tambah baru); proyek tanpa pendaftar tetap delete-recreate bebas seperti `store()`. Ini superset konservatif dari behavior final per-kelas yang akan didapat setelah Bagian B — tujuan intinya (jangan sampai FK di Bagian B orphan) tetap terpenuhi tanpa nyentuh `project_applications`. Warning banner di form edit juga level-proyek untuk alasan yang sama.
+- Bug kecil ditemukan & diperbaiki sendiri dalam proses (bukan out-of-scope): field hidden `kelas[i][id]` awalnya ikut ke-passing ke `CastingProjectClass::create()` dan gagal `MassAssignmentException` (`id` bukan fillable) — di-exclude sebelum create.
+- Test baru: `tests/Feature/CastingProjectEditTest.php` (6 test: update semua field, kelas berpendaftar gagal dihapus, kelas tanpa pendaftar bebas dihapus, dll).
+- `php artisan test`: baseline 71 passed → 77 passed (71 lama + 6 baru), 0 regresi. `./vendor/bin/pint`: passed, tanpa perubahan.
+- Tidak ada bug di luar scope (auth/RBAC/pembayaran/kontrak) ditemukan selama sesi ini.
+
+**Belum dikerjakan (menunggu keputusan lanjut Fakrul):** Bagian B (RF-30 margin per-kepala) — termasuk `casting_project_class_id` di `project_applications`, yang begitu ditambahkan akan memungkinkan proteksi hapus kelas di atas diperketat jadi genuinely per-kelas (bukan lagi per-proyek).
+
+---
+
+## Session 17 — SPEC.md Bagian B: RF-30 Margin Per-Kepala (30 Agustus 2026)
+
+Ganti pendekatan aproksimasi level-proyek (Session 12) jadi eksak per-aplikasi: tiap `ProjectApplication` sekarang tahu kelasnya sendiri.
+
+- Migration baru `add_casting_project_class_id_to_project_applications_table` — `foreignId('casting_project_class_id')->nullable()->constrained('casting_project_classes')->nullOnDelete()`. Nullable di level DB, non-negotiable (SPEC.md), supaya 9+ file test yang `ProjectApplication::create()` langsung tidak perlu diubah.
+- `ProjectApplication` — tambah `casting_project_class_id` ke `#[Fillable]`, relasi `castingProjectClass(): BelongsTo`. `CastingProjectClass` — tambah relasi `applications(): HasMany` (belum dipakai di Bagian A, disiapkan untuk proteksi hapus-kelas genuinely per-kelas nanti).
+- `Extras\CastingProjectController::apply()` — terima `casting_project_class_id`, validasi ownership via `$castingProject->classes()->findOrFail($id)` (bukan percaya bare ID dari request). **Penyesuaian:** field ini cuma `required` kalau proyeknya punya kelas (`$castingProject->classes()->exists()`) — proyek tanpa kelas sama sekali (skenario test lama `WhatsAppNotificationTest::test_apply_mengirim_wa_konfirmasi_dan_mencatat_log`, proyek dibuat tanpa `classes()->create()`) tetap bisa apply tanpa kelas, konsisten dengan kolom yang nullable. Ini bukan penyimpangan dari SPEC, cuma akomodasi supaya "required" tidak memaksa pilihan yang secara harfiah tidak ada.
+- `Admin\MarginRecapController` — dibongkar total. Per proyek: partisi aplikasi status lolos-ke-atas jadi berkelas (`groupBy('casting_project_class_id')`, breakdown per kelas: fee_client = budget_client x jumlah aplikasi di kelas itu) vs tanpa kelas (`whereNull`, masuk baris "Belum terklasifikasi": fee_client dianggap 0, payout tetap disum, margin baris ini otomatis negatif — payout tetap kepotong dari total, tidak silently hilang). **Bug ditemukan & diperbaiki sendiri saat implementasi:** `Collection::groupBy()` memperlakukan key `null` sebagai string kosong `''` bukan `null` — kalau tidak di-partisi manual duluan (`whereNull`/`whereNotNull` sebelum `groupBy`), baris "Belum terklasifikasi" tidak pernah ke-detect dan aplikasi berkelas ikut nyasar ke grup yang salah, error `budget_client on null`.
+- View: `extras/projects/show.blade.php` — radio pilih kelas di form apply (cuma tampil kalau proyek punya kelas). `admin/recap/margin.blade.php` — sub-row breakdown per kelas + baris "Belum terklasifikasi" kalau ada.
+- Test: `MarginRecapTest::test_margin_dihitung_benar_per_kelas_bukan_dikali_kuota` (ganti test lama Session 12, sekarang 2 kelas beda budget dalam 1 proyek, assert sum margin per kelas bukan dikali kuota) + `test_aplikasi_tanpa_kelas_tetap_masuk_total_sebagai_belum_terklasifikasi` (baru). `tests/Feature/CastingProjectApplyTest.php` (baru, 3 test): apply dengan kelas sendiri berhasil, apply dengan kelas milik proyek lain ditolak 404 (`findOrFail` di relasi ter-scope), apply tanpa pilih kelas padahal proyek punya kelas → 422.
+- **Full regression: `php artisan test` 77 passed (baseline sebelum sesi) → 81 passed sesudah (+4 test baru/revisi), 0 gagal.** Semua 10 file yang `ProjectApplication::create()`/`->applications()->create()` langsung (digrep ulang, bukan cuma 9 seperti perkiraan awal SPEC.md): `ProjectApplicationTest`, `EmailNotificationTest`, `WhatsAppNotificationTest`, `LengkapiKtpTest`, `PaymentAddonTest`, `ApplicantGradeFilterTest`, `MarginRecapTest`, `FieldNoteTest`, `CastingProjectEditTest`, `ReminderH1ShootingCommandTest` — tetap PASS tanpa satu pun diubah untuk urusan `casting_project_class_id` (`MarginRecapTest` diubah, tapi karena math-nya memang berubah sesuai SPEC, bukan karena kolom baru). `./vendor/bin/pint`: passed, tidak ada perubahan style.
+- Tidak ada stop-condition/hidden NOT-NULL assumption ditemukan. Tidak menyentuh kode Bagian A (`Admin\CastingProjectController::edit()/update()`) di luar yang diminta SPEC.md (relasi `CastingProjectClass::applications()`, model-only).
+
+---
+
 ## Cara Pakai File Ini
 
 Update di sini tiap sesi kerja modul (bukan hanya task besar) — beda dari project lain yang lebih strict soal token, project ini prioritaskan jejak proses untuk bimbingan (minimal 8x tercatat) dan laporan akhir nanti.

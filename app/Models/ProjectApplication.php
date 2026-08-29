@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Mail;
 
-#[Fillable(['casting_project_id', 'extras_id', 'status_partisipasi', 'grade', 'fee_final', 'bentrok_jadwal_flag', 'alasan_tolak'])]
+#[Fillable(['casting_project_id', 'extras_id', 'casting_project_class_id', 'status_partisipasi', 'grade', 'fee_final', 'bentrok_jadwal_flag', 'alasan_tolak'])]
 class ProjectApplication extends Model
 {
     protected function casts(): array
@@ -31,6 +31,11 @@ class ProjectApplication extends Model
     public function extras(): BelongsTo
     {
         return $this->belongsTo(ExtrasProfile::class, 'extras_id');
+    }
+
+    public function castingProjectClass(): BelongsTo
+    {
+        return $this->belongsTo(CastingProjectClass::class);
     }
 
     public function feeNegotiations(): HasMany

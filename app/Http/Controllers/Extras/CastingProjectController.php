@@ -45,6 +45,13 @@ class CastingProjectController extends Controller
             return back()->with('status', 'Kamu sudah mendaftar ke proyek ini sebelumnya.');
         }
 
+        $kelasId = null;
+
+        if ($castingProject->classes()->exists()) {
+            $data = $request->validate(['casting_project_class_id' => 'required|integer']);
+            $kelasId = $castingProject->classes()->findOrFail($data['casting_project_class_id'])->id;
+        }
+
         $tanggalProyekIni = $castingProject->shootingDates->pluck('tanggal')
             ?: $castingProject->shootingDates()->pluck('tanggal');
 
@@ -53,6 +60,7 @@ class CastingProjectController extends Controller
 
         $application = $castingProject->applications()->create([
             'extras_id' => $profile->id,
+            'casting_project_class_id' => $kelasId,
             'status_partisipasi' => 'diajukan',
             'bentrok_jadwal_flag' => $adaBentrok,
         ]);

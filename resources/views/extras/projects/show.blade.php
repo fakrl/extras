@@ -34,6 +34,20 @@
 
 <form method="POST" action="{{ route('extras.projects.apply', $castingProject) }}">
     @csrf
+    @if ($castingProject->classes->isNotEmpty())
+        <div class="card" style="margin-bottom: 16px;">
+            <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Pilih Kelas yang Kamu Daftar</div>
+            @foreach ($castingProject->classes as $class)
+                <label style="display: block; margin-bottom: 8px;">
+                    <input type="radio" name="casting_project_class_id" value="{{ $class->id }}" required>
+                    {{ $class->nama_kelas }}
+                    @if ($class->kriteria)
+                        <span style="color: var(--text-secondary); font-size: 12.5px;">({{ implode(', ', $class->kriteria) }})</span>
+                    @endif
+                </label>
+            @endforeach
+        </div>
+    @endif
     <button type="submit" class="btn btn-brand">Daftar ke Proyek Ini</button>
 </form>
 @endsection

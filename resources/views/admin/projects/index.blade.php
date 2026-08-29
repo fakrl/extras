@@ -59,6 +59,9 @@
                     </a>
                 </div>
                 <div class="entity-card-actions">
+                    <a href="{{ route('admin.projects.edit', $project) }}" class="btn" style="flex: 1; text-align: center;">Edit</a>
+                </div>
+                <div class="entity-card-actions">
                     <form method="POST" action="{{ route('admin.projects.toggle-status', $project) }}" style="flex: 1;">
                         @csrf @method('PATCH')
                         <button class="btn" style="width: 100%;">
