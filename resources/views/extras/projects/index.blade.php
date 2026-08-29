@@ -16,7 +16,7 @@
         </div>
         <p style="margin: 8px 0 4px; font-size: 13.5px;">Client: {{ $project->client_ph }}</p>
         <p style="margin: 0 0 12px; font-size: 12.5px; color: var(--text-muted);">
-            Fee tertinggi: Rp {{ number_format($project->classes->max('budget_client'), 0, ',', '.') }}
+            {{ $project->classes->count() }} kelas dibuka
         </p>
         <a href="{{ route('extras.projects.show', $project) }}" class="btn btn-brand btn-sm">Lihat Detail & Daftar</a>
     </div>
