@@ -26,4 +26,11 @@ class SecurityHardeningTest extends TestCase
         $response->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->assertHeader('Content-Security-Policy');
     }
+
+    public function test_hsts_tidak_muncul_di_environment_testing(): void
+    {
+        $response = $this->get('/login');
+
+        $response->assertHeaderMissing('Strict-Transport-Security');
+    }
 }

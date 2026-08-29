@@ -437,6 +437,29 @@ Ganti pendekatan aproksimasi level-proyek (Session 12) jadi eksak per-aplikasi: 
 
 ---
 
+## Session 18 — SPEC.md Batch Revisi: Nomor WA Extras + Margin UX Warning + HSTS (30 Agustus 2026)
+
+Batch malam, Fakrul offline — SPEC.md sudah sertakan aturan kontingensi sendiri (jalan terus, catat ambiguitas sebagai BUTUH KEPUTUSAN FAKRUL, jangan stall). Tidak ada item yang STOP; ketiganya selesai berurutan, full suite hijau tiap habis 1 item.
+
+**Item 1 — Extras isi nomor WA sendiri (tutup gap Session 8):**
+- `Extras\ProfileController::update()` — tambah validasi `nomor_wa` (`nullable|string`, tanpa format ketat, sesuai SPEC — mutator `User::nomorWa()` Session 8 yang handle normalisasi 08xx/+62xx/62xx). Disimpan lewat `$request->user()->update(['nomor_wa' => ...])`, **terpisah** dari `$profile->update($dataDisimpan)` — `nomor_wa` di-exclude dari `$dataDisimpan` (bukan tabel `extras_profiles`), TIDAK ditambahkan ke `#[Fillable]` `ExtrasProfile`.
+- View `resources/views/extras/profile-edit.blade.php` — 1 field baru "Nomor WhatsApp" di section 4 (dekat Alias), helper text sesuai SPEC persis.
+- Test baru `tests/Feature/ExtrasProfileUpdateTest.php` (5 test): 3 format nomor (08xx/+62xx/62xx) semua normalisasi ke `628123456789` sama & masuk `users.nomor_wa` (dicek `extras_profiles` tidak punya kolom itu di attributes), update tanpa isi nomor WA tidak error tetap null, field profil lain (alias, rate_card) tersimpan bareng tanpa terganggu.
+
+**Item 2 — Margin: baris "Belum terklasifikasi" dikasih visual warning:**
+- `resources/views/admin/recap/margin.blade.php` — baris "Belum terklasifikasi" reuse `var(--warning)` (`theme-style.blade.php`, sudah dipakai `.badge-pending`) buat warna teks + tint background, plus badge kecil "⚠ Data belum lengkap". Baris total proyek yang kepengaruh (mengandung margin dari data belum terklasifikasi) dikasih badge ⚠ kecil dengan tooltip, tanpa mewarnai ulang seluruh baris total (baris itu masih representasi margin proyek yang sah, cuma diberi sinyal "ada bagian yang belum lengkap" — bukan re-treatment penuh biar tidak disalahartikan margin negatif beneran padahal sebagian sah).
+- **BUTUH KEPUTUSAN FAKRUL (dicatat, jalan dengan opsi konservatif):** SPEC bilang "baris Belum terklasifikasi dan total yang kepengaruh olehnya dikasih treatment amber" — ambigu apakah baris **total per-proyek** ikut diwarnai penuh atau cuma ditandai. Diputuskan kasih badge kecil saja (reversible, tidak mengubah warna baris total yang isinya bisa saja margin sah campur data belum lengkap) — kalau Fakrul mau baris total ikut full-amber, tinggal ubah style di baris `<tr>` pertama di `margin.blade.php`.
+- Tidak ada test baru (sesuai SPEC — perubahan visual doang). `MarginRecapTest` (13 test) diverifikasi tetap PASS tanpa perubahan.
+
+**Item 3 — HSTS header (tutup SECURITY-CHECKLIST poin 18/19):**
+- `app/Http/Middleware/SecurityHeaders.php` — tambah `Strict-Transport-Security: max-age=31536000; includeSubDomains`, gated `app()->isProduction()` (pola sama `AppServiceProvider::boot()` force-HTTPS), tidak aktif di local/testing.
+- `docs/SECURITY-CHECKLIST.md` poin 18 & 19 — hapus catatan "HSTS belum ditambahkan", update jadi DONE dengan referensi test baru.
+- Test baru `test_hsts_tidak_muncul_di_environment_testing` di `tests/Feature/SecurityHardeningTest.php`.
+
+**Hasil akhir:** `php artisan test` — baseline 81 passed (Session 17) → **87 passed** (81 lama + 6 baru: 5 `ExtrasProfileUpdateTest` + 1 HSTS), 0 regresi. `./vendor/bin/pint`: passed, tanpa perubahan tambahan. Tidak ada bug di luar scope (auth/RBAC/pembayaran/kontrak) ditemukan selama sesi ini. File berubah: `app/Http/Controllers/Extras/ProfileController.php`, `resources/views/extras/profile-edit.blade.php`, `resources/views/admin/recap/margin.blade.php`, `app/Http/Middleware/SecurityHeaders.php`, `docs/SECURITY-CHECKLIST.md`, `tests/Feature/SecurityHardeningTest.php`, `tests/Feature/ExtrasProfileUpdateTest.php` (baru).
+
+---
+
 ## Cara Pakai File Ini
 
 Update di sini tiap sesi kerja modul (bukan hanya task besar) — beda dari project lain yang lebih strict soal token, project ini prioritaskan jejak proses untuk bimbingan (minimal 8x tercatat) dan laporan akhir nanti.

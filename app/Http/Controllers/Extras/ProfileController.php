@@ -79,6 +79,7 @@ class ProfileController extends Controller
             'tautan_url' => ['nullable', 'array'],
             'tautan_url.*' => ['nullable', 'url', 'max:500'],
             'rate_card' => ['nullable', 'numeric', 'min:0'],
+            'nomor_wa' => ['nullable', 'string'],
         ]);
 
         $tautanTambahan = [];
@@ -89,7 +90,7 @@ class ProfileController extends Controller
             }
         }
 
-        $dataDisimpan = collect($data)->except(['tautan_label', 'tautan_url'])->toArray();
+        $dataDisimpan = collect($data)->except(['tautan_label', 'tautan_url', 'nomor_wa'])->toArray();
         $dataDisimpan['tautan_tambahan'] = $tautanTambahan;
 
         // SENGAJA tidak menerima 'status', 'cancel_count', 'foto_profil_path',
@@ -97,6 +98,10 @@ class ProfileController extends Controller
         // ada di $fillable ExtrasProfile, jadi mass-update() di bawah otomatis
         // aman (lihat catatan di model).
         $request->user()->extrasProfile->update($dataDisimpan);
+
+        // nomor_wa ada di tabel users (Session 8, reusable lintas role),
+        // BUKAN extras_profiles — simpan terpisah dari update() di atas.
+        $request->user()->update(['nomor_wa' => $data['nomor_wa'] ?? null]);
 
         return redirect('/extras/profil')->with('status', 'Profil berhasil disimpan. Begini tampilannya buat Admin & Casting Director:');
     }
