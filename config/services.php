@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    // RF-37: Node service whatsapp-web.js terpisah (whatsapp-service/),
+    // dipanggil via Http::post() lewat WhatsAppService. Token = shared
+    // secret sederhana (service internal localhost, bukan endpoint publik).
+    'whatsapp' => [
+        'url' => env('WHATSAPP_SERVICE_URL', 'http://127.0.0.1:3001'),
+        'token' => env('WHATSAPP_SERVICE_TOKEN'),
+    ],
+
 ];

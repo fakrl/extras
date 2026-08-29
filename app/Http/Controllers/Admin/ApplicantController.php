@@ -48,4 +48,20 @@ class ApplicantController extends Controller
 
         return back()->with('status', 'Kandidat ditolak. Slot ini bisa diisi pendaftar lain.');
     }
+
+    /**
+     * RF-35: Korlap (atau Admin Default) mencatat catatan/sanksi lapangan
+     * untuk kandidat. Murni informasional, tidak ada edit/delete (belum diminta).
+     */
+    public function tambahCatatan(Request $request, ProjectApplication $application): RedirectResponse
+    {
+        $data = $request->validate([
+            'jenis' => ['required', 'in:catatan,sanksi'],
+            'isi' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $application->tambahCatatan($request->user(), $data['jenis'], $data['isi']);
+
+        return back()->with('status', 'Catatan lapangan berhasil disimpan.');
+    }
 }

@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Mail\HasilSeleksiMail;
+use App\Mail\KonfirmasiFeeMail;
+use App\Services\WhatsAppService;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Mail;
 
 #[Fillable(['casting_project_id', 'extras_id', 'status_partisipasi', 'grade', 'fee_final', 'bentrok_jadwal_flag', 'alasan_tolak'])]
 class ProjectApplication extends Model
@@ -49,6 +53,16 @@ class ProjectApplication extends Model
         return $this->hasMany(CdReview::class);
     }
 
+    public function cancellations(): HasMany
+    {
+        return $this->hasMany(Cancellation::class);
+    }
+
+    public function fieldNotes(): HasMany
+    {
+        return $this->hasMany(FieldNote::class)->latest();
+    }
+
     /**
      * RF-16: Admin ajukan penawaran fee awal. Ronde 1, selalu dari admin.
      */
@@ -56,12 +70,16 @@ class ProjectApplication extends Model
     {
         $this->update(['status_partisipasi' => 'nego_fee']);
 
-        return $this->feeNegotiations()->create([
+        $negotiation = $this->feeNegotiations()->create([
             'round' => 1,
             'diajukan_oleh' => 'admin',
             'nominal' => $nominal,
             'aksi' => 'tawar',
         ]);
+
+        $this->kirimKonfirmasiFee($negotiation, $this->extras->user);
+
+        return $negotiation;
     }
 
     /**
@@ -72,12 +90,17 @@ class ProjectApplication extends Model
     {
         $roundTerakhir = $this->feeNegotiations()->max('round') ?? 0;
 
-        return $this->feeNegotiations()->create([
+        $negotiation = $this->feeNegotiations()->create([
             'round' => $roundTerakhir + 1,
             'diajukan_oleh' => $diajukanOleh,
             'nominal' => $nominal,
             'aksi' => 'counter',
         ]);
+
+        $penerima = $diajukanOleh === 'admin' ? $this->extras->user : $this->castingProject->admin;
+        $this->kirimKonfirmasiFee($negotiation, $penerima);
+
+        return $negotiation;
     }
 
     /**
@@ -139,19 +162,130 @@ class ProjectApplication extends Model
             'status_partisipasi' => 'ditolak',
             'alasan_tolak' => $alasan,
         ]);
+
+        $this->kirimNotifikasiHasil();
     }
 
     /**
      * RF-21: hanya kandidat yang fee-nya sudah Deal yang boleh diajukan ke CD.
      * Ini penjaga urutan supaya alur "nego dulu, baru present ke CD" tidak
      * bisa dilewati dari controller mana pun.
+     *
+     * RF-22: re-cek bentrok jadwal di titik ini juga (bisa saja proyek lain
+     * baru Deal setelah aplikasi ini Deal duluan). Non-blocking sama seperti
+     * RF-13 di apply() — cuma re-set bentrok_jadwal_flag, tetap lanjut.
+     * Return true kalau bentrok, supaya controller bisa kasih warning.
      */
-    public function ajukanKeCd(): void
+    public function ajukanKeCd(): bool
     {
         if ($this->status_partisipasi !== 'deal') {
             throw new \LogicException('Kandidat hanya bisa diajukan ke CD setelah fee Deal.');
         }
 
-        $this->update(['status_partisipasi' => 'diajukan_ke_cd']);
+        $tanggalProyekIni = $this->castingProject->shootingDates->pluck('tanggal');
+        $adaBentrok = $this->extras->activeShootingDates($this->id)->intersect($tanggalProyekIni)->isNotEmpty();
+
+        $this->update([
+            'status_partisipasi' => 'diajukan_ke_cd',
+            'bentrok_jadwal_flag' => $adaBentrok,
+        ]);
+
+        return $adaBentrok;
+    }
+
+    /**
+     * RF-33/34: Admin atau Extras membatalkan aplikasi yang sudah Deal.
+     * Satu klik langsung final (tidak ada approval dua pihak — konfirmasi
+     * Fakrul 29 Agu 2026), konsisten dengan pola aksi sepihak lain di sini.
+     * RF-08: kalau pembatalan mendadak (< H-2 dari tanggal shooting
+     * terdekat proyek ini), trigger hitungan cancel_count di ExtrasProfile.
+     */
+    public function batalkan(string $olehSiapa, string $alasan): Cancellation
+    {
+        if ($this->status_partisipasi !== 'deal') {
+            throw new \LogicException('Hanya aplikasi berstatus Deal yang bisa dibatalkan.');
+        }
+
+        $tanggalTerdekat = $this->castingProject->shootingDates()
+            ->where('tanggal', '>=', now()->toDateString())
+            ->min('tanggal');
+
+        // Tidak ada tanggal shooting mendatang yang tercatat -> anggap tidak
+        // mendadak (tidak ada risiko jadwal yang bisa dinilai).
+        $isMendadak = $tanggalTerdekat && now()->startOfDay()->diffInDays($tanggalTerdekat) < 2;
+
+        $cancellation = $this->cancellations()->create([
+            'dibatalkan_oleh' => $olehSiapa,
+            'alasan' => $alasan,
+            'is_mendadak' => $isMendadak,
+        ]);
+
+        $this->update(['status_partisipasi' => 'dibatalkan']);
+
+        if ($isMendadak && $olehSiapa === 'extras') {
+            $this->extras->recordCancellation();
+        }
+
+        return $cancellation;
+    }
+
+    /**
+     * RF-35: catatan/sanksi lapangan dari Korlap (atau Admin Default sebagai
+     * dirinya sendiri, sub-role Korlap bukan satu-satunya penulis). Murni
+     * informasional, tidak menyentuh status_partisipasi.
+     */
+    public function tambahCatatan(User $olehSiapa, string $jenis, string $isi): FieldNote
+    {
+        return $this->fieldNotes()->create([
+            'korlap_id' => $olehSiapa->id,
+            'jenis' => $jenis,
+            'isi' => $isi,
+        ]);
+    }
+
+    /**
+     * RF-36: notif hasil seleksi (lolos/ditolak) ke Extras — dipicu dari
+     * tolakDini() di sini, dan dari Cd\ReviewController setelah approve/reject.
+     * Email adalah efek samping, bukan syarat sukses aksi utama.
+     */
+    public function kirimNotifikasiHasil(): void
+    {
+        $user = $this->extras->user;
+
+        try {
+            Mail::to($user)->queue(new HasilSeleksiMail($this));
+            NotificationLog::catat($user->id, 'hasil_seleksi', true);
+        } catch (\Throwable $e) {
+            NotificationLog::catat($user->id, 'hasil_seleksi', false);
+        }
+
+        $pesan = $this->status_partisipasi === 'lolos'
+            ? "Halo {$user->name}, selamat! Kamu LOLOS seleksi untuk proyek {$this->castingProject->nama_produksi}. Cek sistem untuk info lebih lanjut."
+            : "Halo {$user->name}, mohon maaf, kamu belum lolos seleksi untuk proyek {$this->castingProject->nama_produksi} kali ini.";
+
+        app(WhatsAppService::class)->kirimNotifikasi($user, 'hasil_seleksi', $pesan);
+    }
+
+    /**
+     * RF-37: konfirmasi WA begitu Extras berhasil apply — titik ini belum
+     * punya notif email sama sekali (WA satu-satunya kanal di sini, bukan
+     * pelengkap email seperti 3 event lain).
+     */
+    public function kirimKonfirmasiApply(): void
+    {
+        $user = $this->extras->user;
+        $pesan = "Halo {$user->name}, pendaftaranmu untuk proyek {$this->castingProject->nama_produksi} berhasil diterima. Admin akan segera mereview.";
+
+        app(WhatsAppService::class)->kirimNotifikasi($user, 'konfirmasi_apply', $pesan);
+    }
+
+    private function kirimKonfirmasiFee(FeeNegotiation $negotiation, User $penerima): void
+    {
+        try {
+            Mail::to($penerima)->queue(new KonfirmasiFeeMail($negotiation));
+            NotificationLog::catat($penerima->id, 'nego_fee', true);
+        } catch (\Throwable $e) {
+            NotificationLog::catat($penerima->id, 'nego_fee', false);
+        }
     }
 }

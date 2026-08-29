@@ -6,49 +6,9 @@
     <title>@yield('title', 'SIM Casting JBTB')</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+    @include('partials.theme-style')
     <style>
-        :root[data-theme="dark"] {
-            --bg-page: #0d1b12;
-            --bg-sidebar: #0a1510;
-            --bg-card: #132a1b;
-            --bg-card-hover: #16321f;
-            --bg-nav-active: #16321f;
-            --text-primary: #f0fdf4;
-            --text-secondary: #a8c2ae;
-            --text-muted: #5a7a63;
-            --border-color: rgba(255,255,255,0.06);
-            --accent: #22c55e;
-            --accent-strong: #4ade80;
-            --accent-on: #052e16;
-            --danger: #ef4444;
-            --warning: #eab308;
-        }
-        :root[data-theme="light"] {
-            --bg-page: #f4f7f5;
-            --bg-sidebar: #ffffff;
-            --bg-card: #ffffff;
-            --bg-card-hover: #eaf5ee;
-            --bg-nav-active: #e4f5e9;
-            --text-primary: #0d1b12;
-            --text-secondary: #4b5f52;
-            --text-muted: #8a9a90;
-            --border-color: rgba(0,0,0,0.08);
-            --accent: #15803d;
-            --accent-strong: #15803d;
-            --accent-on: #ffffff;
-            --danger: #dc2626;
-            --warning: #b45309;
-        }
-
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-page);
-            color: var(--text-primary);
-            margin: 0;
-            min-height: 100vh;
-            transition: background 0.2s ease, color 0.2s ease;
-        }
+        body { transition: background 0.2s ease, color 0.2s ease; }
         a { color: inherit; text-decoration: none; }
 
         .app-shell { display: flex; min-height: 100vh; }
@@ -131,10 +91,10 @@
         .btn-brand:hover { filter: brightness(1.08); color: var(--accent-on); }
         .btn-danger-outline { color: var(--danger); border-color: var(--danger); background: transparent; }
 
-        .badge { display: inline-flex; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
-        .badge-aktif, .badge-status-aktif { background: rgba(34,197,94,0.15); color: var(--accent-strong); }
-        .badge-pending, .badge-status-pending { background: rgba(234,179,8,0.15); color: var(--warning); }
-        .badge-tolak, .badge-status-tolak { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .badge { display: inline-flex; padding: 3px 10px; border-radius: 6px; border: 1px solid transparent; font-size: 12px; font-weight: 500; }
+        .badge-aktif, .badge-status-aktif { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.35); color: var(--accent-strong); }
+        .badge-pending, .badge-status-pending { background: rgba(234,179,8,0.15); border-color: rgba(234,179,8,0.35); color: var(--warning); }
+        .badge-tolak, .badge-status-tolak { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.35); color: var(--danger); }
 
         /* Grid util ringan — pengganti Bootstrap row/col, dipakai form multi-kolom */
         .form-row { display: flex; gap: 14px; flex-wrap: wrap; }
@@ -297,19 +257,6 @@
            (form nego fee, tambah komponen pembayaran, dsb) — bukan full-width */
         .input-inline { width: auto; flex: 1; margin-bottom: 0; min-width: 0; }
 
-        /* Input password dengan tombol show/hide (ikon mata) — dipakai lewat
-           komponen x-password-input, sama dengan layouts/auth.blade.php */
-        .password-field { position: relative; }
-        .password-field input { padding-right: 44px; margin-bottom: 0; }
-        .password-toggle {
-            position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
-            width: 36px; height: 36px; border: none; background: transparent;
-            color: var(--text-secondary); cursor: pointer; display: flex;
-            align-items: center; justify-content: center; font-size: 17px;
-        }
-        .password-toggle:hover { color: var(--text-primary); }
-        .password-field-wrap { margin-bottom: 14px; }
-
         /* Form profil Extras — grouping per section biar nggak berasa panjang/berat */
         .profile-section {
             border-bottom: 1px solid var(--border-color);
@@ -376,14 +323,6 @@
             margin-right: 3px; vertical-align: middle;
         }
 
-        .alert-success {
-            background: rgba(34,197,94,0.12); color: var(--accent-strong);
-            padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 14px;
-        }
-        .alert-danger {
-            background: rgba(239,68,68,0.12); color: var(--danger);
-            padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 14px;
-        }
         .alert-info {
             background: rgba(59,130,246,0.12); color: #60a5fa;
             padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 14px;

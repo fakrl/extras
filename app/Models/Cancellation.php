@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-// SENGAJA tidak ada #[Fillable(...)] — insert cuma boleh lewat
-// ProjectApplication::batalkan() (nanti ditambahkan pas modul Pembatalan
-// dikerjakan), supaya cancel_count di ExtrasProfile selalu ikut ter-update
-// konsisten, tidak ada cancellation "yatim" yang lupa nge-trigger hitungan.
+// Whitelist teknis 3 kolom yang dipakai ProjectApplication::batalkan() —
+// proteksinya bukan dari sini, tapi karena tidak ada controller yang panggil
+// Cancellation::create() langsung (semua insert lewat batalkan(), scalar
+// param typed, bukan raw request), sama seperti pola FeeNegotiation.
+#[Fillable(['dibatalkan_oleh', 'alasan', 'is_mendadak'])]
 class Cancellation extends Model
 {
     protected function casts(): array

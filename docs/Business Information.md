@@ -2,6 +2,8 @@
 ## Sistem Informasi Manajemen Casting Talent dan Extras Berbasis Web dengan Fitur Negosiasi Fee Digital
 ### Studi Kasus: JBTB Casting
 
+> **⚠️ SUPERSEDED (sebagian).** Dokumen riset awal — 3 aktor, kemungkinan CAPTCHA/verifikasi email wajib, NIK di registrasi. Acuan terkini: `docs/CLAUDE.md` & `docs/BAB-3-DRAFT.md` (7 aktor, NIK dikumpulkan saat lolos seleksi bukan saat registrasi/data minimization UU PDP, lihat `CLAUDE.md` §8 poin 4). Jangan jadikan dasar implementasi tanpa cross-check ke dokumen terkini.
+
 | | |
 |---|---|
 | Versi Dokumen | 2.0 (Final — seluruh poin telah dikonfirmasi) |

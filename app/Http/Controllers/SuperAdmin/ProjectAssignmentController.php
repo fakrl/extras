@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminProjectAssignment;
 use App\Models\CastingProject;
+use App\Models\StaffPayroll;
 use App\Models\User;
 use App\Services\PdfGeneratorService;
 use Illuminate\Http\RedirectResponse;
@@ -11,9 +13,7 @@ use Illuminate\Http\Request;
 
 class ProjectAssignmentController extends Controller
 {
-    public function __construct(private PdfGeneratorService $pdfGenerator)
-    {
-    }
+    public function __construct(private PdfGeneratorService $pdfGenerator) {}
 
     /**
      * RF-42: Super Admin menugaskan sub-admin ke proyek casting tertentu
@@ -42,7 +42,7 @@ class ProjectAssignmentController extends Controller
      * RF-45/RF-46/RF-48: proyek dinyatakan selesai -> log jadi "selesai" ->
      * dasar kelayakan honor -> auto-generate slip honor PDF.
      */
-    public function markComplete(\App\Models\AdminProjectAssignment $assignment): RedirectResponse
+    public function markComplete(AdminProjectAssignment $assignment): RedirectResponse
     {
         abort_if($assignment->status_log === 'selesai', 422, 'Penugasan ini sudah ditandai selesai sebelumnya.');
 
@@ -59,7 +59,7 @@ class ProjectAssignmentController extends Controller
     /**
      * RF-47: add-on/reimburse manual pada catatan honor staf.
      */
-    public function addAddon(Request $request, \App\Models\StaffPayroll $payroll): RedirectResponse
+    public function addAddon(Request $request, StaffPayroll $payroll): RedirectResponse
     {
         $data = $request->validate([
             'label' => ['required', 'string', 'max:255'],

@@ -52,6 +52,26 @@ class FeeNegotiationController extends Controller
         return back()->with('status', 'Counter fee terkirim ke Admin.');
     }
 
+    /**
+     * RF-33: Extras membatalkan pendaftarannya yang sudah Deal.
+     */
+    public function batalkan(Request $request, ProjectApplication $application): RedirectResponse
+    {
+        $this->pastikanMilikSendiri($request, $application);
+
+        $data = $request->validate([
+            'alasan' => ['required', 'string'],
+        ]);
+
+        try {
+            $application->batalkan('extras', $data['alasan']);
+        } catch (\LogicException $e) {
+            return back()->with('status', $e->getMessage());
+        }
+
+        return back()->with('status', 'Pendaftaran dibatalkan.');
+    }
+
     private function pastikanMilikSendiri(Request $request, ProjectApplication $application): void
     {
         abort_unless(

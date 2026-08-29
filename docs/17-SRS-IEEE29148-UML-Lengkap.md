@@ -2,6 +2,8 @@
 ## Sistem Informasi Manajemen Casting Talent dan Extras Berbasis Web dengan Fitur Negosiasi Fee Digital
 ### Studi Kasus: JBTB Casting
 
+> **⚠️ SUPERSEDED.** Dokumen ini mendeskripsikan desain lama (3 aktor, fee fixed dengan 1x counter-offer, TTD upload scan, storage Google Drive) yang sudah digantikan. Acuan terkini: `docs/BAB-3-DRAFT.md` dan `docs/CLAUDE.md` (7 aktor, nego fee ala InDrive tanpa batas ronde, canvas signature, private local disk). Jangan jadikan dasar implementasi.
+
 **Format:** Mengikuti struktur modern IEEE 29148:2018 (Software and Systems Engineering — Requirements Engineering)
 **Versi:** 1.0 (Final — konsolidasi dari seluruh dokumen analisis)
 **Tanggal:** 17 Juli 2026

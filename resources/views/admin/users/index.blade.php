@@ -35,7 +35,7 @@
     <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Extras</div>
     <table>
         <thead>
-            <tr><th>Nama</th><th>Alias</th><th>Email</th><th>Status</th><th></th></tr>
+            <tr><th>Nama</th><th>Alias</th><th>Email</th><th>Status</th><th>Pembatalan Mendadak</th><th></th></tr>
         </thead>
         <tbody>
             @foreach ($extras as $ex)
@@ -46,6 +46,13 @@
                     <td>
                         <span class="badge {{ $ex->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">
                             {{ $ex->status }}
+                        </span>
+                    </td>
+                    <td>
+                        {{-- RF-08: cancel_count cuma dari pembatalan mendadak (<H-2), lihat ProjectApplication::batalkan() --}}
+                        @php $cancelCount = $ex->extrasProfile->cancel_count ?? 0; @endphp
+                        <span class="badge {{ $cancelCount >= 3 ? 'badge-tolak' : ($cancelCount > 0 ? 'badge-pending' : 'badge-aktif') }}">
+                            {{ $cancelCount }}x
                         </span>
                     </td>
                     <td>

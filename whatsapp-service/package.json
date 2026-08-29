@@ -1,0 +1,16 @@
+{
+  "name": "jbtb-whatsapp-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RF-37: gateway WA self-hosted (whatsapp-web.js) untuk SIM Casting JBTB, proses terpisah dari Laravel.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "whatsapp-web.js": "^1.26.0",
+    "qrcode-terminal": "^0.12.0",
+    "dotenv": "^16.4.5"
+  }
+}

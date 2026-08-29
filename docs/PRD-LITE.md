@@ -24,7 +24,7 @@ Urutan sesuai dependency, bukan prioritas bisnis:
 8. **Pembayaran Extras** — manual bukti transfer (BUKAN payment gateway), status Belum Dibayar → Ditransfer → Dikonfirmasi.
 9. **Manajemen Karyawan (baru)** — Super Admin tambah Admin + sub-role + set nominal honor per-event.
 10. **Absensi & Penggajian Staf (baru)** — log aktivitas nempel status "proyek selesai" → slip honor PDF auto-generate.
-11. **Notifikasi** — email (primer) + WhatsApp gateway berbayar Fonnte/Wablas (pelengkap, BUKAN whatsapp-web.js).
+11. **Notifikasi** — email (primer) + WhatsApp via `whatsapp-web.js` self-hosted (pelengkap; revisi 28 Agu 2026 — lihat `TECH-STACK.md` & `OPEN-QUESTIONS-PROPOSAL.md` poin 3 untuk alasan ganti dari rencana gateway berbayar).
 12. **Dashboard & Riwayat Kerja** — per-role, termasuk view read-only Talco/Sosmed.
 
 **Eksplisit DI LUAR scope** (lihat `BAB-3-DRAFT.md` §3.1.4 buat detail penuh):

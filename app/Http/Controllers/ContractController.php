@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\KontrakSiapTtdMail;
+use App\Models\NotificationLog;
 use App\Models\ProjectApplication;
 use App\Services\PdfGeneratorService;
+use App\Services\WhatsAppService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
@@ -16,20 +21,36 @@ use Illuminate\Support\Str;
  */
 class ContractController extends Controller
 {
-    public function __construct(private PdfGeneratorService $pdfGenerator)
-    {
-    }
+    public function __construct(
+        private PdfGeneratorService $pdfGenerator,
+        private WhatsAppService $whatsapp,
+    ) {}
 
     public function show(Request $request, ProjectApplication $application)
     {
         $this->pastikanBolehLihat($request, $application);
 
         if (! $application->contract) {
+            // RF-04: gate sebelum auto-generate — kontrak PDF tidak boleh
+            // dibuat sampai Extras lengkapi NIK (rekening ikut ditawarkan di
+            // form yang sama, tapi cuma dikonfirmasi kalau memang sudah ada
+            // — belum ada jalur lain yang mengisinya, jadi tidak diwajibkan).
+            if (! $application->extras->nik) {
+                if ($request->user()->role === 'extras') {
+                    return redirect()->route('extras.kontrak.lengkapi-ktp', $application)
+                        ->with('info', 'Lengkapi NIK dulu ya, kontrak otomatis dibuat setelah itu.');
+                }
+
+                return redirect()->route('admin.projects.applicants', $application->castingProject)
+                    ->with('error', 'Extras belum melengkapi NIK, kontrak belum bisa dibuat.');
+            }
+
             abort_if($application->status_partisipasi !== 'lolos', 422, 'Kontrak hanya dibuat setelah Extras dinyatakan Lolos.');
 
             // RF-25: auto-generate dari data proyek, Extras, dan fee yang disepakati.
             $application->contract()->create([]);
             $this->renderPdf($application);
+            $this->kirimNotifikasiKontrak($application);
         }
 
         $application->load('contract', 'extras', 'castingProject');
@@ -52,10 +73,10 @@ class ContractController extends Controller
         ]);
 
         $role = $request->user()->role === 'extras' ? 'extras' : 'admin';
-        $filename = "contracts/signatures/{$application->id}-{$role}-" . Str::random(8) . '.png';
+        $filename = "contracts/signatures/{$application->id}-{$role}-".Str::random(8).'.png';
 
         $base64 = preg_replace('#^data:image/\w+;base64,#', '', $data['signature']);
-        \Illuminate\Support\Facades\Storage::disk('local')->put($filename, base64_decode($base64));
+        Storage::disk('local')->put($filename, base64_decode($base64));
 
         $contract = $application->contract;
         $contract->update([
@@ -82,6 +103,27 @@ class ContractController extends Controller
         ], $path);
 
         $application->contract->update(['pdf_path' => $path]);
+    }
+
+    /**
+     * RF-36: notif ke kedua pihak yang belum TTD begitu kontrak ter-generate.
+     * Email adalah efek samping, kontrak sudah tersimpan sebelum ini dipanggil.
+     */
+    private function kirimNotifikasiKontrak(ProjectApplication $application): void
+    {
+        $application->loadMissing('extras.user', 'castingProject.admin');
+
+        foreach ([$application->extras->user, $application->castingProject->admin] as $penerima) {
+            try {
+                Mail::to($penerima)->queue(new KontrakSiapTtdMail($application));
+                NotificationLog::catat($penerima->id, 'kontrak_siap_ttd', true);
+            } catch (\Throwable $e) {
+                NotificationLog::catat($penerima->id, 'kontrak_siap_ttd', false);
+            }
+
+            $pesan = "Halo {$penerima->name}, kontrak untuk proyek {$application->castingProject->nama_produksi} sudah siap ditandatangani. Silakan cek sistem.";
+            $this->whatsapp->kirimNotifikasi($penerima, 'kontrak_siap_ttd', $pesan);
+        }
     }
 
     private function pastikanBolehLihat(Request $request, ProjectApplication $application): void
