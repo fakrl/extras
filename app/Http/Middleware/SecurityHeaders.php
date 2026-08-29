@@ -22,6 +22,10 @@ class SecurityHeaders
             "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net",
         ]));
 
+        if (app()->isProduction()) {
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+        }
+
         return $response;
     }
 }
