@@ -125,6 +125,8 @@ Route::middleware(['auth', 'role:admin_default,admin_talco,admin_korlap,admin_so
             Route::get('/projects', [AdminCastingProjectController::class, 'index'])->name('admin.projects.index');
             Route::get('/projects/create', [AdminCastingProjectController::class, 'create'])->name('admin.projects.create');
             Route::post('/projects', [AdminCastingProjectController::class, 'store'])->name('admin.projects.store');
+            Route::get('/projects/{castingProject}/edit', [AdminCastingProjectController::class, 'edit'])->name('admin.projects.edit');
+            Route::patch('/projects/{castingProject}', [AdminCastingProjectController::class, 'update'])->name('admin.projects.update');
             Route::patch('/projects/{castingProject}/toggle-status', [AdminCastingProjectController::class, 'toggleStatus'])
                 ->name('admin.projects.toggle-status');
             Route::get('/projects/{castingProject}/applicants', [AdminCastingProjectController::class, 'showApplicants'])

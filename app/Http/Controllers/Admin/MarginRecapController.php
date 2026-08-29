@@ -13,34 +13,70 @@ class MarginRecapController extends Controller
      * RF-30: margin = rahasia bisnis inti, hanya Admin Default & Super Admin
      * (route middleware role:admin_default,super_admin, bukan grup admin umum).
      *
-     * Catatan skema: project_applications tidak punya FK ke
-     * casting_project_classes (dicek lewat migration asli, bukan asumsi),
-     * jadi margin per kepala tidak bisa dihitung eksak per kelas per aplikasi.
-     * Dihitung di level proyek: total fee client = budget_client x kuota_kelas
-     * (nilai kontrak/budget yang disepakati per kelas), total payout = jumlah
-     * fee_final aplikasi yang lolos ke atas. Didokumentasikan di DEV-NOTES.md.
+     * Margin dihitung eksak per aplikasi: tiap ProjectApplication yang lolos
+     * ke atas tahu kelasnya sendiri (casting_project_class_id), jadi
+     * fee_client aplikasi itu = budget_client kelasnya, bukan lagi
+     * budget_client x kuota_kelas di level proyek. Aplikasi lama/tanpa kelas
+     * (casting_project_class_id null) tidak di-drop, masuk baris terpisah
+     * "Belum terklasifikasi" supaya payout-nya tetap terlihat di total.
      */
     public function index()
     {
-        $projects = CastingProject::with('classes')
-            ->withSum(['applications as total_payout' => function ($q) {
-                $q->whereIn('status_partisipasi', self::STATUS_LOLOS_KE_ATAS);
-            }], 'fee_final')
-            ->get()
-            ->map(function (CastingProject $project) {
-                $totalFeeClient = $project->classes->sum(fn ($kelas) => $kelas->budget_client * $kelas->kuota_kelas);
-                $totalPayout = (float) ($project->total_payout ?? 0);
-                $margin = $totalFeeClient - $totalPayout;
-
-                return (object) [
-                    'project' => $project,
-                    'total_fee_client' => $totalFeeClient,
-                    'total_payout' => $totalPayout,
-                    'margin' => $margin,
-                    'margin_persen' => $totalFeeClient > 0 ? $margin / $totalFeeClient * 100 : 0,
-                ];
-            });
+        $projects = CastingProject::with(['applications' => function ($q) {
+            $q->whereIn('status_partisipasi', self::STATUS_LOLOS_KE_ATAS)->with('castingProjectClass');
+        }])->get()->map(fn (CastingProject $project) => $this->hitungMargin($project));
 
         return view('admin.recap.margin', compact('projects'));
+    }
+
+    private function hitungMargin(CastingProject $project): object
+    {
+        $breakdown = collect();
+        $belumTerklasifikasi = null;
+        $totalFeeClient = 0.0;
+        $totalPayout = 0.0;
+
+        $tanpaKelas = $project->applications->whereNull('casting_project_class_id');
+
+        if ($tanpaKelas->isNotEmpty()) {
+            $payout = (float) $tanpaKelas->sum('fee_final');
+            $totalPayout += $payout;
+
+            $belumTerklasifikasi = (object) [
+                'jumlah_aplikasi' => $tanpaKelas->count(),
+                'total_payout' => $payout,
+            ];
+        }
+
+        // groupBy('casting_project_class_id') memperlakukan kunci null sebagai
+        // string kosong (bukan null), makanya null di-filter manual di atas
+        // sebelum group ini dibentuk (cuma berisi aplikasi berkelas).
+        foreach ($project->applications->whereNotNull('casting_project_class_id')->groupBy('casting_project_class_id') as $aplikasi) {
+            $payout = (float) $aplikasi->sum('fee_final');
+            $totalPayout += $payout;
+
+            $feeClient = (float) $aplikasi->first()->castingProjectClass->budget_client * $aplikasi->count();
+            $totalFeeClient += $feeClient;
+
+            $breakdown->push((object) [
+                'kelas' => $aplikasi->first()->castingProjectClass,
+                'jumlah_aplikasi' => $aplikasi->count(),
+                'total_fee_client' => $feeClient,
+                'total_payout' => $payout,
+                'margin' => $feeClient - $payout,
+            ]);
+        }
+
+        $margin = $totalFeeClient - $totalPayout;
+
+        return (object) [
+            'project' => $project,
+            'breakdown' => $breakdown,
+            'belum_terklasifikasi' => $belumTerklasifikasi,
+            'total_fee_client' => $totalFeeClient,
+            'total_payout' => $totalPayout,
+            'margin' => $margin,
+            'margin_persen' => $totalFeeClient > 0 ? $margin / $totalFeeClient * 100 : 0,
+        ];
     }
 }
