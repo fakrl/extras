@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Exceptions\NikDuplikatException;
 use App\Models\CastingProject;
 use App\Models\Contract;
 use App\Models\ExtrasProfile;
@@ -67,6 +68,47 @@ class LengkapiKtpTest extends TestCase
         $kontrakResponse = $this->actingAs($extrasUser)->get(route('contracts.show', $application));
         $kontrakResponse->assertOk();
         $this->assertDatabaseCount('contracts', 1);
+    }
+
+    /**
+     * Gap coverage (review DEV-NOTES): mutator nik() strip semua karakter
+     * non-digit (preg_replace) sebelum di-hash, jadi 1 NIK yang sama
+     * ditulis dengan format pemisah beda (polos/strip/titik) HARUS
+     * menghasilkan nik_hash IDENTIK — bukan cuma dites dengan 2 nilai
+     * yang berbeda.
+     */
+    public function test_nik_format_berbeda_untuk_digit_sama_hasilkan_hash_identik(): void
+    {
+        // Tidak disimpan ke DB (nik_hash UNIQUE) — cukup baca hasil mutator
+        // in-memory untuk 3 model terpisah yang tidak pernah di-save bareng.
+        $polos = new ExtrasProfile;
+        $polos->nik = '3201234567890055';
+
+        $strip = new ExtrasProfile;
+        $strip->nik = '3201-2345-6789-0055';
+
+        $titik = new ExtrasProfile;
+        $titik->nik = '3201.2345.6789.0055';
+
+        $this->assertNotNull($polos->nik_hash);
+        $this->assertSame($polos->nik_hash, $strip->nik_hash);
+        $this->assertSame($polos->nik_hash, $titik->nik_hash);
+    }
+
+    public function test_nik_format_berbeda_dari_nik_terpakai_tetap_terdeteksi_duplikat(): void
+    {
+        $applicationLain = $this->buatApplicationLolos();
+        $applicationLain->extras->lengkapiKtp('3201234567890066', 'BCA 111');
+
+        $application = $this->buatApplicationLolos();
+
+        // Digit sama persis dengan yang sudah dipakai di atas, format beda
+        // (strip pemisah) — lengkapiKtp() model harus tetap mendeteksi
+        // duplikat lewat nik_hash yang identik, bukan cuma saat format
+        // input persis sama string-nya.
+        $this->expectException(NikDuplikatException::class);
+
+        $application->extras->lengkapiKtp('3201-2345-6789-0066', 'BCA 222');
     }
 
     public function test_nik_duplikat_ditolak_dan_tidak_ada_perubahan(): void

@@ -7,6 +7,7 @@ use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class ProjectApplicationTest extends TestCase
@@ -157,6 +158,25 @@ class ProjectApplicationTest extends TestCase
         $this->assertSame(1, $extras->fresh()->cancel_count);
     }
 
+    public function test_batalkan_tepat_h2_dua_hari_tidak_mendadak(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin_default']);
+        $extrasUser = User::factory()->create(['role' => 'extras']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $project = $this->buatProyek($admin, now()->addDays(2)->toDateString());
+
+        $application = ProjectApplication::create([
+            'casting_project_id' => $project->id,
+            'extras_id' => $extras->id,
+            'status_partisipasi' => 'deal',
+        ]);
+
+        $cancellation = $application->batalkan('extras', 'Tepat H-2');
+
+        $this->assertFalse($cancellation->is_mendadak);
+        $this->assertSame(0, $extras->fresh()->cancel_count);
+    }
+
     public function test_batalkan_tidak_mendadak_tidak_increment_cancel_count(): void
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
@@ -193,6 +213,39 @@ class ProjectApplicationTest extends TestCase
 
         $this->assertSame(3, $extras->fresh()->cancel_count);
         $this->assertSame('melanggar', $extras->fresh()->status);
+    }
+
+    /**
+     * Regresi Session 7: sebelum fix, config('app.timezone') masih UTC,
+     * jadi now() dini hari WIB (00:00-06:59) masih terhitung tanggal
+     * KEMARIN di UTC — bisa salah klasifikasi mendadak/tidak. Bekukan
+     * waktu ke 01:00 WIB (= 18:00 UTC hari sebelumnya) supaya perbedaan
+     * itu ketahuan kalau timezone app pernah balik ke UTC.
+     */
+    public function test_batalkan_klasifikasi_mendadak_benar_saat_dini_hari_wib(): void
+    {
+        Carbon::setTestNow(Carbon::create(2026, 9, 1, 1, 0, 0, 'Asia/Jakarta'));
+
+        try {
+            $admin = User::factory()->create(['role' => 'admin_default']);
+            $extrasUser = User::factory()->create(['role' => 'extras']);
+            $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+            // 1 hari dari "hari ini" versi WIB (2026-09-01), tapi 2 hari
+            // dari "hari ini" versi UTC (2026-08-31) kalau timezone salah.
+            $project = $this->buatProyek($admin, '2026-09-02');
+
+            $application = ProjectApplication::create([
+                'casting_project_id' => $project->id,
+                'extras_id' => $extras->id,
+                'status_partisipasi' => 'deal',
+            ]);
+
+            $cancellation = $application->batalkan('extras', 'Tes dini hari WIB');
+
+            $this->assertTrue($cancellation->is_mendadak);
+        } finally {
+            Carbon::setTestNow();
+        }
     }
 
     public function test_admin_batalkan_mendadak_3x_tidak_membuat_status_melanggar(): void
