@@ -1,5 +1,7 @@
 # SPEC.md — Menunggu Prioritas Berikutnya
 
+> ⚠️ **Cek dulu: repo GitHub `fakrl/extras` PUBLIC**, dan `docs/DEV-NOTES.md`/`docs/CLAUDE.local.md` (harusnya gitignored per catatan di file masing-masing) ke-track & ke-push sejak Session 2 — detail lengkap di baris paling atas `DEV-NOTES.md` Session 19. Tidak ada credential bocor, tapi worth diputuskan mau ditutup gimana.
+
 > Terakhir diperbarui 30 Agustus 2026 (dini hari, sesi semalaman selagi Fakrul tidur). Batch revisi sebelumnya (nomor WA Extras, warning visual margin, HSTS) **selesai** — lihat `DEV-NOTES.md` Session 18.
 
 ## Status Semalam
