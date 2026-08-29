@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Jobs\SendWhatsAppNotification;
 use App\Models\CastingProject;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
@@ -127,6 +128,30 @@ class WhatsAppNotificationTest extends TestCase
             'user_id' => $application->castingProject->admin_id,
             'jenis' => 'kontrak_siap_ttd',
             'channel' => 'whatsapp',
+        ]);
+    }
+
+    /**
+     * Gap coverage (review DEV-NOTES): jalur gagal yang sudah ditest
+     * sebelumnya cuma (a) nomor_wa null (skip, tidak sampai HTTP call) dan
+     * (b) dispatch() sendiri throw (WhatsAppDispatchFailureTest). Belum ada
+     * yang test job SendWhatsAppNotification::handle() sendiri ketika
+     * nomor_wa ADA tapi HTTP call ke Node service-nya gagal (500) — jalur
+     * try/catch di dalam handle() ini sendiri.
+     */
+    public function test_job_handle_mencatat_gagal_saat_http_ke_node_gagal(): void
+    {
+        Http::fake(['*/send' => Http::response(['sukses' => false], 500)]);
+
+        $user = User::factory()->create(['role' => 'extras', 'nomor_wa' => '628123456789']);
+
+        (new SendWhatsAppNotification($user, 'hasil_seleksi', 'pesan test'))->handle(app(WhatsAppService::class));
+
+        $this->assertDatabaseHas('notifications_log', [
+            'user_id' => $user->id,
+            'jenis' => 'hasil_seleksi',
+            'channel' => 'whatsapp',
+            'status' => 'gagal',
         ]);
     }
 
