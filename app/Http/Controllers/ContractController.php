@@ -28,7 +28,7 @@ class ContractController extends Controller
 
     public function show(Request $request, ProjectApplication $application)
     {
-        $this->pastikanBolehLihat($request, $application);
+        abort_unless($application->bolehDilihatOleh($request->user()), 403);
 
         if (! $application->contract) {
             // RF-04: gate sebelum auto-generate — kontrak PDF tidak boleh
@@ -66,7 +66,7 @@ class ContractController extends Controller
      */
     public function sign(Request $request, ProjectApplication $application): RedirectResponse
     {
-        $this->pastikanBolehLihat($request, $application);
+        abort_unless($application->bolehDilihatOleh($request->user()), 403);
 
         $data = $request->validate([
             'signature' => ['required', 'string'],
@@ -124,15 +124,5 @@ class ContractController extends Controller
             $pesan = "Halo {$penerima->name}, kontrak untuk proyek {$application->castingProject->nama_produksi} sudah siap ditandatangani. Silakan cek sistem.";
             $this->whatsapp->kirimNotifikasi($penerima, 'kontrak_siap_ttd', $pesan);
         }
-    }
-
-    private function pastikanBolehLihat(Request $request, ProjectApplication $application): void
-    {
-        $user = $request->user();
-
-        $bolehLihat = $user->role === 'admin_default'
-            || ($user->role === 'extras' && $application->extras_id === $user->extrasProfile->id);
-
-        abort_unless($bolehLihat, 403);
     }
 }

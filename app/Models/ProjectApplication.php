@@ -15,6 +15,10 @@ use Illuminate\Support\Facades\Mail;
 #[Fillable(['casting_project_id', 'extras_id', 'casting_project_class_id', 'status_partisipasi', 'grade', 'fee_final', 'bentrok_jadwal_flag', 'alasan_tolak'])]
 class ProjectApplication extends Model
 {
+    const STATUS_AKTIF = ['deal', 'diajukan_ke_cd', 'direview_cd', 'lolos', 'kontrak_ditandatangani'];
+
+    const STATUS_LOLOS_KE_ATAS = ['lolos', 'kontrak_ditandatangani', 'selesai_produksi'];
+
     protected function casts(): array
     {
         return [
@@ -282,6 +286,21 @@ class ProjectApplication extends Model
         $pesan = "Halo {$user->name}, pendaftaranmu untuk proyek {$this->castingProject->nama_produksi} berhasil diterima. Admin akan segera mereview.";
 
         app(WhatsAppService::class)->kirimNotifikasi($user, 'konfirmasi_apply', $pesan);
+    }
+
+    public function pastikanMasihBisaNego(): void
+    {
+        abort_if(
+            in_array($this->status_partisipasi, ['deal', 'ditolak', 'diajukan_ke_cd', 'direview_cd', 'lolos'], true),
+            422,
+            'Negosiasi untuk pendaftar ini sudah tidak aktif.'
+        );
+    }
+
+    public function bolehDilihatOleh(User $user): bool
+    {
+        return $user->role === 'admin_default'
+            || ($user->role === 'extras' && $this->extras_id === $user->extrasProfile->id);
     }
 
     private function kirimKonfirmasiFee(FeeNegotiation $negotiation, User $penerima): void

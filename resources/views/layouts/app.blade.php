@@ -92,9 +92,9 @@
         .btn-danger-outline { color: var(--danger); border-color: var(--danger); background: transparent; }
 
         .badge { display: inline-flex; padding: 3px 10px; border-radius: 6px; border: 1px solid transparent; font-size: 12px; font-weight: 500; }
-        .badge-aktif, .badge-status-aktif { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.35); color: var(--accent-strong); }
-        .badge-pending, .badge-status-pending { background: rgba(234,179,8,0.15); border-color: rgba(234,179,8,0.35); color: var(--warning); }
-        .badge-tolak, .badge-status-tolak { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.35); color: var(--danger); }
+        .badge-aktif { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.35); color: var(--accent-strong); }
+        .badge-pending { background: rgba(234,179,8,0.15); border-color: rgba(234,179,8,0.35); color: var(--warning); }
+        .badge-tolak { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.35); color: var(--danger); }
 
         /* Grid util ringan — pengganti Bootstrap row/col, dipakai form multi-kolom */
         .form-row { display: flex; gap: 14px; flex-wrap: wrap; }

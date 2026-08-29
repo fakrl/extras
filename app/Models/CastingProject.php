@@ -58,7 +58,7 @@ class CastingProject extends Model
         $tanggalProyekIni = $this->shootingDates()->pluck('tanggal');
 
         return ProjectApplication::query()
-            ->whereIn('status_partisipasi', ['deal', 'diajukan_ke_cd', 'direview_cd', 'lolos', 'kontrak_ditandatangani'])
+            ->whereIn('status_partisipasi', ProjectApplication::STATUS_AKTIF)
             ->where('casting_project_id', '!=', $this->id)
             ->whereHas('castingProject.shootingDates', function ($q) use ($tanggalProyekIni) {
                 $q->whereIn('tanggal', $tanggalProyekIni);

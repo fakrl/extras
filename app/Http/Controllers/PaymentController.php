@@ -14,7 +14,7 @@ class PaymentController extends Controller
 {
     public function show(Request $request, ProjectApplication $application)
     {
-        $this->pastikanBolehLihat($request, $application);
+        abort_unless($application->bolehDilihatOleh($request->user()), 403);
 
         if (! $application->payment) {
             $application->payment()->create(['status' => 'belum_dibayar']);
@@ -68,7 +68,7 @@ class PaymentController extends Controller
      */
     public function addAddon(Request $request, ProjectApplication $application): RedirectResponse
     {
-        $this->pastikanBolehLihat($request, $application);
+        abort_unless($application->bolehDilihatOleh($request->user()), 403);
 
         abort_if($application->payment->status === 'dikonfirmasi_diterima', 422, 'Pembayaran sudah selesai, tidak bisa menambah komponen lagi.');
 
@@ -84,15 +84,5 @@ class PaymentController extends Controller
         ]);
 
         return back()->with('status', 'Komponen tambahan berhasil ditambahkan.');
-    }
-
-    private function pastikanBolehLihat(Request $request, ProjectApplication $application): void
-    {
-        $user = $request->user();
-
-        $boleh = $user->role === 'admin_default'
-            || ($user->role === 'extras' && $application->extras_id === $user->extrasProfile->id);
-
-        abort_unless($boleh, 403);
     }
 }

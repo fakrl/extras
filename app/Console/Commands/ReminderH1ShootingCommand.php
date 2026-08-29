@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\CastingProject;
+use App\Models\ProjectApplication;
 use App\Services\WhatsAppService;
 use Illuminate\Console\Command;
 
@@ -18,15 +19,13 @@ class ReminderH1ShootingCommand extends Command
 
     protected $description = 'Kirim WA reminder H-1 ke Extras yang jadwal shooting-nya besok';
 
-    private const STATUS_AKTIF = ['deal', 'diajukan_ke_cd', 'direview_cd', 'lolos', 'kontrak_ditandatangani'];
-
     public function handle(WhatsAppService $whatsapp): int
     {
         $besok = now()->addDay()->toDateString();
 
         $projects = CastingProject::whereHas('shootingDates', fn ($q) => $q->whereDate('tanggal', $besok))
             ->with(['applications' => function ($q) {
-                $q->whereIn('status_partisipasi', self::STATUS_AKTIF)->with('extras.user');
+                $q->whereIn('status_partisipasi', ProjectApplication::STATUS_AKTIF)->with('extras.user');
             }])
             ->get();
 

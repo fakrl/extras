@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\ExtrasProfile;
+use App\Models\ProjectApplication;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -15,9 +16,7 @@ class ExtrasRecapExport implements FromCollection, WithHeadings
     public function collection(): Collection
     {
         return ExtrasProfile::withCount([
-            'applications' => fn ($q) => $q->whereIn('status_partisipasi', [
-                'lolos', 'kontrak_ditandatangani', 'selesai_produksi',
-            ]),
+            'applications' => fn ($q) => $q->whereIn('status_partisipasi', ProjectApplication::STATUS_LOLOS_KE_ATAS),
         ])
             ->orderByDesc('applications_count')
             ->get()

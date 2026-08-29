@@ -25,7 +25,7 @@ class FeeNegotiationController extends Controller
     public function terima(Request $request, ProjectApplication $application): RedirectResponse
     {
         $this->pastikanMilikSendiri($request, $application);
-        $this->pastikanMasihBisaNego($application);
+        $application->pastikanMasihBisaNego();
 
         $nominalTerakhir = $application->feeNegotiations()->latest('round')->value('nominal');
 
@@ -41,7 +41,7 @@ class FeeNegotiationController extends Controller
     public function counter(Request $request, ProjectApplication $application): RedirectResponse
     {
         $this->pastikanMilikSendiri($request, $application);
-        $this->pastikanMasihBisaNego($application);
+        $application->pastikanMasihBisaNego();
 
         $data = $request->validate([
             'nominal' => ['required', 'numeric', 'min:0'],
@@ -77,15 +77,6 @@ class FeeNegotiationController extends Controller
         abort_unless(
             $application->extras_id === $request->user()->extrasProfile->id,
             403
-        );
-    }
-
-    private function pastikanMasihBisaNego(ProjectApplication $application): void
-    {
-        abort_if(
-            in_array($application->status_partisipasi, ['deal', 'ditolak', 'diajukan_ke_cd', 'direview_cd', 'lolos'], true),
-            422,
-            'Negosiasi untuk pendaftar ini sudah tidak aktif.'
         );
     }
 }
