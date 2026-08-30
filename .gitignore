@@ -22,3 +22,9 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Catatan internal — nama tim & detail bisnis, tidak untuk publik (keputusan
+# Fakrul 30 Agu 2026: repo tetap public, tapi file ini stop di-track ke depan.
+# File lama tetap ada di riwayat commit, ini bukan history rewrite.)
+docs/DEV-NOTES.md
+docs/CLAUDE.local.md
