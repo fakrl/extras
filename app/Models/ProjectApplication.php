@@ -291,7 +291,10 @@ class ProjectApplication extends Model
     public function pastikanMasihBisaNego(): void
     {
         abort_if(
-            in_array($this->status_partisipasi, ['deal', 'ditolak', 'diajukan_ke_cd', 'direview_cd', 'lolos'], true),
+            in_array($this->status_partisipasi, [
+                'deal', 'ditolak', 'diajukan_ke_cd', 'direview_cd', 'lolos',
+                'kontrak_ditandatangani', 'selesai_produksi', 'dibatalkan',
+            ], true),
             422,
             'Negosiasi untuk pendaftar ini sudah tidak aktif.'
         );
