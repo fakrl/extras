@@ -76,7 +76,7 @@
 <script>
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     var gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
-    var textColor = isDark ? '#a8c2ae' : '#4b5f52';
+    var textColor = isDark ? '#9db3a2' : '#435449';
     var palette = ['#22c55e', '#4ade80', '#86efac', '#15803d', '#065f46', '#a3e635', '#eab308', '#f97316', '#ef4444', '#94a3b8', '#64748b'];
 
     new Chart(document.getElementById('chartStatusExtras'), {

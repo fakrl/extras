@@ -1,18 +1,18 @@
-# SPEC.md — Menunggu Keputusan 5 Item Session 19
+# SPEC.md — Menunggu Keputusan 6 Item Session 19
 
-> Terakhir diperbarui 30 Agustus 2026 pagi. Task terakhir ("Fix Nego-Fee Gate + Beres-beres Kecil") **selesai** — lihat `DEV-NOTES.md` Session 20.
+> Terakhir diperbarui 30 Agustus 2026 malam. Task terakhir ("Refresh Palet Warna Opsi B") **selesai** — lihat `DEV-NOTES.md` Session 21.
 
 ## Status
 
-- **Item 1 (fix nego-fee gate) — selesai.** `ProjectApplication::pastikanMasihBisaNego()` sekarang blokir nego di status `kontrak_ditandatangani`/`selesai_produksi`/`dibatalkan` juga. 24 test baru, dibuktikan real (revert-konfirmasi gagal-restore).
-- **Item 2 (stop-track DEV-NOTES.md + CLAUDE.local.md) — selesai.** Kedua file tetap ada di disk, cuma nggak lagi ke-track git mulai commit `1d86be1`.
-- **Temuan tambahan (dicatat, belum diputuskan):** `ajukanAwal()`/`ajukanFeeAwal()` nggak pernah panggil `pastikanMasihBisaNego()` — nggak reachable lewat alur normal (dianalisis di `DEV-NOTES.md` Session 20), tapi bukan defense-in-depth. Bisa dibereskan sekalian kapan-kapan (satu baris) kalau Fakrul mau.
+- **Refresh palet warna — selesai.** `theme-style.blade.php` diupdate sesuai value final Fakrul. Diverifikasi visual beneran (screenshot 4 halaman × 2 tema via Edge headless, login via curl — tidak ada Playwright/internet akses di sandbox ini). Kontras bagus di kedua tema, `--accent-strong` mode terang sekarang beda shade dari `--accent` (sinyal depth), `--warning` konsisten amber.
+- **Temuan tambahan yang di-fix sekalian:** 3 dashboard (`super-admin`, `admin`, `cd`) hardcode mirror JS `textColor` buat Chart.js (nggak bisa baca CSS var langsung) — disamakan ke value `--text-secondary` baru, biar nggak ada teks chart yang ketinggalan warna lama.
+- `docs/UI-GUIDELINES.md` disinkronkan.
 
-**Test: 131 passed, 0 regresi.**
+**Test: 131 passed, 0 regresi (task ini CSS doang, tidak ada test yang terpengaruh).**
 
 ## Berikutnya
 
-**6 item dari `DEV-NOTES.md` Session 19 "BUTUH KEPUTUSAN FAKRUL" masih menunggu** (item nego-fee gate sudah selesai di task ini, jadi tinggal 6 dari 7 semula):
+**6 item dari `DEV-NOTES.md` Session 19 "BUTUH KEPUTUSAN FAKRUL" masih menunggu:**
 1. Akun nonaktif/Melanggar tetap bisa login (status ditulis, tidak pernah dibaca sebagai gate)
 2. State machine pembayaran ↔ partisipasi tidak terkait (bisa bayar aplikasi yang belum lolos)
 3. CD bisa akses invoice & approve/reject lintas proyek (butuh keputusan: model assignment CD↔proyek?)
