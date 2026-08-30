@@ -66,7 +66,7 @@
 <script>
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     var gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
-    var textColor = isDark ? '#a8c2ae' : '#4b5f52';
+    var textColor = isDark ? '#9db3a2' : '#435449';
 
     new Chart(document.getElementById('chartPembayaran'), {
         type: 'doughnut',

@@ -28,7 +28,7 @@
 @push('scripts')
 <script>
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    var textColor = isDark ? '#a8c2ae' : '#4b5f52';
+    var textColor = isDark ? '#9db3a2' : '#435449';
 
     new Chart(document.getElementById('chartKeputusan'), {
         type: 'doughnut',
