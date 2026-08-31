@@ -72,6 +72,11 @@ class ProjectApplication extends Model
         return $this->hasMany(FieldNote::class)->latest();
     }
 
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
     /**
      * RF-16: Admin ajukan penawaran fee awal. Ronde 1, selalu dari admin.
      */
