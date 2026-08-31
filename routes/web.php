@@ -131,6 +131,8 @@ Route::middleware(['auth', 'role:admin_default,admin_talco,admin_korlap,admin_so
                 ->name('admin.projects.toggle-status');
             Route::get('/projects/{castingProject}/applicants', [AdminCastingProjectController::class, 'showApplicants'])
                 ->name('admin.projects.applicants');
+            Route::post('/projects/{castingProject}/assign-cd', [AdminCastingProjectController::class, 'assignCd'])
+                ->name('admin.projects.assign-cd');
 
             Route::patch('/applications/{application}/grade', [ApplicantController::class, 'setGrade'])
                 ->name('admin.applications.grade');

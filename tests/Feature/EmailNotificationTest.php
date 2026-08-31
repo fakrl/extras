@@ -61,6 +61,7 @@ class EmailNotificationTest extends TestCase
 
         $application = $this->buatAplikasi('diajukan_ke_cd');
         $cd = User::factory()->create(['role' => 'casting_director']);
+        $application->castingProject->cdAssignments()->create(['cd_user_id' => $cd->id]);
 
         $response = $this->actingAs($cd)->post('/cd/reviews', [
             'application_ids' => [$application->id],

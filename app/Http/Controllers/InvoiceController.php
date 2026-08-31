@@ -58,9 +58,12 @@ class InvoiceController extends Controller
 
     private function pastikanBolehLihat(Request $request, CastingProject $castingProject): void
     {
-        abort_unless(
-            in_array($request->user()->role, ['admin_default', 'casting_director'], true),
-            403
-        );
+        $user = $request->user();
+
+        abort_unless(in_array($user->role, ['admin_default', 'casting_director'], true), 403);
+
+        if ($user->role === 'casting_director') {
+            abort_unless($castingProject->cdAssignments()->where('cd_user_id', $user->id)->exists(), 403);
+        }
     }
 }

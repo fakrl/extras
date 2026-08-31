@@ -43,6 +43,11 @@ class CastingProject extends Model
         return $this->hasMany(AdminProjectAssignment::class);
     }
 
+    public function cdAssignments(): HasMany
+    {
+        return $this->hasMany(CdProjectAssignment::class);
+    }
+
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
