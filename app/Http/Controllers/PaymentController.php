@@ -12,9 +12,19 @@ use Illuminate\Http\Request;
  */
 class PaymentController extends Controller
 {
+    private function guardStatusLolos(ProjectApplication $application): void
+    {
+        abort_unless(
+            in_array($application->status_partisipasi, ProjectApplication::STATUS_LOLOS_KE_ATAS, true),
+            422,
+            'Pembayaran belum bisa diproses untuk status pendaftaran ini.'
+        );
+    }
+
     public function show(Request $request, ProjectApplication $application)
     {
         abort_unless($application->bolehDilihatOleh($request->user()), 403);
+        $this->guardStatusLolos($application);
 
         if (! $application->payment) {
             $application->payment()->create(['status' => 'belum_dibayar']);
@@ -32,6 +42,7 @@ class PaymentController extends Controller
     public function tandaiTransfer(Request $request, ProjectApplication $application): RedirectResponse
     {
         abort_unless($request->user()->role === 'admin_default', 403);
+        $this->guardStatusLolos($application);
 
         $request->validate([
             'bukti_transfer' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
@@ -53,6 +64,7 @@ class PaymentController extends Controller
             $request->user()->role === 'extras' && $application->extras_id === $request->user()->extrasProfile->id,
             403
         );
+        $this->guardStatusLolos($application);
 
         abort_unless($application->payment->status === 'ditransfer', 422, 'Belum ada bukti transfer untuk dikonfirmasi.');
 
@@ -69,6 +81,7 @@ class PaymentController extends Controller
     public function addAddon(Request $request, ProjectApplication $application): RedirectResponse
     {
         abort_unless($application->bolehDilihatOleh($request->user()), 403);
+        $this->guardStatusLolos($application);
 
         abort_if($application->payment->status === 'dikonfirmasi_diterima', 422, 'Pembayaran sudah selesai, tidak bisa menambah komponen lagi.');
 

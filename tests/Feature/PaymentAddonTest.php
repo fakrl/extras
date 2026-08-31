@@ -26,7 +26,7 @@ class PaymentAddonTest extends TestCase
         $application = ProjectApplication::create([
             'casting_project_id' => $project->id,
             'extras_id' => $extras->id,
-            'status_partisipasi' => 'deal',
+            'status_partisipasi' => 'lolos',
             'fee_final' => 200000,
         ]);
 
