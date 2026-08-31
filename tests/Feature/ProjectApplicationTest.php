@@ -8,6 +8,7 @@ use App\Models\ProjectApplication;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class ProjectApplicationTest extends TestCase
@@ -137,6 +138,117 @@ class ProjectApplicationTest extends TestCase
         $this->expectException(\LogicException::class);
 
         $application->batalkan('extras', 'Berubah pikiran');
+    }
+
+    /**
+     * SPEC.md Bagian C: batalkan() diperluas, tidak lagi cuma status Deal.
+     */
+    public function test_batalkan_status_lolos_berhasil(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin_default']);
+        $extrasUser = User::factory()->create(['role' => 'extras']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
+
+        $application = ProjectApplication::create([
+            'casting_project_id' => $project->id,
+            'extras_id' => $extras->id,
+            'status_partisipasi' => 'lolos',
+        ]);
+
+        $application->batalkan('extras', 'Berubah pikiran setelah lolos');
+
+        $this->assertSame('dibatalkan', $application->fresh()->status_partisipasi);
+    }
+
+    public function test_batalkan_status_kontrak_ditandatangani_berhasil(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin_default']);
+        $extrasUser = User::factory()->create(['role' => 'extras']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
+
+        $application = ProjectApplication::create([
+            'casting_project_id' => $project->id,
+            'extras_id' => $extras->id,
+            'status_partisipasi' => 'kontrak_ditandatangani',
+        ]);
+
+        $application->batalkan('admin', 'Client batal produksi');
+
+        $this->assertSame('dibatalkan', $application->fresh()->status_partisipasi);
+    }
+
+    public function test_batalkan_status_selesai_produksi_tetap_ditolak(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin_default']);
+        $extrasUser = User::factory()->create(['role' => 'extras']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
+
+        $application = ProjectApplication::create([
+            'casting_project_id' => $project->id,
+            'extras_id' => $extras->id,
+            'status_partisipasi' => 'selesai_produksi',
+        ]);
+
+        $this->expectException(\LogicException::class);
+
+        $application->batalkan('admin', 'Coba batalkan produksi selesai');
+    }
+
+    #[DataProvider('statusPraLolosProvider')]
+    public function test_batalkan_status_pra_lolos_tetap_ditolak(string $status): void
+    {
+        $admin = User::factory()->create(['role' => 'admin_default']);
+        $extrasUser = User::factory()->create(['role' => 'extras']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
+
+        $application = ProjectApplication::create([
+            'casting_project_id' => $project->id,
+            'extras_id' => $extras->id,
+            'status_partisipasi' => $status,
+        ]);
+
+        $this->expectException(\LogicException::class);
+
+        $application->batalkan('admin', 'Coba batalkan sebelum lolos');
+    }
+
+    public static function statusPraLolosProvider(): array
+    {
+        return [
+            'diajukan_ke_cd' => ['diajukan_ke_cd'],
+            'direview_cd' => ['direview_cd'],
+        ];
+    }
+
+    /**
+     * RF-08 skenario penuh (SPEC.md Bagian C) — sebelum bagian ini, status
+     * Lolos tidak bisa dibatalkan sama sekali, jadi skenario "3x mendadak
+     * saat Lolos" nyaris mustahil ditest (audit Session 19). Beda dari
+     * test_tiga_kali_batalkan_mendadak_pada_proyek_berbeda_membuat_status_melanggar
+     * di atas (yang lewat status Deal) — ini khusus buktikan jalur Lolos.
+     */
+    public function test_tiga_kali_batalkan_mendadak_status_lolos_pada_proyek_berbeda_membuat_status_melanggar(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin_default']);
+        $extrasUser = User::factory()->create(['role' => 'extras']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+
+        foreach (range(1, 3) as $i) {
+            $project = $this->buatProyek($admin, now()->addDay()->toDateString());
+            $application = ProjectApplication::create([
+                'casting_project_id' => $project->id,
+                'extras_id' => $extras->id,
+                'status_partisipasi' => 'lolos',
+            ]);
+            $application->batalkan('extras', "Pembatalan mendadak ke-{$i} saat lolos");
+        }
+
+        $this->assertSame(3, $extras->fresh()->cancel_count);
+        $this->assertSame('melanggar', $extras->fresh()->status);
     }
 
     public function test_batalkan_mendadak_kurang_dari_h2_increment_cancel_count(): void
