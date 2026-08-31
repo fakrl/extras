@@ -27,6 +27,20 @@ class LoginController extends Controller
             ])->onlyInput('email');
         }
 
+        $user = Auth::user();
+        $diblokir = $user->status !== 'aktif'
+            || ($user->role === 'extras' && $user->extrasProfile?->status === 'melanggar');
+
+        if ($diblokir) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()->withErrors([
+                'email' => 'Akun Anda dinonaktifkan. Hubungi admin untuk info lebih lanjut.',
+            ])->onlyInput('email');
+        }
+
         $request->session()->regenerate();
 
         // SENGAJA bukan redirect()->intended() — RF-03 mensyaratkan tiap role
