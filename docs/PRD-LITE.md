@@ -23,9 +23,10 @@ Urutan sesuai dependency, bukan prioritas bisnis:
 7. **Kontrak Digital** — auto-generate PDF Talent Release, TTD via canvas signature (bukan upload scan, bukan PSrE).
 8. **Pembayaran Extras** — manual bukti transfer (BUKAN payment gateway), status Belum Dibayar → Ditransfer → Dikonfirmasi.
 9. **Manajemen Karyawan (baru)** — Super Admin tambah Admin + sub-role + set nominal honor per-event.
-10. **Absensi & Penggajian Staf (baru)** — log aktivitas nempel status "proyek selesai" → slip honor PDF auto-generate.
+10. **Absensi & Penggajian Staf (baru)** — log aktivitas nempel status "proyek selesai" → slip honor PDF auto-generate. Ditambah absensi formal Extras oleh Korlap di lapangan (revisi 31 Agu 2026).
 11. **Notifikasi** — email (primer) + WhatsApp via `whatsapp-web.js` self-hosted (pelengkap; revisi 28 Agu 2026 — lihat `TECH-STACK.md` & `OPEN-QUESTIONS-PROPOSAL.md` poin 3 untuk alasan ganti dari rencana gateway berbayar).
 12. **Dashboard & Riwayat Kerja** — per-role, termasuk view read-only Talco/Sosmed.
+13. **Void Kontrak Digital (baru)** — kontrak batal otomatis begitu pendaftaran dibatalkan setelah disepakati/ditandatangani (revisi 31 Agu 2026).
 
 **Eksplisit DI LUAR scope** (lihat `BAB-3-DRAFT.md` §3.1.4 buat detail penuh):
 - Talent profesional/pemeran utama (bukan Extras) — di luar sistem, cuma tercatat sebagai log kerja Talco.

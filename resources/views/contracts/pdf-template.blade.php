@@ -10,9 +10,45 @@
         .signature-box { width: 45%; display: inline-block; margin-top: 40px; text-align: center; }
         .signature-box img { max-height: 80px; }
         .signature-line { border-top: 1px solid #333; margin-top: 5px; padding-top: 5px; }
+        .watermark {
+            position: fixed;
+            top: 35%;
+            left: 5%;
+            width: 90%;
+            text-align: center;
+            font-size: 36px;
+            color: #dc3545;
+            opacity: 0.2;
+            transform: rotate(-30deg);
+            transform-origin: 50% 50%;
+            z-index: -1000;
+            font-weight: bold;
+            border: 5px solid #dc3545;
+            padding: 20px;
+        }
+        .void-banner {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
+    @if ($application->contract && $application->contract->isVoided())
+        <div class="watermark">
+            TIDAK BERLAKU<br>
+            Dibatalkan: {{ $application->contract->voided_at->format('d M Y H:i') }}
+        </div>
+        <div class="void-banner">
+            TIDAK BERLAKU — Pendaftaran Dibatalkan pada {{ $application->contract->voided_at->format('d M Y H:i') }}
+        </div>
+    @endif
+
     <h2>SURAT PERSETUJUAN TALENT (TALENT RELEASE)</h2>
 
     <table>
