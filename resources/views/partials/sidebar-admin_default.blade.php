@@ -20,3 +20,6 @@
 <a href="{{ url('/admin/recap') }}" class="sidebar-link {{ str_starts_with($route, 'admin/recap') ? 'active' : '' }}">
     <i class="ti ti-report"></i> Rekap Extras
 </a>
+<a href="{{ url('/admin/absensi') }}" class="sidebar-link {{ str_starts_with($route, 'admin/absensi') ? 'active' : '' }}">
+    <i class="ti ti-clipboard-check"></i> Absensi
+</a>

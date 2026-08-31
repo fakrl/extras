@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ApplicantController;
+use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\CastingProjectController as AdminCastingProjectController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\FeeNegotiationController as AdminFeeNegotiationController;
@@ -165,6 +166,15 @@ Route::middleware(['auth', 'role:admin_default,admin_talco,admin_korlap,admin_so
         Route::middleware('role:admin_default,admin_korlap')->group(function () {
             Route::post('/applications/{application}/catatan', [ApplicantController::class, 'tambahCatatan'])
                 ->name('admin.applications.catatan');
+
+            // SPEC.md Bagian F: halaman baru Korlap, TERPISAH dari
+            // admin.projects.applicants (gerbangnya admin_default murni,
+            // itu akar bug lama RF-35 — route ada, halamannya tidak
+            // terjangkau). Route GET halaman + POST absen sama-sama di
+            // sini biar Korlap beneran bisa sampai.
+            Route::get('/absensi', [AttendanceController::class, 'index'])->name('admin.attendance.index');
+            Route::post('/applications/{application}/absen', [AttendanceController::class, 'store'])
+                ->name('admin.attendance.store');
         });
     });
 
