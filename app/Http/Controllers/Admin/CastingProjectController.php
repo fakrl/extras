@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CastingProject;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -73,11 +74,12 @@ class CastingProjectController extends Controller
      */
     public function edit(CastingProject $castingProject)
     {
-        $castingProject->load('classes', 'shootingDates');
+        $castingProject->load('classes', 'shootingDates', 'cdAssignments.cdUser');
 
         $applicantsCount = $castingProject->applications()->count();
+        $cdUsers = User::where('role', 'casting_director')->orderBy('name')->get();
 
-        return view('admin.projects.edit', compact('castingProject', 'applicantsCount'));
+        return view('admin.projects.edit', compact('castingProject', 'applicantsCount', 'cdUsers'));
     }
 
     /**
@@ -179,5 +181,24 @@ class CastingProjectController extends Controller
             ->get();
 
         return view('admin.projects.applicants', compact('castingProject', 'applicants', 'grade'));
+    }
+
+    /**
+     * SPEC.md Bagian E: Admin Default menugaskan CD ke proyek — dasar guard
+     * akses CD di InvoiceController & Cd\ReviewController. 1 proyek boleh
+     * punya lebih dari satu CD.
+     */
+    public function assignCd(Request $request, CastingProject $castingProject): RedirectResponse
+    {
+        $data = $request->validate([
+            'cd_user_id' => ['required', 'exists:users,id'],
+        ]);
+
+        $cd = User::findOrFail($data['cd_user_id']);
+        abort_unless($cd->isCastingDirector(), 422, 'Hanya bisa menugaskan akun bertipe Casting Director.');
+
+        $castingProject->cdAssignments()->firstOrCreate(['cd_user_id' => $cd->id]);
+
+        return back()->with('status', "{$cd->name} berhasil ditugaskan sebagai CD proyek ini.");
     }
 }

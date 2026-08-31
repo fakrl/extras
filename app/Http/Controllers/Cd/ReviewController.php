@@ -19,6 +19,7 @@ class ReviewController extends Controller
     public function index(Request $request)
     {
         $applications = ProjectApplication::where('status_partisipasi', 'diajukan_ke_cd')
+            ->whereHas('castingProject.cdAssignments', fn ($q) => $q->where('cd_user_id', $request->user()->id))
             // extras.user dibatasi ke id+username saja — CD cuma butuh itu
             // buat tampilan "Alias (@username)", bukan kontak/email Extras.
             ->with('extras:id,user_id,alias,foto_profil_path,video_profil_path', 'extras.user:id,username', 'extras.photos', 'castingProject:id,nama_produksi')
@@ -44,6 +45,7 @@ class ReviewController extends Controller
 
         $applications = ProjectApplication::whereIn('id', $data['application_ids'])
             ->where('status_partisipasi', 'diajukan_ke_cd')
+            ->whereHas('castingProject.cdAssignments', fn ($q) => $q->where('cd_user_id', $request->user()->id))
             ->with('extras.user', 'castingProject')
             ->get();
 
