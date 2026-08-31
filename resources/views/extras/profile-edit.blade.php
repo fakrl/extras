@@ -120,6 +120,16 @@
                    placeholder="Contoh: Rina, Bang Jack" inputmode="text">
             <p class="field-hint">Nama ini yang dilihat Casting Director — bukan nama asli kamu di KTP.</p>
 
+            <label>Nama Asli (sesuai KTP) <span class="required-mark">*</span></label>
+            <input type="text" name="nama_asli" value="{{ old('nama_asli', $profile->nama_asli) }}" required
+                   placeholder="Contoh: Rina Wulandari" inputmode="text">
+            <p class="field-hint">Dipakai di dokumen kontrak resmi, bukan yang tampil ke publik.</p>
+
+            <label>Username <span class="required-mark">*</span></label>
+            <input type="text" name="username" value="{{ old('username', $profile->user->username) }}" required
+                   placeholder="Contoh: rina_wulan" maxlength="50">
+            <p class="field-hint">Huruf, angka, garis bawah, dan strip saja (tanpa spasi). Bisa dipakai untuk masuk selain email, dan tampil di samping alias kamu.</p>
+
             <label>Nomor WhatsApp</label>
             <input type="text" name="nomor_wa" value="{{ old('nomor_wa', $profile->user->nomor_wa) }}"
                    placeholder="Contoh: 08123456789" inputmode="tel">

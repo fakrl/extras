@@ -24,7 +24,7 @@
         <tbody>
             @foreach ($extrasPalingSering as $ex)
                 <tr>
-                    <td>{{ $ex->alias ?? '-' }}</td>
+                    <td>{{ $ex->alias_tampil ?? '-' }}</td>
                     <td>{{ $ex->applications_count }}</td>
                     <td>
                         <span class="badge {{ $ex->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">

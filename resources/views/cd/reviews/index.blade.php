@@ -29,7 +29,7 @@
                                 <div class="thumb-photo thumb-photo-empty"><i class="ti ti-user"></i></div>
                             @endif
                         </td>
-                        <td>{{ $app->extras->alias }}</td>
+                        <td>{{ $app->extras->alias_tampil }}</td>
                         <td>{{ $app->castingProject->nama_produksi }}</td>
                         <td>
                             @forelse ($app->extras->photos as $foto)

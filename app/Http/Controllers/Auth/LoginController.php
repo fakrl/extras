@@ -16,14 +16,18 @@ class LoginController extends Controller
 
     public function login(Request $request): RedirectResponse
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
+        $data = $request->validate([
+            // Satu input untuk dua identifier. Nama field tetap 'email'
+            // (form lama, link lupa-password, dan pesan error ikut key ini).
+            'email' => ['required', 'string'],
             'password' => ['required'],
         ]);
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        $identifier = str_contains($data['email'], '@') ? 'email' : 'username';
+
+        if (! Auth::attempt([$identifier => $data['email'], 'password' => $data['password']], $request->boolean('remember'))) {
             return back()->withErrors([
-                'email' => 'Email atau password salah.',
+                'email' => 'Email/username atau password salah.',
             ])->onlyInput('email');
         }
 

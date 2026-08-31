@@ -172,7 +172,7 @@ class CastingProjectController extends Controller
         $grade = $request->query('grade');
 
         $applicants = $castingProject->applications()
-            ->with('extras', 'extras.photos', 'fieldNotes.korlap')
+            ->with('extras', 'extras.user', 'extras.photos', 'fieldNotes.korlap')
             ->when($grade === 'belum', fn ($q) => $q->whereNull('grade'))
             ->when(in_array($grade, ['A', 'B', 'C'], true), fn ($q) => $q->where('grade', $grade))
             ->latest()

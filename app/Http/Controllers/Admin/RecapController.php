@@ -19,6 +19,7 @@ class RecapController extends Controller
         $extrasPalingSering = ExtrasProfile::withCount([
             'applications' => fn ($q) => $q->whereIn('status_partisipasi', ProjectApplication::STATUS_LOLOS_KE_ATAS),
         ])
+            ->with('user:id,username')
             ->orderByDesc('applications_count')
             ->take(10)
             ->get();

@@ -21,7 +21,7 @@ class MonitoringController extends Controller
         $cdTotal = User::where('role', 'casting_director')->count();
         $adminTotal = User::whereIn('role', ['admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed'])->count();
 
-        $extrasList = User::where('role', 'extras')->with('extrasProfile')->latest()->get();
+        $extrasList = User::where('role', 'extras')->with('extrasProfile.user:id,username')->latest()->get();
         $cdList = User::where('role', 'casting_director')->latest()->get();
 
         return view('super-admin.monitoring', compact(

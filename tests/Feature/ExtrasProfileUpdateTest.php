@@ -20,6 +20,8 @@ class ExtrasProfileUpdateTest extends TestCase
 
         $this->actingAs($user)->put('/extras/profil', [
             'alias' => 'Alias Lama',
+            'nama_asli' => 'Nama Asli Test',
+            'username' => 'user_'.$user->id,
             'nomor_wa' => $input,
         ])->assertRedirect();
 
@@ -44,6 +46,8 @@ class ExtrasProfileUpdateTest extends TestCase
 
         $this->actingAs($user)->put('/extras/profil', [
             'alias' => 'Alias Lama',
+            'nama_asli' => 'Nama Asli Test',
+            'username' => 'user_'.$user->id,
         ])->assertRedirect();
 
         $this->assertNull($user->refresh()->nomor_wa);
@@ -56,6 +60,8 @@ class ExtrasProfileUpdateTest extends TestCase
 
         $this->actingAs($user)->put('/extras/profil', [
             'alias' => 'Alias Baru',
+            'nama_asli' => 'Nama Asli Test',
+            'username' => 'user_'.$user->id,
             'rate_card' => 300000,
             'nomor_wa' => '081234567890',
         ])->assertRedirect();
