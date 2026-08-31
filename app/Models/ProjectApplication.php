@@ -203,16 +203,22 @@ class ProjectApplication extends Model
     }
 
     /**
-     * RF-33/34: Admin atau Extras membatalkan aplikasi yang sudah Deal.
-     * Satu klik langsung final (tidak ada approval dua pihak — konfirmasi
-     * Fakrul 29 Agu 2026), konsisten dengan pola aksi sepihak lain di sini.
+     * RF-33/34: Admin atau Extras membatalkan aplikasi berstatus Deal, Lolos,
+     * atau Kontrak Ditandatangani (diperluas SPEC.md Bagian C, 31 Agu 2026 —
+     * sebelumnya cuma Deal, bikin RF-08 nyaris mustahil kejadian karena
+     * kandidat biasanya sudah lewat Deal saat mendekati tanggal shooting).
+     * Tidak termasuk Selesai Produksi (sudah kelar, tidak masuk akal batal)
+     * atau status pra-Lolos (belum ada komitmen shooting yang bisa dibatalkan
+     * mendadak). Satu klik langsung final (tidak ada approval dua pihak —
+     * konfirmasi Fakrul 29 Agu 2026), konsisten dengan pola aksi sepihak lain
+     * di sini.
      * RF-08: kalau pembatalan mendadak (< H-2 dari tanggal shooting
      * terdekat proyek ini), trigger hitungan cancel_count di ExtrasProfile.
      */
     public function batalkan(string $olehSiapa, string $alasan): Cancellation
     {
-        if ($this->status_partisipasi !== 'deal') {
-            throw new \LogicException('Hanya aplikasi berstatus Deal yang bisa dibatalkan.');
+        if (! in_array($this->status_partisipasi, ['deal', 'lolos', 'kontrak_ditandatangani'], true)) {
+            throw new \LogicException('Hanya aplikasi berstatus Deal, Lolos, atau Kontrak Ditandatangani yang bisa dibatalkan.');
         }
 
         $tanggalTerdekat = $this->castingProject->shootingDates()
