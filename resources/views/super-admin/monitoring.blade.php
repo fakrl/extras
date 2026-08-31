@@ -30,7 +30,7 @@
             @foreach ($extrasList as $ex)
                 <tr>
                     <td>{{ $ex->name }}</td>
-                    <td>{{ $ex->extrasProfile->alias ?? '-' }}</td>
+                    <td>{{ $ex->extrasProfile->alias_tampil ?? '-' }}</td>
                     <td>
                         <span class="badge {{ $ex->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">
                             {{ $ex->status }}

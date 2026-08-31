@@ -22,7 +22,7 @@ class EmailNotificationTest extends TestCase
     {
         $adminUser = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test', 'nama_asli' => 'Nama Asli Test']);
 
         $project = CastingProject::create([
             'admin_id' => $adminUser->id,

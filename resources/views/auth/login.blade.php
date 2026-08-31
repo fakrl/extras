@@ -20,8 +20,9 @@
 
 <form method="POST" action="{{ route('login') }}">
     @csrf
-    <label>Email</label>
-    <input type="email" name="email" value="{{ old('email') }}" required autofocus>
+    <label>Email atau Username</label>
+    <input type="text" name="email" value="{{ old('email') }}" required autofocus
+           placeholder="email@contoh.com atau username">
 
     <x-password-input name="password" label="Password" />
 

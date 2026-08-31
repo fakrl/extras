@@ -57,7 +57,7 @@
         <div>
             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
                 <div>
-                    <div style="font-size: 15px; font-weight: 600;">{{ $app->extras->alias ?? '(belum isi alias)' }}</div>
+                    <div style="font-size: 15px; font-weight: 600;">{{ $app->extras->alias_tampil ?? '(belum isi alias)' }}</div>
                     <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
                         <span class="badge {{ $badgeClass[$app->status_partisipasi] ?? 'badge-pending' }}">{{ $app->status_partisipasi }}</span>
                         @if ($app->bentrok_jadwal_flag)

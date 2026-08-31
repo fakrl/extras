@@ -88,6 +88,18 @@ class ExtrasProfile extends Model
         );
     }
 
+    /**
+     * Tampilan alias untuk Admin/CD: "Alias (@username)". Username nullable
+     * (data lama) — kalau kosong, kembalikan alias apa adanya, JANGAN sampai
+     * merender "(@)" menggantung.
+     */
+    protected function aliasTampil(): Attribute
+    {
+        return Attribute::get(fn () => $this->alias && $this->user?->username
+            ? $this->alias.' (@'.$this->user->username.')'
+            : $this->alias);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

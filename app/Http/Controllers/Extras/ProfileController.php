@@ -10,6 +10,7 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProfileController extends Controller
@@ -64,6 +65,14 @@ class ProfileController extends Controller
     {
         $data = $request->validate([
             'alias' => ['required', 'string', 'max:255'],
+            // Nama KTP dikumpulkan di sini (bareng alias), bukan bareng NIK —
+            // dipakai sebagai nama penandatangan di PDF kontrak.
+            'nama_asli' => ['required', 'string', 'max:255'],
+            // Identifier login alternatif: alpha_dash saja (tanpa spasi).
+            'username' => [
+                'required', 'string', 'alpha_dash', 'max:50',
+                Rule::unique('users', 'username')->ignore($request->user()->id),
+            ],
             'usia' => ['nullable', 'integer', 'min:1', 'max:120'],
             'gender' => ['nullable', 'string'],
             'tinggi_badan' => ['nullable', 'integer'],
@@ -90,7 +99,7 @@ class ProfileController extends Controller
             }
         }
 
-        $dataDisimpan = collect($data)->except(['tautan_label', 'tautan_url', 'nomor_wa'])->toArray();
+        $dataDisimpan = collect($data)->except(['tautan_label', 'tautan_url', 'nomor_wa', 'username'])->toArray();
         $dataDisimpan['tautan_tambahan'] = $tautanTambahan;
 
         // SENGAJA tidak menerima 'status', 'cancel_count', 'foto_profil_path',
@@ -99,9 +108,12 @@ class ProfileController extends Controller
         // aman (lihat catatan di model).
         $request->user()->extrasProfile->update($dataDisimpan);
 
-        // nomor_wa ada di tabel users (Session 8, reusable lintas role),
+        // nomor_wa & username ada di tabel users (reusable lintas role),
         // BUKAN extras_profiles — simpan terpisah dari update() di atas.
-        $request->user()->update(['nomor_wa' => $data['nomor_wa'] ?? null]);
+        $request->user()->update([
+            'nomor_wa' => $data['nomor_wa'] ?? null,
+            'username' => $data['username'],
+        ]);
 
         return redirect('/extras/profil')->with('status', 'Profil berhasil disimpan. Begini tampilannya buat Admin & Casting Director:');
     }

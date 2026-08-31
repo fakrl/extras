@@ -18,7 +18,8 @@
     <table>
         <tr><td width="30%">Nama Produksi</td><td>: {{ $application->castingProject->nama_produksi }}</td></tr>
         <tr><td>Client / Production House</td><td>: {{ $application->castingProject->client_ph }}</td></tr>
-        <tr><td>Nama Talent (Alias)</td><td>: {{ $application->extras->alias }}</td></tr>
+        <tr><td>Nama Talent (sesuai KTP)</td><td>: {{ $application->extras->nama_asli }}</td></tr>
+        <tr><td>Nama Panggung (Alias)</td><td>: {{ $application->extras->alias }}</td></tr>
         <tr><td>Fee Disepakati</td><td>: Rp {{ number_format($application->fee_final, 0, ',', '.') }}</td></tr>
         <tr><td>Grade</td><td>: {{ $application->grade }}</td></tr>
     </table>
@@ -41,7 +42,7 @@
             @if ($application->contract->ttd_extras_signature_path)
                 <img src="{{ storage_path('app/private/' . $application->contract->ttd_extras_signature_path) }}">
             @endif
-            <div class="signature-line">{{ $application->extras->alias }}</div>
+            <div class="signature-line">{{ $application->extras->nama_asli }}</div>
         </div>
     </div>
 </body>

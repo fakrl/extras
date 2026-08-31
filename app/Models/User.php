@@ -18,7 +18,7 @@ use Illuminate\Notifications\Notifiable;
 // tapi karena tidak ada route/controller yang nerima 'role'/'status' mentah
 // dari $request->all(); RegisterController & AdminManagementController
 // selalu set literal/hasil validasi enum, bukan pass-through raw input.
-#[Fillable(['name', 'email', 'password', 'role', 'status', 'nomor_wa'])]
+#[Fillable(['name', 'email', 'username', 'password', 'role', 'status', 'nomor_wa'])]
 // nomor_wa masuk Hidden — bukan super rahasia (bukan NIK/rekening), tapi
 // tembok anti-poaching (CLAUDE.md §5) taruh kontak Extras di kolom ❌ untuk
 // Casting Director; defense-in-depth kalau nanti ada endpoint yang serialize

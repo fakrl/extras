@@ -19,7 +19,9 @@ class ReviewController extends Controller
     public function index(Request $request)
     {
         $applications = ProjectApplication::where('status_partisipasi', 'diajukan_ke_cd')
-            ->with('extras:id,alias,foto_profil_path,video_profil_path', 'extras.photos', 'castingProject:id,nama_produksi')
+            // extras.user dibatasi ke id+username saja — CD cuma butuh itu
+            // buat tampilan "Alias (@username)", bukan kontak/email Extras.
+            ->with('extras:id,user_id,alias,foto_profil_path,video_profil_path', 'extras.user:id,username', 'extras.photos', 'castingProject:id,nama_produksi')
             ->latest()
             ->get();
 

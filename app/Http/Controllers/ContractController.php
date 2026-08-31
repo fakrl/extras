@@ -31,18 +31,34 @@ class ContractController extends Controller
         abort_unless($application->bolehDilihatOleh($request->user()), 403);
 
         if (! $application->contract) {
-            // RF-04: gate sebelum auto-generate — kontrak PDF tidak boleh
-            // dibuat sampai Extras lengkapi NIK (rekening ikut ditawarkan di
-            // form yang sama, tapi cuma dikonfirmasi kalau memang sudah ada
-            // — belum ada jalur lain yang mengisinya, jadi tidak diwajibkan).
-            if (! $application->extras->nik) {
+            // Gate sebelum auto-generate — kontrak PDF tidak boleh dibuat
+            // sampai data yang muncul di dokumen lengkap: nama_asli (nama
+            // penandatangan, diisi bareng alias di halaman profil) lalu NIK
+            // (RF-04, sengaja di form terpisah demi data minimization;
+            // rekening ikut ditawarkan di form itu tapi tidak diwajibkan).
+            $kurang = match (true) {
+                ! $application->extras->nama_asli => [
+                    redirect()->route('extras.profile.edit'),
+                    'Lengkapi Nama Asli (sesuai KTP) di profil dulu ya, itu yang dipakai di dokumen kontrak.',
+                    'Extras belum melengkapi Nama Asli, kontrak belum bisa dibuat.',
+                ],
+                ! $application->extras->nik => [
+                    redirect()->route('extras.kontrak.lengkapi-ktp', $application),
+                    'Lengkapi NIK dulu ya, kontrak otomatis dibuat setelah itu.',
+                    'Extras belum melengkapi NIK, kontrak belum bisa dibuat.',
+                ],
+                default => null,
+            };
+
+            if ($kurang) {
+                [$tujuanExtras, $pesanExtras, $pesanAdmin] = $kurang;
+
                 if ($request->user()->role === 'extras') {
-                    return redirect()->route('extras.kontrak.lengkapi-ktp', $application)
-                        ->with('info', 'Lengkapi NIK dulu ya, kontrak otomatis dibuat setelah itu.');
+                    return $tujuanExtras->with('info', $pesanExtras);
                 }
 
                 return redirect()->route('admin.projects.applicants', $application->castingProject)
-                    ->with('error', 'Extras belum melengkapi NIK, kontrak belum bisa dibuat.');
+                    ->with('error', $pesanAdmin);
             }
 
             abort_if($application->status_partisipasi !== 'lolos', 422, 'Kontrak hanya dibuat setelah Extras dinyatakan Lolos.');

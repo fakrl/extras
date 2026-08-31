@@ -17,7 +17,7 @@ class UserManagementController extends Controller
     public function index()
     {
         $castingDirectors = User::where('role', 'casting_director')->get();
-        $extras = User::where('role', 'extras')->with('extrasProfile')->get();
+        $extras = User::where('role', 'extras')->with('extrasProfile.user:id,username')->get();
 
         return view('admin.users.index', compact('castingDirectors', 'extras'));
     }
