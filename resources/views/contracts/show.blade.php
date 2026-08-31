@@ -17,6 +17,10 @@
     @endif
 </p>
 
+@if ($application->contract->isVoided())
+    <div class="alert-danger" style="font-weight: bold; margin-bottom: 16px;">TIDAK BERLAKU — Pendaftaran Dibatalkan pada {{ $application->contract->voided_at->format('d M Y H:i') }}</div>
+@endif
+
 <div class="card" style="margin-bottom: 16px;">
     <div style="font-size: 14px; font-weight: 500; margin-bottom: 8px;">Status tanda tangan</div>
     <ul style="margin: 0; padding-left: 18px; font-size: 13.5px;">
@@ -25,17 +29,19 @@
     </ul>
 </div>
 
-@if (! $sudahTtd)
-    <form method="POST" action="{{ route('contracts.sign', $application) }}" id="sign-form">
-        @csrf
-        <x-signature-pad name="signature" />
-        <button type="submit" class="btn btn-brand" style="margin-top: 10px;">Simpan Tanda Tangan</button>
-    </form>
-@else
-    <div class="alert-success">Kamu sudah menandatangani kontrak ini.</div>
-@endif
+@if (! $application->contract->isVoided())
+    @if (! $sudahTtd)
+        <form method="POST" action="{{ route('contracts.sign', $application) }}" id="sign-form">
+            @csrf
+            <x-signature-pad name="signature" />
+            <button type="submit" class="btn btn-brand" style="margin-top: 10px;">Simpan Tanda Tangan</button>
+        </form>
+    @else
+        <div class="alert-success">Kamu sudah menandatangani kontrak ini.</div>
+    @endif
 
-@if ($application->contract->isFullySigned())
-    <div class="alert-info" style="margin-top: 12px;">Kontrak sudah ditandatangani lengkap kedua pihak. Lanjut ke proses pembayaran.</div>
+    @if ($application->contract->isFullySigned())
+        <div class="alert-info" style="margin-top: 12px;">Kontrak sudah ditandatangani lengkap kedua pihak. Lanjut to proses pembayaran.</div>
+    @endif
 @endif
 @endsection

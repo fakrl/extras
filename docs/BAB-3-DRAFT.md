@@ -129,9 +129,10 @@ Modul Pembatalan
 
 | Kode | Kebutuhan | Aktor |
 |---|---|---|
-| RF-33 | Admin Default atau Extras dapat membatalkan keikutsertaan pada status "Deal" dengan mengisi alasan pembatalan | Admin Default/Extras |
+| RF-33 | Admin Default atau Extras dapat membatalkan keikutsertaan pada status "Deal", "Lolos", atau "Kontrak Ditandatangani" (diperluas dari status "Deal" saja; revisi 31 Agustus 2026) dengan mengisi alasan pembatalan | Admin Default/Extras |
 | RF-34 | Sistem mencatat riwayat pembatalan dan menghitung akumulasi pembatalan mendadak untuk setiap Extras | Sistem |
 | RF-35 | Korlap dapat memberikan catatan atau sanksi terhadap Extras berdasarkan kondisi di lapangan (misalnya keterlambatan atau pelanggaran ketentuan wardrobe) | Korlap |
+| RF-53 | Korlap dapat mencatat kehadiran Extras per tanggal shooting sebagai catatan formal, terpisah dari catatan/sanksi (RF-35) (ditambahkan pasca-proposal, 31 Agustus 2026) | Korlap |
 
 Modul Notifikasi
 

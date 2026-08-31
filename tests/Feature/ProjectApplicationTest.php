@@ -6,8 +6,11 @@ use App\Models\CastingProject;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use App\Models\User;
+use App\Services\PdfGeneratorService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -380,5 +383,151 @@ class ProjectApplicationTest extends TestCase
 
         $this->assertSame(0, $extras->fresh()->cancel_count);
         $this->assertNotSame('melanggar', $extras->fresh()->status);
+    }
+
+    public function test_batalkan_dengan_kontrak_mengeset_voided_at_dan_meregenerasi_pdf(): void
+    {
+        Storage::fake('local');
+        Mail::fake();
+
+        $admin = User::factory()->create(['role' => 'admin_default']);
+        $extrasUser = User::factory()->create(['role' => 'extras']);
+        $extras = ExtrasProfile::create([
+            'user_id' => $extrasUser->id,
+            'alias' => 'Alias Test',
+            'nama_asli' => 'Nama Asli KTP',
+            'nik' => '3201234567890001',
+        ]);
+        $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
+
+        $application = ProjectApplication::create([
+            'casting_project_id' => $project->id,
+            'extras_id' => $extras->id,
+            'status_partisipasi' => 'lolos',
+            'fee_final' => 200000,
+        ]);
+
+        // Access contracts.show to auto-generate contract and pdf
+        $response = $this->actingAs($extrasUser)->get(route('contracts.show', $application));
+        $response->assertOk();
+
+        $contract = $application->contract;
+        $this->assertNotNull($contract);
+        $this->assertNull($contract->voided_at);
+        $this->assertNotNull($contract->pdf_path);
+
+        $this->assertTrue(Storage::disk('local')->exists($contract->pdf_path));
+
+        $originalHtml = view('contracts.pdf-template', ['application' => $application])->render();
+        $this->assertStringNotContainsString('TIDAK BERLAKU', $originalHtml);
+
+        // Cancel application
+        $application->batalkan('admin', 'Client cancel');
+
+        $this->assertSame('dibatalkan', $application->fresh()->status_partisipasi);
+        $this->assertNotNull($contract->fresh()->voided_at);
+        $this->assertTrue($contract->fresh()->isVoided());
+
+        $this->assertTrue(Storage::disk('local')->exists($contract->pdf_path));
+
+        $regeneratedHtml = view('contracts.pdf-template', ['application' => $application->fresh()])->render();
+        $this->assertStringContainsString('TIDAK BERLAKU', $regeneratedHtml);
+    }
+
+    public function test_batalkan_tetap_sukses_walau_regenerasi_pdf_gagal(): void
+    {
+        Storage::fake('local');
+        Mail::fake();
+
+        $admin = User::factory()->create(['role' => 'admin_default']);
+        $extrasUser = User::factory()->create(['role' => 'extras']);
+        $extras = ExtrasProfile::create([
+            'user_id' => $extrasUser->id,
+            'alias' => 'Alias Test',
+            'nama_asli' => 'Nama Asli KTP',
+            'nik' => '3201234567890002',
+        ]);
+        $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
+
+        $application = ProjectApplication::create([
+            'casting_project_id' => $project->id,
+            'extras_id' => $extras->id,
+            'status_partisipasi' => 'lolos',
+            'fee_final' => 200000,
+        ]);
+
+        $this->actingAs($extrasUser)->get(route('contracts.show', $application))->assertOk();
+
+        // Regenerasi PDF adalah efek samping arsip, bukan syarat sukses
+        // pembatalan (lihat komentar di ProjectApplication::batalkan()) -
+        // paksa gagal di sini untuk buktikan batalkan() tetap sukses.
+        $this->app->bind(PdfGeneratorService::class, function () {
+            $mock = \Mockery::mock(PdfGeneratorService::class);
+            $mock->shouldReceive('generate')->andThrow(new \RuntimeException('dompdf render gagal'));
+
+            return $mock;
+        });
+
+        $cancellation = $application->batalkan('admin', 'Test kegagalan regenerasi PDF');
+
+        $this->assertNotNull($cancellation);
+        $this->assertSame('dibatalkan', $application->fresh()->status_partisipasi);
+        $this->assertNotNull($application->contract->fresh()->voided_at);
+    }
+
+    public function test_batalkan_tanpa_kontrak_tidak_error(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin_default']);
+        $extrasUser = User::factory()->create(['role' => 'extras']);
+        $extras = ExtrasProfile::create([
+            'user_id' => $extrasUser->id,
+            'alias' => 'Alias Test',
+        ]);
+        $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
+
+        $application = ProjectApplication::create([
+            'casting_project_id' => $project->id,
+            'extras_id' => $extras->id,
+            'status_partisipasi' => 'deal',
+        ]);
+
+        // Cancel application - should not throw error or try to void contract since it doesn't exist
+        $application->batalkan('admin', 'Cancel deal');
+        $this->assertSame('dibatalkan', $application->fresh()->status_partisipasi);
+    }
+
+    public function test_halaman_kontrak_yang_dibatalkan_bisa_dilihat_dan_menampilkan_label_voided(): void
+    {
+        Storage::fake('local');
+        Mail::fake();
+
+        $admin = User::factory()->create(['role' => 'admin_default']);
+        $extrasUser = User::factory()->create(['role' => 'extras']);
+        $extras = ExtrasProfile::create([
+            'user_id' => $extrasUser->id,
+            'alias' => 'Alias Test',
+            'nama_asli' => 'Nama Asli KTP',
+            'nik' => '3201234567890001',
+        ]);
+        $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
+
+        $application = ProjectApplication::create([
+            'casting_project_id' => $project->id,
+            'extras_id' => $extras->id,
+            'status_partisipasi' => 'lolos',
+            'fee_final' => 200000,
+        ]);
+
+        // Access contracts.show to auto-generate contract and pdf
+        $this->actingAs($extrasUser)->get(route('contracts.show', $application))->assertOk();
+
+        // Cancel
+        $application->batalkan('admin', 'Cancel');
+
+        // View again
+        $response = $this->actingAs($extrasUser)->get(route('contracts.show', $application));
+        $response->assertOk();
+        $response->assertSee('TIDAK BERLAKU — Pendaftaran Dibatalkan pada');
+        $response->assertDontSee('id="sign-form"', false);
     }
 }

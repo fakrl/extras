@@ -4,12 +4,14 @@ namespace App\Models;
 
 use App\Mail\HasilSeleksiMail;
 use App\Mail\KonfirmasiFeeMail;
+use App\Services\PdfGeneratorService;
 use App\Services\WhatsAppService;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 #[Fillable(['casting_project_id', 'extras_id', 'casting_project_class_id', 'status_partisipasi', 'grade', 'fee_final', 'bentrok_jadwal_flag', 'alasan_tolak'])]
@@ -241,6 +243,31 @@ class ProjectApplication extends Model
         ]);
 
         $this->update(['status_partisipasi' => 'dibatalkan']);
+
+        if ($this->contract) {
+            $this->contract->update(['voided_at' => now()]);
+
+            // Regenerasi PDF arsip supaya watermark "TIDAK BERLAKU" ke-bake
+            // di file (halaman show.blade.php cek isVoided() live, tapi file
+            // PDF statis nggak bisa update sendiri). Efek samping arsip,
+            // BUKAN syarat sukses pembatalan — kalau gagal (render/disk),
+            // jangan sampai batalkan() ikut gagal, cancellation & status
+            // sudah sah tercatat di atas.
+            if ($this->contract->pdf_path) {
+                try {
+                    app(PdfGeneratorService::class)->generate(
+                        'contracts.pdf-template',
+                        ['application' => $this],
+                        $this->contract->pdf_path
+                    );
+                } catch (\Throwable $e) {
+                    Log::warning('Gagal regenerasi PDF kontrak saat void', [
+                        'project_application_id' => $this->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+        }
 
         if ($isMendadak && $olehSiapa === 'extras') {
             $this->extras->recordCancellation();
