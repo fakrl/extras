@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="id" data-theme="light">
 <head>
-    <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme') || 'light');</script>
+    <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme-v2') || 'light');</script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="dark light">
@@ -182,7 +182,7 @@
             document.getElementById('theme-toggle').addEventListener('click', function () {
                 var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
                 document.documentElement.setAttribute('data-theme', next);
-                localStorage.setItem('jbtb-theme', next);
+                localStorage.setItem('jbtb-theme-v2', next);
                 icon.className = next === 'dark' ? 'ti ti-sun' : 'ti ti-moon';
             });
         })();

@@ -409,7 +409,7 @@
 
     <script>
         (function () {
-            var saved = localStorage.getItem('jbtb-theme') || 'light';
+            var saved = localStorage.getItem('jbtb-theme-v2') || 'light';
             document.documentElement.setAttribute('data-theme', saved);
 
             document.addEventListener('DOMContentLoaded', function () {
@@ -422,7 +422,7 @@
                         var current = document.documentElement.getAttribute('data-theme');
                         var next = current === 'dark' ? 'light' : 'dark';
                         document.documentElement.setAttribute('data-theme', next);
-                        localStorage.setItem('jbtb-theme', next);
+                        localStorage.setItem('jbtb-theme-v2', next);
                         icon.className = next === 'dark' ? 'ti ti-sun' : 'ti ti-moon';
                     });
                 }
