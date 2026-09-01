@@ -1,34 +1,27 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="dark">
+<html lang="id" data-theme="light">
 <head>
+    <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme') || 'light');</script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark light">
     <title>SIM Casting JBTB</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+    @include('partials.theme-style')
     <style>
-        :root[data-theme="dark"] {
-            --bg-page: #0d1b12;
-            --bg-card: #132a1b;
-            --text-primary: #f0fdf4;
-            --text-secondary: #a8c2ae;
-            --text-muted: #6b8672;
-            --border-color: rgba(255,255,255,0.06);
-            --accent: #22c55e;
-            --accent-on: #052e16;
-        }
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-page);
-            color: var(--text-primary);
-            margin: 0;
-        }
         .wrap { max-width: 640px; margin: 0 auto; padding: 48px 24px 80px; }
+        .top-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
         .logo {
             width: 48px; height: 48px; border-radius: 12px;
             background: var(--accent); color: var(--accent-on);
             display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 22px; margin-bottom: 20px;
+            font-weight: 700; font-size: 22px;
+        }
+        .theme-toggle-btn {
+            width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
+            background: var(--bg-card-hover); color: var(--accent-strong);
+            display: flex; align-items: center; justify-content: center; font-size: 16px;
         }
         h1 { font-size: 26px; font-weight: 700; margin: 0 0 8px; }
         .tagline { font-size: 15px; color: var(--text-secondary); line-height: 1.6; margin: 0 0 24px; }
@@ -81,7 +74,12 @@
 </head>
 <body>
     <div class="wrap">
-        <div class="logo">J</div>
+        <div class="top-row">
+            <div class="logo">J</div>
+            <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Ganti tema">
+                <i class="ti ti-moon" id="theme-icon"></i>
+            </button>
+        </div>
         <h1>SIM Casting JBTB</h1>
         <p class="tagline">Platform manajemen casting untuk JBTB Casting — dari daftar, apply proyek, seleksi, kontrak digital, sampai kerja & dibayar, semua dalam satu sistem.</p>
 
@@ -174,5 +172,20 @@
             })();
         </script>
     @endguest
+
+    <script>
+        (function () {
+            var icon = document.getElementById('theme-icon');
+            var current = document.documentElement.getAttribute('data-theme');
+            icon.className = current === 'dark' ? 'ti ti-sun' : 'ti ti-moon';
+
+            document.getElementById('theme-toggle').addEventListener('click', function () {
+                var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                localStorage.setItem('jbtb-theme', next);
+                icon.className = next === 'dark' ? 'ti ti-sun' : 'ti ti-moon';
+            });
+        })();
+    </script>
 </body>
 </html>
