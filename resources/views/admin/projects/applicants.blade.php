@@ -66,6 +66,9 @@
                         @if ($app->grade)
                             <span class="badge badge-aktif">Grade {{ $app->grade }}</span>
                         @endif
+                        @if ($app->extras->apresiasi)
+                            <span class="badge badge-aktif" title="{{ $app->extras->apresiasi_catatan }}"><i class="ti ti-star-filled"></i> Apresiasi</span>
+                        @endif
                     </div>
                 </div>
                 <div style="text-align: right;">
@@ -115,6 +118,17 @@
                 @if (in_array(auth()->user()->role, ['admin_default', 'admin_korlap'], true))
                     <button type="button" class="btn btn-sm" onclick="document.getElementById('catatan-dialog-{{ $app->id }}').showModal()">Catatan Lapangan</button>
                 @endif
+                @if (auth()->user()->role === 'admin_default')
+                    @if ($app->extras->apresiasi)
+                        <form method="POST" action="{{ route('admin.applications.apresiasi', $app) }}">
+                            @csrf
+                            <input type="hidden" name="apresiasi" value="0">
+                            <button type="submit" class="btn btn-sm btn-danger-outline">Cabut Apresiasi</button>
+                        </form>
+                    @else
+                        <button type="button" class="btn btn-sm" onclick="document.getElementById('apresiasi-dialog-{{ $app->id }}').showModal()"><i class="ti ti-star"></i> Apresiasi</button>
+                    @endif
+                @endif
             </div>
 
             @if ($app->fieldNotes->isNotEmpty())
@@ -141,6 +155,21 @@
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
                     <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
                     <button type="submit" class="btn btn-sm btn-danger-outline">Tolak Kandidat</button>
+                </div>
+            </form>
+        </dialog>
+    @endif
+
+    @if (auth()->user()->role === 'admin_default' && ! $app->extras->apresiasi)
+        <dialog id="apresiasi-dialog-{{ $app->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
+            <form method="POST" action="{{ route('admin.applications.apresiasi', $app) }}" style="padding: 18px;">
+                @csrf
+                <input type="hidden" name="apresiasi" value="1">
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Beri Apresiasi ke {{ $app->extras->alias ?? 'kandidat' }}?</div>
+                <textarea name="apresiasi_catatan" rows="3" maxlength="1000" placeholder="Catatan internal (opsional), mis. alasan diapresiasi." style="width: 100%; margin-bottom: 12px;"></textarea>
+                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
+                    <button type="submit" class="btn btn-sm btn-brand">Simpan Apresiasi</button>
                 </div>
             </form>
         </dialog>

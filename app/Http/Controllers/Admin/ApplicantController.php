@@ -64,4 +64,32 @@ class ApplicantController extends Controller
 
         return back()->with('status', 'Catatan lapangan berhasil disimpan.');
     }
+
+    /**
+     * RF-54: Admin Default memberi / mencabut badge Apresiasi pada profil Extras.
+     * Murni catatan internal Admin, tidak terlihat oleh Extras maupun CD.
+     */
+    public function toggleApresiasi(Request $request, ProjectApplication $application): RedirectResponse
+    {
+        $data = $request->validate([
+            'apresiasi_catatan' => ['nullable', 'string', 'max:1000'],
+            'apresiasi' => ['nullable', 'boolean'],
+        ]);
+
+        $extras = $application->extras;
+        $isApresiasi = $request->has('apresiasi')
+            ? $request->boolean('apresiasi')
+            : ! $extras->apresiasi;
+
+        $extras->update([
+            'apresiasi' => $isApresiasi,
+            'apresiasi_catatan' => $isApresiasi ? ($data['apresiasi_catatan'] ?? null) : null,
+        ]);
+
+        $pesan = $isApresiasi
+            ? 'Badge Apresiasi berhasil disematkan pada Extras.'
+            : 'Badge Apresiasi berhasil dicabut.';
+
+        return back()->with('status', $pesan);
+    }
 }

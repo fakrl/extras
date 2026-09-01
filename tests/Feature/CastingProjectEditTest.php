@@ -15,7 +15,7 @@ class CastingProjectEditTest extends TestCase
 
     private function buatProyek(User $admin): CastingProject
     {
-        $project = CastingProject::create([
+        $project = CastingProject::factory()->create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Proyek Lama',
             'client_ph' => 'PH Lama',

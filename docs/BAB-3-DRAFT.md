@@ -36,6 +36,7 @@ Modul Autentikasi dan Manajemen Akun
 | RF-03 | Login dengan hak akses berbeda untuk tujuh aktor sistem sesuai peran (Role-Based Access Control) | Semua |
 | RF-04 | Validasi duplikasi NIK saat Extras dinyatakan lolos seleksi (satu NIK untuk satu akun) | Sistem |
 | RF-05 | Admin Default dapat mengelola akun CD dan menonaktifkan akun Extras yang bermasalah | Admin Default |
+| RF-54 | Admin Default dapat memberi atau mencabut badge Apresiasi pada Extras beserta catatan internal opsional, sebagai catatan kualitatif yang tidak terlihat oleh CD maupun Extras (ditambahkan pasca-proposal, 1 September 2026) | Admin Default |
 
 Modul Profil Extras
 

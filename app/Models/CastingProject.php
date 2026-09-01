@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use Database\Factories\CastingProjectFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,6 +12,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['admin_id', 'nama_produksi', 'client_ph', 'wa_group_link', 'deadline', 'kuota', 'is_urgent', 'status'])]
 class CastingProject extends Model
 {
+    /** @use HasFactory<CastingProjectFactory> */
+    use HasFactory;
+
     protected function casts(): array
     {
         return [
