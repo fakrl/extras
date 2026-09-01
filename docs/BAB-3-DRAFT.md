@@ -37,6 +37,7 @@ Modul Autentikasi dan Manajemen Akun
 | RF-04 | Validasi duplikasi NIK saat Extras dinyatakan lolos seleksi (satu NIK untuk satu akun) | Sistem |
 | RF-05 | Admin Default dapat mengelola akun CD dan menonaktifkan akun Extras yang bermasalah | Admin Default |
 | RF-54 | Admin Default dapat memberi atau mencabut badge Apresiasi pada Extras beserta catatan internal opsional, sebagai catatan kualitatif yang tidak terlihat oleh CD maupun Extras (ditambahkan pasca-proposal, 1 September 2026) | Admin Default |
+| RF-55 | Halaman beranda publik (compro) menampilkan perkenalan sistem, alur kerja pendaftaran Extras, dan jumlah proyek casting yang sedang membuka pendaftaran, tanpa detail per proyek — nama client (`client_ph`) dan budget tidak pernah ditampilkan di halaman publik manapun (ditambahkan pasca-proposal, 1 September 2026) | Publik/Sistem |
 
 Modul Profil Extras
 
@@ -65,6 +66,7 @@ Modul Manajemen Proyek Casting
 | RF-09 | Admin Default membuat proyek casting: nama produksi, kriteria per kelas, kuota, deadline, tanggal-tanggal shooting (dapat lebih dari satu tanggal dan tidak harus berurutan), serta penanda "Butuh Dadakan/Urgent" | Admin Default |
 | RF-10 | Admin Default mengedit atau menutup proyek casting | Admin Default |
 | RF-11 | Extras melihat daftar proyek casting yang dibuka, diurutkan berdasarkan fee tertinggi dan status urgent di posisi teratas | Extras |
+| RF-56 | Admin Default membagikan tautan publik per proyek (disebar via WhatsApp); pengunjung tautan (termasuk yang belum punya akun) dapat melihat kriteria & kuota proyek tanpa nama client, lalu diarahkan otomatis ke halaman pendaftaran proyek tersebut setelah daftar/masuk; tautan proyek yang sudah ditutup/lewat deadline/kuota penuh menampilkan halaman pemberitahuan, bukan error (ditambahkan pasca-proposal, 1 September 2026) | Admin Default/Extras/Publik |
 
 Modul Pendaftaran dan Seleksi
 

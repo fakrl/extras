@@ -9,7 +9,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['admin_id', 'nama_produksi', 'client_ph', 'wa_group_link', 'deadline', 'kuota', 'is_urgent', 'status'])]
+// 'share_token' TETAP masuk $fillable, tapi proteksinya bukan dari sini —
+// sama pola dengan ExtrasProfile::foto_profil_path: cuma whitelist teknis,
+// tidak ada route/controller yang nerima 'share_token' mentah dari request
+// user. Satu-satunya jalur yang mengisi field ini adalah
+// Admin\CastingProjectController::store() lewat Str::random(32) literal.
+#[Fillable(['admin_id', 'nama_produksi', 'client_ph', 'share_token', 'wa_group_link', 'deadline', 'kuota', 'is_urgent', 'status'])]
 class CastingProject extends Model
 {
     /** @use HasFactory<CastingProjectFactory> */
@@ -56,6 +61,28 @@ class CastingProject extends Model
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
+    }
+
+    /**
+     * RF-56: definisi "kuota penuh" dipakai konsisten di seluruh fitur link
+     * publik (gerbang B4/B5) — total pendaftar vs kuota level-proyek, BUKAN
+     * kuota_kelas per kelas (konsep berbeda, breakdown internal CD/Admin).
+     */
+    public function kuotaPenuh(): bool
+    {
+        return $this->applications()->count() >= $this->kuota;
+    }
+
+    /**
+     * RF-56: satu-satunya gerbang "masih bisa didaftarin" dipakai
+     * PublicEventController, dan return-to-intent di ProfileController/
+     * LoginController — supaya definisinya konsisten di mana pun dicek.
+     */
+    public function menerimaPendaftaran(): bool
+    {
+        return $this->status === 'dibuka'
+            && ! $this->deadline->isBefore(today())
+            && ! $this->kuotaPenuh();
     }
 
     /**

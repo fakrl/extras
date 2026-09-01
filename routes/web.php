@@ -19,19 +19,24 @@ use App\Http\Controllers\Extras\CastingProjectController as ExtrasCastingProject
 use App\Http\Controllers\Extras\DashboardController as ExtrasDashboardController;
 use App\Http\Controllers\Extras\FeeNegotiationController as ExtrasFeeNegotiationController;
 use App\Http\Controllers\Extras\ProfileController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PublicEventController;
 use App\Http\Controllers\SuperAdmin\AdminManagementController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\SuperAdmin\MonitoringController;
 use App\Http\Controllers\SuperAdmin\ProjectAssignmentController;
 use Illuminate\Support\Facades\Route;
 
-// Landing page publik — compro/informasi singkat + tombol Masuk. Bukan auth
-// gate: tetap tampil apa pun status login user, sesuai request "simpel aja".
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+// RF-55: homepage compro publik. Bukan auth gate: tetap tampil apa pun
+// status login user, konten CTA-nya saja yang beda (lihat HomeController).
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// RF-56: link publik pendaftaran per event, dibagikan Admin lewat WA.
+// Sengaja di luar grup middleware auth/guest — guest maupun user login
+// (extras/admin/CD) manapun boleh buka, otorisasi granular di controller.
+Route::get('/event/{token}', [PublicEventController::class, 'show'])->name('public.event.show');
 
 // Pintu masuk universal setelah login (dipakai mis. link "kembali ke
 // dashboard" generik) — lempar ke dashboard sesuai role via

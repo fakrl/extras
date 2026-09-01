@@ -60,6 +60,9 @@
                 </div>
                 <div class="entity-card-actions">
                     <a href="{{ route('admin.projects.edit', $project) }}" class="btn" style="flex: 1; text-align: center;">Edit</a>
+                    @if ($project->status === 'dibuka' && $project->share_token)
+                        <button type="button" class="btn" style="flex: 1;" data-copy-link="{{ url('/event/'.$project->share_token) }}">Copy Link Pendaftaran</button>
+                    @endif
                 </div>
                 <div class="entity-card-actions">
                     <form method="POST" action="{{ route('admin.projects.toggle-status', $project) }}" style="flex: 1;">
@@ -74,4 +77,16 @@
         @endforeach
     </div>
 @endif
+
+<script>
+    document.querySelectorAll('[data-copy-link]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            navigator.clipboard.writeText(btn.dataset.copyLink).then(function () {
+                var original = btn.textContent;
+                btn.textContent = 'Link disalin!';
+                setTimeout(function () { btn.textContent = original; }, 2000);
+            });
+        });
+    });
+</script>
 @endsection
