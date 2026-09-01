@@ -141,6 +141,9 @@ Route::middleware(['auth', 'role:admin_default,admin_talco,admin_korlap,admin_so
             Route::patch('/applications/{application}/reject', [ApplicantController::class, 'reject'])
                 ->name('admin.applications.reject');
 
+            Route::post('/applications/{application}/apresiasi', [ApplicantController::class, 'toggleApresiasi'])
+                ->name('admin.applications.apresiasi');
+
             Route::get('/applications/{application}/nego', [AdminFeeNegotiationController::class, 'show'])
                 ->name('admin.negotiations.show');
             Route::post('/applications/{application}/nego/ajukan', [AdminFeeNegotiationController::class, 'ajukanAwal'])

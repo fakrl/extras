@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use App\Exceptions\NikDuplikatException;
+use Database\Factories\ExtrasProfileFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -44,15 +46,21 @@ use Illuminate\Support\Facades\Storage;
     'rekening',
     'foto_profil_path',
     'video_profil_path',
+    'apresiasi',
+    'apresiasi_catatan',
 ])]
 class ExtrasProfile extends Model
 {
+    /** @use HasFactory<ExtrasProfileFactory> */
+    use HasFactory;
+
     protected function casts(): array
     {
         return [
             'nik' => 'encrypted',
             'nama_asli' => 'encrypted',
             'rekening' => 'encrypted',
+            'apresiasi' => 'boolean',
             // Array of {label, url} — RF-14 & CLAUDE.md §5: cuma dilihat
             // Extras & Admin, tidak pernah dikirim ke view Casting Director.
             'tautan_tambahan' => 'array',
