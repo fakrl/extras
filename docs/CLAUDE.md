@@ -39,8 +39,8 @@
 ## 3. Model Bisnis & Alur Uang (PENTING — inti pain)
 
 **Alur uang (dua kaki):**
-1. **Client (CD) → Admin (JBTB):** JBTB nagih client lewat **Invoice** (uang masuk). Lihat `Invoice JBTB CASTING X.xlsx`.
-2. **Admin (JBTB) → Extras:** JBTB bayar extras (payout). Lihat `JBTB BUDGET EXTRAS KUI APPROVAL.xlsx`.
+1. **Client (CD) → Admin (JBTB):** JBTB nagih client lewat **Invoice** (uang masuk). Contoh riil pernah ada di `Invoice JBTB CASTING X.xlsx`, sudah dihapus dari repo (data rahasia, repo ini public).
+2. **Admin (JBTB) → Extras:** JBTB bayar extras (payout). Contoh riil pernah ada di `JBTB BUDGET EXTRAS KUI APPROVAL.xlsx`, sudah dihapus dari repo (data rahasia, repo ini public).
 3. **Margin agensi = SELISIH** antara fee dari client dan payout ke extras (agensi biasa motong ±20%, tapi per-kepala bisa beda).
 
 **Dari data Excel asli (decode kolom):**
@@ -185,7 +185,7 @@ Satu file HTML clickable, 3 peran (login demo → pilih peran; **di produksi TID
 ## 10. Tech Stack (untuk build)
 
 - **Backend:** Laravel (PHP) + **MySQL**. Ikuti pola tim (queued Mailable + SMTP Gmail seperti Nobel Akademi). **INGAT: restart `queue:work` tiap deploy/ubah kode job** — kalau tidak, worker pakai versi lama. Untuk tes email tanpa DNS: `MAIL_MAILER=log`.
-- **Frontend:** Blade + **Bootstrap 5** (rekomendasi Design System doc; banyak template admin gratis: AdminLTE/SB Admin/CoreUI) ATAU Livewire/Alpine (pola Nobiplay). Terapkan design token dari `19-Design-System.md` tapi warna disesuaikan ke brand ijo-hitam.
+- **Frontend:** Blade + **Bootstrap 5** (rekomendasi Design System doc; banyak template admin gratis: AdminLTE/SB Admin/CoreUI) ATAU Livewire/Alpine (pola Nobiplay). Terapkan design token dari `_archive/19-Design-System.md` tapi warna disesuaikan ke brand ijo-hitam.
 - **WhatsApp:** `whatsapp-web.js` self-hosted (revisi 28 Agu 2026 — Fonnte/Wablas dicek ke sumbernya sendiri, TERNYATA juga "unofficial"/risiko banned sama, tidak ada keuntungan bayar; detail lihat `OPEN-QUESTIONS-PROPOSAL.md` poin 3). Jalan sebagai proses Node.js/Express terpisah 24/7 (port lokal, mis. 3001), Laravel panggil via `Http::post()`. Mitigasi wajib: nomor khusus sistem, volume rendah non-broadcast, WA kanal pelengkap — email tetap primer.
 - **Hosting:** shared hosting / VPS. Domain/SSL/akun infra **harus atas nama agensi** (biar sistem nggak mati pas developer lulus/cabut).
 - **Deployment/ops:** environment terpisah (dev/staging/prod, apalagi ada data KTP asli), backup terjadwal + tes restore, handover + manual admin (admin non-teknis).
@@ -194,7 +194,7 @@ Satu file HTML clickable, 3 peran (login demo → pilih peran; **di produksi TID
 
 ## 11. Data / Concern Produksi yang Masih Perlu Diklarifikasi
 
-- **Model uang final:** konfirmasi 2 kaki (Client→JBTB invoice; JBTB→Extras payout). Kadang di kwitansi client bayar talent langsung (cek `TALENT RELEASE EROS.pdf`) — pastikan sistem lacak kaki yang mana.
+- **Model uang final:** konfirmasi 2 kaki (Client→JBTB invoice; JBTB→Extras payout). Kadang di kwitansi client bayar talent langsung (cek `TALENT RELEASE EROS.pdf`, sudah dihapus dari repo — data rahasia, repo ini public) — pastikan sistem lacak kaki yang mana.
 - **Teks kontrak & invoice riil** (klausul, penomoran, pajak/PPN) → PR orang bisnis.
 - **Consent & UU PDP:** form persetujuan + kebijakan privasi + retensi (SRS: 1 tahun) + mekanisme hapus, karena nyimpen **KTP asli**.
 - **Master data riil:** nilai kriteria (kategori warna kulit, ukuran baju), jenis proyek, rentang fee.
@@ -204,11 +204,11 @@ Satu file HTML clickable, 3 peran (login demo → pilih peran; **di produksi TID
 
 ## 12. Dokumen Sumber di Folder Ini
 
-- `Business Information.md`, `Requirement Baseline Summary.md`, `01-Kebutuhan-Fungsional-NonFungsional.md` — requirement awal (baseline 35 RF).
-- `17-SRS-IEEE29148-UML-Lengkap.md` — SRS lengkap (membengkak jadi **70 RF** + 18 RNF; UML, ERD, LRS, class diagram). ⚠️ scope besar, perlu disaring ke MVP.
-- `17-User-Flow-Documentation.md`, `18-Information-Architecture.md`, `19-Design-System.md` — flow, IA, design system.
-- **Excel:** `Invoice JBTB CASTING X.xlsx` (invoice JBTB→client, banyak sheet per proyek) · `JBTB BUDGET EXTRAS KUI APPROVAL.xlsx` (tracking payout extras + grade/kelas + rekening + cashflow harian). **Admin-only, rahasia.**
-- **Template kontrak (Talent Release):** `TALENT RELEASE - Fanita (1).pdf`, `TALENT RELEASE EROS.pdf` (+kwitansi), `Talent Release CAMEO.docx`, `Talent Release Kinema.docx`. **Formatnya beda-beda per client** — JBTB nampung format client, bukan 1 template baku.
+- `_archive/Business Information.md`, `_archive/Requirement Baseline Summary.md`, `_archive/01-Kebutuhan-Fungsional-NonFungsional.md` — requirement awal (baseline 35 RF), diarsipkan (historis, masih dikutip di sini buat konteks).
+- `_archive/17-SRS-IEEE29148-UML-Lengkap.md` — SRS lengkap (membengkak jadi **70 RF** + 18 RNF; UML, ERD, LRS, class diagram). ⚠️ scope besar, perlu disaring ke MVP. Diarsipkan.
+- `_archive/17-User-Flow-Documentation.md`, `_archive/18-Information-Architecture.md`, `_archive/19-Design-System.md` — flow, IA, design system. Diarsipkan.
+- **Excel** (`Invoice JBTB CASTING X.xlsx`, `JBTB BUDGET EXTRAS KUI APPROVAL.xlsx`) — **sudah dihapus dari repo** (1 September 2026): berisi data keuangan riil & rahasia, repo ini public. Isinya: invoice JBTB→client per proyek, dan tracking payout extras + grade/kelas + rekening + cashflow harian.
+- **Template kontrak (Talent Release)** (`TALENT RELEASE - Fanita (1).pdf`, `TALENT RELEASE EROS.pdf` + kwitansi, `Talent Release CAMEO.docx`, `Talent Release Kinema.docx`) — **sudah dihapus dari repo** (1 September 2026): berisi PII orang beneran (nama, KTP, tanda tangan), repo ini public. Formatnya beda-beda per client — JBTB nampung format client, bukan 1 template baku.
 - `prototype-jbtb-final.html` — prototype UI final (acuan visual/alur).
 
 ---
