@@ -84,6 +84,26 @@ class DashboardController extends Controller
         $assignmentSelesai = AdminProjectAssignment::where('status_log', 'selesai')->count();
         $assignmentTotal = AdminProjectAssignment::count();
 
+        // RF-49: rekap honor seluruh Admin (bukan super_admin/CD/extras).
+        // Volume kecil (puluhan admin maksimal) — loop pakai nominalTotal()
+        // yang sudah ada, nggak perlu raw SQL agregat.
+        $rekapHonorAdmin = User::whereIn('role', ['admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed'])
+            ->with('adminProjectAssignments.payroll')
+            ->get()
+            ->map(function (User $admin) use ($roleLabels) {
+                $selesai = $admin->adminProjectAssignments->where('status_log', 'selesai');
+
+                return (object) [
+                    'nama' => $admin->name,
+                    'role' => $roleLabels[$admin->role],
+                    'total_honor' => $selesai->sum(fn ($a) => $a->payroll?->nominalTotal() ?? 0),
+                    'proyek_selesai' => $selesai->count(),
+                    'proyek_berjalan' => $admin->adminProjectAssignments->count() - $selesai->count(),
+                ];
+            })
+            ->sortByDesc('total_honor')
+            ->values();
+
         return view('super-admin.dashboard', compact(
             'proyekBerjalan',
             'extrasAktif',
@@ -93,7 +113,8 @@ class DashboardController extends Controller
             'chartStatusExtras',
             'chartStatusPartisipasi',
             'assignmentSelesai',
-            'assignmentTotal'
+            'assignmentTotal',
+            'rekapHonorAdmin'
         ));
     }
 }

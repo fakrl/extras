@@ -1,9 +1,9 @@
-# SPEC.md — Selesai, Menunggu Prioritas Berikutnya dari Fakrul
+# SPEC.md — Selesai, Menunggu Prioritas Berikutnya
 
-> Terakhir diperbarui 31 Agustus 2026.
+> Terakhir diperbarui 1 September 2026.
 
-Semua pekerjaan pada spesifikasi "Contract Voiding + Sinkronisasi Dokumen Akademik" telah diselesaikan dan diverifikasi.
+RF-49 (rekap honor seluruh Admin di dashboard Super Admin) selesai — lihat `DEV-NOTES.md` Session 29. 228 test passing, 0 regresi.
 
 ## Berikutnya
 
-SPEC.md ini dikosongkan terlebih dahulu — menunggu prioritas berikutnya dari Fakrul untuk modul atau perbaikan selanjutnya.
+Kosong dulu. Kandidat sisa (belum diputuskan): fitur "Apresiasi" Extras (bentuk belum jelas), Inbox re-book CD (belum ada RF/scaffolding), ponytail kecil (Eloquent factory `ExtrasProfile`/`CastingProject` buat test lebih ringkas ke depan).

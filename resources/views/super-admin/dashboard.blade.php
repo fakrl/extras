@@ -70,6 +70,28 @@
         </div>
     </div>
 </div>
+
+<div class="card">
+    <div class="card-title">Rekap Honor Seluruh Admin</div>
+    <table>
+        <thead>
+            <tr><th>Nama Admin</th><th>Role</th><th>Total Honor</th><th>Proyek Selesai</th><th>Proyek Berjalan</th></tr>
+        </thead>
+        <tbody>
+            @forelse ($rekapHonorAdmin as $admin)
+                <tr>
+                    <td>{{ $admin->nama }}</td>
+                    <td>{{ $admin->role }}</td>
+                    <td>Rp {{ number_format($admin->total_honor, 0, ',', '.') }}</td>
+                    <td>{{ $admin->proyek_selesai }}</td>
+                    <td>{{ $admin->proyek_berjalan }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="5" style="text-align:center; color: var(--text-muted);">Belum ada Admin.</td></tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
 @endsection
 
 @push('scripts')
