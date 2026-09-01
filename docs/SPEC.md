@@ -1,8 +1,8 @@
 # SPEC.md — Selesai, Menunggu Prioritas Berikutnya
 
-> Terakhir diperbarui 1 September 2026.
+> Terakhir diperbarui 1 September 2026 (sore).
 
-Bagian A (rapihin `docs/`: hapus 16 file usang/rahasia, arsipkan 8 dokumen baseline ke `docs/_archive/`, update referensi di `CLAUDE.md`) dan Bagian B (audit `#[Fillable]` di 21 model — 0 bug ditemukan, sudah beres dari sesi-sesi lalu) selesai — lihat `DEV-NOTES.md` Session 31. 238 test passing, 0 regresi.
+Bagian A (fix git state `docs/Draft penulisan/`, duplikat sengaja 4 file proposal Fakrul) dan Bagian B (RF-55 homepage compro + RF-56 link publik pendaftaran event, termasuk return-to-intent lewat register/login) selesai — lihat `DEV-NOTES.md` Session 32. 246 test passing (+8 dari sebelumnya), 0 regresi.
 
 ## Berikutnya
 

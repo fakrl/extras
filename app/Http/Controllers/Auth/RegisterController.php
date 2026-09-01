@@ -14,9 +14,18 @@ class RegisterController extends Controller
 {
     /**
      * RF-01: registrasi mandiri Extras, publik, tanpa kode undangan.
+     *
+     * SPEC.md Bagian B5: kalau datang dari tombol "Daftar" di link event
+     * publik (?event=token), simpan token itu ke session di sini — dibaca
+     * lagi nanti oleh ProfileController::update() setelah lengkapi-profil
+     * selesai (RF-06 tetap wajib jalan dulu, bukan di-skip).
      */
-    public function showExtras()
+    public function showExtras(Request $request)
     {
+        if ($request->query('event')) {
+            $request->session()->put('intended_event_token', $request->query('event'));
+        }
+
         return view('auth.register-extras');
     }
 

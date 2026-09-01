@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Extras;
 
 use App\Exceptions\NikDuplikatException;
 use App\Http\Controllers\Controller;
+use App\Models\CastingProject;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -114,6 +115,26 @@ class ProfileController extends Controller
             'nomor_wa' => $data['nomor_wa'] ?? null,
             'username' => $data['username'],
         ]);
+
+        // SPEC.md Bagian B5: return-to-intent begitu lengkapi-profil (langkah
+        // WAJIB pasca-registrasi, RF-06, TIDAK di-skip) selesai — kalau
+        // datang dari link event publik dan proyeknya masih valid, lempar ke
+        // halaman apply proyek itu, bukan ke halaman profil biasa. Dipanggil
+        // di update() (bukan cuma dari alur registrasi) SENGAJA — self-
+        // correcting lewat session pull(), cuma "nyala" sekali tepat setelah
+        // token itu di-set, lalu hilang, jadi aman dipanggil di sini juga
+        // untuk edit profil biasa berikutnya (session key sudah kosong).
+        $eventToken = $request->session()->pull('intended_event_token');
+        if ($eventToken) {
+            $project = CastingProject::where('share_token', $eventToken)->first();
+
+            if ($project && $project->menerimaPendaftaran()) {
+                return redirect()->route('extras.projects.show', $project)
+                    ->with('status', 'Profil berhasil disimpan. Yuk lanjut apply ke proyek ini!');
+            }
+
+            return redirect('/extras/profil')->with('status', 'Profil berhasil disimpan. Sayangnya proyek dari link yang kamu buka sudah tidak menerima pendaftaran.');
+        }
 
         return redirect('/extras/profil')->with('status', 'Profil berhasil disimpan. Begini tampilannya buat Admin & Casting Director:');
     }

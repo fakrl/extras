@@ -3,14 +3,24 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\CastingProject;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    public function show()
+    /**
+     * SPEC.md Bagian B5: sama seperti RegisterController::showExtras() —
+     * simpan token event dari ?event=token (link publik), dibaca lagi
+     * setelah login sukses di bawah.
+     */
+    public function show(Request $request)
     {
+        if ($request->query('event')) {
+            $request->session()->put('intended_event_token', $request->query('event'));
+        }
+
         return view('auth.login');
     }
 
@@ -46,6 +56,19 @@ class LoginController extends Controller
         }
 
         $request->session()->regenerate();
+
+        // SPEC.md Bagian B5: mekanisme TERPISAH dari redirect()->intended()
+        // (sengaja tidak dipakai, lihat komentar di bawah) — session key
+        // eksplisit yang cuma terisi kalau login ini datang dari link event
+        // publik. Kosong = behavior tidak berubah sama sekali dari sebelumnya.
+        $eventToken = $request->session()->pull('intended_event_token');
+        if ($eventToken) {
+            $project = CastingProject::where('share_token', $eventToken)->first();
+
+            if ($project && $project->menerimaPendaftaran() && Auth::user()->isExtras()) {
+                return redirect()->route('extras.projects.show', $project);
+            }
+        }
 
         // SENGAJA bukan redirect()->intended() — RF-03 mensyaratkan tiap role
         // selalu diarahkan ke dashboard masing-masing setelah login, terlepas

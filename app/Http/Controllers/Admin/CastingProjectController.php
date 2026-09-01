@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 class CastingProjectController extends Controller
 {
@@ -51,6 +52,8 @@ class CastingProjectController extends Controller
         $project = $request->user()->castingProjects()->create([
             'nama_produksi' => $data['nama_produksi'],
             'client_ph' => $data['client_ph'],
+            // RF-56: token link publik pendaftaran (dibagikan admin lewat WA).
+            'share_token' => Str::random(32),
             'wa_group_link' => $data['wa_group_link'] ?? null,
             'deadline' => $data['deadline'],
             'kuota' => $data['kuota'],
