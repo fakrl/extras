@@ -209,6 +209,8 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
     Route::get('/admins/create', [AdminManagementController::class, 'create'])->name('super-admin.admins.create');
     Route::post('/admins', [AdminManagementController::class, 'store'])->name('super-admin.admins.store');
     Route::patch('/admins/{user}/honor', [AdminManagementController::class, 'updateHonor'])->name('super-admin.admins.honor');
+    Route::patch('/admins/{user}/toggle-status', [AdminManagementController::class, 'toggleStatus'])->name('super-admin.admins.toggle-status');
+    Route::delete('/admins/{user}', [AdminManagementController::class, 'destroy'])->name('super-admin.admins.destroy');
 
     Route::post('/projects/{castingProject}/assign', [ProjectAssignmentController::class, 'assign'])
         ->name('super-admin.assignments.assign');
