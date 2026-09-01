@@ -1,5 +1,6 @@
 <style>
     :root[data-theme="dark"] {
+        color-scheme: dark;
         --bg-page: #0b1310;
         --bg-sidebar: #070c09;
         --bg-card: #131c16;
@@ -16,6 +17,7 @@
         --warning: #f59e0b;
     }
     :root[data-theme="light"] {
+        color-scheme: light;
         --bg-page: #eef2ea;
         --bg-sidebar: #ffffff;
         --bg-card: #ffffff;
