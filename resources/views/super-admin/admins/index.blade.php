@@ -5,8 +5,54 @@
 @section('content')
 <div class="card-header-row">
     <div style="font-size: 16px; font-weight: 600;">Manajemen Admin & Staf</div>
-    <a href="{{ route('super-admin.admins.create') }}" class="btn btn-brand">+ Tambah Admin</a>
+    <button type="button" class="btn btn-brand" onclick="document.getElementById('add-admin-dialog').showModal()">+ Tambah Admin</button>
 </div>
+
+<dialog id="add-admin-dialog" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 480px; width: 90%;">
+    <div style="padding: 18px;">
+        <div style="font-size: 15px; font-weight: 600; margin-bottom: 14px;">Tambah Akun Admin</div>
+
+        @if ($errors->any())
+            <div class="alert-danger">
+                @foreach ($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                @endforeach
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('super-admin.admins.store') }}">
+            @csrf
+            <label>Nama</label>
+            <input type="text" name="name" value="{{ old('name') }}" required>
+
+            <label>Email</label>
+            <input type="email" name="email" value="{{ old('email') }}" required>
+
+            <x-password-input name="password" label="Password" :minlength="8" />
+
+            <label>Role</label>
+            <select name="role" required style="width: 100%; margin-bottom: 4px;">
+                <option value="admin_default" @selected(old('role') === 'admin_default')>Admin Default (operasional penuh)</option>
+                <option value="admin_talco" @selected(old('role') === 'admin_talco')>Talent Coordinator (Talco)</option>
+                <option value="admin_korlap" @selected(old('role') === 'admin_korlap')>Koordinator Lapangan (Korlap)</option>
+                <option value="admin_sosmed" @selected(old('role') === 'admin_sosmed')>Sosial Media / Multimedia</option>
+                @if (auth()->user()->is_protected)
+                    <option value="super_admin" @selected(old('role') === 'super_admin')>Super Admin</option>
+                @endif
+            </select>
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 14px;">Talco/Korlap/Sosmed adalah cabang kewenangan terbatas, ditugaskan per proyek sesuai kebutuhan.</p>
+
+            <label>Nominal Honor per Event (Rp)</label>
+            <input type="number" name="honor_nominal" min="0" value="{{ old('honor_nominal') }}">
+            <p style="font-size: 12px; color: var(--text-muted); margin: -10px 0 18px;">Kosongkan jika tidak relevan (misal untuk Admin Default/Super Admin). Bisa diadjust kapan saja.</p>
+
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
+                <button type="submit" class="btn btn-sm btn-brand">Simpan</button>
+            </div>
+        </form>
+    </div>
+</dialog>
 
 @php
     $subRoleAdmin = ['admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed'];
@@ -139,4 +185,7 @@
         });
     });
 </script>
+@if ($errors->any())
+<script>document.getElementById('add-admin-dialog').showModal();</script>
+@endif
 @endpush

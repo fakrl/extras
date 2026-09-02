@@ -14,3 +14,6 @@
 <a href="{{ url('/super-admin/admins') }}" class="sidebar-link {{ str_starts_with($route, 'super-admin/admins') ? 'active' : '' }}">
     <i class="ti ti-users-group"></i> Kelola Admin
 </a>
+<a href="{{ url('/super-admin/casting-directors') }}" class="sidebar-link {{ str_starts_with($route, 'super-admin/casting-directors') ? 'active' : '' }}">
+    <i class="ti ti-movie"></i> Kelola Casting Director
+</a>

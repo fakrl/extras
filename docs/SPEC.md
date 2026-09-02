@@ -1,8 +1,8 @@
 # SPEC.md — Selesai, Menunggu Prioritas Berikutnya
 
-> Terakhir diperbarui 1 September 2026 (malam).
+> Terakhir diperbarui 2 September 2026.
 
-`is_protected` sudah dieksekusi ke akun asli `fahrulmukhlisin13@gmail.com` di DB dev (migration `share_token`+`is_protected` sekalian dijalankan, keduanya sempat tertinggal). Koreksi toggle tema di `welcome.blade.php` dan `public/event.blade.php` (DRY ke `partials/theme-style.blade.php`, bukan invent warna baru) selesai — lihat `DEV-NOTES.md` Session 34. 260 test passing, 0 regresi.
+Bagian A (root-cause fix `hasHistory()` drift, sekarang pakai mekanisme trial-delete sama persis dengan `destroy()`), Bagian B (modal "Tambah Admin" + RF-58 baru: akun terproteksi bisa bikin Super Admin baru, akun lain tidak bisa), Bagian C (rename localStorage key tema), dan Bagian D (pisah menu "Kelola Admin" vs "Kelola Casting Director") selesai — lihat `DEV-NOTES.md` Session 35. 268 test passing, 0 regresi.
 
 ## Berikutnya
 

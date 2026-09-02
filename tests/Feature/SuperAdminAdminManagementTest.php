@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\AdminProfile;
 use App\Models\CastingProject;
+use App\Models\NotificationLog;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
@@ -71,6 +73,26 @@ class SuperAdminAdminManagementTest extends TestCase
         $this->assertNotNull(User::find($target->id));
     }
 
+    public function test_index_menandai_has_history_untuk_histori_di_luar_casting_projects(): void
+    {
+        $superAdmin = User::factory()->create(['role' => 'super_admin']);
+        $target = User::factory()->create(['role' => 'admin_default']);
+
+        NotificationLog::create([
+            'user_id' => $target->id,
+            'channel' => 'email',
+            'jenis' => 'reminder_h1',
+            'status' => 'terkirim',
+            'sent_at' => now(),
+        ]);
+
+        $response = $this->actingAs($superAdmin)->get(route('super-admin.admins.index'));
+
+        $response->assertOk();
+        $response->assertDontSee('delete-dialog-'.$target->id, false);
+        $this->assertNotNull(User::find($target->id));
+    }
+
     public function test_toggle_dan_hapus_akun_protected_ditolak(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
@@ -114,6 +136,53 @@ class SuperAdminAdminManagementTest extends TestCase
 
         $response->assertRedirect('/login');
         $this->assertFalse(Auth::check());
+    }
+
+    public function test_akun_protected_bisa_bikin_super_admin_baru_tanpa_admin_profile(): void
+    {
+        $protected = User::factory()->create(['role' => 'super_admin', 'is_protected' => true]);
+
+        $response = $this->actingAs($protected)->post(route('super-admin.admins.store'), [
+            'name' => 'Super Admin Baru',
+            'email' => 'sa-baru@example.com',
+            'password' => 'password123',
+            'role' => 'super_admin',
+        ]);
+
+        $response->assertRedirect(route('super-admin.admins.index'));
+
+        $newUser = User::where('email', 'sa-baru@example.com')->first();
+        $this->assertNotNull($newUser);
+        $this->assertSame('super_admin', $newUser->role);
+        $this->assertTrue(AdminProfile::where('user_id', $newUser->id)->doesntExist());
+    }
+
+    public function test_akun_super_admin_biasa_gagal_bikin_super_admin_baru(): void
+    {
+        $superAdmin = User::factory()->create(['role' => 'super_admin', 'is_protected' => false]);
+        $countBefore = User::count();
+
+        $response = $this->actingAs($superAdmin)->post(route('super-admin.admins.store'), [
+            'name' => 'Super Admin Ilegal',
+            'email' => 'sa-ilegal@example.com',
+            'password' => 'password123',
+            'role' => 'super_admin',
+        ]);
+
+        $response->assertSessionHasErrors('role');
+        $this->assertSame($countBefore, User::count());
+        $this->assertTrue(User::where('email', 'sa-ilegal@example.com')->doesntExist());
+    }
+
+    public function test_index_menampilkan_modal_tambah_admin(): void
+    {
+        $superAdmin = User::factory()->create(['role' => 'super_admin']);
+
+        $response = $this->actingAs($superAdmin)->get(route('super-admin.admins.index'));
+
+        $response->assertOk();
+        $response->assertSee('add-admin-dialog', false);
+        $response->assertSee('action="'.route('super-admin.admins.store').'"', false);
     }
 
     public static function bukanSuperAdminProvider(): array

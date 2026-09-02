@@ -38,7 +38,8 @@ Modul Autentikasi dan Manajemen Akun
 | RF-05 | Admin Default dapat mengelola akun CD dan menonaktifkan akun Extras yang bermasalah | Admin Default |
 | RF-54 | Admin Default dapat memberi atau mencabut badge Apresiasi pada Extras beserta catatan internal opsional, sebagai catatan kualitatif yang tidak terlihat oleh CD maupun Extras (ditambahkan pasca-proposal, 1 September 2026) | Admin Default |
 | RF-55 | Halaman beranda publik (compro) menampilkan perkenalan sistem, alur kerja pendaftaran Extras, dan jumlah proyek casting yang sedang membuka pendaftaran, tanpa detail per proyek — nama client (`client_ph`) dan budget tidak pernah ditampilkan di halaman publik manapun (ditambahkan pasca-proposal, 1 September 2026) | Publik/Sistem |
-| RF-57 | Super Admin dapat menonaktifkan/mengaktifkan atau menghapus permanen akun Admin, Casting Director, maupun sesama Super Admin (kecuali akun sistem terproteksi dan akun miliknya sendiri yang sedang login); penghapusan permanen ditolak otomatis kalau akun tersebut masih punya riwayat penugasan (ditambahkan pasca-proposal, 1 September 2026) | Super Admin |
+| RF-57 | Super Admin dapat menonaktifkan/mengaktifkan atau menghapus permanen akun Admin maupun sesama Super Admin (menu "Kelola Admin") dan akun Casting Director (menu terpisah "Kelola Casting Director") — kecuali akun sistem terproteksi dan akun miliknya sendiri yang sedang login; penghapusan permanen ditolak otomatis kalau akun tersebut masih punya riwayat penugasan (ditambahkan pasca-proposal, 1 September 2026) | Super Admin |
+| RF-58 | Satu akun Super Admin sistem yang ditandai terproteksi dapat membuat akun Super Admin baru lewat menu Tambah Admin — kemampuan ini TIDAK dimiliki Super Admin lain manapun, termasuk yang dibuat lewat mekanisme ini (ditambahkan pasca-proposal, 1 September 2026) | Super Admin (akun terproteksi) |
 
 Modul Profil Extras
 
