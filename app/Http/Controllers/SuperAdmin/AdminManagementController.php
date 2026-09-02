@@ -47,6 +47,30 @@ class AdminManagementController extends Controller
     }
 
     /**
+     * RF-58 lanjutan: Super Admin bikin akun CD langsung, terpisah dari
+     * alur self-register publik (register.cd). Tidak ada AdminProfile/honor
+     * — konsep itu cuma buat 4 sub-role Admin.
+     */
+    public function storeCd(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'unique:users,email'],
+            'password' => ['required', 'min:8'],
+        ]);
+
+        User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'role' => 'casting_director',
+            'status' => 'aktif',
+        ]);
+
+        return redirect()->route('super-admin.casting-directors.index')->with('status', 'Akun Casting Director berhasil ditambahkan.');
+    }
+
+    /**
      * RF-40: Super Admin menambahkan akun Admin baru + sub-role spesifik.
      * RF-41: sekaligus menetapkan nominal honor per-event (nullable untuk
      * admin_default, karena dia bukan staf event-based).

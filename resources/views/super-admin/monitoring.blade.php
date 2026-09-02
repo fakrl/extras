@@ -25,12 +25,13 @@
 <div class="card" style="margin-bottom: 16px;">
     <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Extras</div>
     <table>
-        <thead><tr><th>Nama</th><th>Alias</th><th>Status</th></tr></thead>
+        <thead><tr><th>Nama</th><th>Alias</th><th>Email</th><th>Status</th></tr></thead>
         <tbody>
             @foreach ($extrasList as $ex)
                 <tr>
                     <td>{{ $ex->name }}</td>
                     <td>{{ $ex->extrasProfile->alias_tampil ?? '-' }}</td>
+                    <td>{{ $ex->email }}</td>
                     <td>
                         <span class="badge {{ $ex->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">
                             {{ $ex->status }}
