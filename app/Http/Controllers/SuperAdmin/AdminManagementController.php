@@ -4,14 +4,7 @@ namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdminProfile;
-use App\Models\AdminProjectAssignment;
-use App\Models\Attendance;
 use App\Models\CastingProject;
-use App\Models\CdProjectAssignment;
-use App\Models\CdReview;
-use App\Models\FieldNote;
-use App\Models\NotificationLog;
-use App\Models\PaymentAddon;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
@@ -22,13 +15,13 @@ use Illuminate\Support\Facades\Hash;
 class AdminManagementController extends Controller
 {
     /**
-     * RF-57: target diperluas dari Admin (4 sub-role) → + Casting Director +
-     * sesama Super Admin. User yang sedang login dikecualikan (tidak boleh
-     * aksi ke dirinya sendiri, jadi tidak perlu muncul di daftar).
+     * RF-57: target Admin (4 sub-role) + sesama Super Admin. Casting Director
+     * dikelola terpisah lewat indexCd(). User yang sedang login dikecualikan
+     * (tidak boleh aksi ke dirinya sendiri, jadi tidak perlu muncul di daftar).
      */
     public function index()
     {
-        $admins = User::whereIn('role', ['admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed', 'casting_director', 'super_admin'])
+        $admins = User::whereIn('role', ['admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed', 'super_admin'])
             ->where('id', '!=', auth()->id())
             ->with('adminProfile', 'adminProjectAssignments.castingProject', 'adminProjectAssignments.payroll')
             ->get()
@@ -39,9 +32,18 @@ class AdminManagementController extends Controller
         return view('super-admin.admins.index', compact('admins', 'projects'));
     }
 
-    public function create()
+    /**
+     * RF-57: halaman terpisah untuk kelola Casting Director. Reuse
+     * toggleStatus()/destroy()/hasHistory() yang sama dengan halaman Admin.
+     */
+    public function indexCd()
     {
-        return view('super-admin.admins.create');
+        $cds = User::where('role', 'casting_director')
+            ->where('id', '!=', auth()->id())
+            ->get()
+            ->each(fn (User $cd) => $cd->has_history = $this->hasHistory($cd));
+
+        return view('super-admin.casting-directors.index', compact('cds'));
     }
 
     /**
@@ -51,11 +53,16 @@ class AdminManagementController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $allowedRoles = ['admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed'];
+        if ($request->user()->is_protected) {
+            $allowedRoles[] = 'super_admin';
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'min:8'],
-            'role' => ['required', 'in:admin_default,admin_talco,admin_korlap,admin_sosmed'],
+            'role' => ['required', 'in:'.implode(',', $allowedRoles)],
             'honor_nominal' => ['nullable', 'numeric', 'min:0'],
         ]);
 
@@ -67,11 +74,13 @@ class AdminManagementController extends Controller
             'status' => 'aktif',
         ]);
 
-        AdminProfile::create([
-            'user_id' => $user->id,
-            'honor_nominal' => $data['honor_nominal'] ?? null,
-            'created_by' => $request->user()->id,
-        ]);
+        if ($data['role'] !== 'super_admin') {
+            AdminProfile::create([
+                'user_id' => $user->id,
+                'honor_nominal' => $data['honor_nominal'] ?? null,
+                'created_by' => $request->user()->id,
+            ]);
+        }
 
         return redirect()->route('super-admin.admins.index')->with('status', 'Akun Admin berhasil ditambahkan.');
     }
@@ -125,7 +134,9 @@ class AdminManagementController extends Controller
             throw $e;
         }
 
-        return redirect()->route('super-admin.admins.index')->with('status', 'Akun berhasil dihapus.');
+        $redirectRoute = $user->role === 'casting_director' ? 'super-admin.casting-directors.index' : 'super-admin.admins.index';
+
+        return redirect()->route($redirectRoute)->with('status', 'Akun berhasil dihapus.');
     }
 
     private function guardTarget(User $user): void
@@ -134,19 +145,32 @@ class AdminManagementController extends Controller
     }
 
     /**
-     * Flag ringan untuk UI (disable tombol hapus + tooltip alasan) — bukan
-     * satu-satunya penjaga, destroy() tetap divalidasi ulang via FK constraint.
+     * Flag ringan untuk UI (disable tombol hapus + tooltip alasan). Trial-delete
+     * dibungkus transaction yang selalu rollback (probe exception), dengan
+     * catch FK (code 23000) SAMA PERSIS dengan destroy() — jadi kedua fungsi
+     * structurally tidak mungkin drift, bukan cuma re-sync manual per relasi.
+     * Ambil instance baru (bukan $user yang dipakai ->each() di index()) supaya
+     * atribut `exists` milik instance pemanggil tidak ikut ke-set false oleh
+     * delete(), meski row DB-nya sendiri sudah pasti balik oleh rollback.
      */
     private function hasHistory(User $user): bool
     {
-        return $user->castingProjects()->exists()
-            || $user->adminProjectAssignments()->exists()
-            || AdminProjectAssignment::where('assigned_by', $user->id)->exists()
-            || CdReview::where('cd_id', $user->id)->exists()
-            || PaymentAddon::where('created_by', $user->id)->exists()
-            || FieldNote::where('korlap_id', $user->id)->exists()
-            || Attendance::where('dicatat_oleh', $user->id)->exists()
-            || CdProjectAssignment::where('cd_user_id', $user->id)->exists()
-            || NotificationLog::where('user_id', $user->id)->exists();
+        try {
+            DB::transaction(function () use ($user) {
+                User::findOrFail($user->id)->delete();
+
+                throw new \RuntimeException('rollback-probe');
+            });
+        } catch (QueryException $e) {
+            if ($e->getCode() === '23000') {
+                return true;
+            }
+
+            throw $e;
+        } catch (\RuntimeException) {
+            return false;
+        }
+
+        return false;
     }
 }

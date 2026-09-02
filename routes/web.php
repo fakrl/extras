@@ -206,8 +206,8 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
     Route::get('/monitoring', [MonitoringController::class, 'index'])->name('super-admin.monitoring');
 
     Route::get('/admins', [AdminManagementController::class, 'index'])->name('super-admin.admins.index');
-    Route::get('/admins/create', [AdminManagementController::class, 'create'])->name('super-admin.admins.create');
     Route::post('/admins', [AdminManagementController::class, 'store'])->name('super-admin.admins.store');
+    Route::get('/casting-directors', [AdminManagementController::class, 'indexCd'])->name('super-admin.casting-directors.index');
     Route::patch('/admins/{user}/honor', [AdminManagementController::class, 'updateHonor'])->name('super-admin.admins.honor');
     Route::patch('/admins/{user}/toggle-status', [AdminManagementController::class, 'toggleStatus'])->name('super-admin.admins.toggle-status');
     Route::delete('/admins/{user}', [AdminManagementController::class, 'destroy'])->name('super-admin.admins.destroy');
