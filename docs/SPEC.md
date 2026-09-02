@@ -2,7 +2,7 @@
 
 > Terakhir diperbarui 2 September 2026.
 
-Bagian A (3 akun test + data terkait dihapus dari DB dev lewat tinker, audit trail lengkap di `DEV-NOTES.md`), Bagian C (modal "+ Tambah Casting Director"), Bagian D (tombol Copy Link Register CD), dan Bagian E (email Extras di Monitoring) selesai — lihat `DEV-NOTES.md` Session 36. Bagian B tidak ada task teknis (klarifikasi saja). 276 test passing, 0 regresi.
+Bagian A (dokumentasi deviasi WhatsApp Gateway dari proposal) dan Bagian B (RF-59 baru untuk Tambah CD manual + Copy Link Register CD, dipisah dari RF-58 supaya scope-nya tidak kabur) selesai — lihat `DEV-NOTES.md` Session 37. Task dokumentasi murni, tidak ada perubahan kode/test.
 
 ## Berikutnya
 
