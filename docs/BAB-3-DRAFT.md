@@ -40,6 +40,7 @@ Modul Autentikasi dan Manajemen Akun
 | RF-55 | Halaman beranda publik (compro) menampilkan perkenalan sistem, alur kerja pendaftaran Extras, dan jumlah proyek casting yang sedang membuka pendaftaran, tanpa detail per proyek — nama client (`client_ph`) dan budget tidak pernah ditampilkan di halaman publik manapun (ditambahkan pasca-proposal, 1 September 2026) | Publik/Sistem |
 | RF-57 | Super Admin dapat menonaktifkan/mengaktifkan atau menghapus permanen akun Admin maupun sesama Super Admin (menu "Kelola Admin") dan akun Casting Director (menu terpisah "Kelola Casting Director") — kecuali akun sistem terproteksi dan akun miliknya sendiri yang sedang login; penghapusan permanen ditolak otomatis kalau akun tersebut masih punya riwayat penugasan (ditambahkan pasca-proposal, 1 September 2026) | Super Admin |
 | RF-58 | Satu akun Super Admin sistem yang ditandai terproteksi dapat membuat akun Super Admin baru lewat menu Tambah Admin — kemampuan ini TIDAK dimiliki Super Admin lain manapun, termasuk yang dibuat lewat mekanisme ini (ditambahkan pasca-proposal, 1 September 2026) | Super Admin (akun terproteksi) |
+| RF-59 | Super Admin (siapapun, tidak terbatas akun terproteksi) dapat membuat akun Casting Director secara manual lewat menu "Kelola Casting Director", terpisah dari alur registrasi mandiri CD (RF-02); tersedia juga tombol untuk menyalin tautan registrasi mandiri CD guna dibagikan manual ke pihak client/PH (ditambahkan pasca-proposal, 2 September 2026) | Super Admin |
 
 Modul Profil Extras
 
@@ -181,6 +182,16 @@ Modul Dashboard, Riwayat Kerja, dan Laporan
 7. Validasi NIK dilakukan secara internal melalui pengecekan duplikasi pada basis data, tanpa integrasi dengan API Dukcapil.
 8. Karyawan sub-role Admin (Talco, Korlap, Sosial Media/Multimedia) bukan merupakan karyawan tetap agensi; penugasan dan honor bersifat per-proyek, bukan gaji bulanan, dan tidak mencakup perhitungan potongan pajak maupun BPJS.
 9. Absensi karyawan bersifat sederhana berupa log aktivitas sistem yang mengikuti status penyelesaian proyek, bukan verifikasi kehadiran berbasis lokasi (geolocation) atau foto check-in.
+
+Catatan Penyimpangan dari Proposal: WhatsApp Gateway
+
+Dokumen proposal awal (Bab 3.1.4 Batasan Sistem, poin 5) menetapkan: *"Notifikasi WhatsApp menggunakan layanan gateway pihak ketiga berbayar, bukan integrasi API resmi WhatsApp Business maupun otomasi tidak resmi berbasis sesi pribadi."*
+
+Implementasi akhir sistem menggunakan pendekatan yang berlawanan dengan batasan tersebut: `whatsapp-web.js` self-hosted (otomasi sesi WhatsApp Web pribadi, gratis) — bukan layanan gateway berbayar. Keputusan ini diambil secara sadar pada 28 Agustus 2026, bukan merupakan kelalaian dalam mengikuti batasan yang telah ditetapkan.
+
+Pertimbangan teknis di balik keputusan ini: kajian terhadap layanan gateway berbayar (Fonnte, Wablas, dan sejenisnya) menunjukkan bahwa layanan-layanan tersebut, pada praktiknya, juga bersifat *unofficial* dan memiliki risiko pemblokiran nomor (banned) yang setara dengan otomasi sesi pribadi seperti `whatsapp-web.js` — keduanya sama-sama tidak menggunakan API resmi WhatsApp Business. Dengan risiko yang setara namun salah satunya berbayar tanpa keuntungan konkret yang sepadan, alokasi anggaran dinilai lebih tepat dialihkan ke kebutuhan lain, mengingat tim pengembang bersifat solo-developer dengan dukungan tim kecil. Mitigasi risiko pemblokiran (nomor khusus sistem, volume rendah non-broadcast, WhatsApp sebagai kanal pelengkap dengan email tetap sebagai kanal utama) tetap diterapkan pada desain akhir, independen dari penyedia yang dipilih.
+
+Detail pertimbangan trade-off lengkap (perbandingan biaya, arsitektur, dan mitigasi risiko) didokumentasikan pada `docs/OPEN-QUESTIONS-PROPOSAL.md` poin 3.
 
 3.2 Metode Pengembangan
 
