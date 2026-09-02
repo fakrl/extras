@@ -5,7 +5,45 @@
 @section('content')
 <div class="card-header-row">
     <div style="font-size: 16px; font-weight: 600;">Kelola Casting Director</div>
+    <div style="display: flex; gap: 8px;">
+        <button type="button" class="btn" data-copy-link="{{ route('register.cd') }}">Copy Link Register CD</button>
+        <button type="button" class="btn btn-brand" onclick="document.getElementById('add-cd-dialog').showModal()">+ Tambah Casting Director</button>
+    </div>
 </div>
+
+<dialog id="add-cd-dialog" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 480px; width: 90%;">
+    <div style="padding: 18px;">
+        <div style="font-size: 15px; font-weight: 600; margin-bottom: 14px;">Tambah Akun Casting Director</div>
+
+        @if ($errors->any())
+            <div class="alert-danger">
+                @foreach ($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                @endforeach
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('super-admin.casting-directors.store') }}">
+            @csrf
+            <label>Nama</label>
+            <input type="text" name="name" value="{{ old('name') }}" required>
+
+            <label>Email</label>
+            <input type="email" name="email" value="{{ old('email') }}" required>
+
+            <x-password-input name="password" label="Password" :minlength="8" />
+
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
+                <button type="submit" class="btn btn-sm btn-brand">Simpan</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+@if ($errors->any())
+    <script>document.getElementById('add-cd-dialog').showModal();</script>
+@endif
 
 @foreach ($cds as $cd)
     <div class="card" style="margin-bottom: 14px;">
@@ -62,4 +100,16 @@
         @endif
     </div>
 @endforeach
+
+<script>
+    document.querySelectorAll('[data-copy-link]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            navigator.clipboard.writeText(btn.dataset.copyLink).then(function () {
+                var original = btn.textContent;
+                btn.textContent = 'Link disalin!';
+                setTimeout(function () { btn.textContent = original; }, 2000);
+            });
+        });
+    });
+</script>
 @endsection
