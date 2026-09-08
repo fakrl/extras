@@ -36,4 +36,28 @@
         </tbody>
     </table>
 </div>
+
+<div class="card" style="margin-top: 16px;">
+    <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Extras Paling Sering Membatalkan Mendadak</div>
+    @if ($extrasSeringBatal->isEmpty())
+        <p style="color: var(--text-muted); font-size: 13px; margin: 0;">Belum ada pembatalan tercatat.</p>
+    @else
+        <table>
+            <thead><tr><th>Alias</th><th>Jumlah Batal</th><th>Status</th></tr></thead>
+            <tbody>
+                @foreach ($extrasSeringBatal as $ex)
+                    <tr>
+                        <td>{{ $ex->alias_tampil ?? '-' }}</td>
+                        <td>{{ $ex->cancel_count }}</td>
+                        <td>
+                            <span class="badge {{ $ex->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">
+                                {{ $ex->status }}
+                            </span>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
+</div>
 @endsection

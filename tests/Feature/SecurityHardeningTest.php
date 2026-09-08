@@ -33,4 +33,11 @@ class SecurityHardeningTest extends TestCase
 
         $response->assertHeaderMissing('Strict-Transport-Security');
     }
+
+    public function test_session_secure_cookie_tidak_dipaksa_true_di_environment_testing(): void
+    {
+        $this->get('/login');
+
+        $this->assertNotTrue(config('session.secure'));
+    }
 }
