@@ -34,12 +34,31 @@ DB_PASSWORD=
 APP_TIMEZONE=Asia/Jakarta
 ```
 
+**Wajib juga isi `NIK_HASH_KEY`** di `.env` (RF-04, blind index buat deteksi NIK duplikat — terpisah dari `APP_KEY`, tidak ada default, tanpa ini akan error begitu ada yang isi NIK):
+
+```bash
+php artisan key:generate --show
+```
+
+Salin hasilnya ke `NIK_HASH_KEY=` di `.env` (jangan reuse nilai `APP_KEY`, generate ulang biar beda).
+
 Lalu jalankan migration dan server dev:
 
 ```bash
 php artisan migrate
 php artisan serve
 ```
+
+Notifikasi WhatsApp (RF-37) butuh proses Node.js terpisah jalan bareng — lihat `whatsapp-service/README.md`. Tanpa ini, sistem tetap jalan normal (notifikasi WA cuma gagal terkirim & tercatat di log, tidak menghalangi fitur lain).
+
+## Testing
+
+```bash
+php artisan test
+./vendor/bin/pint --test
+```
+
+Test pakai SQLite in-memory (`phpunit.xml`), tidak menyentuh database MySQL dev — aman dijalankan kapan saja. CI (`.github/workflows/tests.yml`) menjalankan keduanya otomatis tiap push/PR ke `main`.
 
 ### Catatan Penting
 
