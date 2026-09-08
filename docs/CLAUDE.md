@@ -161,24 +161,33 @@ Satu file HTML clickable, 3 peran (login demo → pilih peran; **di produksi TID
 
 ---
 
-## 9. Backlog Build (status per 29 Agustus 2026 — lihat `DEV-NOTES.md` untuk detail sesi)
+## 9. Backlog Build (status per 8 September 2026 — lihat `DEV-NOTES.md` untuk detail sesi)
 
 - [x] Layar **auto-generate kontrak Talent Release** (canvas signature, vanilla JS, tanpa library) — Sprint 4.
 - [x] Modul **Negosiasi Fee in-app** (ala InDrive, multi-round, tercatat) — Sprint 3, sempat 500 total gara-gara bug `$fillable` (Session 4), fixed & verified Session 5.
 - [x] **Deteksi bentrok jadwal** (soft-warning, 2 checkpoint: saat apply & saat present ke CD) — Sprint 2 (apply), Session 5 (RF-22, checkpoint present-ke-CD yang sempat kelewat).
 - [x] **WhatsApp Gateway** (`whatsapp-web.js` self-hosted) untuk notif otomatis (apply, hasil seleksi, reminder H-1, kontrak siap TTD) — Session 8-9, termasuk fix bind-localhost & queue job biar bulk-approve nggak blocking.
-- [ ] Menu **Kelola Extras** (aktif/nonaktif + apresiasi + rekap sering-lock) — belum ada sesi yang menyentuh ini.
-- [x] **Rekap extras** (extras paling sering dipilih) + [x] **Ekspor rekap ke Excel** — Sprint 6 (RF-51/52). **Rekap margin per-project (RF-30)** — BELUM, beda dari rekap extras, masih di backlog.
+- [x] Menu **Kelola Extras** — aktif/nonaktif via `Admin\UserManagementController::toggleStatus()` (RF-05); apresiasi = RF-54 (Session 30). **Rekap sering-lock (ranked list Extras paling sering cancel) MASIH BELUM ADA** — lihat item terpisah di bawah, jangan dianggap selesai bareng 2 sub-fitur ini.
+- [x] **Rekap extras** (extras paling sering dipilih) + [x] **Ekspor rekap ke Excel** — Sprint 6 (RF-51/52).
+- [x] **Rekap margin per-project (RF-30)** — Session 17, pendekatan final per-kelas (`casting_project_class_id`), bukan per-proyek seperti draft awal Session 12.
 - [x] **Modul Manajemen Karyawan** (Super Admin nambah Admin + sub-role + honor) — Sprint 5.
 - [x] **Absensi staf** (log aktivitas) + **auto-generate slip honor PDF** — Sprint 5.
 - [x] **Riwayat Kerja** unified + akses read-only Talco/Sosmed — Sprint 5 (RF-43/44).
-- [ ] **Inbox "Permintaan Client"** (re-book) di admin — belum ada sesi yang menyentuh ini.
+- [ ] **Inbox "Permintaan Client"** (re-book) di admin — masih belum dikerjakan, nunggu keputusan scope Fakrul (bukan lupa/kelewat).
 - [x] Notifikasi email (queued) — Session 4 (RF-36).
-- [ ] Grade filter (tab sudah ada, logika filter belum) — belum dikonfirmasi built.
-- [ ] **RF-04** (validasi duplikat NIK saat lolos seleksi) — belum dibangun. **Catatan arsitektur:** `nik` di-cast `encrypted` (IV random tiap enkripsi) sekaligus `unique` di `DATABASE-SCHEMA.md` — `UNIQUE` constraint DB biasa TIDAK bisa mendeteksi duplikat di kolom terenkripsi non-deterministik (ciphertext beda tiap kali walau plaintext sama). Butuh kolom hash deterministik terpisah (HMAC) buat lookup, `nik` tetap `encrypted` buat display.
-- [ ] **RF-35** (catatan/sanksi Korlap) — tabel `field_notes` sudah ada sejak Sprint 1, controller/UI belum dibangun.
-- [ ] **RF-38** (link grup WA per proyek) — sengaja di luar scope task WhatsApp Gateway (Session 8), belum dikerjakan.
-- [ ] Checklist keamanan pre-launch — `SECURITY-CHECKLIST.md` sudah ada kolom Status terverifikasi kode (bukan cuma rencana), tapi masih ada beberapa poin BACKLOG (rate limit, CAPTCHA, security headers, force HTTPS, dependency scan) — cek dokumen itu langsung buat status per-poin.
+- [x] Grade filter — `ApplicantGradeFilterTest` ada & pass, sudah lama jalan.
+- [x] **RF-04** (validasi duplikat NIK) — Session 10-11. Blind index `nik_hash` (HMAC-SHA256, key `NIK_HASH_KEY` terpisah dari `APP_KEY`) buat lookup duplikat, karena `nik` tetap `encrypted` (IV random, tidak bisa di-`WHERE`) buat display.
+- [x] **RF-35** (catatan/sanksi Korlap) — Session 12.
+- [x] **RF-38** (link grup WA per proyek) — Session 12 + follow-up (ditambah tampilan ke Extras di halaman kontrak, CD sengaja tidak diperluas).
+- [ ] Rekap sering-lock — ranked list Extras berdasar `cancel_count` (siapa paling sering batal mendadak). `Admin\RecapController` saat ini cuma agregat jumlah per status (aktif/nonaktif/melanggar), BUKAN daftar per-individu terurut. Belum dibangun.
+- [x] **RF-53** (absensi formal Extras oleh Korlap) — Session 27.
+- [x] **RF-54** (badge Apresiasi Extras, admin-only) — Session 30.
+- [x] **RF-55** (homepage compro publik) — Session 32.
+- [x] **RF-56** (link publik pendaftaran event per proyek) — Session 32.
+- [x] **RF-57** (Super Admin kelola akun Admin/CD/sesama Super Admin, termasuk hapus permanen dengan guard riwayat) — Session 33, 35.
+- [x] **RF-58** (akun terproteksi bisa bikin Super Admin baru) — Session 35.
+- [x] **RF-59** (Tambah CD manual + copy link register CD) — Session 36.
+- [ ] Checklist keamanan pre-launch — `SECURITY-CHECKLIST.md` sudah ada kolom Status terverifikasi kode (bukan cuma rencana), tapi masih ada beberapa poin BACKLOG (purge git secrets, CAPTCHA, dependency scan) — cek dokumen itu langsung buat status per-poin, terakhir diverifikasi ulang 8 September 2026.
 
 ---
 
