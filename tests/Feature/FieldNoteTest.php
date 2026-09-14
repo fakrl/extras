@@ -17,7 +17,7 @@ class FieldNoteTest extends TestCase
     private function buatAplikasi(): ProjectApplication
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
-        $extras = ExtrasProfile::factory()->create(['alias' => 'Alias Test']);
+        $extras = ExtrasProfile::factory()->create();
         $project = CastingProject::factory()->create(['admin_id' => $admin->id]);
 
         return ProjectApplication::create([

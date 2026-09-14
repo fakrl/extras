@@ -37,7 +37,7 @@ class PublicEventLinkTest extends TestCase
     private function buatExtras(string $password = 'password'): User
     {
         $user = User::factory()->create(['role' => 'extras', 'password' => bcrypt($password)]);
-        ExtrasProfile::create(['user_id' => $user->id, 'alias' => 'Alias Test']);
+        ExtrasProfile::create(['user_id' => $user->id]);
 
         return $user;
     }

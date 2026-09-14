@@ -38,7 +38,7 @@ class ProjectApplicationTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin_default']);
         $cd = User::factory()->create(['role' => 'casting_director']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
         $tanggalBentrok = now()->addDays(10)->toDateString();
         $projectA = $this->buatProyek($admin, $tanggalBentrok);
@@ -69,7 +69,7 @@ class ProjectApplicationTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin_default']);
         $cd = User::factory()->create(['role' => 'casting_director']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
         $projectA = $this->buatProyek($admin, now()->addDays(10)->toDateString());
         $projectA->cdAssignments()->create(['cd_user_id' => $cd->id]);
@@ -91,7 +91,7 @@ class ProjectApplicationTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
 
         $application = ProjectApplication::create([
@@ -109,7 +109,7 @@ class ProjectApplicationTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
 
         $application = ProjectApplication::create([
@@ -133,7 +133,7 @@ class ProjectApplicationTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
 
         $application = ProjectApplication::create([
@@ -154,7 +154,7 @@ class ProjectApplicationTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
 
         $application = ProjectApplication::create([
@@ -172,7 +172,7 @@ class ProjectApplicationTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
 
         $application = ProjectApplication::create([
@@ -190,7 +190,7 @@ class ProjectApplicationTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
 
         $application = ProjectApplication::create([
@@ -209,7 +209,7 @@ class ProjectApplicationTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
 
         $application = ProjectApplication::create([
@@ -242,7 +242,7 @@ class ProjectApplicationTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
         foreach (range(1, 3) as $i) {
             $project = $this->buatProyek($admin, now()->addDay()->toDateString());
@@ -262,7 +262,7 @@ class ProjectApplicationTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = $this->buatProyek($admin, now()->addDay()->toDateString());
 
         $application = ProjectApplication::create([
@@ -281,7 +281,7 @@ class ProjectApplicationTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = $this->buatProyek($admin, now()->addDays(2)->toDateString());
 
         $application = ProjectApplication::create([
@@ -300,7 +300,7 @@ class ProjectApplicationTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
 
         $application = ProjectApplication::create([
@@ -318,7 +318,7 @@ class ProjectApplicationTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
         foreach (range(1, 3) as $i) {
             $project = $this->buatProyek($admin, now()->addDay()->toDateString());
@@ -348,7 +348,7 @@ class ProjectApplicationTest extends TestCase
         try {
             $admin = User::factory()->create(['role' => 'admin_default']);
             $extrasUser = User::factory()->create(['role' => 'extras']);
-            $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+            $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
             // 1 hari dari "hari ini" versi WIB (2026-09-01), tapi 2 hari
             // dari "hari ini" versi UTC (2026-08-31) kalau timezone salah.
             $project = $this->buatProyek($admin, '2026-09-02');
@@ -371,7 +371,7 @@ class ProjectApplicationTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
         foreach (range(1, 3) as $i) {
             $project = $this->buatProyek($admin, now()->addDay()->toDateString());
@@ -398,7 +398,6 @@ class ProjectApplicationTest extends TestCase
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create([
             'user_id' => $extrasUser->id,
-            'alias' => 'Alias Test',
             'nama_asli' => 'Nama Asli KTP',
             'nik' => '3201234567890001',
         ]);
@@ -447,7 +446,6 @@ class ProjectApplicationTest extends TestCase
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create([
             'user_id' => $extrasUser->id,
-            'alias' => 'Alias Test',
             'nama_asli' => 'Nama Asli KTP',
             'nik' => '3201234567890002',
         ]);
@@ -485,7 +483,6 @@ class ProjectApplicationTest extends TestCase
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create([
             'user_id' => $extrasUser->id,
-            'alias' => 'Alias Test',
         ]);
         $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
 
@@ -509,7 +506,6 @@ class ProjectApplicationTest extends TestCase
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create([
             'user_id' => $extrasUser->id,
-            'alias' => 'Alias Test',
             'nama_asli' => 'Nama Asli KTP',
             'nik' => '3201234567890001',
         ]);

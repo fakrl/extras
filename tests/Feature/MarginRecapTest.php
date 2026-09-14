@@ -79,8 +79,8 @@ class MarginRecapTest extends TestCase
             'kuota_kelas' => 5,
         ]);
 
-        $extrasA = ExtrasProfile::create(['user_id' => User::factory()->create(['role' => 'extras'])->id, 'alias' => 'Extras A']);
-        $extrasB = ExtrasProfile::create(['user_id' => User::factory()->create(['role' => 'extras'])->id, 'alias' => 'Extras B']);
+        $extrasA = ExtrasProfile::create(['user_id' => User::factory()->create(['role' => 'extras'])->id]);
+        $extrasB = ExtrasProfile::create(['user_id' => User::factory()->create(['role' => 'extras'])->id]);
 
         ProjectApplication::create([
             'casting_project_id' => $project->id,
@@ -127,8 +127,8 @@ class MarginRecapTest extends TestCase
             'kuota_kelas' => 2,
         ]);
 
-        $extrasKelas = ExtrasProfile::create(['user_id' => User::factory()->create(['role' => 'extras'])->id, 'alias' => 'Extras Kelas']);
-        $extrasLegacy = ExtrasProfile::create(['user_id' => User::factory()->create(['role' => 'extras'])->id, 'alias' => 'Extras Legacy']);
+        $extrasKelas = ExtrasProfile::create(['user_id' => User::factory()->create(['role' => 'extras'])->id]);
+        $extrasLegacy = ExtrasProfile::create(['user_id' => User::factory()->create(['role' => 'extras'])->id]);
 
         ProjectApplication::create([
             'casting_project_id' => $project->id,
@@ -177,7 +177,7 @@ class MarginRecapTest extends TestCase
         ]);
 
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Extras Ditolak']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
         ProjectApplication::create([
             'casting_project_id' => $project->id,

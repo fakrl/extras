@@ -15,11 +15,11 @@ class CdRiwayatExport implements FromCollection, WithHeadings
     {
         return CdReview::where('cd_id', $this->cdId)
             ->whereHas('projectApplication', fn ($q) => $q->where('casting_project_id', $this->castingProjectId))
-            ->with(['projectApplication.extras:id,alias'])
+            ->with(['projectApplication.extras:id,user_id', 'projectApplication.extras.user:id,username'])
             ->latest()
             ->get()
             ->map(fn ($r) => [
-                'alias' => $r->projectApplication->extras->alias ?? '-',
+                'alias' => $r->projectApplication->extras->user->username ?? '-',
                 'keputusan' => ucfirst($r->keputusan),
                 'tanggal' => $r->created_at->format('d M Y'),
             ]);

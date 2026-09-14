@@ -22,7 +22,7 @@ class ApresiasiTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $project = CastingProject::factory()->create(['admin_id' => $admin->id]);
-        $extras = ExtrasProfile::factory()->create(['alias' => 'Alias Rajin']);
+        $extras = ExtrasProfile::factory()->create();
 
         return ProjectApplication::create([
             'casting_project_id' => $project->id,

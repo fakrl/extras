@@ -93,7 +93,7 @@ class LoginUsernameTest extends TestCase
             'username' => 'extras_nakal',
             'password' => bcrypt('password'),
         ]);
-        $profile = ExtrasProfile::create(['user_id' => $user->id, 'alias' => 'Alias Test']);
+        $profile = ExtrasProfile::create(['user_id' => $user->id]);
         $profile->forceFill(['status' => 'melanggar'])->save();
 
         $response = $this->from('/login')->post('/login', ['email' => 'extras_nakal', 'password' => 'password']);
@@ -109,7 +109,7 @@ class LoginUsernameTest extends TestCase
             'username' => 'extras_rajin',
             'password' => bcrypt('password'),
         ]);
-        ExtrasProfile::create(['user_id' => $user->id, 'alias' => 'Alias Test']);
+        ExtrasProfile::create(['user_id' => $user->id]);
 
         $response = $this->post('/login', ['email' => 'extras_rajin', 'password' => 'password']);
 

@@ -25,13 +25,12 @@ class NamaAsliUsernameTest extends TestCase
     {
         $user = User::factory()->create($akun + ['role' => 'extras']);
 
-        return ExtrasProfile::create($profil + ['user_id' => $user->id, 'alias' => 'Alias Lama']);
+        return ExtrasProfile::create($profil + ['user_id' => $user->id]);
     }
 
     private function payloadProfil(array $override = []): array
     {
         return $override + [
-            'alias' => 'Alias Baru',
             'nama_asli' => 'Rina Wulandari',
             'username' => 'rina_wulan',
         ];
@@ -44,7 +43,7 @@ class NamaAsliUsernameTest extends TestCase
         $extras = $this->buatExtras();
 
         $this->actingAs($extras->user)
-            ->put('/extras/profil', ['alias' => 'Alias Baru', 'username' => 'rina_wulan'])
+            ->put('/extras/profil', ['username' => 'rina_wulan'])
             ->assertSessionHasErrors('nama_asli');
 
         $this->assertNull($extras->fresh()->nama_asli);
@@ -74,7 +73,6 @@ class NamaAsliUsernameTest extends TestCase
             ->assertRedirect();
 
         $extras->refresh();
-        $this->assertSame('Alias Baru', $extras->alias);
         $this->assertEquals(300000, $extras->rate_card);
         $this->assertSame(28, (int) $extras->usia);
         $this->assertSame('6281234567890', $extras->user->fresh()->nomor_wa);
@@ -120,7 +118,7 @@ class NamaAsliUsernameTest extends TestCase
         $extras = $this->buatExtras();
 
         $this->actingAs($extras->user)
-            ->put('/extras/profil', ['alias' => 'Alias Baru', 'nama_asli' => 'Rina Wulandari'])
+            ->put('/extras/profil', ['nama_asli' => 'Rina Wulandari'])
             ->assertSessionHasErrors('username');
     }
 
@@ -155,7 +153,7 @@ class NamaAsliUsernameTest extends TestCase
         $project = $this->buatProject($admin);
 
         foreach (['rina_a', 'rina_b'] as $username) {
-            $extras = $this->buatExtras(['alias' => 'Rina'], ['username' => $username]);
+            $extras = $this->buatExtras([], ['username' => $username]);
             ProjectApplication::create([
                 'casting_project_id' => $project->id,
                 'extras_id' => $extras->id,
@@ -166,15 +164,15 @@ class NamaAsliUsernameTest extends TestCase
         $response = $this->actingAs($admin)->get(route('admin.projects.applicants', $project));
 
         $response->assertOk()
-            ->assertSee('Rina (@rina_a)')
-            ->assertSee('Rina (@rina_b)');
+            ->assertSee('rina_a')
+            ->assertSee('rina_b');
     }
 
     public function test_extras_tanpa_username_tampil_tanpa_kurung_kosong(): void
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $project = $this->buatProject($admin);
-        $extras = $this->buatExtras(['alias' => 'Rina']);
+        $extras = $this->buatExtras([]);
 
         ProjectApplication::create([
             'casting_project_id' => $project->id,
@@ -185,17 +183,7 @@ class NamaAsliUsernameTest extends TestCase
         $response = $this->actingAs($admin)->get(route('admin.projects.applicants', $project));
 
         $response->assertOk()
-            ->assertSee('Rina')
-            ->assertDontSee('(@)');
-
-        $this->assertSame('Rina', $extras->fresh()->alias_tampil);
-    }
-
-    public function test_alias_tampil_gabungkan_alias_dan_username(): void
-    {
-        $extras = $this->buatExtras(['alias' => 'Rina'], ['username' => 'rina_wulan']);
-
-        $this->assertSame('Rina (@rina_wulan)', $extras->fresh()->alias_tampil);
+            ->assertSee('(belum isi username)');
     }
 
     // ---------- D2: gate & PDF kontrak ----------
@@ -256,7 +244,6 @@ class NamaAsliUsernameTest extends TestCase
         $this->assertStringContainsString('Nama Talent (sesuai KTP)', $html);
         // Nama penandatangan di kolom Pihak Talent = nama KTP, bukan alias.
         $this->assertStringContainsString('<div class="signature-line">Rina Wulandari</div>', $html);
-        $this->assertStringNotContainsString('<div class="signature-line">Alias Lama</div>', $html);
     }
 
     private function buatProject(User $admin): CastingProject

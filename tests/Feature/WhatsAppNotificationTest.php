@@ -22,7 +22,7 @@ class WhatsAppNotificationTest extends TestCase
     {
         $adminUser = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras', 'nomor_wa' => $nomorWa]);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test', 'nama_asli' => 'Nama Asli Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'nama_asli' => 'Nama Asli Test']);
 
         $project = CastingProject::create([
             'admin_id' => $adminUser->id,
@@ -63,7 +63,7 @@ class WhatsAppNotificationTest extends TestCase
         Http::fake(['*/send' => Http::response(['sukses' => true], 200)]);
 
         $extrasUser = User::factory()->create(['role' => 'extras', 'nomor_wa' => '081234567890']);
-        ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $admin = User::factory()->create(['role' => 'admin_default']);
         $project = CastingProject::create([
             'admin_id' => $admin->id,

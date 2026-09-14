@@ -19,9 +19,10 @@ class ExtrasRecapExport implements FromCollection, WithHeadings
             'applications' => fn ($q) => $q->whereIn('status_partisipasi', ProjectApplication::STATUS_LOLOS_KE_ATAS),
         ])
             ->orderByDesc('applications_count')
+            ->with('user:id,username')
             ->get()
             ->map(fn ($ex) => [
-                'alias' => $ex->alias,
+                'alias' => $ex->user->username ?? '-',
                 'status' => $ex->status,
                 'jumlah_terpilih' => $ex->applications_count,
                 'cancel_count' => $ex->cancel_count,

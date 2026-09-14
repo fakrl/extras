@@ -36,7 +36,7 @@ class CastingProjectApplyTest extends TestCase
     private function buatExtras(): User
     {
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
         return $extrasUser;
     }

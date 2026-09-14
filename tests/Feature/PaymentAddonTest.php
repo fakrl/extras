@@ -39,7 +39,7 @@ class PaymentAddonTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $application = $this->buatAplikasi($admin, $extras);
 
         $response = $this->actingAs($extrasUser)->post(route('payments.addon', $application), [
@@ -59,11 +59,11 @@ class PaymentAddonTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $application = $this->buatAplikasi($admin, $extras);
 
         $extrasLainUser = User::factory()->create(['role' => 'extras']);
-        ExtrasProfile::create(['user_id' => $extrasLainUser->id, 'alias' => 'Alias Lain']);
+        ExtrasProfile::create(['user_id' => $extrasLainUser->id]);
 
         $response = $this->actingAs($extrasLainUser)->post(route('payments.addon', $application), [
             'label' => 'Reimburse transport',
@@ -77,7 +77,7 @@ class PaymentAddonTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $application = $this->buatAplikasi($admin, $extras);
 
         $response = $this->actingAs($admin)->post(route('payments.addon', $application), [
@@ -97,7 +97,7 @@ class PaymentAddonTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $application = $this->buatAplikasi($admin, $extras, 'dikonfirmasi_diterima');
 
         $response = $this->actingAs($admin)->post(route('payments.addon', $application), [
@@ -113,7 +113,7 @@ class PaymentAddonTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $application = $this->buatAplikasi($admin, $extras, 'dikonfirmasi_diterima');
 
         $response = $this->actingAs($extrasUser)->post(route('payments.addon', $application), [

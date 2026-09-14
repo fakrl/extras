@@ -25,7 +25,7 @@ class NegoFeeGateSetelahKontrakTest extends TestCase
     private function buatAplikasi(User $admin, string $status): ProjectApplication
     {
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',
             'deadline' => now()->addDays(7), 'kuota' => 5,

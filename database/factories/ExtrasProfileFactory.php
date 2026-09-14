@@ -19,8 +19,7 @@ class ExtrasProfileFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory()->state(['role' => 'extras']),
-            'alias' => fake()->name(),
+            'user_id' => User::factory()->state(['role' => 'extras', 'username' => 'user_'.fake()->unique()->numerify('####')]),
             'nama_asli' => fake()->name(),
             'usia' => fake()->numberBetween(20, 45),
             'gender' => fake()->randomElement(['Pria', 'Wanita']),

@@ -75,7 +75,7 @@ class CastingProjectEditTest extends TestCase
         $project->classes()->create(['nama_kelas' => 'Kelas B', 'budget_client' => 200000, 'kuota_kelas' => 2]);
 
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         ProjectApplication::create([
             'casting_project_id' => $project->id,
             'extras_id' => $extras->id,
@@ -97,7 +97,7 @@ class CastingProjectEditTest extends TestCase
         $kelasA = $project->classes()->create(['nama_kelas' => 'Kelas A', 'budget_client' => 100000, 'kuota_kelas' => 2]);
 
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         ProjectApplication::create([
             'casting_project_id' => $project->id,
             'extras_id' => $extras->id,
@@ -140,7 +140,7 @@ class CastingProjectEditTest extends TestCase
         $kelasA = $project->classes()->create(['nama_kelas' => 'Kelas A', 'budget_client' => 100000, 'kuota_kelas' => 2]);
 
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         ProjectApplication::create([
             'casting_project_id' => $project->id,
             'extras_id' => $extras->id,

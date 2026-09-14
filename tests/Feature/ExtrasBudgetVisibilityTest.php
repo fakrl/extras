@@ -34,7 +34,7 @@ class ExtrasBudgetVisibilityTest extends TestCase
     public function test_index_lowongan_tidak_menampilkan_budget_client(): void
     {
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias']);
+        ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $this->buatProyekDenganKelas();
 
         $response = $this->actingAs($extrasUser)->get('/extras/lowongan');
@@ -47,7 +47,7 @@ class ExtrasBudgetVisibilityTest extends TestCase
     public function test_show_lowongan_tidak_menampilkan_budget_client(): void
     {
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias']);
+        ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = $this->buatProyekDenganKelas();
 
         $response = $this->actingAs($extrasUser)->get('/extras/lowongan/'.$project->id);

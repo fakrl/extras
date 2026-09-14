@@ -25,7 +25,7 @@ class LoginGateTest extends TestCase
     public function test_extras_melanggar_gagal_login(): void
     {
         $user = User::factory()->create(['role' => 'extras', 'password' => bcrypt('password')]);
-        $profile = ExtrasProfile::create(['user_id' => $user->id, 'alias' => 'Alias Test']);
+        $profile = ExtrasProfile::create(['user_id' => $user->id]);
         $profile->forceFill(['status' => 'melanggar'])->save();
 
         $response = $this->from('/login')->post('/login', ['email' => $user->email, 'password' => 'password']);
@@ -47,7 +47,7 @@ class LoginGateTest extends TestCase
     public function test_extras_tidak_aktif_tetap_bisa_login(): void
     {
         $user = User::factory()->create(['role' => 'extras', 'password' => bcrypt('password')]);
-        $profile = ExtrasProfile::create(['user_id' => $user->id, 'alias' => 'Alias Test']);
+        $profile = ExtrasProfile::create(['user_id' => $user->id]);
         $profile->forceFill(['status' => 'tidak_aktif'])->save();
 
         $response = $this->post('/login', ['email' => $user->email, 'password' => 'password']);

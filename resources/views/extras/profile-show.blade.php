@@ -65,8 +65,8 @@
     <div class="profile-section">
         <div class="profile-section-title">Nama Panggilan</div>
         <div class="profile-view-row">
-            <span class="profile-view-label">Nama Panggung / Alias</span>
-            <span class="profile-view-value">{{ $profile->alias_tampil ?: '— belum diisi —' }}</span>
+            <span class="profile-view-label">Nama Panggung / Username</span>
+            <span class="profile-view-value">{{ $profile->user->username ?? '— belum diisi —' }}</span>
         </div>
         <p class="field-hint">Nama ini yang dilihat Casting Director — bukan nama asli kamu di KTP.</p>
     </div>
