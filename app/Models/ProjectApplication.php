@@ -198,6 +198,10 @@ class ProjectApplication extends Model
             throw new \LogicException('Kandidat hanya bisa diajukan ke CD setelah fee Deal.');
         }
 
+        if (! $this->castingProject->cdAssignments()->exists()) {
+            throw new \LogicException('Proyek ini belum ada Casting Director yang ditugaskan. Assign CD dulu lewat halaman proyek sebelum mengajukan kandidat.');
+        }
+
         $tanggalProyekIni = $this->castingProject->shootingDates->pluck('tanggal');
         $adaBentrok = $this->extras->activeShootingDates($this->id)->intersect($tanggalProyekIni)->isNotEmpty();
 
