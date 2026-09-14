@@ -251,6 +251,16 @@
         input:focus, select:focus, textarea:focus {
             outline: none; border-color: var(--accent);
         }
+        input[type="checkbox"],
+        input[type="radio"] {
+            width: 15px;
+            height: 15px;
+            accent-color: var(--accent);
+            cursor: pointer;
+            vertical-align: middle;
+            min-height: unset;
+            margin-bottom: 0;
+        }
         label { font-size: 13.5px; color: var(--text-secondary); display: block; margin-bottom: 6px; font-weight: 500; }
         .required-mark { color: var(--danger); }
 

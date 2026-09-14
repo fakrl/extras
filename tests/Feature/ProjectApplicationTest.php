@@ -36,12 +36,14 @@ class ProjectApplicationTest extends TestCase
     public function test_ajukan_ke_cd_dengan_bentrok_jadwal_tetap_lanjut_tapi_flag_true(): void
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
+        $cd = User::factory()->create(['role' => 'casting_director']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
 
         $tanggalBentrok = now()->addDays(10)->toDateString();
         $projectA = $this->buatProyek($admin, $tanggalBentrok);
         $projectB = $this->buatProyek($admin, $tanggalBentrok);
+        $projectB->cdAssignments()->create(['cd_user_id' => $cd->id]);
 
         ProjectApplication::create([
             'casting_project_id' => $projectA->id,
@@ -65,10 +67,12 @@ class ProjectApplicationTest extends TestCase
     public function test_ajukan_ke_cd_tanpa_bentrok_flag_tetap_false(): void
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
+        $cd = User::factory()->create(['role' => 'casting_director']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
 
         $projectA = $this->buatProyek($admin, now()->addDays(10)->toDateString());
+        $projectA->cdAssignments()->create(['cd_user_id' => $cd->id]);
 
         $application = ProjectApplication::create([
             'casting_project_id' => $projectA->id,

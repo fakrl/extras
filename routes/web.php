@@ -228,6 +228,10 @@ Route::middleware(['auth', 'role:casting_director'])->prefix('cd')->group(functi
 
     Route::get('/reviews', [ReviewController::class, 'index'])->name('cd.reviews.index');
     Route::post('/reviews', [ReviewController::class, 'review'])->name('cd.reviews.review');
+    Route::get('/riwayat', [ReviewController::class, 'riwayat'])->name('cd.riwayat');
+    Route::get('/riwayat/{castingProject}', [ReviewController::class, 'riwayatProyek'])->name('cd.riwayat.show');
+    Route::get('/riwayat/{castingProject}/export/xlsx', [ReviewController::class, 'exportRiwayatXlsx'])->name('cd.riwayat.export.xlsx');
+    Route::get('/riwayat/{castingProject}/export/pdf', [ReviewController::class, 'exportRiwayatPdf'])->name('cd.riwayat.export.pdf');
 });
 
 // ==================== KONTRAK (lintas role: Admin Default & Extras) ====================

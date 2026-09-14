@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\CastingProject;
+use App\Models\CdReview;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use App\Models\User;
@@ -188,5 +189,75 @@ class CdProjectAssignmentTest extends TestCase
         ])->assertRedirect();
 
         $this->assertSame('diajukan_ke_cd', $application->fresh()->status_partisipasi);
+    }
+
+    public function test_ajukan_ke_cd_gagal_kalau_proyek_belum_ada_cd_assignment(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin_default']);
+        $project = $this->buatProyek($admin);
+
+        $extrasUser = User::factory()->create(['role' => 'extras']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Guard Test']);
+        $application = ProjectApplication::create([
+            'casting_project_id' => $project->id,
+            'extras_id' => $extras->id,
+            'status_partisipasi' => 'deal',
+            'fee_final' => 200000,
+        ]);
+
+        $this->expectException(\LogicException::class);
+        $application->ajukanKeCd();
+
+        $this->assertSame('deal', $application->fresh()->status_partisipasi);
+    }
+
+    public function test_cd_hanya_lihat_riwayat_keputusan_sendiri(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin_default']);
+        $cdA = User::factory()->create(['role' => 'casting_director']);
+        $cdB = User::factory()->create(['role' => 'casting_director']);
+        $project = $this->buatProyek($admin);
+        $project->cdAssignments()->create(['cd_user_id' => $cdA->id]);
+        $project->cdAssignments()->create(['cd_user_id' => $cdB->id]);
+        $application = $this->buatApplicationDiajukanKeCd($project);
+
+        CdReview::create([
+            'project_application_id' => $application->id,
+            'cd_id' => $cdA->id,
+            'keputusan' => 'approve',
+        ]);
+
+        $this->actingAs($cdB)->get(route('cd.riwayat'))
+            ->assertOk()
+            ->assertDontSee('Alias Test');
+    }
+
+    public function test_riwayat_tidak_expose_fee_nama_asli_nik(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin_default']);
+        $cd = User::factory()->create(['role' => 'casting_director']);
+        $project = $this->buatProyek($admin);
+        $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $application = $this->buatApplicationDiajukanKeCd($project);
+
+        CdReview::create([
+            'project_application_id' => $application->id,
+            'cd_id' => $cd->id,
+            'keputusan' => 'approve',
+        ]);
+
+        // Level 1: hanya nama proyek, tidak ada data extras sama sekali
+        $response = $this->actingAs($cd)->get(route('cd.riwayat'));
+        $response->assertOk();
+
+        $viewData = $response->original->getData();
+        $byProyek = $viewData['byProyek'];
+
+        // Level 1 tidak load extras — hanya castingProject (id, nama_produksi)
+        foreach ($byProyek as $item) {
+            $proyekAttrs = $item['proyek']->getAttributes();
+            $this->assertArrayNotHasKey('nik', $proyekAttrs);
+            $this->assertArrayNotHasKey('nama_lengkap', $proyekAttrs);
+        }
     }
 }

@@ -11,3 +11,6 @@
 <a href="{{ url('/cd/reviews') }}" class="sidebar-link {{ str_starts_with($route, 'cd/reviews') ? 'active' : '' }}">
     <i class="ti ti-clipboard-check"></i> Greenlight
 </a>
+<a href="{{ url('/cd/riwayat') }}" class="sidebar-link {{ str_starts_with($route, 'cd/riwayat') ? 'active' : '' }}">
+    <i class="ti ti-history"></i> Riwayat
+</a>
