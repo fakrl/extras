@@ -17,14 +17,13 @@
 </div>
 
 <div class="card" style="margin-bottom: 16px;">
-    <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Kelas / Kriteria</div>
+    <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Peran yang Dicari</div>
     <table>
-        <thead><tr><th>Kelas</th><th>Kriteria</th><th>Kuota</th></tr></thead>
+        <thead><tr><th>Peran</th><th>Kuota</th></tr></thead>
         <tbody>
             @foreach ($castingProject->classes as $class)
                 <tr>
                     <td>{{ $class->nama_kelas }}</td>
-                    <td>{{ $class->kriteria ? implode(', ', $class->kriteria) : '-' }}</td>
                     <td>{{ $class->kuota_kelas }}</td>
                 </tr>
             @endforeach
@@ -36,14 +35,11 @@
     @csrf
     @if ($castingProject->classes->isNotEmpty())
         <div class="card" style="margin-bottom: 16px;">
-            <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Pilih Kelas yang Kamu Daftar</div>
+            <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Pilih Peran yang Kamu Daftar</div>
             @foreach ($castingProject->classes as $class)
                 <label style="display: block; margin-bottom: 8px;">
                     <input type="radio" name="casting_project_class_id" value="{{ $class->id }}" required>
                     {{ $class->nama_kelas }}
-                    @if ($class->kriteria)
-                        <span style="color: var(--text-secondary); font-size: 12.5px;">({{ implode(', ', $class->kriteria) }})</span>
-                    @endif
                 </label>
             @endforeach
         </div>
