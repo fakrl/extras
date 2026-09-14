@@ -65,7 +65,7 @@
         </div>
         <div id="tanggal-wrap">
             @foreach ($castingProject->shootingDates as $tanggal)
-                <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; align-items: center;">
                     <input type="date" name="tanggal_shooting[]" class="input-inline" value="{{ $tanggal->tanggal->format('Y-m-d') }}" required>
                     <button type="button" class="btn-icon-danger btn-remove-row" title="Hapus" style="display:none">&times;</button>
                 </div>
