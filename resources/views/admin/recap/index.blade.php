@@ -24,7 +24,7 @@
         <tbody>
             @foreach ($extrasPalingSering as $ex)
                 <tr>
-                    <td>{{ $ex->alias_tampil ?? '-' }}</td>
+                    <td>{{ $ex->user->username ?? '-' }}</td>
                     <td>{{ $ex->applications_count }}</td>
                     <td>
                         <span class="badge {{ $ex->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">
@@ -47,7 +47,7 @@
             <tbody>
                 @foreach ($extrasSeringBatal as $ex)
                     <tr>
-                        <td>{{ $ex->alias_tampil ?? '-' }}</td>
+                        <td>{{ $ex->user->username ?? '-' }}</td>
                         <td>{{ $ex->cancel_count }}</td>
                         <td>
                             <span class="badge {{ $ex->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">

@@ -32,7 +32,7 @@
     <div class="applicant-card">
         <div class="applicant-card-photo">
             @if ($app->extras->foto_profil_path)
-                <img src="{{ route('extras.media.foto', $app->extras) }}" alt="Foto {{ $app->extras->alias }}">
+                <img src="{{ route('extras.media.foto', $app->extras) }}" alt="Foto Extras">
             @else
                 <div class="thumb-photo-empty"><i class="ti ti-user"></i></div>
             @endif
@@ -57,7 +57,7 @@
         <div>
             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
                 <div>
-                    <div style="font-size: 15px; font-weight: 600;">{{ $app->extras->alias_tampil ?? '(belum isi alias)' }}</div>
+                    <div style="font-size: 15px; font-weight: 600;">{{ $app->extras->user->username ?? '(belum isi username)' }}</div>
                     <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
                         <span class="badge {{ $badgeClass[$app->status_partisipasi] ?? 'badge-pending' }}">{{ $app->status_partisipasi }}</span>
                         @if ($app->bentrok_jadwal_flag)
@@ -150,7 +150,7 @@
         <dialog id="reject-dialog-{{ $app->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
             <form method="POST" action="{{ route('admin.applications.reject', $app) }}" style="padding: 18px;">
                 @csrf @method('PATCH')
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Tolak {{ $app->extras->alias ?? 'kandidat' }}?</div>
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Tolak {{ $app->extras->user->username ?? 'kandidat' }}?</div>
                 <textarea name="alasan_tolak" rows="3" required placeholder="Contoh: Kriteria tidak sesuai dengan tokoh yang dicari (usia/tinggi/dll)." style="width: 100%; margin-bottom: 12px;"></textarea>
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
                     <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
@@ -165,7 +165,7 @@
             <form method="POST" action="{{ route('admin.applications.apresiasi', $app) }}" style="padding: 18px;">
                 @csrf
                 <input type="hidden" name="apresiasi" value="1">
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Beri Apresiasi ke {{ $app->extras->alias ?? 'kandidat' }}?</div>
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Beri Apresiasi ke {{ $app->extras->user->username ?? 'kandidat' }}?</div>
                 <textarea name="apresiasi_catatan" rows="3" maxlength="1000" placeholder="Catatan internal (opsional), mis. alasan diapresiasi." style="width: 100%; margin-bottom: 12px;"></textarea>
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
                     <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
@@ -179,7 +179,7 @@
         <dialog id="batalkan-dialog-{{ $app->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
             <form method="POST" action="{{ route('admin.negotiations.batalkan', $app) }}" style="padding: 18px;">
                 @csrf
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Batalkan {{ $app->extras->alias ?? 'kandidat' }}?</div>
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Batalkan {{ $app->extras->user->username ?? 'kandidat' }}?</div>
                 <textarea name="alasan" rows="3" required placeholder="Alasan pembatalan" style="width: 100%; margin-bottom: 12px;"></textarea>
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
                     <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
@@ -193,7 +193,7 @@
         <dialog id="catatan-dialog-{{ $app->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
             <form method="POST" action="{{ route('admin.applications.catatan', $app) }}" style="padding: 18px;">
                 @csrf
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Catatan Lapangan — {{ $app->extras->alias ?? 'kandidat' }}</div>
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Catatan Lapangan — {{ $app->extras->user->username ?? 'kandidat' }}</div>
                 <select name="jenis" required style="width: 100%; margin-bottom: 10px;">
                     <option value="catatan">Catatan</option>
                     <option value="sanksi">Sanksi</option>

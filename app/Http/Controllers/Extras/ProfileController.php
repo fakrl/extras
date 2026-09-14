@@ -65,9 +65,6 @@ class ProfileController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'alias' => ['required', 'string', 'max:255'],
-            // Nama KTP dikumpulkan di sini (bareng alias), bukan bareng NIK —
-            // dipakai sebagai nama penandatangan di PDF kontrak.
             'nama_asli' => ['required', 'string', 'max:255'],
             // Identifier login alternatif: alpha_dash saja (tanpa spasi).
             'username' => [
@@ -100,7 +97,7 @@ class ProfileController extends Controller
             }
         }
 
-        $dataDisimpan = collect($data)->except(['tautan_label', 'tautan_url', 'nomor_wa', 'username'])->toArray();
+        $dataDisimpan = collect($data)->except(['tautan_label', 'tautan_url', 'nomor_wa', 'username', 'alias'])->toArray();
         $dataDisimpan['tautan_tambahan'] = $tautanTambahan;
 
         // SENGAJA tidak menerima 'status', 'cancel_count', 'foto_profil_path',

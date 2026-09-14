@@ -56,7 +56,7 @@ class PaymentStatusGateTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $application = $this->buatAplikasi($admin, $extras, $status);
 
         $this->actingAs($admin)->get(route('payments.show', $application))->assertStatus(422);
@@ -67,7 +67,7 @@ class PaymentStatusGateTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $application = $this->buatAplikasi($admin, $extras, $status);
         $application->payment()->create(['status' => 'belum_dibayar']);
 
@@ -81,7 +81,7 @@ class PaymentStatusGateTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $application = $this->buatAplikasi($admin, $extras, $status);
         $application->payment()->create(['status' => 'ditransfer']);
 
@@ -93,7 +93,7 @@ class PaymentStatusGateTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $application = $this->buatAplikasi($admin, $extras, $status);
         $application->payment()->create(['status' => 'belum_dibayar']);
 
@@ -108,7 +108,7 @@ class PaymentStatusGateTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $application = $this->buatAplikasi($admin, $extras, $status);
 
         $this->actingAs($admin)->get(route('payments.show', $application))->assertOk();
@@ -119,7 +119,7 @@ class PaymentStatusGateTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $application = $this->buatAplikasi($admin, $extras, $status);
         $application->payment()->create(['status' => 'belum_dibayar']);
 
@@ -133,7 +133,7 @@ class PaymentStatusGateTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $application = $this->buatAplikasi($admin, $extras, $status);
         $application->payment()->create(['status' => 'ditransfer']);
 
@@ -145,7 +145,7 @@ class PaymentStatusGateTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $application = $this->buatAplikasi($admin, $extras, $status);
         $application->payment()->create(['status' => 'belum_dibayar']);
 

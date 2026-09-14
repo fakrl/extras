@@ -26,7 +26,7 @@ class FillableTimestampRegressionTest extends TestCase
     public function test_payment_tandai_ditransfer_tidak_lempar_exception(): void
     {
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $admin = User::factory()->create(['role' => 'admin_default']);
         $project = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',
@@ -47,7 +47,7 @@ class FillableTimestampRegressionTest extends TestCase
     public function test_payment_konfirmasi_diterima_tidak_lempar_exception(): void
     {
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $admin = User::factory()->create(['role' => 'admin_default']);
         $project = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',
@@ -68,7 +68,7 @@ class FillableTimestampRegressionTest extends TestCase
     public function test_contract_sign_menyimpan_signed_at_tanpa_exception(): void
     {
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $admin = User::factory()->create(['role' => 'admin_default']);
         $project = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',

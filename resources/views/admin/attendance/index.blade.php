@@ -39,7 +39,7 @@
         <div class="entity-card" style="margin-bottom: 12px;">
             <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
                 <div>
-                    <div class="entity-card-title">{{ $app->extras->alias_tampil ?? '(belum isi alias)' }}</div>
+                    <div class="entity-card-title">{{ $app->extras->user->username ?? '(belum isi username)' }}</div>
                     @if ($absen)
                         <span class="badge {{ $absen->status === 'hadir' ? 'badge-aktif' : 'badge-tolak' }}">{{ $absen->status === 'hadir' ? 'Hadir' : 'Tidak Hadir' }}</span>
                     @else
@@ -67,7 +67,7 @@
         <dialog id="catatan-dialog-{{ $app->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
             <form method="POST" action="{{ route('admin.applications.catatan', $app) }}" style="padding: 18px;">
                 @csrf
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Catatan Lapangan — {{ $app->extras->alias_tampil ?? 'kandidat' }}</div>
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Catatan Lapangan — {{ $app->extras->user->username ?? 'kandidat' }}</div>
                 <select name="jenis" required style="width: 100%; margin-bottom: 10px;">
                     <option value="catatan">Catatan</option>
                     <option value="sanksi">Sanksi</option>

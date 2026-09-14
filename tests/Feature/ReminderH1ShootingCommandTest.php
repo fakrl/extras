@@ -35,7 +35,7 @@ class ReminderH1ShootingCommandTest extends TestCase
     private function buatAplikasi(CastingProject $project, string $status, ?string $nomorWa = '081234567890'): ProjectApplication
     {
         $extrasUser = User::factory()->create(['role' => 'extras', 'nomor_wa' => $nomorWa]);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
         return ProjectApplication::create([
             'casting_project_id' => $project->id,

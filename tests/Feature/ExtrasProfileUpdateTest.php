@@ -16,10 +16,9 @@ class ExtrasProfileUpdateTest extends TestCase
     public function test_nomor_wa_disimpan_ternormalisasi_ke_users_bukan_extras_profiles(string $input): void
     {
         $user = User::factory()->create(['role' => 'extras']);
-        ExtrasProfile::create(['user_id' => $user->id, 'alias' => 'Alias Lama']);
+        ExtrasProfile::create(['user_id' => $user->id]);
 
         $this->actingAs($user)->put('/extras/profil', [
-            'alias' => 'Alias Lama',
             'nama_asli' => 'Nama Asli Test',
             'username' => 'user_'.$user->id,
             'nomor_wa' => $input,
@@ -42,10 +41,9 @@ class ExtrasProfileUpdateTest extends TestCase
     public function test_update_tanpa_nomor_wa_tidak_error_dan_tetap_null(): void
     {
         $user = User::factory()->create(['role' => 'extras']);
-        ExtrasProfile::create(['user_id' => $user->id, 'alias' => 'Alias Lama']);
+        ExtrasProfile::create(['user_id' => $user->id]);
 
         $this->actingAs($user)->put('/extras/profil', [
-            'alias' => 'Alias Lama',
             'nama_asli' => 'Nama Asli Test',
             'username' => 'user_'.$user->id,
         ])->assertRedirect();
@@ -56,10 +54,9 @@ class ExtrasProfileUpdateTest extends TestCase
     public function test_field_profile_lain_tetap_tersimpan_bareng_nomor_wa(): void
     {
         $user = User::factory()->create(['role' => 'extras']);
-        $profile = ExtrasProfile::create(['user_id' => $user->id, 'alias' => 'Alias Lama']);
+        $profile = ExtrasProfile::create(['user_id' => $user->id]);
 
         $this->actingAs($user)->put('/extras/profil', [
-            'alias' => 'Alias Baru',
             'nama_asli' => 'Nama Asli Test',
             'username' => 'user_'.$user->id,
             'rate_card' => 300000,
@@ -67,7 +64,6 @@ class ExtrasProfileUpdateTest extends TestCase
         ])->assertRedirect();
 
         $profile->refresh();
-        $this->assertSame('Alias Baru', $profile->alias);
         $this->assertEquals(300000, $profile->rate_card);
         $this->assertSame('6281234567890', $user->refresh()->nomor_wa);
     }

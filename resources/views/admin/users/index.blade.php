@@ -63,10 +63,10 @@
             @foreach ($extras as $ex)
                 <tr data-status="{{ $ex->status }}"
                     data-nama="{{ strtolower($ex->name) }}"
-                    data-alias="{{ strtolower($ex->extrasProfile->alias_tampil ?? '') }}"
+                    data-alias="{{ strtolower($ex->username ?? '') }}"
                     data-email="{{ strtolower($ex->email) }}">
                     <td>{{ $ex->name }}</td>
-                    <td>{{ $ex->extrasProfile->alias_tampil ?? '-' }}</td>
+                    <td>{{ $ex->username ?? '-' }}</td>
                     <td>{{ $ex->email }}</td>
                     <td>
                         <span class="badge {{ $ex->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">

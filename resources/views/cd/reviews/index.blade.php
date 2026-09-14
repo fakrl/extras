@@ -24,12 +24,12 @@
                         <td><input type="checkbox" name="application_ids[]" value="{{ $app->id }}" class="app-checkbox"></td>
                         <td>
                             @if ($app->extras->foto_profil_path)
-                                <img src="{{ route('extras.media.foto', $app->extras) }}" alt="Foto {{ $app->extras->alias }}" class="thumb-photo">
+                                <img src="{{ route('extras.media.foto', $app->extras) }}" alt="Foto Extras" class="thumb-photo">
                             @else
                                 <div class="thumb-photo thumb-photo-empty"><i class="ti ti-user"></i></div>
                             @endif
                         </td>
-                        <td>{{ $app->extras->alias_tampil }}</td>
+                        <td>{{ $app->extras->user->username ?? '-' }}</td>
                         <td>{{ $app->castingProject->nama_produksi }}</td>
                         <td>
                             @forelse ($app->extras->photos as $foto)

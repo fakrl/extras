@@ -45,7 +45,7 @@
                         : '[]';
                 @endphp
                 <tr data-keputusan="{{ $review->keputusan }}"
-                    data-alias="{{ $extras?->alias ?? '-' }}"
+                    data-alias="{{ $extras?->user?->username ?? '-' }}"
                     data-foto="{{ $fotoUrl }}"
                     data-video="{{ $videoUrl }}"
                     data-photos="{{ $photos }}"
@@ -56,7 +56,7 @@
                     data-warna-kulit="{{ $extras?->warna_kulit ?? '' }}"
                     data-pengalaman="{{ $extras?->pengalaman ?? '' }}"
                     data-bahasa="{{ $extras?->bahasa ?? '' }}">
-                    <td>{{ $extras?->alias ?? '-' }}</td>
+                    <td>{{ $extras?->user?->username ?? '-' }}</td>
                     <td>
                         <span class="badge {{ $review->keputusan === 'approve' ? 'badge-aktif' : 'badge-tolak' }}">
                             {{ ucfirst($review->keputusan) }}

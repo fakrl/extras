@@ -27,18 +27,20 @@ class RecapControllerTest extends TestCase
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
 
-        $seringDipilih = ExtrasProfile::factory()->create(['alias' => 'Sering Dipilih']);
+        $seringDipilih = ExtrasProfile::factory()->for(
+            User::factory()->state(['role' => 'extras', 'username' => 'sering_dipilih'])
+        )->create();
         ProjectApplication::create([
             'casting_project_id' => $project->id, 'extras_id' => $seringDipilih->id,
             'status_partisipasi' => 'lolos',
         ]);
 
-        $jarangDipilih = ExtrasProfile::factory()->create(['alias' => 'Belum Pernah']);
+        $jarangDipilih = ExtrasProfile::factory()->create();
 
         $response = $this->actingAs($admin)->get(route('admin.recap.index'));
 
         $response->assertOk();
-        $response->assertSee('Sering Dipilih');
+        $response->assertSee('sering_dipilih');
         $response->assertViewHas('extrasPalingSering', function ($list) use ($seringDipilih) {
             return $list->first()->id === $seringDipilih->id && $list->first()->applications_count === 1;
         });
@@ -48,14 +50,18 @@ class RecapControllerTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
 
-        $seringBatal = ExtrasProfile::factory()->create(['alias' => 'Tukang Batal', 'cancel_count' => 3]);
-        $sesekaliBatal = ExtrasProfile::factory()->create(['alias' => 'Sesekali Batal', 'cancel_count' => 1]);
-        $tidakPernahBatal = ExtrasProfile::factory()->create(['alias' => 'Rajin', 'cancel_count' => 0]);
+        $seringBatal = ExtrasProfile::factory()->for(
+            User::factory()->state(['role' => 'extras', 'username' => 'tukang_batal'])
+        )->create(['cancel_count' => 3]);
+        $sesekaliBatal = ExtrasProfile::factory()->for(
+            User::factory()->state(['role' => 'extras', 'username' => 'sesekali_batal'])
+        )->create(['cancel_count' => 1]);
+        $tidakPernahBatal = ExtrasProfile::factory()->create(['cancel_count' => 0]);
 
         $response = $this->actingAs($admin)->get(route('admin.recap.index'));
 
         $response->assertOk();
-        $response->assertSeeInOrder(['Tukang Batal', 'Sesekali Batal']);
+        $response->assertSeeInOrder(['tukang_batal', 'sesekali_batal']);
         $response->assertViewHas('extrasSeringBatal', function ($list) use ($seringBatal, $sesekaliBatal) {
             return $list->pluck('id')->all() === [$seringBatal->id, $sesekaliBatal->id];
         });

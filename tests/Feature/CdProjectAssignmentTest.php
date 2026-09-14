@@ -29,10 +29,10 @@ class CdProjectAssignmentTest extends TestCase
         ]);
     }
 
-    private function buatApplicationDiajukanKeCd(CastingProject $project): ProjectApplication
+    private function buatApplicationDiajukanKeCd(CastingProject $project, string $username = 'alias_test_cd'): ProjectApplication
     {
-        $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Test']);
+        $extrasUser = User::factory()->create(['role' => 'extras', 'username' => $username]);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
         return ProjectApplication::create([
             'casting_project_id' => $project->id,
@@ -135,7 +135,7 @@ class CdProjectAssignmentTest extends TestCase
         $project1->cdAssignments()->create(['cd_user_id' => $cdA->id]);
         $application = $this->buatApplicationDiajukanKeCd($project1);
 
-        $this->actingAs($cdA)->get(route('cd.reviews.index'))->assertOk()->assertSee('Alias Test');
+        $this->actingAs($cdA)->get(route('cd.reviews.index'))->assertOk()->assertSee('alias_test_cd');
 
         $this->actingAs($cdA)->post(route('cd.reviews.review'), [
             'application_ids' => [$application->id],
@@ -156,7 +156,7 @@ class CdProjectAssignmentTest extends TestCase
         $project2->cdAssignments()->create(['cd_user_id' => $cdB->id]);
         $application = $this->buatApplicationDiajukanKeCd($project1);
 
-        $this->actingAs($cdB)->get(route('cd.reviews.index'))->assertOk()->assertDontSee('Alias Test');
+        $this->actingAs($cdB)->get(route('cd.reviews.index'))->assertOk()->assertDontSee('alias_test_cd');
     }
 
     public function test_cd_yang_tidak_diassign_aksi_approve_tidak_berefek(): void
@@ -197,7 +197,7 @@ class CdProjectAssignmentTest extends TestCase
         $project = $this->buatProyek($admin);
 
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Guard Test']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $application = ProjectApplication::create([
             'casting_project_id' => $project->id,
             'extras_id' => $extras->id,

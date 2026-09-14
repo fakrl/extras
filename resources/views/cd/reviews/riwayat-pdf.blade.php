@@ -21,7 +21,7 @@ th { background: #f0f0f0; }
     <tbody>
         @foreach ($reviews as $review)
         <tr>
-            <td>{{ $review->projectApplication->extras->alias ?? '-' }}</td>
+            <td>{{ $review->projectApplication->extras->user->username ?? '-' }}</td>
             <td>{{ ucfirst($review->keputusan) }}</td>
             <td>{{ $review->created_at->format('d M Y') }}</td>
         </tr>

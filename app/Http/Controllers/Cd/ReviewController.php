@@ -27,7 +27,7 @@ class ReviewController extends Controller
             ->whereHas('castingProject.cdAssignments', fn ($q) => $q->where('cd_user_id', $request->user()->id))
             // extras.user dibatasi ke id+username saja — CD cuma butuh itu
             // buat tampilan "Alias (@username)", bukan kontak/email Extras.
-            ->with('extras:id,user_id,alias,foto_profil_path,video_profil_path', 'extras.user:id,username', 'extras.photos', 'castingProject:id,nama_produksi')
+            ->with('extras:id,user_id,foto_profil_path,video_profil_path', 'extras.user:id,username', 'extras.photos', 'castingProject:id,nama_produksi')
             ->latest()
             ->get();
 
@@ -100,7 +100,7 @@ class ReviewController extends Controller
         $reviews = CdReview::where('cd_id', $cdId)
             ->whereHas('projectApplication', fn ($q) => $q->where('casting_project_id', $castingProject->id))
             ->with([
-                'projectApplication.extras:id,user_id,alias,usia,gender,tinggi_badan,ukuran_baju,warna_kulit,pengalaman,bahasa,foto_profil_path,video_profil_path',
+                'projectApplication.extras:id,user_id,usia,gender,tinggi_badan,ukuran_baju,warna_kulit,pengalaman,bahasa,foto_profil_path,video_profil_path',
                 'projectApplication.extras.photos',
             ])
             ->latest()
@@ -122,7 +122,7 @@ class ReviewController extends Controller
         $cdId = $request->user()->id;
         $reviews = CdReview::where('cd_id', $cdId)
             ->whereHas('projectApplication', fn ($q) => $q->where('casting_project_id', $castingProject->id))
-            ->with('projectApplication.extras:id,alias')
+            ->with(['projectApplication.extras:id,user_id', 'projectApplication.extras.user:id,username'])
             ->latest()
             ->get();
 

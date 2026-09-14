@@ -15,7 +15,7 @@ class ApplicantGradeFilterTest extends TestCase
 
     private function buatAplikasi(CastingProject $project, ?string $grade): ProjectApplication
     {
-        $extras = ExtrasProfile::factory()->create(['alias' => 'Alias '.$grade]);
+        $extras = ExtrasProfile::factory()->create();
 
         return ProjectApplication::create([
             'casting_project_id' => $project->id,

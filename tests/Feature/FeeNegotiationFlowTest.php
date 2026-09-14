@@ -32,7 +32,7 @@ class FeeNegotiationFlowTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Nego']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
         $project = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Nego', 'client_ph' => 'PH',
@@ -200,7 +200,7 @@ class FeeNegotiationFlowTest extends TestCase
         $this->actingAs($admin)->post(route('admin.negotiations.ajukan', $application), ['nominal' => 200000]);
 
         $extrasLain = User::factory()->create(['role' => 'extras']);
-        ExtrasProfile::create(['user_id' => $extrasLain->id, 'alias' => 'Bukan Pemilik']);
+        ExtrasProfile::create(['user_id' => $extrasLain->id]);
 
         $this->actingAs($extrasLain)->get(route('extras.negotiations.show', $application))->assertForbidden();
         $this->actingAs($extrasLain)->post(route('extras.negotiations.terima', $application), ['nominal' => 200000])
@@ -236,7 +236,7 @@ class FeeNegotiationFlowTest extends TestCase
         $cdB = User::factory()->create(['role' => 'casting_director']);
 
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias Export']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
         $project = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Export', 'client_ph' => 'PH',
@@ -280,7 +280,7 @@ class FeeNegotiationFlowTest extends TestCase
         ]);
 
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'X']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $app = ProjectApplication::create([
             'casting_project_id' => $projectA->id,
             'extras_id' => $extras->id,
@@ -306,10 +306,9 @@ class FeeNegotiationFlowTest extends TestCase
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
 
-        $extrasUser = User::factory()->create(['role' => 'extras']);
+        $extrasUser = User::factory()->create(['role' => 'extras', 'username' => 'panggilan_user']);
         $extras = ExtrasProfile::create([
             'user_id' => $extrasUser->id,
-            'alias' => 'Panggilan',
             'nama_asli' => 'Nama Asli Rahasia',
         ]);
         $app = ProjectApplication::create([
@@ -325,7 +324,7 @@ class FeeNegotiationFlowTest extends TestCase
         $response->assertOk()
             ->assertDontSee('Nama Asli Rahasia')
             ->assertDontSee('rate_card')
-            ->assertSee('Panggilan');
+            ->assertSee('panggilan_user');
     }
 
     public function test_export_pdf_riwayat(): void
@@ -339,7 +338,7 @@ class FeeNegotiationFlowTest extends TestCase
         ]);
 
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'alias' => 'Alias PDF']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $app = ProjectApplication::create([
             'casting_project_id' => $project->id,
             'extras_id' => $extras->id,
