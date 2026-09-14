@@ -75,14 +75,14 @@
 
         <hr>
         <div style="font-size: 14px; font-weight: 500; margin-bottom: 8px;">
-            Kelas / Kriteria <span style="color: var(--text-muted); font-weight: 400; font-size: 12.5px;">(minimal satu kelas)</span>
+            Peran yang Dicari <span style="color: var(--text-muted); font-weight: 400; font-size: 12.5px;">(minimal satu peran)</span>
         </div>
         <div id="kelas-wrap">
             @foreach ($castingProject->classes as $kelas)
                 <div class="kelas-row form-row" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; margin-bottom: 10px; align-items: flex-end;">
                     <input type="hidden" name="kelas[{{ $loop->index }}][id]" value="{{ $kelas->id }}">
                     <div>
-                        <label>Nama Kelas</label>
+                        <label>Nama Peran</label>
                         <input type="text" name="kelas[{{ $loop->index }}][nama_kelas]" value="{{ $kelas->nama_kelas }}" placeholder="misal: Ibu-ibu 29-50th" required>
                     </div>
                     <div>
@@ -99,7 +99,7 @@
                 </div>
             @endforeach
         </div>
-        <button type="button" id="btn-add-kelas" class="btn btn-sm" style="margin-bottom: 24px;">+ Tambah Kelas</button>
+        <button type="button" id="btn-add-kelas" class="btn btn-sm" style="margin-bottom: 24px;">+ Tambah Peran</button>
 
         <button type="submit" class="btn btn-brand" style="width: 100%;">Simpan Perubahan</button>
     </form>
@@ -164,7 +164,7 @@
             row.className = 'kelas-row form-row';
             row.style.cssText = 'border:1px solid var(--border-color); border-radius:10px; padding:12px; margin-bottom:10px; align-items:flex-end;';
             row.innerHTML =
-                '<div><label>Nama Kelas</label>' +
+                '<div><label>Nama Peran</label>' +
                 '<input type="text" name="kelas[' + kelasIndex + '][nama_kelas]" required></div>' +
                 '<div><label>Budget Client (Rp)</label>' +
                 '<input type="number" name="kelas[' + kelasIndex + '][budget_client]" min="0" required></div>' +
