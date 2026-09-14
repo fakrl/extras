@@ -57,7 +57,7 @@
             Tanggal Shooting <span style="color: var(--text-muted); font-weight: 400; font-size: 12.5px;">(bisa lebih dari satu, tidak harus berurutan)</span>
         </div>
         <div id="tanggal-wrap">
-            <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; align-items: center;">
                 <input type="date" name="tanggal_shooting[]" class="input-inline" required>
                 <button type="button" class="btn-icon-danger btn-remove-row" title="Hapus" style="display:none">&times;</button>
             </div>

@@ -1,17 +1,17 @@
 <style>
     :root[data-theme="dark"] {
         color-scheme: dark;
-        --bg-page: #0b1310;
-        --bg-sidebar: #070c09;
-        --bg-card: #131c16;
-        --bg-card-hover: #1a2620;
-        --bg-nav-active: #17251b;
+        --bg-page: #12161a;
+        --bg-sidebar: #0d1013;
+        --bg-card: #1a1f24;
+        --bg-card-hover: #232a30;
+        --bg-nav-active: #1c2621;
         --text-primary: #eef4ef;
         --text-secondary: #9db3a2;
         --text-muted: #62726a;
         --border-color: rgba(255,255,255,0.08);
-        --accent: #22c55e;
-        --accent-strong: #4ade80;
+        --accent: #10b981;
+        --accent-strong: #34d399;
         --accent-on: #052e16;
         --danger: #f0565c;
         --warning: #f59e0b;

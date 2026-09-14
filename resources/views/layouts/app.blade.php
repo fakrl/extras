@@ -17,12 +17,15 @@
         .sidebar {
             width: 220px;
             flex-shrink: 0;
-            background: var(--bg-sidebar);
+            background-color: var(--bg-sidebar);
             border-right: 1px solid var(--border-color);
             padding: 20px 12px;
             display: flex;
             flex-direction: column;
             gap: 4px;
+        }
+        [data-theme="dark"] .sidebar {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cpath d='M0 10L10 0L20 10L10 20Z' stroke='rgba(16%2C185%2C129%2C0.05)' stroke-width='1' fill='none'/%3E%3C/svg%3E");
         }
         .sidebar-brand {
             display: flex; align-items: center; gap: 10px;
