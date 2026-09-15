@@ -8,7 +8,7 @@
 ## 1. Ringkasan Proyek
 
 **Nama:** Sistem Informasi Manajemen Casting Talent & Extras Berbasis Web dengan Fitur Negosiasi Fee Digital — **SIM Casting JBTB**.
-**Studi kasus:** JBTB Casting (agensi milik **Jestika Aisya Kordak**, brand: *Jbtb.Casting*, Depok).
+**Studi kasus:** JBTB Casting (agensi milik **Jestika Aisya Kordak**, brand: *Jbtb.Casting*, Pamulang, Tangerang Selatan).
 **Konteks:** Ini **project work pengganti skripsi** — harus **produksi sistem beneran** untuk syarat kelulusan, TAPI dengan scope & batasan jelas biar nggak membengkak.
 **Masalah yang diselesaikan:** proses rekrutmen extras masih manual (grup WA + Excel + Google Drive) → lambat, kesalahpahaman fee, data tersebar, **konflik pembayaran ("udah kerja belum dibayar / nggak sesuai deal")**.
 

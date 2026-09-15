@@ -9,11 +9,20 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $proyekDibukaCount = CastingProject::where('status', 'dibuka')->count();
         $totalProyek = CastingProject::count();
         $jumlahAdmin = User::where('role', 'like', 'admin_%')->count();
         $jumlahExtras = User::where('role', 'extras')->count();
 
-        return view('welcome', compact('proyekDibukaCount', 'totalProyek', 'jumlahAdmin', 'jumlahExtras'));
+        $allTerbuka = CastingProject::where('status', 'dibuka')
+            ->select(['id', 'nama_produksi', 'deadline', 'kuota', 'status'])
+            ->orderBy('deadline')
+            ->with('classes:id,casting_project_id,nama_kelas,kuota_kelas')
+            ->get()
+            ->filter(fn ($p) => $p->menerimaPendaftaran());
+
+        $proyekTerbuka = $allTerbuka->take(6)->values();
+        $adaLebih = $allTerbuka->count() > 6;
+
+        return view('welcome', compact('totalProyek', 'jumlahAdmin', 'jumlahExtras', 'proyekTerbuka', 'adaLebih'));
     }
 }

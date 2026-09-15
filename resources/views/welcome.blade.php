@@ -20,9 +20,7 @@
         .hp-nav-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; }
         .hp-logo {
             width: 34px; height: 34px; border-radius: 8px;
-            background: var(--accent); color: var(--accent-on);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 16px;
+            object-fit: contain; display: block; flex-shrink: 0;
         }
         .hp-nav-actions { display: flex; gap: 8px; align-items: center; }
         .theme-toggle-btn {
@@ -67,10 +65,17 @@
         .stat-label { font-size: 13.5px; color: var(--text-secondary); }
 
         .about-section { padding: 0 32px 48px; }
-        .about-inner {
-            max-width: 1100px; margin: 0 auto;
-            display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;
-        }
+        .about-inner { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px; }
+        .history-facts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+        .quick-facts { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px 20px; }
+        .quick-facts dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 0; }
+        .quick-facts dt { font-size: 12px; color: var(--text-muted); font-weight: 600; white-space: nowrap; padding-top: 2px; }
+        .quick-facts dd { font-size: 13px; color: var(--text-primary); margin: 0; }
+        .vm-section { display: flex; gap: 24px; }
+        .vm-block { flex: 1; }
+        .vm-title { font-size: 14px; font-weight: 700; margin: 0 0 8px; }
+        .vm-body { font-size: 13.5px; color: var(--text-secondary); margin: 0; line-height: 1.7; }
+        .vm-list { margin: 0; padding-left: 20px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.9; }
         .section-title { font-size: 18px; font-weight: 700; margin: 0 0 12px; }
         .section-body { font-size: 14px; color: var(--text-secondary); line-height: 1.75; margin: 0; }
 
@@ -87,13 +92,16 @@
         .step-bar-line { flex: 1; height: 2px; background: var(--border-color); margin-top: 14px; min-width: 20px; }
         .step-bar-label { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 8px; line-height: 1.3; padding: 0 4px; }
 
-        .teaser-section { padding: 48px 32px; }
-        .teaser-inner { max-width: 1100px; margin: 0 auto; }
-        .teaser-card {
-            background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px;
-            padding: 24px; font-size: 15px; line-height: 1.6;
-        }
-        .teaser-count { color: var(--accent); font-weight: 700; font-size: 22px; }
+        .lowongan-section { padding: 0 32px 48px; }
+        .lowongan-inner { max-width: 1100px; margin: 0 auto; }
+        .lowongan-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 20px; }
+        .lowongan-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+        .lowongan-card-title { font-size: 15px; font-weight: 600; margin: 0; }
+        .lowongan-card-deadline { font-size: 12.5px; color: var(--text-muted); }
+        .lowongan-roles { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+        .lowongan-roles li { font-size: 13px; color: var(--text-secondary); display: flex; justify-content: space-between; }
+        .lowongan-roles .role-quota { color: var(--text-muted); font-size: 12px; }
+        .lowongan-empty { text-align: center; color: var(--text-muted); font-size: 14px; padding: 32px; border: 1px dashed var(--border-color); border-radius: 12px; margin-top: 20px; }
 
         footer {
             border-top: 1px solid var(--border-color);
@@ -121,9 +129,10 @@
             .hp-nav { padding: 0 16px; }
             .hero { padding: 48px 16px 40px; }
             .hero h1 { font-size: 24px; }
-            .stats-section, .about-section, .teaser-section, .how-section { padding-left: 16px; padding-right: 16px; }
+            .stats-section, .about-section, .lowongan-section, .how-section { padding-left: 16px; padding-right: 16px; }
             .stats-grid { grid-template-columns: 1fr; }
-            .about-inner { grid-template-columns: 1fr; }
+            .history-facts-row { grid-template-columns: 1fr; }
+            .vm-section { flex-direction: column; gap: 16px; }
             footer { padding: 20px 16px; }
         }
         @media (min-width: 480px) and (max-width: 768px) {
@@ -134,7 +143,7 @@
 <body>
     <nav class="hp-nav">
         <div class="hp-nav-brand">
-            <div class="hp-logo">J</div>
+            <img src="{{ asset('images/logo-jbtb.jpg') }}" alt="Logo PT. JBTB Casting Creative Group" class="hp-logo">
             SIM Casting JBTB
         </div>
         <div class="hp-nav-actions">
@@ -180,16 +189,52 @@
 
     <div class="about-section">
         <div class="about-inner">
-            <div>
-                <div class="section-title">Tentang JBTB Casting</div>
-                <p class="section-body">
-                    JBTB Casting adalah agensi casting talent dan extras berbasis di Depok yang melayani kebutuhan
-                    production house di industri film, sinetron, dan iklan. Dengan pengalaman mengelola ratusan extras
-                    di berbagai proyek produksi, JBTB hadir dengan sistem digital untuk memastikan setiap kesepakatan
-                    fee tercatat jelas, kontrak ditandatangani secara sah, dan pembayaran terpantau transparan — tidak
-                    ada lagi konflik "sudah kerja belum dibayar" atau "fee tidak sesuai deal".
-                </p>
+            {{-- Block 1: Sejarah + Quick Facts --}}
+            <div class="history-facts-row">
+                <div>
+                    <div class="section-title">Tentang PT. JBTB Casting Creative Group</div>
+                    <p class="section-body">
+                        PT. JBTB Casting Creative Group adalah perusahaan talent agency dan casting management yang berfokus pada penyediaan extras/pemeran figuran untuk kebutuhan produksi film, iklan, dan konten kreatif di Indonesia. Resmi berdiri sejak 2020 dengan badan hukum PT dan NIB terdaftar OSS. Berkantor pusat di Pamulang, Tangerang Selatan, dengan tim inti 5 orang profesional, JBTB aktif mengelola 50–80 extras dan menangani 4–5 proyek per bulan, melayani klien dari rumah produksi, brand, dan tim iklan di industri hiburan Indonesia.
+                    </p>
+                </div>
+                <div class="quick-facts">
+                    <dl>
+                        <dt>Nama Perusahaan</dt>
+                        <dd>PT. JBTB Casting Creative Group</dd>
+                        <dt>Tahun Berdiri</dt>
+                        <dd>2020</dd>
+                        <dt>Bidang Usaha</dt>
+                        <dd>Talent Agency &amp; Casting Management</dd>
+                        <dt>Domisili</dt>
+                        <dd>Pamulang, Tangerang Selatan, Banten</dd>
+                        <dt>Legalitas</dt>
+                        <dd>PT &amp; NIB terdaftar OSS Kemenves RI</dd>
+                        <dt>Karyawan</dt>
+                        <dd>5 orang (tim inti)</dd>
+                        <dt>Skala Operasional</dt>
+                        <dd>50–80 extras aktif, 4–5 proyek/bulan</dd>
+                    </dl>
+                </div>
             </div>
+
+            {{-- Block 2: Visi & Misi --}}
+            <div class="vm-section">
+                <div class="vm-block">
+                    <div class="vm-title">Visi</div>
+                    <p class="vm-body">Menjadi platform casting digital terdepan di Indonesia yang transparan, profesional, dan terintegrasi bagi seluruh ekosistem film, periklanan, dan segala yang berhubungan dengan manajemen talent di industri entertainment.</p>
+                </div>
+                <div class="vm-block">
+                    <div class="vm-title">Misi</div>
+                    <ol class="vm-list">
+                        <li>Menyediakan sistem manajemen talent yang rapi, aman, dan mudah digunakan.</li>
+                        <li>Menjadi sarana resmi open casting yang kredibel bagi seluruh pelaku industri kreatif.</li>
+                        <li>Mempercepat proses seleksi melalui fitur filter dan rekomendasi otomatis.</li>
+                        <li>Membantu talent mengembangkan karir profesional di industri hiburan Indonesia.</li>
+                    </ol>
+                </div>
+            </div>
+
+            {{-- Block 3: Kenapa Pakai Sistem Ini --}}
             <div>
                 <div class="section-title">Kenapa Pakai Sistem Ini?</div>
                 <p class="section-body">
@@ -228,17 +273,53 @@
         </div>
     </div>
 
-    <div class="teaser-section">
-        <div class="teaser-inner">
-            <div class="teaser-card">
-                <span class="teaser-count">{{ $proyekDibukaCount }}</span>
-                proyek casting sedang buka pendaftaran sekarang —
-                @guest
-                    <a href="{{ route('register') }}">daftar akun</a> untuk lihat dan apply.
-                @else
-                    <a href="/extras/projects">lihat semua proyek</a>.
-                @endguest
-            </div>
+    <div class="lowongan-section">
+        <div class="lowongan-inner">
+            <div class="section-title">Lowongan Casting Terbuka</div>
+            @if ($proyekTerbuka->isEmpty())
+                <div class="lowongan-empty">Belum ada lowongan casting yang terbuka saat ini — cek lagi nanti.</div>
+            @else
+                <div class="lowongan-grid">
+                    @foreach ($proyekTerbuka as $proyek)
+                        <div class="lowongan-card">
+                            <div>
+                                <div class="lowongan-card-title">{{ $proyek->nama_produksi }}</div>
+                                <div class="lowongan-card-deadline">Deadline: {{ $proyek->deadline->format('d M Y') }}</div>
+                            </div>
+                            @if ($proyek->classes->isNotEmpty())
+                                <ul class="lowongan-roles">
+                                    @foreach ($proyek->classes as $kelas)
+                                        <li>
+                                            <span>{{ $kelas->nama_kelas }}</span>
+                                            <span class="role-quota">{{ $kelas->kuota_kelas }} orang</span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                            @guest
+                                <a href="{{ route('register') }}" class="btn-brand" style="margin-top: auto; font-size: 13px; min-height: 38px;">Daftar untuk Apply</a>
+                            @endguest
+                            @auth
+                                @if (auth()->user()->role === 'extras')
+                                    <a href="{{ route('extras.projects.show', $proyek) }}" class="btn-brand" style="margin-top: auto; font-size: 13px; min-height: 38px;">Lihat &amp; Apply</a>
+                                @endif
+                            @endauth
+                        </div>
+                    @endforeach
+                </div>
+                @if ($adaLebih)
+                    <div style="text-align: center; margin-top: 20px;">
+                        @guest
+                            <a href="{{ route('register') }}" class="btn-outline" style="font-size: 13px;">Daftar untuk lihat semua lowongan</a>
+                        @endguest
+                        @auth
+                            @if (auth()->user()->role === 'extras')
+                                <a href="/extras/projects" class="btn-outline" style="font-size: 13px;">Lihat semua lowongan</a>
+                            @endif
+                        @endauth
+                    </div>
+                @endif
+            @endif
         </div>
     </div>
 
@@ -253,7 +334,7 @@
 
     <footer>
         <div class="footer-inner">
-            <span>&copy; {{ date('Y') }} JBTB Casting — Depok</span>
+            <span>&copy; {{ date('Y') }} PT. JBTB Casting Creative Group — Pamulang, Tangerang Selatan</span>
             <span>Sistem Informasi Manajemen Casting Talent &amp; Extras</span>
         </div>
     </footer>

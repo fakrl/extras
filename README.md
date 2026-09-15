@@ -1,6 +1,6 @@
 # SIM Casting JBTB
 
-Sistem Informasi Manajemen Casting Talent & Extras Berbasis Web dengan Fitur Negosiasi Fee Digital — studi kasus **JBTB Casting** (agensi milik Jestika Aisya Kordak, brand *Jbtb.Casting*, Depok).
+Sistem Informasi Manajemen Casting Talent & Extras Berbasis Web dengan Fitur Negosiasi Fee Digital — studi kasus **JBTB Casting** (agensi milik Jestika Aisya Kordak, brand *Jbtb.Casting*, Pamulang, Tangerang Selatan).
 
 Proyek ini menggantikan proses rekrutmen extras/figuran yang masih manual (grup WhatsApp, Excel, Google Drive) dengan sistem terpusat: seleksi kandidat, negosiasi fee digital ala InDrive (multi-round, tercatat), kontrak digital dengan tanda tangan canvas, dan pelacakan status pembayaran transparan — untuk menghilangkan kesalahpahaman fee dan konflik "sudah kerja belum dibayar".
 
