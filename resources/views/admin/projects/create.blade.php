@@ -14,7 +14,7 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.projects.store') }}">
+    <form method="POST" action="{{ route('admin.projects.store') }}" enctype="multipart/form-data">
         @csrf
 
         <div class="form-row">
@@ -49,6 +49,13 @@
                     <input type="checkbox" name="is_urgent" value="1" id="is_urgent" @checked(old('is_urgent'))>
                     <label for="is_urgent" style="margin-bottom:0;">Butuh Dadakan / Urgent</label>
                 </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div>
+                <label>Poster/Cover Produksi <span style="color: var(--text-muted); font-weight: 400;">(opsional — bisa diisi nanti)</span></label>
+                <input type="file" name="poster_path" accept="image/jpeg,image/png,image/webp">
             </div>
         </div>
 

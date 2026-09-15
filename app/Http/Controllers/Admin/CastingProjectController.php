@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class CastingProjectController extends Controller
@@ -37,6 +38,7 @@ class CastingProjectController extends Controller
         $data = $request->validate([
             'nama_produksi' => ['required', 'string', 'max:255'],
             'client_ph' => ['required', 'string', 'max:255'],
+            'poster_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'wa_group_link' => ['nullable', 'url'],
             'deadline' => ['required', 'date'],
             'kuota' => ['required', 'integer', 'min:1'],
@@ -49,10 +51,14 @@ class CastingProjectController extends Controller
             'kelas.*.kuota_kelas' => ['required', 'integer', 'min:1'],
         ]);
 
+        $posterPath = $request->hasFile('poster_path')
+            ? $request->file('poster_path')->store('posters', 'public')
+            : null;
+
         $project = $request->user()->castingProjects()->create([
             'nama_produksi' => $data['nama_produksi'],
             'client_ph' => $data['client_ph'],
-            // RF-56: token link publik pendaftaran (dibagikan admin lewat WA).
+            'poster_path' => $posterPath,
             'share_token' => Str::random(32),
             'wa_group_link' => $data['wa_group_link'] ?? null,
             'deadline' => $data['deadline'],
@@ -97,6 +103,7 @@ class CastingProjectController extends Controller
         $data = $request->validate([
             'nama_produksi' => ['required', 'string', 'max:255'],
             'client_ph' => ['required', 'string', 'max:255'],
+            'poster_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'wa_group_link' => ['nullable', 'url'],
             'deadline' => ['required', 'date'],
             'kuota' => ['required', 'integer', 'min:1'],
@@ -123,14 +130,23 @@ class CastingProjectController extends Controller
             }
         }
 
-        $castingProject->update([
+        $updateData = [
             'nama_produksi' => $data['nama_produksi'],
             'client_ph' => $data['client_ph'],
             'wa_group_link' => $data['wa_group_link'] ?? null,
             'deadline' => $data['deadline'],
             'kuota' => $data['kuota'],
             'is_urgent' => $request->boolean('is_urgent'),
-        ]);
+        ];
+
+        if ($request->hasFile('poster_path')) {
+            if ($castingProject->poster_path) {
+                Storage::disk('public')->delete($castingProject->poster_path);
+            }
+            $updateData['poster_path'] = $request->file('poster_path')->store('posters', 'public');
+        }
+
+        $castingProject->update($updateData);
 
         $castingProject->shootingDates()->delete();
         foreach (array_unique($data['tanggal_shooting']) as $tanggal) {

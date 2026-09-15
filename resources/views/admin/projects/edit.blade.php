@@ -20,7 +20,7 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.projects.update', $castingProject) }}">
+    <form method="POST" action="{{ route('admin.projects.update', $castingProject) }}" enctype="multipart/form-data">
         @csrf
         @method('PATCH')
 
@@ -39,6 +39,19 @@
             <div>
                 <label>Link Grup WhatsApp <span style="color: var(--text-muted); font-weight: 400;">(opsional)</span></label>
                 <input type="url" name="wa_group_link" value="{{ old('wa_group_link', $castingProject->wa_group_link) }}" placeholder="https://chat.whatsapp.com/...">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div>
+                <label>Poster/Cover Produksi <span style="color: var(--text-muted); font-weight: 400;">(opsional — bisa diisi nanti)</span></label>
+                @if ($castingProject->poster_path)
+                    <div style="margin-bottom: 8px;">
+                        <img src="{{ Storage::url($castingProject->poster_path) }}" alt="Poster" style="height: 80px; border-radius: 6px; object-fit: cover;">
+                        <span style="font-size: 12px; color: var(--text-muted); margin-left: 8px;">Upload baru untuk mengganti</span>
+                    </div>
+                @endif
+                <input type="file" name="poster_path" accept="image/jpeg,image/png,image/webp">
             </div>
         </div>
 

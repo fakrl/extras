@@ -23,6 +23,12 @@ class HomeController extends Controller
         $proyekTerbuka = $allTerbuka->take(6)->values();
         $adaLebih = $allTerbuka->count() > 6;
 
-        return view('welcome', compact('totalProyek', 'jumlahAdmin', 'jumlahExtras', 'proyekTerbuka', 'adaLebih'));
+        $proyekSelesai = CastingProject::where('status', 'ditutup')
+            ->select(['id', 'nama_produksi', 'poster_path'])
+            ->latest()
+            ->take(8)
+            ->get();
+
+        return view('welcome', compact('totalProyek', 'jumlahAdmin', 'jumlahExtras', 'proyekTerbuka', 'adaLebih', 'proyekSelesai'));
     }
 }

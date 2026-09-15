@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['casting_project_id', 'nama_kelas', 'budget_client', 'kuota_kelas'])]
 class CastingProjectClass extends Model
 {
-
     public function castingProject(): BelongsTo
     {
         return $this->belongsTo(CastingProject::class);
