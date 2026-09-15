@@ -22,6 +22,20 @@
             width: 34px; height: 34px; border-radius: 8px;
             object-fit: contain; display: block; flex-shrink: 0;
         }
+        .hp-nav-menu {
+            list-style: none; margin: 0; padding: 0;
+            display: flex; gap: 2px; align-items: center; flex: 1; justify-content: center;
+        }
+        .hp-nav-menu a {
+            display: block; font-size: 13.5px; color: var(--text-secondary); text-decoration: none;
+            padding: 6px 11px; border-radius: 7px;
+        }
+        .hp-nav-menu a:hover { color: var(--text-primary); background: var(--bg-card); }
+        .hp-menu-toggle {
+            display: none; width: 34px; height: 34px; border-radius: 8px; border: none; cursor: pointer;
+            background: var(--bg-card-hover); color: var(--text-primary);
+            align-items: center; justify-content: center; font-size: 18px;
+        }
         .hp-nav-actions { display: flex; gap: 8px; align-items: center; }
         .theme-toggle-btn {
             width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer;
@@ -95,13 +109,20 @@
         .lowongan-section { padding: 0 32px 48px; }
         .lowongan-inner { max-width: 1100px; margin: 0 auto; }
         .lowongan-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 20px; }
-        .lowongan-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+        .lowongan-card { position: relative; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+        .lowongan-num { position: absolute; top: 14px; right: 16px; font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 1px; }
         .lowongan-card-title { font-size: 15px; font-weight: 600; margin: 0; }
-        .lowongan-card-deadline { font-size: 12.5px; color: var(--text-muted); }
+        .lowongan-card-deadline { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
+        .badge-dibuka { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; background: var(--accent); color: var(--accent-on); padding: 2px 7px; border-radius: 4px; vertical-align: middle; margin-left: 6px; }
         .lowongan-roles { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
         .lowongan-roles li { font-size: 13px; color: var(--text-secondary); display: flex; justify-content: space-between; }
         .lowongan-roles .role-quota { color: var(--text-muted); font-size: 12px; }
         .lowongan-empty { text-align: center; color: var(--text-muted); font-size: 14px; padding: 32px; border: 1px dashed var(--border-color); border-radius: 12px; margin-top: 20px; }
+        .why-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin-top: 16px; }
+        .why-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; }
+        .why-icon { font-size: 24px; color: var(--accent); margin-bottom: 10px; }
+        .why-keyword { font-size: 15px; font-weight: 700; margin: 0 0 6px; }
+        .why-desc { font-size: 13px; color: var(--text-secondary); margin: 0; line-height: 1.6; }
 
         footer {
             border-top: 1px solid var(--border-color);
@@ -126,7 +147,16 @@
         }
 
         @media (max-width: 768px) {
-            .hp-nav { padding: 0 16px; }
+            .hp-nav { padding: 0 16px; position: relative; }
+            .hp-nav-menu {
+                display: none; position: absolute; top: 56px; left: 0; right: 0;
+                flex-direction: column; align-items: flex-start;
+                background: var(--bg-sidebar); border-bottom: 1px solid var(--border-color);
+                padding: 8px 0; z-index: 99;
+            }
+            .hp-nav-menu.open { display: flex; }
+            .hp-nav-menu a { padding: 10px 20px; border-radius: 0; width: 100%; box-sizing: border-box; }
+            .hp-menu-toggle { display: flex; }
             .hero { padding: 48px 16px 40px; }
             .hero h1 { font-size: 24px; }
             .stats-section, .about-section, .lowongan-section, .how-section { padding-left: 16px; padding-right: 16px; }
@@ -146,7 +176,16 @@
             <img src="{{ asset('images/logo-jbtb.jpg') }}" alt="Logo PT. JBTB Casting Creative Group" class="hp-logo">
             SIM Casting JBTB
         </div>
+        <ul class="hp-nav-menu" id="hp-nav-menu">
+            <li><a href="#">Beranda</a></li>
+            <li><a href="#tentang">Tentang Kami</a></li>
+            <li><a href="#cara-kerja">Cara Kerja</a></li>
+            <li><a href="#lowongan">Lowongan Terbuka</a></li>
+        </ul>
         <div class="hp-nav-actions">
+            <button type="button" class="hp-menu-toggle" id="menu-toggle" aria-label="Buka menu">
+                <i class="ti ti-menu-2"></i>
+            </button>
             <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Ganti tema">
                 <i class="ti ti-moon" id="theme-icon"></i>
             </button>
@@ -187,7 +226,7 @@
         </div>
     </div>
 
-    <div class="about-section">
+    <div class="about-section" id="tentang">
         <div class="about-inner">
             {{-- Block 1: Sejarah + Quick Facts --}}
             <div class="history-facts-row">
@@ -234,20 +273,31 @@
                 </div>
             </div>
 
-            {{-- Block 3: Kenapa Pakai Sistem Ini --}}
+            {{-- Block 3: Kenapa Pakai Sistem Ini (why-grid, referensi widescreen.id) --}}
             <div>
                 <div class="section-title">Kenapa Pakai Sistem Ini?</div>
-                <p class="section-body">
-                    Sebelumnya proses casting dikelola manual — grup WhatsApp, spreadsheet, dan scan dokumen fisik.
-                    Sistem ini menggantikan semua itu dengan alur digital yang terintegrasi: extras apply sendiri,
-                    admin seleksi dan nego fee di dalam platform, Casting Director review kandidat, dan kontrak
-                    digital ditandatangani langsung di browser. Semua riwayat tersimpan dan bisa ditelusuri kapanpun.
-                </p>
+                <div class="why-grid">
+                    <div class="why-card">
+                        <div class="why-icon"><i class="ti ti-device-laptop"></i></div>
+                        <div class="why-keyword">Satu Platform</div>
+                        <p class="why-desc">Apply, seleksi, nego fee, kontrak digital — semua alur ada di sini, tanpa Excel atau grup WA.</p>
+                    </div>
+                    <div class="why-card">
+                        <div class="why-icon"><i class="ti ti-receipt-2"></i></div>
+                        <div class="why-keyword">Fee Transparan</div>
+                        <p class="why-desc">Setiap penawaran fee tercatat ronde per ronde — tidak ada ruang untuk konflik "nggak sesuai deal".</p>
+                    </div>
+                    <div class="why-card">
+                        <div class="why-icon"><i class="ti ti-history"></i></div>
+                        <div class="why-keyword">Riwayat Teraudit</div>
+                        <p class="why-desc">Kontrak digital + bukti transfer tersimpan permanen dan bisa ditelusuri kapanpun oleh extras maupun admin.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="how-section">
+    <div class="how-section" id="cara-kerja">
         <div class="how-inner">
             <div class="section-title">Cara Kerja buat Calon Extras</div>
             <div class="step-bar-wrap">
@@ -273,7 +323,7 @@
         </div>
     </div>
 
-    <div class="lowongan-section">
+    <div class="lowongan-section" id="lowongan">
         <div class="lowongan-inner">
             <div class="section-title">Lowongan Casting Terbuka</div>
             @if ($proyekTerbuka->isEmpty())
@@ -282,8 +332,10 @@
                 <div class="lowongan-grid">
                     @foreach ($proyekTerbuka as $proyek)
                         <div class="lowongan-card">
+                            <div class="lowongan-num">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</div>
                             <div>
-                                <div class="lowongan-card-title">{{ $proyek->nama_produksi }}</div>
+                                <span class="lowongan-card-title">{{ $proyek->nama_produksi }}</span>
+                                <span class="badge-dibuka">DIBUKA</span>
                                 <div class="lowongan-card-deadline">Deadline: {{ $proyek->deadline->format('d M Y') }}</div>
                             </div>
                             @if ($proyek->classes->isNotEmpty())
@@ -383,6 +435,15 @@
                 localStorage.setItem('jbtb-theme-v2', next);
                 icon.className = next === 'dark' ? 'ti ti-sun' : 'ti ti-moon';
             });
+
+            var menuToggle = document.getElementById('menu-toggle');
+            var navMenu = document.getElementById('hp-nav-menu');
+            if (menuToggle && navMenu) {
+                menuToggle.addEventListener('click', function () { navMenu.classList.toggle('open'); });
+                navMenu.querySelectorAll('a').forEach(function (a) {
+                    a.addEventListener('click', function () { navMenu.classList.remove('open'); });
+                });
+            }
         })();
     </script>
 </body>
