@@ -188,7 +188,26 @@ class PublicEventLinkTest extends TestCase
         $loggedInResponse = $this->actingAs($extrasUser)->get('/');
         $loggedInResponse->assertOk();
         $loggedInResponse->assertDontSee('welcome-modal', false);
-        $loggedInResponse->assertSee('Ke Dashboard');
-        $loggedInResponse->assertDontSee('Daftar Akun');
+        $loggedInResponse->assertSee('Dashboard');
+        $loggedInResponse->assertDontSee('Daftar Akun Extras');
+    }
+
+    public function test_homepage_menampilkan_stats_akurat(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin_default']);
+        User::factory()->create(['role' => 'admin_korlap']);
+        User::factory()->create(['role' => 'extras']);
+        User::factory()->create(['role' => 'extras']);
+        CastingProject::create(['admin_id' => $admin->id, 'nama_produksi' => 'P1', 'client_ph' => 'PH', 'deadline' => now()->addDays(7), 'kuota' => 5]);
+        CastingProject::create(['admin_id' => $admin->id, 'nama_produksi' => 'P2', 'client_ph' => 'PH', 'deadline' => now()->addDays(7), 'kuota' => 5]);
+
+        $response = $this->get('/');
+
+        $response->assertOk();
+        $response->assertSee('2'); // totalProyek + jumlahAdmin + jumlahExtras semua ada angka 2
+        // Pastikan angka dari DB, bukan hardcode — tambah 1 proyek lagi dan cek berubah
+        CastingProject::create(['admin_id' => $admin->id, 'nama_produksi' => 'P3', 'client_ph' => 'PH', 'deadline' => now()->addDays(7), 'kuota' => 5]);
+        $response2 = $this->get('/');
+        $response2->assertSee('3'); // totalProyek sekarang 3
     }
 }
