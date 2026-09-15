@@ -44,32 +44,30 @@
         }
 
         .hero {
-            display: flex;
-            min-height: 420px;
+            min-height: 520px;
             border-top: 2px solid var(--accent);
             border-bottom: 1px solid var(--border-color);
-        }
-        .hero-photo {
-            flex: 1;
             background-image:
-                linear-gradient(to right, rgba(15,154,76,0.22) 0%, rgba(16,17,18,0.80) 100%),
+                linear-gradient(rgba(16,17,18,0.65), rgba(16,17,18,0.65)),
                 url('/images/hero-clapboard.jpg');
             background-size: cover;
             background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .hero-content {
-            flex: 1;
-            background-color: var(--bg-sidebar);
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cpath d='M0 10L10 0L20 10L10 20Z' stroke='rgba(15%2C154%2C76%2C0.06)' stroke-width='1' fill='none'/%3E%3C/svg%3E");
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 64px 32px 56px;
+            padding: 80px 32px;
             text-align: center;
+            max-width: 720px;
+            width: 100%;
         }
-        .hero h1 { font-size: 32px; font-weight: 700; margin: 0 0 12px; line-height: 1.25; }
-        .hero .tagline { font-size: 15.5px; color: var(--text-secondary); line-height: 1.7; margin: 0 auto; max-width: 560px; }
+        .hero h1 { font-size: 38px; font-weight: 700; margin: 0 0 16px; line-height: 1.2; color: #fff; }
+        .hero .tagline { font-size: 16px; color: rgba(238,244,239,0.82); line-height: 1.7; margin: 0 auto; max-width: 560px; }
         .cta-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
 
         .btn-brand, .btn-outline {
@@ -114,8 +112,8 @@
         .talent-section { padding: 0 32px 48px; }
         .talent-inner { max-width: 1100px; margin: 0 auto; }
         .talent-grid { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
-        .talent-card { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 110px; }
-        .talent-figure svg { width: 64px; height: 84px; display: block; }
+        .talent-card { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 150px; }
+        .talent-figure svg { width: 100px; height: 130px; display: block; }
         .talent-label { font-size: 12.5px; color: var(--text-secondary); text-align: center; font-weight: 500; }
 
         .lowongan-section { padding: 0 32px 48px; }
@@ -143,6 +141,20 @@
             font-size: 32px; color: var(--text-muted);
         }
         .produksi-name { font-size: 12.5px; color: var(--text-secondary); text-align: center; font-weight: 500; }
+
+        .cta-strip {
+            background-image:
+                linear-gradient(rgba(16,17,18,0.70), rgba(16,17,18,0.70)),
+                url('/images/section-soundstage.jpg');
+            background-size: cover;
+            background-position: center;
+            padding: 72px 32px;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+        }
+        .cta-strip-inner { max-width: 620px; margin: 0 auto; }
+        .cta-strip .section-title { color: #fff; }
+        .cta-strip .section-body { color: rgba(238,244,239,0.80); margin-top: 8px; }
 
         footer {
             border-top: 1px solid var(--border-color);
@@ -178,11 +190,10 @@
             .hp-nav-menu.open { display: flex; }
             .hp-nav-menu a { padding: 10px 20px; border-radius: 0; width: 100%; box-sizing: border-box; }
             .hp-menu-toggle { display: flex; }
-            .hero { flex-direction: column; }
-            .hero-photo { min-height: 200px; }
-            .hero-content { padding: 40px 16px 36px; }
-            .hero h1 { font-size: 24px; }
-            .stats-section, .about-section, .lowongan-section, .talent-section, .produksi-section { padding-left: 16px; padding-right: 16px; }
+            .hero { min-height: 360px; }
+            .hero-content { padding: 48px 20px; }
+            .hero h1 { font-size: 26px; }
+            .stats-section, .about-section, .lowongan-section, .talent-section, .produksi-section, .cta-strip { padding-left: 16px; padding-right: 16px; }
             .stats-grid { grid-template-columns: 1fr; }
             .history-facts-row { grid-template-columns: 1fr; }
             .vm-section { flex-direction: column; gap: 16px; }
@@ -221,7 +232,6 @@
     </nav>
 
     <div class="hero">
-        <div class="hero-photo"></div>
         <div class="hero-content">
             <h1>Sistem Manajemen Casting JBTB</h1>
             <p class="tagline">Platform digital untuk manajemen talent & extras JBTB Casting — dari pendaftaran, seleksi, negosiasi fee, kontrak digital, hingga pembayaran honor, semua tercatat dan transparan.</p>
@@ -388,9 +398,21 @@
     </div>
     @endif
 
+    <div class="cta-strip">
+        <div class="cta-strip-inner">
+            <div class="section-title">Siap Bergabung di Produksi Berikutnya?</div>
+            <p class="section-body">Daftar jadi Extras JBTB dan mulai apply proyek casting yang terbuka — gratis, transparan, tercatat.</p>
+            @guest
+                <div style="margin-top: 20px;">
+                    <a href="{{ route('register') }}" class="btn-brand">Daftar Sekarang</a>
+                </div>
+            @endguest
+        </div>
+    </div>
+
     <footer>
         <div class="footer-inner">
-            <span>&copy; {{ date('Y') }} PT. JBTB Casting Creative Group — Pamulang, Tangerang Selatan &nbsp;·&nbsp; <span style="font-size:12px;color:var(--text-muted)">Foto: Jakob Owens (Unsplash)</span></span>
+            <span>&copy; {{ date('Y') }} PT. JBTB Casting Creative Group — Pamulang, Tangerang Selatan</span>
             <span>Sistem Informasi Manajemen Casting Talent &amp; Extras</span>
         </div>
     </footer>
