@@ -118,12 +118,6 @@
         .lowongan-roles li { font-size: 13px; color: var(--text-secondary); display: flex; justify-content: space-between; }
         .lowongan-roles .role-quota { color: var(--text-muted); font-size: 12px; }
         .lowongan-empty { text-align: center; color: var(--text-muted); font-size: 14px; padding: 32px; border: 1px dashed var(--border-color); border-radius: 12px; margin-top: 20px; }
-        .why-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin-top: 16px; }
-        .why-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; }
-        .why-icon { font-size: 24px; color: var(--accent); margin-bottom: 10px; }
-        .why-keyword { font-size: 15px; font-weight: 700; margin: 0 0 6px; }
-        .why-desc { font-size: 13px; color: var(--text-secondary); margin: 0; line-height: 1.6; }
-
         footer {
             border-top: 1px solid var(--border-color);
             padding: 24px 32px;
@@ -270,28 +264,6 @@
                         <li>Mempercepat proses seleksi melalui fitur filter dan rekomendasi otomatis.</li>
                         <li>Membantu talent mengembangkan karir profesional di industri hiburan Indonesia.</li>
                     </ol>
-                </div>
-            </div>
-
-            {{-- Block 3: Kenapa Pakai Sistem Ini (why-grid, referensi widescreen.id) --}}
-            <div>
-                <div class="section-title">Kenapa Pakai Sistem Ini?</div>
-                <div class="why-grid">
-                    <div class="why-card">
-                        <div class="why-icon"><i class="ti ti-device-laptop"></i></div>
-                        <div class="why-keyword">Satu Platform</div>
-                        <p class="why-desc">Apply, seleksi, nego fee, kontrak digital — semua alur ada di sini, tanpa Excel atau grup WA.</p>
-                    </div>
-                    <div class="why-card">
-                        <div class="why-icon"><i class="ti ti-receipt-2"></i></div>
-                        <div class="why-keyword">Fee Transparan</div>
-                        <p class="why-desc">Setiap penawaran fee tercatat ronde per ronde — tidak ada ruang untuk konflik "nggak sesuai deal".</p>
-                    </div>
-                    <div class="why-card">
-                        <div class="why-icon"><i class="ti ti-history"></i></div>
-                        <div class="why-keyword">Riwayat Teraudit</div>
-                        <p class="why-desc">Kontrak digital + bukti transfer tersimpan permanen dan bisa ditelusuri kapanpun oleh extras maupun admin.</p>
-                    </div>
                 </div>
             </div>
         </div>
