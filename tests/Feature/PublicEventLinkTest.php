@@ -192,7 +192,8 @@ class PublicEventLinkTest extends TestCase
         $loggedInResponse->assertDontSee('Daftar untuk Apply'); // extras lihat "Lihat & Apply", bukan CTA guest
     }
 
-    // K.3: homepage menampilkan proyek yang menerimaPendaftaran() = true, tidak yang lain.
+    // K.3: homepage menampilkan proyek yang menerimaPendaftaran() = true di lowongan section.
+    // K.12: proyek ditutup muncul di section produksi (portfolio), bukan di lowongan.
     public function test_homepage_menampilkan_proyek_lowongan_yang_benar(): void
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
@@ -204,13 +205,13 @@ class PublicEventLinkTest extends TestCase
         ]);
         $terbuka->classes()->create(['nama_kelas' => 'Ibu-ibu', 'budget_client' => 999999, 'kuota_kelas' => 3]);
 
-        $ditutup = CastingProject::create([
+        CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Ditutup XYZ',
             'client_ph' => 'PH LAIN', 'share_token' => Str::random(32),
             'deadline' => now()->addDays(7), 'kuota' => 5, 'status' => 'ditutup',
         ]);
 
-        $deadlineLewat = CastingProject::create([
+        CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Deadline Lewat',
             'client_ph' => 'PH LAIN2', 'share_token' => Str::random(32),
             'deadline' => now()->subDay(), 'kuota' => 5, 'status' => 'dibuka',
@@ -219,12 +220,15 @@ class PublicEventLinkTest extends TestCase
         $response = $this->get('/');
 
         $response->assertOk();
+        // Lowongan terbuka section: hanya proyek menerimaPendaftaran()
         $response->assertSee('Proyek Terbuka ABC');
         $response->assertSee('Ibu-ibu');
-        $response->assertDontSee('Proyek Ditutup XYZ');
+        // Proyek deadline lewat tidak muncul di lowongan (sudah lewat deadline, bukan menerimaPendaftaran())
         $response->assertDontSee('Proyek Deadline Lewat');
-        // Tembok visibilitas: client_ph dan budget_client TIDAK BOLEH muncul
+        // K.12 produksi section: proyek ditutup BOLEH muncul (portfolio), tapi client_ph & budget_client TIDAK BOLEH
         $response->assertDontSee('PH RAHASIA XYZ');
+        $response->assertDontSee('PH LAIN');
+        $response->assertDontSee('PH LAIN2');
         $response->assertDontSee('999999');
         $response->assertDontSee('999.999');
     }

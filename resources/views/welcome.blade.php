@@ -130,6 +130,20 @@
         .lowongan-roles li { font-size: 13px; color: var(--text-secondary); display: flex; justify-content: space-between; }
         .lowongan-roles .role-quota { color: var(--text-muted); font-size: 12px; }
         .lowongan-empty { text-align: center; color: var(--text-muted); font-size: 14px; padding: 32px; border: 1px dashed var(--border-color); border-radius: 12px; margin-top: 20px; }
+
+        .produksi-section { padding: 0 32px 48px; }
+        .produksi-inner { max-width: 1100px; margin: 0 auto; }
+        .produksi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; margin-top: 20px; }
+        .produksi-card { display: flex; flex-direction: column; gap: 10px; }
+        .produksi-poster { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 10px; display: block; }
+        .produksi-placeholder {
+            width: 100%; aspect-ratio: 2/3; border-radius: 10px;
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; color: var(--text-muted);
+        }
+        .produksi-name { font-size: 12.5px; color: var(--text-secondary); text-align: center; font-weight: 500; }
+
         footer {
             border-top: 1px solid var(--border-color);
             padding: 24px 32px;
@@ -168,7 +182,7 @@
             .hero-photo { min-height: 200px; }
             .hero-content { padding: 40px 16px 36px; }
             .hero h1 { font-size: 24px; }
-            .stats-section, .about-section, .lowongan-section, .talent-section { padding-left: 16px; padding-right: 16px; }
+            .stats-section, .about-section, .lowongan-section, .talent-section, .produksi-section { padding-left: 16px; padding-right: 16px; }
             .stats-grid { grid-template-columns: 1fr; }
             .history-facts-row { grid-template-columns: 1fr; }
             .vm-section { flex-direction: column; gap: 16px; }
@@ -351,6 +365,28 @@
             @endif
         </div>
     </div>
+
+    @if ($proyekSelesai->isNotEmpty())
+    <div class="produksi-section">
+        <div class="produksi-inner">
+            <div class="section-title">Produksi yang Pernah Kami Tangani</div>
+            <div class="produksi-grid">
+                @foreach ($proyekSelesai as $p)
+                    <div class="produksi-card">
+                        @if ($p->poster_path)
+                            <img src="{{ Storage::url($p->poster_path) }}" alt="{{ $p->nama_produksi }}" class="produksi-poster">
+                        @else
+                            <div class="produksi-placeholder">
+                                <i class="ti ti-clapperboard"></i>
+                            </div>
+                        @endif
+                        <div class="produksi-name">{{ $p->nama_produksi }}</div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+    @endif
 
     <footer>
         <div class="footer-inner">
