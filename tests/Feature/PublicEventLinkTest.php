@@ -182,14 +182,14 @@ class PublicEventLinkTest extends TestCase
         $guestResponse->assertOk();
         $guestResponse->assertSee('welcome-modal', false);
         $guestResponse->assertSee('Proyek Event Test'); // kartu lowongan terbuka muncul
-        $guestResponse->assertSee('Daftar Akun');
+        $guestResponse->assertSee('Daftar untuk Apply'); // CTA per kartu lowongan buat guest
 
         $extrasUser = $this->buatExtras();
         $loggedInResponse = $this->actingAs($extrasUser)->get('/');
         $loggedInResponse->assertOk();
         $loggedInResponse->assertDontSee('welcome-modal', false);
         $loggedInResponse->assertSee('Dashboard');
-        $loggedInResponse->assertDontSee('Daftar Akun Extras');
+        $loggedInResponse->assertDontSee('Daftar untuk Apply'); // extras lihat "Lihat & Apply", bukan CTA guest
     }
 
     // K.3: homepage menampilkan proyek yang menerimaPendaftaran() = true, tidak yang lain.
