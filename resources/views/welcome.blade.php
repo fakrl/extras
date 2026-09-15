@@ -44,9 +44,27 @@
         }
 
         .hero {
-            background-color: var(--bg-sidebar);
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cpath d='M0 10L10 0L20 10L10 20Z' stroke='rgba(16%2C185%2C129%2C0.06)' stroke-width='1' fill='none'/%3E%3C/svg%3E");
+            display: flex;
+            min-height: 420px;
+            border-top: 2px solid var(--accent);
             border-bottom: 1px solid var(--border-color);
+        }
+        .hero-photo {
+            flex: 1;
+            background-image:
+                linear-gradient(to right, rgba(15,154,76,0.22) 0%, rgba(16,17,18,0.80) 100%),
+                url('/images/hero-clapboard.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+        .hero-content {
+            flex: 1;
+            background-color: var(--bg-sidebar);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cpath d='M0 10L10 0L20 10L10 20Z' stroke='rgba(15%2C154%2C76%2C0.06)' stroke-width='1' fill='none'/%3E%3C/svg%3E");
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             padding: 64px 32px 56px;
             text-align: center;
         }
@@ -151,7 +169,9 @@
             .hp-nav-menu.open { display: flex; }
             .hp-nav-menu a { padding: 10px 20px; border-radius: 0; width: 100%; box-sizing: border-box; }
             .hp-menu-toggle { display: flex; }
-            .hero { padding: 48px 16px 40px; }
+            .hero { flex-direction: column; }
+            .hero-photo { min-height: 200px; }
+            .hero-content { padding: 40px 16px 36px; }
             .hero h1 { font-size: 24px; }
             .stats-section, .about-section, .lowongan-section, .how-section { padding-left: 16px; padding-right: 16px; }
             .stats-grid { grid-template-columns: 1fr; }
@@ -193,14 +213,17 @@
     </nav>
 
     <div class="hero">
-        <h1>Sistem Manajemen Casting JBTB</h1>
-        <p class="tagline">Platform digital untuk manajemen talent & extras JBTB Casting — dari pendaftaran, seleksi, negosiasi fee, kontrak digital, hingga pembayaran honor, semua tercatat dan transparan.</p>
-        @guest
-            <div class="cta-row">
-                <a href="{{ route('register') }}" class="btn-brand">Daftar Jadi Extras</a>
-                <a href="{{ route('login') }}" class="btn-outline">Masuk ke Sistem</a>
-            </div>
-        @endguest
+        <div class="hero-photo"></div>
+        <div class="hero-content">
+            <h1>Sistem Manajemen Casting JBTB</h1>
+            <p class="tagline">Platform digital untuk manajemen talent & extras JBTB Casting — dari pendaftaran, seleksi, negosiasi fee, kontrak digital, hingga pembayaran honor, semua tercatat dan transparan.</p>
+            @guest
+                <div class="cta-row">
+                    <a href="{{ route('register') }}" class="btn-brand">Daftar Jadi Extras</a>
+                    <a href="{{ route('login') }}" class="btn-outline">Masuk ke Sistem</a>
+                </div>
+            @endguest
+        </div>
     </div>
 
     <div class="stats-section">
@@ -358,7 +381,7 @@
 
     <footer>
         <div class="footer-inner">
-            <span>&copy; {{ date('Y') }} PT. JBTB Casting Creative Group — Pamulang, Tangerang Selatan</span>
+            <span>&copy; {{ date('Y') }} PT. JBTB Casting Creative Group — Pamulang, Tangerang Selatan &nbsp;·&nbsp; <span style="font-size:12px;color:var(--text-muted)">Foto: Jakob Owens (Unsplash)</span></span>
             <span>Sistem Informasi Manajemen Casting Talent &amp; Extras</span>
         </div>
     </footer>
