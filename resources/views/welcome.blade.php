@@ -39,7 +39,7 @@
         .hp-nav-actions { display: flex; gap: 8px; align-items: center; }
         .theme-toggle-btn {
             width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer;
-            background: var(--bg-card-hover); color: var(--accent-strong);
+            background: var(--bg-card-hover); color: var(--text-secondary);
             display: flex; align-items: center; justify-content: center; font-size: 15px;
         }
 
@@ -69,7 +69,7 @@
             text-align: center;
         }
         .hero h1 { font-size: 32px; font-weight: 700; margin: 0 0 12px; line-height: 1.25; }
-        .hero .tagline { font-size: 15.5px; color: var(--text-secondary); line-height: 1.7; margin: 0 auto 28px; max-width: 560px; }
+        .hero .tagline { font-size: 15.5px; color: var(--text-secondary); line-height: 1.7; margin: 0 auto; max-width: 560px; }
         .cta-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
 
         .btn-brand, .btn-outline {
@@ -105,24 +105,18 @@
         .quick-facts dd { font-size: 13px; color: var(--text-primary); margin: 0; }
         .vm-section { display: flex; gap: 24px; }
         .vm-block { flex: 1; }
-        .vm-title { font-size: 14px; font-weight: 700; margin: 0 0 8px; }
-        .vm-body { font-size: 13.5px; color: var(--text-secondary); margin: 0; line-height: 1.7; }
-        .vm-list { margin: 0; padding-left: 20px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.9; }
+        .vm-title { font-size: 18px; font-weight: 700; margin: 0 0 12px; }
+        .vm-body { font-size: 15px; color: var(--text-secondary); margin: 0; line-height: 1.8; }
+        .vm-list { margin: 0; padding-left: 20px; font-size: 15px; color: var(--text-secondary); line-height: 2.2; }
         .section-title { font-size: 18px; font-weight: 700; margin: 0 0 12px; }
         .section-body { font-size: 14px; color: var(--text-secondary); line-height: 1.75; margin: 0; }
 
-        .how-section { background: var(--bg-card); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 48px 32px; }
-        .how-inner { max-width: 1100px; margin: 0 auto; }
-        .step-bar-wrap { overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; margin-top: 20px; }
-        .step-bar { display: flex; align-items: flex-start; min-width: max-content; }
-        .step-bar-item { display: flex; flex-direction: column; align-items: center; width: 100px; flex-shrink: 0; }
-        .step-bar-circle {
-            width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center;
-            justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;
-            border: 2px solid var(--border-color); background: var(--bg-page); color: var(--text-muted);
-        }
-        .step-bar-line { flex: 1; height: 2px; background: var(--border-color); margin-top: 14px; min-width: 20px; }
-        .step-bar-label { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 8px; line-height: 1.3; padding: 0 4px; }
+        .talent-section { padding: 0 32px 48px; }
+        .talent-inner { max-width: 1100px; margin: 0 auto; }
+        .talent-grid { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+        .talent-card { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 110px; }
+        .talent-figure svg { width: 64px; height: 84px; display: block; }
+        .talent-label { font-size: 12.5px; color: var(--text-secondary); text-align: center; font-weight: 500; }
 
         .lowongan-section { padding: 0 32px 48px; }
         .lowongan-inner { max-width: 1100px; margin: 0 auto; }
@@ -146,9 +140,10 @@
         dialog {
             border: none; border-radius: 16px; padding: 0; max-width: 360px; width: 90%;
             background: var(--bg-card); color: var(--text-primary);
-            opacity: 0; transform: translateY(8px); transition: opacity .2s ease, transform .2s ease;
+            opacity: 0; transform: translateY(8px); transition: opacity .25s ease, transform .25s ease;
         }
         dialog.is-open { opacity: 1; transform: none; }
+        dialog.is-closing { opacity: 0; transform: translateY(-140px) scale(0.75); transition: opacity .25s ease, transform .25s ease; }
         dialog::backdrop { background: rgba(0,0,0,0.55); }
         .modal-body { padding: 24px; }
         .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
@@ -173,7 +168,7 @@
             .hero-photo { min-height: 200px; }
             .hero-content { padding: 40px 16px 36px; }
             .hero h1 { font-size: 24px; }
-            .stats-section, .about-section, .lowongan-section, .how-section { padding-left: 16px; padding-right: 16px; }
+            .stats-section, .about-section, .lowongan-section, .talent-section { padding-left: 16px; padding-right: 16px; }
             .stats-grid { grid-template-columns: 1fr; }
             .history-facts-row { grid-template-columns: 1fr; }
             .vm-section { flex-direction: column; gap: 16px; }
@@ -193,7 +188,6 @@
         <ul class="hp-nav-menu" id="hp-nav-menu">
             <li><a href="#">Beranda</a></li>
             <li><a href="#tentang">Tentang Kami</a></li>
-            <li><a href="#cara-kerja">Cara Kerja</a></li>
             <li><a href="#lowongan">Lowongan Terbuka</a></li>
         </ul>
         <div class="hp-nav-actions">
@@ -217,12 +211,6 @@
         <div class="hero-content">
             <h1>Sistem Manajemen Casting JBTB</h1>
             <p class="tagline">Platform digital untuk manajemen talent & extras JBTB Casting — dari pendaftaran, seleksi, negosiasi fee, kontrak digital, hingga pembayaran honor, semua tercatat dan transparan.</p>
-            @guest
-                <div class="cta-row">
-                    <a href="{{ route('register') }}" class="btn-brand">Daftar Jadi Extras</a>
-                    <a href="{{ route('login') }}" class="btn-outline">Masuk ke Sistem</a>
-                </div>
-            @endguest
         </div>
     </div>
 
@@ -292,28 +280,22 @@
         </div>
     </div>
 
-    <div class="how-section" id="cara-kerja">
-        <div class="how-inner">
-            <div class="section-title">Cara Kerja buat Calon Extras</div>
-            <div class="step-bar-wrap">
-                <div class="step-bar">
-                    @foreach ([
-                        'Daftar akun',
-                        'Lengkapi profil',
-                        'Apply proyek casting terbuka',
-                        'Seleksi Admin & CD',
-                        'Tanda tangan kontrak digital',
-                        'Kerja & dibayar',
-                    ] as $i => $label)
-                        <div class="step-bar-item">
-                            <div class="step-bar-circle">{{ $i + 1 }}</div>
-                            <div class="step-bar-label">{{ $label }}</div>
+    <div class="talent-section">
+        <div class="talent-inner">
+            <div class="section-title">Talent Kami</div>
+            <p class="section-body">Berbagai kategori talent yang siap mendukung kebutuhan produksi klien kami.</p>
+            <div class="talent-grid">
+                @foreach (['Ibu-ibu', 'Bapak-bapak', 'Remaja', 'Anak-anak', 'Dewasa'] as $kategori)
+                    <div class="talent-card">
+                        <div class="talent-figure">
+                            <svg viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <circle cx="30" cy="18" r="11" fill="var(--text-muted)"/>
+                                <rect x="14" y="33" width="32" height="38" rx="10" fill="var(--text-muted)"/>
+                            </svg>
                         </div>
-                        @if (! $loop->last)
-                            <div class="step-bar-line"></div>
-                        @endif
-                    @endforeach
-                </div>
+                        <div class="talent-label">{{ $kategori }}</div>
+                    </div>
+                @endforeach
             </div>
         </div>
     </div>
@@ -370,15 +352,6 @@
         </div>
     </div>
 
-    @guest
-        <div style="padding: 0 32px 48px; max-width: 1100px; margin: 0 auto; text-align: center;">
-            <div class="cta-row">
-                <a href="{{ route('register') }}" class="btn-brand">Daftar Akun Extras</a>
-                <a href="{{ route('login') }}" class="btn-outline">Masuk ke Sistem</a>
-            </div>
-        </div>
-    @endguest
-
     <footer>
         <div class="footer-inner">
             <span>&copy; {{ date('Y') }} PT. JBTB Casting Creative Group — Pamulang, Tangerang Selatan &nbsp;·&nbsp; <span style="font-size:12px;color:var(--text-muted)">Foto: Jakob Owens (Unsplash)</span></span>
@@ -409,7 +382,8 @@
                 function dismiss() {
                     localStorage.setItem('homepage_modal_dismissed', '1');
                     dlg.classList.remove('is-open');
-                    setTimeout(function () { dlg.close(); }, 200);
+                    dlg.classList.add('is-closing');
+                    setTimeout(function () { dlg.close(); }, 250);
                 }
 
                 document.getElementById('welcome-modal-dismiss').addEventListener('click', dismiss);

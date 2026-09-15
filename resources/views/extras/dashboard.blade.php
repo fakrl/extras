@@ -64,8 +64,24 @@
         @include('partials.application-progress', ['app' => $app])
     </div>
 @empty
-    <div class="card" style="text-align:center; color: var(--text-muted); padding: 20px 0;">
-        Belum ada pendaftaran.
+    <div class="card" style="padding: 20px 0 24px;">
+        <div style="font-size: 14px; font-weight: 600; margin-bottom: 16px;">Cara Kerja buat Calon Extras</div>
+        <div class="step-bar-wrap">
+            <div class="step-bar">
+                @foreach (['Daftar akun', 'Lengkapi profil', 'Apply proyek casting terbuka', 'Seleksi Admin & CD', 'Tanda tangan kontrak digital', 'Kerja & dibayar'] as $i => $step)
+                    <div class="step-bar-item">
+                        <div class="step-bar-circle">{{ $i + 1 }}</div>
+                        <div class="step-bar-label">{{ $step }}</div>
+                    </div>
+                    @if (! $loop->last)
+                        <div class="step-bar-line"></div>
+                    @endif
+                @endforeach
+            </div>
+        </div>
+        <p style="text-align:center; color: var(--text-muted); font-size: 13px; margin: 20px 0 0;">
+            Belum ada pendaftaran. <a href="{{ route('extras.projects.index') }}" style="color: var(--accent);">Lihat lowongan casting</a> yang tersedia.
+        </p>
     </div>
 @endforelse
 @endsection
