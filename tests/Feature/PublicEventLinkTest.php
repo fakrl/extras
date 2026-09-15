@@ -181,7 +181,7 @@ class PublicEventLinkTest extends TestCase
         $guestResponse = $this->get('/');
         $guestResponse->assertOk();
         $guestResponse->assertSee('welcome-modal', false);
-        $guestResponse->assertSee('1');
+        $guestResponse->assertSee('Proyek Event Test'); // kartu lowongan terbuka muncul
         $guestResponse->assertSee('Daftar Akun');
 
         $extrasUser = $this->buatExtras();
@@ -190,6 +190,43 @@ class PublicEventLinkTest extends TestCase
         $loggedInResponse->assertDontSee('welcome-modal', false);
         $loggedInResponse->assertSee('Dashboard');
         $loggedInResponse->assertDontSee('Daftar Akun Extras');
+    }
+
+    // K.3: homepage menampilkan proyek yang menerimaPendaftaran() = true, tidak yang lain.
+    public function test_homepage_menampilkan_proyek_lowongan_yang_benar(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin_default']);
+
+        $terbuka = CastingProject::create([
+            'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Terbuka ABC',
+            'client_ph' => 'PH RAHASIA XYZ', 'share_token' => Str::random(32),
+            'deadline' => now()->addDays(7), 'kuota' => 5, 'status' => 'dibuka',
+        ]);
+        $terbuka->classes()->create(['nama_kelas' => 'Ibu-ibu', 'budget_client' => 999999, 'kuota_kelas' => 3]);
+
+        $ditutup = CastingProject::create([
+            'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Ditutup XYZ',
+            'client_ph' => 'PH LAIN', 'share_token' => Str::random(32),
+            'deadline' => now()->addDays(7), 'kuota' => 5, 'status' => 'ditutup',
+        ]);
+
+        $deadlineLewat = CastingProject::create([
+            'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Deadline Lewat',
+            'client_ph' => 'PH LAIN2', 'share_token' => Str::random(32),
+            'deadline' => now()->subDay(), 'kuota' => 5, 'status' => 'dibuka',
+        ]);
+
+        $response = $this->get('/');
+
+        $response->assertOk();
+        $response->assertSee('Proyek Terbuka ABC');
+        $response->assertSee('Ibu-ibu');
+        $response->assertDontSee('Proyek Ditutup XYZ');
+        $response->assertDontSee('Proyek Deadline Lewat');
+        // Tembok visibilitas: client_ph dan budget_client TIDAK BOLEH muncul
+        $response->assertDontSee('PH RAHASIA XYZ');
+        $response->assertDontSee('999999');
+        $response->assertDontSee('999.999');
     }
 
     public function test_homepage_menampilkan_stats_akurat(): void
