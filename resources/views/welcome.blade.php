@@ -10,51 +10,97 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     @include('partials.theme-style')
     <style>
-        .wrap { max-width: 640px; margin: 0 auto; padding: 48px 24px 80px; }
-        .top-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-        .logo {
-            width: 48px; height: 48px; border-radius: 12px;
+        .hp-nav {
+            position: sticky; top: 0; z-index: 100;
+            background: var(--bg-sidebar);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 32px;
+            display: flex; align-items: center; justify-content: space-between; height: 56px;
+        }
+        .hp-nav-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; }
+        .hp-logo {
+            width: 34px; height: 34px; border-radius: 8px;
             background: var(--accent); color: var(--accent-on);
             display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 22px;
+            font-weight: 700; font-size: 16px;
         }
+        .hp-nav-actions { display: flex; gap: 8px; align-items: center; }
         .theme-toggle-btn {
-            width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
+            width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer;
             background: var(--bg-card-hover); color: var(--accent-strong);
-            display: flex; align-items: center; justify-content: center; font-size: 16px;
+            display: flex; align-items: center; justify-content: center; font-size: 15px;
         }
-        h1 { font-size: 26px; font-weight: 700; margin: 0 0 8px; }
-        .tagline { font-size: 15px; color: var(--text-secondary); line-height: 1.6; margin: 0 0 24px; }
-        .cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+
+        .hero {
+            background-color: var(--bg-sidebar);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cpath d='M0 10L10 0L20 10L10 20Z' stroke='rgba(16%2C185%2C129%2C0.06)' stroke-width='1' fill='none'/%3E%3C/svg%3E");
+            border-bottom: 1px solid var(--border-color);
+            padding: 64px 32px 56px;
+            text-align: center;
+        }
+        .hero h1 { font-size: 32px; font-weight: 700; margin: 0 0 12px; line-height: 1.25; }
+        .hero .tagline { font-size: 15.5px; color: var(--text-secondary); line-height: 1.7; margin: 0 auto 28px; max-width: 560px; }
+        .cta-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
         .btn-brand, .btn-outline {
             display: inline-flex; align-items: center; justify-content: center;
-            min-height: 48px; padding: 0 22px; border-radius: 10px;
+            min-height: 46px; padding: 0 22px; border-radius: 10px;
             font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer;
         }
         .btn-brand { background: var(--accent); color: var(--accent-on); border: none; }
         .btn-brand:hover { filter: brightness(1.08); }
         .btn-outline { background: transparent; color: var(--text-primary); border: 1px solid var(--border-color); }
         .btn-outline:hover { background: var(--bg-card); }
-        section { margin: 44px 0; }
-        .section-title { font-size: 17px; font-weight: 600; margin-bottom: 12px; }
-        .section-body { font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin: 0; }
 
-        .step-bar-wrap { overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
-        .step-bar { display: flex; align-items: flex-start; min-width: max-content; }
-        .step-bar-item { display: flex; flex-direction: column; align-items: center; width: 92px; flex-shrink: 0; }
-        .step-bar-circle {
-            width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center;
-            justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;
-            border: 2px solid var(--border-color); background: var(--bg-card); color: var(--text-muted);
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+
+        .stats-section { padding: 48px 32px; }
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+            max-width: 1100px; margin: 0 auto;
         }
-        .step-bar-line { flex: 1; height: 2px; background: var(--border-color); margin-top: 13px; min-width: 20px; }
-        .step-bar-label { font-size: 10.5px; color: var(--text-muted); text-align: center; margin-top: 6px; line-height: 1.25; padding: 0 2px; }
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 14px; padding: 24px 20px; text-align: center;
+        }
+        .stat-number { font-size: 36px; font-weight: 700; color: var(--accent); line-height: 1; margin-bottom: 6px; }
+        .stat-label { font-size: 13.5px; color: var(--text-secondary); }
 
+        .about-section { padding: 0 32px 48px; }
+        .about-inner {
+            max-width: 1100px; margin: 0 auto;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;
+        }
+        .section-title { font-size: 18px; font-weight: 700; margin: 0 0 12px; }
+        .section-body { font-size: 14px; color: var(--text-secondary); line-height: 1.75; margin: 0; }
+
+        .how-section { background: var(--bg-card); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 48px 32px; }
+        .how-inner { max-width: 1100px; margin: 0 auto; }
+        .step-bar-wrap { overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; margin-top: 20px; }
+        .step-bar { display: flex; align-items: flex-start; min-width: max-content; }
+        .step-bar-item { display: flex; flex-direction: column; align-items: center; width: 100px; flex-shrink: 0; }
+        .step-bar-circle {
+            width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;
+            border: 2px solid var(--border-color); background: var(--bg-page); color: var(--text-muted);
+        }
+        .step-bar-line { flex: 1; height: 2px; background: var(--border-color); margin-top: 14px; min-width: 20px; }
+        .step-bar-label { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 8px; line-height: 1.3; padding: 0 4px; }
+
+        .teaser-section { padding: 48px 32px; }
+        .teaser-inner { max-width: 1100px; margin: 0 auto; }
         .teaser-card {
             background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px;
-            padding: 20px; font-size: 14.5px; line-height: 1.6;
+            padding: 24px; font-size: 15px; line-height: 1.6;
         }
-        .teaser-count { color: var(--accent); font-weight: 700; }
+        .teaser-count { color: var(--accent); font-weight: 700; font-size: 22px; }
+
+        footer {
+            border-top: 1px solid var(--border-color);
+            padding: 24px 32px;
+            font-size: 13px; color: var(--text-muted);
+        }
+        .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
 
         dialog {
             border: none; border-radius: 16px; padding: 0; max-width: 360px; width: 90%;
@@ -70,39 +116,94 @@
             display: block; width: 100%; text-align: center; margin-top: 12px;
             background: none; border: none; color: var(--text-muted); font-size: 13px; cursor: pointer;
         }
+
+        @media (max-width: 768px) {
+            .hp-nav { padding: 0 16px; }
+            .hero { padding: 48px 16px 40px; }
+            .hero h1 { font-size: 24px; }
+            .stats-section, .about-section, .teaser-section, .how-section { padding-left: 16px; padding-right: 16px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .about-inner { grid-template-columns: 1fr; }
+            footer { padding: 20px 16px; }
+        }
+        @media (min-width: 480px) and (max-width: 768px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
     </style>
 </head>
 <body>
-    <div class="wrap">
-        <div class="top-row">
-            <div class="logo">J</div>
+    <nav class="hp-nav">
+        <div class="hp-nav-brand">
+            <div class="hp-logo">J</div>
+            SIM Casting JBTB
+        </div>
+        <div class="hp-nav-actions">
             <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Ganti tema">
                 <i class="ti ti-moon" id="theme-icon"></i>
             </button>
-        </div>
-        <h1>SIM Casting JBTB</h1>
-        <p class="tagline">Platform manajemen casting untuk JBTB Casting — dari daftar, apply proyek, seleksi, kontrak digital, sampai kerja & dibayar, semua dalam satu sistem.</p>
-
-        @auth
-            <a href="/dashboard" class="btn-brand">Ke Dashboard</a>
-        @else
-            <div class="cta-row">
-                <a href="{{ route('register') }}" class="btn-brand">Daftar Akun</a>
+            @auth
+                <a href="/dashboard" class="btn-brand">Dashboard</a>
+            @else
                 <a href="{{ route('login') }}" class="btn-outline">Masuk</a>
+                <a href="{{ route('register') }}" class="btn-brand">Daftar</a>
+            @endauth
+        </div>
+    </nav>
+
+    <div class="hero">
+        <h1>Sistem Manajemen Casting JBTB</h1>
+        <p class="tagline">Platform digital untuk manajemen talent & extras JBTB Casting — dari pendaftaran, seleksi, negosiasi fee, kontrak digital, hingga pembayaran honor, semua tercatat dan transparan.</p>
+        @guest
+            <div class="cta-row">
+                <a href="{{ route('register') }}" class="btn-brand">Daftar Jadi Extras</a>
+                <a href="{{ route('login') }}" class="btn-outline">Masuk ke Sistem</a>
             </div>
-        @endauth
+        @endguest
+    </div>
 
-        <section>
-            <div class="section-title">Apa itu SIM Casting JBTB?</div>
-            <p class="section-body">
-                SIM Casting JBTB adalah sistem informasi manajemen casting talent & extras. Extras (figuran/talent)
-                bisa daftar akun, melihat proyek casting yang lagi dibuka, dan apply langsung dari sistem. Proses
-                seleksi, negosiasi fee, tanda tangan kontrak digital, hingga pembayaran honor — semuanya tercatat
-                rapi di satu tempat, jadi jelas siapa deal apa dan sudah dibayar atau belum.
-            </p>
-        </section>
+    <div class="stats-section">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="stat-proyek">{{ $totalProyek }}</div>
+                <div class="stat-label">Total Proyek Casting</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="stat-extras">{{ $jumlahExtras }}</div>
+                <div class="stat-label">Extras Terdaftar</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="stat-admin">{{ $jumlahAdmin }}</div>
+                <div class="stat-label">Tim Admin Agensi</div>
+            </div>
+        </div>
+    </div>
 
-        <section>
+    <div class="about-section">
+        <div class="about-inner">
+            <div>
+                <div class="section-title">Tentang JBTB Casting</div>
+                <p class="section-body">
+                    JBTB Casting adalah agensi casting talent dan extras berbasis di Depok yang melayani kebutuhan
+                    production house di industri film, sinetron, dan iklan. Dengan pengalaman mengelola ratusan extras
+                    di berbagai proyek produksi, JBTB hadir dengan sistem digital untuk memastikan setiap kesepakatan
+                    fee tercatat jelas, kontrak ditandatangani secara sah, dan pembayaran terpantau transparan — tidak
+                    ada lagi konflik "sudah kerja belum dibayar" atau "fee tidak sesuai deal".
+                </p>
+            </div>
+            <div>
+                <div class="section-title">Kenapa Pakai Sistem Ini?</div>
+                <p class="section-body">
+                    Sebelumnya proses casting dikelola manual — grup WhatsApp, spreadsheet, dan scan dokumen fisik.
+                    Sistem ini menggantikan semua itu dengan alur digital yang terintegrasi: extras apply sendiri,
+                    admin seleksi dan nego fee di dalam platform, Casting Director review kandidat, dan kontrak
+                    digital ditandatangani langsung di browser. Semua riwayat tersimpan dan bisa ditelusuri kapanpun.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="how-section">
+        <div class="how-inner">
             <div class="section-title">Cara Kerja buat Calon Extras</div>
             <div class="step-bar-wrap">
                 <div class="step-bar">
@@ -124,22 +225,38 @@
                     @endforeach
                 </div>
             </div>
-        </section>
+        </div>
+    </div>
 
-        <section>
+    <div class="teaser-section">
+        <div class="teaser-inner">
             <div class="teaser-card">
                 <span class="teaser-count">{{ $proyekDibukaCount }}</span>
-                proyek casting lagi buka pendaftaran sekarang — daftar buat lihat & apply.
+                proyek casting sedang buka pendaftaran sekarang —
+                @guest
+                    <a href="{{ route('register') }}">daftar akun</a> untuk lihat dan apply.
+                @else
+                    <a href="/extras/projects">lihat semua proyek</a>.
+                @endguest
             </div>
-        </section>
-
-        @guest
-            <div class="cta-row">
-                <a href="{{ route('register') }}" class="btn-brand">Daftar Akun</a>
-                <a href="{{ route('login') }}" class="btn-outline">Masuk</a>
-            </div>
-        @endguest
+        </div>
     </div>
+
+    @guest
+        <div style="padding: 0 32px 48px; max-width: 1100px; margin: 0 auto; text-align: center;">
+            <div class="cta-row">
+                <a href="{{ route('register') }}" class="btn-brand">Daftar Akun Extras</a>
+                <a href="{{ route('login') }}" class="btn-outline">Masuk ke Sistem</a>
+            </div>
+        </div>
+    @endguest
+
+    <footer>
+        <div class="footer-inner">
+            <span>&copy; {{ date('Y') }} JBTB Casting — Depok</span>
+            <span>Sistem Informasi Manajemen Casting Talent &amp; Extras</span>
+        </div>
+    </footer>
 
     @guest
         <dialog id="welcome-modal">
