@@ -19,8 +19,18 @@
 
 <div class="card">
     <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Extras Paling Sering Terpilih</div>
+    <form method="GET" action="{{ route('admin.recap.index') }}" style="margin-bottom:12px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <label style="font-size:12.5px; color:var(--text-secondary); margin:0;">Filter Kategori:</label>
+        <select name="kategori_id" style="width:auto; min-height:unset; padding:4px 8px; font-size:12.5px; margin-bottom:0;">
+            <option value="">Semua</option>
+            @foreach ($allCategories as $kat)
+                <option value="{{ $kat->id }}" {{ request('kategori_id') == $kat->id ? 'selected' : '' }}>{{ $kat->nama }}</option>
+            @endforeach
+        </select>
+        <button type="submit" class="btn btn-sm">Filter</button>
+    </form>
     <table>
-        <thead><tr><th>Alias</th><th>Jumlah Terpilih</th><th>Status</th></tr></thead>
+        <thead><tr><th>Alias</th><th>Jumlah Terpilih</th><th>Status</th><th>Kategori</th></tr></thead>
         <tbody>
             @foreach ($extrasPalingSering as $ex)
                 <tr>
@@ -30,6 +40,11 @@
                         <span class="badge {{ $ex->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">
                             {{ $ex->status }}
                         </span>
+                    </td>
+                    <td>
+                        @foreach ($ex->categories as $kat)
+                            <span class="badge badge-pending" style="font-size:11px;">{{ $kat->nama }}</span>
+                        @endforeach
                     </td>
                 </tr>
             @endforeach
