@@ -14,3 +14,6 @@
 <a href="{{ url('/cd/riwayat') }}" class="sidebar-link {{ str_starts_with($route, 'cd/riwayat') ? 'active' : '' }}">
     <i class="ti ti-history"></i> Riwayat
 </a>
+<a href="{{ url('/cd/jadwal') }}" class="sidebar-link {{ str_starts_with($route, 'cd/jadwal') ? 'active' : '' }}">
+    <i class="ti ti-calendar-event"></i> Jadwal
+</a>

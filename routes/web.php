@@ -13,6 +13,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Cd\DashboardController as CdDashboardController;
+use App\Http\Controllers\Cd\JadwalController as CdJadwalController;
 use App\Http\Controllers\Cd\ReviewController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\Extras\CastingProjectController as ExtrasCastingProjectController;
@@ -232,6 +233,10 @@ Route::middleware(['auth', 'role:casting_director'])->prefix('cd')->group(functi
     Route::get('/riwayat/{castingProject}', [ReviewController::class, 'riwayatProyek'])->name('cd.riwayat.show');
     Route::get('/riwayat/{castingProject}/export/xlsx', [ReviewController::class, 'exportRiwayatXlsx'])->name('cd.riwayat.export.xlsx');
     Route::get('/riwayat/{castingProject}/export/pdf', [ReviewController::class, 'exportRiwayatPdf'])->name('cd.riwayat.export.pdf');
+
+    Route::get('/jadwal', [CdJadwalController::class, 'index'])->name('cd.jadwal.index');
+    Route::get('/jadwal/{project}', [CdJadwalController::class, 'show'])->name('cd.jadwal.show');
+    Route::post('/jadwal/{project}', [CdJadwalController::class, 'store'])->name('cd.jadwal.store');
 });
 
 // ==================== KONTRAK (lintas role: Admin Default & Extras) ====================
