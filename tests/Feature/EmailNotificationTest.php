@@ -66,6 +66,7 @@ class EmailNotificationTest extends TestCase
         $response = $this->actingAs($cd)->post('/cd/reviews', [
             'application_ids' => [$application->id],
             'keputusan' => 'approve',
+            'grade_cd' => 'A',
         ]);
 
         $response->assertRedirect();

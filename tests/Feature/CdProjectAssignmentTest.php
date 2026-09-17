@@ -140,6 +140,7 @@ class CdProjectAssignmentTest extends TestCase
         $this->actingAs($cdA)->post(route('cd.reviews.review'), [
             'application_ids' => [$application->id],
             'keputusan' => 'approve',
+            'grade_cd' => 'A',
         ])->assertRedirect();
 
         $this->assertSame('lolos', $application->fresh()->status_partisipasi);
