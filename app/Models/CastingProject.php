@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 // tidak ada route/controller yang nerima 'share_token' mentah dari request
 // user. Satu-satunya jalur yang mengisi field ini adalah
 // Admin\CastingProjectController::store() lewat Str::random(32) literal.
-#[Fillable(['admin_id', 'nama_produksi', 'client_ph', 'poster_path', 'share_token', 'wa_group_link', 'deadline', 'kuota', 'is_urgent', 'status'])]
+#[Fillable(['admin_id', 'nama_produksi', 'client_ph', 'poster_path', 'share_token', 'wa_group_link', 'link_grup', 'deadline', 'kuota', 'is_urgent', 'status'])]
 class CastingProject extends Model
 {
     /** @use HasFactory<CastingProjectFactory> */
