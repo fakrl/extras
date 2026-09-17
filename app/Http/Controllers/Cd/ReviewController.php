@@ -5,39 +5,46 @@ namespace App\Http\Controllers\Cd;
 use App\Exports\CdRiwayatExport;
 use App\Http\Controllers\Controller;
 use App\Models\CastingProject;
+use App\Models\CdProjectAssignment;
 use App\Models\CdReview;
 use App\Models\ProjectApplication;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ReviewController extends Controller
 {
-    /**
-     * Daftar kandidat yang statusnya "diajukan_ke_cd" — sudah Deal fee-nya,
-     * siap direview CD. CD hanya melihat data lewat alias (tembok
-     * visibilitas, lihat CLAUDE.md §5) — nama asli/NIK/fee/margin TIDAK
-     * pernah dikirim ke view ini.
-     */
     public function index(Request $request)
     {
-        $applications = ProjectApplication::where('status_partisipasi', 'diajukan_ke_cd')
-            ->whereHas('castingProject.cdAssignments', fn ($q) => $q->where('cd_user_id', $request->user()->id))
-            // extras.user dibatasi ke id+username saja — CD cuma butuh itu
-            // buat tampilan "Alias (@username)", bukan kontak/email Extras.
-            ->with('extras:id,user_id,foto_profil_path,video_profil_path', 'extras.user:id,username', 'extras.photos', 'castingProject:id,nama_produksi,link_grup', 'castingProjectClass:id,nama_kelas,kriteria')
-            ->latest()
-            ->get();
+        $cdId = $request->user()->id;
 
-        return view('cd.reviews.index', compact('applications'));
+        $proyekIds = CdProjectAssignment::where('cd_user_id', $cdId)->pluck('casting_project_id');
+
+        $proyek = CastingProject::whereIn('id', $proyekIds)
+            ->with(['applications' => function ($q) {
+                $q->whereIn('status_partisipasi', [
+                    'diajukan_ke_cd', 'lolos', 'kontrak_ditandatangani', 'selesai_produksi', 'ditolak',
+                ]);
+            }])
+            ->get()
+            ->map(function ($p) {
+                $apps = $p->applications;
+
+                return [
+                    'proyek' => $p,
+                    'menunggu' => $apps->where('status_partisipasi', 'diajukan_ke_cd')->count(),
+                    'approved' => $apps->whereIn('status_partisipasi', ['lolos', 'kontrak_ditandatangani', 'selesai_produksi'])->count(),
+                    'rejected' => $apps->where('status_partisipasi', 'ditolak')->count(),
+                    'total' => $apps->count(),
+                ];
+            });
+
+        return view('cd.reviews.index', compact('proyek'));
     }
 
-    /**
-     * RF-23: approve/reject individual atau massal. CD approve kecocokan
-     * talent, BUKAN approve harga — fee sudah dikunci sebelum sampai di sini.
-     */
     public function review(Request $request): RedirectResponse
     {
         $data = $request->validate([
@@ -76,39 +83,38 @@ class ReviewController extends Controller
         return back()->with('status', "{$jumlah} kandidat berhasil {$aksi}.");
     }
 
-    public function riwayat(Request $request)
+    public function show(Request $request, CastingProject $castingProject): Response
     {
-        $cdId = $request->user()->id;
-        $reviews = CdReview::where('cd_id', $cdId)
-            ->with('projectApplication.castingProject:id,nama_produksi')
-            ->latest()
-            ->get();
+        abort_unless(
+            $castingProject->cdAssignments()->where('cd_user_id', $request->user()->id)->exists(),
+            403
+        );
 
-        $byProyek = $reviews->groupBy(fn ($r) => $r->projectApplication->casting_project_id)
-            ->map(fn ($grup) => [
-                'proyek' => $grup->first()->projectApplication->castingProject,
-                'jumlah_approve' => $grup->where('keputusan', 'approve')->count(),
-                'jumlah_reject' => $grup->where('keputusan', 'reject')->count(),
-                'tanggal_terakhir' => $grup->max('created_at'),
+        $statusFilter = $request->query('status');
+
+        $query = ProjectApplication::where('casting_project_id', $castingProject->id)
+            ->whereIn('status_partisipasi', [
+                'diajukan_ke_cd', 'lolos', 'kontrak_ditandatangani', 'selesai_produksi', 'ditolak',
             ])
-            ->values();
-
-        return view('cd.reviews.riwayat', compact('byProyek'));
-    }
-
-    public function riwayatProyek(Request $request, CastingProject $castingProject)
-    {
-        $cdId = $request->user()->id;
-        $reviews = CdReview::where('cd_id', $cdId)
-            ->whereHas('projectApplication', fn ($q) => $q->where('casting_project_id', $castingProject->id))
             ->with([
-                'projectApplication.extras:id,user_id,usia,gender,tinggi_badan,ukuran_baju,warna_kulit,pengalaman,bahasa,foto_profil_path,video_profil_path',
-                'projectApplication.extras.photos',
-            ])
-            ->latest()
-            ->get();
+                'extras:id,user_id,usia,gender,tinggi_badan,ukuran_baju,warna_kulit,pengalaman,bahasa,foto_profil_path,video_profil_path',
+                'extras.user:id,username',
+                'extras.photos',
+                'castingProjectClass:id,nama_kelas,kriteria',
+                'cdReviews' => fn ($q) => $q->where('cd_id', $request->user()->id)->latest()->limit(1),
+            ]);
 
-        return view('cd.reviews.riwayat-proyek', compact('reviews', 'castingProject'));
+        if ($statusFilter === 'menunggu') {
+            $query->where('status_partisipasi', 'diajukan_ke_cd');
+        } elseif ($statusFilter === 'approved') {
+            $query->whereIn('status_partisipasi', ['lolos', 'kontrak_ditandatangani', 'selesai_produksi']);
+        } elseif ($statusFilter === 'rejected') {
+            $query->where('status_partisipasi', 'ditolak');
+        }
+
+        $applications = $query->latest()->get();
+
+        return response()->view('cd.reviews.show', compact('applications', 'castingProject', 'statusFilter'));
     }
 
     public function exportRiwayatXlsx(Request $request, CastingProject $castingProject)

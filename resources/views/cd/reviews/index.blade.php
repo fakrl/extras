@@ -1,89 +1,45 @@
 @extends('layouts.app')
 
-@section('title', 'Greenlight — Review Kandidat')
+@section('title', 'Greenlight')
 
 @section('content')
 <div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">Greenlight</div>
 <p style="color: var(--text-secondary); margin: 0 0 16px; font-size: 13.5px;">
-    Kandidat yang sudah Deal fee-nya, siap kamu approve atau reject.
+    Proyek yang kamu handle — klik proyek untuk lihat dan review kandidat.
 </p>
-<form method="POST" action="{{ route('cd.reviews.review') }}">
-    @csrf
 
-    <div class="card">
-        <table>
-            <thead>
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>Proyek</th>
+                <th>Menunggu</th>
+                <th>Approved</th>
+                <th>Rejected</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse ($proyek as $item)
                 <tr>
-                    <th><input type="checkbox" id="check-all"></th>
-                    <th>Foto</th><th>Alias</th><th>Proyek</th><th>Karakter</th><th>Kriteria</th><th>Rek. Admin</th><th>Foto Lain</th><th>Video</th>
+                    <td>{{ $item['proyek']->nama_produksi }}</td>
+                    <td><span class="badge badge-pending">{{ $item['menunggu'] }}</span></td>
+                    <td><span class="badge badge-aktif">{{ $item['approved'] }}</span></td>
+                    <td><span class="badge badge-tolak">{{ $item['rejected'] }}</span></td>
+                    <td>{{ $item['total'] }}</td>
+                    <td>
+                        <a href="{{ route('cd.reviews.show', $item['proyek']) }}" class="btn btn-sm">Lihat Kandidat</a>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                @forelse ($applications as $app)
-                    <tr>
-                        <td><input type="checkbox" name="application_ids[]" value="{{ $app->id }}" class="app-checkbox"></td>
-                        <td>
-                            @if ($app->extras->foto_profil_path)
-                                <img src="{{ route('extras.media.foto', $app->extras) }}" alt="Foto Extras" class="thumb-photo">
-                            @else
-                                <div class="thumb-photo thumb-photo-empty"><i class="ti ti-user"></i></div>
-                            @endif
-                        </td>
-                        <td>{{ $app->extras->user->username ?? '-' }}</td>
-                        <td>
-                            {{ $app->castingProject->nama_produksi }}
-                            @if ($app->castingProject->link_grup)
-                                <br><a href="{{ $app->castingProject->link_grup }}" target="_blank" style="font-size: 12px;">Link Grup</a>
-                            @endif
-                        </td>
-                        <td>{{ $app->castingProjectClass->nama_kelas ?? '-' }}</td>
-                        <td style="font-size: 12px; color: var(--text-secondary); max-width: 180px;">{{ $app->castingProjectClass->kriteria ?? '-' }}</td>
-                        <td>{{ $app->grade ?? '-' }}</td>
-                        <td>
-                            @forelse ($app->extras->photos as $foto)
-                                <a href="{{ route('extras.media.foto-tambahan', [$app->extras, $foto->urutan]) }}" target="_blank">
-                                    <img src="{{ route('extras.media.foto-tambahan', [$app->extras, $foto->urutan]) }}" alt="Foto {{ $foto->urutan }}" class="thumb-photo-mini">
-                                </a>
-                            @empty
-                                <span style="color: var(--text-muted); font-size: 12px;">-</span>
-                            @endforelse
-                        </td>
-                        <td>
-                            @if ($app->extras->video_profil_path)
-                                <a href="{{ route('extras.media.video', $app->extras) }}" target="_blank" class="btn btn-sm">Lihat Video</a>
-                            @else
-                                <span style="color: var(--text-muted); font-size: 12px;">-</span>
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding: 20px 0;">Tidak ada kandidat yang perlu direview.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    @if ($applications->isNotEmpty())
-        <div style="margin-top: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-            <select name="grade_cd" style="min-height:unset; padding:4px 8px; width:auto; font-size:13px;">
-                <option value="">— Pilih Grade CD —</option>
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
-            </select>
-            <button type="submit" name="keputusan" value="approve" class="btn btn-brand">Greenlight Terpilih</button>
-            <button type="submit" name="keputusan" value="reject" class="btn btn-danger-outline">Reject Terpilih</button>
-        </div>
-    @endif
-</form>
+            @empty
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px 0;">
+                        Belum ada proyek yang kamu handle.
+                    </td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
 @endsection
-
-@push('scripts')
-<script>
-    document.getElementById('check-all')?.addEventListener('change', function (e) {
-        document.querySelectorAll('.app-checkbox').forEach(function (cb) {
-            cb.checked = e.target.checked;
-        });
-    });
-</script>
-@endpush
