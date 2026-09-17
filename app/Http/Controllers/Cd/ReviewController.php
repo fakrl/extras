@@ -27,7 +27,7 @@ class ReviewController extends Controller
             ->whereHas('castingProject.cdAssignments', fn ($q) => $q->where('cd_user_id', $request->user()->id))
             // extras.user dibatasi ke id+username saja — CD cuma butuh itu
             // buat tampilan "Alias (@username)", bukan kontak/email Extras.
-            ->with('extras:id,user_id,foto_profil_path,video_profil_path', 'extras.user:id,username', 'extras.photos', 'castingProject:id,nama_produksi')
+            ->with('extras:id,user_id,foto_profil_path,video_profil_path', 'extras.user:id,username', 'extras.photos', 'castingProject:id,nama_produksi,link_grup', 'castingProjectClass:id,nama_kelas,kriteria')
             ->latest()
             ->get();
 

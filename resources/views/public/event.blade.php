@@ -60,7 +60,7 @@
             <p class="meta">Deadline pendaftaran: {{ $project->deadline->format('d M Y') }} · Kuota: {{ $project->kuota }} orang</p>
 
             <div class="card">
-                <div class="card-title">Peran yang Dicari</div>
+                <div class="card-title">Karakter yang Dibutuhkan</div>
                 @forelse ($project->classes as $class)
                     <div class="class-row">
                         <div class="class-name">{{ $class->nama_kelas }}</div>
