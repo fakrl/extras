@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\CastingProject;
-use App\Models\CdReview;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use App\Models\User;
@@ -135,7 +134,9 @@ class CdProjectAssignmentTest extends TestCase
         $project1->cdAssignments()->create(['cd_user_id' => $cdA->id]);
         $application = $this->buatApplicationDiajukanKeCd($project1);
 
-        $this->actingAs($cdA)->get(route('cd.reviews.index'))->assertOk()->assertSee('alias_test_cd');
+        // Level 1 (index) tidak tampilkan alias — cek via show (Level 2)
+        $this->actingAs($cdA)->get(route('cd.reviews.index'))->assertOk()->assertSee('Proyek Test');
+        $this->actingAs($cdA)->get(route('cd.reviews.show', $project1))->assertOk()->assertSee('alias_test_cd');
 
         $this->actingAs($cdA)->post(route('cd.reviews.review'), [
             'application_ids' => [$application->id],
@@ -157,7 +158,10 @@ class CdProjectAssignmentTest extends TestCase
         $project2->cdAssignments()->create(['cd_user_id' => $cdB->id]);
         $application = $this->buatApplicationDiajukanKeCd($project1);
 
+        // Level 1: cdB hanya lihat proyek miliknya, bukan project1
         $this->actingAs($cdB)->get(route('cd.reviews.index'))->assertOk()->assertDontSee('alias_test_cd');
+        // Level 2: cdB tidak bisa akses show project1 (403)
+        $this->actingAs($cdB)->get(route('cd.reviews.show', $project1))->assertForbidden();
     }
 
     public function test_cd_yang_tidak_diassign_aksi_approve_tidak_berefek(): void
@@ -217,18 +221,13 @@ class CdProjectAssignmentTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin_default']);
         $cdA = User::factory()->create(['role' => 'casting_director']);
         $cdB = User::factory()->create(['role' => 'casting_director']);
-        $project = $this->buatProyek($admin);
-        $project->cdAssignments()->create(['cd_user_id' => $cdA->id]);
-        $project->cdAssignments()->create(['cd_user_id' => $cdB->id]);
-        $application = $this->buatApplicationDiajukanKeCd($project);
+        $projectA = $this->buatProyek($admin);
+        $projectB = $this->buatProyek($admin);
+        $projectA->cdAssignments()->create(['cd_user_id' => $cdA->id]);
+        $projectB->cdAssignments()->create(['cd_user_id' => $cdB->id]);
 
-        CdReview::create([
-            'project_application_id' => $application->id,
-            'cd_id' => $cdA->id,
-            'keputusan' => 'approve',
-        ]);
-
-        $this->actingAs($cdB)->get(route('cd.riwayat'))
+        // Level 1 index berbasis assignment — cdB hanya lihat proyeknya sendiri
+        $this->actingAs($cdB)->get(route('cd.reviews.index'))
             ->assertOk()
             ->assertDontSee('Alias Test');
     }
@@ -239,23 +238,16 @@ class CdProjectAssignmentTest extends TestCase
         $cd = User::factory()->create(['role' => 'casting_director']);
         $project = $this->buatProyek($admin);
         $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
-        $application = $this->buatApplicationDiajukanKeCd($project);
-
-        CdReview::create([
-            'project_application_id' => $application->id,
-            'cd_id' => $cd->id,
-            'keputusan' => 'approve',
-        ]);
 
         // Level 1: hanya nama proyek, tidak ada data extras sama sekali
-        $response = $this->actingAs($cd)->get(route('cd.riwayat'));
+        $response = $this->actingAs($cd)->get(route('cd.reviews.index'));
         $response->assertOk();
 
         $viewData = $response->original->getData();
-        $byProyek = $viewData['byProyek'];
+        $proyek = $viewData['proyek'];
 
         // Level 1 tidak load extras — hanya castingProject (id, nama_produksi)
-        foreach ($byProyek as $item) {
+        foreach ($proyek as $item) {
             $proyekAttrs = $item['proyek']->getAttributes();
             $this->assertArrayNotHasKey('nik', $proyekAttrs);
             $this->assertArrayNotHasKey('nama_lengkap', $proyekAttrs);

@@ -279,18 +279,11 @@ class FeeNegotiationFlowTest extends TestCase
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
 
-        $extrasUser = User::factory()->create(['role' => 'extras']);
-        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
-        $app = ProjectApplication::create([
-            'casting_project_id' => $projectA->id,
-            'extras_id' => $extras->id,
-            'status_partisipasi' => 'lolos',
-            'fee_final' => 100000,
-        ]);
+        // Level 1 sekarang berbasis CD assignment, bukan CdReview.
+        // CD hanya di-assign ke projectA — projectB tidak muncul.
+        $projectA->cdAssignments()->create(['cd_user_id' => $cd->id]);
 
-        CdReview::create(['cd_id' => $cd->id, 'project_application_id' => $app->id, 'keputusan' => 'approve']);
-
-        $response = $this->actingAs($cd)->get(route('cd.riwayat'));
+        $response = $this->actingAs($cd)->get(route('cd.reviews.index'));
         $response->assertOk()
             ->assertSee('Proyek Ada Review')
             ->assertDontSee('Proyek Tanpa Review');
@@ -306,21 +299,22 @@ class FeeNegotiationFlowTest extends TestCase
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
 
+        // show() sekarang cek CD assignment
+        $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
+
         $extrasUser = User::factory()->create(['role' => 'extras', 'username' => 'panggilan_user']);
         $extras = ExtrasProfile::create([
             'user_id' => $extrasUser->id,
             'nama_asli' => 'Nama Asli Rahasia',
         ]);
-        $app = ProjectApplication::create([
+        ProjectApplication::create([
             'casting_project_id' => $project->id,
             'extras_id' => $extras->id,
             'status_partisipasi' => 'lolos',
             'fee_final' => 100000,
         ]);
 
-        CdReview::create(['cd_id' => $cd->id, 'project_application_id' => $app->id, 'keputusan' => 'approve']);
-
-        $response = $this->actingAs($cd)->get(route('cd.riwayat.show', $project));
+        $response = $this->actingAs($cd)->get(route('cd.reviews.show', $project));
         $response->assertOk()
             ->assertDontSee('Nama Asli Rahasia')
             ->assertDontSee('rate_card')

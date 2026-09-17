@@ -211,6 +211,264 @@ Taruh sebagai `<ul>` horizontal di tengah `.hp-nav`, di antara brand (kiri) dan 
 - Manual tambahan (K.8-K.13): cek step-bar "Cara Kerja" udah bener-bener hilang dari homepage dan muncul di dashboard Extras; cek cuma ada 2 titik Daftar/Masuk umum di homepage (navbar + popup, CTA per-kartu Lowongan tidak dihitung); cek animasi close popup keliatan ngarah ke atas/navbar; cek pemakaian `--accent` udah nggak berlebihan (audit visual singkat); cek section poster placeholder nggak nongol kalau belum ada proyek `ditutup`, dan `client_ph` tetap nggak ke-leak (test `assertDontSee` baru); cek section "Talent Kami" nggak ada query ke data Extras individual sama sekali (grep controller/view-nya).
 - **Tambahkan entry `DEV-NOTES.md` untuk Bagian F-J yang masih kosong DULU sebelum entry Bagian K** (lihat catatan di bagian atas) — supaya urutan sesi tetap kronologis dan akurat.
 
+---
+
+# Bagian L: Karakter/Kriteria, Modul Jadwal, Grade CD, Kategori Extras, Konsolidasi Menu CD
+
+> Ditulis 17 September 2026, oleh manager-session, setelah diskusi & konfirmasi Fakrul (bukan cuma restyle kayak Bagian K — ini core-domain: workflow, RBAC, migration baru). **WAJIB pakai subagent per `CLAUDE.md` §"Cara Kerja Coding"** (lintas >3 file + menyentuh RBAC/workflow inti). **SANGAT DISARANKAN dipecah jadi beberapa sesi kerja/komit** (misal: L.1-L.2 dulu, lalu L.3, lalu L.5-L.6, lalu L.8-L.9) — JANGAN digabung jadi satu commit raksasa, biar kalau ada regresi gampang di-bisect. Update `DEV-NOTES.md` di akhir TIAP sub-bagian, bukan cuma di akhir semua.
+
+## Konteks
+
+Fakrul kirim contoh call sheet asli (WA + PDF lengkap produksi film). Dari situ + diskusi, ada beberapa gap besar di sistem: (1) field "kriteria" karakter yang di-drop di Bagian G ternyata dibutuhkan lagi, (2) belum ada mekanisme "link grup koordinasi" yang kebuka otomatis begitu kandidat lolos+kontrak, (3) belum ada modul jadwal/rundown shooting sama sekali (cuma ada tanggal shooting buat deteksi bentrok, `event_shooting_dates`, tanpa detail lokasi/jam/catatan), (4) grade kandidat sekarang cuma dari Admin — CD (yang harusnya validator final) belum punya grade sendiri, (5) belum ada kategori/tag buat Extras (anak/dewasa/dll) buat filtering rekap, (6) menu CD "Greenlight" dan "Riwayat" kepisah padahal isinya sama-sama "kandidat yang diajukan Admin", cuma beda status.
+
+**Keputusan default yang manager-session ambil (Fakrul belum spesifikasi eksplisit, didokumentasikan di sini biar bisa dikoreksi):**
+- Kategori Extras: **many-to-many** (1 extras bisa punya lebih dari 1 kategori sekaligus, misal "Anak" + "Chinese" bareng) — karena kombinasi kategori realistis muncul di kebutuhan casting beneran.
+- Nama menu gabungan CD: tetap **"Greenlight"** (label yang sudah established), bukan bikin nama baru — link "Riwayat" di sidebar dihapus, semua fungsinya pindah ke Greenlight.
+- Modul Jadwal versi **ringkas** (rundown per hari: lokasi, jam, panggilan per karakter/kategori, catatan) — BUKAN scene-by-scene breakdown lengkap kayak PDF contoh (itu scope manajemen produksi penuh, di luar peran JBTB sebagai vendor casting/extras).
+
+## Bagian L.1: Karakter & Kriteria
+
+1. **Rename tampilan** "Nama Peran"/"Peran yang Dicari" (hasil Bagian G) jadi **"Karakter"**/"Karakter yang Dibutuhkan" di semua tempat yang render label ini (`admin/projects/create.blade.php`, `edit.blade.php`, dan tempat lain yang nampilin `nama_kelas` sebagai label ke user — CD, Extras). **Field/kolom DB tetap `nama_kelas`, JANGAN rename kolom** (cukup ubah label tampilan) — hindari migration yang gak perlu.
+2. **Hidupkan lagi field `kriteria`:** kolom `kriteria` di tabel `casting_project_classes` MASIH ADA di DB (sengaja nggak di-drop di Bagian G), cuma dihapus dari `$fillable`/`casts()` di model. Balikin ke `CastingProjectClass`: `$fillable` tambah `kriteria`, `casts()` tambah `'kriteria' => 'array'` (atau `string` kalau mau simpel free-text — pilih salah satu, free-text lebih cocok buat deskripsi kebutuhan kayak "wanita, 25-35th, ekspresi sedih", JANGAN dipaksa jadi array terstruktur kalau kontennya emang narasi bebas).
+3. Tambah input **textarea** "Kriteria yang dibutuhkan (opsional)" di form create/edit proyek, per baris Karakter.
+4. Tampilkan `kriteria` ini ke CD di menu Greenlight (Bagian L.8) — CD perlu lihat kriteria pas mutusin grade/approve, bukan cuma nama karakter doang.
+
+## Bagian L.2: Link Grup Koordinasi (1 per proyek, terbuka pas lock + kontrak)
+
+1. Migration baru: tambah kolom nullable `link_grup` (string) ke `casting_projects`.
+2. `CastingProject::$fillable` tambah `link_grup`.
+3. Admin form create/edit proyek: field "Link Grup Koordinasi (WA/Telegram, opsional — bisa diisi belakangan)".
+4. **Kondisi tampil ke Extras:** link muncul di halaman kontrak (`contracts.show`) dan/atau dashboard Extras HANYA kalau `$application->status_partisipasi` sudah `kontrak_ditandatangani` atau `selesai_produksi` (pakai `ProjectApplication::STATUS_LOLOS_KE_ATAS` yang sudah ada, tapi filter yang sudah TTD kontrak — cek constant itu, kalau perlu buat constant baru `STATUS_KONTRAK_KE_ATAS = ['kontrak_ditandatangani', 'selesai_produksi']`). **JANGAN tampilkan link cuma dari status `lolos`** — harus SETELAH kontrak TTD juga, sesuai instruksi Fakrul ("berbarengan dengan TTD kontrak").
+5. CD juga bisa lihat `link_grup` proyek yang dia pegang (di menu Greenlight, Bagian L.8) — CD butuh gabung ke grup yang sama buat koordinasi.
+6. Kalau `link_grup` kosong (belum diisi Admin), jangan tampilkan section link-nya sama sekali (bukan link kosong/rusak).
+
+## Bagian L.3: Modul Jadwal (ringkas) — diinput CD, dibaca semua dashboard
+
+**Perluas tabel yang SUDAH ADA** (`event_shooting_dates` — jangan bikin tabel tanggal baru):
+1. Migration baru (alter table): tambah kolom nullable `lokasi` (string), `jam_mulai` (time), `jam_selesai` (time), `catatan` (text), `panggilan` (json — array bebas berisi entri seperti `[{"nama": "Ara (Faris)", "jam": "06:30"}, {"nama": "Perawat Klinik (kategori, 2 orang)", "jam": "18:30"}]`). **`panggilan` sengaja JSON bebas, BUKAN relasi ketat ke `casting_project_classes`** — dari contoh call sheet asli, satu hari bisa campur nama karakter spesifik DAN kategori+kuota extras generik dalam satu daftar call time, maksa jadi 1 bentuk relasional kaku cuma bikin over-engineered buat versi "ringkas" ini.
+2. Cek dulu apakah sudah ada Model `EventShootingDate` (kemungkinan cuma diakses lewat relasi Eloquent tanpa file model eksplisit) — kalau belum ada, buat modelnya, `$fillable` sesuai kolom di atas + `casting_project_id`, `tanggal`.
+3. **Menu baru "Jadwal" di sidebar CD** (`cd/jadwal`), scoped ke proyek yang CD itu di-assign (`cdAssignments`). CD bisa: pilih proyek → tambah/edit entry per tanggal (lokasi, jam mulai/selesai, catatan, daftar panggilan — pakai pola dynamic add-row JS yang SUDAH ada di form Karakter, jangan bikin pola baru).
+4. **Visibilitas baca (read-only):**
+   - **Admin:** lihat jadwal di halaman detail/Kelola Proyek (Bagian L.4).
+   - **SuperAdmin:** lihat semua jadwal semua proyek, read-only, taruh di menu Monitoring yang sudah ada atau menu baru kecil "Jadwal" read-only — implementer pilih, dokumentasikan.
+   - **Extras:** lihat jadwal proyek yang dia ikuti (status aplikasi aktif) di dashboard-nya — tampilkan APA ADANYA (satu hari itu, lokasi+jam+catatan+daftar panggilan), TIDAK perlu filter "yang relevan ke dia doang" buat versi pertama ini (over-engineering kalau dipaksa sekarang, dan konten `panggilan` toh JSON bebas tanpa data pribadi/kontak Extras lain yang sensitif — cuma nama karakter/kategori+jam).
+5. **Reminder terkait jadwal** (Artisan command baru, ikutin pola `ReminderH1ShootingCommand` yang SUDAH ADA — pelajari dulu code-nya sebelum bikin yang baru):
+   - `reminder:h3-pilih-extras` — jalan harian, cek proyek dengan `event_shooting_dates.tanggal` = H+3, DAN masih ada `project_applications` berstatus `diajukan_ke_cd` (belum direview CD) di proyek itu → kirim WA ke CD yang di-assign. **Kalau H-1 masih ada yang pending juga**, kirim lagi (boleh reuse command yang sama dengan cek tambahan `now()->addDay()`, atau bikin logic di 1 command yang cek H+3 DAN H+1 sekaligus — implementer pilih, yang penting jangan dobel-kirim di hari yang sama).
+   - `reminder:input-jadwal` — jalan harian, cek proyek dengan shooting date H+3 yang barisnya di `event_shooting_dates` masih kosong `lokasi`/`panggilan` → kirim WA ke CD yang di-assign, minta lengkapi jadwal.
+   - Daftarkan keduanya di `routes/console.php` pakai `Schedule::command(...)->dailyAt(...)`, ikutin jam yang sudah ada (08:00 WIB) atau jam lain yang masuk akal — jangan numpuk semua reminder di menit yang sama persis.
+
+## Bagian L.4: Rename menu "Callsheet" (Admin) → "Kelola Proyek"
+
+Ganti label tampilan doang (sidebar Admin, judul halaman `admin/projects/index.blade.php`) dari "Callsheet" balik jadi **"Kelola Proyek"** — route name/URL TIDAK perlu diubah (biar gak ada breaking change ke link/bookmark/test yang udah ada), cukup teks yang user lihat. Ini membebaskan istilah "Jadwal" (Bagian L.3) sebagai satu-satunya makna "callsheet" yang sebenarnya di sistem ini.
+
+## Bagian L.5: Grade CD (validator final, terpisah dari rekomendasi Admin)
+
+1. Migration baru: tambah kolom nullable `grade_cd` (enum `A,B,C`) ke tabel `cd_reviews`.
+2. `CdReview::$fillable` tambah `grade_cd`.
+3. `ReviewController::review()` — request validation tambah `'grade_cd' => ['required_if:keputusan,approve', 'in:A,B,C']` (grade cuma wajib kalau approve, gak relevan buat reject), simpan ke `cdReviews()->create([...])` bareng `keputusan`.
+4. UI Greenlight (Bagian L.8): tambah pilihan grade (A/B/C) di form approve — muncul bareng tombol approve, bukan step terpisah, sesuai instruksi Fakrul ("nentuin grade pas nge-lock extras").
+5. **Grade Admin (`project_applications.grade`) TIDAK dihapus** — cuma di-relabel jadi **"Rekomendasi Grade (Admin)"** di UI Lineup Admin (`applicants.blade.php`), dan ditampilkan sebagai referensi read-only di Greenlight CD (biar CD lihat rekomendasi Admin sebelum nentuin grade final sendiri).
+
+## Bagian L.6: Kategori Extras (anak/dewasa/orangtua/chinese/custom)
+
+1. Migration baru: tabel `extras_categories` (`id`, `nama` unique, timestamps) — daftar kategori yang bisa ditambah Admin.
+2. Migration baru: tabel pivot `extras_category_extras_profile` (`extras_profile_id`, `extras_category_id`) — many-to-many.
+3. Seeder: isi kategori default (`Anak-anak`, `Remaja`, `Dewasa`, `Orang Tua`, `Chinese/Tionghoa`) — Admin bisa nambah kategori baru sendiri lewat UI kecil (form tambah kategori, taruh di halaman Kelola Akun atau halaman kecil terpisah "Kategori Extras").
+4. Model `ExtrasCategory` (fillable `nama`) + relasi many-to-many di `ExtrasProfile` (`categories()`).
+5. **Admin yang assign kategori** ke tiap Extras (dikonfirmasi Fakrul) — di halaman Kelola Akun (`admin/users/index.blade.php`) atau modal "Ubah Kategori" per baris Extras, checkbox multi-select dari daftar `extras_categories`.
+6. Tambahkan kolom "Kategori" di Rekap Extras (Bagian L.7) dan di export Excel.
+
+## Bagian L.7: Rekap Extras — filter lebih lengkap
+
+Audit dulu `RecapController` yang SUDAH ADA (jangan bikin ulang dari nol) — tambahkan filter berdasarkan kategori Extras (Bagian L.6) ke query yang sudah ada, plus filter lain yang make sense dari kolom yang sudah tersedia (status aktif/nonaktif user, dll — implementer cek kolom apa yang berguna buat difilter, dokumentasikan pilihannya). Filter pakai query string (`request()->query('kategori')`, dst), native, TIDAK perlu library filter baru.
+
+## Bagian L.8: Konsolidasi menu CD — "Greenlight" jadi satu-satunya menu lihat kandidat (drill-down semua status)
+
+**Konteks:** instruksi Fakrul eksplisit — jangan kepisah antara "Greenlight" (pending) dan "Riwayat" (sudah diputus), gabung jadi 1 menu.
+
+1. **`ReviewController::index()`** diubah total: dari cuma nampilin `status_partisipasi = diajukan_ke_cd`, jadi **drill-down Level 1 per proyek** (reuse struktur `riwayat()` yang sudah ada) — per proyek yang CD di-assign, tampilkan breakdown jumlah: **Menunggu Review** (`diajukan_ke_cd`) + **Approved** (`lolos`/`kontrak_ditandatangani`/`selesai_produksi`) + **Rejected** (`ditolak`).
+2. **Level 2** (klik 1 proyek): tabel SEMUA `project_applications` proyek itu dengan status `diajukan_ke_cd` ke atas (bukan cuma yang sudah ada `CdReview`-nya) — kolom status, kriteria karakter (Bagian L.1), rekomendasi grade Admin (Bagian L.5). Baris berstatus `diajukan_ke_cd`: tampilkan tombol Approve (+ pilih grade CD, Bagian L.5) / Reject. Baris yang sudah diputus: tampilkan keputusan + grade CD + tanggal, read-only (kayak Riwayat sekarang). Filter dropdown status (Semua/Menunggu/Approved/Rejected).
+3. Export Excel/PDF (`CdRiwayatExport`, `riwayat-pdf`) — extend query-nya supaya bisa include baris yang masih pending juga (bukan cuma yang sudah ada `CdReview`), atau biarkan export cuma untuk yang sudah diputus dan dokumentasikan alasannya kalau itu pilihannya — implementer putuskan, yang penting KONSISTEN sama apa yang ditampilkan di Level 2.
+4. **Hapus** route/menu `cd.riwayat` terpisah dari sidebar CD — semua fungsinya sudah pindah ke `cd.reviews.index` (Greenlight). Method `riwayat()`/`riwayatProyek()` di controller boleh di-merge ke `index()`/`show()` yang baru, atau tetap ada sebagai method terpisah yang dipanggil dari route yang sama — implementer pilih struktur kode, yang penting user-facing cuma ada 1 menu.
+5. **PENTING — test yang SUDAH ADA akan kena dampak** (`CdRiwayatExport`, test drill-down Riwayat dari Bagian E, test Greenlight/`ReviewController::index` yang lama): WAJIB update test-test itu supaya sesuai struktur baru, JANGAN cuma nambah test baru dan biarin yang lama gagal/dihapus diam-diam. Laporkan di DEV-NOTES.md test mana yang diubah dan kenapa.
+
+## Bagian L.9: Dashboard CD — tambahan reminder & ringkasan
+
+Tambahkan ke `Cd\DashboardController::index()` (yang sekarang cuma "perlu direview" count + chart approve/reject):
+1. **List pelunasan:** `Payment::whereIn('status', ['belum_dibayar', 'ditransfer'])` scoped ke proyek yang CD itu di-assign (lewat relasi `application.castingProject.cdAssignments`) — tampilkan ringkas (nama produksi, jumlah pending).
+2. **Project berjalan:** proyek yang CD di-assign dengan `status = 'dibuka'`.
+3. **List karakter yang dibutuhkan + jumlah pendaftar:** per proyek yang CD pegang, group `project_applications` by `casting_project_class_id`, hitung jumlah pendaftar per karakter (data ini SUDAH bisa diquery karena `casting_project_class_id` sudah ada di `project_applications` — TIDAK perlu skema baru).
+4. Reminder H-3/H-1 (Bagian L.3) TIDAK perlu widget dashboard terpisah — itu dikirim via WA langsung ke CD, dashboard cukup nampilin ringkasan 1-3 di atas.
+
+## Verifikasi Bagian L
+
+- **Ini scope besar — jalankan `php artisan test` SETELAH TIAP sub-bagian selesai** (L.1-L.2, lalu L.3, dst), bukan cuma sekali di akhir. Laporkan angka riil tiap kali.
+- Test baru minimal: `kriteria` tersimpan & tampil (L.1); `link_grup` cuma muncul saat status kontrak sudah TTD, TIDAK muncul saat status masih `lolos` doang (L.2); CRUD Jadwal oleh CD, scoped ke proyek yang di-assign aja — CD lain TIDAK bisa input jadwal proyek yang bukan miliknya (L.3); `grade_cd` wajib diisi saat approve, tersimpan benar (L.5); assign kategori Extras many-to-many berfungsi, filter Rekap by kategori menghasilkan data yang benar (L.6, L.7); Level 1 & Level 2 Greenlight baru menampilkan SEMUA status (bukan cuma yang sudah diputus), tombol approve/reject/grade cuma muncul di baris pending (L.8); dashboard CD menampilkan pelunasan/project berjalan/karakter+pendaftar dengan angka yang benar dan scoped ke CD yang login (L.9).
+- **Tembok visibilitas (CLAUDE.md §5) tetap berlaku** di semua fitur baru ini — cek ulang: `link_grup`/`panggilan` jadwal TIDAK mengandung `nama_asli`/`nik`/`rate_card`/`rekening` Extras; kategori Extras bukan data sensitif tapi tetap TIDAK perlu diekspos ke publik (cuma internal Admin/CD).
+- Update `DEV-NOTES.md` per sub-bagian selesai (bukan ditumpuk di akhir) — ini poin yang udah 2x jadi catatan proses di SPEC sebelumnya, tolong benar-benar dijalanin kali ini.
+
+---
+
+# Bagian M: Grid kartu foto buat kandidat CD + profil Extras ala widescreen.id/amara/
+
+> Ditulis 17 September 2026. **KERJAKAN SETELAH Bagian L (khususnya L.5 grade_cd dan L.8 drill-down) SELESAI DAN TER-TEST** — Bagian M ini restyle di atas struktur yang dibangun L.8, kalau dikerjakan duluan/bareng bakal tabrakan. Cek `DEV-NOTES.md` dulu, pastikan L.5 & L.8 sudah ada entry-nya sebelum mulai M.
+
+## Konteks
+
+Fakrul kasih referensi 2 halaman widescreen.id: (1) grid "Meet Our Stars" (kartu foto talent, klik → halaman detail) buat tampilan kandidat yang diajukan ke CD; (2) halaman profil individual (`/amara/`) buat gaya halaman profil Extras, terutama section Gallery. Manager-session sudah cek langsung dua-duanya:
+- Grid "Meet Our Stars": kartu foto + nama, klik kartu → halaman profil individual terpisah.
+- Halaman `/amara/`: hero foto besar + nama, lalu info block ringkas (Gender/Age Range/Height/Location/Language — **ini persis sekelas sama field yang SUDAH diizinkan tembok visibilitas buat CD**: usia, gender, tinggi_badan, dst), lalu section "Gallery" isinya foto full-bleed berurutan, lalu paragraf riwayat karir. **Galerinya BUKAN click-to-zoom** — itu cuma hover-swap gambar. Jadi permintaan lu soal "onclick ngezoom" itu fitur TAMBAHAN dari lu sendiri, bukan niru yang ada di situ — dicatat di sini biar jelas asalnya, dan ini ide bagus, dilanjutkan.
+
+## Bagian M.1: Kandidat CD — grid kartu foto (bukan tabel), klik → modal detail + putuskan
+
+**Ganti tampilan Level 2 Greenlight** (hasil Bagian L.8 — daftar kandidat per proyek) dari tabel ke **grid kartu foto**, mirip pola "Meet Our Stars":
+- Tiap kartu: foto profil kandidat (`foto_profil_path`, fallback ikon kalau kosong) sebagai gambar utama kartu, alias di bawahnya, badge kecil status (Menunggu/Approved/Rejected) di pojok kartu.
+- **Klik kartu (bukan checkbox) → buka modal "Lihat Profil & Putuskan"** (native `<dialog>`, reuse pola yang SUDAH ADA di `riwayat-proyek.blade.php`, JANGAN bikin komponen modal baru dari nol). Isi modal:
+  - Foto profil + galeri foto tambahan (Bagian M.3, sekalian dibikin zoomable di sini) + video kalau ada.
+  - Atribut terbatas yang SUDAH diizinkan (usia, gender, tinggi_badan, ukuran_baju, warna_kulit, pengalaman, bahasa) — TIDAK ada field baru, TIDAK ada `nama_asli`/`nik`/`rate_card`/`rekening`.
+  - Karakter yang dilamar + `kriteria` (Bagian L.1).
+  - Rekomendasi Grade Admin (Bagian L.5) — read-only, label jelas "Rekomendasi Admin".
+  - **Ringkasan riwayat SINGKAT dengan CD ini** (BUKAN riwayat lintas-CD lain — itu bocor info proyek CD lain, dilarang): hitung dari `cd_reviews` milik CD yang login, berapa kali kandidat ini pernah di-approve/reject OLEH CD YANG SAMA di proyek-proyek lain yang CD itu pegang. Contoh tampilan: "Pernah di-approve 2x, ditolak 0x sama kamu sebelumnya."
+  - **Form keputusan DI DALAM modal** (bukan submit terpisah dari luar): kalau status masih `diajukan_ke_cd`, tampilkan pilihan Grade CD (A/B/C, wajib) + tombol Approve, dan tombol Reject terpisah (reject tidak butuh grade). Kalau status sudah diputus, tampilkan keputusan+grade+tanggal read-only, tanpa form.
+- **Kenapa approve jadi per-kandidat (bukan bulk lagi):** karena grade CD (Bagian L.5) itu wajib diisi PER KANDIDAT saat approve — nggak masuk akal 1 grade buat banyak kandidat sekaligus dalam 1 aksi bulk. **Reject boleh tetap bulk** (checkbox di kartu + tombol "Reject Terpilih" di luar grid, reject nggak butuh grade) — pertahankan itu dari UI yang sekarang, jangan dihilangin, cuma approve yang wajib lewat modal per-kandidat.
+- Filter status (Semua/Menunggu/Approved/Rejected) tetap ada di atas grid, sama seperti rencana L.8.
+
+## Bagian M.2: Halaman profil Extras — restyle terinspirasi `/amara/`
+
+**Terapkan ke halaman "Lihat Profil" Extras yang read-only** (yang dilihat Extras sendiri, DAN yang dilihat Admin/CD kalau di project mereka ada halaman serupa — cek dulu semua tempat yang render profil lengkap Extras sebelum mulai, biar konsisten):
+1. Header: foto profil jadi elemen dominan (bukan avatar kecil), nama/alias besar di bawah atau overlay foto — sesuai proporsi yang wajar buat layout kita (JANGAN niru ukuran font raksasa ala widescreen.id yang emang gaya editorial mereka, sesuaikan skala normal aplikasi ini).
+2. Info block ringkas di bawah header: field yang MEMANG milik pemilik profil itu sendiri boleh full (kalau Extras lihat profil sendiri, dia boleh lihat semua datanya sendiri termasuk yang dibatasi buat CD) — tembok visibilitas cuma berlaku pas Admin/CD yang lihat profil ORANG LAIN, BUKAN pas Extras lihat profilnya sendiri. Pastikan controller/view yang dipakai membedakan konteks ini dengan benar (jangan sampai gara-gara restyle malah kebalik: Extras lihat profil sendiri jadi dibatasin, atau CD lihat profil orang lain malah kebuka penuh).
+3. **Section Galeri** (Bagian M.3).
+
+## Bagian M.3: Galeri foto — klik buat zoom (lightbox), reusable di semua tempat
+
+Ini FITUR BARU (bukan niru referensi, sudah dijelaskan di Konteks), tapi diminta eksplisit oleh Fakrul. Bikin SEKALI sebagai partial/komponen Blade yang reusable (misal `partials.foto-lightbox` atau serupa — cek dulu konvensi partial yang sudah ada di codebase ini, ikutin polanya), lalu pakai di SEMUA tempat yang nampilin galeri foto Extras:
+- Halaman Lihat Profil Extras (M.2).
+- Modal "Lihat Profil & Putuskan" CD (M.1).
+- Halaman Lineup Admin (`applicants.blade.php`) yang juga nampilin foto tambahan.
+
+**Mekanisme (native, TIDAK ada library lightbox baru):**
+- Tiap thumbnail foto (`.thumb-photo-mini` dst) dikasih `onclick` yang buka `<dialog>` lightbox — isi `<dialog>` cuma 1 `<img>` besar (`max-width:90vw; max-height:90vh; object-fit:contain`) + tombol close.
+- Kalau galerinya lebih dari 1 foto (kasus `extras_photos`, 4 slot): tambahkan tombol Prev/Next di dalam dialog buat geser antar foto tanpa nutup dialog dulu (native JS, ganti `src` gambar di dialog yang sama).
+- Pastikan foto yang di-load di lightbox tetap lewat route yang sudah ada (`extras.media.foto`, `extras.media.foto-tambahan`) — JANGAN expose path storage langsung.
+
+## Verifikasi Bagian M
+
+- Jalankan SETELAH Bagian L beres & di-test — regresi test L.5/L.8 harus masih hijau setelah M diterapkan (restyle doang, logic approve/reject/grade jangan berubah).
+- Manual: kartu kandidat CD nampilin foto+alias+status dengan benar; klik kartu buka modal, approve WAJIB isi grade dulu (test validasi), reject bulk masih jalan dari luar modal; profil Extras (lihat punya sendiri) masih nampilin semua data sendiri (nggak kebatasi keliru); lightbox foto bisa dibuka-tutup-geser di 3 tempat (Lihat Profil Extras, modal CD, Lineup Admin) dan foto yang tampil tetap lewat route media yang aman (bukan path storage bocor).
+- Test baru: `assertDontSee` nama_asli/nik/dll tetap lolos di modal kandidat CD yang baru (regresi tembok visibilitas harus di-cek ulang karena tampilannya berubah total).
+- Update `DEV-NOTES.md` setelah Bagian M selesai.
+
+---
+
+# Bagian N: Sentuhan cream beige di dark mode (partial-adopt moodboard Fakrul, TETAP pertahankan hijau logo asli)
+
+> Ditulis 17 September 2026. Restyle warna kecil, TIDAK terkait/tergantung Bagian L atau M — boleh dikerjakan kapan saja, prioritas rendah, kerjakan setelah L & M selesai.
+
+## Konteks
+
+Fakrul share moodboard warna ("Dark Emerald Green" `#02110c`, "Olive Green" `#1a422f`, "Cream Beige" `#f3ebd6`) — ini template moodboard generik (dipakai contoh buat brand fashion/perhiasan/produk natural/kafe, bukan yang dirancang khusus buat casting agency). Manager-session evaluasi: dua hijau di situ (dark emerald & olive) BEDA dari hijau logo JBTB yang sudah diverifikasi langsung dari pixel logo asli (`#0f9a4c`, kelly/emerald jenuh — bukan olive pudar). Kalau full-adopt, bakal ada 2 "hijau" yang saling nggak konsisten di brand (logo vs UI). **Keputusan: JANGAN ganti `--accent` yang sudah ada, TAPI ambil "Cream Beige" (`#f3ebd6`) sebagai warna sekunder baru**, dipakai sangat selektif — konsisten sama prinsip monokrom+1-aksen dari Bagian K.10 (bukan nambah aksen ke-2 yang rame, tapi warna netral hangat pengganti putih polos di tempat-tempat tertentu).
+
+## Implementasi
+
+1. Tambah 1 token CSS baru di `resources/views/partials/theme-style.blade.php`, blok `:root[data-theme="dark"]`: `--highlight-cream: #f3ebd6;`. **TIDAK mengubah token yang sudah ada** (`--accent`, `--accent-strong`, `--bg-page`, dst dari Bagian K.6 tetap persis sama).
+2. **Pakai `--highlight-cream` HANYA di 2-3 tempat yang butuh sentuhan "hangat/premium" tanpa jadi aksen actionable** (bukan tombol, bukan link, bukan badge status — itu tetap punya `--accent`):
+   - Angka besar di `.stat-number` (stats section homepage) — ganti dari `--accent` jadi `--highlight-cream`, biar angka statistik kerasa "premium" tapi nggak berebut perhatian sama tombol CTA hijau.
+   - Judul besar section editorial (misal heading "Visi"/"Misi" dari Bagian K.11, atau angka nomor urut kartu poster dari Bagian K.12) — opsional, implementer pilih 1-2 tempat yang paling pas, JANGAN taruh di semua heading (nanti malah jadi aksen ke-2 yang rame, ngelawan prinsip K.10).
+3. **JANGAN dipakai buat:** background section manapun, border card, teks body/paragraf biasa (`--text-secondary` tetap dipakai buat itu) — cream ini aksen kecil pemanis, bukan warna dasar baru.
+4. **Light mode TIDAK berubah sama sekali** — ini murni dark mode, sama seperti Bagian K.6.
+5. "Dark Emerald" (`#02110c`) dan "Olive Green" (`#1a422f`) dari moodboard **TIDAK dipakai sama sekali** — `--bg-page` dkk tetap nilai dari Bagian K.6, sudah cukup akurat & dekat secara visual, ganti-ganti tanpa alasan kuat cuma nambah risiko regresi kontras yang udah diverifikasi WCAG di K.6.
+
+## Verifikasi
+
+- Manual: cek kontras `--highlight-cream` di atas `--bg-page`/`--bg-card` tetap gampang dibaca (cream di atas gelap harusnya kontrasnya tinggi, tapi tetap cek).
+- Cek `--accent` (hijau logo) TIDAK berubah nilainya di mana pun setelah perubahan ini — grep cepat pastikan tidak ada tempat yang keliru ganti `--accent` jadi `--highlight-cream` atau sebaliknya.
+- Update `DEV-NOTES.md`.
+
+---
+
+# Bagian O: Navbar homepage — avatar+submenu kalau login, 1 tombol kalau guest
+
+## Konteks
+
+Sekarang di `.hp-nav-actions` (`welcome.blade.php`): kalau `@guest` ada 2 tombol terpisah (Masuk, Daftar); kalau `@auth` ada 1 tombol teks "Dashboard". Fakrul minta: kalau sudah login, tombol itu diganti jadi **foto profil** (avatar), diklik baru muncul submenu isinya "Dashboard" dan "Keluar" — bukan langsung link ke dashboard. Kalau belum login, 2 tombol Masuk/Daftar digabung jadi **1 tombol aja**.
+
+## Implementasi
+
+1. **State guest:** ganti 2 tombol (`Masuk`, `Daftar`) jadi 1 tombol `<a href="{{ route('login') }}" class="btn-brand">Masuk / Daftar</a>` — halaman login yang sudah ada SUDAH punya link ke halaman Daftar di dalamnya (cek dulu, kalau belum ada, tambahkan link "Belum punya akun? Daftar" di situ), jadi 1 titik masuk ini tetap mencakup dua-duanya.
+2. **State auth:** ganti tombol "Dashboard" jadi avatar + dropdown native (`<details><summary>`, TIDAK perlu JS/library baru buat dropdown-nya, `<details>` udah native browser support):
+   ```html
+   <details class="navbar-user-menu">
+       <summary class="avatar-badge-summary">
+           @if (auth()->user()->isExtras() && auth()->user()->extrasProfile?->foto_profil_path)
+               <img src="{{ route('extras.media.foto', auth()->user()->extrasProfile) }}" class="avatar-badge avatar-badge-img" alt="Foto profil">
+           @else
+               <div class="avatar-badge">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
+           @endif
+       </summary>
+       <div class="navbar-user-menu-dropdown">
+           <a href="/dashboard"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+           <form method="POST" action="{{ route('logout') }}">
+               @csrf
+               <button type="submit"><i class="ti ti-logout"></i> Keluar</button>
+           </form>
+       </div>
+   </details>
+   ```
+   **Reuse class `.avatar-badge`** yang SUDAH ADA di `layouts/app.blade.php` (dipakai di topbar dashboard, inisial 2 huruf nama) — jangan bikin style avatar baru dari nol, cukup import/duplikasi CSS itu ke `welcome.blade.php` (atau pindahkan ke partial shared kalau lebih rapi). Tambah varian `.avatar-badge-img` (buat `<img>` biar `object-fit:cover` bukan cuma teks).
+3. **Styling dropdown:** `.navbar-user-menu-dropdown` posisinya `position:absolute` di bawah avatar, native CSS (`details[open] .navbar-user-menu-dropdown { display:block }` atau manfaatin behavior default `<details>`), background `--bg-card`, border `--border-color`, shadow tipis. Tutup dropdown otomatis kalau klik di luar (native `<details>` sudah handle sebagian, tapi tambahkan listener kecil buat close-on-outside-click biar konsisten dengan pola dialog yang sudah ada di app ini).
+4. Route `extras.media.foto` sudah ada guard kepemilikan-nya sendiri (dipakai di banyak tempat) — pastikan ini masih aman dipanggil dari context navbar (user lihat foto dirinya sendiri, harusnya selalu boleh).
+
+## Verifikasi
+
+- Manual: guest lihat 1 tombol doang; Extras yang punya foto lihat foto sendiri di navbar; role lain (Admin/CD/SuperAdmin, yang gak punya `extrasProfile`) fallback ke inisial, tidak error; klik avatar buka dropdown Dashboard+Keluar; klik luar nutup dropdown; Keluar beneran logout.
+- Test: cek route dashboard & logout dari dropdown baru masih münuju tempat yang benar per role.
+
+---
+
+# Bagian P: Rapihin form "Lengkapi Profil" Extras — upload progress, error inline, tata letak
+
+## Konteks
+
+Form `extras/profile-edit.blade.php` (9 section, banyak field) — Fakrul komplain: (1) upload foto/video gak ada feedback progress sama sekali (form submit polos, reload halaman, kelamaan buat video sampai 50MB tanpa ada tanda "lagi proses"), (2) field berasa berantakan, (3) ada error handling (blok `@if ($errors->any())` di atas) tapi "ketutup fieldnya" — manager-session cek kodenya: BENAR, cuma ada 1 blok error generik di paling atas halaman, TIDAK ADA pesan error di dekat masing-masing field yang salah — jadi kalau errornya soal field di section 7 (misal), user harus scroll ke atas buat baca pesannya lalu nebak-nebak field mana yang dimaksud, ini yang bikin "kerasa ketutup".
+
+## Bagian P.1: Progress bar upload (foto & video)
+
+1. Ubah mekanisme upload dari `onchange="this.form.submit()"` (submit polos, reload halaman) jadi **AJAX pakai `XMLHttpRequest`** (BUKAN `fetch`, karena `fetch` TIDAK punya event progress upload native — `XMLHttpRequest.upload.onprogress` yang punya) — tetap TIDAK ada library baru, native browser API.
+2. Tambah elemen `<progress>` HTML native (bukan div custom, elemen paling ringan yang ada) di bawah tiap `media-upload-box`, `display:none` default, muncul begitu file dipilih, `value`/`max` di-update dari event `onprogress` (`e.loaded`, `e.total`).
+3. Setelah upload sukses (response 200), refresh preview gambar/video di tempat (ganti `src` elemen yang relevan pakai response/timestamp cache-bust) TANPA reload halaman penuh — lebih smooth. Kalau gagal (validasi ukuran/format dari server), tampilkan pesan error di dekat situ juga (P.2).
+4. Terapkan pola yang sama di 3 tempat upload: foto profil, video profil, 4 slot foto tambahan — buat 1 fungsi JS reusable (`function uploadWithProgress(form, progressEl, onSuccess)`), jangan copy-paste 6x.
+
+## Bagian P.2: Error inline per field (bukan cuma 1 blok generik di atas)
+
+1. **Pertahankan** blok generik `@if ($errors->any())` di atas (buat ringkasan cepat), TAPI tambahkan JUGA pesan error di bawah TIAP input yang relevan: `@error('nama_field') <span class="field-error">{{ $message }}</span> @enderror` — pola standar Laravel Blade, terapkan ke semua field yang punya validasi (`nama_asli`, `username`, `usia`, dst).
+2. Tambah class visual `input-error` (border merah tipis, pakai `--danger` yang sudah ada) ke input yang error: `class="{{ $errors->has('nama_field') ? 'input-error' : '' }}"`.
+3. **Auto-scroll ke field error pertama** kalau halaman reload dengan error (JS kecil: `document.querySelector('.input-error, .field-error')?.scrollIntoView({behavior:'smooth', block:'center'})` di `@push('scripts')`) — biar user langsung diarahkan, gak perlu scroll manual cari-cari.
+4. Untuk upload foto/video (P.1, AJAX): error dari situ ditampilkan INLINE di dekat upload box yang gagal (bukan reload halaman + blok generik di atas, karena dengan AJAX halaman gak reload).
+
+## Bagian P.3: Tata letak — kurangi kesan berantakan
+
+1. Cek styling `.profile-section` yang ada sekarang (di `layouts/app.blade.php` atau tempat lain) — pastikan tiap section punya pemisah visual yang jelas (border/background card konsisten, spacing yang cukup antar section, BUKAN cuma judul angka doang nempel ke field berikutnya).
+2. **Pertimbangkan gabungkan section yang kependekan** (section "5. Data Diri" 3 field + "6. Ciri-ciri Fisik" 2 field — dua-duanya sama-sama atribut fisik, bisa digabung jadi 1 section "Data Diri & Ciri Fisik" biar gak kebanyakan angka section buat info yang dikit) — implementer boleh eksekusi ini atau tidak, tapi kalau tidak, minimal rapikan spacing/visual card per section supaya tetap keliatan terpisah jelas.
+3. Ini murni CSS/restrukturisasi Blade, TIDAK ada perubahan kolom DB atau field baru.
+
+## Verifikasi Bagian P
+
+- Manual: upload foto/video nunjukin progress bar native, preview update tanpa reload penuh; submit form dengan sengaja bikin error (misal username sudah dipakai) → pesan error muncul PAS di bawah field yang salah, bukan cuma di atas, dan halaman auto-scroll ke situ; tampilan form nggak lagi kerasa berantakan (subjektif, tapi minimal ada pemisah visual jelas antar section).
+- Test: upload foto/video via AJAX tetap lolos validasi server yang sudah ada (ukuran, format) — test existing jangan sampai regresi cuma gara-gara ganti ke AJAX.
+
+---
+
+## Catatan buat Fakrul — soal penyimpanan foto/video (Google Drive vs S3 vs disk VPS)
+
+**Ini jawaban langsung, BUKAN ditulis jadi task SPEC** (belum ada keputusan buat dieksekusi) — kalau Fakrul mau lanjut ke salah satu opsi, kasih tau baru manager-session tulis speknya.
+
+**Google Drive: TIDAK disarankan buat penyimpanan utama foto/video sistem ini.** Alasan: (1) Drive API dirancang buat kolaborasi dokumen, bukan backend storage aplikasi — kena rate limit yang gak didesain buat trafik aplikasi; (2) kuota gampang penuh (15GB gratis per akun, video 50MB x puluhan Extras abis cepat); (3) model permission-nya (share link, per-file) rawan salah-setting jadi ke-expose publik — ini SENSITIF karena video/foto Extras itu data yang sudah kita jaga ketat (tembok visibilitas), 1 kesalahan toggle "siapa aja yang punya link" bisa bocorin video orang ke publik; (4) gak ada signed-URL/expiry kayak S3, gak cocok buat kontrol akses granular yang udah dibangun sistem ini (private disk, route ber-guard).
+
+**Rekomendasi:** tetap pakai disk lokal VPS yang SUDAH jalan sekarang (private disk, sudah ada guard akses via route) — buat skala JBTB sekarang (50-80 extras aktif, 4-5 proyek/bulan) ini masih cukup, TIDAK perlu migrasi storage sekarang. Yang perlu dipikirkan: **backup otomatis** (rsync/rclone harian ke tempat lain, bukan Google Drive juga sih buat live storage, tapi Drive/cloud lain OK KHUSUS buat backup arsip, beda konteks sama live serving). Kalau nanti beneran butuh upgrade (jumlah file makin banyak, butuh CDN buat streaming video lebih cepat, atau mau scale ke multi-server), baru pindah ke **S3-compatible** (S3 asli, atau Cloudflare R2/DigitalOcean Spaces yang lebih murah, R2 malah gak ada biaya egress) — Laravel udah native support lewat `league/flysystem-aws-s3-v3`, tinggal ganti disk config, gak perlu ubah banyak kode karena udah pakai `Storage::disk()` abstraction.
+
+Kalau mau, gua bisa tulis spec buat setup backup otomatis (opsi murah, gak ganggu storage utama) — bilang aja.
+
 ## Berikutnya
 
 Kosong, tunggu hasil task ini.
