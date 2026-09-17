@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CastingProject;
 use App\Models\User;
 
 /**
@@ -24,8 +25,14 @@ class MonitoringController extends Controller
         $extrasList = User::where('role', 'extras')->with('extrasProfile.user:id,username')->latest()->get();
         $cdList = User::where('role', 'casting_director')->latest()->get();
 
+        // Jadwal read-only: proyek yang punya shooting dates dengan jadwal terisi
+        $jadwalProjects = CastingProject::whereHas('shootingDates', fn ($q) => $q->whereNotNull('lokasi'))
+            ->with(['shootingDates' => fn ($q) => $q->whereNotNull('lokasi')->orderBy('tanggal')])
+            ->latest()
+            ->get();
+
         return view('super-admin.monitoring', compact(
-            'extrasAktif', 'extrasTotal', 'cdTotal', 'adminTotal', 'extrasList', 'cdList'
+            'extrasAktif', 'extrasTotal', 'cdTotal', 'adminTotal', 'extrasList', 'cdList', 'jadwalProjects'
         ));
     }
 }

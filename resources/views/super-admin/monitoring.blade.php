@@ -43,6 +43,26 @@
     </table>
 </div>
 
+<div class="card" style="margin-bottom: 16px;">
+    <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Jadwal Shooting (Read-only)</div>
+    @if ($jadwalProjects->isEmpty())
+        <div style="color: var(--text-muted); font-size: 13px;">Belum ada jadwal yang diisi CD.</div>
+    @else
+        @foreach ($jadwalProjects as $project)
+            <div style="margin-bottom: 12px;">
+                <div style="font-weight: 600; font-size: 13.5px; margin-bottom: 6px;">{{ $project->nama_produksi }}</div>
+                @foreach ($project->shootingDates as $date)
+                    <div style="font-size: 12.5px; border-left: 3px solid var(--accent); padding-left: 10px; margin-bottom: 6px;">
+                        <strong>{{ $date->tanggal->format('d M Y') }}</strong>
+                        @if ($date->lokasi) &mdash; {{ $date->lokasi }} @endif
+                        @if ($date->jam_mulai) | {{ substr($date->jam_mulai, 0, 5) }}{{ $date->jam_selesai ? '–' . substr($date->jam_selesai, 0, 5) : '' }} @endif
+                    </div>
+                @endforeach
+            </div>
+        @endforeach
+    @endif
+</div>
+
 <div class="card">
     <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Casting Director</div>
     <table>

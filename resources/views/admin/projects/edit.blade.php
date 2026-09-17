@@ -155,6 +155,32 @@
         <button type="submit" class="btn btn-brand">Tugaskan</button>
     </form>
 </div>
+
+<div class="card">
+    <div style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Jadwal Shooting (Read-only)</div>
+    @if ($castingProject->shootingDates->whereNotNull('lokasi')->isEmpty())
+        <div style="color: var(--text-muted);">CD belum mengisi jadwal detail.</div>
+    @else
+        @foreach ($castingProject->shootingDates->sortBy('tanggal') as $date)
+            @if ($date->lokasi || $date->jam_mulai || $date->catatan || $date->panggilan)
+                <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+                    <div style="font-weight: 600; margin-bottom: 6px;">{{ $date->tanggal->translatedFormat('l, d F Y') }}</div>
+                    @if ($date->lokasi) <div style="font-size: 13px;"><strong>Lokasi:</strong> {{ $date->lokasi }}</div> @endif
+                    @if ($date->jam_mulai) <div style="font-size: 13px;"><strong>Waktu:</strong> {{ substr($date->jam_mulai, 0, 5) }}{{ $date->jam_selesai ? ' – ' . substr($date->jam_selesai, 0, 5) : '' }}</div> @endif
+                    @if ($date->catatan) <div style="font-size: 13px;"><strong>Catatan:</strong> {{ $date->catatan }}</div> @endif
+                    @if ($date->panggilan)
+                        <div style="font-size: 13px; margin-top: 6px;"><strong>Daftar Panggilan:</strong></div>
+                        <ul style="margin: 4px 0 0 16px; font-size: 13px;">
+                            @foreach ($date->panggilan as $p)
+                                <li>{{ $p['nama'] }} — {{ $p['jam'] }}</li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </div>
+            @endif
+        @endforeach
+    @endif
+</div>
 @endsection
 
 @push('scripts')

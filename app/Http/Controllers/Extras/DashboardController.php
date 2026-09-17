@@ -16,7 +16,7 @@ class DashboardController extends Controller
         // dengan tampilan lama, biar histori tidak hilang dari sudut pandang Extras.
         $pendaftaranSaya = $extrasProfile
             ? ProjectApplication::where('extras_id', $extrasProfile->id)
-                ->with('castingProject')
+                ->with('castingProject.shootingDates')
                 ->latest()
                 ->get()
             : collect();
