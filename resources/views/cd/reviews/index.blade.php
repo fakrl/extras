@@ -15,7 +15,7 @@
             <thead>
                 <tr>
                     <th><input type="checkbox" id="check-all"></th>
-                    <th>Foto</th><th>Alias</th><th>Proyek</th><th>Foto Lain</th><th>Video</th>
+                    <th>Foto</th><th>Alias</th><th>Proyek</th><th>Karakter</th><th>Kriteria</th><th>Foto Lain</th><th>Video</th>
                 </tr>
             </thead>
             <tbody>
@@ -30,7 +30,14 @@
                             @endif
                         </td>
                         <td>{{ $app->extras->user->username ?? '-' }}</td>
-                        <td>{{ $app->castingProject->nama_produksi }}</td>
+                        <td>
+                            {{ $app->castingProject->nama_produksi }}
+                            @if ($app->castingProject->link_grup)
+                                <br><a href="{{ $app->castingProject->link_grup }}" target="_blank" style="font-size: 12px;">Link Grup</a>
+                            @endif
+                        </td>
+                        <td>{{ $app->castingProjectClass->nama_kelas ?? '-' }}</td>
+                        <td style="font-size: 12px; color: var(--text-secondary); max-width: 180px;">{{ $app->castingProjectClass->kriteria ?? '-' }}</td>
                         <td>
                             @forelse ($app->extras->photos as $foto)
                                 <a href="{{ route('extras.media.foto-tambahan', [$app->extras, $foto->urutan]) }}" target="_blank">
@@ -49,7 +56,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 20px 0;">Tidak ada kandidat yang perlu direview.</td></tr>
+                    <tr><td colspan="8" style="text-align:center; color: var(--text-muted); padding: 20px 0;">Tidak ada kandidat yang perlu direview.</td></tr>
                 @endforelse
             </tbody>
         </table>

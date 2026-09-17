@@ -17,9 +17,9 @@
 </div>
 
 <div class="card" style="margin-bottom: 16px;">
-    <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Peran yang Dicari</div>
+    <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Karakter yang Dibutuhkan</div>
     <table>
-        <thead><tr><th>Peran</th><th>Kuota</th></tr></thead>
+        <thead><tr><th>Karakter</th><th>Kuota</th></tr></thead>
         <tbody>
             @foreach ($castingProject->classes as $class)
                 <tr>
@@ -35,7 +35,7 @@
     @csrf
     @if ($castingProject->classes->isNotEmpty())
         <div class="card" style="margin-bottom: 16px;">
-            <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Pilih Peran yang Kamu Daftar</div>
+            <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Pilih Karakter yang Kamu Daftar</div>
             @foreach ($castingProject->classes as $class)
                 <label style="display: block; margin-bottom: 8px;">
                     <input type="radio" name="casting_project_class_id" value="{{ $class->id }}" required>
