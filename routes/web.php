@@ -128,6 +128,8 @@ Route::middleware(['auth', 'role:admin_default,admin_talco,admin_korlap,admin_so
             Route::get('/users', [UserManagementController::class, 'index'])->name('admin.users.index');
             Route::patch('/users/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])
                 ->name('admin.users.toggle-status');
+            Route::patch('/users/{user}/kategori', [UserManagementController::class, 'updateKategori'])
+                ->name('admin.users.kategori');
 
             Route::get('/projects', [AdminCastingProjectController::class, 'index'])->name('admin.projects.index');
             Route::get('/projects/create', [AdminCastingProjectController::class, 'create'])->name('admin.projects.create');

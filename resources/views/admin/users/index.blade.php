@@ -57,7 +57,7 @@
 
     <table id="tabel-extras">
         <thead>
-            <tr><th>Nama</th><th>Alias</th><th>Email</th><th>Status</th><th>Pembatalan Mendadak</th><th></th></tr>
+            <tr><th>Nama</th><th>Alias</th><th>Email</th><th>Status</th><th>Pembatalan Mendadak</th><th>Kategori</th><th></th></tr>
         </thead>
         <tbody>
             @foreach ($extras as $ex)
@@ -79,6 +79,25 @@
                         <span class="badge {{ $cancelCount >= 3 ? 'badge-tolak' : ($cancelCount > 0 ? 'badge-pending' : 'badge-aktif') }}">
                             {{ $cancelCount }}x
                         </span>
+                    </td>
+                    <td>
+                        @foreach ($ex->extrasProfile?->categories ?? [] as $kat)
+                            <span class="badge badge-pending" style="font-size:11px; margin-bottom:2px;">{{ $kat->nama }}</span>
+                        @endforeach
+                        <details style="display:block; margin-top:4px;">
+                            <summary style="font-size:11px; cursor:pointer; color:var(--accent); list-style:none;">Edit Kategori</summary>
+                            <form method="POST" action="{{ route('admin.users.kategori', $ex) }}" style="margin-top:6px; padding:6px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:4px;">
+                                @csrf @method('PATCH')
+                                @foreach ($allCategories as $kat)
+                                    <label style="display:block; font-size:11px; margin-bottom:2px;">
+                                        <input type="checkbox" name="kategori_ids[]" value="{{ $kat->id }}"
+                                            {{ $ex->extrasProfile?->categories->contains('id', $kat->id) ? 'checked' : '' }}>
+                                        {{ $kat->nama }}
+                                    </label>
+                                @endforeach
+                                <button type="submit" class="btn btn-sm" style="margin-top:6px; padding:2px 8px;">Simpan</button>
+                            </form>
+                        </details>
                     </td>
                     <td>
                         <form method="POST" action="{{ route('admin.users.toggle-status', $ex) }}">
