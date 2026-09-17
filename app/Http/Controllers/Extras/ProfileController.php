@@ -8,6 +8,7 @@ use App\Models\CastingProject;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -219,6 +220,48 @@ class ProfileController extends Controller
         $request->user()->extrasProfile->simpanFotoTambahan($slot, $request->file('foto'));
 
         return redirect('/extras/profil/lengkapi')->with('status', 'Foto berhasil diperbarui.');
+    }
+
+    public function uploadFotoJson(Request $request): JsonResponse
+    {
+        $request->validate([
+            'foto' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
+        ]);
+
+        $profile = $request->user()->extrasProfile;
+        $profile->simpanFoto($request->file('foto'));
+
+        return response()->json([
+            'url' => route('extras.media.foto', $profile).'?t='.time(),
+        ]);
+    }
+
+    public function uploadVideoJson(Request $request): JsonResponse
+    {
+        $request->validate([
+            'video' => ['required', 'mimes:mp4,mov,webm', 'max:51200'],
+        ]);
+
+        $profile = $request->user()->extrasProfile;
+        $profile->simpanVideo($request->file('video'));
+
+        return response()->json([
+            'url' => route('extras.media.video', $profile).'?t='.time(),
+        ]);
+    }
+
+    public function uploadFotoTambahanJson(Request $request, int $slot): JsonResponse
+    {
+        $request->validate([
+            'foto' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
+        ]);
+
+        $profile = $request->user()->extrasProfile;
+        $profile->simpanFotoTambahan($slot, $request->file('foto'));
+
+        return response()->json([
+            'url' => route('extras.media.foto-tambahan', [$profile, $slot]).'?t='.time(),
+        ]);
     }
 
     /**
