@@ -64,7 +64,7 @@
                             <span class="badge badge-tolak">Bentrok Jadwal</span>
                         @endif
                         @if ($app->grade)
-                            <span class="badge badge-aktif">Grade {{ $app->grade }}</span>
+                            <span class="badge badge-aktif">Rek. Grade (Admin): {{ $app->grade }}</span>
                         @endif
                         @if ($app->extras->apresiasi)
                             <span class="badge badge-aktif" title="{{ $app->extras->apresiasi_catatan }}"><i class="ti ti-star-filled"></i> Apresiasi</span>

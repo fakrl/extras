@@ -15,7 +15,7 @@
             <thead>
                 <tr>
                     <th><input type="checkbox" id="check-all"></th>
-                    <th>Foto</th><th>Alias</th><th>Proyek</th><th>Karakter</th><th>Kriteria</th><th>Foto Lain</th><th>Video</th>
+                    <th>Foto</th><th>Alias</th><th>Proyek</th><th>Karakter</th><th>Kriteria</th><th>Rek. Admin</th><th>Foto Lain</th><th>Video</th>
                 </tr>
             </thead>
             <tbody>
@@ -38,6 +38,7 @@
                         </td>
                         <td>{{ $app->castingProjectClass->nama_kelas ?? '-' }}</td>
                         <td style="font-size: 12px; color: var(--text-secondary); max-width: 180px;">{{ $app->castingProjectClass->kriteria ?? '-' }}</td>
+                        <td>{{ $app->grade ?? '-' }}</td>
                         <td>
                             @forelse ($app->extras->photos as $foto)
                                 <a href="{{ route('extras.media.foto-tambahan', [$app->extras, $foto->urutan]) }}" target="_blank">
@@ -63,7 +64,13 @@
     </div>
 
     @if ($applications->isNotEmpty())
-        <div style="margin-top: 14px; display: flex; gap: 8px;">
+        <div style="margin-top: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <select name="grade_cd" style="min-height:unset; padding:4px 8px; width:auto; font-size:13px;">
+                <option value="">— Pilih Grade CD —</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+            </select>
             <button type="submit" name="keputusan" value="approve" class="btn btn-brand">Greenlight Terpilih</button>
             <button type="submit" name="keputusan" value="reject" class="btn btn-danger-outline">Reject Terpilih</button>
         </div>

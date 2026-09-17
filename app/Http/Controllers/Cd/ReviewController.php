@@ -44,6 +44,7 @@ class ReviewController extends Controller
             'application_ids' => ['required', 'array', 'min:1'],
             'application_ids.*' => ['exists:project_applications,id'],
             'keputusan' => ['required', 'in:approve,reject'],
+            'grade_cd' => ['nullable', 'required_if:keputusan,approve', 'in:A,B,C'],
         ]);
 
         $bulkBatchId = count($data['application_ids']) > 1 ? Str::uuid()->toString() : null;
@@ -59,6 +60,7 @@ class ReviewController extends Controller
                 'cd_id' => $request->user()->id,
                 'keputusan' => $data['keputusan'],
                 'bulk_batch_id' => $bulkBatchId,
+                'grade_cd' => $data['grade_cd'] ?? null,
             ]);
 
             $application->update([
