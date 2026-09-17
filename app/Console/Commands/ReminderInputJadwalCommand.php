@@ -27,13 +27,13 @@ class ReminderInputJadwalCommand extends Command
         foreach ($dates as $date) {
             $project = $date->castingProject;
             foreach ($project->cdAssignments as $assignment) {
-                $key = $project->id . '_' . $assignment->cd_user_id;
+                $key = $project->id.'_'.$assignment->cd_user_id;
                 if (isset($sent[$key])) {
                     continue;
                 }
                 $sent[$key] = true;
                 $user = $assignment->cdUser;
-                $pesan = "Halo {$user->name}, proyek {$project->nama_produksi} ada shooting pada " . $date->tanggal->format('d M Y') . " (H-3) tapi jadwal detail (lokasi, jam, daftar panggilan) belum diisi. Mohon segera lengkapi di sistem.";
+                $pesan = "Halo {$user->name}, proyek {$project->nama_produksi} ada shooting pada ".$date->tanggal->format('d M Y').' (H-3) tapi jadwal detail (lokasi, jam, daftar panggilan) belum diisi. Mohon segera lengkapi di sistem.';
                 $whatsapp->kirimNotifikasi($user, 'reminder_input_jadwal', $pesan);
             }
         }

@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\CastingProject;
-use App\Models\ProjectApplication;
+use App\Models\EventShootingDate;
 use App\Services\WhatsAppService;
 use Illuminate\Console\Command;
 
@@ -18,7 +18,7 @@ class ReminderH3PilihExtrasCommand extends Command
         $tanggalH3 = now()->addDays(3)->toDateString();
         $tanggalH1 = now()->addDay()->toDateString();
 
-        $projektIds = \App\Models\EventShootingDate::whereIn('tanggal', [$tanggalH3, $tanggalH1])
+        $projektIds = EventShootingDate::whereIn('tanggal', [$tanggalH3, $tanggalH1])
             ->pluck('casting_project_id')
             ->unique();
 
