@@ -42,6 +42,30 @@
             background: var(--bg-card-hover); color: var(--text-secondary);
             display: flex; align-items: center; justify-content: center; font-size: 15px;
         }
+        .avatar-badge {
+            width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer;
+            background: var(--accent); color: var(--accent-on); font-size: 11px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .avatar-badge-img { object-fit: cover; padding: 0; }
+        .navbar-user-menu { position: relative; list-style: none; }
+        .navbar-user-menu > summary { list-style: none; cursor: pointer; }
+        .navbar-user-menu > summary::-webkit-details-marker { display: none; }
+        .navbar-user-menu-dropdown {
+            display: none; position: absolute; right: 0; top: calc(100% + 8px); z-index: 200;
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 10px; min-width: 160px; padding: 6px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+        }
+        .navbar-user-menu[open] .navbar-user-menu-dropdown { display: block; }
+        .navbar-user-menu-dropdown a,
+        .navbar-user-menu-dropdown button {
+            display: flex; align-items: center; gap: 8px; width: 100%;
+            padding: 9px 12px; border-radius: 7px; font-size: 13.5px; font-weight: 500;
+            color: var(--text-primary); text-decoration: none; background: none; border: none; cursor: pointer;
+        }
+        .navbar-user-menu-dropdown a:hover,
+        .navbar-user-menu-dropdown button:hover { background: var(--bg-card-hover); }
 
         .hero {
             min-height: 520px;
@@ -223,10 +247,25 @@
                 <i class="ti ti-moon" id="theme-icon"></i>
             </button>
             @auth
-                <a href="/dashboard" class="btn-brand">Dashboard</a>
+                <details class="navbar-user-menu" id="navbar-user-menu">
+                    <summary class="avatar-badge-summary">
+                        @if (auth()->user()->extrasProfile?->foto_profil_path)
+                            <img src="{{ route('extras.media.foto', auth()->user()->extrasProfile) }}"
+                                 class="avatar-badge avatar-badge-img" alt="Foto profil">
+                        @else
+                            <div class="avatar-badge">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
+                        @endif
+                    </summary>
+                    <div class="navbar-user-menu-dropdown">
+                        <a href="/dashboard"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit"><i class="ti ti-logout"></i> Keluar</button>
+                        </form>
+                    </div>
+                </details>
             @else
-                <a href="{{ route('login') }}" class="btn-outline">Masuk</a>
-                <a href="{{ route('register') }}" class="btn-brand">Daftar</a>
+                <a href="{{ route('login') }}" class="btn-brand">Masuk / Daftar</a>
             @endauth
         </div>
     </nav>
@@ -469,6 +508,12 @@
                 menuToggle.addEventListener('click', function () { navMenu.classList.toggle('open'); });
                 navMenu.querySelectorAll('a').forEach(function (a) {
                     a.addEventListener('click', function () { navMenu.classList.remove('open'); });
+                });
+            }
+            var userMenu = document.getElementById('navbar-user-menu');
+            if (userMenu) {
+                document.addEventListener('click', function (e) {
+                    if (!userMenu.contains(e.target)) userMenu.removeAttribute('open');
                 });
             }
         })();
