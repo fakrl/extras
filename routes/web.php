@@ -90,9 +90,13 @@ Route::middleware(['auth', 'role:extras'])->prefix('extras')->group(function () 
     Route::get('/profil/lengkapi', [ProfileController::class, 'edit'])->name('extras.profile.edit');
     Route::put('/profil', [ProfileController::class, 'update'])->name('extras.profile.update');
     Route::post('/profil/foto', [ProfileController::class, 'uploadFoto'])->name('extras.profile.foto');
+    Route::post('/profil/foto/ajax', [ProfileController::class, 'uploadFotoJson'])->name('extras.profile.foto.ajax');
     Route::post('/profil/video', [ProfileController::class, 'uploadVideo'])->name('extras.profile.video');
+    Route::post('/profil/video/ajax', [ProfileController::class, 'uploadVideoJson'])->name('extras.profile.video.ajax');
     Route::post('/profil/foto-tambahan/{slot}', [ProfileController::class, 'uploadFotoTambahan'])
         ->whereNumber('slot')->name('extras.profile.foto-tambahan');
+    Route::post('/profil/foto-tambahan/{slot}/ajax', [ProfileController::class, 'uploadFotoTambahanJson'])
+        ->whereNumber('slot')->name('extras.profile.foto-tambahan.ajax');
     Route::delete('/profil/foto-tambahan/{slot}', [ProfileController::class, 'hapusFotoTambahan'])
         ->whereNumber('slot')->name('extras.profile.foto-tambahan.hapus');
 
