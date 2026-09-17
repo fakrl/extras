@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Callsheet — Proyek Casting')
+@section('title', 'Kelola Proyek — Casting')
 
 @section('content')
 <div class="card-header-row">
     <div>
-        <div style="font-size: 16px; font-weight: 600;">Callsheet</div>
+        <div style="font-size: 16px; font-weight: 600;">Kelola Proyek</div>
         <div style="font-size: 12.5px; color: var(--text-secondary);">Semua proyek casting yang sedang & pernah dibuka</div>
     </div>
     <a href="{{ route('admin.projects.create') }}" class="btn btn-brand">+ Buka Lowongan Baru</a>
