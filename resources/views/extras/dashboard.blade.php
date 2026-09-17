@@ -62,6 +62,31 @@
         </div>
 
         @include('partials.application-progress', ['app' => $app])
+
+        @if (in_array($app->status_partisipasi, \App\Models\ProjectApplication::STATUS_LOLOS_KE_ATAS))
+            @php $jadwalTerisi = $app->castingProject->shootingDates->where('lokasi', '!=', null)->sortBy('tanggal'); @endphp
+            @if ($jadwalTerisi->isNotEmpty())
+                <div style="margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+                    <div style="font-size: 12.5px; font-weight: 600; margin-bottom: 6px;">Jadwal Shooting</div>
+                    @foreach ($jadwalTerisi as $date)
+                        <div style="font-size: 12.5px; margin-bottom: 6px; padding: 8px; background: var(--bg-secondary, rgba(0,0,0,.04)); border-radius: 6px;">
+                            <div style="font-weight: 500;">{{ $date->tanggal->translatedFormat('l, d F Y') }}</div>
+                            @if ($date->lokasi) <div>Lokasi: {{ $date->lokasi }}</div> @endif
+                            @if ($date->jam_mulai) <div>Waktu: {{ substr($date->jam_mulai, 0, 5) }}{{ $date->jam_selesai ? ' – ' . substr($date->jam_selesai, 0, 5) : '' }}</div> @endif
+                            @if ($date->catatan) <div>Catatan: {{ $date->catatan }}</div> @endif
+                            @if ($date->panggilan)
+                                <div style="margin-top: 4px;"><strong>Panggilan:</strong></div>
+                                <ul style="margin: 2px 0 0 14px;">
+                                    @foreach ($date->panggilan as $p)
+                                        <li>{{ $p['nama'] }} — {{ $p['jam'] }}</li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        @endif
     </div>
 @empty
     <div class="card" style="padding: 20px 0 24px;">
