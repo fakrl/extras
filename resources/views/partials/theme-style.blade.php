@@ -15,6 +15,7 @@
         --accent-on: #04140a;
         --danger: #f0565c;
         --warning: #f59e0b;
+        --highlight-cream: #f3ebd6;
     }
     :root[data-theme="light"] {
         color-scheme: light;

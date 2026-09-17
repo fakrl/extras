@@ -115,7 +115,7 @@
             background: var(--bg-card); border: 1px solid var(--border-color);
             border-radius: 14px; padding: 24px 20px; text-align: center;
         }
-        .stat-number { font-size: 36px; font-weight: 700; color: var(--accent); line-height: 1; margin-bottom: 6px; }
+        .stat-number { font-size: 36px; font-weight: 700; color: var(--highlight-cream, var(--accent)); line-height: 1; margin-bottom: 6px; }
         .stat-label { font-size: 13.5px; color: var(--text-secondary); }
 
         .about-section { padding: 0 32px 48px; }
