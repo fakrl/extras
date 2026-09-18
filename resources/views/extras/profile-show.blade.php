@@ -6,7 +6,17 @@
 <div class="card" style="max-width: 560px; margin: 0 auto;">
     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
         <div style="font-size: 17px; font-weight: 600;">Profil Saya</div>
-        <a href="{{ route('extras.profile.edit') }}" class="btn btn-sm btn-brand">Edit Profil</a>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <button type="button" id="btn-share" class="btn btn-sm btn-outline" style="font-size: 12px;">
+                <i class="ti ti-share"></i> Share
+            </button>
+            <a href="{{ route('extras.profile.edit') }}" class="btn btn-sm btn-brand">Edit Profil</a>
+        </div>
+    </div>
+    <div id="share-result" style="display:none; margin-bottom: 12px;">
+        <input id="share-url" readonly type="text"
+               style="width: 100%; font-size: 12px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card-hover); color: var(--text-primary);">
+        <p id="share-copied" style="display:none; color: var(--accent); font-size: 12px; margin: 4px 0 0;">Link disalin!</p>
     </div>
     <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 20px; line-height: 1.5;">
         Ini persis tampilan profil kamu yang dilihat Admin &amp; Casting Director saat cross-check kandidat.
@@ -111,4 +121,34 @@
 
     <a href="{{ route('extras.profile.edit') }}" class="btn btn-brand" style="width: 100%; margin-top: 8px; display: flex;">Edit Profil</a>
 </div>
+
+@push('scripts')
+<script>
+document.getElementById('btn-share').addEventListener('click', function () {
+    var btn = this;
+    btn.disabled = true;
+    fetch('{{ route('extras.profile.share-link') }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json',
+        },
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+        var input = document.getElementById('share-url');
+        var result = document.getElementById('share-result');
+        input.value = data.url;
+        result.style.display = 'block';
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(data.url).then(function () {
+                document.getElementById('share-copied').style.display = 'block';
+            });
+        }
+        input.select();
+    })
+    .finally(function () { btn.disabled = false; });
+});
+</script>
+@endpush
 @endsection
