@@ -125,7 +125,7 @@
                 style="flex:1; font-size:12px; padding:8px 10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-card-hover); color:var(--text-primary); min-width:0;">
             <button type="button" id="btn-copy-link" title="Salin link"
                 style="flex-shrink:0; align-self:stretch; padding:0 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-card); cursor:pointer; color:var(--text-primary); display:flex; align-items:center;">
-                <i class="ti ti-copy" style="font-size:16px;"></i>
+                <i class="ti ti-copy" style="font-size:16px; line-height:1; display:block;"></i>
             </button>
         </div>
         <p id="share-copied-modal" style="display:none; color:var(--accent); font-size:12px; margin:-10px 0 12px;">Link disalin!</p>
