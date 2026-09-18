@@ -15,6 +15,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 // 'status' & 'cancel_count' SENGAJA tidak masuk $fillable — itu hasil
 // kalkulasi sistem (RF-07/RF-08), cuma boleh berubah lewat recordCancellation()
@@ -246,5 +247,15 @@ class ExtrasProfile extends Model
             Storage::disk('local')->delete($existing->path);
             $existing->delete();
         }
+    }
+
+    public function generateShareToken(): string
+    {
+        if (! $this->share_token) {
+            $this->share_token = Str::random(32);
+            $this->saveQuietly();
+        }
+
+        return $this->share_token;
     }
 }

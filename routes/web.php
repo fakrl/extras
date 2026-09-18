@@ -24,10 +24,12 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PublicEventController;
+use App\Http\Controllers\PublicExtrasProfileController;
 use App\Http\Controllers\SuperAdmin\AdminManagementController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\SuperAdmin\MonitoringController;
 use App\Http\Controllers\SuperAdmin\ProjectAssignmentController;
+use App\Http\Controllers\UbahPasswordController;
 use Illuminate\Support\Facades\Route;
 
 // RF-55: homepage compro publik. Bukan auth gate: tetap tampil apa pun
@@ -38,6 +40,10 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 // Sengaja di luar grup middleware auth/guest — guest maupun user login
 // (extras/admin/CD) manapun boleh buka, otorisasi granular di controller.
 Route::get('/event/{token}', [PublicEventController::class, 'show'])->name('public.event.show');
+
+// Bagian S: halaman profil publik Extras via share link. Tidak perlu auth.
+// Tembok visibilitas ditegakkan di controller & view (tanpa nik/nama_asli/rekening/rate_card/tautan_tambahan).
+Route::get('/p/extras/{token}', [PublicExtrasProfileController::class, 'show'])->name('public.extras.profile');
 
 // Pintu masuk universal setelah login (dipakai mis. link "kembali ke
 // dashboard" generik) — lempar ke dashboard sesuai role via
@@ -81,6 +87,11 @@ Route::post('/logout', [LoginController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
+Route::middleware('auth')->group(function () {
+    Route::get('/ubah-password', [UbahPasswordController::class, 'edit'])->name('ubah-password');
+    Route::post('/ubah-password', [UbahPasswordController::class, 'update'])->name('ubah-password.update');
+});
+
 // ==================== EXTRAS ====================
 
 Route::middleware(['auth', 'role:extras'])->prefix('extras')->group(function () {
@@ -113,6 +124,8 @@ Route::middleware(['auth', 'role:extras'])->prefix('extras')->group(function () 
     Route::get('/kontrak/{application}/lengkapi-ktp', [ProfileController::class, 'lengkapiKtp'])->name('extras.kontrak.lengkapi-ktp');
     Route::post('/kontrak/{application}/lengkapi-ktp', [ProfileController::class, 'simpanKtp'])
         ->middleware('throttle:5,1')->name('extras.kontrak.simpan-ktp');
+
+    Route::post('/profil/share-link', [ProfileController::class, 'generateShareLink'])->name('extras.profile.share-link');
 });
 
 // ==================== ADMIN (Default + sub-role) ====================

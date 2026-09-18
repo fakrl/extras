@@ -137,6 +137,17 @@ class ProfileController extends Controller
         return redirect('/extras/profil')->with('status', 'Profil berhasil disimpan. Begini tampilannya buat Admin & Casting Director:');
     }
 
+    public function generateShareLink(Request $request): JsonResponse
+    {
+        $profile = $request->user()->extrasProfile;
+        $token = $profile->generateShareToken();
+
+        return response()->json([
+            'token' => $token,
+            'url' => route('public.extras.profile', $token),
+        ]);
+    }
+
     /**
      * RF-04: form KTP+rekening, cuma muncul setelah Extras dinyatakan lolos
      * (ContractController::show() redirect ke sini kalau data belum lengkap).
