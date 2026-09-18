@@ -65,10 +65,6 @@
                 ])->values()->all();
             @endphp
 
-            <div id="lb-pre-{{ $app->id }}" style="display:none;">
-                @include('partials.foto-lightbox', ['fotos' => $fotosArr, 'lightboxId' => 'lb-' . $app->id])
-            </div>
-
             <div class="kandidat-card"
                 style="position: relative; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; cursor: pointer; background: var(--bg-card);"
                 onclick="bukaModalKandidat({{ $app->id }})"
@@ -92,6 +88,7 @@
                 data-review-tgl="{{ $review ? $review->created_at->format('d M Y') : '' }}"
                 data-riwayat-approve="{{ $riwayatApprove }}"
                 data-riwayat-reject="{{ $riwayatReject }}"
+                data-fotos="{{ json_encode(array_column($fotosArr, 'url')) }}"
             >
                 <div style="position: absolute; top: 6px; right: 6px; z-index: 1;">
                     <span class="badge {{ $statusBadge }}" style="font-size: 10px;">{{ $statusLabel }}</span>
@@ -129,6 +126,11 @@
         <button type="button" id="btn-bulk-reject" class="btn btn-danger-outline">Reject Terpilih</button>
     </div>
 </form>
+
+<style>
+.lightbox-thumbs { display:grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
+.lightbox-thumbs img { width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:8px; cursor:pointer; }
+</style>
 
 <dialog id="modal-kandidat" style="border: 1px solid var(--border-color); border-radius: 14px; padding: 0; max-width: 500px; width: 95%; max-height: 90vh; overflow-y: auto;">
     <div style="padding: 20px;">
@@ -170,6 +172,19 @@
         <div id="mk-form-area"></div>
     </div>
 </dialog>
+
+{{-- Shared lightbox (sibling modal-kandidat, BUKAN nested di dalamnya) --}}
+<dialog id="mk-lb-dialog"
+    style="border:1px solid var(--border-color); border-radius:12px; padding:0; background:#000; max-width:95vw; position:relative;"
+    data-fotos="[]" data-current="0">
+    <img id="mk-lb-img" src="" alt="" style="max-width:90vw; max-height:90vh; object-fit:contain; display:block;">
+    <button type="button" onclick="document.getElementById('mk-lb-dialog').close()"
+        style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,.6); color:#fff; border:none; border-radius:50%; width:28px; height:28px; cursor:pointer; font-size:16px; line-height:1;">×</button>
+    <button type="button" id="mk-lb-prev"
+        style="position:absolute; top:50%; left:8px; transform:translateY(-50%); background:rgba(0,0,0,.6); color:#fff; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:20px; line-height:1; display:none;">‹</button>
+    <button type="button" id="mk-lb-next"
+        style="position:absolute; top:50%; right:8px; transform:translateY(-50%); background:rgba(0,0,0,.6); color:#fff; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:20px; line-height:1; display:none;">›</button>
+</dialog>
 @endsection
 
 @push('scripts')
@@ -190,6 +205,25 @@
     var dlg = document.getElementById('modal-kandidat');
     dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
 
+    var lbDlg = document.getElementById('mk-lb-dialog');
+    var lbImg = document.getElementById('mk-lb-img');
+    lbDlg.addEventListener('click', function (e) { if (e.target === lbDlg) lbDlg.close(); });
+    document.getElementById('mk-lb-prev').addEventListener('click', function () {
+        var fotos = JSON.parse(lbDlg.dataset.fotos);
+        var idx = (parseInt(lbDlg.dataset.current) - 1 + fotos.length) % fotos.length;
+        lbDlg.dataset.current = idx; lbImg.src = fotos[idx];
+    });
+    document.getElementById('mk-lb-next').addEventListener('click', function () {
+        var fotos = JSON.parse(lbDlg.dataset.fotos);
+        var idx = (parseInt(lbDlg.dataset.current) + 1) % fotos.length;
+        lbDlg.dataset.current = idx; lbImg.src = fotos[idx];
+    });
+
+    function openMkLb(idx) {
+        var fotos = JSON.parse(lbDlg.dataset.fotos);
+        lbDlg.dataset.current = idx; lbImg.src = fotos[idx]; lbDlg.showModal();
+    }
+
     window.bukaModalKandidat = function (appId) {
         var kartu = document.querySelector('[data-appid="' + appId + '"]');
         if (!kartu) return;
@@ -204,11 +238,27 @@
 
         var slot = document.getElementById('mk-lightbox-slot');
         slot.innerHTML = '';
-        var pre = document.getElementById('lb-pre-' + appId);
-        if (pre) {
-            var clone = pre.cloneNode(true);
-            clone.style.display = '';
-            slot.appendChild(clone);
+        var fotosData = [];
+        try { fotosData = JSON.parse(kartu.dataset.fotos || '[]'); } catch (e) { fotosData = []; }
+        lbDlg.dataset.fotos = JSON.stringify(fotosData);
+        lbDlg.dataset.current = '0';
+        if (fotosData.length > 0) {
+            var thumbGrid = document.createElement('div');
+            thumbGrid.className = 'lightbox-thumbs';
+            fotosData.forEach(function (url, i) {
+                var img = document.createElement('img');
+                img.src = url; img.alt = 'Foto ' + (i + 1);
+                img.addEventListener('click', (function (idx) { return function () { openMkLb(idx); }; })(i));
+                thumbGrid.appendChild(img);
+            });
+            slot.appendChild(thumbGrid);
+            document.getElementById('mk-lb-prev').style.display = fotosData.length > 1 ? '' : 'none';
+            document.getElementById('mk-lb-next').style.display = fotosData.length > 1 ? '' : 'none';
+        } else {
+            var p = document.createElement('p');
+            p.style.cssText = 'color:var(--text-muted);font-size:12px;margin:0;';
+            p.textContent = 'Belum ada foto tambahan.';
+            slot.appendChild(p);
         }
 
         var video = kartu.dataset.video;
