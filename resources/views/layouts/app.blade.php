@@ -68,6 +68,25 @@
         }
         .theme-toggle-btn { background: var(--bg-card-hover); color: var(--accent-strong); }
         .avatar-badge { background: var(--accent); color: var(--accent-on); font-size: 11px; font-weight: 700; }
+        .avatar-badge-img { object-fit: cover; padding: 0; }
+        .navbar-user-menu { position: relative; list-style: none; }
+        .navbar-user-menu > summary { list-style: none; cursor: pointer; }
+        .navbar-user-menu > summary::-webkit-details-marker { display: none; }
+        .navbar-user-menu-dropdown {
+            display: none; position: absolute; right: 0; top: calc(100% + 8px); z-index: 200;
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 10px; min-width: 180px; padding: 6px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+        }
+        .navbar-user-menu[open] .navbar-user-menu-dropdown { display: block; }
+        .navbar-user-menu-dropdown a,
+        .navbar-user-menu-dropdown button {
+            display: flex; align-items: center; gap: 8px; width: 100%;
+            padding: 9px 12px; border-radius: 7px; font-size: 13.5px; font-weight: 500;
+            color: var(--text-primary); text-decoration: none; background: none; border: none; cursor: pointer;
+        }
+        .navbar-user-menu-dropdown a:hover,
+        .navbar-user-menu-dropdown button:hover { background: var(--bg-card-hover); }
 
         .content { padding: 24px 28px; flex: 1; }
 
@@ -401,11 +420,25 @@
                         <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Ganti tema">
                             <i class="ti ti-sun" id="theme-icon"></i>
                         </button>
-                        <div class="avatar-badge">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="btn" style="min-height:36px; padding:0 14px; font-size:13px;">Keluar</button>
-                        </form>
+                        <details class="navbar-user-menu" id="topbar-user-menu">
+                            <summary class="avatar-badge-summary">
+                                @if (auth()->user()->isExtras() && auth()->user()->extrasProfile?->foto_profil_path)
+                                    <img src="{{ route('extras.media.foto', auth()->user()->extrasProfile) }}" class="avatar-badge avatar-badge-img" alt="Foto profil">
+                                @else
+                                    <div class="avatar-badge">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
+                                @endif
+                            </summary>
+                            <div class="navbar-user-menu-dropdown">
+                                @if (auth()->user()->role === 'extras')
+                                    <a href="{{ route('extras.profile.edit') }}"><i class="ti ti-user"></i> Profil Saya</a>
+                                @endif
+                                <a href="{{ route('ubah-password') }}"><i class="ti ti-lock"></i> Ubah Kata Sandi</a>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit"><i class="ti ti-logout"></i> Keluar</button>
+                                </form>
+                            </div>
+                        </details>
                     @endauth
                 </div>
             </div>
@@ -441,6 +474,13 @@
                 }
             });
         })();
+
+        var topbarUserMenu = document.getElementById('topbar-user-menu');
+        if (topbarUserMenu) {
+            document.addEventListener('click', function (e) {
+                if (!topbarUserMenu.contains(e.target)) topbarUserMenu.removeAttribute('open');
+            });
+        }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     @stack('scripts')
