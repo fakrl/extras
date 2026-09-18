@@ -43,7 +43,7 @@ Route::get('/event/{token}', [PublicEventController::class, 'show'])->name('publ
 
 // Bagian S: halaman profil publik Extras via share link. Tidak perlu auth.
 // Tembok visibilitas ditegakkan di controller & view (tanpa nik/nama_asli/rekening/rate_card/tautan_tambahan).
-Route::get('/p/extras/{token}', [PublicExtrasProfileController::class, 'show'])->name('public.extras.profile');
+Route::get('/p/extras/{username}', [PublicExtrasProfileController::class, 'show'])->name('public.extras.profile');
 
 // Pintu masuk universal setelah login (dipakai mis. link "kembali ke
 // dashboard" generik) — lempar ke dashboard sesuai role via
@@ -125,7 +125,6 @@ Route::middleware(['auth', 'role:extras'])->prefix('extras')->group(function () 
     Route::post('/kontrak/{application}/lengkapi-ktp', [ProfileController::class, 'simpanKtp'])
         ->middleware('throttle:5,1')->name('extras.kontrak.simpan-ktp');
 
-    Route::post('/profil/share-link', [ProfileController::class, 'generateShareLink'])->name('extras.profile.share-link');
 });
 
 // ==================== ADMIN (Default + sub-role) ====================

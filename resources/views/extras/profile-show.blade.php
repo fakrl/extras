@@ -121,16 +121,16 @@
         </div>
 
         <div style="display:flex; gap:8px; margin-bottom:16px;">
-            <input id="share-url-modal" readonly type="text"
+            <input id="share-url-modal" readonly type="text" value="{{ route('public.extras.profile', $profile->user->username) }}"
                 style="flex:1; font-size:12px; padding:8px 10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-card-hover); color:var(--text-primary); min-width:0;">
-            <button type="button" id="btn-copy-link"
-                style="flex-shrink:0; padding:8px 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-card); cursor:pointer; font-size:13px; color:var(--text-primary); white-space:nowrap;">
-                Salin
+            <button type="button" id="btn-copy-link" title="Salin link"
+                style="flex-shrink:0; padding:8px 10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-card); cursor:pointer; color:var(--text-primary);">
+                <i class="ti ti-copy" style="font-size:16px;"></i>
             </button>
         </div>
         <p id="share-copied-modal" style="display:none; color:var(--accent); font-size:12px; margin:-10px 0 12px;">Link disalin!</p>
 
-        <a id="btn-share-wa" href="#" target="_blank" rel="noopener"
+        <a href="https://wa.me/?text={{ urlencode(route('public.extras.profile', $profile->user->username)) }}" target="_blank" rel="noopener"
             style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:10px; border-radius:10px; background:#25d366; color:#fff; text-decoration:none; font-size:14px; font-weight:600; box-sizing:border-box;">
             <i class="ti ti-brand-whatsapp" style="font-size:18px;"></i> WhatsApp
         </a>
@@ -141,40 +141,25 @@
 <script>
 (function () {
     var modal = document.getElementById('modal-share');
-    var urlInput = document.getElementById('share-url-modal');
-    var waBtn = document.getElementById('btn-share-wa');
     var copied = document.getElementById('share-copied-modal');
-    var cachedUrl = null;
 
     modal.addEventListener('click', function (e) { if (e.target === modal) modal.close(); });
 
     document.getElementById('btn-share').addEventListener('click', function () {
-        var btn = this;
-        if (cachedUrl) { urlInput.value = cachedUrl; waBtn.href = 'https://wa.me/?text=' + encodeURIComponent(cachedUrl); modal.showModal(); return; }
-        btn.disabled = true;
-        fetch('{{ route('extras.profile.share-link') }}', {
-            method: 'POST',
-            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
-        })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-            cachedUrl = data.url;
-            urlInput.value = cachedUrl;
-            waBtn.href = 'https://wa.me/?text=' + encodeURIComponent(cachedUrl);
-            copied.style.display = 'none';
-            modal.showModal();
-        })
-        .finally(function () { btn.disabled = false; });
+        copied.style.display = 'none';
+        modal.showModal();
     });
 
     document.getElementById('btn-copy-link').addEventListener('click', function () {
+        var url = document.getElementById('share-url-modal').value;
         if (navigator.clipboard) {
-            navigator.clipboard.writeText(urlInput.value).then(function () {
+            navigator.clipboard.writeText(url).then(function () {
                 copied.style.display = 'block';
                 setTimeout(function () { copied.style.display = 'none'; }, 2000);
             });
         } else {
-            urlInput.select(); document.execCommand('copy');
+            document.getElementById('share-url-modal').select();
+            document.execCommand('copy');
             copied.style.display = 'block';
             setTimeout(function () { copied.style.display = 'none'; }, 2000);
         }
