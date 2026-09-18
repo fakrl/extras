@@ -38,13 +38,13 @@
             @endif
 
             @if ($app->extras->photos->isNotEmpty())
-                <div class="applicant-card-extra-photos">
-                    @foreach ($app->extras->photos as $foto)
-                        <a href="{{ route('extras.media.foto-tambahan', [$app->extras, $foto->urutan]) }}" target="_blank">
-                            <img src="{{ route('extras.media.foto-tambahan', [$app->extras, $foto->urutan]) }}" alt="Foto {{ $foto->urutan }}" class="thumb-photo-mini">
-                        </a>
-                    @endforeach
-                </div>
+                @php
+                $fotosApplicant = $app->extras->photos->map(fn($p) => [
+                    'url' => route('extras.media.foto-tambahan', [$app->extras, $p->urutan]),
+                    'alt' => 'Foto ' . $p->urutan,
+                ])->values()->all();
+                @endphp
+                @include('partials.foto-lightbox', ['fotos' => $fotosApplicant, 'lightboxId' => 'lb-' . $app->id])
             @endif
 
             @if ($app->extras->video_profil_path)
