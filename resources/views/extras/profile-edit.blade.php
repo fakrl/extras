@@ -6,11 +6,12 @@
 <style>
     .field-error { color: var(--danger); font-size: 12px; margin-top: 4px; display: block; }
     .input-error { border-color: var(--danger) !important; }
-    .upload-progress {
-        display: none; width: 100%; height: 6px; margin-top: 8px;
-        border-radius: 4px; overflow: hidden;
-        accent-color: var(--accent-strong);
+    .upload-spinner {
+        display: none; width: 22px; height: 22px; margin-top: 8px;
+        border: 3px solid var(--border-color); border-top-color: var(--accent-strong);
+        border-radius: 50%; animation: spin 0.7s linear infinite;
     }
+    @keyframes spin { to { transform: rotate(360deg); } }
     .upload-error-msg { color: var(--danger); font-size: 12px; margin-top: 6px; display: none; }
 </style>
 @endpush
@@ -59,7 +60,7 @@
                data-progress="progress-foto"
                data-preview="preview-foto"
                data-error="err-foto">
-        <progress id="progress-foto" class="upload-progress" value="0" max="100"></progress>
+        <div id="progress-foto" class="upload-spinner"></div>
         <span id="err-foto" class="upload-error-msg"></span>
         <p class="field-hint">Format JPG/PNG, maksimal 5MB.</p>
     </div>
@@ -86,7 +87,7 @@
                data-preview="preview-video"
                data-error="err-video"
                data-type="video">
-        <progress id="progress-video" class="upload-progress" value="0" max="100"></progress>
+        <div id="progress-video" class="upload-spinner"></div>
         <span id="err-video" class="upload-error-msg"></span>
         @if ($profile->video_profil_path)
             <label for="upload-video" class="btn btn-sm" style="margin-top: 8px; cursor: pointer;">Ganti Video</label>
@@ -121,7 +122,7 @@
                            data-preview="preview-slot-{{ $slot }}"
                            data-error="err-slot-{{ $slot }}"
                            data-empty="empty-slot-{{ $slot }}">
-                    <progress id="progress-slot-{{ $slot }}" class="upload-progress" value="0" max="100"></progress>
+                    <div id="progress-slot-{{ $slot }}" class="upload-spinner"></div>
                     <span id="err-slot-{{ $slot }}" class="upload-error-msg"></span>
                     @if ($foto)
                         <form method="POST" action="{{ route('extras.profile.foto-tambahan.hapus', $slot) }}" style="margin-top: 4px;">
@@ -274,16 +275,8 @@
         xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
-        xhr.upload.onprogress = function (e) {
-            if (e.lengthComputable) {
-                progressEl.value = Math.round((e.loaded / e.total) * 100);
-                progressEl.style.display = 'block';
-            }
-        };
-
         xhr.onload = function () {
             progressEl.style.display = 'none';
-            progressEl.value = 0;
             if (xhr.status >= 200 && xhr.status < 300) {
                 try {
                     var data = JSON.parse(xhr.responseText);
@@ -307,6 +300,7 @@
             onError('Koneksi bermasalah, coba lagi.');
         };
 
+        progressEl.style.display = 'block';
         xhr.send(form);
     }
 
