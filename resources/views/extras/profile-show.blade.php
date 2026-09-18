@@ -9,98 +9,76 @@
         <a href="{{ route('extras.profile.edit') }}" class="btn btn-sm btn-brand">Edit Profil</a>
     </div>
     <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 20px; line-height: 1.5;">
-        Ini persis tampilan profil kamu yang dilihat Admin & Casting Director saat cross-check kandidat.
+        Ini persis tampilan profil kamu yang dilihat Admin &amp; Casting Director saat cross-check kandidat.
     </p>
 
     @if (session('status'))
         <div class="alert-success">{{ session('status') }}</div>
     @endif
 
-    {{-- ===== Reel (Foto & Video) — bagian paling penting, ditaruh atas ===== --}}
+    {{-- Header foto dominan --}}
+    <div class="profile-section" style="text-align: center; margin-bottom: 20px;">
+        <div style="width: 180px; aspect-ratio: 3/4; margin: 0 auto 10px; border-radius: 14px; overflow: hidden; background: var(--bg-nav-active); display: flex; align-items: center; justify-content: center;">
+            @if ($profile->foto_profil_path)
+                <img src="{{ route('extras.media.foto', $profile) }}" alt="Foto profil"
+                     style="width: 100%; height: 100%; object-fit: cover; display: block;">
+            @else
+                <i class="ti ti-photo-off" style="font-size: 36px; color: var(--text-muted);"></i>
+            @endif
+        </div>
+        <div style="font-size: 18px; font-weight: 700;">{{ $profile->user->username ?? '— belum diisi —' }}</div>
+        <p class="field-hint" style="margin-top: 4px;">Nama ini yang dilihat Casting Director — bukan nama asli kamu di KTP.</p>
+    </div>
+
+    {{-- Video --}}
     <div class="profile-section">
-        <div class="profile-section-title">Reel (Foto & Video)</div>
-        <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-start;">
-            <div style="width: 130px; flex-shrink: 0;">
-                @if ($profile->foto_profil_path)
-                    <img src="{{ route('extras.media.foto', $profile) }}" alt="Foto profil"
-                         style="width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 12px; display: block;">
-                @else
-                    <div style="width: 100%; aspect-ratio: 3/4; border-radius: 12px; background: var(--bg-nav-active); display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
-                        <i class="ti ti-photo-off" style="font-size: 28px;"></i>
-                    </div>
-                    <p class="field-hint" style="margin-top: 6px;">Belum ada foto</p>
-                @endif
+        <div class="profile-section-title">Video Profil</div>
+        @if ($profile->video_profil_path)
+            <video src="{{ route('extras.media.video', $profile) }}" controls
+                   style="width: 100%; border-radius: 12px; background: #000; aspect-ratio: 16/9;"></video>
+        @else
+            <div style="width: 100%; aspect-ratio: 16/9; border-radius: 12px; background: var(--bg-nav-active); display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+                <i class="ti ti-video-off" style="font-size: 28px;"></i>
             </div>
-            <div style="flex: 1; min-width: 160px;">
-                @if ($profile->video_profil_path)
-                    <video src="{{ route('extras.media.video', $profile) }}" controls
-                           style="width: 100%; border-radius: 12px; background: #000; aspect-ratio: 16/9;"></video>
-                @else
-                    <div style="width: 100%; aspect-ratio: 16/9; border-radius: 12px; background: var(--bg-nav-active); display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
-                        <i class="ti ti-video-off" style="font-size: 28px;"></i>
-                    </div>
-                    <p class="field-hint" style="margin-top: 6px;">Belum ada video</p>
-                @endif
-            </div>
-        </div>
-
-        <p class="field-hint" style="margin: 14px 0 8px;">Foto tambahan:</p>
-        <div class="photo-slot-grid" style="max-width: 100%; grid-template-columns: repeat(4, 1fr);">
-            @foreach ($fotoTambahan as $slot => $foto)
-                <div>
-                    @if ($foto)
-                        <img src="{{ route('extras.media.foto-tambahan', [$profile, $slot]) }}" alt="Foto tambahan {{ $slot }}"
-                             style="width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 10px; display: block;">
-                    @else
-                        <div style="width: 100%; aspect-ratio: 1/1; border-radius: 10px; background: var(--bg-nav-active); display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 11px;">
-                            Kosong
-                        </div>
-                    @endif
-                </div>
-            @endforeach
-        </div>
+            <p class="field-hint" style="margin-top: 6px;">Belum ada video</p>
+        @endif
     </div>
 
-    {{-- ===== Nama & data dasar ===== --}}
+    {{-- Foto tambahan via lightbox --}}
     <div class="profile-section">
-        <div class="profile-section-title">Nama Panggilan</div>
-        <div class="profile-view-row">
-            <span class="profile-view-label">Nama Panggung / Username</span>
-            <span class="profile-view-value">{{ $profile->user->username ?? '— belum diisi —' }}</span>
-        </div>
-        <p class="field-hint">Nama ini yang dilihat Casting Director — bukan nama asli kamu di KTP.</p>
+        <div class="profile-section-title">Foto Tambahan</div>
+        @php
+            $fotosArr = collect($fotoTambahan)->filter()->map(fn($foto, $slot) => [
+                'url' => route('extras.media.foto-tambahan', [$profile, $slot]),
+                'alt' => 'Foto ' . $slot,
+            ])->values()->all();
+        @endphp
+        @include('partials.foto-lightbox', ['fotos' => $fotosArr, 'lightboxId' => 'profil-lb'])
     </div>
 
+    {{-- Data Diri & Ciri Fisik — grid 2-kolom --}}
     <div class="profile-section">
-        <div class="profile-section-title">Data Diri</div>
-        <div class="profile-view-row">
-            <span class="profile-view-label">Usia</span>
-            <span class="profile-view-value">{{ $profile->usia ? $profile->usia . ' tahun' : '—' }}</span>
-        </div>
-        <div class="profile-view-row">
-            <span class="profile-view-label">Jenis Kelamin</span>
-            <span class="profile-view-value">{{ $profile->gender === 'pria' ? 'Laki-laki' : ($profile->gender === 'wanita' ? 'Perempuan' : '—') }}</span>
-        </div>
-        <div class="profile-view-row">
-            <span class="profile-view-label">Tinggi Badan</span>
-            <span class="profile-view-value">{{ $profile->tinggi_badan ? $profile->tinggi_badan . ' cm' : '—' }}</span>
+        <div class="profile-section-title">Data Diri &amp; Ciri Fisik</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; font-size: 13px;">
+            <div style="color: var(--text-secondary);">Usia</div>
+            <div>{{ $profile->usia ? $profile->usia . ' tahun' : '—' }}</div>
+
+            <div style="color: var(--text-secondary);">Jenis Kelamin</div>
+            <div>{{ $profile->gender === 'pria' ? 'Laki-laki' : ($profile->gender === 'wanita' ? 'Perempuan' : '—') }}</div>
+
+            <div style="color: var(--text-secondary);">Tinggi Badan</div>
+            <div>{{ $profile->tinggi_badan ? $profile->tinggi_badan . ' cm' : '—' }}</div>
+
+            <div style="color: var(--text-secondary);">Ukuran Baju</div>
+            <div>{{ $profile->ukuran_baju ?: '—' }}</div>
+
+            <div style="color: var(--text-secondary);">Warna Kulit</div>
+            <div>{{ $profile->warna_kulit ?: '—' }}</div>
         </div>
     </div>
 
     <div class="profile-section">
-        <div class="profile-section-title">Ciri-ciri Fisik</div>
-        <div class="profile-view-row">
-            <span class="profile-view-label">Ukuran Baju</span>
-            <span class="profile-view-value">{{ $profile->ukuran_baju ?: '—' }}</span>
-        </div>
-        <div class="profile-view-row">
-            <span class="profile-view-label">Warna Kulit</span>
-            <span class="profile-view-value">{{ $profile->warna_kulit ?: '—' }}</span>
-        </div>
-    </div>
-
-    <div class="profile-section">
-        <div class="profile-section-title">Pengalaman & Kemampuan</div>
+        <div class="profile-section-title">Pengalaman &amp; Kemampuan</div>
         <div class="profile-view-row" style="flex-direction: column; align-items: flex-start; gap: 4px;">
             <span class="profile-view-label">Pengalaman Main / Kerja</span>
             <span class="profile-view-value" style="text-align: left;">{{ $profile->pengalaman ?: '— belum diisi —' }}</span>
