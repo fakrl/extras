@@ -13,11 +13,6 @@
             <a href="{{ route('extras.profile.edit') }}" class="btn btn-sm btn-brand">Edit Profil</a>
         </div>
     </div>
-    <div id="share-result" style="display:none; margin-bottom: 12px;">
-        <input id="share-url" readonly type="text"
-               style="width: 100%; font-size: 12px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card-hover); color: var(--text-primary);">
-        <p id="share-copied" style="display:none; color: var(--accent); font-size: 12px; margin: 4px 0 0;">Link disalin!</p>
-    </div>
     @if (session('status'))
         <div class="alert-success">{{ session('status') }}</div>
     @endif
@@ -117,33 +112,74 @@
     <a href="{{ route('extras.profile.edit') }}" class="btn btn-brand" style="width: 100%; margin-top: 8px; display: flex;">Edit Profil</a>
 </div>
 
+<dialog id="modal-share" style="border:1px solid var(--border-color); border-radius:16px; padding:0; max-width:360px; width:95%;">
+    <div style="padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <span style="font-size:15px; font-weight:600;">Bagikan Profil Kamu</span>
+            <button type="button" onclick="document.getElementById('modal-share').close()"
+                style="background:none; border:none; cursor:pointer; font-size:20px; color:var(--text-muted); line-height:1;">×</button>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-bottom:16px;">
+            <input id="share-url-modal" readonly type="text"
+                style="flex:1; font-size:12px; padding:8px 10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-card-hover); color:var(--text-primary); min-width:0;">
+            <button type="button" id="btn-copy-link"
+                style="flex-shrink:0; padding:8px 14px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-card); cursor:pointer; font-size:13px; color:var(--text-primary); white-space:nowrap;">
+                Salin
+            </button>
+        </div>
+        <p id="share-copied-modal" style="display:none; color:var(--accent); font-size:12px; margin:-10px 0 12px;">Link disalin!</p>
+
+        <a id="btn-share-wa" href="#" target="_blank" rel="noopener"
+            style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:10px; border-radius:10px; background:#25d366; color:#fff; text-decoration:none; font-size:14px; font-weight:600; box-sizing:border-box;">
+            <i class="ti ti-brand-whatsapp" style="font-size:18px;"></i> WhatsApp
+        </a>
+    </div>
+</dialog>
+
 @push('scripts')
 <script>
-document.getElementById('btn-share').addEventListener('click', function () {
-    var btn = this;
-    btn.disabled = true;
-    fetch('{{ route('extras.profile.share-link') }}', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Accept': 'application/json',
-        },
-    })
-    .then(function (r) { return r.json(); })
-    .then(function (data) {
-        var input = document.getElementById('share-url');
-        var result = document.getElementById('share-result');
-        input.value = data.url;
-        result.style.display = 'block';
+(function () {
+    var modal = document.getElementById('modal-share');
+    var urlInput = document.getElementById('share-url-modal');
+    var waBtn = document.getElementById('btn-share-wa');
+    var copied = document.getElementById('share-copied-modal');
+    var cachedUrl = null;
+
+    modal.addEventListener('click', function (e) { if (e.target === modal) modal.close(); });
+
+    document.getElementById('btn-share').addEventListener('click', function () {
+        var btn = this;
+        if (cachedUrl) { urlInput.value = cachedUrl; waBtn.href = 'https://wa.me/?text=' + encodeURIComponent(cachedUrl); modal.showModal(); return; }
+        btn.disabled = true;
+        fetch('{{ route('extras.profile.share-link') }}', {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            cachedUrl = data.url;
+            urlInput.value = cachedUrl;
+            waBtn.href = 'https://wa.me/?text=' + encodeURIComponent(cachedUrl);
+            copied.style.display = 'none';
+            modal.showModal();
+        })
+        .finally(function () { btn.disabled = false; });
+    });
+
+    document.getElementById('btn-copy-link').addEventListener('click', function () {
         if (navigator.clipboard) {
-            navigator.clipboard.writeText(data.url).then(function () {
-                document.getElementById('share-copied').style.display = 'block';
+            navigator.clipboard.writeText(urlInput.value).then(function () {
+                copied.style.display = 'block';
+                setTimeout(function () { copied.style.display = 'none'; }, 2000);
             });
+        } else {
+            urlInput.select(); document.execCommand('copy');
+            copied.style.display = 'block';
+            setTimeout(function () { copied.style.display = 'none'; }, 2000);
         }
-        input.select();
-    })
-    .finally(function () { btn.disabled = false; });
-});
+    });
+})();
 </script>
 @endpush
 @endsection
