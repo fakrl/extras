@@ -9,9 +9,9 @@
 --}}
 @props(['name'])
 
-<div class="signature-pad-wrap">
+<div class="signature-pad-wrap" style="text-align: center;">
     <canvas id="canvas-{{ $name }}" width="500" height="200"
-            style="border:1px solid #ccc; border-radius:8px; background:#fff; touch-action:none; max-width:100%;"></canvas>
+            style="border:1px solid #ccc; border-radius:8px; background:#fff; touch-action:none; max-width:100%; display:inline-block;"></canvas>
     <input type="hidden" name="{{ $name }}" id="input-{{ $name }}">
     <div style="margin-top: 8px;">
         <button type="button" class="btn btn-sm" onclick="clearSignature('{{ $name }}')">Hapus & Ulangi</button>
