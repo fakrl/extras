@@ -18,10 +18,6 @@
                style="width: 100%; font-size: 12px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card-hover); color: var(--text-primary);">
         <p id="share-copied" style="display:none; color: var(--accent); font-size: 12px; margin: 4px 0 0;">Link disalin!</p>
     </div>
-    <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 20px; line-height: 1.5;">
-        Ini persis tampilan profil kamu yang dilihat Admin &amp; Casting Director saat cross-check kandidat.
-    </p>
-
     @if (session('status'))
         <div class="alert-success">{{ session('status') }}</div>
     @endif
@@ -37,7 +33,6 @@
             @endif
         </div>
         <div style="font-size: 18px; font-weight: 700;">{{ $profile->user->username ?? '— belum diisi —' }}</div>
-        <p class="field-hint" style="margin-top: 4px;">Nama ini yang dilihat Casting Director — bukan nama asli kamu di KTP.</p>
     </div>
 
     {{-- Video --}}
