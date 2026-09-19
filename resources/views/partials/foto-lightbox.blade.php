@@ -1,16 +1,17 @@
 @if (count($fotos) === 0)
-    <p style="color:var(--text-muted); font-size:12px;">Belum ada foto tambahan.</p>
+    <p style="color:var(--text-muted); font-size:12px;">Gallery masih kosong.</p>
 @else
 <style>
-.lightbox-thumbs { display:grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
-.lightbox-thumbs img { width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:8px; cursor:pointer; }
+.lightbox-thumbs { display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; }
+.lightbox-thumbs img { flex:0 0 140px; width:140px; aspect-ratio:1/1; object-fit:cover; border-radius:8px; cursor:pointer; }
+.lightbox-thumbs img.is-grid { flex:0 0 280px; width:280px; }
 </style>
 
 @php $dlgId = $lightboxId . '-dialog'; $imgId = $lightboxId . '-img'; @endphp
 
 <div class="lightbox-thumbs">
     @foreach ($fotos as $i => $foto)
-        <img src="{{ $foto['url'] }}" alt="{{ $foto['alt'] }}" onclick="_lbOpen('{{ $lightboxId }}', {{ $i }})">
+        <img src="{{ $foto['url'] }}" alt="{{ $foto['alt'] }}" class="{{ $loop->first ? 'is-grid' : '' }}" onclick="_lbOpen('{{ $lightboxId }}', {{ $i }})">
     @endforeach
 </div>
 

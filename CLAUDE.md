@@ -29,3 +29,4 @@ Keduanya aktif otomatis lewat hook `SessionStart` & `UserPromptSubmit`. Kalau be
 | `docs/SPEC.md` | Template spec per modul aktif |
 | `docs/UI-GUIDELINES.md` | Design system, warna, behavior rules |
 | `docs/SECURITY-CHECKLIST.md` | Checklist keamanan — cek tiap sprint |
+| `docs/BIMBINGAN-2026-09-19.md` | Catatan mentah revisi bimbingan dospem 19 Sept — belum jadi task SPEC, masih dikumpulkan |

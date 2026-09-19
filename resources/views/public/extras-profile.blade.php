@@ -29,9 +29,15 @@
         .avatar-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .alias { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 4px; }
         .note-sensitive { font-size: 11.5px; color: var(--text-muted); text-align: center; margin: 0 0 20px; }
-        .thumb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
-        .thumb-grid img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 8px; cursor: pointer; }
         p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+        @media (min-width: 900px) {
+            html, body { height: 100%; overflow: hidden; }
+            .wrap { max-width: 900px; height: 100%; padding: 0; overflow: hidden; display: grid; grid-template-columns: 300px 1fr; grid-template-rows: auto 1fr; }
+            .top-row { grid-column: 1 / -1; padding: 14px 24px; margin-bottom: 0; border-bottom: 1px solid var(--border-color); }
+            .avatar-wrap { width: 100%; margin: 0 auto 12px; }
+            .pub-media-col { overflow: hidden; padding: 16px; border-right: 1px solid var(--border-color); }
+            .pub-info-col { overflow-y: auto; padding: 16px; }
+        }
     </style>
 </head>
 <body>
@@ -43,69 +49,83 @@
             </button>
         </div>
 
-        {{-- Foto profil --}}
-        <div class="avatar-wrap">
-            @if ($profile->foto_profil_path)
-                <img src="{{ route('extras.media.foto', $profile) }}" alt="Foto profil {{ $profile->user->username }}">
+        <div class="pub-media-col">
+            {{-- Foto profil --}}
+            <div class="avatar-wrap">
+                @if ($profile->foto_profil_path)
+                    <img src="{{ route('public.extras.foto', $token) }}" alt="Foto profil {{ $profile->user->username }}">
+                @else
+                    <i class="ti ti-photo-off" style="font-size: 36px; color: var(--text-muted);"></i>
+                @endif
+            </div>
+            <div class="alias">{{ $profile->user->username ?? '—' }}</div>
+
+            {{-- Video profil --}}
+            @if ($profile->video_profil_path)
+            <div class="card">
+                <div class="card-title">Video Profil</div>
+                <video src="{{ route('public.extras.video', $token) }}" controls
+                       style="width: 100%; border-radius: 8px; background: #000; aspect-ratio: 16/9;"></video>
+            </div>
             @else
-                <i class="ti ti-photo-off" style="font-size: 36px; color: var(--text-muted);"></i>
+            <div class="card">
+                <div class="card-title">Video Profil</div>
+                <div style="width: 100%; aspect-ratio: 16/9; border-radius: 8px; background: var(--bg-nav-active); display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+                    <i class="ti ti-video-off" style="font-size: 28px;"></i>
+                </div>
+            </div>
             @endif
         </div>
 
-        <div class="alias">{{ $profile->user->username ?? '—' }}</div>
-        <p class="note-sensitive">Data sensitif (NIK, rekening, nama asli) hanya dilihat Admin.</p>
+        <div class="pub-info-col">
+            <p class="note-sensitive">Data sensitif (NIK, rekening, nama asli) hanya dilihat Admin.</p>
 
-        {{-- Data diri --}}
-        <div class="card">
-            <div class="card-title">Data Diri &amp; Ciri Fisik</div>
-            <div class="field-grid">
-                <div class="field-label">Usia</div>
-                <div>{{ $profile->usia ? $profile->usia . ' tahun' : '—' }}</div>
-
-                <div class="field-label">Jenis Kelamin</div>
-                <div>{{ $profile->gender === 'pria' ? 'Laki-laki' : ($profile->gender === 'wanita' ? 'Perempuan' : '—') }}</div>
-
-                <div class="field-label">Tinggi Badan</div>
-                <div>{{ $profile->tinggi_badan ? $profile->tinggi_badan . ' cm' : '—' }}</div>
-
-                <div class="field-label">Ukuran Baju</div>
-                <div>{{ $profile->ukuran_baju ?: '—' }}</div>
-
-                <div class="field-label">Warna Kulit</div>
-                <div>{{ $profile->warna_kulit ?: '—' }}</div>
-            </div>
-        </div>
-
-        {{-- Pengalaman & bahasa --}}
-        <div class="card">
-            <div class="card-title">Pengalaman &amp; Kemampuan</div>
-            <div style="font-size: 13px; margin-bottom: 12px;">
-                <span class="field-label">Pengalaman</span>
-                <p style="margin: 4px 0 0; color: var(--text-primary);">{{ $profile->pengalaman ?: '—' }}</p>
-            </div>
-            <div class="field-grid">
-                <div class="field-label">Bahasa</div>
-                <div>{{ $profile->bahasa ?: '—' }}</div>
-            </div>
-        </div>
-
-        {{-- Foto tambahan --}}
-        @php
-            $fotosArr = $profile->photos->map(fn ($foto, $i) => [
-                'url' => route('extras.media.foto-tambahan', [$profile, $foto->urutan]),
-                'alt' => 'Foto ' . $foto->urutan,
-            ])->values()->all();
-        @endphp
-        @if (count($fotosArr) > 0)
+            {{-- Data diri --}}
             <div class="card">
-                <div class="card-title">Foto Tambahan</div>
-                @include('partials.foto-lightbox', ['fotos' => $fotosArr, 'lightboxId' => 'pub-lb'])
-            </div>
-        @endif
+                <div class="card-title">Data Diri &amp; Ciri Fisik</div>
+                <div class="field-grid">
+                    <div class="field-label">Usia</div>
+                    <div>{{ $profile->usia ? $profile->usia . ' tahun' : '—' }}</div>
 
-        <p style="text-align:center; margin-top: 24px; font-size: 12px;">
-            <a href="{{ route('home') }}" style="color: var(--accent);">SIM Casting JBTB</a>
-        </p>
+                    <div class="field-label">Jenis Kelamin</div>
+                    <div>{{ $profile->gender === 'pria' ? 'Laki-laki' : ($profile->gender === 'wanita' ? 'Perempuan' : '—') }}</div>
+
+                    <div class="field-label">Tinggi Badan</div>
+                    <div>{{ $profile->tinggi_badan ? $profile->tinggi_badan . ' cm' : '—' }}</div>
+
+                    <div class="field-label">Ukuran Baju</div>
+                    <div>{{ $profile->ukuran_baju ?: '—' }}</div>
+
+                    <div class="field-label">Warna Kulit</div>
+                    <div>{{ $profile->warna_kulit ?: '—' }}</div>
+                </div>
+            </div>
+
+            {{-- Pengalaman & bahasa --}}
+            <div class="card">
+                <div class="card-title">Pengalaman &amp; Kemampuan</div>
+                <div style="font-size: 13px; margin-bottom: 12px;">
+                    <span class="field-label">Pengalaman</span>
+                    <p style="margin: 4px 0 0; color: var(--text-primary);">{{ $profile->pengalaman ?: '—' }}</p>
+                </div>
+                <div class="field-grid">
+                    <div class="field-label">Bahasa</div>
+                    <div>{{ $profile->bahasa ?: '—' }}</div>
+                </div>
+            </div>
+
+            {{-- Gallery --}}
+            @if (count($fotosArr) > 0)
+                <div class="card">
+                    <div class="card-title">Gallery</div>
+                    @include('partials.foto-lightbox', ['fotos' => $fotosArr, 'lightboxId' => 'pub-lb'])
+                </div>
+            @endif
+
+            <p style="text-align:center; margin-top: 24px; font-size: 12px;">
+                <a href="{{ route('home') }}" style="color: var(--accent);">SIM Casting JBTB</a>
+            </p>
+        </div>
     </div>
 
     <script>

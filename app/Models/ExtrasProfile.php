@@ -49,6 +49,8 @@ use Illuminate\Support\Str;
     'video_profil_path',
     'apresiasi',
     'apresiasi_catatan',
+    'grade_saat_ini',
+    'grade_diberikan_at',
 ])]
 class ExtrasProfile extends Model
 {
@@ -62,6 +64,7 @@ class ExtrasProfile extends Model
             'nama_asli' => 'encrypted',
             'rekening' => 'encrypted',
             'apresiasi' => 'boolean',
+            'grade_diberikan_at' => 'datetime',
             // Array of {label, url} — RF-14 & CLAUDE.md §5: cuma dilihat
             // Extras & Admin, tidak pernah dikirim ke view Casting Director.
             'tautan_tambahan' => 'array',

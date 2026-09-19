@@ -257,7 +257,7 @@
         } else {
             var p = document.createElement('p');
             p.style.cssText = 'color:var(--text-muted);font-size:12px;margin:0;';
-            p.textContent = 'Belum ada foto tambahan.';
+            p.textContent = 'Gallery masih kosong.';
             slot.appendChild(p);
         }
 

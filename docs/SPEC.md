@@ -469,6 +469,716 @@ Form `extras/profile-edit.blade.php` (9 section, banyak field) — Fakrul kompla
 
 Kalau mau, gua bisa tulis spec buat setup backup otomatis (opsi murah, gak ganggu storage utama) — bilang aja.
 
+## Bagian Q: FIX BUG — page freeze pas CD klik foto tambahan di modal kandidat
+
+> Ditulis 18 September 2026, oleh manager-session. **PRIORITAS TERTINGGI, kerjakan duluan sebelum R/S/T/U.**
+> Bug ini dari perubahan di commit `67f3c0c` (obrolan langsung Fakrul-Claude Code, belum lewat SPEC ini) — jadi bukan salah spec sebelumnya, tapi tetap harus dibenerin via jalur ini biar tercatat.
+
+### Konteks
+
+Reproduksi: CD buka Greenlight → Lihat Kandidat → klik card kandidat (buka modal profil) → klik salah satu foto tambahan di dalam modal itu → **seluruh halaman freeze total**, gak bisa diapa-apain, cuma bisa di-refresh. Kejadian konsisten, bukan sesekali.
+
+**Root cause udah ketemu, pasti, bukan tebakan** — di `resources/views/cd/reviews/show.blade.php`, function `window.bukaModalKandidat(appId)`:
+
+```js
+var slot = document.getElementById('mk-lightbox-slot');
+slot.innerHTML = '';
+var pre = document.getElementById('lb-pre-' + appId);
+if (pre) {
+    var clone = pre.cloneNode(true);
+    clone.style.display = '';
+    slot.appendChild(clone);
+}
+```
+
+Ini nge-`cloneNode(true)` sebuah `<div id="lb-pre-{appId}" style="display:none">` yang isinya `@include('partials.foto-lightbox', ['lightboxId' => 'lb-' . $app->id])` — dan `foto-lightbox.blade.php` bikin `<dialog id="{lightboxId}-dialog">`. Dua masalah gabung jadi satu:
+
+1. `cloneNode(true)` **gak ikut nge-eksekusi ulang `<script>`** yang ada di dalamnya — jadi handler klik `onclick="_lbOpen(...)"` di foto clone itu manggil `window._lbOpen` global (yang cuma didefinisikan SEKALI, dari instance foto-lightbox PERTAMA di halaman), bukan masalah utamanya sih karena `_lbOpen` emang didesain global.
+2. Masalah utamanya: **ada 2 elemen dengan `id` yang SAMA** di DOM sekarang (`lb-{appId}-dialog` asli yang tersembunyi di `lb-pre-{appId}` yang `display:none`, DAN clone-nya yang barusan di-append ke `#mk-lightbox-slot`). `document.getElementById()` di dalam `_lbOpen` cuma nemu yang PERTAMA — yaitu yang ASLI, yang masih ada di dalam ancestor `display:none`. Manggil `.showModal()` pada `<dialog>` yang ancestornya `display:none` itu invalid per spec HTML — dan lebih parah lagi, `<dialog id="modal-kandidat">` (modal profil) SUDAH dalam kondisi `showModal()` terbuka, jadi ini juga nested-dialog-inside-open-dialog lewat DOM insertion dinamis, kombinasi yang emang dikenal fragile di banyak browser engine. Ini yang bikin browser hang/freeze total.
+
+**Fix-nya BUKAN nambah tambalan (misal ganti id jadi unik per-clone) — itu cuma nutupin, `cloneNode` tetep salah pendekatan.** Fix yang benar: satu `<dialog>` lightbox SHARED di level halaman (sibling dari `#modal-kandidat`, JANGAN di-nest, JANGAN di-clone), datanya diisi ulang tiap kali dibuka — sama persis pola yang udah dipakai `#modal-kandidat` sendiri buat data kandidat (baca dari `data-*` attribute, bukan clone DOM).
+
+### Implementasi
+
+1. Di `cd/reviews/show.blade.php`, HAPUS semua `<div id="lb-pre-{{ $app->id }}" style="display:none;">...@include('partials.foto-lightbox', ...)...</div>` per-kandidat yang ada sekarang — ini sumber masalahnya, gak perlu ada lagi.
+2. Tambah SATU array foto per kandidat ke `data-*` attribute yang udah ada di `.kandidat-card` (yang sekarang sudah bawa `data-foto`, `data-video`, dst) — tambah `data-fotos='{{ json_encode(array_column($app->fotosArr ?? [], "url")) }}'` (sesuaikan nama variabel foto array yang emang dipakai di file itu sekarang, ganti `$app->fotosArr` sesuai nama real-nya).
+3. Tambah SATU `@include('partials.foto-lightbox', ['fotos' => [], 'lightboxId' => 'mk-lb'])` di level halaman (sibling `#modal-kandidat`, BUKAN di dalam grid card, BUKAN hidden) — ini bikin satu `<dialog id="mk-lb-dialog">` yang re-usable buat kandidat manapun, persis pola yang dipakai `extras/profile-show.blade.php` dan `admin/projects/applicants.blade.php` (dua file itu udah bener, gak ada bug ini — cek sudah, mereka include `foto-lightbox` langsung di badan halaman, gak di-clone ke modal lain).
+4. Di `bukaModalKandidat(appId)`, ganti logic yang lama jadi: baca `data-fotos` dari card yang diklik, `JSON.parse`, lalu update `dataset.fotos` milik `<dialog id="mk-lb-dialog">` langsung (`document.getElementById('mk-lb-dialog').dataset.fotos = ...`) plus render ulang thumbnail grid-nya (`.lightbox-thumbs`) via JS — TANPA clone, tanpa nested-open-dialog. Kalau mau lebih lazy lagi: render thumbnail grid-nya di `#mk-foto-wrap`/`#mk-lightbox-slot` pakai `<img onclick="_lbOpen('mk-lb', idx)">` yang di-generate lewat JS loop dari array foto, dialog viewer-nya tetap yang satu shared itu.
+5. **JANGAN** panggil `.showModal()` pada `<dialog>` manapun selagi `<dialog>` lain masih `showModal()`-open dan yang baru itu nested/di-append ke dalam DOM subtree dialog yang lama — kalau lightbox harus muncul "di atas" modal profil, itu otomatis kejadian by native top-layer behavior asal dua dialog itu SIBLING di DOM (bukan salah satu jadi child dari yang lain).
+
+### Verifikasi
+
+- Manual, ulang skenario reproduksi PERSIS: CD → Greenlight → Lihat Kandidat → klik card → klik foto tambahan di modal → **halaman TIDAK freeze**, lightbox foto muncul di atas modal, tombol prev/next/close normal, close lightbox balik ke modal profil (modal profil gak ikut ketutup).
+- Ulangi buat MINIMAL 2 kandidat berbeda di halaman yang sama (buka kandidat A → tutup semua → buka kandidat B → klik foto) — pastikan foto yang muncul itu foto kandidat yang bener, bukan ke-cache dari kandidat sebelumnya (ini konsekuensi dari hapus `data-*` approach yang lama, harus dicek gak ada state nyangkut).
+- Cek console browser (DevTools) gak ada error `Failed to execute 'showModal'` atau warning duplicate `id`.
+- Grep ulang `cloneNode` di seluruh `resources/views/` — harus 0 hasil kalau ini satu-satunya tempat yang pakai pattern itu (kalau ada lagi di file lain, laporkan balik ke manager-session, jangan langsung fix sendiri kalau itu di luar scope Bagian Q ini).
+
+---
+
+## Bagian R: Ganti progress bar upload jadi loading-spinner sederhana
+
+> Ditulis 18 September 2026, oleh manager-session.
+
+### Konteks
+
+Progress bar native `<progress>` di `extras/profile-edit.blade.php` (dipasang Bagian P.1) dilaporkan Fakrul "ga work, aneh kliatannya". Sudah dicek kode `uploadWithProgress()` — logic JS-nya sendiri sebenarnya BENER (`xhr.upload.onprogress` + `e.lengthComputable` guard itu standar). Masalahnya lebih ke sifat elemen `<progress>` native: cuma di-style `accent-color` doang di CSS (`.upload-progress`), sementara TRACK background-nya (bagian belum terisi) tetap default browser (abu-abu/putih terang) yang GAK ngikutin `--bg-page`/`--border-color` tema gelap — jadi kelihatan aneh/gak nyatu pas dark mode. Ditambah untuk file kecil di koneksi cepat, event `onprogress` bisa cuma sempat fire 1-2 kali (langsung lompat ke 100%) — kerasa "kaya gak jalan" padahal emang cuma kelewat cepat buat kelihatan animasinya.
+
+Fakrul sendiri minta diganti loading-cycle/spinner aja — ini emang lebih masuk akal buat use-case ini: upload foto/video biasanya cepat, byte-progress yang presisi gak terlalu berguna dibanding sekadar indikator "sedang proses", dan spinner CSS jauh lebih gampang konsisten di semua browser + tema dibanding native `<progress>`.
+
+### Implementasi
+
+1. Di `<style>` `@push('head')` `extras/profile-edit.blade.php`, HAPUS `.upload-progress` (elemen `<progress>`), ganti dengan spinner CSS murni (gak ada library baru):
+   ```css
+   .upload-spinner {
+       display: none; width: 22px; height: 22px; margin-top: 8px;
+       border: 3px solid var(--border-color); border-top-color: var(--accent-strong);
+       border-radius: 50%; animation: spin 0.7s linear infinite;
+   }
+   @keyframes spin { to { transform: rotate(360deg); } }
+   ```
+2. Ganti ketiga elemen `<progress id="progress-foto"|"progress-video"|"progress-slot-{{ $slot }}" class="upload-progress" ...>` jadi `<div id="..." class="upload-spinner"></div>` (id sama, cuma tag & class berubah).
+3. Di `uploadWithProgress()`: HAPUS blok `xhr.upload.onprogress` (gak perlu lagi, gak ada value yang diisi). Tampilkan spinner (`progressEl.style.display = 'block'`) pas mulai upload (sebelum `xhr.send(form)`), sembunyikan (`style.display = 'none'`) di `xhr.onload` dan `xhr.onerror` — pola show/hide-nya sama kayak sekarang, cuma tanpa `.value` assignment.
+4. Rename variabel `progressEl` biar gak nyesatin? Boleh dibiarin nama lama juga gak masalah, minor, terserah implementer — jangan buang waktu di ini.
+
+### Verifikasi
+
+- Manual: upload foto/video di form edit profil Extras → spinner muncul selagi proses, ketutup otomatis pas selesai (sukses ATAU gagal), gak ada elemen `<progress>` yang keliatan sama sekali lagi.
+- Cek dark mode DAN light mode — spinner harus keliatan jelas di kedua tema (border color pakai variable tema, bukan hardcode).
+
+---
+
+## Bagian S: Fitur share link profil Extras — publik doang, tampilan terbatas
+
+> Ditulis 18 September 2026, oleh manager-session. **Disarankan pakai subagent** (>3 file: migration, model, controller, route, view). **Revisi dari draf awal** — awalnya didesain 3 tingkat (publik/CD/Admin beda tampilan), Fakrul putuskan disederhanain: SATU tampilan doang, buat siapapun yang buka link (termasuk kalau yang buka itu ternyata Admin/CD yang lagi login) — gak perlu deteksi role viewer sama sekali. Lebih `/ponytail`, lebih lazy, lebih dikit permukaan bug.
+
+### Konteks
+
+Extras bisa generate link share profil dia sendiri. SIAPAPUN yang buka link itu (publik anonim, atau kebetulan yang buka lagi login sebagai CD/Admin/role lain) dapat tampilan YANG SAMA — terbatas, gak ada tingkatan.
+
+**Field yang ditampilin** = SET YANG SAMA PERSIS kayak yang CD lihat sekarang di dashboard internal (aturan tembok visibilitas yang sudah ada: exclude `nama_asli`, `nik`, `rate_card`, `rekening`, `tautan_tambahan`) — reuse langsung, gak bikin aturan baru.
+
+**Konfirmasi soal pertanyaan Fakrul** (data pribadi Extras aman, CD juga gak bisa liat): **Bener.** Ini bukan cuma soal fitur share ini doang — aturan "tembok visibilitas" yang udah berlaku dari awal proyek ini (di `CLAUDE.md` §5) emang udah bikin `nik`, `rekening`, `nama_asli`, `rate_card`, `tautan_tambahan` itu HANYA kebaca sama Admin/SuperAdmin lewat dashboard internal — CD (dan tentu publik) gak pernah dikasih akses ke field-field itu sama sekali, baik di halaman review kandidat, modal, maupun (sekarang) link share ini. Kalau mau nambahin note buat Extras di halaman profile-edit, boleh tulis kira-kira: *"Data sensitif kamu (NIK, nomor rekening, nama asli) cuma bisa dilihat Admin — Casting Director dan publik (termasuk lewat link share) TIDAK bisa melihatnya."*
+
+### Implementasi
+
+1. **Migration**: tambah kolom `share_token` (string, nullable, unique) ke `extras_profiles` — generate pakai `Str::random(32)` sekali pas pertama kali di-generate (bukan auto pas registrasi, Extras yang milih kapan mau bikin), simpan permanen (gak expire, `/ponytail` — kalau nanti mau expire/regenerate, itu revisi lain).
+2. **Model** `ExtrasProfile`: JANGAN taruh `share_token` di `$fillable` (biar gak bisa di-mass-assign lewat form biasa) — generate lewat method khusus `generateShareToken()` yang cek dulu, kalau udah ada gak usah generate ulang (biar link lama gak keputus tiap generate).
+3. **Controller**: tambah endpoint di controller profil Extras yang sudah ada, buat generate/lihat/copy link share-nya sendiri (tombol "Buat/Copy Link Share" di halaman profile-edit atau profile-show Extras).
+4. **Public controller baru**: `PublicExtrasProfileController`, reuse pola yang SAMA kayak `PublicEventController` yang udah ada (cek dulu route prefix yang dia pakai sekarang, ikutin biar konsisten) — resolve `ExtrasProfile::where('share_token', $token)->firstOrFail()`, route contoh `GET /p/extras/{token}`.
+5. **TIDAK ADA logic deteksi role viewer** — controller ini SELALU render field terbatas (set yang sama kayak CD), gak peduli yang buka link itu login sebagai apa atau logout total. Ini justru bikin controllernya lebih simpel dari draf sebelumnya.
+6. **View**: satu Blade view baru khusus halaman publik ini (jangan reuse `extras/profile-show.blade.php` langsung — beda konteks akses, nanti gampang salah kalau digabung), layout minimal ala `layouts/auth.blade.php` tapi buat nampilin profil bukan form.
+
+### Verifikasi
+
+- Test: generate token 1 Extras, akses link dalam kondisi logout total, login CD, login Admin, login Extras lain → SEMUA kondisi dapat field yang SAMA (terbatas), gak ada bedanya sama sekali.
+- Test: token salah/gak ada → 404, bukan error 500.
+- Test: `nik`, `rekening`, `nama_asli`, `rate_card`, `tautan_tambahan` TIDAK ADA di response HTML sama sekali (cek raw HTML, bukan cuma "gak keliatan di UI").
+
+---
+
+## Bagian T: Dropdown menu di topbar dashboard (konsolidasi avatar + Keluar)
+
+> Ditulis 18 September 2026, oleh manager-session. **Disarankan pakai subagent** (nyentuh flow auth-adjacent buat bagian ubah password).
+
+### Konteks
+
+Sama kayak Bagian O di homepage (avatar jadi dropdown), sekarang mau diterapin juga di topbar dashboard yang sudah login — sekarang masih avatar-badge + tombol "Keluar" berdiri sendiri (`layouts/app.blade.php` baris ~400-408).
+
+Fakrul nanya isi dropdown-nya apa — ini jawaban gua: dropdown berisi **"Profil Saya"** (khusus role Extras, link ke halaman profile-edit yang udah ada — role lain BELUM punya halaman "profil" sendiri yang setara, jadi jangan dipaksa ada buat semua role dulu), **"Ubah Kata Sandi"** (baru, semua role, form sederhana current password + new password, reuse `Hash::check()`/`Hash::make()` standar Laravel — sudah dicek, sekarang CUMA ada flow forgot-password/reset-password buat yang LUPA password waktu logout, belum ada cara ganti password waktu udah login, ini gap nyata bukan cuma nice-to-have), dan **"Keluar"** (pindahin form logout yang udah ada ke dalam dropdown item, bukan tombol terpisah lagi).
+
+### Implementasi
+
+1. Di `layouts/app.blade.php`, ganti avatar-badge + tombol Keluar jadi 1 tombol trigger dropdown (reuse class `.avatar-badge` yang sudah ada buat visualnya), dropdown panel isi 2-3 item di atas — pola dropdown-nya SAMA kayak yang dibuat di Bagian O buat homepage (reuse CSS/JS-nya kalau memungkinkan, jangan bikin dropdown component kedua yang beda pattern).
+2. "Profil Saya" cuma muncul kalau `auth()->user()->role === 'extras'` — role lain gak usah dikasih (belum ada halamannya).
+3. **"Ubah Kata Sandi"**: route baru `GET/POST /ubah-password` (nama route bebas, konsisten sama pola existing), controller baru (atau tambah method di controller auth yang sudah ada) — form: current password (validasi `Hash::check` ke `auth()->user()->password`), password baru + konfirmasi (validasi sama kayak form register yang sudah ada). Sukses → flash message, redirect balik ke dashboard (JANGAN auto-logout, itu UX buruk buat ganti password biasa).
+4. Tetap tampilkan theme-toggle button di luar dropdown seperti sekarang (itu dipakai sering banget, kalau ditaruh dalam dropdown extra klik buat toggle tema, kurang enak) — dropdown ini CUMA gantiin avatar+Keluar, bukan theme toggle.
+
+### Verifikasi
+
+- Manual per role: SuperAdmin/Admin/CD → dropdown isi "Ubah Kata Sandi" + "Keluar" doang (2 item). Extras → 3 item ("Profil Saya" + "Ubah Kata Sandi" + "Keluar").
+- Test ubah password: salah current password → error jelas, gak ke-submit. Benar → password ke-update, bisa login pakai password baru, SESSION SEKARANG TETAP JALAN (gak ke-logout otomatis).
+- Test: field password baru pakai validasi minimal yang SAMA kayak form register Extras/CD sekarang (jangan bikin aturan panjang-password baru yang beda sendiri).
+
+---
+
+## Bagian U: Sinkronkan tema dark/light di halaman login & register
+
+> Ditulis 18 September 2026, oleh manager-session.
+
+### Konteks
+
+`layouts/auth.blade.php` (dipakai login/register) sekarang HARDCODE `<html data-theme="light">` dan gak baca `localStorage`, beda sama `welcome.blade.php` yang punya inline script di `<head>` (`document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme-v2') || 'light');`) buat sinkron tema SEBELUM render (biar gak ada flash warna salah).
+
+### Implementasi
+
+1. Di `layouts/auth.blade.php`, tambah SATU baris inline `<script>` di `<head>`, PERSIS sama kayak yang di `welcome.blade.php`, sebelum `@include('partials.theme-style')` biar gak ada flash:
+   ```html
+   <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme-v2') || 'light');</script>
+   ```
+2. Hapus/biarkan `data-theme="light"` di tag `<html>` — gak masalah dibiarin sebagai fallback awal karena script di atas langsung override-nya sebelum body ke-render.
+3. **Itu doang** — gak perlu tambah theme-toggle button di halaman login/register (Fakrul cuma minta ikut state, bukan minta bisa di-toggle dari situ juga; kalau nanti mau toggle-nya juga ada di sini, bilang, ini beda scope).
+
+### Verifikasi
+
+- Manual: set dark mode dari homepage → buka /login atau /register di tab/kunjungan baru → harus langsung dark (gak flash putih dulu). Balik ke light dari salah satu halaman manapun (kalau ada toggle-nya) → cek konsisten di semua halaman lain juga.
+
+## Bagian V: Center-in canvas signature-pad
+
+> Ditulis 18 September 2026, oleh manager-session.
+
+### Konteks
+
+Fakrul minta field tanda tangan digital dirapihin jadi center. Sudah dicek `components/signature-pad.blade.php` (dipakai di `contracts/show.blade.php` DAN `invoices/show.blade.php` — reuse component yang sama) — `.signature-pad-wrap` sekarang gak punya alignment sama sekali, `<canvas>` (default `inline-block`) numpuk rata kiri karena parent-nya gak `text-align:center`. Fix di 1 file component ini otomatis berlaku ke SEMUA halaman yang pakai `<x-signature-pad>` (contracts & invoices), gak perlu sentuh 2 file itu.
+
+### Implementasi
+
+Di `resources/views/components/signature-pad.blade.php`, tambah styling ke `.signature-pad-wrap`:
+
+```html
+<div class="signature-pad-wrap" style="text-align: center;">
+    <canvas id="canvas-{{ $name }}" width="500" height="200"
+            style="border:1px solid #ccc; border-radius:8px; background:#fff; touch-action:none; max-width:100%; display:inline-block;"></canvas>
+    <input type="hidden" name="{{ $name }}" id="input-{{ $name }}">
+    <div style="margin-top: 8px;">
+        <button type="button" class="btn btn-sm" onclick="clearSignature('{{ $name }}')">Hapus & Ulangi</button>
+    </div>
+</div>
+```
+
+Cuma nambah `text-align: center` ke wrapper + `display:inline-block` eksplisit ke canvas (biar gak gantung ke default browser) — tombol "Hapus & Ulangi" di bawahnya ikut ke-center juga karena dia `<div>` block penuh, teksnya sendiri di dalam tombol gak masalah. TIDAK ada perubahan JS, TIDAK ada perubahan struktur canvas (ukuran 500×200 tetap, cuma soal posisi).
+
+### Verifikasi
+
+- Manual: buka halaman kontrak (Admin & Extras) dan invoice (Admin & CD) yang ada signature pad-nya → canvas + tombol "Hapus & Ulangi" keliatan center secara horizontal, bukan rata kiri.
+- Cek di layar kecil (mobile width) — canvas tetap `max-width:100%`, gak overflow, tetap center.
+- Coba gambar tanda tangan & submit — pastikan `syncSignature`/`clearSignature` masih jalan normal (murni CSS, harusnya gak ada regresi JS, tapi tetap dicek).
+
+## Bagian W: FIX BUG — share link publik belum opt-in + foto/video 403 buat guest + tampilan desktop & galeri
+
+> Ditulis 18 September 2026, oleh manager-session. **REVISI** dari draf pertama (yang kemarin nyaranin ganti URL ke token) — Fakrul kasih concern valid: URL isi token 32-karakter random itu gak bisa "dieja"/didiktein manual sama Extras ke orang lain (misal lewat telepon/WA voice note), beda sama username yang gampang disebut. Jadi desain final di bawah ini: **URL yang keliatan/dibagi tetap pakai username** (gampang dibaca/diucapin), tapi ADA flag terpisah yang nentuin boleh diakses publik apa belum — biar konsen "opt-in"-nya tetap jalan tanpa Extras harus nyebut token acak.
+> **PRIORITAS TINGGI, sebelum X/Y.** **WAJIB pakai subagent per `CLAUDE.md` §"Cara Kerja Coding"** (auth/access-control + >3 file: `routes/web.php`, `PublicExtrasProfileController.php`, `profile-show.blade.php`, `public/extras-profile.blade.php`). **SANGAT DISARANKAN dipecah beberapa komit** (fix opt-in gate dulu, baru media publik, baru video+layout+galeri).
+
+### Konteks
+
+Fakrul minta video ditambahin ke tampilan share publik, plus tampilan share publik ini dirasa masih kurang pas di desktop (numpuk sempit, "fullscreen aja") dan galeri foto tambahannya kurang rapi. Pas manager-session cek buat nulis speknya, ketemu **dua bug nyata** yang belum kelihatan karena Fakrul testing sambil login (foto tampil normal di screenshot karena itu sesi Fakrul sendiri sebagai pemilik profil):
+
+**Bug 1 — share link kepake TANPA Extras pernah opt-in.** Route sekarang: `Route::get('/p/extras/{username}', [PublicExtrasProfileController::class, 'show'])`, controller lookup `User::where('username', $username)` doang — TANPA cek apapun soal apakah Extras itu pernah klik "Share"/generate link. Efeknya: **SEMUA profil Extras bisa diakses publik lewat `/p/extras/{username}`, walau dia belum pernah setuju di-share.** Kolom `share_token` + `ExtrasProfile::generateShareToken()` udah ada tapi gak dipakai buat gating apapun di route ini (cuma nyimpen nilai, gak dicek). Fitur "opt-in" yang diminta Fakrul dari awal jadi gak beneran opt-in.
+
+**Fix-nya (setelah revisi):** TETAP pakai username di URL (gampang diucap/diketik Extras, sesuai concern Fakrul), tapi controller WAJIB cek `share_token` udah pernah di-generate (gak null) sebelum nampilin apapun — kalau belum pernah klik "Share", 404 walau username-nya bener. Jadi username tetap jadi "alamat", `share_token` (gak keliatan di URL utama) jadi "kunci apakah alamat itu lagi dibuka buat umum". Ini standar yang sama kayak profil publik Instagram/LinkedIn — URL gampang dibaca, tapi tetap ada toggle "boleh dilihat publik apa nggak".
+
+**Bug 2 — foto/video di halaman share publik 403/gak muncul buat visitor yang beneran logout.** Route media (`/media/foto/{extrasProfile}`, `/media/video/{extrasProfile}`, `/media/foto-tambahan/{extrasProfile}/{slot}`) itu di-wrap `Route::middleware('auth')` (`routes/web.php` baris ~289) — visitor yang GENUINE logout bakal keredirect ke `/login` pas browser coba load `<img src="...">`/`<video src="...">`, hasilnya broken image. Fix-nya beda dari halaman utama: route media INI tetap pakai `share_token` (bukan username) sebagai parameter-nya — karena URL media ini cuma dipakai sebagai `src` attribute di HTML (gak pernah diketik/diucapin manual sama siapapun), jadi gak masalah dia acak/gak gampang dieja, dan justru itu nge-block orang scraping foto/video langsung dari URL media tanpa lewat halaman profil resminya.
+
+### Implementasi
+
+1. **Route halaman utama TETAP pakai username** — `routes/web.php`, TIDAK berubah dari sekarang: `Route::get('/p/extras/{username}', [PublicExtrasProfileController::class, 'show'])->name('public.extras.profile');`
+2. **Controller** `PublicExtrasProfileController::show(string $username)`: tambah 1 baris cek — `$profile = $user->extrasProfile; abort_if(!$profile || !$profile->share_token, 404);` SEBELUM render view. Ini satu-satunya perubahan di controller ini buat nutup Bug 1 — kalau `share_token` masih null (Extras belum pernah klik "Share"), langsung 404.
+3. **Di controller halaman "Profil Saya" internal** (`ExtrasProfileController` atau sejenisnya yang render `profile-show.blade.php`): panggil `$profile->generateShareToken()` (method udah ada, cek dulu kalau udah ada gak generate ulang) SEBELUM view di-render — ini yang "menyalakan" opt-in-nya pertama kali halaman ini pernah dibuka Extras. Kalau Fakrul mau opt-in-nya BENERAN cuma nyala pas Extras SENGAJA klik tombol "Share" (bukan otomatis pas buka halaman profil) — kasih tau, ini gampang disesuaikan tinggal pindah pemanggilannya ke handler klik tombol Share aja (butuh 1 endpoint kecil, POST doang, balikin token). Default implementasi ini pilih yang paling `/ponytail` (auto-generate pas halaman dibuka, gak nambah endpoint baru) — kalau kurang cocok bilang aja.
+4. **Method `ProfileController::generateShareLink()` yang sekarang orphan** (gak dipanggil dari mana-mana): boleh dihapus (`/ponytail`, dead code) — TIDAK dipakai di desain final ini.
+5. **Buat route media KHUSUS publik**, TETAP pakai `{token}` (bukan username, sesuai alasan di Konteks), unguarded oleh `auth` middleware:
+   ```php
+   Route::get('/p/extras/media/{token}/foto', [PublicExtrasProfileController::class, 'foto'])->name('public.extras.foto');
+   Route::get('/p/extras/media/{token}/video', [PublicExtrasProfileController::class, 'video'])->name('public.extras.video');
+   Route::get('/p/extras/media/{token}/foto-tambahan/{slot}', [PublicExtrasProfileController::class, 'fotoTambahan'])->whereNumber('slot')->name('public.extras.foto-tambahan');
+   ```
+   Masing-masing method resolve `ExtrasProfile::where('share_token', $token)->firstOrFail()` dulu (404 kalau token invalid ATAU null), baru `Storage::disk('local')->response(...)` — **JANGAN** reuse `ProfileController::fotoStream()` dkk yang lama (butuh `$request->user()`, error kalau dipanggil tanpa auth) — method independen di controller publik ini.
+6. **Tambah section Video di `public/extras-profile.blade.php`** (belum ada sama sekali sekarang) — copy pola section Foto Tambahan yang udah ada, buat video, pakai route baru `public.extras.video` dari langkah 5 (parameter-nya `$profile->share_token`, sudah pasti ada karena kalau kosong halaman ini gak akan ke-render, sudah ke-block di langkah 2). Kalau `video_profil_path` null, placeholder kosong (pola sama kayak `profile-show.blade.php` internal — icon `ti-video-off` + teks "Belum ada video").
+7. Foto profil & foto tambahan yang udah ada di file ini ikut diganti src-nya ke route publik baru (`public.extras.foto`, `public.extras.foto-tambahan`, parameter `$profile->share_token`) — BUKAN `extras.media.foto` yang lama (itu tetep dipertahankan buat dashboard internal, jangan diubah/dihapus).
+8. **Layout desktop, `public/extras-profile.blade.php`**: sekarang `.wrap { max-width: 560px; margin: 0 auto; ... }` — sama persis masalahnya kayak Bagian X di halaman internal. Terapin pola YANG SAMA: pisah jadi 2 kolom di atas breakpoint 900px (media kiri: foto profil + video + galeri foto tambahan, sticky; info kanan: data diri, pengalaman, tautan, tarif), single-column di bawah 900px (behaviour sekarang, jangan diubah). Reuse CSS grid pattern dari Bagian X (`.profile-layout`/`.profile-media-col`/`.profile-info-col`), boleh reuse literal class name yang sama supaya konsisten kalau nanti mau di-share ke 1 file CSS umum, TAPI ini file terpisah (public, layout minimal `layouts/auth.blade.php`-style, bukan `layouts/app.blade.php`) jadi definisikan ulang class-nya di `<style>` block file ini sendiri.
+9. **Rapiin galeri foto tambahan** (`.thumb-grid`) — sekarang `grid-template-columns: repeat(auto-fill, minmax(72px, 1fr))`, itu bikin thumbnail kegencet kecil-kecil kalau lebar kolom media gede di desktop (bisa jadi kebanyakan kolom rapat). Ganti jadi `grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px;` (thumbnail lebih besar, jarak lebih lega) — dan taruh galeri ini SETELAH video di `.profile-media-col`, biar urutan media-nya: foto profil → video → galeri foto tambahan, konsisten sama urutan di halaman internal.
+
+### Verifikasi
+
+- **Paling penting**: test dalam kondisi **BENERAN LOGOUT** (browser lain/incognito) — buka link `/p/extras/{username}` punya Extras yang UDAH PERNAH buka halaman "Profil Saya" (jadi `share_token`-nya udah ke-generate) → foto profil, video, DAN galeri foto tambahan semua tampil, gak ada broken image/redirect ke login.
+- Test: Extras yang BELUM PERNAH buka halaman "Profil Saya" sama sekali (`share_token` masih null, kalau ada data seperti ini) → buka `/p/extras/{username-dia}` → HARUS 404.
+- Test: `nik`, `rekening`, `nama_asli`, `rate_card`, `tautan_tambahan` tetap TIDAK ADA di response (regresi check dari Bagian S, jangan sampai ke-reset pas refactor ini).
+- Manual: buka halaman share publik di desktop lebar (>1200px) → 2 kolom, media kiri (foto+video+galeri) info kanan, TIDAK numpuk sempit di tengah lagi. Resize ke mobile → balik single-column kayak sekarang, urutan foto→video→galeri→data tetap bener.
+- Manual: galeri foto tambahan (4 slot) di desktop lebar → thumbnail keliatan proporsional, gak kegencet kecil-kecil, spacing enak dilihat.
+
+---
+
+## Bagian X: Layout "Profil Saya" (internal) — responsif desktop, bukan cuma mobile
+
+> Ditulis 18 September 2026, oleh manager-session.
+
+### Konteks
+
+`extras/profile-show.blade.php` sekarang `.card` di-cap `max-width: 560px; margin: 0 auto` — di layar desktop lebar (lihat screenshot Fakrul), ini bikin konten numpuk sempit di tengah dengan banyak ruang kosong di kiri-kanan yang kebuang. Ini emang sengaja dibuat sempit awalnya buat mobile (single column, gampang dibaca), tapi Fakrul minta versi desktop yang lebih "make sense" pakai lebar yang ada, TANPA bikin versi mobile jadi jelek.
+
+### Implementasi
+
+1. Bikin 2 wrapper baru buat pisahin section media (foto profil, video, foto tambahan) dari section teks/data (data diri, pengalaman, tautan, tarif) — bungkus jadi `<div class="profile-media-col">...</div>` dan `<div class="profile-info-col">...</div>`, isi section-section yang udah ada dipindah ke masing-masing wrapper TANPA ubah isi/urutan internalnya.
+2. CSS baru:
+   ```css
+   .profile-layout { max-width: 560px; margin: 0 auto; }
+   @media (min-width: 900px) {
+       .profile-layout { max-width: 900px; display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start; }
+       .profile-media-col { position: sticky; top: 24px; }
+   }
+   ```
+   Ganti `.card` yang sekarang jadi pembungkus `.profile-layout` (title+tombol Share/Edit di atas, di luar grid, full-width), lalu di dalamnya `.profile-media-col` + `.profile-info-col` sebagai 2 grid item.
+3. **Di bawah breakpoint 900px** (termasuk semua ukuran mobile) — behaviour TETAP SAMA seperti sekarang, single column, media di atas baru data di bawah, urutan gak berubah. Breakpoint 900px dipilih karena di bawah itu 2 kolom bakal kegencet/kesempitan buat konten media (foto 180px + text), sesuaikan angka ini kalau pas dicoba masih kerasa aneh di lebar tablet (~700-900px), itu wewenang implementer buat fine-tune.
+4. Foto profil & video biarin ukurannya proporsional ke `.profile-media-col` yang lebih lebar (~320px) di desktop, bukan tetep 180px hardcode kayak sekarang — foto profil boleh full-width dari kolom itu (jaga aspect-ratio 3/4 yang udah ada).
+
+### Verifikasi
+
+- Manual: buka halaman "Profil Saya" (bukan yang public share, yang internal ini) di lebar desktop (>1200px) → konten make sense pakai lebar yang ada, GAK numpuk sempit di tengah dengan whitespace gede kiri-kanan, tapi juga GAK stretch berantakan/kosong aneh.
+- Manual: resize ke lebar tablet (~800px) dan mobile (~375px) → balik ke single-column, tetep enak dibaca kayak sekarang, gak ada elemen kepotong/overflow.
+- Cek breakpoint transition-nya (resize browser window pelan-pelan lewatin 900px) — gak ada layout yang "patah"/jump aneh pas nyebrang breakpoint.
+
+---
+
+## Bagian Y: Samain style tombol copy-link ke input URL-nya
+
+> Ditulis 18 September 2026, oleh manager-session.
+
+### Konteks
+
+Di modal "Bagikan Profil Kamu" (`profile-show.blade.php`, `#modal-share`), input URL (`#share-url-modal`) pakai `background: var(--bg-card-hover)`, sementara tombol copy (`#btn-copy-link`) di sebelahnya pakai `background: var(--bg-card)` — beda satu shade, keliatan kayak 2 elemen lepas yang gak senada padahal fungsinya nempel jadi 1 unit (url + tombol salin-nya).
+
+### Implementasi
+
+Di `profile-show.blade.php`, ganti `background: var(--bg-card)` jadi `background: var(--bg-card-hover)` di style inline `#btn-copy-link` (baris yang sekarang `style="flex-shrink:0; align-self:stretch; padding:0 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-card); ...`) — samain persis kayak background input di sebelahnya. Border-nya udah sama (`var(--border-color)`), jadi cukup 1 property ini doang yang diganti, biar keduanya keliatan 1 kesatuan grup.
+
+### Verifikasi
+
+- Manual: buka modal Share di halaman Profil Saya → input URL dan tombol copy-nya keliatan senada (warna dasar sama), bukan 2 shade beda kayak sekarang. Cek di dark mode DAN light mode.
+
+---
+
+## Bagian Z: Rename label "Foto Tambahan" → "Gallery"
+
+> Ditulis 18 September 2026, oleh manager-session. Pola yang sama kayak rename "Callsheet"/"Lineup"/"Greenlight"/"Reel" sebelumnya (Session-session lama) — label tampilan doang, TIDAK ada perubahan nama kolom DB/route/variabel.
+
+### Konteks
+
+Fakrul minta section "Foto Tambahan" diganti jadi "Gallery" (konsisten sama gaya label lain yang udah dipake — Callsheet, Lineup, Greenlight, Reel — semuanya istilah Inggris walau UI-nya Indonesia).
+
+### Implementasi
+
+Ganti TEKS TAMPILAN doang (bukan nama variabel/kolom/route, itu semua tetap `foto_tambahan`/`fotoTambahan`/dst seperti sekarang) di:
+
+1. `resources/views/extras/profile-show.blade.php` baris 62: `<div class="profile-section-title">Foto Tambahan</div>` → `Gallery`
+2. `resources/views/public/extras-profile.blade.php` baris 111: `<div class="card-title">Foto Tambahan</div>` → `Gallery`
+3. `resources/views/extras/profile-edit.blade.php` baris 100: `<div class="profile-section-title">Foto Tambahan</div>` → `Gallery` (baris 98, komentar `{{-- ===== Foto Tambahan ===== --}}`, boleh ikut diganti `Gallery` juga, tapi opsional karena cuma komentar)
+4. `resources/views/partials/foto-lightbox.blade.php` baris 2: teks empty-state `Belum ada foto tambahan.` → `Gallery masih kosong.`
+5. `resources/views/cd/reviews/show.blade.php` baris 260: `p.textContent = 'Belum ada foto tambahan.';` → `'Gallery masih kosong.'`
+
+Grep ulang `Foto Tambahan` (case-sensitive, exact) di `resources/views/` setelah selesai — harus 0 hasil kalau semua kepake udah keganti (di luar komentar kalau poin 3 gak diikutin).
+
+### Verifikasi
+
+- Manual: cek ke-4 tempat di atas (halaman edit profil Extras, lihat profil Extras internal, halaman share publik, modal kandidat di CD) — semua nampilin "Gallery", bukan "Foto Tambahan" lagi.
+- Cek empty-state (Extras yang belum upload foto tambahan sama sekali) → teksnya "Gallery masih kosong.", bukan "Belum ada foto tambahan." lagi.
+
+---
+
+## Bagian AA: Gallery — thumbnail lebih gede & lebih lebar, full-width di desktop
+
+> Ditulis 18 September 2026, oleh manager-session. **Koreksi sekaligus revisi** — tolong baca catatan koreksi di Konteks sebelum eksekusi, ada instruksi di Bagian W poin 9 yang manager-session sendiri salah target selector-nya, supaya gak dobel-kerja atau bingung mana yang bener.
+
+### Konteks
+
+Fakrul minta thumbnail Gallery dibuat lebih besar & lebih lebar ke samping — masih kurang enak dilihat.
+
+**Koreksi dulu:** di Bagian W poin 9 kemarin, manager-session nyaranin ganti `.thumb-grid` di `public/extras-profile.blade.php`. Itu SALAH TARGET — `.thumb-grid` di file itu emang ke-define di `<style>` block-nya, tapi **gak pernah kepake** (section Gallery di file itu render lewat `@include('partials.foto-lightbox', ...)`, yang grid-nya pakai class `.lightbox-thumbs` DARI PARTIAL itu, bukan `.thumb-grid`). Jadi kalau Bagian W poin 9 udah dieksekusi persis kayak ditulis, itu gak ngefek apa-apa ke tampilan (ganti CSS yang gak dipakai) — **abaikan Bagian W poin 9, ganti sesuai instruksi di bawah ini aja.**
+
+Karena `.lightbox-thumbs` itu di SATU partial yang dipakai di SEMUA tempat (form edit, lihat profil internal, share publik, modal kandidat CD, halaman applicants Admin), fix di 1 file ini otomatis berlaku ke semua surface itu.
+
+### Implementasi
+
+1. **`resources/views/partials/foto-lightbox.blade.php`**, ganti `.lightbox-thumbs`:
+   ```css
+   .lightbox-thumbs { display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+   ```
+   (dari `minmax(72px, 1fr)` + `gap: 6px` yang sekarang) — thumbnail jadi jauh lebih besar, dan otomatis lebih dikit per baris di kolom yang sama makanya kerasa "lebih lega".
+2. **Biar beneran "lebih lebar ke samping" (bukan cuma gede tapi tetep kegencet di kolom sempit)** — di layout 2-kolom desktop yang udah dispesifikasiin Bagian W (public share) dan Bagian X (internal profile), section Gallery JANGAN ikut ditaruh di dalam `.profile-media-col` (kolom sempit ~320px) — pindahin section Gallery jadi FULL-WIDTH di BAWAH area 2-kolom itu (span kedua kolom), pakai `grid-column: 1 / -1` di container section Gallery-nya. Urutan render halaman jadi: [baris 2-kolom: media kiri (foto profil+video) | info kanan (data diri dst)], BARU di bawahnya section Gallery yang lebar penuh.
+3. Ini berarti REVISI KECIL ke Bagian W poin 8 dan Bagian X poin 1 (yang kemarin nyebut galeri ikut masuk `.profile-media-col`) — Gallery-nya DIKELUARIN dari kolom media, jadi section terpisah full-width di bawah. Kalau Bagian W/X udah dieksekusi duluan dengan galeri di dalam kolom media, tinggal pindahin section-nya keluar grid 2-kolom, gak perlu bongkar ulang yang lain.
+4. Di mobile/single-column (di bawah breakpoint 900px) — urutan tetap sama kayak sekarang (foto profil → video → Gallery → data), gak ada perubahan.
+
+### Verifikasi
+
+- Manual: buka halaman manapun yang render Gallery (edit profil, lihat profil internal, share publik, modal kandidat CD, applicants Admin) di desktop lebar → thumbnail keliatan jauh lebih besar & lega, gallery-nya lebar penuh (span semua lebar konten, gak kegencet di kolom sempit).
+- Manual: mobile → tetap 2-3 thumbnail per baris (grid auto-fill otomatis nyesuaiin), gak overflow, urutan section gak berubah dari sekarang.
+- Cross-check: pastikan `.thumb-grid` yang gak kepake di `public/extras-profile.blade.php` gak ketinggalan (boleh dihapus aja sekalian dari `<style>` block-nya, `/ponytail` — dead CSS).
+
+---
+
+## Bagian AB: "Fullscreen" beneran = fit 1 viewport tanpa scroll di desktop (REVISI Gallery jadi filmstrip)
+
+> Ditulis 18 September 2026, oleh manager-session. **Baca dulu sebelum eksekusi Bagian AA** — Bagian ini REVISI cara Gallery ditampilkan (poin 2 di bawah gantiin desain "grid lebar" di Bagian AA poin 2), karena ternyata maksud "fullscreen" Fakrul itu soal TINGGI (gak sampai scroll ke bawah), bukan cuma lebar.
+
+### Konteks
+
+Fakrul klarifikasi: "fullscreen" itu maksudnya di desktop kontennya harus fit 1 layar penuh, gak sampai perlu scroll ke bawah.
+
+**Pushback jujur dulu, sebelum masuk desain:** "gak sampai scroll SAMA SEKALI" itu klaim yang gampang meleset kalau kontennya panjang — misal Extras yang isi "Pengalaman Main/Kerja" panjang banget (beberapa paragraf), atau Gallery-nya keisi penuh 4 slot + banyak variasi tinggi layar (laptop 13" ~768px vs monitor besar ~1080px+). Kalau dipaksa "no scroll" mutlak apapun kontennya, ujungnya konten yang kepotong/ke-hide, itu lebih buruk daripada scroll dikit. Jadi target yang REALISTIS & tetap keliatan "fullscreen": **halaman-nya sendiri gak nge-scroll (gak ada scrollbar browser di level page)**, tapi kalau ada 1 bagian yang isinya kebetulan kepanjangan (biasanya kolom info teks), bagian ITU AJA yang scroll internal di dalam kotaknya — bukan seluruh halaman. Ini pola umum buat "app-like fullscreen layout" (mirip dashboard), bukan artikel yang di-scroll dari atas ke bawah.
+
+### Implementasi
+
+Berlaku buat KEDUA halaman yang udah dikasih layout 2-kolom di Bagian W (share publik) & Bagian X (profil internal) — TERAPIN CUMA DI BREAKPOINT DESKTOP (≥900px), mobile TETAP scroll normal kayak sekarang (di HP, scroll itu wajar & diharapkan, jangan dipaksain juga di situ):
+
+1. **Container utama jadi tinggi 1 viewport, gak lebih:**
+   ```css
+   @media (min-width: 900px) {
+       .profile-layout { height: calc(100vh - <tinggi topbar/header yang ada>); overflow: hidden; }
+       .profile-info-col { height: 100%; overflow-y: auto; }
+       .profile-media-col { height: 100%; overflow: hidden; }
+   }
+   ```
+   (`<tinggi topbar/header yang ada>` sesuaikan sama tinggi real elemen header di masing-masing file — di `profile-show.blade.php` itu topbar dari `layouts/app.blade.php`, di `public/extras-profile.blade.php` itu `.top-row` yang udah ada.)
+2. **REVISI Gallery (gantiin Bagian AA poin 2-3):** Gallery JANGAN jadi grid yang wrap ke bawah (itu bikin tinggi halaman gak menentu, gampang bikin overflow) — ganti jadi **filmstrip horizontal 1 baris**: thumbnail besar (tetap pakai ukuran dari Bagian AA, ~140px), tapi `.lightbox-thumbs` diganti lagi:
+   ```css
+   .lightbox-thumbs { display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; }
+   .lightbox-thumbs img { flex: 0 0 140px; width:140px; aspect-ratio:1/1; object-fit:cover; border-radius:8px; cursor:pointer; }
+   ```
+   Ini gantiin CSS yang ditulis di Bagian AA poin 1 (jangan pakai grid lagi, pakai flex+scroll-x ini). Efeknya: Gallery tetap keliatan gede & lebar (sesuai request sebelumnya), TAPI tingginya selalu tetap (1 baris) gak peduli ada 1 atau 4 foto — foto ekstra scroll ke SAMPING (di dalam strip-nya sendiri), BUKAN bikin halaman jadi lebih tinggi ke bawah.
+3. Gallery ini taruh sebagai bagian PALING BAWAH di `.profile-info-col` (kolom info yang boleh scroll internal) — BUKAN full-width lintas 2 kolom lagi seperti Bagian AA poin 2 (itu direvisi, dibatalkan) — karena kalau Gallery taruh di luar kedua kolom sebagai baris ke-3, dia nambah tinggi total halaman lagi, balik lagi ke masalah scroll. Ditaruh di ujung kolom info yang emang udah dikasih `overflow-y:auto`, jadi kalaupun kolom itu penuh, yang scroll cuma kolom itu sendiri (dalam kotaknya), bukan seluruh halaman/browser.
+4. Kolom media (foto profil + video, TANPA gallery lagi karena udah dipindah ke poin 3) otomatis lebih santai tingginya, harusnya cukup dalam 1 viewport tanpa masalah.
+
+### Verifikasi
+
+- Manual: buka di beberapa tinggi layar berbeda (resize browser height, termasuk yang pendek ~700px) → TIDAK ada scrollbar di level halaman/browser di desktop. Kalau kolom info-nya kebetulan panjang (extras dengan bio panjang + gallery penuh), yang muncul scrollbar cuma DI DALAM kolom info itu (ada border/batas jelas kolom itu beda dari scroll halaman).
+- Manual: coba Extras dengan Gallery 4 foto penuh → filmstrip bisa di-scroll ke samping (drag/scroll horizontal), foto ke-4 gak "ketutup"/gak keakses.
+- Manual: mobile (di bawah 900px) → TETAP scroll normal seperti sebelumnya, semua perubahan di atas cuma nyala di breakpoint desktop.
+- Ini exception dari filosofi umum "jangan overengineer" — internal-scroll-di-dalam-box itu emang lebih kompleks dari scroll halaman biasa, tapi itu trade-off yang perlu buat beneran capai "gak sampai scroll" yang diminta tanpa motong data.
+
+---
+
+## Bagian AC: Tema theatrical/cinema di landing page — grain, film-strip, "reel" carousel, spotlight
+
+> Ditulis 19 September 2026, oleh manager-session. **WAJIB pakai subagent per `CLAUDE.md` §"Cara Kerja Coding"** (bukan karena banyak file — semua kontennya di `welcome.blade.php` doang — tapi karena kompleksitas: CSS/JS animasi baru yang harus bener secara aksesibilitas & fallback browser, bukan sekadar tempel gambar). **SANGAT DISARANKAN dipecah beberapa komit** (grain+film-strip dulu, baru reel carousel, baru spotlight — masing-masing bisa didemoin terpisah).
+
+### Konteks — riset yang dipakai (bukan asal tebak)
+
+Fakrul minta nuansa theatrical/movie/casting yang lebih kental, terutama di dark theme tapi tetap "nyambung" di light theme, plus animasi yang lebih dari sekadar gambar background — dia sebut contoh "roll film". Manager-session riset dulu sebelum nulis spec ini (bukan modal feeling):
+
+**Riset desain** — baca artikel roundup Qode Interactive ["24 Stunning Examples of Movie Industry Websites"](https://qodeinteractive.com/magazine/24-stunning-examples-of-movie-industry-websites/), nyari pola yang BENERAN dipakai situs produksi film/studio asli (Skyline Films, A24, 20/20 Films, Ali Ali, Brother Film, Faliro House, dll). Pola yang konsisten muncul & relevan buat JBTB (bukan semua — beberapa kita skip, lihat catatan di bawah): **tekstur grain/noise hitam-putih di background** (20/26 Films, Ali Ali, Brother Film — "grainy texture, subtle nod to film industry"), **foto/poster yang default hitam-putih lalu jadi warna pas di-hover** (American Documentary, Faliro House), **tipografi cinematic uppercase buat menu/label** (The Greatest Showman — "menu links displayed in purely cinematic style as if they were movie titles"), **restraint/gak berlebihan animasinya** (A24 — "animation and transition effects aren't too wild... matching the simplicity of displayed content", ini yang paling penting diikuti karena sesuai arah branding JBTB selama ini: korporat-profesional, BUKAN experimental/gimmicky kayak situs single-movie-hype).
+
+**Yang SENGAJA di-skip** dari roundup itu (biar gak overboard, gak sesuai konteks JBTB yang situs company profile + portal casting, bukan situs hype 1 film): custom cursor berbentuk lingkaran/kotak, infinite-canvas portfolio, choose-your-own-adventure interaktif, background music otomatis, horizontal-scroll-menggantikan-navigasi-utama. Itu semua keren buat situs film/director portfolio, tapi kebanyakan buat B2B casting agency yang mau keliatan bisa dipercaya klien produksi.
+
+**Riset teknis** — sebelum nulis kode animasi, manager-session cek `modern-web-guidance` (skill wajib buat kerjaan CSS/JS klien-side) biar gak kasih instruksi API/animasi yang udah usang. Hasil yang dipakai: `scroll-driven animations` (`animation-timeline: view()`) buat efek scroll pada carousel, `interactive-content-reveal` (CSS `mask-image` + `@property` custom property) buat efek spotlight ikut kursor, dan aturan wajib `prefers-reduced-motion` + `@supports` feature-detection buat semuanya (Firefox belum support scroll-driven animations per data guide ini, jadi WAJIB ada fallback, bukan opsional).
+
+Implementasi di bawah SEMUA reuse variable warna tema yang udah ada (`--bg-page`, `--bg-card`, `--accent`, `--border-color`, `--text-primary`, dst dari `partials/theme-style.blade.php`) — TIDAK ada warna hardcode baru, biar otomatis kerja di dark & light theme sesuai constraint Fakrul ("related juga di light theme").
+
+### AC.0: Disiplin warna — ijo brand TETAP dipertahankan, jangan ke-geser jadi abu-abu semua
+
+**Warna hijau brand (`--accent`/`--accent-strong`) TIDAK BOLEH hilang/tergeser** oleh tema theatrical ini — semua elemen ijo yang UDAH ADA sekarang (navbar, tombol CTA, badge "DIBUKA", dst) TIDAK disentuh sama sekali di Bagian AC ini, dan elemen BARU yang cocok dikasih warna (AC.5 eyebrow label) SENGAJA pakai `var(--accent-strong)` biar ijo-nya keliatan di tempat baru juga, bukan cuma dibiarin di tempat lama doang.
+
+Yang SENGAJA dibuat netral/hitam-putih di Bagian ini cuma yang sifatnya TEKSTUR murni (grain di AC.1, film-strip divider di AC.2, spotlight glow di AC.6) — ini BUKAN kelupaan warnain, ini disiplin yang SAMA kayak keputusan "monochrome + selective accent" pas kita adopsi referensi agiveteam.co dulu (liat riwayat SPEC sebelumnya): base netral, warna cuma nongol di titik yang emang mau ditonjolkan (tombol, label, CTA), biar hijau-nya kerasa "istimewa" bukan dipake di semua tempat sampai encer. Spotlight di AC.6 khususnya sengaja putih/netral (`rgba(255,255,255,0.12)`) niru cahaya panggung/studio asli (lampu sorot panggung itu putih/warm, bukan hijau — kalau dihijauin malah kesannya horor bukan glamor). Kalau Fakrul tetap mau spotlight-nya bertema hijau juga, gampang, tinggal ganti value rgba itu ke `var(--accent)` dengan alpha rendah — bilang aja, ini 1 baris doang.
+
+### AC.1: Grain/noise texture overlay (global, seluruh landing page)
+
+Tekstur grain halus yang nge-nod ke "film" tanpa norak — dari referensi Ali Ali/Brother Film/20/20 Films.
+
+```css
+.film-grain {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    opacity: var(--grain-opacity, 0.05);
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+:root[data-theme="dark"] { --grain-opacity: 0.05; }
+:root[data-theme="light"] { --grain-opacity: 0.02; }
+```
+
+Taruh `<div class="film-grain"></div>` sekali di awal `<body>` (bukan di dalam section manapun, biar nutup seluruh viewport & ikut scroll pakai `position:fixed`). Opacity beda jauh antara dark (kerasa) & light (samar tapi tetap "ada", biar related sesuai request Fakrul, gak dominan ganggu keterbacaan teks korporat di light mode).
+
+### AC.2: Sprocket-hole film-strip divider
+
+Divider horizontal literal "pita film" — CSS murni, gak ada gambar/asset baru.
+
+```css
+.film-strip-divider {
+    height: 18px;
+    background:
+        repeating-linear-gradient(90deg, var(--bg-sidebar) 0 14px, transparent 14px 28px),
+        var(--border-color);
+    background-position: center;
+    background-size: 28px 10px, 100% 2px;
+    background-repeat: repeat-x, no-repeat;
+    opacity: 0.6;
+}
+```
+(Ini bikin garis tipis dengan "lubang-lubang" berulang mirip sprocket hole di tepi pita film — sesuaikan angka `14px`/`28px` pas dicoba visual, itu wewenang implementer buat fine-tune biar proporsional.)
+
+Taruh SATU div ini di antara `.hero` dan `.about-section`, dan SATU lagi di antara `.lowongan-section` dan `.produksi-section` — jangan taruh di semua celah section (kebanyakan jadi norak), cukup 2 titik strategis itu.
+
+### AC.3: "Reel" — `.produksi-grid` jadi horizontal scroll-driven film reel (INI YANG PALING SESUAI REQUEST "ANIMASI ROLL FILM")
+
+Section "Produksi yang Pernah Kami Tangani" (`.produksi-grid`/`.produksi-card`/`.produksi-poster`, udah ada, isinya poster produksi asli) diubah dari grid statis jadi **strip horizontal yang bisa di-scroll, dengan poster yang MEMBESAR pas di tengah viewport dan MENGECIL di tepi** — persis efek film yang lewat di depan lensa proyektor, dan sekaligus fungsional (bukan cuma dekorasi, based on real ex-project data yang emang mau ditonjolkan).
+
+1. Ganti CSS `.produksi-grid`:
+   ```css
+   .produksi-grid {
+       display: flex; gap: 20px; overflow-x: auto; scroll-snap-type: x proximity;
+       padding: 24px 8px 32px; margin-top: 20px;
+   }
+   .produksi-card { flex: 0 0 160px; scroll-snap-align: center; }
+   ```
+2. Animasi scroll-driven (progressive enhancement — HANYA nyala di browser yang support, TIDAK memblokir apapun di browser yang gak support):
+   ```css
+   @media (prefers-reduced-motion: no-preference) {
+       @supports ((animation-timeline: view()) and (animation-range: entry)) {
+           @keyframes reel-scale {
+               0% { scale: 0.82; opacity: 0.6; }
+               50% { scale: 1; opacity: 1; }
+               100% { scale: 0.82; opacity: 0.6; }
+           }
+           .produksi-card {
+               animation: reel-scale auto linear both;
+               animation-timeline: view(inline);
+           }
+       }
+   }
+   ```
+3. **Fallback WAJIB** buat browser yang belum support (Firefox, per data `modern-web-guidance`) — JANGAN pakai package `scroll-timeline-polyfill` (dilarang di guide, banyak bug), pakai `IntersectionObserver` manual:
+   ```js
+   if (!CSS.supports('(animation-timeline: view()) and (animation-range: entry)')
+       && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+       const io = new IntersectionObserver((entries) => {
+           entries.forEach((entry) => {
+               const scale = 0.82 + entry.intersectionRatio * 0.18;
+               entry.target.style.scale = scale;
+               entry.target.style.opacity = 0.6 + entry.intersectionRatio * 0.4;
+           });
+       }, { threshold: Array.from({ length: 21 }, (_, i) => i / 20), root: document.querySelector('.produksi-grid') });
+       document.querySelectorAll('.produksi-card').forEach((el) => io.observe(el));
+   }
+   ```
+4. Kalau `prefers-reduced-motion: reduce` AKTIF: JANGAN jalanin animasi maupun fallback JS-nya sama sekali — biarin `.produksi-grid` tetap scrollable horizontal biasa tanpa efek scale (poster tetap kebaca semua ukurannya konsisten). Ini bukan opsional, ini wajib per aturan aksesibilitas.
+5. Tambah `.film-strip-divider` (AC.2) sebagai border atas-bawah tipis di container `.produksi-grid` biar makin berasa literally "pita film yang diputar".
+6. Kalau item poster cuma dikit (1-3), pertimbangin nonaktifin scroll-snap/animasi (gak ada gunanya kalau gak ada yang discroll) — cek dulu `count($proyekSelesai)` di Blade, kalau ≤3 biarin grid statis biasa aja (`display:flex; flex-wrap:wrap; justify-content:center`) tanpa animasi.
+
+### AC.4: Poster hitam-putih → warna pas di-hover
+
+Dari pola American Documentary/Faliro House — reuse target yang sama, `.produksi-poster`:
+
+```css
+.produksi-poster { filter: grayscale(100%); transition: filter 0.4s ease; }
+.produksi-card:hover .produksi-poster,
+.produksi-card:focus-within .produksi-poster { filter: grayscale(0%); }
+
+@media (prefers-reduced-motion: reduce) {
+    .produksi-poster { transition: none; }
+}
+```
+(`:focus-within` disertain biar keyboard user yang nge-tab ke card juga dapet efeknya, bukan cuma mouse hover — bagian dari aksesibilitas dasar.)
+
+### AC.5: Label "eyebrow" cinematic sebelum section title
+
+Sentuhan tipografi murah tapi kena — label kecil huruf kapital berspasi lebar sebelum tiap `.section-title`, gaya "menu ala judul film" (pola dari The Greatest Showman).
+
+```css
+.section-eyebrow {
+    display: block; font-size: 11px; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--accent-strong); margin-bottom: 6px;
+}
+```
+Tambahin `<span class="section-eyebrow">Sedang Tayang</span>` sebelum `.section-title` "Lowongan Casting Terbuka", dan `<span class="section-eyebrow">Arsip Produksi</span>` sebelum "Produksi yang Pernah Kami Tangani". Teks eyebrow-nya boleh disesuaikan implementer asal tetap pendek & kapital (2-3 kata), yang penting pola visualnya konsisten di semua section-title yang ada.
+
+### AC.6: Spotlight ikutin kursor di `.hero` (efek paling "wah", tapi murni dekoratif)
+
+Pakai pola `interactive-content-reveal` dari `modern-web-guidance` — spotlight yang ngikutin pointer, nyoroti tekstur grain di background hero biar berasa "panggung/studio".
+
+1. Register custom property (taruh di `<style>` awal file, sekali):
+   ```css
+   @property --spot-size { syntax: "<length-percentage>"; inherits: true; initial-value: 0%; }
+   ```
+2. Tambah 1 layer div dekoratif di dalam `.hero` (SEBELUM `.hero-content`, sibling-nya, bukan pembungkus):
+   ```html
+   <div class="hero-spotlight" aria-hidden="true"></div>
+   ```
+   ```css
+   .hero-spotlight {
+       position: absolute; inset: 0; pointer-events: none;
+       transition: --spot-size 0.3s ease-out;
+       mask-image: radial-gradient(circle at var(--spot-x, 50%) var(--spot-y, 50%), black var(--spot-size, 0%), transparent calc(var(--spot-size, 0%) + 15%));
+       background: radial-gradient(circle at var(--spot-x, 50%) var(--spot-y, 50%), rgba(255,255,255,0.12), transparent 60%);
+   }
+   .hero:hover .hero-spotlight { --spot-size: 35%; }
+   @media (prefers-reduced-motion: reduce) { .hero-spotlight { transition: none; } }
+   ```
+   (`.hero` butuh `position: relative` biar `.hero-spotlight` yang `position:absolute` ke-anchor bener — cek CSS `.hero` yang ada sekarang belum punya `position`, tambahin.)
+3. JS buat update posisi (`pointermove` di `.hero`, `ResizeObserver` buat rect-nya) — reuse PERSIS pola dari guide, cukup ganti nama variabel `--mouse-x/y` jadi `--spot-x/y` biar gak bentrok penamaan.
+4. **WAJIB (bukan opsional) per aturan aksesibilitas dari guide-nya sendiri**: konten asli di `.hero` (judul, tagline, tombol CTA) HARUS tetap kebaca & bisa diklik penuh TANPA butuh spotlight ini — spotlight cuma dekorasi tambahan buat pointer user, `pointer-events:none` di layer-nya WAJIB ada biar klik tembus ke elemen asli di baliknya. Keyboard-only/screen-reader user gak kehilangan apapun kalau spotlight-nya gak pernah nongol buat mereka.
+
+### Verifikasi
+
+- **Reduced motion**: aktifin "Reduce motion" di OS (Windows: Settings > Accessibility > Visual effects; atau emulasi lewat DevTools `Rendering > Emulate CSS media: prefers-reduced-motion`) → SEMUA animasi di atas (reel scale, hover transition, spotlight transition) harus MATI/instant, TAPI konten & fungsinya (scroll poster, baca hero, klik CTA) tetap 100% jalan.
+- **Cross-browser**: test reel carousel (AC.3) di Chrome/Edge (native scroll-driven animation harus jalan) DAN di Firefox (harus jalan pakai fallback `IntersectionObserver`, BUKAN diem aja tanpa efek) — buka DevTools Console, gak boleh ada error JS di kedua browser.
+- Manual: hover/tab-focus ke poster produksi → grayscale ke warna smooth, keyboard focus juga dapet efek yang sama (`:focus-within`).
+- Manual: hero spotlight ngikutin kursor dengan smooth, dan area di luar hover tetap keliatan teks/tombolnya normal (gak keitutup/gak keburamin).
+- Manual: cek di LIGHT theme — grain masih ada tapi jelas lebih halus dari dark, film-strip divider keliatan proporsional (warnanya ngikut `--border-color` yang beda tiap tema).
+- Manual: resize ke mobile — reel carousel tetep bisa discroll pakai jari (touch), grain & spotlight gak bikin lag/scroll patah-patah (test di HP beneran kalau ada, bukan cuma resize browser desktop).
+- Lighthouse/Performance check kalau sempat: pastiin `.film-grain` (SVG data-URI, ukuran kecil, di-`mix-blend-mode`) gak bikin jank pas scroll — kalau kerasa berat, kecilin size SVG-nya (`120x120` → `80x80` misalnya) atau turunin opacity lagi.
+
+---
+
+## Bagian AD: Absensi Korlap — foto lapangan + validasi, Admin Default drop akses
+
+> Ditulis 19 September 2026, oleh manager-session, hasil diskusi bimbingan 19 Sept (`docs/BIMBINGAN-2026-09-19.md`). **WAJIB pakai subagent** (nyentuh RBAC/middleware).
+
+### Konteks
+
+Korlap = `admin_korlap` (role yang UDAH ADA, bukan role baru — jangan bikin migration role baru). `AttendanceController`/`attendances` table juga udah ada (Bagian F lama), tapi sekarang absen dicatat manual oleh siapapun yang punya akses (`role:admin_default,admin_korlap` di route `/absensi`). Keputusan bimbingan: (1) absen HARUS pakai foto dari lokasi, bukan checkbox manual doang; (2) Extras yang ambil foto (selfie langsung dari kamera, opsional — Korlap boleh validasi langsung tanpa nunggu Extras foto, misal buat Extras yang gaptek); (3) `admin_default` DIHAPUS aksesnya dari fitur absen ini — cuma Korlap yang pegang.
+
+### Implementasi
+
+1. **Migration** tambah ke `attendances`: `foto_path` (string, nullable, private disk — Extras yang isi kalau dia sempet foto sendiri), `status_validasi` (enum `menunggu`, `tervalidasi`, default `tervalidasi` — biar existing flow manual-oleh-Korlap tanpa foto Extras tetep jalan tanpa keharusan approval tambahan), `divalidasi_oleh` (nullable, `foreignId` ke `users`), `divalidasi_at` (nullable timestamp).
+2. **Endpoint baru buat Extras** upload foto absen sendiri (bukan lewat `AttendanceController` yang punya Admin — bikin endpoint terpisah di controller Extras, misal `Extras\AttendanceSelfieController@store`): input file WAJIB pakai `<input type="file" accept="image/*" capture="environment">` (native HTML, maksa buka kamera langsung bukan galeri — TIDAK butuh library JS tambahan). Simpan sebagai `Attendance` baru dengan `status_validasi = 'menunggu'`, `foto_path` keisi, `dicatat_oleh` = Extras sendiri.
+3. **Halaman `/admin/absensi` (Korlap)**: tampilin foto yang Extras submit (`status_validasi = menunggu`) dengan tombol "Validasi" (set `tervalidasi`, `divalidasi_oleh`, `divalidasi_at`) — DAN tetap sediain jalur manual lama (Korlap langsung pilih hadir/tidak tanpa foto, buat Extras yang gak sempet/gak ngerti selfie), yang otomatis `status_validasi = tervalidasi` (self-validated by Korlap, gak perlu approval kedua).
+4. **Cabut akses `admin_default`**: `routes/web.php` baris ~196-208, pisah jadi dua middleware group — `/catatan` (field notes) TETAP `role:admin_default,admin_korlap` (RF-35, jangan diubah), `/absensi` + `/absen` ganti jadi `role:admin_korlap` DOANG.
+5. Cek sidebar `partials/sidebar-admin_default.blade.php` (atau file sejenis) — hapus link menu "Absensi" kalau ada, biar gak nunjuk ke halaman yang udah di-gate.
+
+### Verifikasi
+
+- Login `admin_default` → coba akses `/admin/absensi` langsung via URL → 403, dan link menu-nya juga udah gak ada.
+- Login Extras → submit foto absen (test pakai file upload biasa di environment testing, `capture` cuma ngefek di browser HP asli) → masuk status `menunggu`.
+- Login `admin_korlap` → liat entri `menunggu` itu, klik validasi → status berubah, `divalidasi_oleh` keisi.
+- Login `admin_korlap` → langsung tandain hadir manual tanpa foto Extras → langsung `tervalidasi`, gak nyangkut di `menunggu`.
+
+---
+
+## Bagian AE: Auto-ban (3x batal proyek terkunci) + fold `cancellations` ke `project_applications`
+
+> Ditulis 19 September 2026, oleh manager-session. **WAJIB pakai subagent** (logic otomatis yang berefek ke akses akun orang — harus di-test ketat).
+
+### Konteks
+
+Keputusan bimbingan: Extras yang batalin proyek yang udah "di-lock" (didefinisikan di sini sebagai status masuk `ProjectApplication::STATUS_LOLOS_KE_ATAS` — `lolos`, `kontrak_ditandatangani`, `selesai_produksi`, sesuai konstanta yang UDAH ADA di model, biar konsisten) sebanyak 3 KALI → auto-ban. Admin/Korlap juga bisa ban manual kapan aja dengan alasan (pola yang sama kayak `alasan_tolak` yang udah ada). Sekalian, manager-session liat tabel `cancellations` (`dibatalkan_oleh`, `alasan`, `is_mendadak`) itu kejadian SEKALI per aplikasi (bukan berulang) — cocok dilebur jadi kolom di `project_applications` langsung, sesuai concern Fakrul soal kebanyakan tabel, DAN mempermudah query hitung "3x batal" (gak perlu join lagi).
+
+### Implementasi
+
+1. **Migration**: tambah ke `project_applications`: `dibatalkan_oleh` (enum `admin`,`extras`, nullable), `alasan_batal` (text, nullable), `is_batal_mendadak` (boolean, nullable), `dibatalkan_at` (timestamp, nullable). Pindahkan data dari `cancellations` ke kolom baru ini via migration data-backfill SEBELUM drop tabel lama. Model `Cancellation` & tabel `cancellations` dihapus SETELAH backfill sukses & semua kode yang refer ke situ (cek `app/Models/Cancellation.php` dan semua controller/test yang pakai) di-update ke kolom baru.
+2. **Migration** tambah ke `users`: `alasan_nonaktif` (text, nullable — dipakai baik buat ban manual maupun nonaktifasi biasa, reuse 1 kolom, `/ponytail`) dan `dibanned_at` (timestamp nullable, buat bedain "nonaktif biasa" vs "kena ban" kalau perlu ditampilin beda di UI nanti).
+3. **Job/listener**: tiap kali `project_applications.dibatalkan_oleh = 'extras'` ke-set DAN statusnya sebelumnya masuk `STATUS_LOLOS_KE_ATAS`, hitung ulang total pembatalan sejenis milik Extras itu (`ExtrasProfile::whereHas('applications', ...)` — query ke kolom baru, bukan tabel `cancellations` lama). Kalau totalnya udah 3, otomatis set `users.status = 'nonaktif'`, `alasan_nonaktif = 'Otomatis: 3x membatalkan proyek yang sudah terkunci.'`, `dibanned_at = now()`.
+4. **UI manual ban**: tombol "Ban" di halaman Kelola Extras (Admin) & halaman Extras di Korlap (kalau ada) — modal isi alasan wajib, pola sama persis kayak modal "Tolak" yang udah ada (`alasan_tolak`).
+5. Extras yang `status = nonaktif` gak bisa login (cek middleware/`LoginController` yang udah ada — pasti udah ada guard buat `status`, cek dulu sebelum nambah, jangan duplikasi logic).
+
+### Verifikasi
+
+- Test: bikin Extras dengan 2 pembatalan proyek ber-status lolos ke atas → batal ke-3 → `status` otomatis `nonaktif`, `alasan_nonaktif` keisi teks otomatis.
+- Test: pembatalan proyek yang BELUM lolos (misal masih `diajukan_ke_cd`) → TIDAK dihitung ke counter 3x ini (harus proyek yang beneran udah "dikunci").
+- Test: ban manual by Admin → `status` nonaktif, `alasan_nonaktif` sesuai yang diisi Admin, `dibanned_at` keisi.
+- Test: Extras yang ke-ban gak bisa login lagi (redirect/pesan error yang jelas, bukan 500).
+- Regresi: semua test yang lama nyebut `Cancellation`/`cancellations` (`BatalkanAuthorizationTest.php` dan sejenisnya) di-update, harus tetap lolos.
+
+---
+
+## Bagian AF: Akun Admin & Casting Director TIDAK PERNAH dihapus (soft-deactivate doang) + auto-delete Extras yang gak aktif
+
+> Ditulis 19 September 2026, oleh manager-session. **WAJIB pakai subagent** (auth/RBAC, berefek ke data retensi).
+
+### Konteks
+
+Bimbingan tegas: akun Admin & Casting Director **TIDAK BOLEH dihapus permanen SAMA SEKALI**, cuma boleh dinonaktifin — beda dari Extras yang justru butuh **auto-delete** kalau daftar tapi gak pernah lengkapin profil (interaksi minim banget, dianggap sampah data). Manager-session udah verifikasi ke kode: `AdminManagementController::destroy()` SEKARANG masih genuine hard-delete (`$user->delete()`) kalau akun belum kena FK constraint — ini harus difix, bukan cuma "kebanyakan udah aman karena keburu ada riwayat".
+
+### Implementasi
+
+1. **HAPUS TOTAL tombol & route "Hapus" buat role Admin/CD** di `AdminManagementController` — `destroy()` untuk target role `admin_default`/`admin_talco`/`admin_korlap`/`admin_sosmed`/`casting_director` diganti JADI `nonaktifkan()` (set `status = 'nonaktif'`, TIDAK PERNAH panggil `$user->delete()`). Kalau UI sekarang punya tombol "Hapus" buat akun-akun ini, ganti label + behaviour jadi "Nonaktifkan" aja, hapus try/catch FK-exception yang sekarang ada (gak perlu lagi, wong gak pernah delete).
+2. **Extras auto-delete**: scheduled command baru (pola sama kayak `ReminderH1ShootingCommand` yang udah ada), jalan harian, cari `User::where('role','extras')->where('status','aktif')` yang: (a) `extrasProfile` masih kosong/gak lengkap (definisi "lengkap" — minimal ada `foto_profil_path` + data diri dasar keisi, sesuaikan sama validasi form yang udah ada) DAN (b) `created_at` lebih dari **30 hari lalu** (angka ini asumsi manager-session, BELUM dikonfirmasi Fakrul — gampang diubah, taruh di config bukan hardcode biar gampang di-tweak) DAN (c) belum pernah punya `project_applications` sama sekali. Kalau 3 syarat itu semua benar → `$user->delete()` (di sini BOLEH hard-delete beneran, karena emang belum ada histori apapun yang perlu di-keep).
+3. **Sosialisasi di form registrasi Extras**: tambah 1 baris teks kecil di halaman `register-extras` — "Akun yang belum lengkapi profil dalam 30 hari akan dihapus otomatis." (sesuaikan angka hari kalau poin 2 diubah).
+
+### Verifikasi
+
+- Test: coba `destroy()` akun `admin_default`/`casting_director` apapun kondisinya → HARUS selalu jadi nonaktifkan, TIDAK PERNAH benar-benar hilang dari database (assert row masih ada, `status = nonaktif`).
+- Test: Extras baru daftar, profil kosong, `created_at` di-mock 31 hari lalu → command hapus dia. Extras yang SAMA tapi udah pernah 1x apply proyek → TIDAK dihapus walau profil masih kosong (ada histori, harus di-keep).
+- Test: Extras yang profilnya kosong tapi baru daftar kemarin (belum 30 hari) → TIDAK dihapus (belum waktunya).
+
+---
+
+## Bagian AG: Portofolio/riwayat kerja akun (Kelola Admin) + gabung Kelola Casting Director
+
+> Ditulis 19 September 2026, oleh manager-session. **WAJIB pakai subagent** (lintas >3 file, RBAC).
+
+### Konteks
+
+Klik nama Admin/CD di "Kelola Admin" (SuperAdmin) → buka halaman detail yang nunjukin riwayat kerja lengkap sejak akun dibuat (proyek yang ditangani, rekap gaji dari `staff_payrolls`). Sekalian, "Kelola Casting Director" (`super-admin/casting-directors/index.blade.php`, sekarang terpisah) DILEBUR ke "Kelola Admin" — CD ditampilin di list yang sama dengan filter/tab role, bukan halaman terpisah lagi.
+
+### Implementasi
+
+1. **Halaman baru**: `super-admin/admins/show.blade.php` (detail per-akun), route `super-admin.admins.show`, controller method baru di `AdminManagementController@show`. Isi: data profil dasar, daftar `admin_project_assignments`/`cd_project_assignments` yang pernah dipegang (tanggal mulai/selesai), rekap `staff_payrolls` (total honor per periode, link ke slip PDF yang udah ada), status akun (aktif/nonaktif + alasan kalau nonaktif dari Bagian AF/AE).
+2. **Lebur Kelola CD ke Kelola Admin**: `super-admin/admins/index.blade.php` tambah tab/filter role (`admin_default`, `admin_talco`, `admin_korlap`, `admin_sosmed`, `casting_director` — semua dari 1 query `User` yang sama, filter di frontend/query string, bukan 2 controller terpisah). Rute `super-admin.casting-directors.*` di-redirect/dihapus, semua fungsinya (create/list) pindah ke `AdminManagementController` yang udah ada (tambahin `casting_director` ke `$allowedRoles` yang relevan). Test lama `SuperAdminCdManagementTest.php` disesuaikan (jangan dihapus testnya, update assertion ke route baru).
+3. Nama menu sidebar SuperAdmin: ganti "Kelola Casting Director" (yang mau dihapus) — sisa 1 menu "Kelola Admin" aja yang nampung semua sub-role termasuk CD.
+
+### Verifikasi
+
+- SuperAdmin buka Kelola Admin → lihat SEMUA sub-role (4 tipe admin + CD) dalam 1 list, bisa difilter per role.
+- Klik nama siapapun → halaman detail muncul, isinya proyek yang pernah ditangani + rekap gaji (buat Admin) — buat CD tampilin proyek yang di-review sebagai gantinya (`cd_project_assignments`).
+- Route lama `/super-admin/casting-directors` — pastikan gak 404 nyasar (redirect ke Kelola Admin dengan filter CD, atau minimal gak broken link dari tempat lain yang masih refer ke situ — grep dulu semua `route('super-admin.casting-directors...')` di codebase).
+
+---
+
+## Bagian AH: Grade Admin — kunci 2 bulan sebelum bisa diubah lagi
+
+> Ditulis 19 September 2026, oleh manager-session.
+
+### Konteks
+
+Grade itu URUSAN SELEKSI (Admin kasih rekomendasi grade A/B/C, CD validasi/putuskan lewat `grade_cd` — ini SUDAH benar dan TIDAK berubah, dikonfirmasi Fakrul: **Korlap TIDAK ikut kasih grade**, catatan lapangan Korlap itu hal terpisah lewat `field_notes`, sudah ada). Yang baru: grade Admin gak boleh gonta-ganti sebentar-sebentar buat orang yang sama — sekali dikasih, "mengunci" 2 bulan, biar Extras dapet kesempatan berkembang sebelum di-grade ulang. Karena efeknya harus LINTAS proyek (bukan cuma di 1 aplikasi), grade "yang berlaku" dipindah konsepnya ke level `ExtrasProfile` (persisten), sementara `project_applications.grade` TETAP ADA sebagai SNAPSHOT historis (riwayat: "di proyek ini, gradenya berapa waktu itu").
+
+### Implementasi
+
+1. **Migration**: tambah ke `extras_profiles`: `grade_saat_ini` (enum A/B/C, nullable), `grade_diberikan_at` (timestamp, nullable).
+2. **`ApplicantController::setGrade()`** (yang udah ada): SEBELUM nyimpen grade baru, cek `grade_diberikan_at` di profil Extras terkait — kalau belum lewat 2 bulan (`now()->lt($profile->grade_diberikan_at?->addMonths(2))`), TOLAK perubahan (response error jelas: "Grade masih terkunci sampai {tanggal}, gak bisa diubah dulu"), KECUALI ini pemberian grade PERTAMA KALI (`grade_diberikan_at` masih null — Extras baru, belum pernah di-grade, langsung boleh).
+3. Kalau lolos pengecekan: update `extras_profiles.grade_saat_ini` + `grade_diberikan_at = now()`, DAN copy nilai yang sama ke `project_applications.grade` (buat aplikasi yang lagi diproses) sebagai snapshot historis — jangan cuma nyimpen di satu tempat.
+4. **UI**: form/tombol set grade di halaman applicants Admin — kalau lagi terkunci, tombolnya disable + tooltip/teks "Terkunci sampai {tanggal}" (jangan cuma gagal silent pas submit, kasih tau dari awal).
+
+### Verifikasi
+
+- Extras baru, belum pernah di-grade → Admin kasih grade C → sukses, `grade_diberikan_at` ke-set.
+- Extras yang sama apply ke proyek lain minggu depan → Admin coba ubah ke grade A → DITOLAK, masih dalam masa kunci.
+- Extras yang sama, setelah lewat 2 bulan dari `grade_diberikan_at` → Admin ubah grade → sukses, `grade_diberikan_at` ke-reset ke waktu baru.
+- Cek `project_applications.grade` di proyek-proyek lama tetap nunjukin grade APA ADANYA waktu itu (riwayat), gak ikut berubah retroaktif walau `grade_saat_ini` di profil udah beda sekarang.
+
+---
+
+## Bagian AI: Frame foto "Grid" di Gallery dibikin lebih besar
+
+> Ditulis 19 September 2026, oleh manager-session. **REVISI** dari draf sebelumnya yang salah dengar "grid" jadi "grip" — udah dikoreksi Fakrul. Ini BUKAN kategori/tabel baru, murni soal UKURAN FRAME tampilan.
+
+### Konteks
+
+Salah satu slot di Gallery ("Foto Tambahan" yang udah di-rename jadi "Gallery" di Bagian Z) itu biasanya diisi Extras dengan foto yang UDAH JADI KOLASE sendiri ala grid Instagram (beberapa foto digabung jadi 1 gambar, gaya feed 3x3/2x2 IG). Masalahnya, di tampilan Gallery sekarang (filmstrip horizontal, thumbnail seragam ~140px per Bagian AA), foto kolase kayak gitu keliatan kekecilan/gak kebaca kalau di-frame sama kayak foto tunggal biasa — isinya kepadetan, detail tiap sub-foto ilang. Fix-nya: kasih frame KHUSUS yang lebih gede buat slot ini doang, sisanya tetap ukuran normal.
+
+### Implementasi
+
+1. **Gak ada perubahan skema/tabel sama sekali** — `extras_photos` tetap 4 slot seperti sekarang, cukup TANDAI salah satu slot (default: slot pertama/`urutan = 1`, atau slot yang emang dipakai Extras buat upload grid — pola pemakaiannya di lapangan biar implementer sesuaikan, tanya Fakrul kalau ragu slot mana) sebagai "slot grid".
+2. Di `partials/foto-lightbox.blade.php` (`.lightbox-thumbs`), kasih 1 modifier class khusus buat thumbnail slot ini, misal `.lightbox-thumbs img.is-grid { flex: 0 0 280px; width: 280px; }` (dobel dari ukuran normal 140px yang udah ada dari Bagian AA) — sisanya (`img` biasa) tetap ukuran standar. Class `is-grid` ditempel via Blade berdasarkan index slot yang ditandai di poin 1.
+3. Di form edit profil Extras (`profile-edit.blade.php`), kasih label kecil di slot itu — "Foto Grid (kolase gaya Instagram)" — biar Extras ngerti slot mana yang cocok buat upload jenis foto ini, dan preview upload-nya di form juga dikasih ukuran box yang lebih lega (bukan kotak sama kecil kayak slot lain) biar konsisten sama tampilan akhirnya di Gallery.
+4. Berlaku di SEMUA tempat yang render Gallery lewat partial ini (form edit, lihat profil internal, share publik, modal kandidat CD, applicants Admin) — otomatis konsisten karena 1 partial yang sama.
+
+### Verifikasi
+
+- Manual: upload foto ke slot yang ditandai "grid" → cek di Gallery (halaman manapun) frame-nya keliatan jelas lebih besar dari 3 foto lain di sebelahnya.
+- Manual: slot lain (non-grid) tetap ukuran normal, gak ikut kebesaran.
+- Cek filmstrip horizontal (Bagian AB) — foto grid yang lebih lebar ini gak bikin filmstrip-nya jadi aneh/kepotong, tetap bisa di-scroll normal.
+
+---
+
+## Bagian AJ: Konsolidasi tabel — gabung `admin_project_assignments`+`cd_project_assignments`, tambah `activity_logs`
+
+> Ditulis 19 September 2026, oleh manager-session. **WAJIB pakai subagent, SANGAT DISARANKAN kerjakan TERAKHIR** (dari semua Bagian AD-AJ) **dan di sesi terpisah sendirian** — ini refactor ke tabel yang udah dipakai banyak fitur existing (dashboard, honor, rekap), risiko regresi paling tinggi di batch ini. **WAJIB jalanin full test suite sebelum DAN sesudah**, bukan cuma test yang berhubungan langsung.
+
+### Konteks
+
+Fakrul concern soal 22 tabel yang bikin ERD/DFD laporan berat, tapi JUGA minta ditambah activity log buat semua tindakan (yang notabene nambah tabel lagi) — dua permintaan yang saling tarik. Solusinya: gabung yang BENERAN redundan (bukan asal gabung), dan buat log-nya 1 tabel POLYMORPHIC generik (nyatet tindakan dari model manapun), bukan tabel log per-modul. Net: -1 tabel dari `cancellations` (udah di Bagian AE), -1 tabel dari gabung assignments di sini, +1 tabel `activity_logs` di sini — hasil akhir tetep lebih sedikit dari 22 sekarang, TANPA korbanin fitur (many-to-many kategori, class per-proyek, dst — itu semua TETAP terpisah, jangan disentuh, itu emang perlu 2 tabel buat fungsinya).
+
+### Implementasi
+
+1. **Migration**: bikin `project_assignments` baru — `casting_project_id`, `user_id`, `assigned_by` (nullable, buat CD yang mungkin gak ada "assigned_by" eksplisit dulu), `status_log` (enum berjalan/selesai, nullable buat row CD lama), `completed_at` (nullable), `unique(casting_project_id, user_id)`. **Migration data-backfill**: copy semua baris dari `admin_project_assignments` DAN `cd_project_assignments` ke tabel baru ini (role penugasan diketahui dari `users.role`, gak perlu kolom diskriminator terpisah).
+2. **Grep SEMUA referensi** ke `AdminProjectAssignment`/`CdProjectAssignment` model & tabel lama (controllers, views, tests — banyak, termasuk `CdProjectAssignmentTest.php`, query di `SuperAdmin\DashboardController`, `SuperAdmin\ProjectAssignmentController`, recap/honor calculation) — update SEMUA ke model/tabel baru `ProjectAssignment`. Ini kerjaan paling makan waktu di Bagian ini, jangan buru-buru, cek satu-satu.
+3. Drop `admin_project_assignments` & `cd_project_assignments` HANYA SETELAH poin 2 selesai total & full test suite hijau.
+4. **Migration baru** `activity_logs`: `id`, `user_id` (siapa yang ngelakuin), `loggable_type`+`loggable_id` (morphs — objek yang kena tindakan, misal `ProjectApplication`, `User`, `CastingProject`), `aksi` (string pendek, misal "grade_diberikan", "akun_dinonaktifkan", "proyek_dibuat"), `keterangan` (text nullable, detail tambahan), `timestamps`.
+5. **Jangan pasang logging di SEMUA tempat sekaligus** — mulai dari titik-titik yang paling penting buat audit (perubahan status akun, grade, ban, approve/reject CD, pembayaran) dulu, biar gak jadi kerjaan raksasa dalam 1 komit. Sisanya nyusul di sesi terpisah kalau Fakrul minta diperluas.
+
+### Verifikasi
+
+- **WAJIB**: jalanin `php artisan test` PENUH sebelum mulai (baseline) dan sesudah selesai — bandingin, HARUS 0 test yang tadinya lolos jadi gagal.
+- Manual: buka Dashboard SuperAdmin, Rekap Honor, halaman assignment CD/Admin — semua data yang sebelumnya nongol dari `admin_project_assignments`/`cd_project_assignments` HARUS tetap nongol sama persis setelah migrasi ke `project_assignments`.
+- Test: trigger beberapa aksi yang udah dipasangin log (misal ban akun, grade Extras) → cek row muncul di `activity_logs` dengan `user_id`/`loggable_type`/`aksi` yang bener.
+- Grep ulang seluruh `resources/views` dan `app/` buat nama tabel/model lama — harus 0 hasil kalau migrasi referensinya udah tuntas semua.
+
 ## Berikutnya
 
 Kosong, tunggu hasil task ini.

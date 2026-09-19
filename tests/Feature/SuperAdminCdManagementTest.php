@@ -15,39 +15,30 @@ class SuperAdminCdManagementTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_cd_muncul_di_listing_cd_tidak_di_listing_admin(): void
+    public function test_cd_muncul_di_listing_admin_dengan_filter_cd(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
         $cd = User::factory()->create(['role' => 'casting_director', 'name' => 'CD Satu']);
 
+        // Bagian AG: CD sekarang muncul di admin listing dengan filter role=casting_director
         $this->actingAs($superAdmin)
-            ->get(route('super-admin.casting-directors.index'))
+            ->get(route('super-admin.admins.index', ['role' => 'casting_director']))
             ->assertOk()
             ->assertSee('CD Satu');
-
-        $this->actingAs($superAdmin)
-            ->get(route('super-admin.admins.index'))
-            ->assertOk()
-            ->assertDontSee('CD Satu');
     }
 
-    public function test_admin_dan_super_admin_muncul_di_listing_admin_tidak_di_listing_cd(): void
+    public function test_cd_tidak_muncul_di_listing_admin_tanpa_filter(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
+        $cd = User::factory()->create(['role' => 'casting_director', 'name' => 'CD Satu']);
         $admin = User::factory()->create(['role' => 'admin_default', 'name' => 'Admin Satu']);
-        $otherSuperAdmin = User::factory()->create(['role' => 'super_admin', 'name' => 'SA Dua']);
 
+        // Bagian AG: CD tidak muncul di listing default (hanya Admin roles)
         $this->actingAs($superAdmin)
             ->get(route('super-admin.admins.index'))
             ->assertOk()
             ->assertSee('Admin Satu')
-            ->assertSee('SA Dua');
-
-        $this->actingAs($superAdmin)
-            ->get(route('super-admin.casting-directors.index'))
-            ->assertOk()
-            ->assertDontSee('Admin Satu')
-            ->assertDontSee('SA Dua');
+            ->assertDontSee('CD Satu');
     }
 
     public function test_toggle_status_cd_lewat_route_generic_tetap_kerja(): void
@@ -62,16 +53,28 @@ class SuperAdminCdManagementTest extends TestCase
         $this->assertSame('nonaktif', $cd->fresh()->status);
     }
 
-    public function test_hapus_cd_bersih_redirect_ke_listing_cd(): void
+    public function test_hapus_cd_bersih_redirect_ke_listing_admin(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
         $cd = User::factory()->create(['role' => 'casting_director']);
 
         $this->actingAs($superAdmin)
             ->delete(route('super-admin.admins.destroy', $cd))
-            ->assertRedirect(route('super-admin.casting-directors.index'));
+            ->assertRedirect(route('super-admin.admins.index'));
 
         $this->assertNull(User::find($cd->id));
+    }
+
+    public function test_super_admin_bisa_lihat_detail_akun_cd(): void
+    {
+        $superAdmin = User::factory()->create(['role' => 'super_admin']);
+        $cd = User::factory()->create(['role' => 'casting_director', 'name' => 'CD Detail']);
+
+        $this->actingAs($superAdmin)
+            ->get(route('super-admin.admins.show', $cd))
+            ->assertOk()
+            ->assertSee('CD Detail')
+            ->assertSee(route('super-admin.admins.index'));
     }
 
     public function test_super_admin_bisa_bikin_akun_cd_baru(): void
@@ -84,7 +87,7 @@ class SuperAdminCdManagementTest extends TestCase
             'password' => 'password123',
         ]);
 
-        $response->assertRedirect(route('super-admin.casting-directors.index'));
+        $response->assertRedirect(route('super-admin.admins.index', ['role' => 'casting_director']));
 
         $newCd = User::where('email', 'cd-baru@example.com')->first();
         $this->assertNotNull($newCd);

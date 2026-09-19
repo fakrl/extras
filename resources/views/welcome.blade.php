@@ -10,6 +10,33 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     @include('partials.theme-style')
     <style>
+        @property --spot-size { syntax: "<length-percentage>"; inherits: true; initial-value: 0%; }
+
+        .film-grain {
+            position: fixed; inset: 0; z-index: 1; pointer-events: none;
+            opacity: var(--grain-opacity, 0.05);
+            mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+        :root[data-theme="dark"] { --grain-opacity: 0.05; }
+        :root[data-theme="light"] { --grain-opacity: 0.02; }
+
+        .film-strip-divider {
+            height: 18px;
+            background:
+                repeating-linear-gradient(90deg, var(--bg-sidebar) 0 14px, transparent 14px 28px),
+                var(--border-color);
+            background-position: center;
+            background-size: 28px 10px, 100% 2px;
+            background-repeat: repeat-x, no-repeat;
+            opacity: 0.6;
+        }
+
+        .section-eyebrow {
+            display: block; font-size: 11px; font-weight: 700; letter-spacing: 3px;
+            text-transform: uppercase; color: var(--accent-strong); margin-bottom: 6px;
+        }
+
         .hp-nav {
             position: sticky; top: 0; z-index: 100;
             background: var(--bg-sidebar);
@@ -68,6 +95,7 @@
         .navbar-user-menu-dropdown button:hover { background: var(--bg-card-hover); }
 
         .hero {
+            position: relative;
             min-height: 520px;
             border-top: 2px solid var(--accent);
             border-bottom: 1px solid var(--border-color);
@@ -80,6 +108,14 @@
             align-items: center;
             justify-content: center;
         }
+        .hero-spotlight {
+            position: absolute; inset: 0; pointer-events: none;
+            transition: --spot-size 0.3s ease-out;
+            mask-image: radial-gradient(circle at var(--spot-x, 50%) var(--spot-y, 50%), black var(--spot-size, 0%), transparent calc(var(--spot-size, 0%) + 15%));
+            background: radial-gradient(circle at var(--spot-x, 50%) var(--spot-y, 50%), rgba(255,255,255,0.12), transparent 60%);
+        }
+        .hero:hover .hero-spotlight { --spot-size: 35%; }
+        @media (prefers-reduced-motion: reduce) { .hero-spotlight { transition: none; } }
         .hero-content {
             display: flex;
             flex-direction: column;
@@ -106,19 +142,7 @@
 
         .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
 
-        .stats-section { padding: 48px 32px; }
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
-            max-width: 1100px; margin: 0 auto;
-        }
-        .stat-card {
-            background: var(--bg-card); border: 1px solid var(--border-color);
-            border-radius: 14px; padding: 24px 20px; text-align: center;
-        }
-        .stat-number { font-size: 36px; font-weight: 700; color: var(--highlight-cream, var(--accent)); line-height: 1; margin-bottom: 6px; }
-        .stat-label { font-size: 13.5px; color: var(--text-secondary); }
-
-        .about-section { padding: 0 32px 48px; }
+        .about-section { padding: 48px 32px; }
         .about-inner { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px; }
         .history-facts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
         .quick-facts { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px 20px; }
@@ -156,8 +180,31 @@
         .produksi-section { padding: 0 32px 48px; }
         .produksi-inner { max-width: 1100px; margin: 0 auto; }
         .produksi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; margin-top: 20px; }
+        .produksi-grid-reel {
+            display: flex; gap: 20px; overflow-x: auto; scroll-snap-type: x proximity;
+            padding: 24px 8px 32px; margin-top: 20px;
+        }
+        .produksi-grid-reel .produksi-card { flex: 0 0 160px; scroll-snap-align: center; }
         .produksi-card { display: flex; flex-direction: column; gap: 10px; }
-        .produksi-poster { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 10px; display: block; }
+        .produksi-poster { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 10px; display: block; filter: grayscale(100%); transition: filter 0.4s ease; }
+        .produksi-card:hover .produksi-poster,
+        .produksi-card:focus-within .produksi-poster { filter: grayscale(0%); }
+        @media (prefers-reduced-motion: reduce) {
+            .produksi-poster { transition: none; }
+        }
+        @media (prefers-reduced-motion: no-preference) {
+            @supports ((animation-timeline: view()) and (animation-range: entry)) {
+                @keyframes reel-scale {
+                    0% { scale: 0.82; opacity: 0.6; }
+                    50% { scale: 1; opacity: 1; }
+                    100% { scale: 0.82; opacity: 0.6; }
+                }
+                .produksi-grid-reel .produksi-card {
+                    animation: reel-scale auto linear both;
+                    animation-timeline: view(inline);
+                }
+            }
+        }
         .produksi-placeholder {
             width: 100%; aspect-ratio: 2/3; border-radius: 10px;
             background: var(--bg-card); border: 1px solid var(--border-color);
@@ -217,18 +264,16 @@
             .hero { min-height: 360px; }
             .hero-content { padding: 48px 20px; }
             .hero h1 { font-size: 26px; }
-            .stats-section, .about-section, .lowongan-section, .talent-section, .produksi-section, .cta-strip { padding-left: 16px; padding-right: 16px; }
-            .stats-grid { grid-template-columns: 1fr; }
+            .about-section, .lowongan-section, .talent-section, .produksi-section, .cta-strip { padding-left: 16px; padding-right: 16px; }
             .history-facts-row { grid-template-columns: 1fr; }
             .vm-section { flex-direction: column; gap: 16px; }
             footer { padding: 20px 16px; }
         }
-        @media (min-width: 480px) and (max-width: 768px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-        }
+
     </style>
 </head>
 <body>
+    <div class="film-grain" aria-hidden="true"></div>
     <nav class="hp-nav">
         <div class="hp-nav-brand">
             <img src="{{ asset('images/logo-jbtb.jpg') }}" alt="Logo PT. JBTB Casting Creative Group" class="hp-logo">
@@ -271,28 +316,14 @@
     </nav>
 
     <div class="hero">
+        <div class="hero-spotlight" aria-hidden="true"></div>
         <div class="hero-content">
             <h1>Sistem Manajemen Casting JBTB</h1>
             <p class="tagline">Platform digital untuk manajemen talent & extras JBTB Casting — dari pendaftaran, seleksi, negosiasi fee, kontrak digital, hingga pembayaran honor, semua tercatat dan transparan.</p>
         </div>
     </div>
 
-    <div class="stats-section">
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number" id="stat-proyek">{{ $totalProyek }}</div>
-                <div class="stat-label">Total Proyek Casting</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="stat-extras">{{ $jumlahExtras }}</div>
-                <div class="stat-label">Extras Terdaftar</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="stat-admin">{{ $jumlahAdmin }}</div>
-                <div class="stat-label">Tim Admin Agensi</div>
-            </div>
-        </div>
-    </div>
+    <div class="film-strip-divider" aria-hidden="true"></div>
 
     <div class="about-section" id="tentang">
         <div class="about-inner">
@@ -365,6 +396,7 @@
 
     <div class="lowongan-section" id="lowongan">
         <div class="lowongan-inner">
+            <span class="section-eyebrow">Sedang Tayang</span>
             <div class="section-title">Lowongan Casting Terbuka</div>
             @if ($proyekTerbuka->isEmpty())
                 <div class="lowongan-empty">Belum ada lowongan casting yang terbuka saat ini — cek lagi nanti.</div>
@@ -416,23 +448,44 @@
     </div>
 
     @if ($proyekSelesai->isNotEmpty())
+    <div class="film-strip-divider" aria-hidden="true"></div>
     <div class="produksi-section">
         <div class="produksi-inner">
+            <span class="section-eyebrow">Arsip Produksi</span>
             <div class="section-title">Produksi yang Pernah Kami Tangani</div>
-            <div class="produksi-grid">
-                @foreach ($proyekSelesai as $p)
-                    <div class="produksi-card">
-                        @if ($p->poster_path)
-                            <img src="{{ Storage::url($p->poster_path) }}" alt="{{ $p->nama_produksi }}" class="produksi-poster">
-                        @else
-                            <div class="produksi-placeholder">
-                                <i class="ti ti-clapperboard"></i>
-                            </div>
-                        @endif
-                        <div class="produksi-name">{{ $p->nama_produksi }}</div>
-                    </div>
-                @endforeach
-            </div>
+            @if (count($proyekSelesai) > 3)
+                <div class="film-strip-divider" aria-hidden="true"></div>
+                <div class="produksi-grid-reel">
+                    @foreach ($proyekSelesai as $p)
+                        <div class="produksi-card">
+                            @if ($p->poster_path)
+                                <img src="{{ Storage::url($p->poster_path) }}" alt="{{ $p->nama_produksi }}" class="produksi-poster">
+                            @else
+                                <div class="produksi-placeholder">
+                                    <i class="ti ti-clapperboard"></i>
+                                </div>
+                            @endif
+                            <div class="produksi-name">{{ $p->nama_produksi }}</div>
+                        </div>
+                    @endforeach
+                </div>
+                <div class="film-strip-divider" aria-hidden="true"></div>
+            @else
+                <div class="produksi-grid">
+                    @foreach ($proyekSelesai as $p)
+                        <div class="produksi-card">
+                            @if ($p->poster_path)
+                                <img src="{{ Storage::url($p->poster_path) }}" alt="{{ $p->nama_produksi }}" class="produksi-poster">
+                            @else
+                                <div class="produksi-placeholder">
+                                    <i class="ti ti-clapperboard"></i>
+                                </div>
+                            @endif
+                            <div class="produksi-name">{{ $p->nama_produksi }}</div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
     </div>
     @endif
@@ -489,6 +542,38 @@
         </script>
     @endguest
 
+    <script>
+        (function () {
+            var hero = document.querySelector('.hero');
+            if (!hero) return;
+            var spotlight = hero.querySelector('.hero-spotlight');
+            if (!spotlight) return;
+            var rect = hero.getBoundingClientRect();
+            var ro = new ResizeObserver(function () { rect = hero.getBoundingClientRect(); });
+            ro.observe(hero);
+            hero.addEventListener('pointermove', function (e) {
+                var x = ((e.clientX - rect.left) / rect.width * 100).toFixed(1) + '%';
+                var y = ((e.clientY - rect.top) / rect.height * 100).toFixed(1) + '%';
+                spotlight.style.setProperty('--spot-x', x);
+                spotlight.style.setProperty('--spot-y', y);
+            });
+        })();
+
+        if (!CSS.supports('(animation-timeline: view()) and (animation-range: entry)')
+            && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            var reelGrid = document.querySelector('.produksi-grid-reel');
+            if (reelGrid) {
+                var io = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry) {
+                        var scale = 0.82 + entry.intersectionRatio * 0.18;
+                        entry.target.style.scale = scale;
+                        entry.target.style.opacity = 0.6 + entry.intersectionRatio * 0.4;
+                    });
+                }, { threshold: Array.from({ length: 21 }, function (_, i) { return i / 20; }), root: reelGrid });
+                document.querySelectorAll('.produksi-grid-reel .produksi-card').forEach(function (el) { io.observe(el); });
+            }
+        }
+    </script>
     <script>
         (function () {
             var icon = document.getElementById('theme-icon');
