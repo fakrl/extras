@@ -93,15 +93,29 @@
             @endif
 
             <div class="entity-card-actions" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color);">
-                <form method="POST" action="{{ route('admin.applications.grade', $app) }}" style="display: flex; gap: 6px;">
-                    @csrf @method('PATCH')
-                    <select name="grade" style="width: 70px; min-height: 36px; padding: 4px 8px; margin-bottom: 0;">
-                        <option value="A" @selected($app->grade === 'A')>A</option>
-                        <option value="B" @selected($app->grade === 'B')>B</option>
-                        <option value="C" @selected($app->grade === 'C')>C</option>
-                    </select>
-                    <button class="btn btn-sm">Set Grade</button>
-                </form>
+                @php
+                    $gradeProfile = $app->extras;
+                    $gradeTerkunci = $gradeProfile->grade_diberikan_at && now()->lt($gradeProfile->grade_diberikan_at->addMonths(2));
+                    $terkunciSampai = $gradeTerkunci ? $gradeProfile->grade_diberikan_at->addMonths(2)->translatedFormat('d F Y') : null;
+                @endphp
+                @if ($gradeTerkunci)
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <select disabled style="width: 70px; min-height: 36px; padding: 4px 8px; margin-bottom: 0; opacity: 0.5;">
+                            <option>{{ $gradeProfile->grade_saat_ini }}</option>
+                        </select>
+                        <span style="font-size: 12px; color: var(--text-muted);">Terkunci s.d. {{ $terkunciSampai }}</span>
+                    </div>
+                @else
+                    <form method="POST" action="{{ route('admin.applications.grade', $app) }}" style="display: flex; gap: 6px;">
+                        @csrf @method('PATCH')
+                        <select name="grade" style="width: 70px; min-height: 36px; padding: 4px 8px; margin-bottom: 0;">
+                            <option value="A" @selected($app->grade === 'A')>A</option>
+                            <option value="B" @selected($app->grade === 'B')>B</option>
+                            <option value="C" @selected($app->grade === 'C')>C</option>
+                        </select>
+                        <button class="btn btn-sm">Set Grade</button>
+                    </form>
+                @endif
                 <a href="{{ route('admin.negotiations.show', $app) }}" class="btn btn-sm btn-brand">Nego Fee</a>
                 @if (in_array($app->status_partisipasi, ['diajukan', 'direview_admin'], true))
                     <button type="button" class="btn btn-sm btn-danger-outline" onclick="document.getElementById('reject-dialog-{{ $app->id }}').showModal()">Tolak</button>

@@ -95,15 +95,19 @@
         <p class="field-hint">Format MP4/MOV, maksimal 50MB.</p>
     </div>
 
-    {{-- ===== Foto Tambahan ===== --}}
+    {{-- ===== Gallery ===== --}}
     <div class="profile-section">
-        <div class="profile-section-title">Foto Tambahan</div>
+        <div class="profile-section-title">Gallery</div>
         <p class="field-hint" style="margin-top: -4px;">Foto lain buat Admin menilai — misal dari sisi samping, badan penuh, atau gaya lain. Boleh diisi sebagian, boleh diganti kapan saja.</p>
 
         <div class="photo-slot-grid">
             @foreach ($fotoTambahan as $slot => $foto)
-                <div>
-                    <label for="upload-slot-{{ $slot }}" class="media-upload-box photo-slot-box" id="box-slot-{{ $slot }}">
+                <div @if($slot === 1) style="grid-column: span 2;" @endif>
+                    @if($slot === 1)
+                        <p style="font-size:11px; color:var(--accent-strong); font-weight:600; margin:0 0 4px; text-transform:uppercase; letter-spacing:.5px;">Foto Grid (kolase gaya Instagram)</p>
+                    @endif
+                    <label for="upload-slot-{{ $slot }}" class="media-upload-box photo-slot-box" id="box-slot-{{ $slot }}"
+                           @if($slot === 1) style="aspect-ratio:2/1;" @endif>
                         @if ($foto)
                             <img id="preview-slot-{{ $slot }}" src="{{ route('extras.media.foto-tambahan', [$profile, $slot]) }}" alt="Foto tambahan {{ $slot }}" class="media-upload-preview">
                             <span class="media-upload-overlay">Ketuk untuk ganti</span>

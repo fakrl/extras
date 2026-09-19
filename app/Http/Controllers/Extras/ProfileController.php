@@ -25,6 +25,7 @@ class ProfileController extends Controller
     public function show(Request $request)
     {
         $profile = $request->user()->extrasProfile;
+        $profile?->generateShareToken();
 
         return view('extras.profile-show', [
             'profile' => $profile,

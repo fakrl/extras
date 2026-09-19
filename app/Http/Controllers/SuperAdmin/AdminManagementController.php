@@ -15,21 +15,60 @@ use Illuminate\Support\Facades\Hash;
 class AdminManagementController extends Controller
 {
     /**
-     * RF-57: target Admin (4 sub-role) + sesama Super Admin. Casting Director
-     * dikelola terpisah lewat indexCd(). User yang sedang login dikecualikan
-     * (tidak boleh aksi ke dirinya sendiri, jadi tidak perlu muncul di daftar).
+     * RF-57: target Admin (4 sub-role) + sesama Super Admin + Casting Director.
+     * Semua ditampilkan dalam 1 list dengan filter/tab role. User yang sedang login
+     * dikecualikan (tidak boleh aksi ke dirinya sendiri).
+     * 
+     * Bagian AG: Default listing (role=all) HANYA tampilkan Admin roles, bukan CD.
+     * CD hanya muncul kalau explicit filter role=casting_director.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $admins = User::whereIn('role', ['admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed', 'super_admin'])
-            ->where('id', '!=', auth()->id())
-            ->with('adminProfile', 'adminProjectAssignments.castingProject', 'adminProjectAssignments.payroll')
+        $roleFilter = $request->query('role', 'all');
+        
+        $query = User::where('id', '!=', auth()->id());
+
+        if ($roleFilter === 'all') {
+            // Default: hanya Admin roles (tidak termasuk CD)
+            $query->whereIn('role', ['admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed', 'super_admin']);
+        } else {
+            // Filter spesifik: bisa Admin atau CD
+            $query->where('role', $roleFilter);
+        }
+
+        $admins = $query->with([
+            'adminProfile',
+            'adminProjectAssignments.castingProject',
+            'adminProjectAssignments.payroll',
+            'cdProjectAssignments.castingProject',
+        ])
             ->get()
             ->each(fn (User $admin) => $admin->has_history = $this->hasHistory($admin));
 
         $projects = CastingProject::orderByDesc('id')->get();
 
-        return view('super-admin.admins.index', compact('admins', 'projects'));
+        return view('super-admin.admins.index', compact('admins', 'projects', 'roleFilter'));
+    }
+
+    /**
+     * Bagian AG: halaman detail per-akun Admin/CD dengan riwayat kerja lengkap.
+     */
+    public function show(User $user)
+    {
+        // Cegah Super Admin melihat dirinya sendiri atau Super Admin protected lainnya
+        abort_if($user->is_protected && $user->id !== auth()->id(), 403);
+        abort_if($user->id === auth()->id(), 403);
+
+        // Load riwayat berdasarkan role
+        if ($user->isCastingDirector()) {
+            $user->load('cdProjectAssignments.castingProject', 'cdProjectAssignments.cdReviews');
+            $assignments = $user->cdProjectAssignments;
+        } else {
+            $user->load('adminProjectAssignments.castingProject', 'adminProjectAssignments.payroll', 'adminProfile');
+            $assignments = $user->adminProjectAssignments;
+        }
+
+        return view('super-admin.admins.show', compact('user', 'assignments'));
     }
 
     /**
@@ -67,7 +106,7 @@ class AdminManagementController extends Controller
             'status' => 'aktif',
         ]);
 
-        return redirect()->route('super-admin.casting-directors.index')->with('status', 'Akun Casting Director berhasil ditambahkan.');
+        return redirect()->route('super-admin.admins.index', ['role' => 'casting_director'])->with('status', 'Akun Casting Director berhasil ditambahkan.');
     }
 
     /**
@@ -158,7 +197,7 @@ class AdminManagementController extends Controller
             throw $e;
         }
 
-        $redirectRoute = $user->role === 'casting_director' ? 'super-admin.casting-directors.index' : 'super-admin.admins.index';
+        $redirectRoute = $user->role === 'casting_director' ? 'super-admin.admins.index' : 'super-admin.admins.index';
 
         return redirect()->route($redirectRoute)->with('status', 'Akun berhasil dihapus.');
     }

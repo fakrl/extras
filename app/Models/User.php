@@ -88,6 +88,11 @@ class User extends Authenticatable
         return $this->hasMany(AdminProjectAssignment::class);
     }
 
+    public function cdProjectAssignments(): HasMany
+    {
+        return $this->hasMany(CdProjectAssignment::class, 'cd_user_id');
+    }
+
     public function isExtras(): bool
     {
         return $this->role === 'extras';

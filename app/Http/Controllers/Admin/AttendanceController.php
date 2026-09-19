@@ -8,6 +8,8 @@ use App\Models\CastingProject;
 use App\Models\ProjectApplication;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AttendanceController extends Controller
 {
@@ -68,5 +70,25 @@ class AttendanceController extends Controller
         );
 
         return back()->with('status', 'Absensi berhasil dicatat.');
+    }
+
+    public function validasi(Request $request, Attendance $attendance): RedirectResponse
+    {
+        abort_if($attendance->status_validasi === 'tervalidasi', 422, 'Sudah divalidasi.');
+
+        $attendance->update([
+            'status_validasi' => 'tervalidasi',
+            'divalidasi_oleh' => $request->user()->id,
+            'divalidasi_at' => now(),
+        ]);
+
+        return back()->with('status', 'Absensi berhasil divalidasi.');
+    }
+
+    public function fotoStream(Attendance $attendance): StreamedResponse
+    {
+        abort_unless($attendance->foto_path && Storage::disk('local')->exists($attendance->foto_path), 404);
+
+        return Storage::disk('local')->response($attendance->foto_path);
     }
 }

@@ -16,6 +16,7 @@ use App\Http\Controllers\Cd\DashboardController as CdDashboardController;
 use App\Http\Controllers\Cd\JadwalController as CdJadwalController;
 use App\Http\Controllers\Cd\ReviewController;
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\Extras\AttendanceSelfieController;
 use App\Http\Controllers\Extras\CastingProjectController as ExtrasCastingProjectController;
 use App\Http\Controllers\Extras\DashboardController as ExtrasDashboardController;
 use App\Http\Controllers\Extras\FeeNegotiationController as ExtrasFeeNegotiationController;
@@ -43,7 +44,10 @@ Route::get('/event/{token}', [PublicEventController::class, 'show'])->name('publ
 
 // Bagian S: halaman profil publik Extras via share link. Tidak perlu auth.
 // Tembok visibilitas ditegakkan di controller & view (tanpa nik/nama_asli/rekening/rate_card/tautan_tambahan).
-Route::get('/p/extras/{username}', [PublicExtrasProfileController::class, 'show'])->name('public.extras.profile');
+Route::get('/p/extras/{token}', [PublicExtrasProfileController::class, 'show'])->name('public.extras.profile');
+Route::get('/p/extras/{token}/foto', [PublicExtrasProfileController::class, 'foto'])->name('public.extras.foto');
+Route::get('/p/extras/{token}/video', [PublicExtrasProfileController::class, 'video'])->name('public.extras.video');
+Route::get('/p/extras/{token}/foto-tambahan/{slot}', [PublicExtrasProfileController::class, 'fotoTambahan'])->whereNumber('slot')->name('public.extras.foto-tambahan');
 
 // Pintu masuk universal setelah login (dipakai mis. link "kembali ke
 // dashboard" generik) — lempar ke dashboard sesuai role via
@@ -125,6 +129,7 @@ Route::middleware(['auth', 'role:extras'])->prefix('extras')->group(function () 
     Route::post('/kontrak/{application}/lengkapi-ktp', [ProfileController::class, 'simpanKtp'])
         ->middleware('throttle:5,1')->name('extras.kontrak.simpan-ktp');
 
+    Route::post('/absensi-selfie/{application}', [AttendanceSelfieController::class, 'store'])->name('extras.absensi.selfie');
 });
 
 // ==================== ADMIN (Default + sub-role) ====================
@@ -187,21 +192,21 @@ Route::middleware(['auth', 'role:admin_default,admin_talco,admin_korlap,admin_so
             Route::get('/recap/export', [RecapController::class, 'export'])->name('admin.recap.export');
         });
 
-        // RF-35: Korlap DAN Admin Default boleh nulis catatan lapangan —
-        // beda dari grup role:admin_default murni di atas, jadi route
-        // sendiri dengan whitelist role eksplisit (Talco/Sosmed tidak boleh).
+        // RF-35: Korlap DAN Admin Default boleh nulis catatan lapangan.
         Route::middleware('role:admin_default,admin_korlap')->group(function () {
             Route::post('/applications/{application}/catatan', [ApplicantController::class, 'tambahCatatan'])
                 ->name('admin.applications.catatan');
+        });
 
-            // SPEC.md Bagian F: halaman baru Korlap, TERPISAH dari
-            // admin.projects.applicants (gerbangnya admin_default murni,
-            // itu akar bug lama RF-35 — route ada, halamannya tidak
-            // terjangkau). Route GET halaman + POST absen sama-sama di
-            // sini biar Korlap beneran bisa sampai.
+        // Bagian AD: Absensi Extras — hanya Korlap. Admin Default dicabut aksesnya.
+        Route::middleware('role:admin_korlap')->group(function () {
             Route::get('/absensi', [AttendanceController::class, 'index'])->name('admin.attendance.index');
             Route::post('/applications/{application}/absen', [AttendanceController::class, 'store'])
                 ->name('admin.attendance.store');
+            Route::post('/absensi/{attendance}/validasi', [AttendanceController::class, 'validasi'])
+                ->name('admin.absensi.validasi');
+            Route::get('/media/absensi/{attendance}', [AttendanceController::class, 'fotoStream'])
+                ->name('admin.absensi.foto');
         });
     });
 
@@ -226,11 +231,14 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
 
     Route::get('/admins', [AdminManagementController::class, 'index'])->name('super-admin.admins.index');
     Route::post('/admins', [AdminManagementController::class, 'store'])->name('super-admin.admins.store');
-    Route::get('/casting-directors', [AdminManagementController::class, 'indexCd'])->name('super-admin.casting-directors.index');
-    Route::post('/casting-directors', [AdminManagementController::class, 'storeCd'])->name('super-admin.casting-directors.store');
+    Route::get('/admins/{user}', [AdminManagementController::class, 'show'])->name('super-admin.admins.show');
     Route::patch('/admins/{user}/honor', [AdminManagementController::class, 'updateHonor'])->name('super-admin.admins.honor');
     Route::patch('/admins/{user}/toggle-status', [AdminManagementController::class, 'toggleStatus'])->name('super-admin.admins.toggle-status');
     Route::delete('/admins/{user}', [AdminManagementController::class, 'destroy'])->name('super-admin.admins.destroy');
+
+    // Bagian AG: route lama CD di-redirect ke index admin dengan filter role
+    Route::redirect('/casting-directors', '/super-admin/admins?role=casting_director');
+    Route::post('/casting-directors', [AdminManagementController::class, 'storeCd'])->name('super-admin.casting-directors.store');
 
     Route::post('/projects/{castingProject}/assign', [ProjectAssignmentController::class, 'assign'])
         ->name('super-admin.assignments.assign');

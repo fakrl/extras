@@ -12,7 +12,13 @@
       "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch -f --msg-filter 'grep -v \"Co-Authored-By: Claude\"' 395ca0d~1..HEAD)",
       "Bash(Remove-Item *)",
       "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch *)",
-      "Bash(git update-ref *)"
+      "Bash(git update-ref *)",
+      "Bash(vendor/bin/pint --test)",
+      "Bash(.\\\\vendor\\\\bin\\\\pint)",
+      "Bash(Get-Content \"C:\\\\Users\\\\fahru\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-fahru-Documents-GitHub-extras\\\\28d621e1-70b1-43fb-8e2c-ad152fc7bcc2\\\\tasks\\\\bt88gqwoi.output\")",
+      "Bash(Select-Object -Last 5)",
+      "Bash(vendor/bin/pint)",
+      "Bash(./vendor/bin/pint resources/views/welcome.blade.php)"
     ]
   }
 }

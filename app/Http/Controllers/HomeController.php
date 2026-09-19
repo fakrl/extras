@@ -3,16 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\CastingProject;
-use App\Models\User;
 
 class HomeController extends Controller
 {
     public function index()
     {
-        $totalProyek = CastingProject::count();
-        $jumlahAdmin = User::where('role', 'like', 'admin_%')->count();
-        $jumlahExtras = User::where('role', 'extras')->count();
-
         $allTerbuka = CastingProject::where('status', 'dibuka')
             ->select(['id', 'nama_produksi', 'deadline', 'kuota', 'status'])
             ->orderBy('deadline')
@@ -29,6 +24,6 @@ class HomeController extends Controller
             ->take(8)
             ->get();
 
-        return view('welcome', compact('totalProyek', 'jumlahAdmin', 'jumlahExtras', 'proyekTerbuka', 'adaLebih', 'proyekSelesai'));
+        return view('welcome', compact('proyekTerbuka', 'adaLebih', 'proyekSelesai'));
     }
 }

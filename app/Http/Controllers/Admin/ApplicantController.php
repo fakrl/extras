@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,6 +20,20 @@ class ApplicantController extends Controller
     {
         $data = $request->validate([
             'grade' => ['required', 'in:A,B,C'],
+        ]);
+
+        /** @var ExtrasProfile $profile */
+        $profile = $application->extras;
+
+        if ($profile->grade_diberikan_at && now()->lt($profile->grade_diberikan_at->addMonths(2))) {
+            $terkunciSampai = $profile->grade_diberikan_at->addMonths(2)->translatedFormat('d F Y');
+
+            return back()->with('error', "Grade masih terkunci sampai {$terkunciSampai}, gak bisa diubah dulu.");
+        }
+
+        $profile->update([
+            'grade_saat_ini' => $data['grade'],
+            'grade_diberikan_at' => now(),
         ]);
 
         $application->update([
