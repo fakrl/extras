@@ -53,16 +53,17 @@ class SuperAdminCdManagementTest extends TestCase
         $this->assertSame('nonaktif', $cd->fresh()->status);
     }
 
-    public function test_hapus_cd_bersih_redirect_ke_listing_admin(): void
+    public function test_soft_delete_cd_redirect_ke_listing_admin(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
         $cd = User::factory()->create(['role' => 'casting_director']);
 
         $this->actingAs($superAdmin)
             ->delete(route('super-admin.admins.destroy', $cd))
-            ->assertRedirect(route('super-admin.admins.index'));
+            ->assertRedirect();
 
         $this->assertNull(User::find($cd->id));
+        $this->assertNotNull(User::withTrashed()->find($cd->id));
     }
 
     public function test_super_admin_bisa_lihat_detail_akun_cd(): void

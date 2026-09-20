@@ -1,7 +1,7 @@
 # CLAUDE.md — SIM Casting JBTB (Project Work / Skripsi Pengganti)
 
 > **Fungsi file ini:** handoff konteks lengkap dari sesi diskusi sebelumnya. Baca ini dulu sebelum lanjut. Semua keputusan, model bisnis, alur, dan backlog ada di sini.
-> **Terakhir diperbarui:** 29 Agustus 2026 · **Status:** coding aktif, 9 sesi dev selesai (lihat `DEV-NOTES.md`) — RF-01 s.d. RF-52 mayoritas sudah dibangun+tes (auth RBAC, profil, proyek, nego fee, review CD, kontrak+TTD, pembayaran, karyawan+payroll, WA Gateway self-hosted). Sisa: RF-04 (validasi duplikat NIK), RF-30 (rekap margin), RF-35 (catatan Korlap), RF-38 (link grup WA). Proposal Bab 1-3 pra-sempro (target 1 Sept 2026) berjalan paralel — lihat `BAB-3-DRAFT.md` & `OPEN-QUESTIONS-PROPOSAL.md`.
+> **Terakhir diperbarui:** 21 September 2026 · **Status:** Blueprint arsitektur resmi diperbarui di `docs/SYSTEM-ARCHITECTURE.md` berdasarkan hasil bimbingan Dospem (Erlina) dan review Solution Architect. Role resmi dirampingkan menjadi **5 role** (`super_admin`, `admin`, `korlap`, `client`, `extras`). Modul SoftDeletes & UI dropdown sidebar (Bagian AI) sedang dalam proses verifikasi final.
 
 ---
 
@@ -18,21 +18,19 @@
 
 ---
 
-## 2. Aktor (7 peran — diperluas hasil bimbingan dosen, 21-22 Agu 2026)
+## 2. Aktor (5 peran resmi — konsolidasi 20–21 Sept 2026)
 
-> **UPDATE PENTING:** struktur aktor lama (3 peran: Extras, Admin Agensi tunggal, Client/CD) di-supersede jadi 7 peran lewat RBAC berjenjang. Detail lengkap di `BAB-3-DRAFT.md` §3.1.1.
+> **UPDATE RESMI:** Struktur aktor dipangkas dari 7 menjadi **5 peran**. Role Talco dan Sosmed dihapus dari sistem (kebutuhan tenaga tambahan dicatat sebagai biaya proyek/add-on). Casting Director dilebur dan dinamai ulang menjadi `Client`. Detail arsitektur lengkap di `docs/SYSTEM-ARCHITECTURE.md`.
 
 | Peran | Keterangan | Cara masuk sistem |
 |---|---|---|
-| **Super Admin** | Owner (Jestika). Dashboard monitoring/analitik only, **tidak** pegang operasional harian. Nambah akun Admin + tentuin sub-role + set nominal honor staf. | Akun tunggal, dibuat manual saat inisialisasi |
-| **Admin Default** | Operasional inti (seleksi, nego fee, kontrak, pembayaran Extras). **Bisa lebih dari satu akun** (beda dari asumsi lama "hanya satu Admin"). | Dibuat oleh Super Admin |
-| **Admin — Talco (Talent Coordination)** | Cabang Admin Default, ditugaskan per proyek sesuai kebutuhan (nggak selalu tiap proyek). Zero functional footprint di sistem (talent utama di luar scope) — cuma role+log buat keperluan honor. Akses login read-only riwayat kerja & status honor sendiri. | Dibuat oleh Super Admin |
-| **Admin — Korlap (Koordinator Lapangan)** | Cabang Admin Default. Ada fitur fungsional: absensi Extras di lapangan, catatan/sanksi Extras. | Dibuat oleh Super Admin |
-| **Admin — Sosial Media/Multimedia** | Cabang Admin Default. Sama seperti Talco: zero functional footprint, role+log only, akses login read-only. | Dibuat oleh Super Admin |
-| **Extras / Talent** | Figuran/talent yang daftar casting. User "semua umur" (termasuk orang tua) → UI wajib simpel & kebaca. | Self-register bebas (tanpa kode) |
-| **Client / Casting Director (CD)** | Pihak rumah produksi (PH) yang butuh talent. **PH sebagai entitas TIDAK punya akun** — yang login adalah CD yang mewakilinya. | Registrasi lewat tautan khusus terpisah (bukan kode undangan manual — otomatis role CD) |
+| **Super Admin** | Owner (Jestika). **Godmode:** Monitoring analitik, approval pengajuan proyek dari Client, kelola staf/billing, serta memiliki wewenang eksekusi penuh aksi Admin & Korlap. | Akun tunggal, dibuat manual saat inisialisasi |
+| **Admin** | Operasional inti (buka lowongan, seleksi, grading visual awal, nego fee, kontrak, pembayaran Extras). | Dibuat oleh Super Admin |
+| **Korlap** | Koordinator Lapangan di lokasi shooting (validasi absensi foto on-set, absensi manual darurat, catatan & penilaian sikap extras di set). | Dibuat oleh Super Admin |
+| **Client** | Pihak rumah produksi (PH) / Casting Director (ajukan brief proyek, review kandidat via alias, lock extras + grade Client, pantau foto kehadiran on-set, invoice). | Registrasi via tautan khusus / dibuat Admin |
+| **Extras / Talent** | Figuran/talent yang daftar casting (registrasi mandiri, profil, rate card, apply, nego fee InDrive, TTD kontrak canvas, selfie absen on-set, konfirmasi transfer). | Self-register bebas (tanpa kode) |
 
-> Catatan: Talco/Korlap/Sosmed BUKAN karyawan tetap — dibayar per-event/proyek, model konseptual sama seperti fee proyek-basis Extras (lihat §6b baru di bawah).
+> Catatan: Tenaga tambahan (Talco, Sosmed, Runner) BUKAN role sistem — jika ada, diinput sebagai add-on biaya operasional proyek oleh Admin.
 
 ---
 

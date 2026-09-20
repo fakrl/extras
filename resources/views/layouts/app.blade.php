@@ -55,6 +55,28 @@
             background: var(--bg-nav-active); color: var(--accent-strong); font-weight: 500;
         }
 
+        .sidebar-dropdown { margin-bottom: 2px; }
+        .sidebar-dropdown-summary {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 10px; border-radius: 8px;
+            color: var(--text-secondary); font-size: 13.5px; font-weight: 600;
+            cursor: pointer; list-style: none; min-height: 40px;
+            user-select: none;
+        }
+        .sidebar-dropdown-summary::-webkit-details-marker { display: none; }
+        .sidebar-dropdown-summary:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+        .sidebar-dropdown[open] .sidebar-dropdown-summary { color: var(--accent-strong); }
+        .sidebar-dropdown-summary .chevron-icon {
+            font-size: 14px; transition: transform 0.2s ease;
+        }
+        .sidebar-dropdown[open] .sidebar-dropdown-summary .chevron-icon {
+            transform: rotate(90deg);
+        }
+        .sidebar-submenu {
+            display: flex; flex-direction: column; gap: 2px;
+            padding-left: 14px; margin-top: 2px;
+        }
+
         .main-area { flex: 1; display: flex; flex-direction: column; min-width: 0; }
         .topbar {
             display: flex; justify-content: space-between; align-items: center;

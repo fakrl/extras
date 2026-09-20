@@ -45,19 +45,30 @@ class SuperAdminAdminManagementTest extends TestCase
         $this->assertSame('aktif', $target->fresh()->status);
     }
 
-    public function test_hapus_permanen_berhasil_untuk_akun_bersih(): void
+    public function test_soft_delete_dan_restore_berhasil(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        $target = User::factory()->create(['role' => 'admin_default']);
+        $target = User::factory()->create(['role' => 'admin_default', 'status' => 'aktif']);
 
         $this->actingAs($superAdmin)
+            ->from(route('super-admin.admins.index'))
             ->delete(route('super-admin.admins.destroy', $target))
             ->assertRedirect(route('super-admin.admins.index'));
 
         $this->assertNull(User::find($target->id));
+        $this->assertNotNull(User::withTrashed()->find($target->id));
+        $this->assertSame('nonaktif', $target->fresh()->status);
+
+        $this->actingAs($superAdmin)
+            ->from(route('super-admin.admins.index'))
+            ->patch(route('super-admin.admins.restore', $target->id))
+            ->assertRedirect(route('super-admin.admins.index'));
+
+        $this->assertNotNull(User::find($target->id));
+        $this->assertSame('aktif', $target->fresh()->status);
     }
 
-    public function test_hapus_permanen_ditolak_untuk_akun_berhistori(): void
+    public function test_soft_delete_tetap_berhasil_untuk_akun_berhistori(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
         $target = User::factory()->create(['role' => 'admin_default']);
@@ -69,8 +80,8 @@ class SuperAdminAdminManagementTest extends TestCase
         $response = $this->actingAs($superAdmin)->delete(route('super-admin.admins.destroy', $target));
 
         $response->assertRedirect();
-        $response->assertSessionHas('error', 'Akun ini punya riwayat penugasan, nonaktifkan saja.');
-        $this->assertNotNull(User::find($target->id));
+        $this->assertNull(User::find($target->id));
+        $this->assertNotNull(User::withTrashed()->find($target->id));
     }
 
     public function test_index_menandai_has_history_untuk_histori_di_luar_casting_projects(): void
@@ -89,7 +100,6 @@ class SuperAdminAdminManagementTest extends TestCase
         $response = $this->actingAs($superAdmin)->get(route('super-admin.admins.index'));
 
         $response->assertOk();
-        $response->assertDontSee('delete-dialog-'.$target->id, false);
         $this->assertNotNull(User::find($target->id));
     }
 

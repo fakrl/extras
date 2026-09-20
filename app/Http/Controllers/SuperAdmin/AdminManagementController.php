@@ -6,10 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminProfile;
 use App\Models\CastingProject;
 use App\Models\User;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class AdminManagementController extends Controller
@@ -18,15 +16,16 @@ class AdminManagementController extends Controller
      * RF-57: target Admin (4 sub-role) + sesama Super Admin + Casting Director.
      * Semua ditampilkan dalam 1 list dengan filter/tab role. User yang sedang login
      * dikecualikan (tidak boleh aksi ke dirinya sendiri).
-     * 
+     *
      * Bagian AG: Default listing (role=all) HANYA tampilkan Admin roles, bukan CD.
      * CD hanya muncul kalau explicit filter role=casting_director.
      */
     public function index(Request $request)
     {
         $roleFilter = $request->query('role', 'all');
-        
-        $query = User::where('id', '!=', auth()->id());
+        $statusFilter = $request->query('status', 'all');
+
+        $query = User::withTrashed()->where('id', '!=', auth()->id());
 
         if ($roleFilter === 'all') {
             // Default: hanya Admin roles (tidak termasuk CD)
@@ -34,6 +33,14 @@ class AdminManagementController extends Controller
         } else {
             // Filter spesifik: bisa Admin atau CD
             $query->where('role', $roleFilter);
+        }
+
+        if ($statusFilter === 'aktif') {
+            $query->whereNull('deleted_at')->where('status', 'aktif');
+        } elseif ($statusFilter === 'nonaktif') {
+            $query->where(function ($q) {
+                $q->whereNotNull('deleted_at')->orWhere('status', 'nonaktif');
+            });
         }
 
         $admins = $query->with([
@@ -47,7 +54,7 @@ class AdminManagementController extends Controller
 
         $projects = CastingProject::orderByDesc('id')->get();
 
-        return view('super-admin.admins.index', compact('admins', 'projects', 'roleFilter'));
+        return view('super-admin.admins.index', compact('admins', 'projects', 'roleFilter', 'statusFilter'));
     }
 
     /**
@@ -178,28 +185,33 @@ class AdminManagementController extends Controller
     }
 
     /**
-     * RF-57: hapus permanen. Guard dasar sama dengan toggleStatus, ditambah
-     * cek histori lewat FK constraint DB (bukan enumerasi manual tiap tabel
-     * yang belum tentu lengkap) — kalau DB tolak karena FK, akun punya
-     * riwayat, arahkan ke nonaktifkan saja.
+     * RF-57: Nonaktifkan / Soft-Delete akun. Tidak ada hard delete.
+     * Histori dan data akun tetap tersimpan aman di database.
      */
     public function destroy(User $user): RedirectResponse
     {
         $this->guardTarget($user);
 
-        try {
-            DB::transaction(fn () => $user->delete());
-        } catch (QueryException $e) {
-            if ($e->getCode() === '23000') {
-                return back()->with('error', 'Akun ini punya riwayat penugasan, nonaktifkan saja.');
-            }
+        $user->status = 'nonaktif';
+        $user->save();
+        $user->delete();
 
-            throw $e;
-        }
+        return back()->with('status', 'Akun berhasil dinonaktifkan/diarsipkan. Data histori tetap tersimpan aman.');
+    }
 
-        $redirectRoute = $user->role === 'casting_director' ? 'super-admin.admins.index' : 'super-admin.admins.index';
+    /**
+     * Mengembalikan akun yang sebelumnya dinonaktifkan / di-soft delete.
+     */
+    public function restore(int $id): RedirectResponse
+    {
+        $user = User::withTrashed()->findOrFail($id);
+        $this->guardTarget($user);
 
-        return redirect()->route($redirectRoute)->with('status', 'Akun berhasil dihapus.');
+        $user->restore();
+        $user->status = 'aktif';
+        $user->save();
+
+        return back()->with('status', 'Akun berhasil diaktifkan kembali.');
     }
 
     private function guardTarget(User $user): void
@@ -208,30 +220,18 @@ class AdminManagementController extends Controller
     }
 
     /**
-     * Flag ringan untuk UI (disable tombol hapus + tooltip alasan). Trial-delete
-     * dibungkus transaction yang selalu rollback (probe exception), dengan
-     * catch FK (code 23000) SAMA PERSIS dengan destroy() — jadi kedua fungsi
-     * structurally tidak mungkin drift, bukan cuma re-sync manual per relasi.
-     * Ambil instance baru (bukan $user yang dipakai ->each() di index()) supaya
-     * atribut `exists` milik instance pemanggil tidak ikut ke-set false oleh
-     * delete(), meski row DB-nya sendiri sudah pasti balik oleh rollback.
+     * Flag untuk UI mengecek apakah pengguna memiliki riwayat kerja / penugasan.
      */
     private function hasHistory(User $user): bool
     {
-        try {
-            DB::transaction(function () use ($user) {
-                User::findOrFail($user->id)->delete();
-
-                throw new \RuntimeException('rollback-probe');
-            });
-        } catch (QueryException $e) {
-            if ($e->getCode() === '23000') {
-                return true;
-            }
-
-            throw $e;
-        } catch (\RuntimeException) {
-            return false;
+        if ($user->adminProjectAssignments()->exists()) {
+            return true;
+        }
+        if ($user->cdProjectAssignments()->exists()) {
+            return true;
+        }
+        if ($user->castingProjects()->exists()) {
+            return true;
         }
 
         return false;

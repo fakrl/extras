@@ -198,8 +198,8 @@ Route::middleware(['auth', 'role:admin_default,admin_talco,admin_korlap,admin_so
                 ->name('admin.applications.catatan');
         });
 
-        // Bagian AD: Absensi Extras — hanya Korlap. Admin Default dicabut aksesnya.
-        Route::middleware('role:admin_korlap')->group(function () {
+        // Absensi Extras — Korlap, Admin, dan Super Admin (Godmode)
+        Route::middleware('role:admin_korlap,admin_default,super_admin')->group(function () {
             Route::get('/absensi', [AttendanceController::class, 'index'])->name('admin.attendance.index');
             Route::post('/applications/{application}/absen', [AttendanceController::class, 'store'])
                 ->name('admin.attendance.store');
@@ -234,6 +234,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
     Route::get('/admins/{user}', [AdminManagementController::class, 'show'])->name('super-admin.admins.show');
     Route::patch('/admins/{user}/honor', [AdminManagementController::class, 'updateHonor'])->name('super-admin.admins.honor');
     Route::patch('/admins/{user}/toggle-status', [AdminManagementController::class, 'toggleStatus'])->name('super-admin.admins.toggle-status');
+    Route::patch('/admins/{user}/restore', [AdminManagementController::class, 'restore'])->name('super-admin.admins.restore');
     Route::delete('/admins/{user}', [AdminManagementController::class, 'destroy'])->name('super-admin.admins.destroy');
 
     // Bagian AG: route lama CD di-redirect ke index admin dengan filter role
