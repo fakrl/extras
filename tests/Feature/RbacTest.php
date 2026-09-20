@@ -35,4 +35,22 @@ class RbacTest extends TestCase
 
         $response->assertRedirect('/login');
     }
+
+    public function test_super_admin_has_godmode_access_to_admin_and_korlap_routes(): void
+    {
+        $superAdmin = User::factory()->create(['role' => 'super_admin']);
+
+        // Akses rute admin
+        $this->actingAs($superAdmin)->get('/admin/dashboard')->assertOk();
+
+        // Akses rute absensi korlap
+        $this->actingAs($superAdmin)->get(route('admin.attendance.index'))->assertOk();
+    }
+
+    public function test_client_cannot_access_admin_dashboard(): void
+    {
+        $client = User::factory()->create(['role' => 'client']);
+
+        $this->actingAs($client)->get('/admin/dashboard')->assertStatus(403);
+    }
 }

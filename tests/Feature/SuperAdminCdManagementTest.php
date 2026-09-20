@@ -88,18 +88,17 @@ class SuperAdminCdManagementTest extends TestCase
             'password' => 'password123',
         ]);
 
-        $response->assertRedirect(route('super-admin.admins.index', ['role' => 'casting_director']));
+        $response->assertRedirect(route('super-admin.admins.index', ['role' => 'client']));
 
         $newCd = User::where('email', 'cd-baru@example.com')->first();
         $this->assertNotNull($newCd);
-        $this->assertSame('casting_director', $newCd->role);
+        $this->assertTrue($newCd->isClient());
     }
 
     public static function bukanSuperAdminProviderCd(): array
     {
         return [
-            ['admin_default'], ['admin_talco'], ['admin_korlap'], ['admin_sosmed'],
-            ['casting_director'], ['extras'],
+            ['admin'], ['korlap'], ['client'], ['extras'],
         ];
     }
 
