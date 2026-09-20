@@ -18,7 +18,7 @@ class UserManagementController extends Controller
      */
     public function index()
     {
-        $castingDirectors = User::where('role', 'casting_director')->get();
+        $castingDirectors = User::whereIn('role', ['client', 'casting_director'])->get();
         $extras = User::where('role', 'extras')
             ->with('extrasProfile.user:id,username', 'extrasProfile.categories')
             ->get();
@@ -30,9 +30,9 @@ class UserManagementController extends Controller
     public function toggleStatus(User $user): RedirectResponse
     {
         abort_unless(
-            in_array($user->role, ['casting_director', 'extras'], true),
+            in_array($user->role, ['client', 'casting_director', 'extras'], true),
             403,
-            'Admin Default hanya boleh mengelola akun Casting Director dan Extras.'
+            'Admin hanya boleh mengelola akun Client dan Extras.'
         );
 
         $user->update([

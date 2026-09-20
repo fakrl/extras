@@ -81,8 +81,7 @@ class RecapControllerTest extends TestCase
     public static function bukanAdminDefaultProvider(): array
     {
         return [
-            ['admin_talco'], ['admin_korlap'], ['admin_sosmed'],
-            ['casting_director'], ['extras'], ['super_admin'],
+            ['korlap'], ['client'], ['extras'],
         ];
     }
 

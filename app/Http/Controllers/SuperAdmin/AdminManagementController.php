@@ -28,11 +28,18 @@ class AdminManagementController extends Controller
         $query = User::withTrashed()->where('id', '!=', auth()->id());
 
         if ($roleFilter === 'all') {
-            // Default: hanya Admin roles (tidak termasuk CD)
-            $query->whereIn('role', ['admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed', 'super_admin']);
+            // Default: hanya Admin roles (tidak termasuk CD/Client)
+            $query->whereIn('role', ['admin', 'korlap', 'super_admin', 'admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed']);
+        } elseif ($roleFilter === 'client' || $roleFilter === 'casting_director') {
+            $query->whereIn('role', ['client', 'casting_director']);
         } else {
-            // Filter spesifik: bisa Admin atau CD
-            $query->where('role', $roleFilter);
+            // Support aliases
+            $targetRole = match ($roleFilter) {
+                'admin' => ['admin', 'admin_default'],
+                'korlap' => ['korlap', 'admin_korlap'],
+                default => [$roleFilter],
+            };
+            $query->whereIn('role', $targetRole);
         }
 
         if ($statusFilter === 'aktif') {
@@ -67,7 +74,7 @@ class AdminManagementController extends Controller
         abort_if($user->id === auth()->id(), 403);
 
         // Load riwayat berdasarkan role
-        if ($user->isCastingDirector()) {
+        if ($user->isClient()) {
             $user->load('cdProjectAssignments.castingProject', 'cdProjectAssignments.cdReviews');
             $assignments = $user->cdProjectAssignments;
         } else {
@@ -79,12 +86,11 @@ class AdminManagementController extends Controller
     }
 
     /**
-     * RF-57: halaman terpisah untuk kelola Casting Director. Reuse
-     * toggleStatus()/destroy()/hasHistory() yang sama dengan halaman Admin.
+     * RF-57: halaman terpisah untuk kelola Casting Director / Client.
      */
     public function indexCd()
     {
-        $cds = User::where('role', 'casting_director')
+        $cds = User::whereIn('role', ['client', 'casting_director'])
             ->where('id', '!=', auth()->id())
             ->get()
             ->each(fn (User $cd) => $cd->has_history = $this->hasHistory($cd));
@@ -93,9 +99,8 @@ class AdminManagementController extends Controller
     }
 
     /**
-     * RF-58 lanjutan: Super Admin bikin akun CD langsung, terpisah dari
-     * alur self-register publik (register.cd). Tidak ada AdminProfile/honor
-     * — konsep itu cuma buat 4 sub-role Admin.
+     * RF-58 lanjutan: Super Admin bikin akun Client langsung, terpisah dari
+     * alur self-register publik (register.cd).
      */
     public function storeCd(Request $request): RedirectResponse
     {
@@ -109,21 +114,19 @@ class AdminManagementController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            'role' => 'casting_director',
+            'role' => 'client',
             'status' => 'aktif',
         ]);
 
-        return redirect()->route('super-admin.admins.index', ['role' => 'casting_director'])->with('status', 'Akun Casting Director berhasil ditambahkan.');
+        return redirect()->route('super-admin.admins.index', ['role' => 'client'])->with('status', 'Akun Client berhasil ditambahkan.');
     }
 
     /**
      * RF-40: Super Admin menambahkan akun Admin baru + sub-role spesifik.
-     * RF-41: sekaligus menetapkan nominal honor per-event (nullable untuk
-     * admin_default, karena dia bukan staf event-based).
      */
     public function store(Request $request): RedirectResponse
     {
-        $allowedRoles = ['admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed'];
+        $allowedRoles = ['admin', 'korlap', 'admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed'];
         if ($request->user()->is_protected) {
             $allowedRoles[] = 'super_admin';
         }

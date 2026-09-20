@@ -94,21 +94,65 @@ class User extends Authenticatable
         return $this->hasMany(CdProjectAssignment::class, 'cd_user_id');
     }
 
+    public const ROLE_SUPER_ADMIN = 'super_admin';
+
+    public const ROLE_ADMIN = 'admin';
+
+    public const ROLE_KORLAP = 'korlap';
+
+    public const ROLE_CLIENT = 'client';
+
+    public const ROLE_EXTRAS = 'extras';
+
+    public const ROLES = [
+        self::ROLE_SUPER_ADMIN,
+        self::ROLE_ADMIN,
+        self::ROLE_KORLAP,
+        self::ROLE_CLIENT,
+        self::ROLE_EXTRAS,
+    ];
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === self::ROLE_SUPER_ADMIN;
+    }
+
+    public function isAdmin(): bool
+    {
+        return in_array($this->role, [self::ROLE_ADMIN, 'admin_default'], true);
+    }
+
+    public function isKorlap(): bool
+    {
+        return in_array($this->role, [self::ROLE_KORLAP, 'admin_korlap'], true);
+    }
+
     public function isExtras(): bool
     {
-        return $this->role === 'extras';
+        return $this->role === self::ROLE_EXTRAS;
     }
 
     public function isAnyAdmin(): bool
     {
         return in_array($this->role, [
-            'super_admin', 'admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed',
+            self::ROLE_SUPER_ADMIN,
+            self::ROLE_ADMIN,
+            self::ROLE_KORLAP,
+            'admin_default',
+            'admin_talco',
+            'admin_korlap',
+            'admin_sosmed',
         ], true);
+    }
+
+    public function isClient(): bool
+    {
+        return in_array($this->role, [self::ROLE_CLIENT, 'casting_director'], true);
     }
 
     public function isCastingDirector(): bool
     {
-        return $this->role === 'casting_director';
+        return $this->isClient();
     }
 
     /**
@@ -121,10 +165,11 @@ class User extends Authenticatable
     public function dashboardUrl(): string
     {
         return match ($this->role) {
-            'super_admin' => '/super-admin/dashboard',
-            'admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed' => '/admin/dashboard',
-            'casting_director' => '/cd/dashboard',
-            'extras' => '/extras/dashboard',
+            self::ROLE_SUPER_ADMIN => '/super-admin/dashboard',
+            self::ROLE_ADMIN, 'admin_default', 'admin_talco', 'admin_sosmed' => '/admin/dashboard',
+            self::ROLE_KORLAP, 'admin_korlap' => '/admin/absensi',
+            self::ROLE_CLIENT, 'casting_director' => '/client/dashboard',
+            self::ROLE_EXTRAS => '/extras/dashboard',
             default => '/login',
         };
     }

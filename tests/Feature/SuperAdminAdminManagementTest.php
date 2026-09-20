@@ -198,8 +198,7 @@ class SuperAdminAdminManagementTest extends TestCase
     public static function bukanSuperAdminProvider(): array
     {
         return [
-            ['admin_default'], ['admin_talco'], ['admin_korlap'], ['admin_sosmed'],
-            ['casting_director'], ['extras'],
+            ['admin'], ['korlap'], ['client'], ['extras'],
         ];
     }
 

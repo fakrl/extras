@@ -132,20 +132,18 @@ Route::middleware(['auth', 'role:extras'])->prefix('extras')->group(function () 
     Route::post('/absensi-selfie/{application}', [AttendanceSelfieController::class, 'store'])->name('extras.absensi.selfie');
 });
 
-// ==================== ADMIN (Default + sub-role) ====================
+// ==================== ADMIN & KORLAP ====================
 
-Route::middleware(['auth', 'role:admin_default,admin_talco,admin_korlap,admin_sosmed'])
+Route::middleware(['auth', 'role:admin,admin_default,admin_talco,korlap,admin_korlap,admin_sosmed,super_admin'])
     ->prefix('admin')
     ->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
-        // RF-43/RF-44: Riwayat Kerja & Status Gaji — akses SEMUA tipe Admin,
-        // termasuk Talco/Sosmed yang read-only footprint-nya cuma di sini.
+        // RF-43/RF-44: Riwayat Kerja & Status Gaji
         Route::get('/riwayat-kerja', [WorkHistoryController::class, 'index'])->name('admin.work-history');
 
-        // RF-05: khusus Admin Default — dicek lagi di controller karena
-        // sub-role (Talco/Korlap/Sosmed) tidak boleh kelola akun CD/Extras.
-        Route::middleware('role:admin_default')->group(function () {
+        // Operasional Proyek: Admin & Super Admin (Godmode)
+        Route::middleware('role:admin,admin_default,super_admin')->group(function () {
             Route::get('/users', [UserManagementController::class, 'index'])->name('admin.users.index');
             Route::patch('/users/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])
                 ->name('admin.users.toggle-status');
@@ -192,14 +190,14 @@ Route::middleware(['auth', 'role:admin_default,admin_talco,admin_korlap,admin_so
             Route::get('/recap/export', [RecapController::class, 'export'])->name('admin.recap.export');
         });
 
-        // RF-35: Korlap DAN Admin Default boleh nulis catatan lapangan.
-        Route::middleware('role:admin_default,admin_korlap')->group(function () {
+        // RF-35: Korlap, Admin, dan Super Admin boleh nulis catatan lapangan.
+        Route::middleware('role:admin,admin_default,korlap,admin_korlap,super_admin')->group(function () {
             Route::post('/applications/{application}/catatan', [ApplicantController::class, 'tambahCatatan'])
                 ->name('admin.applications.catatan');
         });
 
         // Absensi Extras — Korlap, Admin, dan Super Admin (Godmode)
-        Route::middleware('role:admin_korlap,admin_default,super_admin')->group(function () {
+        Route::middleware('role:korlap,admin_korlap,admin,admin_default,super_admin')->group(function () {
             Route::get('/absensi', [AttendanceController::class, 'index'])->name('admin.attendance.index');
             Route::post('/applications/{application}/absen', [AttendanceController::class, 'store'])
                 ->name('admin.attendance.store');
@@ -210,15 +208,12 @@ Route::middleware(['auth', 'role:admin_default,admin_talco,admin_korlap,admin_so
         });
     });
 
-// RF-30: rekap margin — RAHASIA bisnis inti, cuma Admin Default & Super
-// Admin (BUKAN sub-role admin manapun). Grup role sendiri, jangan nested di
-// grup admin umum (line ~106, isinya termasuk sub-role) atau grup
-// role:admin_default murni (tidak termasuk super_admin).
-Route::middleware(['auth', 'role:admin_default,super_admin'])->prefix('admin')->group(function () {
+// RF-30: rekap margin — RAHASIA bisnis inti, cuma Admin & Super Admin.
+Route::middleware(['auth', 'role:admin,admin_default,super_admin'])->prefix('admin')->group(function () {
     Route::get('/rekap-margin', [MarginRecapController::class, 'index'])->name('admin.recap-margin');
 });
 
-Route::middleware(['auth', 'role:admin_default,super_admin'])->prefix('super-admin')->group(function () {
+Route::middleware(['auth', 'role:admin,admin_default,super_admin'])->prefix('super-admin')->group(function () {
     Route::get('/rekap-margin', [MarginRecapController::class, 'index'])->name('super-admin.recap-margin');
 });
 
@@ -249,9 +244,9 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
         ->name('super-admin.payrolls.addon');
 });
 
-// ==================== CASTING DIRECTOR ====================
+// ==================== CLIENT (CASTING DIRECTOR) ====================
 
-Route::middleware(['auth', 'role:casting_director'])->prefix('cd')->group(function () {
+Route::middleware(['auth', 'role:client,casting_director'])->prefix('cd')->group(function () {
     Route::get('/dashboard', [CdDashboardController::class, 'index'])->name('cd.dashboard');
 
     Route::get('/reviews', [ReviewController::class, 'index'])->name('cd.reviews.index');

@@ -8,15 +8,13 @@
     <button type="button" class="btn btn-brand" onclick="document.getElementById('add-admin-dialog').showModal()">+ Tambah Admin</button>
 </div>
 
-<!-- Bagian AG: Filter/Tab Role & Status -->
+<!-- Bagian AG & AI: Filter/Tab Role & Status 5-Role -->
 <div style="display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
     <a href="?role=all&status={{ $statusFilter }}" class="btn {{ $roleFilter === 'all' ? 'btn-brand' : '' }}">Semua Role</a>
-    <a href="?role=admin_default&status={{ $statusFilter }}" class="btn {{ $roleFilter === 'admin_default' ? 'btn-brand' : '' }}">Admin Default</a>
-    <a href="?role=admin_talco&status={{ $statusFilter }}" class="btn {{ $roleFilter === 'admin_talco' ? 'btn-brand' : '' }}">Talco</a>
-    <a href="?role=admin_korlap&status={{ $statusFilter }}" class="btn {{ $roleFilter === 'admin_korlap' ? 'btn-brand' : '' }}">Korlap</a>
-    <a href="?role=admin_sosmed&status={{ $statusFilter }}" class="btn {{ $roleFilter === 'admin_sosmed' ? 'btn-brand' : '' }}">Sosmed</a>
+    <a href="?role=admin&status={{ $statusFilter }}" class="btn {{ in_array($roleFilter, ['admin', 'admin_default']) ? 'btn-brand' : '' }}">Admin</a>
+    <a href="?role=korlap&status={{ $statusFilter }}" class="btn {{ in_array($roleFilter, ['korlap', 'admin_korlap']) ? 'btn-brand' : '' }}">Korlap</a>
+    <a href="?role=client&status={{ $statusFilter }}" class="btn {{ in_array($roleFilter, ['client', 'casting_director']) ? 'btn-brand' : '' }}">Client</a>
     <a href="?role=super_admin&status={{ $statusFilter }}" class="btn {{ $roleFilter === 'super_admin' ? 'btn-brand' : '' }}">Super Admin</a>
-    <a href="?role=casting_director&status={{ $statusFilter }}" class="btn {{ $roleFilter === 'casting_director' ? 'btn-brand' : '' }}">Casting Director</a>
 </div>
 
 <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center;">
@@ -28,7 +26,7 @@
 
 <dialog id="add-admin-dialog" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 480px; width: 90%;">
     <div style="padding: 18px;">
-        <div style="font-size: 15px; font-weight: 600; margin-bottom: 14px;">Tambah Akun Admin</div>
+        <div style="font-size: 15px; font-weight: 600; margin-bottom: 14px;">Tambah Akun Staf / Admin</div>
 
         @if ($errors->any())
             <div class="alert-danger">
@@ -50,19 +48,17 @@
 
             <label>Role</label>
             <select name="role" required style="width: 100%; margin-bottom: 4px;">
-                <option value="admin_default" @selected(old('role') === 'admin_default')>Admin Default (operasional penuh)</option>
-                <option value="admin_talco" @selected(old('role') === 'admin_talco')>Talent Coordinator (Talco)</option>
-                <option value="admin_korlap" @selected(old('role') === 'admin_korlap')>Koordinator Lapangan (Korlap)</option>
-                <option value="admin_sosmed" @selected(old('role') === 'admin_sosmed')>Sosial Media / Multimedia</option>
+                <option value="admin" @selected(old('role') === 'admin' || old('role') === 'admin_default')>Admin (operasional proyek penuh)</option>
+                <option value="korlap" @selected(old('role') === 'korlap' || old('role') === 'admin_korlap')>Korlap (Koordinator Lapangan)</option>
                 @if (auth()->user()->is_protected)
                     <option value="super_admin" @selected(old('role') === 'super_admin')>Super Admin</option>
                 @endif
             </select>
-            <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 14px;">Talco/Korlap/Sosmed adalah cabang kewenangan terbatas, ditugaskan per proyek sesuai kebutuhan.</p>
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 14px;">Pilih jenis akun staf yang ingin ditambahkan.</p>
 
             <label>Nominal Honor per Event (Rp)</label>
             <input type="number" name="honor_nominal" min="0" value="{{ old('honor_nominal') }}">
-            <p style="font-size: 12px; color: var(--text-muted); margin: -10px 0 18px;">Kosongkan jika tidak relevan (misal untuk Admin Default/Super Admin). Bisa diadjust kapan saja.</p>
+            <p style="font-size: 12px; color: var(--text-muted); margin: -10px 0 18px;">Honor standing per proyek (khusus Korlap/staf proyek). Bisa diadjust kapan saja.</p>
 
             <div style="display: flex; gap: 8px; justify-content: flex-end;">
                 <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
