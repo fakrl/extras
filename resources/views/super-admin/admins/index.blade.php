@@ -8,15 +8,22 @@
     <button type="button" class="btn btn-brand" onclick="document.getElementById('add-admin-dialog').showModal()">+ Tambah Admin</button>
 </div>
 
-<!-- Bagian AG: Filter/Tab Role -->
-<div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
-    <a href="?role=all" class="btn {{ $roleFilter === 'all' ? 'btn-brand' : '' }}">Semua</a>
-    <a href="?role=admin_default" class="btn {{ $roleFilter === 'admin_default' ? 'btn-brand' : '' }}">Admin Default</a>
-    <a href="?role=admin_talco" class="btn {{ $roleFilter === 'admin_talco' ? 'btn-brand' : '' }}">Talco</a>
-    <a href="?role=admin_korlap" class="btn {{ $roleFilter === 'admin_korlap' ? 'btn-brand' : '' }}">Korlap</a>
-    <a href="?role=admin_sosmed" class="btn {{ $roleFilter === 'admin_sosmed' ? 'btn-brand' : '' }}">Sosmed</a>
-    <a href="?role=super_admin" class="btn {{ $roleFilter === 'super_admin' ? 'btn-brand' : '' }}">Super Admin</a>
-    <a href="?role=casting_director" class="btn {{ $roleFilter === 'casting_director' ? 'btn-brand' : '' }}">Casting Director</a>
+<!-- Bagian AG: Filter/Tab Role & Status -->
+<div style="display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
+    <a href="?role=all&status={{ $statusFilter }}" class="btn {{ $roleFilter === 'all' ? 'btn-brand' : '' }}">Semua Role</a>
+    <a href="?role=admin_default&status={{ $statusFilter }}" class="btn {{ $roleFilter === 'admin_default' ? 'btn-brand' : '' }}">Admin Default</a>
+    <a href="?role=admin_talco&status={{ $statusFilter }}" class="btn {{ $roleFilter === 'admin_talco' ? 'btn-brand' : '' }}">Talco</a>
+    <a href="?role=admin_korlap&status={{ $statusFilter }}" class="btn {{ $roleFilter === 'admin_korlap' ? 'btn-brand' : '' }}">Korlap</a>
+    <a href="?role=admin_sosmed&status={{ $statusFilter }}" class="btn {{ $roleFilter === 'admin_sosmed' ? 'btn-brand' : '' }}">Sosmed</a>
+    <a href="?role=super_admin&status={{ $statusFilter }}" class="btn {{ $roleFilter === 'super_admin' ? 'btn-brand' : '' }}">Super Admin</a>
+    <a href="?role=casting_director&status={{ $statusFilter }}" class="btn {{ $roleFilter === 'casting_director' ? 'btn-brand' : '' }}">Casting Director</a>
+</div>
+
+<div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center;">
+    <span style="font-size: 12.5px; color: var(--text-muted); font-weight: 600;">Filter Status:</span>
+    <a href="?role={{ $roleFilter }}&status=all" class="btn {{ $statusFilter === 'all' ? 'btn-brand' : '' }}">Semua</a>
+    <a href="?role={{ $roleFilter }}&status=aktif" class="btn {{ $statusFilter === 'aktif' ? 'btn-brand' : '' }}">Aktif</a>
+    <a href="?role={{ $roleFilter }}&status=nonaktif" class="btn {{ $statusFilter === 'nonaktif' ? 'btn-brand' : '' }}">Nonaktif / Arsip</a>
 </div>
 
 <dialog id="add-admin-dialog" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 480px; width: 90%;">
@@ -80,45 +87,50 @@
             </div>
 
             <div style="display: flex; gap: 6px; align-items: center;">
-                <button type="button" class="btn btn-sm" onclick="document.getElementById('toggle-dialog-{{ $cd->id }}').showModal()">
-                    {{ $cd->status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }}
-                </button>
-
-                @if ($cd->is_protected)
-                    <button type="button" class="btn btn-sm" disabled title="Akun ini dilindungi, tidak bisa dihapus.">Hapus</button>
-                @elseif ($cd->has_history)
-                    <button type="button" class="btn btn-sm" disabled title="Akun ini punya riwayat penugasan, nonaktifkan saja.">Hapus</button>
+                @if ($cd->trashed() || $cd->status === 'nonaktif')
+                    <button type="button" class="btn btn-sm btn-brand" onclick="document.getElementById('restore-dialog-{{ $cd->id }}').showModal()">
+                        Aktifkan Kembali
+                    </button>
                 @else
-                    <button type="button" class="btn btn-sm btn-danger-outline" onclick="document.getElementById('delete-dialog-{{ $cd->id }}').showModal()">Hapus</button>
+                    @if ($cd->is_protected)
+                        <button type="button" class="btn btn-sm" disabled title="Akun ini terproteksi sistem.">Nonaktifkan</button>
+                    @else
+                        <button type="button" class="btn btn-sm btn-danger-outline" onclick="document.getElementById('deactivate-dialog-{{ $cd->id }}').showModal()">
+                            Nonaktifkan
+                        </button>
+                    @endif
                 @endif
             </div>
         </div>
 
-        <dialog id="toggle-dialog-{{ $cd->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
-            <form method="POST" action="{{ route('super-admin.admins.toggle-status', $cd) }}" style="padding: 18px;">
-                @csrf @method('PATCH')
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">
-                    {{ $cd->status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }} {{ $cd->name }}?
-                </div>
-                <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                    <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
-                    <button type="submit" class="btn btn-sm btn-brand">Ya, Lanjutkan</button>
-                </div>
-            </form>
-        </dialog>
-
-        @if (! $cd->is_protected && ! $cd->has_history)
-            <dialog id="delete-dialog-{{ $cd->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
-                <form method="POST" action="{{ route('super-admin.admins.destroy', $cd) }}" style="padding: 18px;">
-                    @csrf @method('DELETE')
-                    <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Hapus permanen {{ $cd->name }}?</div>
-                    <div style="color: var(--text-muted); font-size: 12.5px; margin-bottom: 12px;">Aksi ini tidak bisa dibatalkan.</div>
+        @if ($cd->trashed() || $cd->status === 'nonaktif')
+            <dialog id="restore-dialog-{{ $cd->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
+                <form method="POST" action="{{ route('super-admin.admins.restore', $cd->id) }}" style="padding: 18px;">
+                    @csrf @method('PATCH')
+                    <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">
+                        Aktifkan kembali {{ $cd->name }}?
+                    </div>
+                    <div style="color: var(--text-muted); font-size: 12.5px; margin-bottom: 12px;">Akun akan dapat digunakan kembali untuk login dan menerima penugasan.</div>
                     <div style="display: flex; gap: 8px; justify-content: flex-end;">
                         <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
-                        <button type="submit" class="btn btn-sm btn-danger-outline">Hapus Permanen</button>
+                        <button type="submit" class="btn btn-sm btn-brand">Ya, Aktifkan</button>
                     </div>
                 </form>
             </dialog>
+        @else
+            @if (! $cd->is_protected)
+                <dialog id="deactivate-dialog-{{ $cd->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
+                    <form method="POST" action="{{ route('super-admin.admins.destroy', $cd) }}" style="padding: 18px;">
+                        @csrf @method('DELETE')
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Nonaktifkan {{ $cd->name }}?</div>
+                        <div style="color: var(--text-muted); font-size: 12.5px; margin-bottom: 12px;">Akun akan dinonaktifkan. Data dan histori penugasan tetap tersimpan aman di database.</div>
+                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                            <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
+                            <button type="submit" class="btn btn-sm btn-danger-outline">Nonaktifkan</button>
+                        </div>
+                    </form>
+                </dialog>
+            @endif
         @endif
     </div>
 @endforeach

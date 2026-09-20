@@ -7,7 +7,6 @@ use App\Models\Attendance;
 use App\Models\ProjectApplication;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class AttendanceSelfieController extends Controller
 {
@@ -29,7 +28,7 @@ class AttendanceSelfieController extends Controller
         ]);
 
         $path = $request->file('foto')->store(
-            'absensi/' . $application->id,
+            'absensi/'.$application->id,
             'local'
         );
 

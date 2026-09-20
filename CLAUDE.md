@@ -22,6 +22,7 @@ Keduanya aktif otomatis lewat hook `SessionStart` & `UserPromptSubmit`. Kalau be
 
 | File | Isi |
 |---|---|
+| `docs/SYSTEM-ARCHITECTURE.md` | Master Arsitektur resmi: HLD, LLD, 5-Role RBAC, 11 Core Tables, Scope Boundary |
 | `docs/CLAUDE.md` | Konteks bisnis penuh, aktor, alur, backlog |
 | `docs/PRD-LITE.md` | MVP distilasi — cek ini sebelum tambah fitur |
 | `docs/DATABASE-SCHEMA.md` | Blueprint 17 tabel |
