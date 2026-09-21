@@ -58,6 +58,21 @@
             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
                 <div>
                     <div style="font-size: 15px; font-weight: 600;">{{ $app->extras->user->username ?? '(belum isi username)' }}</div>
+                    <div style="font-size: 12.5px; color: var(--text-secondary); margin-top: 3px;">
+                        Kelas: <strong>{{ $app->castingProjectClass->nama_kelas ?? 'Umum' }}</strong>
+                        @if ($app->karakter || $app->castingProjectClass?->karakter)
+                            · Peran: <span style="color: var(--accent-strong);">{{ $app->karakter ?: $app->castingProjectClass->karakter }}</span>
+                        @endif
+                        @if ($app->jam_callingan || $app->castingProjectClass?->jam_callingan)
+                            · Callingan: <strong>{{ $app->jam_callingan ?: $app->castingProjectClass->jam_callingan }}</strong>
+                            @if ($app->castingProjectClass?->jam_callsheet)
+                                <span style="color: var(--text-muted); font-size: 11px;">(Callsheet: {{ $app->castingProjectClass->jam_callsheet }})</span>
+                            @endif
+                        @endif
+                        @if ($app->keterangan_scene || $app->castingProjectClass?->keterangan_scene)
+                            · Scene: <em>{{ $app->keterangan_scene ?: $app->castingProjectClass->keterangan_scene }}</em>
+                        @endif
+                    </div>
                     <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
                         <span class="badge {{ $badgeClass[$app->status_partisipasi] ?? 'badge-pending' }}">{{ $app->status_partisipasi }}</span>
                         @if ($app->bentrok_jadwal_flag)
@@ -65,6 +80,9 @@
                         @endif
                         @if ($app->grade)
                             <span class="badge badge-aktif">Rek. Grade (Admin): {{ $app->grade }}</span>
+                        @endif
+                        @if (($app->tipe_continuity ?: $app->castingProjectClass?->tipe_continuity) === 'continuity')
+                            <span class="badge badge-pending">Continuity</span>
                         @endif
                         @if ($app->extras->apresiasi)
                             <span class="badge badge-aktif" title="{{ $app->extras->apresiasi_catatan }}"><i class="ti ti-star-filled"></i> Apresiasi</span>
@@ -116,6 +134,7 @@
                         <button class="btn btn-sm">Set Grade</button>
                     </form>
                 @endif
+                <button type="button" class="btn btn-sm" onclick="document.getElementById('breakdown-dialog-{{ $app->id }}').showModal()"><i class="ti ti-movie"></i> Breakdown</button>
                 <a href="{{ route('admin.negotiations.show', $app) }}" class="btn btn-sm btn-brand">Nego Fee</a>
                 @if (in_array($app->status_partisipasi, ['diajukan', 'direview_admin'], true))
                     <button type="button" class="btn btn-sm btn-danger-outline" onclick="document.getElementById('reject-dialog-{{ $app->id }}').showModal()">Tolak</button>
@@ -129,10 +148,10 @@
                 @if ($app->status_partisipasi === 'kontrak_ditandatangani' || $app->payment)
                     <a href="{{ route('payments.show', $app) }}" class="btn btn-sm">Bayar</a>
                 @endif
-                @if (in_array(auth()->user()->role, ['admin_default', 'admin_korlap'], true))
+                @if (auth()->user()->isAdmin() || auth()->user()->isKorlap())
                     <button type="button" class="btn btn-sm" onclick="document.getElementById('catatan-dialog-{{ $app->id }}').showModal()">Catatan Lapangan</button>
                 @endif
-                @if (auth()->user()->role === 'admin_default')
+                @if (auth()->user()->isAdmin())
                     @if ($app->extras->apresiasi)
                         <form method="POST" action="{{ route('admin.applications.apresiasi', $app) }}">
                             @csrf
@@ -174,7 +193,7 @@
         </dialog>
     @endif
 
-    @if (auth()->user()->role === 'admin_default' && ! $app->extras->apresiasi)
+    @if (auth()->user()->isAdmin() && ! $app->extras->apresiasi)
         <dialog id="apresiasi-dialog-{{ $app->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
             <form method="POST" action="{{ route('admin.applications.apresiasi', $app) }}" style="padding: 18px;">
                 @csrf
@@ -188,6 +207,38 @@
             </form>
         </dialog>
     @endif
+
+    <dialog id="breakdown-dialog-{{ $app->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 440px; width: 90%;">
+        <form method="POST" action="{{ route('admin.applications.breakdown', $app) }}" style="padding: 18px;">
+            @csrf @method('PATCH')
+            <div style="font-size: 15px; font-weight: 600; margin-bottom: 12px;">Breakdown — {{ $app->extras->user->username ?? 'Extras' }}</div>
+            <div style="margin-bottom: 10px;">
+                <label>Nama Karakter / Peran</label>
+                <input type="text" name="karakter" value="{{ old('karakter', $app->karakter ?: $app->castingProjectClass?->karakter) }}" placeholder="misal: Preman 1 / Teman Kampus" style="width: 100%;">
+            </div>
+            <div class="form-row" style="margin-bottom: 10px;">
+                <div>
+                    <label>Jam Callingan Extras</label>
+                    <input type="time" name="jam_callingan" value="{{ old('jam_callingan', $app->jam_callingan ?: $app->castingProjectClass?->jam_callingan) }}" style="width: 100%;">
+                </div>
+                <div>
+                    <label>Tipe Kontinuitas</label>
+                    <select name="tipe_continuity" style="width: 100%;">
+                        <option value="free" @selected(($app->tipe_continuity ?: $app->castingProjectClass?->tipe_continuity) === 'free')>Bebas</option>
+                        <option value="continuity" @selected(($app->tipe_continuity ?: $app->castingProjectClass?->tipe_continuity) === 'continuity')>Continuity</option>
+                    </select>
+                </div>
+            </div>
+            <div style="margin-bottom: 12px;">
+                <label>Keterangan Scene</label>
+                <input type="text" name="keterangan_scene" value="{{ old('keterangan_scene', $app->keterangan_scene ?: $app->castingProjectClass?->keterangan_scene) }}" placeholder="misal: Scene 12-14 warung kopi, baju casual" style="width: 100%;">
+            </div>
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
+                <button type="submit" class="btn btn-sm btn-brand">Simpan Breakdown</button>
+            </div>
+        </form>
+    </dialog>
 
     @if ($app->status_partisipasi === 'deal')
         <dialog id="batalkan-dialog-{{ $app->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
@@ -203,7 +254,7 @@
         </dialog>
     @endif
 
-    @if (in_array(auth()->user()->role, ['admin_default', 'admin_korlap'], true))
+    @if (auth()->user()->isAdmin() || auth()->user()->isKorlap())
         <dialog id="catatan-dialog-{{ $app->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
             <form method="POST" action="{{ route('admin.applications.catatan', $app) }}" style="padding: 18px;">
                 @csrf

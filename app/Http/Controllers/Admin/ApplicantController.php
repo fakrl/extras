@@ -107,4 +107,39 @@ class ApplicantController extends Controller
 
         return back()->with('status', $pesan);
     }
+
+    /**
+     * Modul 1: Admin / Korlap override karakter, scene, dan jam callingan individual extras.
+     */
+    public function updateBreakdown(Request $request, ProjectApplication $application): RedirectResponse
+    {
+        $data = $request->validate([
+            'karakter' => ['nullable', 'string', 'max:255'],
+            'karakter_override' => ['nullable', 'string', 'max:255'],
+            'keterangan_scene' => ['nullable', 'string', 'max:255'],
+            'scene_override' => ['nullable', 'string', 'max:255'],
+            'jam_callingan' => ['nullable', 'string'],
+            'jam_callingan_override' => ['nullable', 'string'],
+            'tipe_continuity' => ['nullable', 'in:continuity,free'],
+            'tipe_continuity_override' => ['nullable', 'in:continuity,free'],
+        ]);
+
+        $updateData = [];
+        if ($request->has('karakter') || $request->has('karakter_override')) {
+            $updateData['karakter_override'] = $request->input('karakter', $request->input('karakter_override'));
+        }
+        if ($request->has('keterangan_scene') || $request->has('scene_override')) {
+            $updateData['scene_override'] = $request->input('keterangan_scene', $request->input('scene_override'));
+        }
+        if ($request->has('jam_callingan') || $request->has('jam_callingan_override')) {
+            $updateData['jam_callingan_override'] = $request->input('jam_callingan', $request->input('jam_callingan_override'));
+        }
+        if ($request->has('tipe_continuity') || $request->has('tipe_continuity_override')) {
+            $updateData['tipe_continuity_override'] = $request->input('tipe_continuity', $request->input('tipe_continuity_override'));
+        }
+
+        $application->update($updateData);
+
+        return back()->with('status', 'Detail breakdown karakter, scene, dan jam callingan berhasil diperbarui.');
+    }
 }

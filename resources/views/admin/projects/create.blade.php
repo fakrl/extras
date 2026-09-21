@@ -58,8 +58,12 @@
 
         <div class="form-row">
             <div>
-                <label>Poster/Cover Produksi <span style="color: var(--text-muted); font-weight: 400;">(opsional — bisa diisi nanti)</span></label>
+                <label>Poster Produksi <span style="color: var(--text-muted); font-weight: 400;">(opsional — max 2MB)</span></label>
                 <input type="file" name="poster_path" accept="image/jpeg,image/png,image/webp">
+            </div>
+            <div>
+                <label>Cover Naskah / Moodboard <span style="color: var(--text-muted); font-weight: 400;">(opsional — max 3MB)</span></label>
+                <input type="file" name="cover_path" accept="image/jpeg,image/png,image/webp">
             </div>
         </div>
 
@@ -77,7 +81,7 @@
 
         <hr>
         <div style="font-size: 14px; font-weight: 500; margin-bottom: 8px;">
-            Karakter yang Dibutuhkan <span style="color: var(--text-muted); font-weight: 400; font-size: 12.5px;">(minimal satu karakter)</span>
+            Karakter yang Dibutuhkan & Breakdown <span style="color: var(--text-muted); font-weight: 400; font-size: 12.5px;">(minimal satu karakter)</span>
         </div>
         <div id="kelas-wrap">
             <div class="kelas-row" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; margin-bottom: 10px;">
@@ -97,6 +101,27 @@
                     <div style="flex: 0;">
                         <button type="button" class="btn-icon-danger btn-remove-kelas" style="display:none">&times;</button>
                     </div>
+                </div>
+                <div class="form-row" style="margin-top: 8px;">
+                    <div>
+                        <label>Jam Callsheet Client <span style="color: var(--text-muted); font-weight: 400;">(waktu rundown PH)</span></label>
+                        <input type="time" name="kelas[0][jam_callsheet]" placeholder="07:00">
+                    </div>
+                    <div>
+                        <label>Jam Callingan Extras <span style="color: var(--text-muted); font-weight: 400;">(otomatis -1 jam jika kosong)</span></label>
+                        <input type="time" name="kelas[0][jam_callingan]" placeholder="06:00">
+                    </div>
+                    <div>
+                        <label>Tipe Kontinuitas</label>
+                        <select name="kelas[0][tipe_continuity]">
+                            <option value="free">Bebas (Single Day)</option>
+                            <option value="continuity">Continuity (Multi-day)</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-top: 8px;">
+                    <label>Keterangan Scene <span style="color: var(--text-muted); font-weight: 400;">(opsional, misal: Scene 12-14 warung kopi, baju casual)</span></label>
+                    <input type="text" name="kelas[0][keterangan_scene]" placeholder="Scene 12-14 di warung kopi...">
                 </div>
                 <div style="margin-top: 8px;">
                     <label>Kriteria yang dibutuhkan <span style="color: var(--text-muted); font-weight: 400;">(opsional)</span></label>
@@ -146,6 +171,12 @@
                 '<input type="number" name="kelas[' + kelasIndex + '][kuota_kelas]" min="1" required></div>' +
                 '<div style="flex:0;"><button type="button" class="btn-icon-danger btn-remove-kelas">&times;</button></div>' +
                 '</div>' +
+                '<div class="form-row" style="margin-top:8px;">' +
+                '<div><label>Jam Callsheet Client</label><input type="time" name="kelas[' + kelasIndex + '][jam_callsheet]"></div>' +
+                '<div><label>Jam Callingan Extras</label><input type="time" name="kelas[' + kelasIndex + '][jam_callingan]"></div>' +
+                '<div><label>Tipe Kontinuitas</label><select name="kelas[' + kelasIndex + '][tipe_continuity]"><option value="free">Bebas (Single Day)</option><option value="continuity">Continuity (Multi-day)</option></select></div>' +
+                '</div>' +
+                '<div style="margin-top:8px;"><label>Keterangan Scene</label><input type="text" name="kelas[' + kelasIndex + '][keterangan_scene]" placeholder="Scene 12-14 di warung kopi..."></div>' +
                 '<div style="margin-top:8px;"><label>Kriteria yang dibutuhkan <span style="color:var(--text-muted);font-weight:400;">(opsional)</span></label>' +
                 '<textarea name="kelas[' + kelasIndex + '][kriteria]" rows="2" placeholder="Contoh: wanita 25-35 th, ekspresi natural" maxlength="500"></textarea></div>';
             kelasWrap.appendChild(row);

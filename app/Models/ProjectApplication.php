@@ -14,12 +14,51 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
-#[Fillable(['casting_project_id', 'extras_id', 'casting_project_class_id', 'status_partisipasi', 'grade', 'fee_final', 'bentrok_jadwal_flag', 'alasan_tolak'])]
+#[Fillable([
+    'casting_project_id', 'extras_id', 'casting_project_class_id', 'status_partisipasi',
+    'grade', 'fee_final', 'bentrok_jadwal_flag', 'alasan_tolak',
+    'karakter_override', 'scene_override', 'jam_callingan_override', 'tipe_continuity_override',
+])]
 class ProjectApplication extends Model
 {
     const STATUS_AKTIF = ['deal', 'diajukan_ke_cd', 'direview_cd', 'lolos', 'kontrak_ditandatangani'];
 
     const STATUS_LOLOS_KE_ATAS = ['lolos', 'kontrak_ditandatangani', 'selesai_produksi'];
+
+    public function getKarakterAttribute(): ?string
+    {
+        return $this->karakter_override ?? $this->castingProjectClass?->karakter;
+    }
+
+    public function getKeteranganSceneAttribute(): ?string
+    {
+        return $this->scene_override ?? $this->castingProjectClass?->keterangan_scene;
+    }
+
+    public function getJamCallinganAttribute(): ?string
+    {
+        return $this->jam_callingan_override ?? $this->castingProjectClass?->jam_callingan;
+    }
+
+    public function getTipeContinuityAttribute(): ?string
+    {
+        return $this->tipe_continuity_override ?? $this->castingProjectClass?->tipe_continuity ?? 'free';
+    }
+
+    public function getKarakter(): string
+    {
+        return $this->karakter_override ?? $this->castingProjectClass?->karakter ?? '-';
+    }
+
+    public function getScene(): string
+    {
+        return $this->scene_override ?? $this->castingProjectClass?->keterangan_scene ?? '-';
+    }
+
+    public function getJamCallingan(): string
+    {
+        return $this->jam_callingan_override ?? $this->castingProjectClass?->jam_callingan ?? '-';
+    }
 
     protected function casts(): array
     {

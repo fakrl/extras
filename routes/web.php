@@ -15,6 +15,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Cd\DashboardController as CdDashboardController;
 use App\Http\Controllers\Cd\JadwalController as CdJadwalController;
 use App\Http\Controllers\Cd\ReviewController;
+use App\Http\Controllers\Client\ProjectRequestController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\Extras\AttendanceSelfieController;
 use App\Http\Controllers\Extras\CastingProjectController as ExtrasCastingProjectController;
@@ -149,6 +150,8 @@ Route::middleware(['auth', 'role:admin,admin_default,admin_talco,korlap,admin_ko
                 ->name('admin.users.toggle-status');
             Route::patch('/users/{user}/kategori', [UserManagementController::class, 'updateKategori'])
                 ->name('admin.users.kategori');
+            Route::post('/users/prune-abandoned', [UserManagementController::class, 'pruneAbandoned'])
+                ->name('admin.users.prune');
 
             Route::get('/projects', [AdminCastingProjectController::class, 'index'])->name('admin.projects.index');
             Route::get('/projects/create', [AdminCastingProjectController::class, 'create'])->name('admin.projects.create');
@@ -170,6 +173,9 @@ Route::middleware(['auth', 'role:admin,admin_default,admin_talco,korlap,admin_ko
 
             Route::post('/applications/{application}/apresiasi', [ApplicantController::class, 'toggleApresiasi'])
                 ->name('admin.applications.apresiasi');
+
+            Route::patch('/applications/{application}/breakdown', [ApplicantController::class, 'updateBreakdown'])
+                ->name('admin.applications.breakdown');
 
             Route::get('/applications/{application}/nego', [AdminFeeNegotiationController::class, 'show'])
                 ->name('admin.negotiations.show');
@@ -203,6 +209,8 @@ Route::middleware(['auth', 'role:admin,admin_default,admin_talco,korlap,admin_ko
                 ->name('admin.attendance.store');
             Route::post('/absensi/{attendance}/validasi', [AttendanceController::class, 'validasi'])
                 ->name('admin.absensi.validasi');
+            Route::post('/absensi/{attendance}/tolak', [AttendanceController::class, 'tolakValidasi'])
+                ->name('admin.absensi.tolak');
             Route::get('/media/absensi/{attendance}', [AttendanceController::class, 'fotoStream'])
                 ->name('admin.absensi.foto');
         });
@@ -242,12 +250,22 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
         ->name('super-admin.assignments.complete');
     Route::post('/payrolls/{payroll}/addon', [ProjectAssignmentController::class, 'addAddon'])
         ->name('super-admin.payrolls.addon');
+
+    // Modul 2: Super Admin ACC / Tolak Permintaan Proyek dari Client
+    Route::match(['post', 'patch'], '/projects/{castingProject}/acc', [SuperAdminDashboardController::class, 'accProject'])
+        ->name('super-admin.projects.acc');
+    Route::match(['post', 'patch'], '/projects/{castingProject}/reject', [SuperAdminDashboardController::class, 'rejectProject'])
+        ->name('super-admin.projects.reject');
 });
 
 // ==================== CLIENT (CASTING DIRECTOR) ====================
 
 Route::middleware(['auth', 'role:client,casting_director'])->prefix('cd')->group(function () {
     Route::get('/dashboard', [CdDashboardController::class, 'index'])->name('cd.dashboard');
+
+    // Modul 2: Pengajuan brief permintaan proyek oleh Client (Pintu 1)
+    Route::get('/projects/request', [ProjectRequestController::class, 'create'])->name('cd.projects.request');
+    Route::post('/projects/request', [ProjectRequestController::class, 'store'])->name('cd.projects.request.store');
 
     Route::get('/reviews', [ReviewController::class, 'index'])->name('cd.reviews.index');
     Route::post('/reviews', [ReviewController::class, 'review'])->name('cd.reviews.review');
@@ -258,6 +276,8 @@ Route::middleware(['auth', 'role:client,casting_director'])->prefix('cd')->group
     Route::get('/jadwal', [CdJadwalController::class, 'index'])->name('cd.jadwal.index');
     Route::get('/jadwal/{project}', [CdJadwalController::class, 'show'])->name('cd.jadwal.show');
     Route::post('/jadwal/{project}', [CdJadwalController::class, 'store'])->name('cd.jadwal.store');
+
+    Route::get('/absensi/{attendance}/foto', [AttendanceController::class, 'cdFotoStream'])->name('cd.absensi.foto');
 });
 
 // ==================== KONTRAK (lintas role: Admin Default & Extras) ====================
@@ -274,6 +294,9 @@ Route::middleware('auth')->prefix('kontrak')->group(function () {
 Route::middleware('auth')->prefix('invoice')->group(function () {
     Route::get('/{castingProject}', [InvoiceController::class, 'show'])->name('invoices.show');
     Route::post('/{castingProject}/sign', [InvoiceController::class, 'sign'])->name('invoices.sign');
+    Route::post('/{castingProject}/custom-doc', [InvoiceController::class, 'uploadCustomDoc'])->name('invoices.upload-custom');
+    Route::get('/{castingProject}/custom-doc', [InvoiceController::class, 'downloadCustomDoc'])->name('invoices.download-custom');
+    Route::get('/{castingProject}/download-pdf', [InvoiceController::class, 'downloadPdf'])->name('invoices.download-pdf');
 });
 
 // ==================== PEMBAYARAN EXTRAS (lintas role: Admin Default & Extras) ====================

@@ -32,18 +32,25 @@ class AttendanceSelfieController extends Controller
             'local'
         );
 
-        Attendance::create([
-            'project_application_id' => $application->id,
-            'event_shooting_date_id' => $application->castingProject
-                ->shootingDates()
-                ->whereDate('tanggal', today())
-                ->value('id') ?? abort(422, 'Tidak ada jadwal shooting hari ini untuk proyek ini.'),
-            'status' => 'hadir',
-            'dicatat_oleh' => $request->user()->id,
-            'foto_path' => $path,
-            'status_validasi' => 'menunggu',
-        ]);
+        $shootingDateId = $request->input('event_shooting_date_id')
+            ?? $application->castingProject->shootingDates()->whereDate('tanggal', today())->value('id')
+            ?? $application->castingProject->shootingDates()->first()?->id
+            ?? abort(422, 'Tidak ada jadwal shooting untuk proyek ini.');
 
-        return back()->with('status', 'Selfie absensi berhasil dikirim, menunggu validasi Korlap.');
+        Attendance::updateOrCreate(
+            [
+                'project_application_id' => $application->id,
+                'event_shooting_date_id' => $shootingDateId,
+            ],
+            [
+                'status' => 'hadir',
+                'dicatat_oleh' => $request->user()->id,
+                'foto_path' => $path,
+                'status_validasi' => 'menunggu',
+                'catatan' => 'Selfie Absensi Extras (Hybrid On-Site)',
+            ]
+        );
+
+        return back()->with('status', 'Selfie absensi berhasil dikirim, menunggu validasi Korlap di lokasi.');
     }
 }

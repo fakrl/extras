@@ -14,7 +14,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 // tidak ada route/controller yang nerima 'share_token' mentah dari request
 // user. Satu-satunya jalur yang mengisi field ini adalah
 // Admin\CastingProjectController::store() lewat Str::random(32) literal.
-#[Fillable(['admin_id', 'nama_produksi', 'client_ph', 'poster_path', 'share_token', 'wa_group_link', 'link_grup', 'deadline', 'kuota', 'is_urgent', 'status'])]
+#[Fillable([
+    'admin_id', 'nama_produksi', 'client_ph', 'poster_path', 'cover_path',
+    'share_token', 'wa_group_link', 'link_grup', 'deadline', 'kuota',
+    'is_urgent', 'status', 'client_request_status', 'diajukan_oleh_client_id', 'brief_catatan',
+])]
 class CastingProject extends Model
 {
     /** @use HasFactory<CastingProjectFactory> */
@@ -103,5 +107,28 @@ class CastingProject extends Model
             ->pluck('extras_id')
             ->unique()
             ->all();
+    }
+
+    public function diajukanOlehClient(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'diajukan_oleh_client_id');
+    }
+
+    public function isUrgent(): bool
+    {
+        if ($this->is_urgent) {
+            return true;
+        }
+
+        // Otomatis H-3 jika shooting terdekat <= 3 hari dan kuota belum penuh
+        $closestShooting = $this->shootingDates()->where('tanggal', '>=', today())->min('tanggal');
+        if ($closestShooting) {
+            $daysLeft = (int) today()->diffInDays($closestShooting, false);
+            if ($daysLeft >= 0 && $daysLeft <= 3 && ! $this->kuotaPenuh()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

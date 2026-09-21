@@ -41,6 +41,21 @@
     </table>
 </div>
 
+@if (($mangkrakCount ?? 0) > 0)
+    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div>
+            <div style="font-weight: 600; font-size: 13.5px;"><i class="ti ti-trash"></i> Pembersihan Akun Mangkrak (>30 Hari)</div>
+            <div style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">
+                Ditemukan <strong>{{ $mangkrakCount }}</strong> akun extras yang terdaftar lebih dari 30 hari lalu dengan profil tidak lengkap dan 0 riwayat apply proyek.
+            </div>
+        </div>
+        <form method="POST" action="{{ route('admin.users.prune') }}" onsubmit="return confirm('Yakin ingin menghapus {{ $mangkrakCount }} akun extras mangkrak (>30 hari tanpa kelengkapan profil & pendaftaran)?')">
+            @csrf
+            <button type="submit" class="btn btn-sm btn-danger-outline">Bersihkan {{ $mangkrakCount }} Akun Mangkrak</button>
+        </form>
+    </div>
+@endif
+
 <div class="card">
     <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Extras</div>
 

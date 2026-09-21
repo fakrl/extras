@@ -35,7 +35,7 @@ class InvoiceController extends Controller
 
         $data = $request->validate(['signature' => ['required', 'string']]);
 
-        $role = $request->user()->role === 'casting_director' ? 'cd' : 'admin';
+        $role = $request->user()->isClient() ? 'cd' : 'admin';
         $filename = "invoices/signatures/{$castingProject->id}-{$role}-".Str::random(8).'.png';
 
         $base64 = preg_replace('#^data:image/\w+;base64,#', '', $data['signature']);
@@ -56,14 +56,59 @@ class InvoiceController extends Controller
         return back()->with('status', 'Tanda tangan invoice berhasil disimpan.');
     }
 
+    public function uploadCustomDoc(Request $request, CastingProject $castingProject): RedirectResponse
+    {
+        $this->pastikanBolehLihat($request, $castingProject);
+
+        $request->validate([
+            'custom_doc' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png,docx,xlsx', 'max:10240'],
+        ]);
+
+        $path = $request->file('custom_doc')->store("invoices/custom/{$castingProject->id}", 'local');
+
+        $invoice = $castingProject->invoices()->firstOrCreate([]);
+        if ($invoice->custom_doc_path) {
+            Storage::disk('local')->delete($invoice->custom_doc_path);
+        }
+
+        $invoice->update([
+            'template_type' => 'custom_ph',
+            'custom_doc_path' => $path,
+        ]);
+
+        return back()->with('status', 'Dokumen invoice/voucher template khusus Client PH berhasil diupload.');
+    }
+
+    public function downloadCustomDoc(Request $request, CastingProject $castingProject)
+    {
+        $this->pastikanBolehLihat($request, $castingProject);
+
+        $invoice = $castingProject->invoices()->first();
+        abort_unless($invoice && $invoice->custom_doc_path && Storage::disk('local')->exists($invoice->custom_doc_path), 404);
+
+        return Storage::disk('local')->download($invoice->custom_doc_path);
+    }
+
+    public function downloadPdf(Request $request, CastingProject $castingProject)
+    {
+        $this->pastikanBolehLihat($request, $castingProject);
+
+        $invoice = $castingProject->invoices()->first();
+        abort_unless($invoice && $invoice->pdf_path && Storage::disk('local')->exists($invoice->pdf_path), 404, 'Invoice PDF belum tersedia.');
+
+        return Storage::disk('local')->download($invoice->pdf_path, 'Invoice-JBTB-'.Str::slug($castingProject->nama_produksi).'.pdf');
+    }
+
     private function pastikanBolehLihat(Request $request, CastingProject $castingProject): void
     {
         $user = $request->user();
 
-        abort_unless(in_array($user->role, ['admin_default', 'casting_director'], true), 403);
+        abort_unless($user->isAdmin() || $user->isClient(), 403);
 
-        if ($user->role === 'casting_director') {
-            abort_unless($castingProject->cdAssignments()->where('cd_user_id', $user->id)->exists(), 403);
+        if ($user->isClient()) {
+            $isAssigned = $castingProject->cdAssignments()->where('cd_user_id', $user->id)->exists();
+            $isOwner = $castingProject->diajukan_oleh_client_id === $user->id;
+            abort_unless($isAssigned || $isOwner, 403);
         }
     }
 }

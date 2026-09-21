@@ -408,6 +408,9 @@
                             <div>
                                 <span class="lowongan-card-title">{{ $proyek->nama_produksi }}</span>
                                 <span class="badge-dibuka">DIBUKA</span>
+                                @if ($proyek->isUrgent())
+                                    <span style="background: var(--danger, #ef4444); color: white; padding: 2px 7px; border-radius: 5px; font-size: 11px; font-weight: 700; margin-left: 4px;">🚨 URGENT H-3</span>
+                                @endif
                                 <div class="lowongan-card-deadline">Deadline: {{ $proyek->deadline->format('d M Y') }}</div>
                             </div>
                             @if ($proyek->classes->isNotEmpty())
