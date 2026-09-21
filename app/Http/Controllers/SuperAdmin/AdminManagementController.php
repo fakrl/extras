@@ -78,7 +78,7 @@ class AdminManagementController extends Controller
             $user->load('cdProjectAssignments.castingProject', 'cdProjectAssignments.cdReviews');
             $assignments = $user->cdProjectAssignments;
         } else {
-            $user->load('adminProjectAssignments.castingProject', 'adminProjectAssignments.payroll', 'adminProfile');
+            $user->load('adminProjectAssignments.castingProject', 'adminProjectAssignments.payroll.addons', 'adminProfile');
             $assignments = $user->adminProjectAssignments;
         }
 

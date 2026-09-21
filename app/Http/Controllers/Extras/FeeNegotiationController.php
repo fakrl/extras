@@ -27,7 +27,7 @@ class FeeNegotiationController extends Controller
         $this->pastikanMilikSendiri($request, $application);
         $application->pastikanMasihBisaNego();
 
-        $nominalTerakhir = $application->feeNegotiations()->latest('round')->value('nominal');
+        $nominalTerakhir = $application->feeNegotiations()->reorder('round', 'desc')->value('nominal');
 
         $application->terimaFee('extras', $nominalTerakhir);
 
@@ -45,9 +45,10 @@ class FeeNegotiationController extends Controller
 
         $data = $request->validate([
             'nominal' => ['required', 'numeric', 'min:0'],
+            'catatan' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $application->counterFee('extras', $data['nominal']);
+        $application->counterFee('extras', $data['nominal'], $data['catatan'] ?? null);
 
         return back()->with('status', 'Counter fee terkirim ke Admin.');
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Extras;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\CastingProject;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -66,6 +67,12 @@ class CastingProjectController extends Controller
         ]);
 
         $application->kirimKonfirmasiApply();
+
+        ActivityLog::record(
+            'APPLY_PROJECT',
+            "Extras {$request->user()->name} mendaftar ke proyek casting '{$castingProject->nama_produksi}'",
+            $application
+        );
 
         $pesan = $adaBentrok
             ? '⚠️ Pendaftaran berhasil, tapi ada tanggal yang bertabrakan dengan proyek lain yang sedang kamu ikuti. Silakan cek kembali komitmenmu.'

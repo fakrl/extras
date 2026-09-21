@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\AdminProjectAssignment;
 use App\Models\CastingProject;
 use App\Models\ProjectApplication;
@@ -33,11 +34,9 @@ class DashboardController extends Controller
 
         $roleLabels = [
             'super_admin' => 'Super Admin',
-            'admin_default' => 'Admin Default',
-            'admin_talco' => 'Admin Talco',
-            'admin_korlap' => 'Admin Korlap',
-            'admin_sosmed' => 'Admin Sosmed',
-            'casting_director' => 'Casting Director',
+            'admin' => 'Admin',
+            'korlap' => 'Koordinator Lapangan',
+            'client' => 'Client/Casting Director',
             'extras' => 'Extras',
         ];
 
@@ -88,15 +87,28 @@ class DashboardController extends Controller
         // RF-49: rekap honor seluruh Admin (bukan super_admin/CD/extras).
         // Volume kecil (puluhan admin maksimal) — loop pakai nominalTotal()
         // yang sudah ada, nggak perlu raw SQL agregat.
-        $rekapHonorAdmin = User::whereIn('role', ['admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed'])
+        $roleDisplayNames = [
+            'super_admin' => 'Super Admin',
+            'admin' => 'Admin',
+            'admin_default' => 'Admin Default',
+            'admin_talco' => 'Admin Talco',
+            'admin_korlap' => 'Admin Korlap',
+            'admin_sosmed' => 'Admin Sosmed',
+            'korlap' => 'Koordinator Lapangan',
+            'client' => 'Client',
+            'casting_director' => 'Casting Director',
+            'extras' => 'Extras',
+        ];
+
+        $rekapHonorAdmin = User::whereIn('role', ['admin', 'admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed', 'korlap'])
             ->with('adminProjectAssignments.payroll')
             ->get()
-            ->map(function (User $admin) use ($roleLabels) {
+            ->map(function (User $admin) use ($roleDisplayNames) {
                 $selesai = $admin->adminProjectAssignments->where('status_log', 'selesai');
 
                 return (object) [
                     'nama' => $admin->name,
-                    'role' => $roleLabels[$admin->role],
+                    'role' => $roleDisplayNames[$admin->role] ?? ucwords(str_replace('_', ' ', $admin->role)),
                     'total_honor' => $selesai->sum(fn ($a) => $a->payroll?->nominalTotal() ?? 0),
                     'proyek_selesai' => $selesai->count(),
                     'proyek_berjalan' => $admin->adminProjectAssignments->count() - $selesai->count(),
@@ -132,6 +144,12 @@ class DashboardController extends Controller
             'status' => 'dibuka',
         ]);
 
+        ActivityLog::record(
+            'APPROVE_PROJECT_REQUEST',
+            "Super Admin menyetujui (ACC) permintaan proyek '{$castingProject->nama_produksi}' dari Client",
+            $castingProject
+        );
+
         return back()->with('status', "Permintaan proyek '{$castingProject->nama_produksi}' berhasil disetujui (ACC). Proyek kini masuk antrean Admin.");
     }
 
@@ -141,6 +159,12 @@ class DashboardController extends Controller
             'client_request_status' => 'ditolak',
             'status' => 'ditutup',
         ]);
+
+        ActivityLog::record(
+            'REJECT_PROJECT_REQUEST',
+            "Super Admin menolak permintaan proyek '{$castingProject->nama_produksi}' dari Client",
+            $castingProject
+        );
 
         return back()->with('status', "Permintaan proyek '{$castingProject->nama_produksi}' telah ditolak.");
     }

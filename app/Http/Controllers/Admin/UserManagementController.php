@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\ExtrasCategory;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -60,6 +61,13 @@ class UserManagementController extends Controller
             $u->extrasProfile?->forceDelete();
             $u->forceDelete();
         }
+
+        ActivityLog::record(
+            'PRUNE_ABANDONED_USERS',
+            "Admin {$request->user()->name} membersihkan {$count} akun extras mangkrak (>30 hari tanpa profil & pendaftaran)",
+            null,
+            ['jumlah_akun_dihapus' => $count]
+        );
 
         return back()->with('status', "Berhasil membersihkan {$count} akun extras mangkrak (>30 hari tanpa kelengkapan profil & 0 pendaftaran).");
     }

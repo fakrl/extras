@@ -29,7 +29,7 @@
     @endif
 </div>
 
-@if (auth()->user()->role === 'admin_default' && $application->payment->status === 'belum_dibayar')
+@if (auth()->user()->isAdmin() && $application->payment->status === 'belum_dibayar')
     <div class="card" style="margin-bottom: 14px;">
         <form method="POST" action="{{ route('payments.transfer', $application) }}" enctype="multipart/form-data">
             @csrf
@@ -40,7 +40,7 @@
     </div>
 @endif
 
-@if (in_array(auth()->user()->role, ['admin_default', 'extras']) && $application->payment->status !== 'dikonfirmasi_diterima')
+@if ((auth()->user()->isAdmin() || auth()->user()->isExtras()) && $application->payment->status !== 'dikonfirmasi_diterima')
     <form method="POST" action="{{ route('payments.addon', $application) }}" style="display: flex; gap: 8px; margin-bottom: 14px;">
         @csrf
         <input type="text" name="label" class="input-inline" placeholder="Label (misal: Reimburse transport)" required>

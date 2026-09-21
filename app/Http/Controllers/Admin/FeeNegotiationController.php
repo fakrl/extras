@@ -29,9 +29,10 @@ class FeeNegotiationController extends Controller
 
         $data = $request->validate([
             'nominal' => ['required', 'numeric', 'min:0'],
+            'catatan' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $application->ajukanFeeAwal($data['nominal']);
+        $application->ajukanFeeAwal($data['nominal'], $data['catatan'] ?? null);
 
         return back()->with('status', 'Penawaran fee awal terkirim ke Extras.');
     }
@@ -43,11 +44,12 @@ class FeeNegotiationController extends Controller
     {
         $data = $request->validate([
             'nominal' => ['required', 'numeric', 'min:0'],
+            'catatan' => ['nullable', 'string', 'max:500'],
         ]);
 
         $application->pastikanMasihBisaNego();
 
-        $application->counterFee('admin', $data['nominal']);
+        $application->counterFee('admin', $data['nominal'], $data['catatan'] ?? null);
 
         return back()->with('status', 'Counter fee terkirim.');
     }

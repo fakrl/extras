@@ -41,6 +41,51 @@
     <a href="{{ route('extras.projects.index') }}" class="btn btn-brand">Lihat Lowongan Casting</a>
 </div>
 
+{{-- Status Akun, Grade, & Linimasa Aktivitas --}}
+<div class="card" style="margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+        <div style="font-size: 14px; font-weight: 600;">
+            <i class="ti ti-activity"></i> Status Talenta & Linimasa Aktivitas
+        </div>
+        <div>
+            @if ($extrasProfile?->grade_saat_ini)
+                <span class="badge badge-aktif" style="font-weight: 600; font-size: 12px;">Grade {{ $extrasProfile->grade_saat_ini }}</span>
+            @else
+                <span class="badge badge-pending" style="font-size: 11.5px;">Grade: Belum Dinilai</span>
+            @endif
+        </div>
+    </div>
+    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4;">
+        Klasifikasi Grade (A/B/C) ditentukan oleh Admin Casting berdasarkan penampilan/look fisik talenta dan divalidasi oleh Client. Riwayat aktivitas dan perubahan status akun Anda tercatat secara transparan di bawah ini.
+    </p>
+
+    @if ($aktivitasSaya->isNotEmpty())
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            @foreach ($aktivitasSaya as $log)
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 10px; background: var(--bg-secondary, rgba(0,0,0,.03)); border-radius: 6px; font-size: 12.5px; gap: 10px;">
+                    <div>
+                        <div style="font-weight: 500;">
+                            @if ($log->action === 'SET_EXTRAS_GRADE')
+                                <span style="color: var(--accent);"><i class="ti ti-star"></i> Perubahan Grade Talenta</span>
+                            @else
+                                <i class="ti ti-point"></i> {{ $log->action }}
+                            @endif
+                        </div>
+                        <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 2px;">{{ $log->description }}</div>
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-muted); white-space: nowrap;">
+                        {{ $log->created_at?->diffForHumans() }}
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @else
+        <div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 12px 0;">
+            Belum ada catatan aktivitas akun.
+        </div>
+    @endif
+</div>
+
 <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Pendaftaran Saya</div>
 
 @forelse ($pendaftaranSaya as $app)

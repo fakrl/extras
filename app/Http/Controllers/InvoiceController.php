@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\CastingProject;
 use App\Services\PdfGeneratorService;
 use Illuminate\Http\RedirectResponse;
@@ -53,6 +54,12 @@ class InvoiceController extends Controller
             $invoice->update(['pdf_path' => $path]);
         }
 
+        ActivityLog::record(
+            'SIGN_INVOICE',
+            ucfirst($role)." {$request->user()->name} menandatangani invoice untuk proyek '{$castingProject->nama_produksi}'",
+            $castingProject
+        );
+
         return back()->with('status', 'Tanda tangan invoice berhasil disimpan.');
     }
 
@@ -75,6 +82,12 @@ class InvoiceController extends Controller
             'template_type' => 'custom_ph',
             'custom_doc_path' => $path,
         ]);
+
+        ActivityLog::record(
+            'UPLOAD_CUSTOM_INVOICE_DOC',
+            "{$request->user()->name} mengunggah template voucher/invoice khusus untuk proyek '{$castingProject->nama_produksi}'",
+            $castingProject
+        );
 
         return back()->with('status', 'Dokumen invoice/voucher template khusus Client PH berhasil diupload.');
     }

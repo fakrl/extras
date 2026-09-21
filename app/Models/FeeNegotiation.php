@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 // lewat scalar param typed, bukan raw request). Tanpa Fillable ini, keempat
 // method di atas selalu throw MassAssignmentException — bug nyata sejak
 // Sprint 1, baru ketahuan sekarang karena belum ada testing end-to-end.
-#[Fillable(['round', 'diajukan_oleh', 'nominal', 'aksi'])]
+#[Fillable(['round', 'diajukan_oleh', 'nominal', 'aksi', 'catatan'])]
 class FeeNegotiation extends Model
 {
     public function projectApplication(): BelongsTo

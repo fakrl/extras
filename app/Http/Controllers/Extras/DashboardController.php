@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Extras;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
+use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,6 +23,17 @@ class DashboardController extends Controller
                 ->get()
             : collect();
 
-        return view('extras.dashboard', compact('extrasProfile', 'pendaftaranSaya'));
+        $aktivitasSaya = collect();
+        if ($extrasProfile) {
+            $aktivitasSaya = ActivityLog::where(function ($q) use ($extrasProfile) {
+                $q->where('user_id', Auth::id())
+                    ->orWhere(function ($sq) use ($extrasProfile) {
+                        $sq->where('subject_type', ExtrasProfile::class)
+                            ->where('subject_id', $extrasProfile->id);
+                    });
+            })->latest('created_at')->take(5)->get();
+        }
+
+        return view('extras.dashboard', compact('extrasProfile', 'pendaftaranSaya', 'aktivitasSaya'));
     }
 }

@@ -12,18 +12,19 @@
 <div class="card" style="margin-bottom: 16px;">
     <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Riwayat Tawar-Menawar</div>
     <table>
-        <thead><tr><th>Ronde</th><th>Diajukan Oleh</th><th>Nominal</th><th>Aksi</th><th>Waktu</th></tr></thead>
+        <thead><tr><th>Ronde</th><th>Diajukan Oleh</th><th>Nominal</th><th>Aksi</th><th>Catatan / Alasan</th><th>Waktu</th></tr></thead>
         <tbody>
             @forelse ($application->feeNegotiations as $nego)
                 <tr>
                     <td>{{ $nego->round }}</td>
-                    <td style="text-transform: capitalize;">{{ $nego->diajukan_oleh }}</td>
-                    <td>Rp {{ number_format($nego->nominal, 0, ',', '.') }}</td>
-                    <td style="text-transform: capitalize;">{{ $nego->aksi }}</td>
+                    <td style="text-transform: capitalize; font-weight: 500;">{{ $nego->diajukan_oleh }}</td>
+                    <td style="font-weight: 600; color: var(--accent-strong);">Rp {{ number_format($nego->nominal, 0, ',', '.') }}</td>
+                    <td style="text-transform: capitalize;"><span class="badge {{ $nego->aksi === 'terima' ? 'badge-aktif' : ($nego->aksi === 'tolak' ? 'badge-tolak' : 'badge-pending') }}">{{ $nego->aksi }}</span></td>
+                    <td style="color: var(--text-secondary); font-size: 12.5px;">{{ $nego->catatan ?: '-' }}</td>
                     <td>{{ $nego->created_at->format('d M Y H:i') }}</td>
                 </tr>
             @empty
-                <tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding: 20px 0;">Belum ada penawaran.</td></tr>
+                <tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 20px 0;">Belum ada penawaran.</td></tr>
             @endforelse
         </tbody>
     </table>
@@ -40,23 +41,24 @@
 @elseif ($application->status_partisipasi === 'ditolak')
     <div class="alert-info">Negosiasi untuk pendaftar ini sudah dihentikan.</div>
 @elseif ($application->feeNegotiations->isEmpty())
-    <form method="POST" action="{{ route('admin.negotiations.ajukan', $application) }}" style="display: flex; gap: 8px;">
+    <form method="POST" action="{{ route('admin.negotiations.ajukan', $application) }}" style="display: flex; gap: 8px; flex-wrap: wrap;">
         @csrf
         <input type="number" name="nominal" class="input-inline" placeholder="Nominal penawaran awal" required
                value="{{ $application->extras->rate_card }}">
+        <input type="text" name="catatan" class="input-inline" placeholder="Catatan/alasan (opsional)" style="min-width: 200px;">
         <button class="btn btn-brand">Ajukan Fee Awal</button>
     </form>
 @else
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
         <form method="POST" action="{{ route('admin.negotiations.terima', $application) }}" style="display: flex; gap: 8px;">
             @csrf
-            <input type="number" name="nominal" class="input-inline" placeholder="Nominal" required
-                   value="{{ $application->feeNegotiations->last()->nominal }}">
-            <button class="btn btn-brand">Terima</button>
+            <input type="hidden" name="nominal" value="{{ $application->feeNegotiations->last()->nominal }}">
+            <button class="btn btn-brand">✓ Terima (Rp {{ number_format($application->feeNegotiations->last()->nominal, 0, ',', '.') }})</button>
         </form>
-        <form method="POST" action="{{ route('admin.negotiations.counter', $application) }}" style="display: flex; gap: 8px;">
+        <form method="POST" action="{{ route('admin.negotiations.counter', $application) }}" style="display: flex; gap: 8px; flex-wrap: wrap;">
             @csrf
-            <input type="number" name="nominal" class="input-inline" placeholder="Nominal counter" required>
+            <input type="number" name="nominal" class="input-inline" placeholder="Nominal counter" required style="width: 140px;">
+            <input type="text" name="catatan" class="input-inline" placeholder="Catatan/alasan counter (opsional)" style="min-width: 180px;">
             <button class="btn">Counter</button>
         </form>
         <form method="POST" action="{{ route('admin.negotiations.tolak', $application) }}">
