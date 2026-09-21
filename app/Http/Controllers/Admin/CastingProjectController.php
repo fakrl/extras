@@ -39,6 +39,7 @@ class CastingProjectController extends Controller
             'nama_produksi' => ['required', 'string', 'max:255'],
             'client_ph' => ['required', 'string', 'max:255'],
             'poster_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'cover_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
             'wa_group_link' => ['nullable', 'url'],
             'link_grup' => ['nullable', 'url'],
             'deadline' => ['required', 'date'],
@@ -51,16 +52,26 @@ class CastingProjectController extends Controller
             'kelas.*.kriteria' => ['nullable', 'string', 'max:500'],
             'kelas.*.budget_client' => ['required', 'numeric', 'min:0'],
             'kelas.*.kuota_kelas' => ['required', 'integer', 'min:1'],
+            'kelas.*.jam_callsheet' => ['nullable', 'string'],
+            'kelas.*.jam_callingan' => ['nullable', 'string'],
+            'kelas.*.karakter' => ['nullable', 'string', 'max:255'],
+            'kelas.*.keterangan_scene' => ['nullable', 'string', 'max:255'],
+            'kelas.*.tipe_continuity' => ['nullable', 'in:continuity,free'],
         ]);
 
         $posterPath = $request->hasFile('poster_path')
             ? $request->file('poster_path')->store('posters', 'public')
             : null;
 
+        $coverPath = $request->hasFile('cover_path')
+            ? $request->file('cover_path')->store('covers', 'public')
+            : null;
+
         $project = $request->user()->castingProjects()->create([
             'nama_produksi' => $data['nama_produksi'],
             'client_ph' => $data['client_ph'],
             'poster_path' => $posterPath,
+            'cover_path' => $coverPath,
             'share_token' => Str::random(32),
             'wa_group_link' => $data['wa_group_link'] ?? null,
             'link_grup' => $data['link_grup'] ?? null,
@@ -68,6 +79,7 @@ class CastingProjectController extends Controller
             'kuota' => $data['kuota'],
             'is_urgent' => $request->boolean('is_urgent'),
             'status' => 'dibuka',
+            'client_request_status' => 'disetujui',
         ]);
 
         foreach (array_unique($data['tanggal_shooting']) as $tanggal) {
@@ -75,6 +87,9 @@ class CastingProjectController extends Controller
         }
 
         foreach ($data['kelas'] as $kelas) {
+            if (! empty($kelas['jam_callsheet']) && empty($kelas['jam_callingan'])) {
+                $kelas['jam_callingan'] = date('H:i', strtotime($kelas['jam_callsheet'].' -1 hour'));
+            }
             $project->classes()->create($kelas);
         }
 
@@ -89,7 +104,7 @@ class CastingProjectController extends Controller
         $castingProject->load('classes', 'shootingDates', 'cdAssignments.cdUser');
 
         $applicantsCount = $castingProject->applications()->count();
-        $cdUsers = User::where('role', 'casting_director')->orderBy('name')->get();
+        $cdUsers = User::whereIn('role', ['client', 'casting_director'])->orderBy('name')->get();
 
         return view('admin.projects.edit', compact('castingProject', 'applicantsCount', 'cdUsers'));
     }
@@ -107,6 +122,7 @@ class CastingProjectController extends Controller
             'nama_produksi' => ['required', 'string', 'max:255'],
             'client_ph' => ['required', 'string', 'max:255'],
             'poster_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'cover_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
             'wa_group_link' => ['nullable', 'url'],
             'link_grup' => ['nullable', 'url'],
             'deadline' => ['required', 'date'],
@@ -120,6 +136,11 @@ class CastingProjectController extends Controller
             'kelas.*.kriteria' => ['nullable', 'string', 'max:500'],
             'kelas.*.budget_client' => ['required', 'numeric', 'min:0'],
             'kelas.*.kuota_kelas' => ['required', 'integer', 'min:1'],
+            'kelas.*.jam_callsheet' => ['nullable', 'string'],
+            'kelas.*.jam_callingan' => ['nullable', 'string'],
+            'kelas.*.karakter' => ['nullable', 'string', 'max:255'],
+            'kelas.*.keterangan_scene' => ['nullable', 'string', 'max:255'],
+            'kelas.*.tipe_continuity' => ['nullable', 'in:continuity,free'],
         ]);
 
         $hasApplicants = $castingProject->applications()->exists();
@@ -152,12 +173,26 @@ class CastingProjectController extends Controller
             $updateData['poster_path'] = $request->file('poster_path')->store('posters', 'public');
         }
 
+        if ($request->hasFile('cover_path')) {
+            if ($castingProject->cover_path) {
+                Storage::disk('public')->delete($castingProject->cover_path);
+            }
+            $updateData['cover_path'] = $request->file('cover_path')->store('covers', 'public');
+        }
+
         $castingProject->update($updateData);
 
         $castingProject->shootingDates()->delete();
         foreach (array_unique($data['tanggal_shooting']) as $tanggal) {
             $castingProject->shootingDates()->create(['tanggal' => $tanggal]);
         }
+
+        foreach ($data['kelas'] as &$k) {
+            if (! empty($k['jam_callsheet']) && empty($k['jam_callingan'])) {
+                $k['jam_callingan'] = date('H:i', strtotime($k['jam_callsheet'].' -1 hour'));
+            }
+        }
+        unset($k);
 
         if ($hasApplicants) {
             foreach ($data['kelas'] as $kelas) {

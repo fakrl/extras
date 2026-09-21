@@ -3,7 +3,23 @@
 @section('title', 'Dashboard Admin')
 
 @section('content')
-@if (auth()->user()->role === 'admin_default')
+@if (auth()->user()->isAdmin())
+    @if ($urgentProjects->isNotEmpty())
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger, #ef4444); border-radius: 10px; padding: 14px 18px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <div style="font-weight: 700; color: var(--danger, #ef4444); font-size: 14.5px;">
+                        🚨 Perhatian: Ada {{ $urgentProjects->count() }} Proyek Berstatus Urgent / H-3!
+                    </div>
+                    <div style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">
+                        Tanggal shooting sudah sangat dekat namun kuota kandidat belum terpenuhi. Segera bagikan link pendaftaran ke grup WA atau review lineup.
+                    </div>
+                </div>
+                <a href="{{ route('admin.projects.index') }}" class="btn btn-sm btn-brand">Lihat Proyek Urgent &rarr;</a>
+            </div>
+        </div>
+    @endif
+
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px;">
         <div class="metric-card">
             <div class="metric-label">Proyek Aktif</div>
@@ -45,14 +61,18 @@
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
         <a href="{{ route('admin.users.index') }}" class="btn">Kelola Akun CD & Extras</a>
         <a href="{{ route('admin.projects.index') }}" class="btn btn-brand">Manajemen Proyek Casting</a>
+        <a href="{{ route('admin.attendance.index') }}" class="btn">Kelola Absensi Lapangan</a>
         <a href="{{ route('admin.recap.index') }}" class="btn">Rekap Extras</a>
         <a href="{{ route('admin.work-history') }}" class="btn">Riwayat Kerja & Status Gaji Saya</a>
     </div>
-@elseif (auth()->user()->role === 'admin_korlap')
-    <div class="alert-info">
-        Sebagai Korlap, kamu bisa mencatat absensi/sanksi Extras di lapangan lewat halaman proyek terkait.
+@elseif (auth()->user()->isKorlap())
+    <div class="alert-info" style="margin-bottom: 16px;">
+        Sebagai Koordinator Lapangan (Korlap), tugas utama kamu adalah memvalidasi kehadiran Extras di lokasi syuting dan mencatat evaluasi lapangan.
     </div>
-    <a href="{{ route('admin.work-history') }}" class="btn">Riwayat Kerja & Status Gaji Saya</a>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <a href="{{ route('admin.attendance.index') }}" class="btn btn-brand"><i class="ti ti-camera"></i> Absensi Lapangan</a>
+        <a href="{{ route('admin.work-history') }}" class="btn">Riwayat Kerja & Status Gaji Saya</a>
+    </div>
 @else
     <div class="alert-info">
         Akses kamu sebagai {{ auth()->user()->role }} terbatas ke pencatatan penugasan & riwayat kerja.
@@ -61,7 +81,7 @@
 @endif
 @endsection
 
-@if (auth()->user()->role === 'admin_default')
+@if (auth()->user()->isAdmin())
 @push('scripts')
 <script>
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';

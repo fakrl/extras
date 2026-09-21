@@ -8,6 +8,7 @@ use App\Models\CastingProject;
 use App\Models\ProjectApplication;
 use App\Models\StaffPayroll;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 
 /**
  * RF-50: dashboard monitoring Super Admin — read-only, ringkasan operasional
@@ -104,6 +105,11 @@ class DashboardController extends Controller
             ->sortByDesc('total_honor')
             ->values();
 
+        $pendingRequests = CastingProject::where('client_request_status', 'menunggu_acc')
+            ->with('diajukanOlehClient')
+            ->latest()
+            ->get();
+
         return view('super-admin.dashboard', compact(
             'proyekBerjalan',
             'extrasAktif',
@@ -114,7 +120,28 @@ class DashboardController extends Controller
             'chartStatusPartisipasi',
             'assignmentSelesai',
             'assignmentTotal',
-            'rekapHonorAdmin'
+            'rekapHonorAdmin',
+            'pendingRequests'
         ));
+    }
+
+    public function accProject(CastingProject $castingProject): RedirectResponse
+    {
+        $castingProject->update([
+            'client_request_status' => 'disetujui',
+            'status' => 'dibuka',
+        ]);
+
+        return back()->with('status', "Permintaan proyek '{$castingProject->nama_produksi}' berhasil disetujui (ACC). Proyek kini masuk antrean Admin.");
+    }
+
+    public function rejectProject(CastingProject $castingProject): RedirectResponse
+    {
+        $castingProject->update([
+            'client_request_status' => 'ditolak',
+            'status' => 'ditutup',
+        ]);
+
+        return back()->with('status', "Permintaan proyek '{$castingProject->nama_produksi}' telah ditolak.");
     }
 }

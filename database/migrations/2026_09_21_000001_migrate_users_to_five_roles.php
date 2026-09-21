@@ -9,12 +9,18 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (DB::getDriverName() === 'mysql') {
+            // Expand ENUM first so MySQL accepts the new role values during update
+            DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('super_admin', 'admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed', 'casting_director', 'extras', 'admin', 'korlap', 'client') NOT NULL");
+        }
+
         // Migrasi data pengguna yang masih memakai role lama
         DB::table('users')->whereIn('role', ['admin_default', 'admin_talco', 'admin_sosmed'])->update(['role' => 'admin']);
         DB::table('users')->where('role', 'admin_korlap')->update(['role' => 'korlap']);
         DB::table('users')->where('role', 'casting_director')->update(['role' => 'client']);
 
         if (DB::getDriverName() === 'mysql') {
+            // Narrow down to the locked 5 core roles
             DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('super_admin', 'admin', 'korlap', 'client', 'extras') NOT NULL");
         } else {
             // SQLite support for changing column definition
@@ -26,6 +32,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('super_admin', 'admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed', 'casting_director', 'extras', 'admin', 'korlap', 'client') NOT NULL");
+        }
+
         DB::table('users')->where('role', 'admin')->update(['role' => 'admin_default']);
         DB::table('users')->where('role', 'korlap')->update(['role' => 'admin_korlap']);
         DB::table('users')->where('role', 'client')->update(['role' => 'casting_director']);

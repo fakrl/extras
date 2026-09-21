@@ -58,12 +58,19 @@ class DashboardController extends Controller
             ],
         ];
 
+        $urgentProjects = CastingProject::where('status', 'dibuka')
+            ->with(['shootingDates', 'applications'])
+            ->get()
+            ->filter(fn ($p) => $p->isUrgent())
+            ->values();
+
         return view('admin.dashboard', compact(
             'proyekAktif',
             'totalPendaftar',
             'perluDinego',
             'chartStatusPartisipasi',
-            'chartStatusPembayaran'
+            'chartStatusPembayaran',
+            'urgentProjects'
         ));
     }
 }

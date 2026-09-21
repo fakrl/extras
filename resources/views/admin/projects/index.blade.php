@@ -21,8 +21,8 @@
             <div class="entity-card">
                 <div class="entity-card-title">
                     {{ $project->nama_produksi }}
-                    @if ($project->is_urgent)
-                        <span class="badge badge-tolak">Urgent</span>
+                    @if ($project->isUrgent())
+                        <span class="badge badge-tolak">🚨 Urgent</span>
                     @endif
                 </div>
                 <div class="entity-card-sub">{{ $project->client_ph }}</div>

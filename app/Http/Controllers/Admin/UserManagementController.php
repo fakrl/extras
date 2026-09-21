@@ -24,7 +24,44 @@ class UserManagementController extends Controller
             ->get();
         $allCategories = ExtrasCategory::orderBy('nama')->get();
 
-        return view('admin.users.index', compact('castingDirectors', 'extras', 'allCategories'));
+        $mangkrakCount = User::where('role', 'extras')
+            ->where('created_at', '<=', now()->subDays(30))
+            ->whereDoesntHave('extrasProfile.applications')
+            ->where(function ($q) {
+                $q->whereDoesntHave('extrasProfile')
+                    ->orWhereHas('extrasProfile', function ($ep) {
+                        $ep->whereNull('foto_profil_path')->orWhereNull('nik');
+                    });
+            })
+            ->count();
+
+        return view('admin.users.index', compact('castingDirectors', 'extras', 'allCategories', 'mangkrakCount'));
+    }
+
+    /**
+     * Rule Prune: Akun >30 hari mangkrak (profil tidak lengkap dan 0 riwayat proyek).
+     */
+    public function pruneAbandoned(Request $request): RedirectResponse
+    {
+        $abandonedUsers = User::where('role', 'extras')
+            ->where('created_at', '<=', now()->subDays(30))
+            ->whereDoesntHave('extrasProfile.applications')
+            ->where(function ($q) {
+                $q->whereDoesntHave('extrasProfile')
+                    ->orWhereHas('extrasProfile', function ($ep) {
+                        $ep->whereNull('foto_profil_path')->orWhereNull('nik');
+                    });
+            })
+            ->get();
+
+        $count = $abandonedUsers->count();
+        foreach ($abandonedUsers as $u) {
+            $u->extrasProfile?->categories()->detach();
+            $u->extrasProfile?->forceDelete();
+            $u->forceDelete();
+        }
+
+        return back()->with('status', "Berhasil membersihkan {$count} akun extras mangkrak (>30 hari tanpa kelengkapan profil & 0 pendaftaran).");
     }
 
     public function toggleStatus(User $user): RedirectResponse

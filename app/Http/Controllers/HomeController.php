@@ -9,9 +9,9 @@ class HomeController extends Controller
     public function index()
     {
         $allTerbuka = CastingProject::where('status', 'dibuka')
-            ->select(['id', 'nama_produksi', 'deadline', 'kuota', 'status'])
+            ->select(['id', 'nama_produksi', 'client_ph', 'deadline', 'kuota', 'is_urgent', 'status'])
             ->orderBy('deadline')
-            ->with('classes:id,casting_project_id,nama_kelas,kuota_kelas')
+            ->with(['classes:id,casting_project_id,nama_kelas,kuota_kelas', 'shootingDates:id,casting_project_id,tanggal'])
             ->get()
             ->filter(fn ($p) => $p->menerimaPendaftaran());
 

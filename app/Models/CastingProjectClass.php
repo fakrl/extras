@@ -7,7 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['casting_project_id', 'nama_kelas', 'kriteria', 'budget_client', 'kuota_kelas'])]
+#[Fillable([
+    'casting_project_id', 'nama_kelas', 'kriteria', 'budget_client', 'kuota_kelas',
+    'jam_callsheet', 'jam_callingan', 'karakter', 'keterangan_scene', 'tipe_continuity',
+])]
 class CastingProjectClass extends Model
 {
     protected function casts(): array

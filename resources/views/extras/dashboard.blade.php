@@ -64,10 +64,97 @@
         @include('partials.application-progress', ['app' => $app])
 
         @if (in_array($app->status_partisipasi, \App\Models\ProjectApplication::STATUS_LOLOS_KE_ATAS))
-            @php $jadwalTerisi = $app->castingProject->shootingDates->where('lokasi', '!=', null)->sortBy('tanggal'); @endphp
-            @if ($jadwalTerisi->isNotEmpty())
-                <div style="margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 10px;">
-                    <div style="font-size: 12.5px; font-weight: 600; margin-bottom: 6px;">Jadwal Shooting</div>
+            @php
+                $callingan = $app->jam_callingan ?: $app->castingProjectClass?->jam_callingan;
+                $karakter = $app->karakter ?: $app->castingProjectClass?->karakter;
+                $scene = $app->keterangan_scene ?: $app->castingProjectClass?->keterangan_scene;
+                $continuity = ($app->tipe_continuity ?: $app->castingProjectClass?->tipe_continuity) === 'continuity' ? 'Continuity (Multi-day)' : 'Bebas (Single Day)';
+                $shootingDates = $app->castingProject->shootingDates->sortBy('tanggal');
+            @endphp
+
+            <div style="margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+                <div style="font-size: 13px; font-weight: 600; color: var(--accent-strong); margin-bottom: 8px;">
+                    <i class="ti ti-clock"></i> Callingan & Info On-Site
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; font-size: 12.5px; background: var(--bg-secondary, rgba(0,0,0,.03)); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                    @if ($callingan)
+                        <div>
+                            <div style="color: var(--text-muted); font-size: 11px; text-transform: uppercase;">Jam Callingan</div>
+                            <div style="font-size: 16px; font-weight: 700; color: var(--danger, #d9534f);">{{ $callingan }} WIB</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">(Wajib tiba di lokasi)</div>
+                        </div>
+                    @endif
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 11px; text-transform: uppercase;">Peran / Tokoh</div>
+                        <div style="font-weight: 600;">{{ $karakter ?: ($app->castingProjectClass->nama_kelas ?? 'Umum') }}</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">Kelas: {{ $app->castingProjectClass->nama_kelas ?? 'Umum' }}</div>
+                    </div>
+                    @if ($scene)
+                        <div>
+                            <div style="color: var(--text-muted); font-size: 11px; text-transform: uppercase;">Scene & Catatan Kostum</div>
+                            <div>{{ $scene }}</div>
+                        </div>
+                    @endif
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 11px; text-transform: uppercase;">Kontinuitas</div>
+                        <div>{{ $continuity }}</div>
+                    </div>
+                </div>
+
+                {{-- Status Absensi & Tombol Selfie --}}
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; background: var(--bg-card); border: 1px dashed var(--border-color); border-radius: 8px; padding: 10px 12px;">
+                    <div>
+                        <div style="font-size: 12.5px; font-weight: 600;"><i class="ti ti-camera"></i> Absensi Lapangan Hybrid</div>
+                        <div style="font-size: 11.5px; color: var(--text-muted);">Ambil selfie langsung di lokasi syuting menggunakan kamera ponsel.</div>
+                    </div>
+                    <button type="button" class="btn btn-brand btn-sm" onclick="document.getElementById('dialog-absen-{{ $app->id }}').showModal()">
+                        <i class="ti ti-camera"></i> Absen Selfie On-Site
+                    </button>
+                </div>
+
+                {{-- Dialog Absen Selfie On-site --}}
+                <dialog id="dialog-absen-{{ $app->id }}" style="border: 1px solid var(--border-color); border-radius: 12px; padding: 0; max-width: 400px; width: 92%;">
+                    <form method="POST" action="{{ route('extras.absensi.selfie', $app) }}" enctype="multipart/form-data" style="padding: 20px;">
+                        @csrf
+                        <div style="font-size: 15px; font-weight: 600; margin-bottom: 8px;">Absen Selfie di Lokasi Syuting</div>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4;">
+                            Buka kamera dan ambil foto selfie kamu di lokasi syuting. Tanggal dan waktu pengiriman akan tercatat otomatis dan divalidasi oleh Korlap di lapangan.
+                        </p>
+
+                        @if ($shootingDates->count() > 1)
+                            <div style="margin-bottom: 12px;">
+                                <label>Pilih Tanggal Shooting</label>
+                                <select name="event_shooting_date_id" required style="width: 100%;">
+                                    @foreach ($shootingDates as $sd)
+                                        <option value="{{ $sd->id }}" @selected($sd->tanggal->isToday())>
+                                            {{ $sd->tanggal->translatedFormat('l, d F Y') }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @elseif ($shootingDates->isNotEmpty())
+                            <input type="hidden" name="event_shooting_date_id" value="{{ $shootingDates->first()->id }}">
+                            <div style="font-size: 12px; margin-bottom: 12px; color: var(--text-secondary);">
+                                Tanggal Shooting: <strong>{{ $shootingDates->first()->tanggal->translatedFormat('l, d F Y') }}</strong>
+                            </div>
+                        @endif
+
+                        <div style="margin-bottom: 16px;">
+                            <label>Foto Selfie di Lokasi (Kamera Saja)</label>
+                            <input type="file" name="foto" accept="image/*" capture="user" required style="width: 100%;">
+                            <span style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 4px;">Hanya kamera langsung (tidak bisa pilih dari galeri).</span>
+                        </div>
+
+                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                            <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
+                            <button type="submit" class="btn btn-brand btn-sm">Kirim Selfie Kehadiran</button>
+                        </div>
+                    </form>
+                </dialog>
+
+                @php $jadwalTerisi = $shootingDates->where('lokasi', '!=', null); @endphp
+                @if ($jadwalTerisi->isNotEmpty())
+                    <div style="font-size: 12.5px; font-weight: 600; margin-bottom: 6px;">Jadwal Shooting Detail</div>
                     @foreach ($jadwalTerisi as $date)
                         <div style="font-size: 12.5px; margin-bottom: 6px; padding: 8px; background: var(--bg-secondary, rgba(0,0,0,.04)); border-radius: 6px;">
                             <div style="font-weight: 500;">{{ $date->tanggal->translatedFormat('l, d F Y') }}</div>
@@ -84,8 +171,8 @@
                             @endif
                         </div>
                     @endforeach
-                </div>
-            @endif
+                @endif
+            </div>
         @endif
     </div>
 @empty

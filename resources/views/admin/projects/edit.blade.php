@@ -48,7 +48,7 @@
 
         <div class="form-row">
             <div>
-                <label>Poster/Cover Produksi <span style="color: var(--text-muted); font-weight: 400;">(opsional — bisa diisi nanti)</span></label>
+                <label>Poster Produksi <span style="color: var(--text-muted); font-weight: 400;">(opsional — max 2MB)</span></label>
                 @if ($castingProject->poster_path)
                     <div style="margin-bottom: 8px;">
                         <img src="{{ Storage::url($castingProject->poster_path) }}" alt="Poster" style="height: 80px; border-radius: 6px; object-fit: cover;">
@@ -56,6 +56,16 @@
                     </div>
                 @endif
                 <input type="file" name="poster_path" accept="image/jpeg,image/png,image/webp">
+            </div>
+            <div>
+                <label>Cover Naskah / Moodboard <span style="color: var(--text-muted); font-weight: 400;">(opsional — max 3MB)</span></label>
+                @if ($castingProject->cover_path)
+                    <div style="margin-bottom: 8px;">
+                        <img src="{{ Storage::url($castingProject->cover_path) }}" alt="Cover" style="height: 80px; border-radius: 6px; object-fit: cover;">
+                        <span style="font-size: 12px; color: var(--text-muted); margin-left: 8px;">Upload baru untuk mengganti</span>
+                    </div>
+                @endif
+                <input type="file" name="cover_path" accept="image/jpeg,image/png,image/webp">
             </div>
         </div>
 
@@ -114,6 +124,27 @@
                         <div style="flex: 0;">
                             <button type="button" class="btn-icon-danger btn-remove-kelas" @if ($applicantsCount > 0) style="display:none" title="Kelas ini tidak bisa dihapus, proyek sudah punya pendaftar" @endif>&times;</button>
                         </div>
+                    </div>
+                    <div class="form-row" style="margin-top: 8px;">
+                        <div>
+                            <label>Jam Callsheet Client <span style="color: var(--text-muted); font-weight: 400;">(waktu rundown PH)</span></label>
+                            <input type="time" name="kelas[{{ $loop->index }}][jam_callsheet]" value="{{ $kelas->jam_callsheet }}">
+                        </div>
+                        <div>
+                            <label>Jam Callingan Extras <span style="color: var(--text-muted); font-weight: 400;">(otomatis -1 jam jika kosong)</span></label>
+                            <input type="time" name="kelas[{{ $loop->index }}][jam_callingan]" value="{{ $kelas->jam_callingan }}">
+                        </div>
+                        <div>
+                            <label>Tipe Kontinuitas</label>
+                            <select name="kelas[{{ $loop->index }}][tipe_continuity]">
+                                <option value="free" @selected(($kelas->tipe_continuity ?? 'free') === 'free')>Bebas (Single Day)</option>
+                                <option value="continuity" @selected(($kelas->tipe_continuity ?? '') === 'continuity')>Continuity (Multi-day)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <label>Keterangan Scene <span style="color: var(--text-muted); font-weight: 400;">(opsional, misal: Scene 12-14 warung kopi)</span></label>
+                        <input type="text" name="kelas[{{ $loop->index }}][keterangan_scene]" value="{{ $kelas->keterangan_scene }}" placeholder="Scene 12-14 di warung kopi...">
                     </div>
                     <div style="margin-top: 8px;">
                         <label>Kriteria yang dibutuhkan <span style="color: var(--text-muted); font-weight: 400;">(opsional)</span></label>
@@ -222,6 +253,12 @@
                 '<input type="number" name="kelas[' + kelasIndex + '][kuota_kelas]" min="1" required></div>' +
                 '<div style="flex:0;"><button type="button" class="btn-icon-danger btn-remove-kelas">&times;</button></div>' +
                 '</div>' +
+                '<div class="form-row" style="margin-top:8px;">' +
+                '<div><label>Jam Callsheet Client</label><input type="time" name="kelas[' + kelasIndex + '][jam_callsheet]"></div>' +
+                '<div><label>Jam Callingan Extras</label><input type="time" name="kelas[' + kelasIndex + '][jam_callingan]"></div>' +
+                '<div><label>Tipe Kontinuitas</label><select name="kelas[' + kelasIndex + '][tipe_continuity]"><option value="free">Bebas (Single Day)</option><option value="continuity">Continuity (Multi-day)</option></select></div>' +
+                '</div>' +
+                '<div style="margin-top:8px;"><label>Keterangan Scene</label><input type="text" name="kelas[' + kelasIndex + '][keterangan_scene]" placeholder="Scene 12-14 di warung kopi..."></div>' +
                 '<div style="margin-top:8px;"><label>Kriteria yang dibutuhkan <span style="color:var(--text-muted);font-weight:400;">(opsional)</span></label>' +
                 '<textarea name="kelas[' + kelasIndex + '][kriteria]" rows="2" placeholder="Contoh: wanita 25-35 th, ekspresi natural" maxlength="500"></textarea></div>';
             kelasWrap.appendChild(row);

@@ -8,8 +8,8 @@
         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
             <div style="font-size: 15px; font-weight: 600;">
                 {{ $project->nama_produksi }}
-                @if ($project->is_urgent)
-                    <span class="badge badge-tolak">Butuh Dadakan</span>
+                @if ($project->isUrgent())
+                    <span class="badge badge-tolak">🚨 Butuh Dadakan</span>
                 @endif
             </div>
             <span style="color: var(--text-muted); font-size: 13px;">Deadline: {{ $project->deadline->format('d M Y') }}</span>
