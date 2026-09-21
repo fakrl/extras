@@ -185,31 +185,47 @@
         .services-body strong { font-size: 14px; font-weight: 600; color: var(--hp-fg); display: block; margin-bottom: 4px; }
         .services-body p { font-size: 13.5px; color: var(--hp-muted); margin: 0; line-height: 1.65; }
 
-        /* ── Lowongan (AK.2) ── */
+        /* ── Lowongan list ala loker (AK.9) ── */
         .lowongan-section { padding-block: 7rem; border-top: 1px solid var(--hp-line); }
         .lowongan-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
-        .lowongan-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1px; background: var(--hp-line); margin-top: 2.5rem; border: 1px solid var(--hp-line); border-radius: 4px; overflow: hidden; }
-        .lowongan-card { position: relative; background: var(--hp-bg); display: flex; flex-direction: column; }
-        .lowongan-poster-wrap { position: relative; overflow: hidden; }
-        .lowongan-poster { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; filter: grayscale(1); transition: filter .5s ease; }
-        .lowongan-card:hover .lowongan-poster,
-        .lowongan-card:focus-within .lowongan-poster { filter: grayscale(0); }
-        @media (prefers-reduced-motion: reduce) { .lowongan-poster { transition: none; } }
-        .lowongan-poster-placeholder { width: 100%; aspect-ratio: 2/3; background: var(--hp-card); display: flex; align-items: center; justify-content: center; color: var(--hp-muted); font-size: 36px; }
-        .lowongan-badge-num { position: absolute; top: 10px; left: 10px; font-size: 10px; font-weight: 700; letter-spacing: 1px; background: rgba(0,0,0,0.55); color: #fff; padding: 2px 7px; border-radius: 3px; }
-        .lowongan-badge-urgent { position: absolute; top: 10px; right: 10px; font-size: 10px; font-weight: 700; background: #ef4444; color: #fff; padding: 2px 7px; border-radius: 3px; }
-        .lowongan-badge-lihat { position: absolute; bottom: 10px; right: 10px; font-size: 11px; font-weight: 600; background: rgba(0,0,0,0.65); color: #fff; padding: 4px 10px; border-radius: 3px; opacity: 0; transition: opacity .25s; }
-        .lowongan-card:hover .lowongan-badge-lihat { opacity: 1; }
-        @media (prefers-reduced-motion: reduce) { .lowongan-badge-lihat { transition: none; } }
-        .lowongan-card-info { padding: 14px 16px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
-        .lowongan-card-title { font-size: 14px; font-weight: 600; margin: 0; color: var(--hp-fg); }
-        .lowongan-card-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-        .badge-dibuka { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; background: var(--hp-accent); color: var(--hp-accent-on); padding: 2px 7px; border-radius: 3px; }
-        .lowongan-card-deadline { font-size: 12px; color: var(--hp-muted); }
-        .lowongan-roles { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
-        .lowongan-roles li { font-size: 12.5px; color: var(--hp-muted); display: flex; justify-content: space-between; }
-        .lowongan-card-cta { margin-top: auto; padding-top: 8px; }
+        .lowongan-list { display: flex; flex-direction: column; border-top: 1px solid var(--hp-line); margin-top: 2.5rem; }
+        .lowongan-item { border-bottom: 1px solid var(--hp-line); }
+        .lowongan-summary {
+            display: flex; align-items: center; gap: 16px;
+            padding: 18px 0; cursor: pointer; list-style: none;
+        }
+        .lowongan-summary::-webkit-details-marker { display: none; }
+        .lowongan-summary::marker { display: none; }
+        .lowongan-thumb {
+            width: 56px; height: 56px; border-radius: 10px; overflow: hidden;
+            flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+            background: color-mix(in srgb, var(--hp-accent) 18%, var(--hp-card));
+        }
+        .lowongan-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .lowongan-thumb-mono { font-size: 22px; font-weight: 700; color: var(--hp-accent); line-height: 1; }
+        .lowongan-summary-info { flex: 1; min-width: 0; }
+        .lowongan-summary-title { font-size: 15px; font-weight: 600; color: var(--hp-fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .lowongan-summary-meta { font-size: 12.5px; color: var(--hp-muted); margin-top: 3px; }
+        .lowongan-summary-badges { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+        .badge-dibuka { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; background: var(--hp-accent); color: var(--hp-accent-on); padding: 2px 8px; border-radius: 3px; }
+        .badge-urgent { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; background: #ef4444; color: #fff; padding: 2px 8px; border-radius: 3px; }
+        .lowongan-chevron { font-size: 18px; color: var(--hp-muted); flex-shrink: 0; transition: transform .2s; line-height: 1; }
+        .lowongan-item[open] .lowongan-chevron { transform: rotate(45deg); }
+        @media (prefers-reduced-motion: reduce) { .lowongan-chevron { transition: none; } }
+        .lowongan-detail { padding: 4px 0 20px 72px; display: flex; flex-direction: column; gap: 12px; }
+        .lowongan-roles { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+        .lowongan-roles li { font-size: 13px; color: var(--hp-muted); display: flex; justify-content: space-between; gap: 8px; }
         .lowongan-empty { text-align: center; color: var(--hp-muted); font-size: 14px; padding: 40px; border: 1px dashed var(--hp-line); border-radius: 12px; margin-top: 2.5rem; }
+
+        /* ── Kontak (AK.10) ── */
+        .contact-section { padding-block: 7rem; border-top: 1px solid var(--hp-line); }
+        .contact-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: grid; grid-template-columns: 1fr 2fr; gap: 56px; align-items: start; }
+        .contact-left-title { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 400; line-height: 1.1; letter-spacing: -0.02em; margin: 8px 0 0; color: var(--hp-fg); }
+        .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px 40px; }
+        .contact-block strong { display: block; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--hp-muted); margin-bottom: 8px; }
+        .contact-block p { font-size: 14px; color: var(--hp-fg); margin: 0; line-height: 1.6; }
+        .contact-block a { font-size: 14px; color: var(--hp-fg); text-decoration: none; border-bottom: 1px solid var(--hp-line); }
+        .contact-block a:hover { color: var(--hp-accent); border-color: var(--hp-accent); }
 
         /* ── Produksi ── */
         .produksi-section { padding-block: 7rem; border-top: 1px solid var(--hp-line); }
@@ -239,11 +255,17 @@
         .footer-cta-contact { font-size: 13.5px; color: var(--hp-muted); line-height: 2.2; }
         .footer-cta-contact strong { display: block; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--hp-muted); margin-bottom: 4px; opacity: 0.7; }
 
-        /* ── Footer ── */
-        footer { border-top: 1px solid var(--hp-line); padding: 20px 32px; font-size: 13px; color: var(--hp-muted); }
-        .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-        footer a { color: var(--hp-muted); text-decoration: none; }
-        footer a:hover { color: var(--hp-fg); }
+        /* ── Footer (AK.10 enhanced) ── */
+        footer { border-top: 1px solid var(--hp-line); padding: 24px 32px; }
+        .footer-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto auto; gap: 24px; align-items: center; }
+        .footer-brand { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 600; color: var(--hp-fg); text-decoration: none; }
+        .footer-brand img { width: 26px; height: 26px; border-radius: 6px; object-fit: contain; }
+        .footer-nav { display: flex; gap: 20px; }
+        .footer-nav a { font-size: 13px; color: var(--hp-muted); text-decoration: none; white-space: nowrap; }
+        .footer-nav a:hover { color: var(--hp-fg); }
+        .footer-legal { display: flex; gap: 16px; align-items: center; font-size: 13px; color: var(--hp-muted); }
+        .footer-legal a { color: var(--hp-muted); text-decoration: none; }
+        .footer-legal a:hover { color: var(--hp-fg); }
 
         /* ── Dialog / Modal ── */
         dialog { border: none; border-radius: 16px; padding: 0; max-width: 360px; width: 90%; background: var(--hp-card); color: var(--hp-fg); opacity: 0; transform: translateY(8px); transition: opacity .25s ease, transform .25s ease; }
@@ -276,8 +298,12 @@
             .vm-section { flex-direction: column; gap: 20px; }
             .services-inner { grid-template-columns: 1fr; gap: 28px; }
             .footer-cta-inner { grid-template-columns: 1fr; gap: 40px; }
-            .lowongan-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
-            footer { padding: 16px 20px; }
+            .contact-inner { grid-template-columns: 1fr; gap: 32px; }
+            .contact-grid { grid-template-columns: 1fr; gap: 24px; }
+            .lowongan-detail { padding-left: 0; }
+            .footer-inner { grid-template-columns: 1fr; gap: 16px; }
+            .footer-nav { flex-wrap: wrap; gap: 12px; }
+            footer { padding: 20px; }
         }
     </style>
 </head>
@@ -482,7 +508,7 @@
 
     <div class="film-strip-divider" aria-hidden="true"></div>
 
-    {{-- Lowongan Casting (AK.2) --}}
+    {{-- Lowongan Casting (AK.9: list ringkas ala loker) --}}
     <div class="lowongan-section" id="lowongan">
         <div class="lowongan-inner">
             <span class="section-eyebrow">Sedang Tayang</span>
@@ -490,56 +516,51 @@
             @if ($proyekTerbuka->isEmpty())
                 <div class="lowongan-empty">Belum ada lowongan casting yang terbuka saat ini.</div>
             @else
-                <div class="lowongan-grid">
+                <div class="lowongan-list">
                     @foreach ($proyekTerbuka as $proyek)
-                        <div class="lowongan-card">
-                            <div class="lowongan-poster-wrap">
-                                @if ($proyek->poster_path)
-                                    <img src="{{ Storage::url($proyek->poster_path) }}" alt="{{ $proyek->nama_produksi }}" class="lowongan-poster">
-                                @else
-                                    <div class="lowongan-poster-placeholder">
-                                        <i class="ti ti-clapperboard"></i>
-                                    </div>
-                                @endif
-                                <span class="lowongan-badge-num">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
-                                @if ($proyek->isUrgent())
-                                    <span class="lowongan-badge-urgent">URGENT</span>
-                                @endif
-                                @guest<span class="lowongan-badge-lihat">Lihat &#x2197;</span>@endguest
-                                @auth
-                                    @if (auth()->user()->role === 'extras')
-                                        <span class="lowongan-badge-lihat">Apply &#x2197;</span>
+                        <details class="lowongan-item">
+                            <summary class="lowongan-summary">
+                                {{-- Thumbnail: poster → monogram PH --}}
+                                <div class="lowongan-thumb">
+                                    @if ($proyek->poster_path)
+                                        <img src="{{ Storage::url($proyek->poster_path) }}" alt="">
+                                    @else
+                                        <div class="lowongan-thumb-mono">{{ strtoupper(substr($proyek->client_ph ?: 'J', 0, 1)) }}</div>
                                     @endif
-                                @endauth
-                            </div>
-                            <div class="lowongan-card-info">
-                                <div class="lowongan-card-title">{{ $proyek->nama_produksi }}</div>
-                                <div class="lowongan-card-meta">
-                                    <span class="badge-dibuka">DIBUKA</span>
-                                    <span class="lowongan-card-deadline">Deadline {{ $proyek->deadline->format('d M Y') }}</span>
                                 </div>
+                                <div class="lowongan-summary-info">
+                                    <div class="lowongan-summary-title">{{ $proyek->nama_produksi }}</div>
+                                    <div class="lowongan-summary-meta">Deadline {{ $proyek->deadline->format('d M Y') }}</div>
+                                </div>
+                                <div class="lowongan-summary-badges">
+                                    <span class="badge-dibuka">DIBUKA</span>
+                                    @if ($proyek->isUrgent())
+                                        <span class="badge-urgent">URGENT</span>
+                                    @endif
+                                </div>
+                                <span class="lowongan-chevron" aria-hidden="true">+</span>
+                            </summary>
+                            <div class="lowongan-detail">
                                 @if ($proyek->classes->isNotEmpty())
                                     <ul class="lowongan-roles">
                                         @foreach ($proyek->classes as $kelas)
                                             <li>
                                                 <span>{{ $kelas->nama_kelas }}</span>
-                                                <span>{{ $kelas->kuota_kelas }} orang</span>
+                                                <span style="color: var(--hp-muted); flex-shrink:0;">{{ $kelas->kuota_kelas }} orang</span>
                                             </li>
                                         @endforeach
                                     </ul>
                                 @endif
-                                <div class="lowongan-card-cta">
-                                    @guest
-                                        <a href="{{ route('register') }}" class="btn-brand" style="font-size: 13px; min-height: 38px; width: 100%;">Daftar untuk Apply</a>
-                                    @endguest
-                                    @auth
-                                        @if (auth()->user()->role === 'extras')
-                                            <a href="{{ route('extras.projects.show', $proyek) }}" class="btn-brand" style="font-size: 13px; min-height: 38px; width: 100%;">Lihat &amp; Apply</a>
-                                        @endif
-                                    @endauth
-                                </div>
+                                @guest
+                                    <a href="{{ route('register') }}" class="btn-brand" style="font-size: 13px; min-height: 38px; align-self: flex-start;">Daftar untuk Apply</a>
+                                @endguest
+                                @auth
+                                    @if (auth()->user()->role === 'extras')
+                                        <a href="{{ route('extras.projects.show', $proyek) }}" class="btn-brand" style="font-size: 13px; min-height: 38px; align-self: flex-start;">Lihat &amp; Apply</a>
+                                    @endif
+                                @endauth
                             </div>
-                        </div>
+                        </details>
                     @endforeach
                 </div>
                 @if ($adaLebih)
@@ -625,10 +646,51 @@
         </div>
     </div>
 
+    {{-- Contact Section (AK.10) --}}
+    <section class="contact-section">
+        <div class="contact-inner">
+            <div>
+                <span class="section-eyebrow">Hubungi Kami</span>
+                <div class="contact-left-title">Siap<br>bekerjasama?</div>
+            </div>
+            <div class="contact-grid">
+                <div class="contact-block">
+                    <strong>Alamat</strong>
+                    <p>Pamulang, Tangerang Selatan,<br>Banten, Indonesia</p>
+                </div>
+                <div class="contact-block">
+                    <strong>WhatsApp</strong>
+                    {{-- TODO: isi kontak asli --}}
+                    <p style="color: var(--hp-muted); font-style: italic;">Isi nomor WhatsApp di sini</p>
+                </div>
+                <div class="contact-block">
+                    <strong>Instagram</strong>
+                    <a href="https://instagram.com/jbtb.casting" target="_blank" rel="noopener">@jbtb.casting</a>
+                </div>
+                <div class="contact-block">
+                    <strong>Email</strong>
+                    {{-- TODO: isi email asli --}}
+                    <p style="color: var(--hp-muted); font-style: italic;">Isi email di sini</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <footer>
         <div class="footer-inner">
-            <span>&copy; {{ date('Y') }} PT. JBTB Casting Creative Group</span>
-            <a href="{{ route('privacy-policy') }}">Kebijakan Privasi</a>
+            <a href="/" class="footer-brand">
+                <img src="{{ asset('images/logo.png') }}" alt="JBTB" onerror="this.style.display='none'">
+                JBTB Casting
+            </a>
+            <nav class="footer-nav">
+                <a href="#layanan">Layanan</a>
+                <a href="#lowongan">Lowongan</a>
+                @guest<a href="{{ route('register') }}">Daftar</a>@endguest
+            </nav>
+            <div class="footer-legal">
+                <span>&copy; {{ date('Y') }} JBTB</span>
+                <a href="{{ route('privacy-policy') }}">Privasi</a>
+            </div>
         </div>
     </footer>
 
