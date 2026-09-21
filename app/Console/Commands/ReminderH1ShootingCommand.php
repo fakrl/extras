@@ -10,7 +10,7 @@ use Illuminate\Console\Command;
 /**
  * RF-37: reminder WA H-1 shooting, jalan harian lewat scheduler
  * (routes/console.php). Cuma kirim ke Extras yang aplikasinya sudah Deal
- * ke atas (bukan yang masih nego/ditolak/dibatalkan) — sama seperti daftar
+ * ke atas (bukan yang masih nego/ditolak/dibatalkan), sama seperti daftar
  * status "aktif" yang dipakai deteksi bentrok jadwal di tempat lain.
  */
 class ReminderH1ShootingCommand extends Command

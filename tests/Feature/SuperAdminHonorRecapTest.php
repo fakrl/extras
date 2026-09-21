@@ -43,7 +43,7 @@ class SuperAdminHonorRecapTest extends TestCase
         $response->assertSee('Budi Korlap');
         $response->assertSee('Rp 550.000');
         // Bug HP Erlin (1 Sep 2026): tanpa `color-scheme`, browser mobile bisa
-        // paksa dark-mode sendiri walau toggle app bilang light — lihat
+        // paksa dark-mode sendiri walau toggle app bilang light - lihat
         // partials/theme-style.blade.php & layouts/app.blade.php.
         $response->assertSee('color-scheme', false);
     }

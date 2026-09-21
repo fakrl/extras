@@ -14,7 +14,7 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Metrik ringkas — sama untuk semua sub-role (Talco/Korlap/Sosmed ikut lihat,
+        // Metrik ringkas, sama untuk semua sub-role (Talco/Korlap/Sosmed ikut lihat,
         // aksinya yang dibatasi lewat middleware role:admin_default di routes).
         $proyekAktif = CastingProject::where('status', 'dibuka')->count();
         $totalPendaftar = ProjectApplication::count();

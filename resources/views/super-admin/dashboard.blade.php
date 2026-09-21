@@ -4,7 +4,7 @@
 
 @section('content')
 <p style="color: var(--text-secondary); margin: -8px 0 20px; font-size: 13.5px;">
-    Monitoring & analitik seluruh sistem — read-only. Operasional harian (seleksi, nego fee, kelola akun) tetap wewenang Admin Default.
+    Monitoring dan analitik sistem (read-only). Operasional harian dikelola oleh Admin.
 </p>
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px;">
@@ -75,7 +75,7 @@
     <div class="card" style="border: 2px solid var(--accent-strong); margin-bottom: 20px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <div class="card-title" style="color: var(--accent-strong); margin: 0;">
-                🔔 Permintaan Proyek Baru dari Client (Menunggu ACC: {{ $pendingRequests->count() }})
+                <i class="ti ti-bell"></i> Permintaan Proyek Baru dari Client (Menunggu ACC: {{ $pendingRequests->count() }})
             </div>
         </div>
         <div class="table-container">
@@ -102,12 +102,12 @@
                                 <form method="POST" action="{{ route('super-admin.projects.acc', $req) }}" style="display: inline-block;">
                                     @csrf
                                     @method('PATCH')
-                                    <button type="submit" class="btn btn-sm btn-brand" onclick="return confirm('Setujui permintaan proyek ini dan teruskan ke Admin?')">✓ ACC Proyek</button>
+                                    <button type="submit" class="btn btn-sm btn-brand" onclick="return confirm('Setujui permintaan proyek ini dan teruskan ke Admin?')">ACC Proyek</button>
                                 </form>
                                 <form method="POST" action="{{ route('super-admin.projects.reject', $req) }}" style="display: inline-block; margin-left: 4px;">
                                     @csrf
                                     @method('PATCH')
-                                    <button type="submit" class="btn btn-sm btn-secondary" onclick="return confirm('Tolak permintaan proyek ini?')">✕ Tolak</button>
+                                    <button type="submit" class="btn btn-sm btn-secondary" onclick="return confirm('Tolak permintaan proyek ini?')">Tolak</button>
                                 </form>
                             </td>
                         </tr>

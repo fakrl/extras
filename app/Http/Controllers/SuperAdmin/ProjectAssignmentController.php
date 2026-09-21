@@ -17,7 +17,7 @@ class ProjectAssignmentController extends Controller
 
     /**
      * RF-42: Super Admin menugaskan sub-admin ke proyek casting tertentu
-     * sesuai kebutuhan proyek tersebut — tidak wajib tiap proyek.
+     * sesuai kebutuhan proyek tersebut, tidak wajib tiap proyek.
      */
     public function assign(Request $request, CastingProject $castingProject): RedirectResponse
     {

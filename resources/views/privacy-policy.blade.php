@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Kebijakan Privasi — SIM Casting JBTB</title>
+    <title>Kebijakan Privasi | SIM Casting JBTB</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root[data-theme="dark"] {
@@ -57,13 +57,13 @@
         <h2>Siapa yang bisa melihat data kamu</h2>
         <p>Kami membatasi akses data berdasarkan peran (role), bukan membuka semua data ke semua orang:</p>
         <ul>
-            <li><strong>Casting Director / Client</strong> hanya melihat nama panggung (alias), foto, dan video — nama asli, NIK, kontak, rekening, dan tautan sosial media/portofolio Extras <strong>tidak pernah</strong> ditampilkan ke Casting Director.</li>
+            <li><strong>Casting Director / Client</strong> hanya melihat nama panggung (alias), foto, dan video . Nama asli, NIK, kontak, rekening, dan tautan sosial media/portofolio Extras <strong>tidak pernah</strong> ditampilkan ke Casting Director.</li>
             <li><strong>Admin</strong> dapat melihat data lengkap Extras (termasuk nama asli & NIK) untuk keperluan verifikasi dan administrasi, serta data fee/pembayaran untuk keperluan operasional.</li>
-            <li><strong>Extras</strong> hanya bisa melihat profilnya sendiri secara lengkap — bukan data Extras lain.</li>
+            <li><strong>Extras</strong> hanya bisa melihat profilnya sendiri secara lengkap, bukan data Extras lain.</li>
         </ul>
 
         <h2>Penggunaan data</h2>
-        <p>Data yang kamu berikan digunakan semata-mata untuk proses seleksi casting, negosiasi fee, pembuatan kontrak, dan pembayaran honor — bukan untuk tujuan lain, dan tidak dibagikan ke pihak ketiga di luar proses tersebut.</p>
+        <p>Data yang kamu berikan digunakan semata-mata untuk proses seleksi casting, negosiasi fee, pembuatan kontrak, dan pembayaran honor, bukan untuk tujuan lain, dan tidak dibagikan ke pihak ketiga di luar proses tersebut.</p>
 
         <h2>Keamanan data</h2>
         <p>NIK, nama asli, dan nomor rekening disimpan dalam bentuk terenkripsi di database. Foto dan video disimpan di penyimpanan privat yang hanya bisa diakses lewat aplikasi (bukan link publik langsung), dengan pengecekan otorisasi setiap kali diakses.</p>

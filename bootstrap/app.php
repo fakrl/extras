@@ -21,7 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Percaya semua proxy di depan aplikasi (ngrok, dsb) supaya Laravel
         // baca header X-Forwarded-Proto dengan benar dan tahu request aslinya
-        // HTTPS — tanpa ini, request lewat ngrok bisa memicu redirect loop
+        // HTTPS - tanpa ini, request lewat ngrok bisa memicu redirect loop
         // karena Laravel salah kira koneksinya HTTP biasa.
         $middleware->trustProxies(at: '*');
     })

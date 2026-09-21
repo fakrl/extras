@@ -13,7 +13,7 @@ use Illuminate\View\View;
 class PasswordResetController extends Controller
 {
     /**
-     * Form "lupa password" — user masukkan email, Laravel kirim link
+     * Form "lupa password", user masukkan email, Laravel kirim link
      * bertoken (masa berlaku default 60 menit, lihat config/auth.php).
      */
     public function showForgotForm(): View
@@ -27,12 +27,12 @@ class PasswordResetController extends Controller
 
         Password::sendResetLink($request->only('email'));
 
-        // Pesan generik — tidak ungkap apakah email terdaftar atau tidak.
+        // Pesan generik, tidak ungkap apakah email terdaftar atau tidak.
         return back()->with('status', 'Kalau email tersebut terdaftar, link reset password sudah dikirim. Cek inbox (atau folder spam) kamu.');
     }
 
     /**
-     * Form reset — token dari link email, dicek validitasnya oleh
+     * Form reset, token dari link email, dicek validitasnya oleh
      * Password::reset() saat submit (bukan di sini), supaya token yang sudah
      * kedaluwarsa tetap dikasih pesan error yang jelas, bukan 404 mentah.
      */

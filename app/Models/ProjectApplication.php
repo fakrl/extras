@@ -204,8 +204,8 @@ class ProjectApplication extends Model
     }
 
     /**
-     * RF-15 (perluasan): Admin bisa reject kandidat lebih dini — sebelum masuk
-     * fase nego fee — kalau jelas tidak sesuai spesifikasi/kriteria tokoh yang
+     * RF-15 (perluasan): Admin bisa reject kandidat lebih dini, sebelum masuk
+     * fase nego fee, kalau jelas tidak sesuai spesifikasi/kriteria tokoh yang
      * dicari. Beda dari tolakNegosiasi() (yang khusus fase nego) dan dari
      * keputusan CD (RF-23, fase review talent). Cuma boleh dipanggil selagi
      * status masih di fase awal, biar tidak bisa "menyalip" kandidat yang
@@ -232,7 +232,7 @@ class ProjectApplication extends Model
      *
      * RF-22: re-cek bentrok jadwal di titik ini juga (bisa saja proyek lain
      * baru Deal setelah aplikasi ini Deal duluan). Non-blocking sama seperti
-     * RF-13 di apply() — cuma re-set bentrok_jadwal_flag, tetap lanjut.
+     * RF-13 di apply(), cuma re-set bentrok_jadwal_flag, tetap lanjut.
      * Return true kalau bentrok, supaya controller bisa kasih warning.
      */
     public function ajukanKeCd(): bool
@@ -258,12 +258,12 @@ class ProjectApplication extends Model
 
     /**
      * RF-33/34: Admin atau Extras membatalkan aplikasi berstatus Deal, Lolos,
-     * atau Kontrak Ditandatangani (diperluas SPEC.md Bagian C, 31 Agu 2026 —
+     * atau Kontrak Ditandatangani (diperluas SPEC.md Bagian C, 31 Agu 2026,
      * sebelumnya cuma Deal, bikin RF-08 nyaris mustahil kejadian karena
      * kandidat biasanya sudah lewat Deal saat mendekati tanggal shooting).
      * Tidak termasuk Selesai Produksi (sudah kelar, tidak masuk akal batal)
      * atau status pra-Lolos (belum ada komitmen shooting yang bisa dibatalkan
-     * mendadak). Satu klik langsung final (tidak ada approval dua pihak —
+     * mendadak). Satu klik langsung final (tidak ada approval dua pihak,
      * konfirmasi Fakrul 29 Agu 2026), konsisten dengan pola aksi sepihak lain
      * di sini.
      * RF-08: kalau pembatalan mendadak (< H-2 dari tanggal shooting
@@ -297,7 +297,7 @@ class ProjectApplication extends Model
             // Regenerasi PDF arsip supaya watermark "TIDAK BERLAKU" ke-bake
             // di file (halaman show.blade.php cek isVoided() live, tapi file
             // PDF statis nggak bisa update sendiri). Efek samping arsip,
-            // BUKAN syarat sukses pembatalan — kalau gagal (render/disk),
+            // BUKAN syarat sukses pembatalan, kalau gagal (render/disk),
             // jangan sampai batalkan() ikut gagal, cancellation & status
             // sudah sah tercatat di atas.
             if ($this->contract->pdf_path) {
@@ -338,7 +338,7 @@ class ProjectApplication extends Model
     }
 
     /**
-     * RF-36: notif hasil seleksi (lolos/ditolak) ke Extras — dipicu dari
+     * RF-36: notif hasil seleksi (lolos/ditolak) ke Extras, dipicu dari
      * tolakDini() di sini, dan dari Cd\ReviewController setelah approve/reject.
      * Email adalah efek samping, bukan syarat sukses aksi utama.
      */
@@ -361,7 +361,7 @@ class ProjectApplication extends Model
     }
 
     /**
-     * RF-37: konfirmasi WA begitu Extras berhasil apply — titik ini belum
+     * RF-37: konfirmasi WA begitu Extras berhasil apply, titik ini belum
      * punya notif email sama sekali (WA satu-satunya kanal di sini, bukan
      * pelengkap email seperti 3 event lain).
      */

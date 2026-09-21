@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Monitoring — Semua Akun')
+@section('title', 'Monitoring Semua Akun')
 
 @section('content')
 <p style="color: var(--text-secondary); margin: -8px 0 20px; font-size: 13.5px;">

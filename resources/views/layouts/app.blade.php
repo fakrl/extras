@@ -142,7 +142,7 @@
         .badge-pending { background: rgba(234,179,8,0.15); border-color: rgba(234,179,8,0.35); color: var(--warning); }
         .badge-tolak { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.35); color: var(--danger); }
 
-        /* Grid util ringan — pengganti Bootstrap row/col, dipakai form multi-kolom */
+        /* Grid util ringan: pengganti Bootstrap row/col, dipakai form multi-kolom */
         .form-row { display: flex; gap: 14px; flex-wrap: wrap; }
         .form-row > div { flex: 1; min-width: 180px; }
         .form-check { display: flex; align-items: center; gap: 8px; }
@@ -159,7 +159,7 @@
             color: var(--text-primary); text-decoration: none;
         }
 
-        /* Progress steps ala Jira — pengganti bar chart untuk data funnel/tahapan */
+        /* Progress steps: visualisasi progress alur pendaftaran */
         .funnel-steps { display: flex; flex-direction: column; gap: 10px; }
         .funnel-step { display: grid; grid-template-columns: 110px 1fr 34px; align-items: center; gap: 10px; }
         .funnel-step-label { font-size: 12.5px; color: var(--text-secondary); }
@@ -172,7 +172,7 @@
         }
         .funnel-step-value { font-size: 12.5px; color: var(--text-primary); text-align: right; font-weight: 500; }
 
-        /* Step-bar horizontal — progress pendaftaran Extras (dashboard Extras).
+        /* Step-bar horizontal: progress pendaftaran Extras (dashboard Extras).
            Bisa discroll ke samping di layar kecil, bukan wrap/vertical. */
         .step-bar-wrap { overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
         .step-bar { display: flex; align-items: flex-start; min-width: max-content; }
@@ -214,7 +214,7 @@
             .step-bar-label { font-size: 10px; }
         }
 
-        /* Card grid untuk daftar Proyek Casting & Pendaftar — desktop/iPad-first
+        /* Card grid untuk daftar Proyek Casting & Pendaftar, desktop/iPad-first
            (Admin pakai perangkat itu), tapi tetap collapse rapi ke 1 kolom di
            mobile karena CD kadang buka dari HP juga. */
         .entity-card-grid {
@@ -236,7 +236,7 @@
         .entity-card-row-value { font-weight: 500; text-align: right; }
         .entity-card-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
 
-        /* Card kandidat di halaman Pendaftar — foto besar kiri, info+aksi kanan.
+        /* Card kandidat di halaman Pendaftar: foto besar kiri, info+aksi kanan.
            Di mobile stack jadi 1 kolom (foto di atas). */
         .applicant-card {
             display: grid; grid-template-columns: 120px 1fr; gap: 14px;
@@ -256,13 +256,13 @@
             .applicant-card-photo { max-width: 160px; }
         }
 
-        /* Grid dashboard 2 kolom (Super Admin, dll) — collapse ke 1 kolom di
+        /* Grid dashboard 2 kolom (Super Admin, dll), collapse ke 1 kolom di
            mobile supaya chart tidak diperas jadi sempit & tinggi tidak proporsional. */
         .dashboard-grid-2col { display: grid; gap: 16px; margin-bottom: 16px; align-items: start; }
         .dashboard-grid-2col.is-wide-narrow { grid-template-columns: 1.4fr 1fr; }
         .dashboard-grid-2col.is-even { grid-template-columns: 1fr 1fr; }
 
-        /* Wrapper canvas Chart.js — tinggi dikontrol lewat CSS (bukan attribute
+        /* Wrapper canvas Chart.js: tinggi dikontrol lewat CSS (bukan attribute
            height di <canvas>), dipasangkan dengan maintainAspectRatio:false di
            JS supaya chart selalu proporsional dengan lebar container-nya. */
         .chart-box { position: relative; height: 240px; width: 100%; }
@@ -310,10 +310,10 @@
         .required-mark { color: var(--danger); }
 
         /* Override untuk input yang sengaja sejajar tombol dalam satu baris
-           (form nego fee, tambah komponen pembayaran, dsb) — bukan full-width */
+           (form nego fee, tambah komponen pembayaran, dsb), bukan full-width */
         .input-inline { width: auto; flex: 1; margin-bottom: 0; min-width: 0; }
 
-        /* Form profil Extras — grouping per section biar nggak berasa panjang/berat */
+        /* Form profil Extras: grouping per section */
         .profile-section {
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 18px; margin-bottom: 18px;
@@ -328,7 +328,7 @@
             margin: -8px 0 14px;
         }
 
-        /* Upload foto/video — tap area besar, bukan input file kecil bawaan
+        /* Upload foto/video: tap area besar, bukan input file kecil bawaan
            browser yang susah disentuh di HP */
         .media-upload-box {
             display: flex; align-items: center; justify-content: center;
@@ -386,7 +386,7 @@
 
         /* ===== Mobile: sidebar berubah jadi bottom navigation bar =====
            Extras (pengguna utama di HP) butuh navigasi yang selalu kelihatan
-           tanpa perlu "nemu" tombol menu dulu — pola bottom nav ala WA/IG
+           tanpa perlu membuka menu terpisah (pola navigasi mobile)
            yang kemungkinan besar sudah familiar buat mereka. */
         @media (max-width: 860px) {
             .app-shell { flex-direction: column; }

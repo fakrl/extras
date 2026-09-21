@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="dark light">
-    <title>Profil {{ $profile->user->username ?? 'Extras' }} — SIM Casting JBTB</title>
+    <title>Profil {{ $profile->user->username ?? 'Extras' }} | SIM Casting JBTB</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     @include('partials.theme-style')
@@ -58,7 +58,7 @@
                     <i class="ti ti-photo-off" style="font-size: 36px; color: var(--text-muted);"></i>
                 @endif
             </div>
-            <div class="alias">{{ $profile->user->username ?? '—' }}</div>
+            <div class="alias">{{ $profile->user->username ?? '-' }}</div>
 
             {{-- Video profil --}}
             @if ($profile->video_profil_path)
@@ -85,19 +85,19 @@
                 <div class="card-title">Data Diri &amp; Ciri Fisik</div>
                 <div class="field-grid">
                     <div class="field-label">Usia</div>
-                    <div>{{ $profile->usia ? $profile->usia . ' tahun' : '—' }}</div>
+                    <div>{{ $profile->usia ? $profile->usia . ' tahun' : '-' }}</div>
 
                     <div class="field-label">Jenis Kelamin</div>
-                    <div>{{ $profile->gender === 'pria' ? 'Laki-laki' : ($profile->gender === 'wanita' ? 'Perempuan' : '—') }}</div>
+                    <div>{{ $profile->gender === 'pria' ? 'Laki-laki' : ($profile->gender === 'wanita' ? 'Perempuan' : '-') }}</div>
 
                     <div class="field-label">Tinggi Badan</div>
-                    <div>{{ $profile->tinggi_badan ? $profile->tinggi_badan . ' cm' : '—' }}</div>
+                    <div>{{ $profile->tinggi_badan ? $profile->tinggi_badan . ' cm' : '-' }}</div>
 
                     <div class="field-label">Ukuran Baju</div>
-                    <div>{{ $profile->ukuran_baju ?: '—' }}</div>
+                    <div>{{ $profile->ukuran_baju ?: '-' }}</div>
 
                     <div class="field-label">Warna Kulit</div>
-                    <div>{{ $profile->warna_kulit ?: '—' }}</div>
+                    <div>{{ $profile->warna_kulit ?: '-' }}</div>
                 </div>
             </div>
 
@@ -106,11 +106,11 @@
                 <div class="card-title">Pengalaman &amp; Kemampuan</div>
                 <div style="font-size: 13px; margin-bottom: 12px;">
                     <span class="field-label">Pengalaman</span>
-                    <p style="margin: 4px 0 0; color: var(--text-primary);">{{ $profile->pengalaman ?: '—' }}</p>
+                    <p style="margin: 4px 0 0; color: var(--text-primary);">{{ $profile->pengalaman ?: '-' }}</p>
                 </div>
                 <div class="field-grid">
                     <div class="field-label">Bahasa</div>
-                    <div>{{ $profile->bahasa ?: '—' }}</div>
+                    <div>{{ $profile->bahasa ?: '-' }}</div>
                 </div>
             </div>
 

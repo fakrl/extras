@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('casting_projects', function (Blueprint $table) {
             // RF-56: token link publik pendaftaran event. Nullable karena
-            // proyek lama (dibuat sebelum fitur ini) tidak punya token — TIDAK
+            // proyek lama (dibuat sebelum fitur ini) tidak punya token - TIDAK
             // di-backfill, link publik memang belum ada buat proyek lama itu.
             $table->string('share_token', 32)->nullable()->unique()->after('client_ph');
         });

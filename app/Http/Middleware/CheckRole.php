@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
  * misal: ->middleware('role:admin_default,super_admin')
  *
  * Pola ini mengikuti CheckRole di Nobel Akademi (bukan middleware terpisah
- * per role) — satu middleware, role diberikan sebagai parameter route.
+ * per role), satu middleware, role diberikan sebagai parameter route.
  */
 class CheckRole
 {

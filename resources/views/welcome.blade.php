@@ -319,7 +319,7 @@
         <div class="hero-spotlight" aria-hidden="true"></div>
         <div class="hero-content">
             <h1>Sistem Manajemen Casting JBTB</h1>
-            <p class="tagline">Platform digital untuk manajemen talent & extras JBTB Casting — dari pendaftaran, seleksi, negosiasi fee, kontrak digital, hingga pembayaran honor, semua tercatat dan transparan.</p>
+            <p class="tagline">Platform digital manajemen talent dan extras JBTB Casting, mulai dari pendaftaran, seleksi, negosiasi fee, kontrak digital, hingga pembayaran honor yang terdata transparan.</p>
         </div>
     </div>
 
@@ -399,7 +399,7 @@
             <span class="section-eyebrow">Sedang Tayang</span>
             <div class="section-title">Lowongan Casting Terbuka</div>
             @if ($proyekTerbuka->isEmpty())
-                <div class="lowongan-empty">Belum ada lowongan casting yang terbuka saat ini — cek lagi nanti.</div>
+                <div class="lowongan-empty">Belum ada lowongan casting yang terbuka saat ini. Silakan cek kembali nanti.</div>
             @else
                 <div class="lowongan-grid">
                     @foreach ($proyekTerbuka as $proyek)
@@ -409,7 +409,7 @@
                                 <span class="lowongan-card-title">{{ $proyek->nama_produksi }}</span>
                                 <span class="badge-dibuka">DIBUKA</span>
                                 @if ($proyek->isUrgent())
-                                    <span style="background: var(--danger, #ef4444); color: white; padding: 2px 7px; border-radius: 5px; font-size: 11px; font-weight: 700; margin-left: 4px;">🚨 URGENT H-3</span>
+                                    <span style="background: var(--danger, #ef4444); color: white; padding: 2px 7px; border-radius: 5px; font-size: 11px; font-weight: 700; margin-left: 4px;">URGENT H-3</span>
                                 @endif
                                 <div class="lowongan-card-deadline">Deadline: {{ $proyek->deadline->format('d M Y') }}</div>
                             </div>
@@ -496,7 +496,7 @@
     <div class="cta-strip">
         <div class="cta-strip-inner">
             <div class="section-title">Siap Bergabung di Produksi Berikutnya?</div>
-            <p class="section-body">Daftar jadi Extras JBTB dan mulai apply proyek casting yang terbuka — gratis, transparan, tercatat.</p>
+            <p class="section-body">Daftar jadi Extras JBTB dan mulai apply proyek casting yang terbuka (gratis dan transparan).</p>
             @guest
                 <div style="margin-top: 20px;">
                     <a href="{{ route('register') }}" class="btn-brand">Daftar Sekarang</a>
@@ -507,7 +507,7 @@
 
     <footer>
         <div class="footer-inner">
-            <span>&copy; {{ date('Y') }} PT. JBTB Casting Creative Group — Pamulang, Tangerang Selatan</span>
+            <span>&copy; {{ date('Y') }} PT. JBTB Casting Creative Group, Pamulang, Tangerang Selatan</span>
             <span>Sistem Informasi Manajemen Casting Talent &amp; Extras</span>
         </div>
     </footer>

@@ -26,7 +26,7 @@ class KarakterKriteriaTest extends TestCase
         ], $overrides);
     }
 
-    // L.1 — kriteria tersimpan saat store
+    // L.1 - kriteria tersimpan saat store
     public function test_kriteria_tersimpan_saat_buat_proyek(): void
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
@@ -41,7 +41,7 @@ class KarakterKriteriaTest extends TestCase
         $this->assertSame('wanita 25-35 th, ekspresi sedih', $kelas->kriteria);
     }
 
-    // L.1 — kriteria nullable
+    // L.1 - kriteria nullable
     public function test_kriteria_opsional(): void
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
@@ -52,7 +52,7 @@ class KarakterKriteriaTest extends TestCase
         $this->assertNull(CastingProjectClass::first()->kriteria);
     }
 
-    // L.1 — kriteria max 500 karakter
+    // L.1 - kriteria max 500 karakter
     public function test_kriteria_max_500_karakter(): void
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
@@ -64,7 +64,7 @@ class KarakterKriteriaTest extends TestCase
         ]))->assertSessionHasErrors('kelas.0.kriteria');
     }
 
-    // L.2 — link_grup tersimpan saat store
+    // L.2 - link_grup tersimpan saat store
     public function test_link_grup_tersimpan_saat_buat_proyek(): void
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
@@ -76,7 +76,7 @@ class KarakterKriteriaTest extends TestCase
         $this->assertSame('https://chat.whatsapp.com/koordinasi123', CastingProject::first()->link_grup);
     }
 
-    // L.2 — link_grup tidak wajib
+    // L.2 - link_grup tidak wajib
     public function test_link_grup_opsional(): void
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
@@ -87,7 +87,7 @@ class KarakterKriteriaTest extends TestCase
         $this->assertNull(CastingProject::first()->link_grup);
     }
 
-    // L.2 — link_grup harus URL valid
+    // L.2 - link_grup harus URL valid
     public function test_link_grup_invalid_url_ditolak(): void
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
@@ -97,7 +97,7 @@ class KarakterKriteriaTest extends TestCase
         ]))->assertSessionHasErrors('link_grup');
     }
 
-    // L.2 — link_grup TIDAK muncul di model saat null
+    // L.2 - link_grup TIDAK muncul di model saat null
     public function test_link_grup_null_saat_tidak_diisi(): void
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
@@ -106,7 +106,7 @@ class KarakterKriteriaTest extends TestCase
         $this->assertNull($project->link_grup);
     }
 
-    // L.2 — link_grup tersimpan di model
+    // L.2 - link_grup tersimpan di model
     public function test_link_grup_tersimpan_di_model(): void
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
@@ -119,7 +119,7 @@ class KarakterKriteriaTest extends TestCase
         $this->assertSame('https://t.me/koordinasi_jbtb', $project->fresh()->link_grup);
     }
 
-    // L.2 — verifikasi logika kondisi tampil link_grup: status lolos tidak masuk whitelist, status kontrak_ditandatangani masuk
+    // L.2 - verifikasi logika kondisi tampil link_grup: status lolos tidak masuk whitelist, status kontrak_ditandatangani masuk
     public function test_link_grup_hanya_tampil_saat_kontrak_ditandatangani(): void
     {
         $statusLolos = 'lolos';

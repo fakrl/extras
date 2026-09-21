@@ -134,7 +134,7 @@ class CdProjectAssignmentTest extends TestCase
         $project1->cdAssignments()->create(['cd_user_id' => $cdA->id]);
         $application = $this->buatApplicationDiajukanKeCd($project1);
 
-        // Level 1 (index) tidak tampilkan alias — cek via show (Level 2)
+        // Level 1 (index) tidak tampilkan alias - cek via show (Level 2)
         $this->actingAs($cdA)->get(route('cd.reviews.index'))->assertOk()->assertSee('Proyek Test');
         $this->actingAs($cdA)->get(route('cd.reviews.show', $project1))->assertOk()->assertSee('alias_test_cd');
 
@@ -226,7 +226,7 @@ class CdProjectAssignmentTest extends TestCase
         $projectA->cdAssignments()->create(['cd_user_id' => $cdA->id]);
         $projectB->cdAssignments()->create(['cd_user_id' => $cdB->id]);
 
-        // Level 1 index berbasis assignment — cdB hanya lihat proyeknya sendiri
+        // Level 1 index berbasis assignment - cdB hanya lihat proyeknya sendiri
         $this->actingAs($cdB)->get(route('cd.reviews.index'))
             ->assertOk()
             ->assertDontSee('Alias Test');
@@ -246,7 +246,7 @@ class CdProjectAssignmentTest extends TestCase
         $viewData = $response->original->getData();
         $proyek = $viewData['proyek'];
 
-        // Level 1 tidak load extras — hanya castingProject (id, nama_produksi)
+        // Level 1 tidak load extras - hanya castingProject (id, nama_produksi)
         foreach ($proyek as $item) {
             $proyekAttrs = $item['proyek']->getAttributes();
             $this->assertArrayNotHasKey('nik', $proyekAttrs);

@@ -7,7 +7,7 @@
     <div style="font-size: 17px; font-weight: 600; margin-bottom: 4px;">Lengkapi Data untuk Kontrak</div>
     <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 20px; line-height: 1.5;">
         Selamat, kamu lolos untuk proyek {{ $application->castingProject->nama_produksi }}! Data ini dibutuhkan
-        untuk kontrak & transfer pembayaran, dan hanya dilihat Admin — tidak ditampilkan ke pihak lain.
+        untuk kontrak dan pembayaran honor, hanya dilihat Admin (tidak ditampilkan ke pihak lain).
     </p>
 
     @if (session('status'))

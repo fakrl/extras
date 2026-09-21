@@ -16,7 +16,7 @@ class RegisterController extends Controller
      * RF-01: registrasi mandiri Extras, publik, tanpa kode undangan.
      *
      * SPEC.md Bagian B5: kalau datang dari tombol "Daftar" di link event
-     * publik (?event=token), simpan token itu ke session di sini — dibaca
+     * publik (?event=token), simpan token itu ke session di sini, dibaca
      * lagi nanti oleh ProfileController::update() setelah lengkapi-profil
      * selesai (RF-06 tetap wajib jalan dulu, bukan di-skip).
      */
@@ -47,7 +47,7 @@ class RegisterController extends Controller
         ]);
 
         // RF-06: profil dibuat kosong dulu, extras lengkapi rate card/foto/dst
-        // di langkah berikutnya — bukan wajib penuh saat registrasi awal.
+        // di langkah berikutnya, bukan wajib penuh saat registrasi awal.
         ExtrasProfile::create([
             'user_id' => $user->id,
         ]);
@@ -59,9 +59,9 @@ class RegisterController extends Controller
 
     /**
      * RF-02: registrasi khusus Casting Director. URL ini TIDAK ditautkan
-     * dari halaman publik mana pun — dibagikan manual oleh Admin ke pihak
+     * dari halaman publik mana pun, dibagikan manual oleh Admin ke pihak
      * client/PH yang relevan. Siapa pun yang mendaftar lewat sini otomatis
-     * dapat role casting_director, tanpa approval tambahan (sesuai RF-02).
+     * dapat role client, tanpa approval tambahan (sesuai RF-02).
      */
     public function showCastingDirector()
     {

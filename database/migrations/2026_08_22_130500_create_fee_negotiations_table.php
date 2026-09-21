@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         // RF-16 s/d RF-20: negosiasi fee ala InDrive, multi-round, tercatat.
-        // Tabel ini adalah jejak audit tiap ronde tawar-menawar — jangan
+        // Tabel ini adalah jejak audit tiap ronde tawar-menawar - jangan
         // pernah di-update/delete, hanya insert (append-only), karena inilah
         // "catatan kesepakatan yang tidak bisa dibantah" yang jadi value prop inti.
         Schema::create('fee_negotiations', function (Blueprint $table) {

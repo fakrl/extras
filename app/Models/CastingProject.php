@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-// 'share_token' TETAP masuk $fillable, tapi proteksinya bukan dari sini —
+// 'share_token' TETAP masuk $fillable, tapi proteksinya bukan dari sini,
 // sama pola dengan ExtrasProfile::foto_profil_path: cuma whitelist teknis,
 // tidak ada route/controller yang nerima 'share_token' mentah dari request
 // user. Satu-satunya jalur yang mengisi field ini adalah
@@ -69,7 +69,7 @@ class CastingProject extends Model
 
     /**
      * RF-56: definisi "kuota penuh" dipakai konsisten di seluruh fitur link
-     * publik (gerbang B4/B5) — total pendaftar vs kuota level-proyek, BUKAN
+     * publik (gerbang B4/B5), total pendaftar vs kuota level-proyek, BUKAN
      * kuota_kelas per kelas (konsep berbeda, breakdown internal CD/Admin).
      */
     public function kuotaPenuh(): bool
@@ -80,7 +80,7 @@ class CastingProject extends Model
     /**
      * RF-56: satu-satunya gerbang "masih bisa didaftarin" dipakai
      * PublicEventController, dan return-to-intent di ProfileController/
-     * LoginController — supaya definisinya konsisten di mana pun dicek.
+     * LoginController, supaya definisinya konsisten di mana pun dicek.
      */
     public function menerimaPendaftaran(): bool
     {

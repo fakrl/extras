@@ -32,7 +32,7 @@ class RecapController extends Controller
             ->groupBy('status')
             ->pluck('total', 'status');
 
-        // RF-07/08: rekap Extras paling sering membatalkan mendadak — pelengkap
+        // RF-07/08: rekap Extras paling sering membatalkan mendadak, pelengkap
         // "Kelola Extras" (docs/CLAUDE.md §9), sebelumnya cuma ada agregat status,
         // belum ada ranking per-individu.
         $extrasSeringBatal = ExtrasProfile::where('cancel_count', '>', 0)

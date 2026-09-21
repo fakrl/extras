@@ -246,7 +246,7 @@ class PublicEventLinkTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('2'); // totalProyek + jumlahAdmin + jumlahExtras semua ada angka 2
-        // Pastikan angka dari DB, bukan hardcode — tambah 1 proyek lagi dan cek berubah
+        // Pastikan angka dari DB, bukan hardcode - tambah 1 proyek lagi dan cek berubah
         CastingProject::create(['admin_id' => $admin->id, 'nama_produksi' => 'P3', 'client_ph' => 'PH', 'deadline' => now()->addDays(7), 'kuota' => 5]);
         $response2 = $this->get('/');
         $response2->assertSee('3'); // totalProyek sekarang 3

@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         // RF-24 / CLAUDE.md §6: status pembayaran SENGAJA terpisah dari
-        // status_partisipasi di project_applications — dua lifecycle independen.
+        // status_partisipasi di project_applications - dua lifecycle independen.
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('project_application_id')->unique()->constrained()->cascadeOnDelete();

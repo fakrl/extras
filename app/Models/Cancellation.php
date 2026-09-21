@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-// Whitelist teknis 3 kolom yang dipakai ProjectApplication::batalkan() —
+// Whitelist teknis 3 kolom yang dipakai ProjectApplication::batalkan(),
 // proteksinya bukan dari sini, tapi karena tidak ada controller yang panggil
 // Cancellation::create() langsung (semua insert lewat batalkan(), scalar
 // param typed, bukan raw request), sama seperti pola FeeNegotiation.

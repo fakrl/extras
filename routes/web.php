@@ -40,7 +40,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // RF-56: link publik pendaftaran per event, dibagikan Admin lewat WA.
-// Sengaja di luar grup middleware auth/guest — guest maupun user login
+// Sengaja di luar grup middleware auth/guest - guest maupun user login
 // (extras/admin/CD) manapun boleh buka, otorisasi granular di controller.
 Route::get('/event/{token}', [PublicEventController::class, 'show'])->name('public.event.show');
 
@@ -52,7 +52,7 @@ Route::get('/p/extras/{token}/video', [PublicExtrasProfileController::class, 'vi
 Route::get('/p/extras/{token}/foto-tambahan/{slot}', [PublicExtrasProfileController::class, 'fotoTambahan'])->whereNumber('slot')->name('public.extras.foto-tambahan');
 
 // Pintu masuk universal setelah login (dipakai mis. link "kembali ke
-// dashboard" generik) — lempar ke dashboard sesuai role via
+// dashboard" generik) - lempar ke dashboard sesuai role via
 // User::dashboardUrl(), satu-satunya sumber kebenaran mapping role→URL.
 Route::middleware('auth')->get('/dashboard', function () {
     return redirect(auth()->user()->dashboardUrl());
@@ -68,7 +68,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'showExtras'])->name('register');
     Route::post('/register', [RegisterController::class, 'registerExtras'])->middleware('throttle:5,1');
 
-    // RF-02: registrasi Casting Director — URL ini TIDAK ditautkan dari
+    // RF-02: registrasi Casting Director - URL ini TIDAK ditautkan dari
     // halaman publik mana pun, dibagikan manual oleh Admin ke pihak client/PH.
     Route::get('/register/casting-director', [RegisterController::class, 'showCastingDirector'])
         ->name('register.cd');
@@ -203,7 +203,7 @@ Route::middleware(['auth', 'role:admin,admin_default,admin_talco,korlap,admin_ko
                 ->name('admin.applications.catatan');
         });
 
-        // Absensi Extras — Korlap, Admin, dan Super Admin (Godmode)
+        // Absensi Extras - Korlap, Admin, dan Super Admin (Godmode)
         Route::middleware('role:korlap,admin_korlap,admin,admin_default,super_admin')->group(function () {
             Route::get('/absensi', [AttendanceController::class, 'index'])->name('admin.attendance.index');
             Route::post('/applications/{application}/absen', [AttendanceController::class, 'store'])
@@ -217,7 +217,7 @@ Route::middleware(['auth', 'role:admin,admin_default,admin_talco,korlap,admin_ko
         });
     });
 
-// RF-30: rekap margin — RAHASIA bisnis inti, cuma Admin & Super Admin.
+// RF-30: rekap margin - RAHASIA bisnis inti, cuma Admin & Super Admin.
 Route::middleware(['auth', 'role:admin,admin_default,super_admin'])->prefix('admin')->group(function () {
     Route::get('/rekap-margin', [MarginRecapController::class, 'index'])->name('admin.recap-margin');
 });
@@ -314,7 +314,7 @@ Route::middleware('auth')->prefix('pembayaran')->group(function () {
 });
 
 // ==================== MEDIA PROFIL EXTRAS (lintas role: pemilik, Admin, CD) ====================
-// RF-14 & CLAUDE.md §5: foto/video boleh dilihat pemilik, Admin, maupun CD —
+// RF-14 & CLAUDE.md §5: foto/video boleh dilihat pemilik, Admin, maupun CD -
 // otorisasi granular ditegakkan di ProfileController::pastikanBolehLihatMedia(),
 // bukan lewat role middleware, karena resource yang sama diakses 3 pihak berbeda.
 

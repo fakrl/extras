@@ -10,7 +10,7 @@ use Tests\TestCase;
 
 /**
  * Regresi audit full-codebase (30 Agu 2026): budget_client (fee dari
- * client) sempat tampil ke Extras di halaman lowongan — pelanggaran
+ * client) sempat tampil ke Extras di halaman lowongan - pelanggaran
  * tembok visibilitas CLAUDE.md §5 (budget_client cuma boleh Admin).
  */
 class ExtrasBudgetVisibilityTest extends TestCase

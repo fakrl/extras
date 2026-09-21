@@ -41,14 +41,14 @@
                 <input type="url" name="wa_group_link" value="{{ old('wa_group_link', $castingProject->wa_group_link) }}" placeholder="https://chat.whatsapp.com/...">
             </div>
             <div>
-                <label>Link Grup Koordinasi <span style="color: var(--text-muted); font-weight: 400;">(WA/Telegram, opsional — bisa diisi belakangan)</span></label>
+                <label>Link Grup Koordinasi <span style="color: var(--text-muted); font-weight: 400;">(WA/Telegram, opsional, dapat diisi menyusul)</span></label>
                 <input type="url" name="link_grup" value="{{ old('link_grup', $castingProject->link_grup) }}" placeholder="https://chat.whatsapp.com/... atau https://t.me/...">
             </div>
         </div>
 
         <div class="form-row">
             <div>
-                <label>Poster Produksi <span style="color: var(--text-muted); font-weight: 400;">(opsional — max 2MB)</span></label>
+                <label>Poster Produksi <span style="color: var(--text-muted); font-weight: 400;">(opsional, maks. 2MB)</span></label>
                 @if ($castingProject->poster_path)
                     <div style="margin-bottom: 8px;">
                         <img src="{{ Storage::url($castingProject->poster_path) }}" alt="Poster" style="height: 80px; border-radius: 6px; object-fit: cover;">
@@ -58,7 +58,7 @@
                 <input type="file" name="poster_path" accept="image/jpeg,image/png,image/webp">
             </div>
             <div>
-                <label>Cover Naskah / Moodboard <span style="color: var(--text-muted); font-weight: 400;">(opsional — max 3MB)</span></label>
+                <label>Cover Naskah / Moodboard <span style="color: var(--text-muted); font-weight: 400;">(opsional, maks. 3MB)</span></label>
                 @if ($castingProject->cover_path)
                     <div style="margin-bottom: 8px;">
                         <img src="{{ Storage::url($castingProject->cover_path) }}" alt="Cover" style="height: 80px; border-radius: 6px; object-fit: cover;">
@@ -203,7 +203,7 @@
                         <div style="font-size: 13px; margin-top: 6px;"><strong>Daftar Panggilan:</strong></div>
                         <ul style="margin: 4px 0 0 16px; font-size: 13px;">
                             @foreach ($date->panggilan as $p)
-                                <li>{{ $p['nama'] }} — {{ $p['jam'] }}</li>
+                                <li>{{ $p['nama'] }} ({{ $p['jam'] }})</li>
                             @endforeach
                         </ul>
                     @endif

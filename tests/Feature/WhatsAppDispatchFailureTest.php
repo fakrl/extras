@@ -12,7 +12,7 @@ use Tests\TestCase;
 /**
  * Regresi audit full-codebase (30 Agu 2026): SendWhatsAppNotification::
  * dispatch() bisa throw SENDIRI (bukan cuma job-nya) kalau insert ke
- * tabel `jobs` gagal (DB lock/down) — try/catch lama cuma ada di dalam
+ * tabel `jobs` gagal (DB lock/down) - try/catch lama cuma ada di dalam
  * WhatsAppService::kirim()/job handle(), yang keduanya baru jalan
  * SETELAH dispatch() sukses. kirimNotifikasi() harus tetap best-effort
  * walau dispatch() sendiri yang gagal.

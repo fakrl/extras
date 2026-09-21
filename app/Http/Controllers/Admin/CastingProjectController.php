@@ -29,7 +29,7 @@ class CastingProjectController extends Controller
     }
 
     /**
-     * RF-09: Admin Default membuat proyek casting — nama produksi, kriteria
+     * RF-09: Admin Default membuat proyek casting, nama produksi, kriteria
      * per kelas, kuota, deadline, tanggal-tanggal shooting (jamak, tidak
      * harus berurutan), serta penanda "Butuh Dadakan/Urgent".
      */
@@ -104,14 +104,14 @@ class CastingProjectController extends Controller
         $castingProject->load('classes', 'shootingDates', 'cdAssignments.cdUser');
 
         $applicantsCount = $castingProject->applications()->count();
-        $cdUsers = User::whereIn('role', ['client', 'casting_director'])->orderBy('name')->get();
+        $cdUsers = User::where('role', 'client')->orderBy('name')->get();
 
         return view('admin.projects.edit', compact('castingProject', 'applicantsCount', 'cdUsers'));
     }
 
     /**
      * RF-10: kalau proyek sudah punya pendaftar, kelas yang sudah ada TIDAK
-     * boleh dihapus (di-update in-place) — cegah project_applications
+     * boleh dihapus (di-update in-place), cegah project_applications
      * (via casting_project_class_id, RF-30) jadi merujuk kelas yang hilang.
      * Kelas baru tetap boleh ditambah. Proyek tanpa pendaftar: delete-recreate
      * biasa, sama seperti store().
@@ -244,7 +244,7 @@ class CastingProjectController extends Controller
     }
 
     /**
-     * SPEC.md Bagian E: Admin Default menugaskan CD ke proyek — dasar guard
+     * SPEC.md Bagian E: Admin Default menugaskan CD ke proyek, dasar guard
      * akses CD di InvoiceController & Cd\ReviewController. 1 proyek boleh
      * punya lebih dari satu CD.
      */

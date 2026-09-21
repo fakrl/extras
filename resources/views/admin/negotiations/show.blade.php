@@ -53,7 +53,7 @@
         <form method="POST" action="{{ route('admin.negotiations.terima', $application) }}" style="display: flex; gap: 8px;">
             @csrf
             <input type="hidden" name="nominal" value="{{ $application->feeNegotiations->last()->nominal }}">
-            <button class="btn btn-brand">✓ Terima (Rp {{ number_format($application->feeNegotiations->last()->nominal, 0, ',', '.') }})</button>
+            <button class="btn btn-brand">Terima (Rp {{ number_format($application->feeNegotiations->last()->nominal, 0, ',', '.') }})</button>
         </form>
         <form method="POST" action="{{ route('admin.negotiations.counter', $application) }}" style="display: flex; gap: 8px; flex-wrap: wrap;">
             @csrf

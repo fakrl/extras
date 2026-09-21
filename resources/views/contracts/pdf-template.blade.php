@@ -45,7 +45,7 @@
             Dibatalkan: {{ $application->contract->voided_at->format('d M Y H:i') }}
         </div>
         <div class="void-banner">
-            TIDAK BERLAKU — Pendaftaran Dibatalkan pada {{ $application->contract->voided_at->format('d M Y H:i') }}
+            TIDAK BERLAKU - Pendaftaran Dibatalkan pada {{ $application->contract->voided_at->format('d M Y H:i') }}
         </div>
     @endif
 

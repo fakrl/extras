@@ -16,7 +16,7 @@ use Illuminate\Support\Str;
 
 /**
  * Controller ini dipakai bersama oleh Admin Default & Extras (dua pihak
- * yang tanda tangan kontrak yang sama) — makanya tidak ditaruh di
+ * yang tanda tangan kontrak yang sama), makanya tidak ditaruh di
  * namespace Admin\ atau Extras\ terpisah. Middleware role tetap dicek
  * di routes/web.php, method di sini yang menegakkan siapa boleh apa.
  */
@@ -32,7 +32,7 @@ class ContractController extends Controller
         abort_unless($application->bolehDilihatOleh($request->user()), 403);
 
         if (! $application->contract) {
-            // Gate sebelum auto-generate — kontrak PDF tidak boleh dibuat
+            // Gate sebelum auto-generate, kontrak PDF tidak boleh dibuat
             // sampai data yang muncul di dokumen lengkap: nama_asli (nama
             // penandatangan, diisi bareng alias di halaman profil) lalu NIK
             // (RF-04, sengaja di form terpisah demi data minimization;

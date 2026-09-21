@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Kelola Proyek — Casting')
+@section('title', 'Kelola Proyek Casting')
 
 @section('content')
 <div class="card-header-row">
@@ -22,7 +22,7 @@
                 <div class="entity-card-title">
                     {{ $project->nama_produksi }}
                     @if ($project->isUrgent())
-                        <span class="badge badge-tolak">🚨 Urgent</span>
+                        <span class="badge badge-tolak">Urgent</span>
                     @endif
                 </div>
                 <div class="entity-card-sub">{{ $project->client_ph }}</div>

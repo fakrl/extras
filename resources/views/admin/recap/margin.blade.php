@@ -27,7 +27,7 @@
                     <td>
                         Rp {{ number_format($row->margin, 0, ',', '.') }}
                         @if ($row->belum_terklasifikasi)
-                            <span class="badge badge-pending" title="Termasuk data belum terklasifikasi, lihat rincian di bawah">⚠</span>
+                            <span class="badge badge-pending" title="Termasuk data belum terklasifikasi, lihat rincian di bawah">Perlu Cek</span>
                         @endif
                     </td>
                     <td>{{ number_format($row->margin_persen, 1) }}%</td>
@@ -46,7 +46,7 @@
                         <tr style="color: var(--warning); background: rgba(240,185,11,0.1); font-size: 12.5px;">
                             <td style="padding-left: 24px;">
                                 &mdash; Belum terklasifikasi ({{ $row->belum_terklasifikasi->jumlah_aplikasi }} orang)
-                                <span class="badge badge-pending">⚠ Data belum lengkap</span>
+                                <span class="badge badge-pending">Data belum lengkap</span>
                             </td>
                             <td>Rp 0</td>
                             <td>Rp {{ number_format($row->belum_terklasifikasi->total_payout, 0, ',', '.') }}</td>

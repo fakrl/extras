@@ -48,7 +48,7 @@
         <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-start;">
             <form method="POST" action="{{ route('extras.negotiations.terima', $application) }}">
                 @csrf
-                <button class="btn btn-brand">✓ Terima Penawaran Terakhir</button>
+                <button class="btn btn-brand">Terima Penawaran Terakhir</button>
             </form>
             
             <form method="POST" action="{{ route('extras.negotiations.counter', $application) }}" style="display: flex; gap: 8px; flex-wrap: wrap; flex: 1;">

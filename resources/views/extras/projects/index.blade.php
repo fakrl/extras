@@ -9,7 +9,7 @@
             <div style="font-size: 15px; font-weight: 600;">
                 {{ $project->nama_produksi }}
                 @if ($project->isUrgent())
-                    <span class="badge badge-tolak">🚨 Butuh Dadakan</span>
+                    <span class="badge badge-tolak">Butuh Dadakan</span>
                 @endif
             </div>
             <span style="color: var(--text-muted); font-size: 13px;">Deadline: {{ $project->deadline->format('d M Y') }}</span>

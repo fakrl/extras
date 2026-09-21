@@ -75,7 +75,7 @@ class CastingProjectController extends Controller
         );
 
         $pesan = $adaBentrok
-            ? '⚠️ Pendaftaran berhasil, tapi ada tanggal yang bertabrakan dengan proyek lain yang sedang kamu ikuti. Silakan cek kembali komitmenmu.'
+            ? 'Pendaftaran berhasil, tapi ada tanggal yang bertabrakan dengan proyek lain yang sedang kamu ikuti. Silakan cek kembali komitmenmu.'
             : 'Pendaftaran berhasil! Admin akan mereview profilmu.';
 
         return redirect()->route('extras.dashboard')->with('status', $pesan);

@@ -44,7 +44,7 @@
         min-height: 100vh;
     }
 
-    /* Password show/hide toggle — dipakai lewat komponen password-input, sama di layouts/app.blade.php & layouts/auth.blade.php */
+    /* Password show/hide toggle, dipakai lewat komponen password-input */
     .password-field { position: relative; }
     .password-field input { padding-right: 44px; margin-bottom: 0; }
     .password-toggle {

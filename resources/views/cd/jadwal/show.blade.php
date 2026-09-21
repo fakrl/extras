@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Input Jadwal — ' . $project->nama_produksi)
+@section('title', 'Input Jadwal: ' . $project->nama_produksi)
 
 @section('content')
 <div style="margin-bottom: 16px;">

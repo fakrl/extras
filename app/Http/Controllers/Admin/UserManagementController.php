@@ -13,13 +13,13 @@ class UserManagementController extends Controller
 {
     /**
      * RF-05: Admin Default mengelola akun CD dan menonaktifkan akun Extras
-     * yang bermasalah. Cakupan sengaja dibatasi ke dua role ini — Admin
+     * yang bermasalah. Cakupan sengaja dibatasi ke dua role ini, Admin
      * Default TIDAK punya kewenangan menonaktifkan Admin lain (itu hak
      * Super Admin lewat modul Manajemen Karyawan, RF-40/RF-41, Sprint 5).
      */
     public function index()
     {
-        $castingDirectors = User::whereIn('role', ['client', 'casting_director'])->get();
+        $castingDirectors = User::where('role', 'client')->get();
         $extras = User::where('role', 'extras')
             ->with('extrasProfile.user:id,username', 'extrasProfile.categories')
             ->get();
@@ -75,7 +75,7 @@ class UserManagementController extends Controller
     public function toggleStatus(User $user): RedirectResponse
     {
         abort_unless(
-            in_array($user->role, ['client', 'casting_director', 'extras'], true),
+            in_array($user->role, ['client', 'extras'], true),
             403,
             'Admin hanya boleh mengelola akun Client dan Extras.'
         );

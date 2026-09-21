@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="dark light">
-    <title>{{ $valid ? $project->nama_produksi : 'Pendaftaran Ditutup' }} — SIM Casting JBTB</title>
+    <title>{{ $valid ? $project->nama_produksi : 'Pendaftaran Ditutup' }} | SIM Casting JBTB</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     @include('partials.theme-style')
@@ -53,7 +53,7 @@
 
         @if (! $valid)
             <h1>Pendaftaran sudah tidak dibuka</h1>
-            <p>Link ini sudah tidak menerima pendaftaran — mungkin kuota sudah penuh, deadline sudah lewat, atau proyeknya sudah ditutup.</p>
+            <p>Link ini sudah tidak menerima pendaftaran. Kuota mungkin sudah penuh, batas waktu terlewati, atau proyek telah ditutup.</p>
             <a href="{{ route('home') }}" class="btn-outline">Ke Beranda SIM Casting JBTB</a>
         @else
             <h1>{{ $project->nama_produksi }}</h1>
