@@ -14,6 +14,11 @@
     </div>
 </div>
 
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-title">Jadwal Shooting Bulan Ini</div>
+    <x-jadwal-calendar :events="$jadwalBulanIni" :compact="true" />
+</div>
+
 <div class="dashboard-grid-2col is-even">
     <div class="card">
         <div class="card-title">Keputusan Greenlight Saya</div>

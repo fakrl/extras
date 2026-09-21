@@ -86,6 +86,11 @@
     @endif
 </div>
 
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-title">Jadwal Shooting Bulan Ini</div>
+    <x-jadwal-calendar :events="$jadwalBulanIni" :compact="true" />
+</div>
+
 <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Pendaftaran Saya</div>
 
 @forelse ($pendaftaranSaya as $app)
