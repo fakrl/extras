@@ -27,7 +27,7 @@ class SuperAdminHonorRecapTest extends TestCase
     public function test_total_honor_dihitung_termasuk_addon(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        $korlap = User::factory()->create(['role' => 'admin_korlap', 'name' => 'Budi Korlap']);
+        $korlap = User::factory()->create(['role' => 'korlap', 'name' => 'Budi Korlap']);
         $project = $this->buatProyek($korlap);
 
         $assignment = AdminProjectAssignment::create([
@@ -51,7 +51,7 @@ class SuperAdminHonorRecapTest extends TestCase
     public function test_admin_tanpa_assignment_tetap_muncul_dengan_total_nol(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        User::factory()->create(['role' => 'admin_talco', 'name' => 'Talco Baru']);
+        User::factory()->create(['role' => 'admin', 'name' => 'Talco Baru']);
 
         $response = $this->actingAs($superAdmin)->get(route('super-admin.dashboard'));
 
@@ -63,7 +63,7 @@ class SuperAdminHonorRecapTest extends TestCase
     public function test_proyek_berjalan_tidak_ikut_dihitung_honornya(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        $admin = User::factory()->create(['role' => 'admin_default', 'name' => 'Admin Aktif']);
+        $admin = User::factory()->create(['role' => 'admin', 'name' => 'Admin Aktif']);
         $project = $this->buatProyek($admin);
 
         AdminProjectAssignment::create([
