@@ -19,7 +19,7 @@ class CastingProjectFactory extends Factory
     public function definition(): array
     {
         return [
-            'admin_id' => User::factory()->state(['role' => 'admin_default']),
+            'admin_id' => User::factory()->state(['role' => 'admin']),
             'nama_produksi' => fake()->sentence(3),
             'client_ph' => fake()->company(),
             'deadline' => now()->addDays(7),

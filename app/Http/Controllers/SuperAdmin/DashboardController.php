@@ -90,17 +90,12 @@ class DashboardController extends Controller
         $roleDisplayNames = [
             'super_admin' => 'Super Admin',
             'admin' => 'Admin',
-            'admin_default' => 'Admin Default',
-            'admin_talco' => 'Admin Talco',
-            'admin_korlap' => 'Admin Korlap',
-            'admin_sosmed' => 'Admin Sosmed',
             'korlap' => 'Koordinator Lapangan',
             'client' => 'Client',
-            'casting_director' => 'Casting Director',
             'extras' => 'Extras',
         ];
 
-        $rekapHonorAdmin = User::whereIn('role', ['admin', 'admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed', 'korlap'])
+        $rekapHonorAdmin = User::whereIn('role', ['admin', 'korlap'])
             ->with('adminProjectAssignments.payroll')
             ->get()
             ->map(function (User $admin) use ($roleDisplayNames) {

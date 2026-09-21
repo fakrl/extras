@@ -26,7 +26,7 @@ class RegistrationRoleTest extends TestCase
         $this->assertSame('extras', $user->role);
     }
 
-    public function test_casting_director_registration_gets_casting_director_role(): void
+    public function test_casting_director_registration_gets_client_role_not_legacy_enum_value(): void
     {
         $this->post('/register/casting-director', [
             'name' => 'Test CD',
@@ -39,6 +39,6 @@ class RegistrationRoleTest extends TestCase
         $user = User::where('email', 'cd@example.com')->first();
 
         $this->assertNotNull($user);
-        $this->assertSame('casting_director', $user->role);
+        $this->assertSame('client', $user->role);
     }
 }
