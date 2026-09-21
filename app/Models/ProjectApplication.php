@@ -121,7 +121,7 @@ class ProjectApplication extends Model
     /**
      * RF-16: Admin ajukan penawaran fee awal. Ronde 1, selalu dari admin.
      */
-    public function ajukanFeeAwal(float $nominal): FeeNegotiation
+    public function ajukanFeeAwal(float $nominal, ?string $catatan = null): FeeNegotiation
     {
         $this->update(['status_partisipasi' => 'nego_fee']);
 
@@ -130,6 +130,7 @@ class ProjectApplication extends Model
             'diajukan_oleh' => 'admin',
             'nominal' => $nominal,
             'aksi' => 'tawar',
+            'catatan' => $catatan,
         ]);
 
         $this->kirimKonfirmasiFee($negotiation, $this->extras->user);
@@ -141,7 +142,7 @@ class ProjectApplication extends Model
      * RF-17/RF-18: counter dari salah satu pihak, ronde bertambah, tidak
      * dibatasi jumlah putaran (mekanisme ala InDrive).
      */
-    public function counterFee(string $diajukanOleh, float $nominal): FeeNegotiation
+    public function counterFee(string $diajukanOleh, float $nominal, ?string $catatan = null): FeeNegotiation
     {
         $roundTerakhir = $this->feeNegotiations()->max('round') ?? 0;
 
@@ -150,6 +151,7 @@ class ProjectApplication extends Model
             'diajukan_oleh' => $diajukanOleh,
             'nominal' => $nominal,
             'aksi' => 'counter',
+            'catatan' => $catatan,
         ]);
 
         $penerima = $diajukanOleh === 'admin' ? $this->extras->user : $this->castingProject->admin;
@@ -161,7 +163,7 @@ class ProjectApplication extends Model
     /**
      * RF-20: salah satu pihak terima -> status "Deal", fee terkunci.
      */
-    public function terimaFee(string $diterimaOleh, float $nominal): FeeNegotiation
+    public function terimaFee(string $diterimaOleh, float $nominal, ?string $catatan = null): FeeNegotiation
     {
         $roundTerakhir = $this->feeNegotiations()->max('round') ?? 0;
 
@@ -170,6 +172,7 @@ class ProjectApplication extends Model
             'diajukan_oleh' => $diterimaOleh,
             'nominal' => $nominal,
             'aksi' => 'terima',
+            'catatan' => $catatan,
         ]);
 
         $this->update([
@@ -183,7 +186,7 @@ class ProjectApplication extends Model
     /**
      * RF-18: admin bisa hentikan proses negosiasi (tolak), bukan cuma extras.
      */
-    public function tolakNegosiasi(string $ditolakOleh): FeeNegotiation
+    public function tolakNegosiasi(string $ditolakOleh, ?string $catatan = null): FeeNegotiation
     {
         $roundTerakhir = $this->feeNegotiations()->max('round') ?? 0;
 
@@ -192,6 +195,7 @@ class ProjectApplication extends Model
             'diajukan_oleh' => $ditolakOleh,
             'nominal' => 0,
             'aksi' => 'tolak',
+            'catatan' => $catatan,
         ]);
 
         $this->update(['status_partisipasi' => 'ditolak']);
@@ -383,7 +387,7 @@ class ProjectApplication extends Model
 
     public function bolehDilihatOleh(User $user): bool
     {
-        return $user->role === 'admin_default'
+        return $user->isAdmin()
             || ($user->role === 'extras' && $this->extras_id === $user->extrasProfile->id);
     }
 

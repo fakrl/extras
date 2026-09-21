@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Attendance;
 use App\Models\CastingProject;
 use App\Models\ProjectApplication;
@@ -132,6 +133,12 @@ class AttendanceController extends Controller
             'divalidasi_at' => now(),
         ]);
 
+        ActivityLog::record(
+            'VALIDATE_ATTENDANCE',
+            "Korlap {$request->user()->name} memvalidasi kehadiran extras {$attendance->projectApplication->extras->user->name} di lokasi shooting",
+            $attendance
+        );
+
         return back()->with('status', 'Absensi berhasil divalidasi.');
     }
 
@@ -145,7 +152,13 @@ class AttendanceController extends Controller
             'catatan' => ($attendance->catatan ? $attendance->catatan.' | ' : '').'Ditolak Korlap di lokasi.',
         ]);
 
-        return back()->with('status', 'Absensi ditolak & ditandai Tidak Hadir.');
+        ActivityLog::record(
+            'REJECT_ATTENDANCE',
+            "Korlap {$request->user()->name} menolak validasi absensi extras {$attendance->projectApplication->extras->user->name}",
+            $attendance
+        );
+
+        return back()->with('status', 'Validasi kehadiran ditolak (Status: Tidak Hadir).');
     }
 
     public function fotoStream(Attendance $attendance): StreamedResponse
@@ -160,7 +173,7 @@ class AttendanceController extends Controller
         $user = $request->user();
         $project = $attendance->projectApplication->castingProject;
         $isAssignedCd = $project->cdAssignments()->where('cd_user_id', $user->id)->exists();
-        $isClientOwner = $project->client_id === $user->id;
+        $isClientOwner = $project->diajukan_oleh_client_id === $user->id;
 
         abort_unless(
             $user->isAdmin() || $user->isKorlap() || $isAssignedCd || $isClientOwner,

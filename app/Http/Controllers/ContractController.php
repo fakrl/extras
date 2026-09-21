@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\KontrakSiapTtdMail;
+use App\Models\ActivityLog;
 use App\Models\NotificationLog;
 use App\Models\ProjectApplication;
 use App\Services\PdfGeneratorService;
@@ -104,6 +105,12 @@ class ContractController extends Controller
             $application->update(['status_partisipasi' => 'kontrak_ditandatangani']);
             $this->renderPdf($application);
         }
+
+        ActivityLog::record(
+            'SIGN_CONTRACT',
+            ucfirst($role)." {$request->user()->name} menandatangani kontrak kerja digital untuk proyek '{$application->castingProject->nama_produksi}'",
+            $contract
+        );
 
         return back()->with('status', 'Tanda tangan berhasil disimpan.');
     }

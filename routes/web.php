@@ -27,6 +27,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PublicEventController;
 use App\Http\Controllers\PublicExtrasProfileController;
+use App\Http\Controllers\SuperAdmin\ActivityLogController;
 use App\Http\Controllers\SuperAdmin\AdminManagementController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\SuperAdmin\MonitoringController;
@@ -256,6 +257,10 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
         ->name('super-admin.projects.acc');
     Route::match(['post', 'patch'], '/projects/{castingProject}/reject', [SuperAdminDashboardController::class, 'rejectProject'])
         ->name('super-admin.projects.reject');
+
+    // Audit Trail: Log Aktivitas Seluruh Role
+    Route::get('/activity-logs', [ActivityLogController::class, 'index'])
+        ->name('super-admin.activity-logs');
 });
 
 // ==================== CLIENT (CASTING DIRECTOR) ====================

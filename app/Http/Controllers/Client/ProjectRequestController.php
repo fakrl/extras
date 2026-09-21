@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\CastingProject;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -62,6 +63,12 @@ class ProjectRequestController extends Controller
 
         // Otomatis assign client ini ke proyek yang diajukan
         $project->cdAssignments()->create(['cd_user_id' => $request->user()->id]);
+
+        ActivityLog::record(
+            'SUBMIT_PROJECT_REQUEST',
+            "Client {$request->user()->name} mengajukan brief proyek casting baru: '{$project->nama_produksi}'",
+            $project
+        );
 
         return redirect()->route('cd.dashboard')->with('status', 'Brief permintaan proyek berhasil diajukan! Menunggu peninjauan & persetujuan Super Admin.');
     }

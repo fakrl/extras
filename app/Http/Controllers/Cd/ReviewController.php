@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Cd;
 
 use App\Exports\CdRiwayatExport;
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\CastingProject;
 use App\Models\CdProjectAssignment;
 use App\Models\CdReview;
@@ -75,6 +76,13 @@ class ReviewController extends Controller
             ]);
 
             $application->kirimNotifikasiHasil();
+
+            ActivityLog::record(
+                $data['keputusan'] === 'approve' ? 'REVIEW_CANDIDATE_LOCK' : 'REVIEW_CANDIDATE_REJECT',
+                "Client {$request->user()->name} me-{$data['keputusan']} kandidat extras {$application->extras->user->name} untuk proyek {$application->castingProject->nama_produksi}",
+                $application,
+                ['grade_cd' => $data['grade_cd'] ?? null]
+            );
         }
 
         $jumlah = $applications->count();

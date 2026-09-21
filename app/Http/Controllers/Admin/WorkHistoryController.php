@@ -21,6 +21,19 @@ class WorkHistoryController extends Controller
             ->latest()
             ->get();
 
-        return view('admin.work-history', compact('assignments'));
+        $reimbursements = $assignments->flatMap(function ($assignment) {
+            return $assignment->payroll?->addons->map(function ($addon) use ($assignment) {
+                return (object) [
+                    'id' => $addon->id,
+                    'proyek' => $assignment->castingProject->nama_produksi,
+                    'label' => $addon->label,
+                    'nominal' => $addon->nominal,
+                    'tanggal' => $addon->created_at,
+                    'slip_status' => $assignment->payroll?->pdf_slip_path ? 'Tercatat di Slip' : 'Menunggu Slip',
+                ];
+            }) ?? collect();
+        })->sortByDesc('tanggal')->values();
+
+        return view('admin.work-history', compact('assignments', 'reimbursements'));
     }
 }

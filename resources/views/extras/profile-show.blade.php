@@ -47,6 +47,17 @@
                 @endif
             </div>
             <div style="font-size: 18px; font-weight: 700;">{{ $profile->user->username ?? '— belum diisi —' }}</div>
+            <div style="margin-top: 6px;">
+                @if ($profile->grade_saat_ini)
+                    <span class="badge badge-aktif" style="font-size: 12px; padding: 3px 8px; font-weight: 600;">
+                        Grade {{ $profile->grade_saat_ini }}
+                    </span>
+                @else
+                    <span class="badge badge-pending" style="font-size: 11px; padding: 2px 6px;">
+                        Grade Belum Dinilai
+                    </span>
+                @endif
+            </div>
         </div>
 
         {{-- Video --}}

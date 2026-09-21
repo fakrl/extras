@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use Illuminate\Http\RedirectResponse;
@@ -31,6 +32,7 @@ class ApplicantController extends Controller
             return back()->with('error', "Grade masih terkunci sampai {$terkunciSampai}, gak bisa diubah dulu.");
         }
 
+        $gradeLama = $profile->grade_saat_ini;
         $profile->update([
             'grade_saat_ini' => $data['grade'],
             'grade_diberikan_at' => now(),
@@ -40,6 +42,18 @@ class ApplicantController extends Controller
             'grade' => $data['grade'],
             'status_partisipasi' => 'direview_admin',
         ]);
+
+        ActivityLog::record(
+            'SET_EXTRAS_GRADE',
+            "Admin menetapkan Grade {$data['grade']} pada profil extras {$profile->user->name}",
+            $profile,
+            [
+                'extras_user_id' => $profile->user_id,
+                'grade_lama' => $gradeLama,
+                'grade_baru' => $data['grade'],
+                'terkunci_sampai' => now()->addMonths(2)->translatedFormat('d F Y'),
+            ]
+        );
 
         return back()->with('status', 'Grade berhasil ditetapkan.');
     }
@@ -139,6 +153,12 @@ class ApplicantController extends Controller
         }
 
         $application->update($updateData);
+
+        ActivityLog::record(
+            'UPDATE_LINEUP_BREAKDOWN',
+            "Admin/Korlap memperbarui breakdown karakter/callingan untuk {$application->extras->user->name} di proyek {$application->castingProject->nama_produksi}",
+            $application
+        );
 
         return back()->with('status', 'Detail breakdown karakter, scene, dan jam callingan berhasil diperbarui.');
     }

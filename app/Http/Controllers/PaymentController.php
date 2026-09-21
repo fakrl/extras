@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\ProjectApplication;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -41,7 +42,7 @@ class PaymentController extends Controller
      */
     public function tandaiTransfer(Request $request, ProjectApplication $application): RedirectResponse
     {
-        abort_unless($request->user()->role === 'admin_default', 403);
+        abort_unless($request->user()->isAdmin(), 403);
         $this->guardStatusLolos($application);
 
         $request->validate([
@@ -51,6 +52,12 @@ class PaymentController extends Controller
         $path = $request->file('bukti_transfer')->store('payments/bukti-transfer', 'local');
 
         $application->payment->tandaiDitransfer($path);
+
+        ActivityLog::record(
+            'UPLOAD_PAYOUT_TRANSFER',
+            "Admin {$request->user()->name} mengunggah bukti transfer honor untuk {$application->extras->user->name}",
+            $application
+        );
 
         return back()->with('status', 'Status pembayaran ditandai "Sudah Ditransfer".');
     }
@@ -70,6 +77,12 @@ class PaymentController extends Controller
 
         $application->payment->konfirmasiDiterima();
         $application->update(['status_partisipasi' => 'selesai_produksi']);
+
+        ActivityLog::record(
+            'CONFIRM_PAYMENT',
+            "Extras {$request->user()->name} mengonfirmasi penerimaan honor (Lunas) untuk proyek '{$application->castingProject->nama_produksi}'",
+            $application
+        );
 
         return back()->with('status', 'Terima kasih, pembayaran telah dikonfirmasi.');
     }

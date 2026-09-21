@@ -35,12 +35,56 @@
             <thead><tr style="border-bottom: 1px solid var(--border-color);"><th style="text-align: left; padding: 8px 0;">Proyek</th><th style="text-align: left; padding: 8px 0;">Status</th>@if ($user->isCastingDirector())<th style="text-align: left; padding: 8px 0;">Review</th>@else<th style="text-align: left; padding: 8px 0;">Mulai</th><th style="text-align: left; padding: 8px 0;">Honor</th>@endif</tr></thead>
             <tbody>
                 @foreach ($assignments as $a)
-                <tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 8px 0;"><a href="{{ route('admin.projects.show', $a->castingProject) }}" style="color: var(--accent);">{{ $a->castingProject->nama_produksi }}</a></td><td style="padding: 8px 0;"><span class="badge {{ $a->status_log === 'berjalan' ? 'badge-warning' : 'badge-aktif' }}">{{ $a->status_log }}</span></td>@if ($user->isCastingDirector())<td style="padding: 8px 0;">@php $cnt = $a->cdReviews()->count(); @endphp {{ $cnt }} review</td>@else<td style="padding: 8px 0;">{{ $a->created_at->format('d M') }}</td><td style="padding: 8px 0;">@if ($a->payroll) Rp {{ number_format($a->payroll->nominalTotal(), 0, ',', '.') }} @else - @endif</td>@endif</tr>
+                <tr style="border-bottom: 1px solid var(--border-color);"><td style="padding: 8px 0;"><a href="{{ route('admin.projects.applicants', $a->castingProject) }}" style="color: var(--accent);">{{ $a->castingProject->nama_produksi }}</a></td><td style="padding: 8px 0;"><span class="badge {{ $a->status_log === 'berjalan' ? 'badge-warning' : 'badge-aktif' }}">{{ $a->status_log }}</span></td>@if ($user->isCastingDirector())<td style="padding: 8px 0;">@php $cnt = $a->cdReviews()->count(); @endphp {{ $cnt }} review</td>@else<td style="padding: 8px 0;">{{ $a->created_at->format('d M') }}</td><td style="padding: 8px 0;">@if ($a->payroll) Rp {{ number_format($a->payroll->nominalTotal(), 0, ',', '.') }} @else - @endif</td>@endif</tr>
                 @endforeach
             </tbody>
         </table>
     @endif
 </div>
+
+@if (!$user->isClient())
+    @php
+        $staffReimbursements = $assignments->flatMap(function ($a) {
+            return $a->payroll?->addons->map(function ($addon) use ($a) {
+                return (object) [
+                    'proyek' => $a->castingProject->nama_produksi,
+                    'label' => $addon->label,
+                    'nominal' => $addon->nominal,
+                    'tanggal' => $addon->created_at,
+                ];
+            }) ?? collect();
+        })->sortByDesc('tanggal');
+    @endphp
+    @if ($staffReimbursements->isNotEmpty())
+        <div class="card" style="margin-bottom: 16px;">
+            <div style="font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                <i class="ti ti-receipt" style="color: var(--accent);"></i> Riwayat Reimbursement &amp; Biaya Tambahan
+            </div>
+            <table style="width: 100%; font-size: 13px;">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <th style="text-align: left; padding: 8px 0;">Tanggal</th>
+                        <th style="text-align: left; padding: 8px 0;">Proyek</th>
+                        <th style="text-align: left; padding: 8px 0;">Keperluan</th>
+                        <th style="text-align: right; padding: 8px 0;">Nominal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($staffReimbursements as $sr)
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 8px 0;">{{ $sr->tanggal ? $sr->tanggal->format('d M Y') : '-' }}</td>
+                            <td style="padding: 8px 0;">{{ $sr->proyek }}</td>
+                            <td style="padding: 8px 0; font-weight: 500;">{{ $sr->label }}</td>
+                            <td style="padding: 8px 0; text-align: right; font-weight: 600; color: var(--accent-strong);">
+                                Rp {{ number_format($sr->nominal, 0, ',', '.') }}
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @endif
+@endif
 
 <div class="card">
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">

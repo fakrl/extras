@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Extras;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Attendance;
 use App\Models\ProjectApplication;
 use Illuminate\Http\RedirectResponse;
@@ -37,7 +38,7 @@ class AttendanceSelfieController extends Controller
             ?? $application->castingProject->shootingDates()->first()?->id
             ?? abort(422, 'Tidak ada jadwal shooting untuk proyek ini.');
 
-        Attendance::updateOrCreate(
+        $attendance = Attendance::updateOrCreate(
             [
                 'project_application_id' => $application->id,
                 'event_shooting_date_id' => $shootingDateId,
@@ -49,6 +50,12 @@ class AttendanceSelfieController extends Controller
                 'status_validasi' => 'menunggu',
                 'catatan' => 'Selfie Absensi Extras (Hybrid On-Site)',
             ]
+        );
+
+        ActivityLog::record(
+            'SUBMIT_SELFIE_ATTENDANCE',
+            "Extras {$request->user()->name} mengirimkan selfie absensi di lokasi shooting untuk proyek {$application->castingProject->nama_produksi}",
+            $attendance
         );
 
         return back()->with('status', 'Selfie absensi berhasil dikirim, menunggu validasi Korlap di lokasi.');
