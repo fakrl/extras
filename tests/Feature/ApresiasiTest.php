@@ -11,7 +11,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
- * RF-54: badge Apresiasi Extras, murni catatan internal Admin Default —
+ * RF-54: badge Apresiasi Extras, murni catatan internal Admin Default -
  * tidak pernah boleh terlihat oleh CD maupun Extras sendiri.
  */
 class ApresiasiTest extends TestCase

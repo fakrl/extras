@@ -14,7 +14,7 @@ use Tests\TestCase;
 
 /**
  * Regresi audit full-codebase (30 Agu 2026): 6 model menulis kolom
- * *_at lewat update() tanpa kolom itu ada di #[Fillable] — sama persis
+ * *_at lewat update() tanpa kolom itu ada di #[Fillable] - sama persis
  * pola bug yang sudah 3x kejadian (User, FeeNegotiation, ExtrasProfile).
  * Tanpa fix ini, tiap method di bawah lempar MassAssignmentException
  * (preventSilentlyDiscardingAttributes aktif di non-production).

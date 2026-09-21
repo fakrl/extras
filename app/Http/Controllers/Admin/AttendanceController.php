@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class AttendanceController extends Controller
 {
     /**
-     * SPEC.md Bagian F: halaman absensi Korlap — ringkas, mobile-friendly,
+     * SPEC.md Bagian F: halaman absensi Korlap, ringkas, mobile-friendly,
      * tanpa aksi finansial/Grade/Nego/Batalkan. Proyek+tanggal shooting
      * dipilih lewat dropdown (query string), bukan lewat halaman
      * admin.projects.applicants yang gerbangnya admin_default murni.

@@ -21,7 +21,7 @@
 </p>
 
 @if ($application->contract->isVoided())
-    <div class="alert-danger" style="font-weight: bold; margin-bottom: 16px;">TIDAK BERLAKU — Pendaftaran Dibatalkan pada {{ $application->contract->voided_at->format('d M Y H:i') }}</div>
+    <div class="alert-danger" style="font-weight: bold; margin-bottom: 16px;">TIDAK BERLAKU - Pendaftaran Dibatalkan pada {{ $application->contract->voided_at->format('d M Y H:i') }}</div>
 @endif
 
 <div class="card" style="margin-bottom: 16px;">

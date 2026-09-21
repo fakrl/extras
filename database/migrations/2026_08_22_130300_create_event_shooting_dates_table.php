@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Satu row per tanggal shooting — mendukung tanggal jamak yang tidak
+        // Satu row per tanggal shooting - mendukung tanggal jamak yang tidak
         // harus berurutan (temuan data riil: proyek besar bisa 9-13 hari
         // shooting, kemungkinan tidak berurutan). Ini yang membuat deteksi
         // bentrok jadwal (RF-13, RF-22) jadi simple overlap-check per tanggal,

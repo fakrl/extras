@@ -136,7 +136,7 @@ class WhatsAppNotificationTest extends TestCase
      * sebelumnya cuma (a) nomor_wa null (skip, tidak sampai HTTP call) dan
      * (b) dispatch() sendiri throw (WhatsAppDispatchFailureTest). Belum ada
      * yang test job SendWhatsAppNotification::handle() sendiri ketika
-     * nomor_wa ADA tapi HTTP call ke Node service-nya gagal (500) — jalur
+     * nomor_wa ADA tapi HTTP call ke Node service-nya gagal (500) - jalur
      * try/catch di dalam handle() ini sendiri.
      */
     public function test_job_handle_mencatat_gagal_saat_http_ke_node_gagal(): void

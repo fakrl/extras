@@ -46,7 +46,7 @@
                     <i class="ti ti-photo-off" style="font-size: 36px; color: var(--text-muted);"></i>
                 @endif
             </div>
-            <div style="font-size: 18px; font-weight: 700;">{{ $profile->user->username ?? '— belum diisi —' }}</div>
+            <div style="font-size: 18px; font-weight: 700;">{{ $profile->user->username ?? 'Belum diisi' }}</div>
             <div style="margin-top: 6px;">
                 @if ($profile->grade_saat_ini)
                     <span class="badge badge-aktif" style="font-size: 12px; padding: 3px 8px; font-weight: 600;">
@@ -77,24 +77,24 @@
     </div>
 
     <div class="profile-info-col">
-        {{-- Data Diri & Ciri Fisik — grid 2-kolom --}}
+        {{-- Data Diri & Ciri Fisik (grid 2-kolom) --}}
         <div class="profile-section">
             <div class="profile-section-title">Data Diri &amp; Ciri Fisik</div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; font-size: 13px;">
                 <div style="color: var(--text-secondary);">Usia</div>
-                <div>{{ $profile->usia ? $profile->usia . ' tahun' : '—' }}</div>
+                <div>{{ $profile->usia ? $profile->usia . ' tahun' : '-' }}</div>
 
                 <div style="color: var(--text-secondary);">Jenis Kelamin</div>
-                <div>{{ $profile->gender === 'pria' ? 'Laki-laki' : ($profile->gender === 'wanita' ? 'Perempuan' : '—') }}</div>
+                <div>{{ $profile->gender === 'pria' ? 'Laki-laki' : ($profile->gender === 'wanita' ? 'Perempuan' : '-') }}</div>
 
                 <div style="color: var(--text-secondary);">Tinggi Badan</div>
-                <div>{{ $profile->tinggi_badan ? $profile->tinggi_badan . ' cm' : '—' }}</div>
+                <div>{{ $profile->tinggi_badan ? $profile->tinggi_badan . ' cm' : '-' }}</div>
 
                 <div style="color: var(--text-secondary);">Ukuran Baju</div>
-                <div>{{ $profile->ukuran_baju ?: '—' }}</div>
+                <div>{{ $profile->ukuran_baju ?: '-' }}</div>
 
                 <div style="color: var(--text-secondary);">Warna Kulit</div>
-                <div>{{ $profile->warna_kulit ?: '—' }}</div>
+                <div>{{ $profile->warna_kulit ?: '-' }}</div>
             </div>
         </div>
 
@@ -102,11 +102,11 @@
             <div class="profile-section-title">Pengalaman &amp; Kemampuan</div>
             <div class="profile-view-row" style="flex-direction: column; align-items: flex-start; gap: 4px;">
                 <span class="profile-view-label">Pengalaman Main / Kerja</span>
-                <span class="profile-view-value" style="text-align: left;">{{ $profile->pengalaman ?: '— belum diisi —' }}</span>
+                <span class="profile-view-value" style="text-align: left;">{{ $profile->pengalaman ?: 'Belum diisi' }}</span>
             </div>
             <div class="profile-view-row">
                 <span class="profile-view-label">Bahasa</span>
-                <span class="profile-view-value">{{ $profile->bahasa ?: '—' }}</span>
+                <span class="profile-view-value">{{ $profile->bahasa ?: '-' }}</span>
             </div>
         </div>
 
@@ -118,7 +118,7 @@
                     <span class="profile-view-value"><a href="{{ $tautan['url'] }}" target="_blank">{{ $tautan['url'] }}</a></span>
                 </div>
             @empty
-                <span class="profile-view-value" style="color: var(--text-muted); font-weight: 400;">—</span>
+                <span class="profile-view-value" style="color: var(--text-muted); font-weight: 400;">-</span>
             @endforelse
         </div>
 
@@ -126,7 +126,7 @@
             <div class="profile-section-title">Tarif</div>
             <div class="profile-view-row">
                 <span class="profile-view-label">Tarif Harapan</span>
-                <span class="profile-view-value">{{ $profile->rate_card ? 'Rp ' . number_format($profile->rate_card, 0, ',', '.') : '—' }}</span>
+                <span class="profile-view-value">{{ $profile->rate_card ? 'Rp ' . number_format($profile->rate_card, 0, ',', '.') : '-' }}</span>
             </div>
         </div>
 

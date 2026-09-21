@@ -8,7 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 /**
- * Diakses lintas role (Admin Default & Extras) untuk resource yang sama —
+ * Diakses lintas role (Admin Default & Extras) untuk resource yang sama,
  * pola konsisten dengan ContractController/InvoiceController.
  */
 class PaymentController extends Controller

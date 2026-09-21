@@ -17,11 +17,11 @@ class MonitoringController extends Controller
     {
         $extrasAktif = User::where('role', 'extras')->where('status', 'aktif')->count();
         $extrasTotal = User::where('role', 'extras')->count();
-        $cdTotal = User::whereIn('role', ['client', 'casting_director'])->count();
-        $adminTotal = User::whereIn('role', ['admin', 'admin_default', 'korlap', 'admin_korlap'])->count();
+        $cdTotal = User::where('role', 'client')->count();
+        $adminTotal = User::whereIn('role', ['admin', 'korlap'])->count();
 
         $extrasList = User::where('role', 'extras')->with('extrasProfile.user:id,username')->latest()->get();
-        $cdList = User::whereIn('role', ['client', 'casting_director'])->latest()->get();
+        $cdList = User::where('role', 'client')->latest()->get();
 
         // Jadwal read-only: proyek yang punya shooting dates dengan jadwal terisi
         $jadwalProjects = CastingProject::whereHas('shootingDates', fn ($q) => $q->whereNotNull('lokasi'))

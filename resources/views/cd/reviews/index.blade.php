@@ -5,7 +5,7 @@
 @section('content')
 <div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">Greenlight</div>
 <p style="color: var(--text-secondary); margin: 0 0 16px; font-size: 13.5px;">
-    Proyek yang kamu handle — klik proyek untuk lihat dan review kandidat.
+    Daftar proyek casting. Pilih proyek untuk melihat dan meninjau kandidat.
 </p>
 
 <div class="card">

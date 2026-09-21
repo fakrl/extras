@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Daftar Extras — SIM Casting JBTB')
+@section('title', 'Daftar Extras | SIM Casting JBTB')
 
 @section('content')
 <h1 class="auth-title">Daftar sebagai Extras</h1>

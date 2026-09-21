@@ -232,11 +232,11 @@ class ProjectApplicationTest extends TestCase
     }
 
     /**
-     * RF-08 skenario penuh (SPEC.md Bagian C) — sebelum bagian ini, status
+     * RF-08 skenario penuh (SPEC.md Bagian C) - sebelum bagian ini, status
      * Lolos tidak bisa dibatalkan sama sekali, jadi skenario "3x mendadak
      * saat Lolos" nyaris mustahil ditest (audit Session 19). Beda dari
      * test_tiga_kali_batalkan_mendadak_pada_proyek_berbeda_membuat_status_melanggar
-     * di atas (yang lewat status Deal) — ini khusus buktikan jalur Lolos.
+     * di atas (yang lewat status Deal) - ini khusus buktikan jalur Lolos.
      */
     public function test_tiga_kali_batalkan_mendadak_status_lolos_pada_proyek_berbeda_membuat_status_melanggar(): void
     {
@@ -337,7 +337,7 @@ class ProjectApplicationTest extends TestCase
     /**
      * Regresi Session 7: sebelum fix, config('app.timezone') masih UTC,
      * jadi now() dini hari WIB (00:00-06:59) masih terhitung tanggal
-     * KEMARIN di UTC — bisa salah klasifikasi mendadak/tidak. Bekukan
+     * KEMARIN di UTC - bisa salah klasifikasi mendadak/tidak. Bekukan
      * waktu ke 01:00 WIB (= 18:00 UTC hari sebelumnya) supaya perbedaan
      * itu ketahuan kalau timezone app pernah balik ke UTC.
      */
@@ -527,7 +527,7 @@ class ProjectApplicationTest extends TestCase
         // View again
         $response = $this->actingAs($extrasUser)->get(route('contracts.show', $application));
         $response->assertOk();
-        $response->assertSee('TIDAK BERLAKU — Pendaftaran Dibatalkan pada');
+        $response->assertSee('TIDAK BERLAKU - Pendaftaran Dibatalkan pada');
         $response->assertDontSee('id="sign-form"', false);
     }
 }

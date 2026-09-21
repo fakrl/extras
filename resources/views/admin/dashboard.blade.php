@@ -9,7 +9,7 @@
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
                 <div>
                     <div style="font-weight: 700; color: var(--danger, #ef4444); font-size: 14.5px;">
-                        🚨 Perhatian: Ada {{ $urgentProjects->count() }} Proyek Berstatus Urgent / H-3!
+                        <i class="ti ti-alert-triangle"></i> Perhatian: Ada {{ $urgentProjects->count() }} Proyek Berstatus Urgent / H-3!
                     </div>
                     <div style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">
                         Tanggal shooting sudah sangat dekat namun kuota kandidat belum terpenuhi. Segera bagikan link pendaftaran ke grup WA atau review lineup.

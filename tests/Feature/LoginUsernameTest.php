@@ -10,7 +10,7 @@ use Tests\TestCase;
 
 /**
  * Bagian D3: satu input login menerima email ATAU username. Test pertama di
- * file ini adalah regresi login-email — kalau itu merah, fitur username
+ * file ini adalah regresi login-email - kalau itu merah, fitur username
  * dianggap merusak pintu masuk utama sistem.
  */
 class LoginUsernameTest extends TestCase

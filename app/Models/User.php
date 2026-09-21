@@ -15,13 +15,13 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 // 'role' & 'status' TETAP masuk $fillable (whitelist teknis, sama pola
-// dengan ExtrasProfile::$foto_profil_path) — proteksinya bukan dari sini,
+// dengan ExtrasProfile::$foto_profil_path), proteksinya bukan dari sini,
 // tapi karena tidak ada route/controller yang nerima 'role'/'status' mentah
 // dari $request->all(); RegisterController & AdminManagementController
 // selalu set literal/hasil validasi enum, bukan pass-through raw input.
 #[Fillable(['name', 'email', 'username', 'password', 'role', 'status', 'nomor_wa'])]
-// nomor_wa masuk Hidden — bukan super rahasia (bukan NIK/rekening), tapi
-// tembok anti-poaching (CLAUDE.md §5) taruh kontak Extras di kolom ❌ untuk
+// nomor_wa masuk Hidden, bukan super rahasia (bukan NIK/rekening), tapi
+// Kebijakan privasi: kontak Extras tidak ditampilkan untuk
 // Casting Director; defense-in-depth kalau nanti ada endpoint yang serialize
 // User lewat relasi extras.user tanpa sengaja (Cd\ReviewController sudah
 // eager-load extras.user untuk kirim WA hasil seleksi).
@@ -48,7 +48,7 @@ class User extends Authenticatable
     /**
      * RF-37: normalisasi nomor WA ke format `62xxxxxxxxxx` (tanpa `+`/`0`
      * depan) satu tempat saja, sesuai format yang dipakai whatsapp-web.js
-     * (`<nomor>@c.us`) — supaya tidak campur-campur di database terlepas
+     * (`<nomor>@c.us`), supaya tidak campur-campur di database terlepas
      * format input (08xx, +62xx, 62xx).
      */
     protected function nomorWa(): Attribute
@@ -157,7 +157,7 @@ class User extends Authenticatable
 
     /**
      * RF-03: satu-satunya sumber kebenaran untuk "role ini dashboard-nya
-     * di mana" — dipakai LoginController (setelah login), AppServiceProvider
+     * di mana", dipakai LoginController (setelah login), AppServiceProvider
      * (redirect kalau user yang sudah login coba akses /login), dan route
      * /dashboard (pintu masuk universal). Jangan duplikasi mapping ini di
      * tempat lain; kalau ada role baru, cukup ubah di sini.

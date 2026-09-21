@@ -17,12 +17,12 @@ use Tests\TestCase;
 /**
  * RF-16 s.d. RF-21: negosiasi fee in-app ala InDrive (multi-round, tercatat).
  * Ini "value inti" produk (docs/CLAUDE.md: "catatan kesepakatan fee yang
- * nggak bisa dibantah") — sebelumnya cuma dites dari sisi "email terkirim"
+ * nggak bisa dibantah") - sebelumnya cuma dites dari sisi "email terkirim"
  * (EmailNotificationTest), belum pernah dites logic negosiasinya sendiri
  * (round bertambah benar, Deal mengunci fee, tolak/deal memblokir aksi
  * lanjutan, ajukanKeCd() menjaga urutan). Model FeeNegotiation sendiri
  * py catatan: bug MassAssignmentException di 4 method ini pernah lolos
- * lama karena "belum ada testing end-to-end" — file ini nutup gap itu.
+ * lama karena "belum ada testing end-to-end" - file ini nutup gap itu.
  */
 class FeeNegotiationFlowTest extends TestCase
 {
@@ -279,7 +279,7 @@ class FeeNegotiationFlowTest extends TestCase
         ]);
 
         // Level 1 sekarang berbasis CD assignment, bukan CdReview.
-        // CD hanya di-assign ke projectA — projectB tidak muncul.
+        // CD hanya di-assign ke projectA - projectB tidak muncul.
         $projectA->cdAssignments()->create(['cd_user_id' => $cd->id]);
 
         $response = $this->actingAs($cd)->get(route('cd.reviews.index'));

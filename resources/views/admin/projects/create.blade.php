@@ -34,7 +34,7 @@
                 <input type="url" name="wa_group_link" value="{{ old('wa_group_link') }}" placeholder="https://chat.whatsapp.com/...">
             </div>
             <div>
-                <label>Link Grup Koordinasi <span style="color: var(--text-muted); font-weight: 400;">(WA/Telegram, opsional — bisa diisi belakangan)</span></label>
+                <label>Link Grup Koordinasi <span style="color: var(--text-muted); font-weight: 400;">(WA/Telegram, opsional, dapat diisi menyusul)</span></label>
                 <input type="url" name="link_grup" value="{{ old('link_grup') }}" placeholder="https://chat.whatsapp.com/... atau https://t.me/...">
             </div>
         </div>
@@ -58,11 +58,11 @@
 
         <div class="form-row">
             <div>
-                <label>Poster Produksi <span style="color: var(--text-muted); font-weight: 400;">(opsional — max 2MB)</span></label>
+                <label>Poster Produksi <span style="color: var(--text-muted); font-weight: 400;">(opsional, maks. 2MB)</span></label>
                 <input type="file" name="poster_path" accept="image/jpeg,image/png,image/webp">
             </div>
             <div>
-                <label>Cover Naskah / Moodboard <span style="color: var(--text-muted); font-weight: 400;">(opsional — max 3MB)</span></label>
+                <label>Cover Naskah / Moodboard <span style="color: var(--text-muted); font-weight: 400;">(opsional, maks. 3MB)</span></label>
                 <input type="file" name="cover_path" accept="image/jpeg,image/png,image/webp">
             </div>
         </div>

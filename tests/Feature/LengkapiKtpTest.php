@@ -74,12 +74,12 @@ class LengkapiKtpTest extends TestCase
      * Gap coverage (review DEV-NOTES): mutator nik() strip semua karakter
      * non-digit (preg_replace) sebelum di-hash, jadi 1 NIK yang sama
      * ditulis dengan format pemisah beda (polos/strip/titik) HARUS
-     * menghasilkan nik_hash IDENTIK — bukan cuma dites dengan 2 nilai
+     * menghasilkan nik_hash IDENTIK - bukan cuma dites dengan 2 nilai
      * yang berbeda.
      */
     public function test_nik_format_berbeda_untuk_digit_sama_hasilkan_hash_identik(): void
     {
-        // Tidak disimpan ke DB (nik_hash UNIQUE) — cukup baca hasil mutator
+        // Tidak disimpan ke DB (nik_hash UNIQUE) - cukup baca hasil mutator
         // in-memory untuk 3 model terpisah yang tidak pernah di-save bareng.
         $polos = new ExtrasProfile;
         $polos->nik = '3201234567890055';
@@ -103,7 +103,7 @@ class LengkapiKtpTest extends TestCase
         $application = $this->buatApplicationLolos();
 
         // Digit sama persis dengan yang sudah dipakai di atas, format beda
-        // (strip pemisah) — lengkapiKtp() model harus tetap mendeteksi
+        // (strip pemisah) - lengkapiKtp() model harus tetap mendeteksi
         // duplikat lewat nik_hash yang identik, bukan cuma saat format
         // input persis sama string-nya.
         $this->expectException(NikDuplikatException::class);

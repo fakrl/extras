@@ -14,7 +14,7 @@ class DashboardController extends Controller
     {
         $extrasProfile = Auth::user()->extrasProfile;
 
-        // Semua pendaftaran ditampilkan (bukan cuma yang aktif) — konsisten
+        // Semua pendaftaran ditampilkan (bukan cuma yang aktif), konsisten
         // dengan tampilan lama, biar histori tidak hilang dari sudut pandang Extras.
         $pendaftaranSaya = $extrasProfile
             ? ProjectApplication::where('extras_id', $extrasProfile->id)

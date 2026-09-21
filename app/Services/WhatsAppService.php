@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 /**
  * RF-37: satu-satunya titik integrasi ke Node service whatsapp-web.js.
  * Laravel TIDAK PERNAH panggil Http::post() langsung tersebar di model/
- * controller — semua lewat sini, biar gampang diganti kalau arsitektur
+ * controller, semua lewat sini, biar gampang diganti kalau arsitektur
  * WA berubah lagi nanti.
  */
 class WhatsAppService
@@ -38,12 +38,12 @@ class WhatsAppService
      * di-dispatch ke queue biar HTTP call ke Node tidak blocking request
      * (terutama bulk approve/reject CD).
      *
-     * dispatch() sendiri dibungkus try/catch (bukan cuma di dalam job) —
+     * dispatch() sendiri dibungkus try/catch (bukan cuma di dalam job),
      * audit 30 Agu 2026 nemu: kalau tabel `jobs` gagal di-insert (DB
      * lock/down), dispatch() throw SEBELUM job sempat jalan, jadi
      * try/catch di WhatsAppService::kirim()/job handle() nggak kepakai.
      * Notifikasi WA harus tetap best-effort di titik manapun bisa gagal,
-     * termasuk saat enqueue — jangan sampai gagal kirim WA gagalkan aksi
+     * termasuk saat enqueue, jangan sampai gagal kirim WA gagalkan aksi
      * utama pemanggil (approve CD, dsb).
      */
     public function kirimNotifikasi(User $user, string $jenis, string $pesan): void

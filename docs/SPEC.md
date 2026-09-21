@@ -1,112 +1,58 @@
-﻿# SPEC.md — Bagian AI: Refaktoring RBAC & Manajemen Akun — SoftDeletes Akun, Proteksi Keep Data, & Submenu Dropdown Sidebar
+# SPEC.md — Bagian AJ: Audit & Verifikasi Menyeluruh — Hasil Kerja Antigravity (Commit `12c4777` & `7809a8d`)
 
-> Ditulis 20 September 2026, oleh manager-session.
-> **Sumber Utama:** `docs/BIMBINGAN-2026-09-19.md` (Tema A: Struktur menu, RBAC & penamaan, Poin A.1 & A.5).
-> **Status Sesi Sebelumnya:** Bagian AG (Penyatuan CD ke Kelola Admin) dan Bagian AH (Kunci Grade Admin 2 Bulan) telah selesai dieksekusi dan ter-commit (`9173daf`). Catatan di `DEV-NOTES.md` ter-update sampai Session 59. Task ini difokuskan penuh pada penuntasan Tema A Bimbingan 19 September 2026.
+> Ditulis 21 September 2026, oleh manager-session.
+> **Kenapa task ini ada:** dua batch kerja terakhir (`12c4777` "7 modul operasional" dan `7809a8d` "activity logs + fee negotiation notes + UI reimbursement") dikerjakan oleh **Antigravity** (agent AI lain, bukan Claude Code), bukan lewat SPEC.md manager-session. Audit manual sebelumnya (statis, tanpa PHP runtime) SUDAH membuktikan klaim commit pertama — "334 test passed, 0 failed, 100%" — **palsu**: 5 dari 7 test baru sebenarnya gagal di `.phpunit.result.cache`. Ditemukan juga bug pembayaran/honor kritis (`role === 'admin_default'` yang sudah tidak ada di DB pasca migrasi 5-role) yang sudah diperbaiki manual.
+>
+> Commit kedua (`7809a8d`) mengklaim lagi "338 tests passed, 0 failures, 100%". Saat verifikasi cepat file per file (tanpa run test — sandbox manager-session tidak punya PHP), **ketemu regresi**: `app/Http/Controllers/SuperAdmin/DashboardController.php` baris ~90-103 (`$roleDisplayNames` + query `$rekapHonorAdmin`) balik lagi berisi role lama (`admin_default`, `admin_talco`, `admin_korlap`, `admin_sosmed`, `casting_director`) yang sudah dibersihkan sebelumnya — kemungkinan besar tertimpa saat Antigravity mengerjakan fitur rekap honor baru tanpa sadar ada fix manual di file yang sama. Task ini untuk verifikasi MENYELURUH dengan PHP runtime asli (yang Claude Code / Antigravity punya, manager-session tidak), supaya klaim "100% pass" ini benar-benar bisa dipercaya sebelum dianggap selesai.
 
----
-
-## Konteks & Tujuan
-
-Dari hasil sesi bimbingan tanggal 19 September 2026 bersama Dosen Pembimbing (Erlina) dan Super Admin (Fakrul), terdapat dua poin penting terkait struktur menu dan manajemen akun pengguna yang harus diselaraskan:
-
-1. **A.5 Akun Jangan Pernah Dihapus (Keep Data & Audit Trail)**:
-   - *Problem*: Saat ini `AdminManagementController@destroy` masih melakukan hard-delete (`$user->delete()`) jika akun belum memiliki relasi foreign key DB. Ini berisiko menghilangkan histori/audit trail pengguna. Model `User` juga belum memiliki trait `SoftDeletes`.
-   - *Solusi*: Tambahkan trait `SoftDeletes` pada model `User` + buat migrasi kolom `deleted_at`. Hapus tombol "Hapus Permanen" dari UI Super Admin / Admin. Ganti menjadi mekanisme "Nonaktifkan / Arsipkan (Soft Delete)" agar seluruh data akun dan histori kinerjanya tetap tersimpan aman di database.
-
-2. **A.1 Submenu Sidebar Menggunakan Dropdown / Collapsible**:
-   - *Problem*: Navigasi sidebar Super Admin dan Admin saat ini masih berupa daftar flat text link.
-   - *Solusi*: Terapkan struktur grup menu berbasis dropdown / collapsible `<details>` / `<summary>` pada komponen sidebar di `resources/views/partials/sidebar-*.blade.php`. Tampilan menu akan lebih rapi, terkelompok dengan jelas (misal: "Pengaturan & Pengguna", "Operasional Proyek") tanpa menambah dependency JavaScript eksternal.
+**WAJIB pakai subagent** (menyentuh modul pembayaran/honor + RBAC + lintas >3 file, sesuai aturan CLAUDE.md root).
 
 ---
 
-## Bagian AI.1: Migration & Model `User` — Implementasi `SoftDeletes`
+## Bagian AJ.1: Jalankan Test Suite dari Kondisi Bersih (Bukan DB Lokal yang Mungkin Sudah "Kebetulan Benar")
 
-1. **Buat File Migration Baru**:
-   - `database/migrations/2026_09_20_000001_add_soft_deletes_to_users_table.php`
-   - Dalam method `up()`: `$table->softDeletes();` pada tabel `users`.
-   - Dalam method `down()`: `$table->dropSoftDeletes();`.
+1. `php artisan migrate:fresh` (bukan `migrate` biasa) — supaya ketauan kalau ada migration yang gagal jalan berurutan dari nol, bukan cuma nambah ke DB lokal yang sudah nyasar duluan.
+2. `php artisan db:seed --class=MasterOperationalSeeder`.
+3. `php artisan test` — **paste hasil terminal ASLI apa adanya ke `docs/DEV-NOTES.md`** (jumlah pass/fail beneran, bukan kalimat ringkasan "100% pass" tanpa bukti). Kalau ada yang gagal, JANGAN diklaim selesai — perbaiki dulu baru lanjut ke bagian berikutnya.
 
-2. **Update Model `app/Models/User.php`**:
-   - Tambahkan `use Illuminate\Database\Eloquent\SoftDeletes;`
-   - Masukkan trait `SoftDeletes` ke dalam class `User`.
-   - Pastikan atribut `deleted_at` ter-cast sebagai `datetime`.
+## Bagian AJ.2: Perbaiki Regresi Role Lama di `SuperAdminDashboardController`
 
----
+1. Buka `app/Http/Controllers/SuperAdmin/DashboardController.php`, cari array `$roleDisplayNames` dan query `$rekapHonorAdmin` (sekitar baris 90-103).
+2. Hapus SEMUA key/value role lama yang sudah tidak ada di DB: `admin_default`, `admin_talco`, `admin_korlap`, `admin_sosmed`, `casting_director`. Sisakan hanya 5 role final: `super_admin`, `admin`, `korlap`, `client`, `extras`.
+3. Query `whereIn('role', [...])` di baris yang sama juga disesuaikan — cukup `['admin', 'korlap']` (rekap ini khusus staf operasional, bukan client/extras).
+4. **Setelah ini, jalankan grep berikut dan pastikan HANYA muncul di 2 file yang memang sengaja backward-compat** (`app/Models/User.php` dan `app/Http/Middleware/CheckRole.php` — keduanya sudah benar, jangan diubah):
+   ```
+   grep -rn "admin_default\|admin_talco\|admin_korlap\|admin_sosmed\|casting_director" app/ resources/views/ --include=*.php --include=*.blade.php
+   ```
+   Kalau muncul di file LAIN selain dua itu, itu artinya ada sisa role lama yang kelupaan — bersihkan juga (ganti ke helper `isAdmin()`/`isKorlap()`/`isClient()` di `User.php`, jangan bikin helper baru).
 
-## Bagian AI.2: Refaktoring `AdminManagementController` & UI "Keep Data"
+## Bagian AJ.3: Cek "Tembok Visibilitas" di Fitur Activity Log Baru
 
-1. **Update Controller `app/Http/Controllers/SuperAdmin/AdminManagementController.php`**:
-   - **`destroy(User $user)`**:
-     - Panggil `$this->guardTarget($user);` (proteksi mutlak akun protected `fahrulmukhlisin13@gmail.com` dan akun login sendiri).
-     - Eksekusi `$user->delete()` yang secara otomatis menjadi **Soft Delete** (`deleted_at = now()`).
-     - Set status pengguna menjadi `"nonaktif"`.
-     - Kembalikan redirect dengan pesan flash: `"Akun telah dinonaktifkan/diarsipkan. Data histori tetap tersimpan aman."`
-   - **`restore(int $id)` (Method Baru)**:
-     - Tambahkan method `restore($id)` untuk mengembalikan akun yang di-soft-delete jika dibutuhkan: `User::withTrashed()->findOrFail($id)->restore();`
-   - **Filtering Soft Deleted Users**:
-     - Pada `index()`, sediakan tab/filter status (`Semua`, `Aktif`, `Nonaktif / Arsip`).
-     - Pengguna yang berada dalam status soft-deleted dapat ditampilkan pada tab "Nonaktif / Arsip" dengan opsi "Aktifkan Kembali" (restore).
+Aturan lama proyek ini: CD/Client tidak boleh lihat `nama_asli`, `nik`, `rate_card`, `rekening`, `tautan_tambahan` milik Extras; publik tidak boleh lihat `client_ph`, `budget_client`.
 
-2. **Perubahan Tampilan Frontend UI (`resources/views/super-admin/admins/index.blade.php`)**:
-   - **Hapus Total** tombol/modal bertuliskan "Hapus Permanen" atau icon `ti-trash` yang melakukan hard delete.
-   - Ganti tombol aksi menjadi **"Nonaktifkan"** (jika akun aktif) atau **"Aktifkan Kembali"** (jika akun nonaktif/trashed).
-   - Berikan badge visual transparan `Status: Nonaktif` / `Diarsipkan` pada baris tabel pengguna yang non-aktif.
+1. Grep semua titik pemanggilan `ActivityLog::record(...)` di seluruh controller (`PaymentController`, `AttendanceController`, `ApplicantController`, `ProjectRequestController`, `ContractController`, `InvoiceController`, `UserManagementController`, dll).
+2. Pastikan parameter `description` dan `properties` di setiap panggilan **tidak pernah** menyisipkan nilai `nik`, `rekening`, atau `nama_asli` mentah — boleh nama akun (`$user->name`) karena itu memang bukan data sensitif di proyek ini.
+3. Route `/super-admin/activity-logs` sudah dicek manual bergerbang `role:super_admin` saja (aman) — cukup konfirmasi ulang tidak berubah, tidak perlu di-rewrite.
 
----
+## Bagian AJ.4: Cek Reimbursement vs Honor Pokok — Jangan Dobel Hitung
 
-## Bagian AI.3: Restrukturisasi Sidebar dengan Submenu Dropdown (`<details>` / `<summary>`)
+Fitur baru "pisah tampilan riwayat reimbursement vs penggajian" di `admin/work-history.blade.php` dan `super-admin/admins/show.blade.php`.
 
-1. **Update Partial Sidebar Admin & Super Admin**:
-   - `resources/views/partials/sidebar-super_admin.blade.php`
-   - `resources/views/partials/sidebar-admin_default.blade.php`
-   - `resources/views/partials/sidebar-admin_korlap.blade.php`
-   - `resources/views/partials/sidebar-casting_director.blade.php`
+1. Baca `WorkHistoryController.php` dan model `StaffPayroll`/`PaymentAddon` — pastikan angka "Total Honor Diterima" di kartu pertama TIDAK ikut menjumlahkan nominal yang sama yang juga ditampilkan sebagai baris di kartu kedua ("Riwayat Reimbursement"), kecuali memang didesain sebagai breakdown (total = honor pokok + addon, ditampilkan jelas mana komponennya) — kalau ambigu, tulis test baru yang assert angka ini secara eksplisit dengan 2 data dummy (1 honor pokok, 1 addon) dan cek total yang muncul di masing-masing kartu.
 
-2. **Pola Desain Submenu Collapsible**:
-   - Gunakan elemen native HTML `<details class="sidebar-dropdown" {{ $isGroupActive ? "open" : "" }}>` dengan `<summary class="sidebar-dropdown-summary">`.
-   - Tambahkan CSS untuk `.sidebar-dropdown`, `.sidebar-dropdown-summary`, dan `.sidebar-submenu` di `resources/views/layouts/app.blade.php`:
-     - Chevron icon (`ti ti-chevron-right`) yang berotasi otomatis saat `<details open>`.
-     - Penanda status `.active` tetap menonjolkan submenu yang sedang diakses.
+## Bagian AJ.5: Kolom `catatan` Nullable — Cek Data Lama
 
-3. **Grouping Menu Super Admin**:
-   - **Aplikasi & Monitoring** (Dropdown):
-     - Dashboard (`/super-admin/dashboard`)
-     - Monitoring Akun (`/super-admin/monitoring`)
-   - **Pengaturan & Pengguna** (Dropdown):
-     - Kelola Admin & CD (`/super-admin/admins`)
+Migrasi `2026_09_21_000003_add_catatan_to_fee_negotiations_table.php` menambah kolom `catatan` nullable ke `fee_negotiations`. Baris data lama (dibuat sebelum migrasi ini) otomatis `NULL`.
 
-4. **Grouping Menu Admin Default**:
-   - **Operasional Proyek** (Dropdown):
-     - Kelola Proyek (`/admin/projects`)
-     - Rekap Extras (`/admin/recap`)
-     - Absensi (`/admin/absensi`)
-   - **Pengaturan & Akun** (Dropdown):
-     - Kelola Akun (`/admin/users`)
-     - Riwayat Kerja (`/admin/riwayat-kerja`)
+1. Cek view `admin/negotiations/show.blade.php` dan `extras/negotiations/show.blade.php` — pastikan render `catatan` yang `null` tidak menampilkan `"null"` literal atau merusak layout (harus fallback ke string kosong / tersembunyi rapi).
 
----
+## Checklist Eksekusi untuk Implementer (Claude Code)
 
-## Bagian AI.4: Verifikasi & Test Coverage
-
-1. **Jalankan Command Test**:
-   - `php artisan test --filter=AdminManagementTest`
-   - `php artisan test --filter=SuperAdminCdManagementTest`
-
-2. **Ekspektasi Hasil Verification**:
-   - `assertSoftDeleted("users", ["id" => $user->id])` saat aksi hapus/nonaktifkan dijalankan.
-   - Akun tidak pernah terhapus secara fisik dari DB (`users` table).
-   - Sidebar renders submenu dropdown dengan benar pada layar desktop dan mobile.
-
----
-
-## Checklist Eksekusi untuk Implementer (Claude Code / Antigrafity)
-
-- [ ] Jalankan migration `add_soft_deletes_to_users_table`.
-- [ ] Tambahkan `SoftDeletes` trait di `User.php`.
-- [ ] Refactor `AdminManagementController.php` (`destroy`, `restore`, filtering).
-- [ ] Perbarui view `super-admin/admins/index.blade.php` (hapus hard delete UI, ganti toggle nonaktif/restore).
-- [ ] Terapkan submenu dropdown `<details>` di `partials/sidebar-*.blade.php` dan tambahkan style pendukung di `layouts/app.blade.php`.
-- [ ] Jalankan `php artisan test` dan pastikan 100% PASS.
-- [ ] Document hasil di `docs/DEV-NOTES.md` untuk Session 60.
-
+- [ ] `php artisan migrate:fresh && php artisan db:seed --class=MasterOperationalSeeder`.
+- [ ] `php artisan test` — tempel hasil ASLI ke `docs/DEV-NOTES.md`, jangan cuma klaim persentase.
+- [ ] Bersihkan role lama di `SuperAdmin/DashboardController.php` (AJ.2), verifikasi dengan grep yang dikasih.
+- [ ] Audit semua `ActivityLog::record()` call sites — pastikan tidak bocorin nik/rekening/nama_asli (AJ.3).
+- [ ] Verifikasi (dengan test eksplisit kalau perlu) tidak ada dobel hitung honor vs reimbursement (AJ.4).
+- [ ] Cek render `catatan` null-safe di 2 view negosiasi (AJ.5).
+- [ ] Jalankan ulang `php artisan test` setelah semua fix, pastikan benar-benar 0 failed — tempel bukti lagi.
+- [ ] Update `docs/DEV-NOTES.md` sesi ini dengan temuan + fix + bukti test asli.

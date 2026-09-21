@@ -10,7 +10,7 @@ return new class extends Migration
     {
         // RF-32 / RF-47: add-on/reimburse manual (transport, penginapan, dst).
         // Polymorphic karena bisa nempel ke payments (Extras) ATAU
-        // staff_payrolls (staf) — satu tabel shared, bukan duplikasi struktur
+        // staff_payrolls (staf) - satu tabel shared, bukan duplikasi struktur
         // di dua tempat. Sifatnya optional & jumlahnya tidak tetap.
         Schema::create('payment_addons', function (Blueprint $table) {
             $table->id();

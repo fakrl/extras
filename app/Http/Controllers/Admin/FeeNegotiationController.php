@@ -19,7 +19,7 @@ class FeeNegotiationController extends Controller
     /**
      * RF-16: Admin mengajukan penawaran fee awal berdasarkan rate card
      * Extras dan budget dari client. Hanya boleh dipanggil sekali per
-     * aplikasi — ronde selanjutnya lewat counter().
+     * aplikasi, ronde selanjutnya lewat counter().
      */
     public function ajukanAwal(Request $request, ProjectApplication $application): RedirectResponse
     {
@@ -81,7 +81,7 @@ class FeeNegotiationController extends Controller
 
     /**
      * RF-21: hanya kandidat yang fee-nya sudah Deal yang boleh diajukan ke CD.
-     * Method ajukanKeCd() di model sendiri sudah menjaga urutan ini —
+     * Method ajukanKeCd() di model sendiri sudah menjaga urutan ini,
      * di sini cukup tangkap exception-nya jadi pesan yang manusiawi.
      */
     public function ajukanKeCd(ProjectApplication $application): RedirectResponse
@@ -93,7 +93,7 @@ class FeeNegotiationController extends Controller
         }
 
         $pesan = $adaBentrok
-            ? '⚠️ Kandidat diajukan ke Casting Director, tapi ada tanggal yang bertabrakan dengan proyek lain yang sedang diikuti. Silakan cek kembali komitmennya.'
+            ? 'Kandidat diajukan ke Casting Director, tapi ada tanggal yang bertabrakan dengan proyek lain yang sedang diikuti. Silakan cek kembali komitmennya.'
             : 'Kandidat diajukan ke Casting Director.';
 
         return back()->with('status', $pesan);

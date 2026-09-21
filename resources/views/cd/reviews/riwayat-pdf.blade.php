@@ -12,7 +12,7 @@ th { background: #f0f0f0; }
 </style>
 </head>
 <body>
-<h2>Riwayat Keputusan — {{ $castingProject->nama_produksi }}</h2>
+<h2>Riwayat Keputusan: {{ $castingProject->nama_produksi }}</h2>
 <p>Diekspor {{ now()->format('d M Y') }}</p>
 <table>
     <thead>

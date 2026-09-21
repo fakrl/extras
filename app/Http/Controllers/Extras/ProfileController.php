@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class ProfileController extends Controller
 {
     /**
-     * Tampilan read-only — persis apa yang dilihat Admin saat cross-check
+     * Tampilan read-only, persis apa yang dilihat Admin saat cross-check
      * (RF-14), supaya Extras bisa tau "gini nih tampilan gua" sebelum/sesudah
      * isi profil. Beda dari edit() yang isinya form input.
      */
@@ -50,7 +50,7 @@ class ProfileController extends Controller
 
     /**
      * Array 4 slot (index 1-4), isi ExtrasPhoto kalau ada atau null kalau
-     * kosong — biar view tinggal loop 1..4 tanpa perlu cek collection manual.
+     * kosong, biar view tinggal loop 1..4 tanpa perlu cek collection manual.
      */
     private function fotoTambahanPerSlot(ExtrasProfile $profile): array
     {
@@ -81,7 +81,7 @@ class ProfileController extends Controller
             'pengalaman' => ['nullable', 'string'],
             'bahasa' => ['nullable', 'string'],
             // Tautan tambahan (sosmed/portofolio, jumlah bebas via tombol "+"):
-            // CLAUDE.md §5 — hanya dilihat Extras & Admin, TIDAK PERNAH
+            // CLAUDE.md §5, hanya dilihat Extras & Admin, TIDAK PERNAH
             // dikirim ke view Casting Director.
             'tautan_label' => ['nullable', 'array'],
             'tautan_label.*' => ['nullable', 'string', 'max:100'],
@@ -103,23 +103,23 @@ class ProfileController extends Controller
         $dataDisimpan['tautan_tambahan'] = $tautanTambahan;
 
         // SENGAJA tidak menerima 'status', 'cancel_count', 'foto_profil_path',
-        // atau 'video_profil_path' dari request ini — kolom-kolom itu tidak
+        // atau 'video_profil_path' dari request ini, kolom-kolom itu tidak
         // ada di $fillable ExtrasProfile, jadi mass-update() di bawah otomatis
         // aman (lihat catatan di model).
         $request->user()->extrasProfile->update($dataDisimpan);
 
         // nomor_wa & username ada di tabel users (reusable lintas role),
-        // BUKAN extras_profiles — simpan terpisah dari update() di atas.
+        // BUKAN extras_profiles, simpan terpisah dari update() di atas.
         $request->user()->update([
             'nomor_wa' => $data['nomor_wa'] ?? null,
             'username' => $data['username'],
         ]);
 
         // SPEC.md Bagian B5: return-to-intent begitu lengkapi-profil (langkah
-        // WAJIB pasca-registrasi, RF-06, TIDAK di-skip) selesai — kalau
+        // WAJIB pasca-registrasi, RF-06, TIDAK di-skip) selesai, kalau
         // datang dari link event publik dan proyeknya masih valid, lempar ke
         // halaman apply proyek itu, bukan ke halaman profil biasa. Dipanggil
-        // di update() (bukan cuma dari alur registrasi) SENGAJA — self-
+        // di update() (bukan cuma dari alur registrasi) SENGAJA, self-
         // correcting lewat session pull(), cuma "nyala" sekali tepat setelah
         // token itu di-set, lalu hilang, jadi aman dipanggil di sini juga
         // untuk edit profil biasa berikutnya (session key sudah kosong).
@@ -277,7 +277,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Hapus foto tambahan di slot tertentu — slot jadi kosong lagi.
+     * Hapus foto tambahan di slot tertentu, slot jadi kosong lagi.
      */
     public function hapusFotoTambahan(Request $request, int $slot): RedirectResponse
     {
@@ -304,7 +304,7 @@ class ProfileController extends Controller
      * Serve foto profil dari private disk. Otorisasi manual (bukan cuma role
      * middleware) karena resource yang sama diakses beberapa pihak berbeda:
      * pemilik sendiri, Admin (semua), atau Casting Director (RF-14 & CLAUDE.md
-     * §5 — foto/video boleh dilihat CD, beda dari sosmed/portofolio yang tidak).
+     * §5, foto/video boleh dilihat CD, beda dari sosmed/portofolio yang tidak).
      */
     public function fotoStream(Request $request, ExtrasProfile $extrasProfile): StreamedResponse
     {

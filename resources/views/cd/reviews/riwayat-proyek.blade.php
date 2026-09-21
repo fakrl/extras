@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Riwayat — ' . $castingProject->nama_produksi)
+@section('title', 'Riwayat: ' . $castingProject->nama_produksi)
 
 @section('content')
 <div style="margin-bottom:12px;">
@@ -176,7 +176,7 @@
                 label.style.cssText = 'color:var(--text-secondary);';
                 label.textContent = pair[0];
                 var val = document.createElement('div');
-                val.textContent = pair[1] || '—';
+                val.textContent = pair[1] || '-';
                 atEl.appendChild(label);
                 atEl.appendChild(val);
             });

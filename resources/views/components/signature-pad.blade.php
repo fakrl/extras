@@ -1,5 +1,5 @@
 {{--
-    Komponen canvas signature — tanda tangan digambar langsung di browser
+    Komponen canvas signature: tanda tangan digambar langsung di browser
     (RF-26), BUKAN upload scan, BUKAN e-signature tersertifikasi (PSrE).
     Dipakai di halaman kontrak (Admin & Extras) dan invoice (Admin & CD).
 

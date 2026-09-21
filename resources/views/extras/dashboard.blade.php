@@ -210,7 +210,7 @@
                                 <div style="margin-top: 4px;"><strong>Panggilan:</strong></div>
                                 <ul style="margin: 2px 0 0 14px;">
                                     @foreach ($date->panggilan as $p)
-                                        <li>{{ $p['nama'] }} — {{ $p['jam'] }}</li>
+                                        <li>{{ $p['nama'] }} ({{ $p['jam'] }})</li>
                                     @endforeach
                                 </ul>
                             @endif

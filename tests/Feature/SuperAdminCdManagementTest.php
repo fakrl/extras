@@ -31,7 +31,7 @@ class SuperAdminCdManagementTest extends TestCase
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
         $cd = User::factory()->create(['role' => 'casting_director', 'name' => 'CD Satu']);
-        $admin = User::factory()->create(['role' => 'admin_default', 'name' => 'Admin Satu']);
+        $admin = User::factory()->create(['role' => 'admin', 'name' => 'Admin Satu']);
 
         // Bagian AG: CD tidak muncul di listing default (hanya Admin roles)
         $this->actingAs($superAdmin)

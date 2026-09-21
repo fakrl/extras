@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 
 /**
  * RF-31: invoice ke client, ditandatangani Admin Default & CD. Diakses
- * lintas role sama seperti ContractController — otorisasi granular di
+ * lintas role sama seperti ContractController, otorisasi granular di
  * dalam method, bukan lewat role middleware group.
  */
 class InvoiceController extends Controller

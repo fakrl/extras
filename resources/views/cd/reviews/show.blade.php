@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Greenlight — ' . $castingProject->nama_produksi)
+@section('title', 'Greenlight: ' . $castingProject->nama_produksi)
 
 @section('content')
 <div style="margin-bottom: 12px;">
@@ -280,13 +280,13 @@
         atEl.innerHTML = '';
         attrs.forEach(function (pair) {
             var lbl = document.createElement('div'); lbl.style.color = 'var(--text-secondary)'; lbl.textContent = pair[0];
-            var val = document.createElement('div'); val.textContent = pair[1] || '—';
+            var val = document.createElement('div'); val.textContent = pair[1] || '-';
             atEl.appendChild(lbl); atEl.appendChild(val);
         });
 
         document.getElementById('mk-karakter').textContent = kartu.dataset.karakter || '-';
         document.getElementById('mk-kriteria').textContent = kartu.dataset.kriteria || '';
-        document.getElementById('mk-grade-admin').textContent = kartu.dataset.gradeAdmin || '—';
+        document.getElementById('mk-grade-admin').textContent = kartu.dataset.gradeAdmin || '-';
         document.getElementById('mk-riwayat').textContent =
             'Approve: ' + (kartu.dataset.riwayatApprove || '0') + ', Reject: ' + (kartu.dataset.riwayatReject || '0');
 
@@ -297,7 +297,7 @@
                 '<div style="border-top: 1px solid var(--border-color); padding-top: 12px; display: flex; flex-direction: column; gap: 8px;">' +
                 '<label style="font-size: 13px; font-weight: 600;">Grade CD (wajib untuk Approve)</label>' +
                 '<select id="mk-grade-select" style="width: 100%; min-height: 36px; padding: 4px 8px; margin-bottom: 0;">' +
-                '<option value="">— Pilih Grade —</option>' +
+                '<option value="">Pilih Grade</option>' +
                 '<option value="A">A</option>' +
                 '<option value="B">B</option>' +
                 '<option value="C">C</option>' +
@@ -308,7 +308,7 @@
                 '</div></div>';
         } else if (kartu.dataset.reviewKeputusan) {
             var kep = kartu.dataset.reviewKeputusan;
-            var grCd = kartu.dataset.reviewGrade ? ' — Grade ' + kartu.dataset.reviewGrade : '';
+            var grCd = kartu.dataset.reviewGrade ? ' (Grade ' + kartu.dataset.reviewGrade + ')' : '';
             formArea.innerHTML =
                 '<div style="border-top: 1px solid var(--border-color); padding-top: 12px; font-size: 13px; color: var(--text-secondary);">' +
                 'Keputusan: <strong>' + kep.charAt(0).toUpperCase() + kep.slice(1) + grCd + '</strong><br>' +

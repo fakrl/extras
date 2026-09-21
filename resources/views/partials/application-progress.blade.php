@@ -1,6 +1,6 @@
 @php
     // Urutan step utama pendaftaran Extras (RF-11 s.d. RF-24). 'ditolak' dan
-    // 'dibatalkan' BUKAN bagian dari urutan ini — keduanya jalur keluar yang
+    // 'dibatalkan' bukan bagian dari urutan linier, melainkan jalur keluar status
     // ditangani terpisah di bawah (lihat CLAUDE.md alur status_partisipasi).
     $urutanStep = [
         'diajukan' => 'Diajukan',

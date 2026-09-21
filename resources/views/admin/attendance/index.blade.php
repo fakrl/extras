@@ -13,7 +13,7 @@
         <label>Proyek</label>
         <select name="project" onchange="this.form.submit()">
             @foreach ($projects as $p)
-                <option value="{{ $p->id }}" @selected($castingProject?->id === $p->id)>{{ $p->nama_produksi }} — {{ $p->client_ph }}</option>
+                <option value="{{ $p->id }}" @selected($castingProject?->id === $p->id)>{{ $p->nama_produksi }} ({{ $p->client_ph }})</option>
             @endforeach
         </select>
     </div>
@@ -70,9 +70,9 @@
                                     {{ $absen->status === 'hadir' ? 'Hadir' : 'Tidak Hadir' }}
                                 </span>
                                 @if ($absen->status_validasi === 'menunggu')
-                                    <span class="badge badge-pending">⏳ Menunggu Validasi Korlap</span>
+                                    <span class="badge badge-pending">Menunggu Validasi Korlap</span>
                                 @elseif ($absen->status_validasi === 'tervalidasi')
-                                    <span class="badge badge-aktif">✓ Tervalidasi ({{ $absen->divalidasiOleh?->name ?? 'Staf' }})</span>
+                                    <span class="badge badge-aktif">Tervalidasi ({{ $absen->divalidasiOleh?->name ?? 'Staf' }})</span>
                                 @endif
                                 <span style="font-size: 11.5px; color: var(--text-muted);">{{ $absen->created_at->format('H:i') }} WIB</span>
                             @else
@@ -132,7 +132,7 @@
                 @csrf
                 <input type="hidden" name="event_shooting_date_id" value="{{ $shootingDate->id }}">
                 <input type="hidden" name="status" value="hadir">
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Ambil Foto On-Site — {{ $app->extras->user->username ?? 'Extras' }}</div>
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Ambil Foto On-Site: {{ $app->extras->user->username ?? 'Extras' }}</div>
                 <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Foto extras di lokasi syuting sebagai bukti kehadiran untuk Client / PH.</p>
                 <input type="file" name="foto" accept="image/*" capture="environment" required style="width: 100%; margin-bottom: 12px;">
                 <textarea name="catatan" rows="2" placeholder="Catatan kehadiran (opsional)..." style="width: 100%; margin-bottom: 12px;"></textarea>
@@ -147,7 +147,7 @@
         <dialog id="catatan-dialog-{{ $app->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
             <form method="POST" action="{{ route('admin.applications.catatan', $app) }}" style="padding: 18px;">
                 @csrf
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Catatan Lapangan — {{ $app->extras->user->username ?? 'kandidat' }}</div>
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Catatan Lapangan: {{ $app->extras->user->username ?? 'kandidat' }}</div>
                 <select name="jenis" required style="width: 100%; margin-bottom: 10px;">
                     <option value="catatan">Catatan</option>
                     <option value="sanksi">Sanksi</option>

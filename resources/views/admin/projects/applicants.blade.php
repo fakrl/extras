@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Lineup — ' . $castingProject->nama_produksi)
+@section('title', 'Lineup: ' . $castingProject->nama_produksi)
 
 @php
     $badgeClass = [
@@ -12,7 +12,7 @@
 @endphp
 
 @section('content')
-<div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">Lineup — {{ $castingProject->nama_produksi }}</div>
+<div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">Lineup: {{ $castingProject->nama_produksi }}</div>
 <p style="color: var(--text-secondary); margin: 0 0 20px; font-size: 13.5px;">
     Client: {{ $castingProject->client_ph }} · {{ $applicants->count() }} pendaftar
     @if ($castingProject->wa_group_link)
@@ -171,7 +171,7 @@
                         <div style="font-size: 12.5px; margin-bottom: 6px;">
                             <span class="badge {{ $note->jenis === 'sanksi' ? 'badge-tolak' : 'badge-pending' }}">{{ $note->jenis }}</span>
                             {{ $note->isi }}
-                            <span style="color: var(--text-muted);">— {{ $note->korlap->name ?? '-' }}, {{ $note->created_at->format('d M Y H:i') }}</span>
+                            <span style="color: var(--text-muted);">({{ $note->korlap->name ?? '-' }}, {{ $note->created_at->format('d M Y H:i') }}</span>
                         </div>
                     @endforeach
                 </div>
@@ -211,7 +211,7 @@
     <dialog id="breakdown-dialog-{{ $app->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 440px; width: 90%;">
         <form method="POST" action="{{ route('admin.applications.breakdown', $app) }}" style="padding: 18px;">
             @csrf @method('PATCH')
-            <div style="font-size: 15px; font-weight: 600; margin-bottom: 12px;">Breakdown — {{ $app->extras->user->username ?? 'Extras' }}</div>
+            <div style="font-size: 15px; font-weight: 600; margin-bottom: 12px;">Breakdown: {{ $app->extras->user->username ?? 'Extras' }}</div>
             <div style="margin-bottom: 10px;">
                 <label>Nama Karakter / Peran</label>
                 <input type="text" name="karakter" value="{{ old('karakter', $app->karakter ?: $app->castingProjectClass?->karakter) }}" placeholder="misal: Preman 1 / Teman Kampus" style="width: 100%;">
@@ -258,7 +258,7 @@
         <dialog id="catatan-dialog-{{ $app->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
             <form method="POST" action="{{ route('admin.applications.catatan', $app) }}" style="padding: 18px;">
                 @csrf
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Catatan Lapangan — {{ $app->extras->user->username ?? 'kandidat' }}</div>
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Catatan Lapangan: {{ $app->extras->user->username ?? 'kandidat' }}</div>
                 <select name="jenis" required style="width: 100%; margin-bottom: 10px;">
                     <option value="catatan">Catatan</option>
                     <option value="sanksi">Sanksi</option>

@@ -4,7 +4,7 @@
 
 @section('content')
 <p style="color: var(--text-secondary); margin: -8px 0 20px; font-size: 13.5px;">
-    Halaman ini read-only — nominal dan status ditentukan oleh Super Admin.
+    Halaman ini read-only. Nominal dan status ditentukan oleh Super Admin.
 </p>
 
 <div class="card" style="margin-bottom: 20px;">

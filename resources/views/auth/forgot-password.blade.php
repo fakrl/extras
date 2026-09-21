@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Lupa Password — SIM Casting JBTB')
+@section('title', 'Lupa Password | SIM Casting JBTB')
 
 @section('content')
 <h1 class="auth-title">Lupa Password</h1>

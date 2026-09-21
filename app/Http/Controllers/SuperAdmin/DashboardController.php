@@ -12,7 +12,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 
 /**
- * RF-50: dashboard monitoring Super Admin — read-only, ringkasan operasional
+ * RF-50: dashboard monitoring Super Admin, read-only, ringkasan operasional
  * + ringkasan seluruh akun sistem. Paling banyak chart di antara semua role
  * (keputusan Fakrul 24 Agu 2026) karena ini satu-satunya role yang punya
  * visibilitas lintas seluruh sistem.
@@ -85,7 +85,7 @@ class DashboardController extends Controller
         $assignmentTotal = AdminProjectAssignment::count();
 
         // RF-49: rekap honor seluruh Admin (bukan super_admin/CD/extras).
-        // Volume kecil (puluhan admin maksimal) — loop pakai nominalTotal()
+        // Volume kecil (puluhan admin maksimal), loop pakai nominalTotal()
         // yang sudah ada, nggak perlu raw SQL agregat.
         $roleDisplayNames = [
             'super_admin' => 'Super Admin',

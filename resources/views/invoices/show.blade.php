@@ -8,7 +8,7 @@
 @endphp
 
 @section('content')
-<div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">Invoice Produksi — {{ $castingProject->nama_produksi }}</div>
+<div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">Invoice Produksi: {{ $castingProject->nama_produksi }}</div>
 <p style="color: var(--text-secondary); margin: 0 0 20px; font-size: 13.5px;">
     Client / PH: <strong>{{ $castingProject->client_ph }}</strong>
 </p>
@@ -27,7 +27,7 @@
             <div style="font-size: 12px; color: var(--text-secondary);">Tanda Tangan Admin JBTB</div>
             <div style="font-weight: 600; margin-top: 4px;">
                 @if ($invoice->ttd_admin_signature_path)
-                    <span class="badge badge-aktif">✓ Sudah Ditandatangani</span>
+                    <span class="badge badge-aktif">Sudah Ditandatangani</span>
                 @else
                     <span class="badge badge-pending">Menunggu TTD Admin</span>
                 @endif
@@ -37,7 +37,7 @@
             <div style="font-size: 12px; color: var(--text-secondary);">Tanda Tangan Client / PH</div>
             <div style="font-weight: 600; margin-top: 4px;">
                 @if ($invoice->ttd_cd_signature_path)
-                    <span class="badge badge-aktif">✓ Sudah Ditandatangani</span>
+                    <span class="badge badge-aktif">Sudah Ditandatangani</span>
                 @else
                     <span class="badge badge-pending">Menunggu TTD Client</span>
                 @endif

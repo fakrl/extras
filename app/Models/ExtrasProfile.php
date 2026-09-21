@@ -17,17 +17,17 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-// 'status' & 'cancel_count' SENGAJA tidak masuk $fillable — itu hasil
+// 'status' & 'cancel_count' SENGAJA tidak masuk $fillable, itu hasil
 // kalkulasi sistem (RF-07/RF-08), cuma boleh berubah lewat recordCancellation()
 // di bawah, bukan lewat mass-update dari request Extras sendiri.
 // Lihat SECURITY-CHECKLIST.md poin 8 (Block field tampering).
 //
 // 'foto_profil_path' & 'video_profil_path' TETAP masuk $fillable, tapi
-// proteksinya bukan dari $fillable — itu cuma whitelist teknis biar
+// proteksinya bukan dari $fillable, itu cuma whitelist teknis biar
 // update() di dalam simpanFoto()/simpanVideo() nggak ditolak Laravel.
 // Proteksi sebenarnya: tidak ada route/controller yang nerima input
 // 'foto_profil_path' atau 'video_profil_path' langsung dari request user
-// (lihat ProfileController::update() — field itu nggak divalidasi/dikirim
+// (lihat ProfileController::update(), field itu nggak divalidasi/dikirim
 // di sana). Satu-satunya jalur yang mengisi kedua field ini adalah
 // simpanFoto()/simpanVideo() di bawah, yang dipanggil dari endpoint upload
 // khusus yang sudah validasi file (UploadedFile asli) + otorisasi pemilik.
@@ -65,14 +65,14 @@ class ExtrasProfile extends Model
             'rekening' => 'encrypted',
             'apresiasi' => 'boolean',
             'grade_diberikan_at' => 'datetime',
-            // Array of {label, url} — RF-14 & CLAUDE.md §5: cuma dilihat
+            // Array of {label, url}, RF-14 & CLAUDE.md §5: cuma dilihat
             // Extras & Admin, tidak pernah dikirim ke view Casting Director.
             'tautan_tambahan' => 'array',
         ];
     }
 
     /**
-     * RF-04: satu-satunya titik yang mengisi nik_hash — kolom teknis untuk
+     * RF-04: satu-satunya titik yang mengisi nik_hash, kolom teknis untuk
      * lookup duplikat, karena `nik` di-cast `encrypted` (IV random, tidak
      * bisa di-WHERE). Set-only (tidak ada `get`) supaya cast `encrypted`
      * bawaan tetap jalan normal saat baca. Return array men-set kedua kolom
@@ -126,7 +126,7 @@ class ExtrasProfile extends Model
 
     /**
      * RF-13: tanggal shooting dari proyek lain yang statusnya masih aktif
-     * (Deal ke atas, belum selesai/batal/ditolak) — dipakai untuk deteksi
+     * (Deal ke atas, belum selesai/batal/ditolak), dipakai untuk deteksi
      * bentrok jadwal saat extras mau apply ke proyek baru.
      */
     public function activeShootingDates(?int $excludeApplicationId = null): Collection
@@ -143,7 +143,7 @@ class ExtrasProfile extends Model
     /**
      * RF-08: 3x pembatalan mendadak pada proyek berbeda -> status "melanggar".
      * Dipanggil dari logic Cancellation, bukan dari request user langsung.
-     * forceFill() sengaja dipakai di sini (bukan update()) — 'status' memang
+     * forceFill() sengaja dipakai di sini (bukan update()), 'status' memang
      * sengaja tidak masuk $fillable (lihat komentar di atas), jadi update()
      * biasa cuma mendiskard perubahan ini diam-diam tanpa efek apa pun. Bug
      * ini ditemukan & diperbaiki 29 Agu 2026 saat verifikasi trigger RF-08.
@@ -160,7 +160,7 @@ class ExtrasProfile extends Model
     /**
      * RF-04: dipanggil setelah Extras dinyatakan lolos, sebelum kontrak bisa
      * di-generate (gate di ContractController::show()). Satu-satunya
-     * pemanggil sah untuk mengisi nik+rekening di titik ini — format NIK
+     * pemanggil sah untuk mengisi nik+rekening di titik ini, format NIK
      * (16 digit) diasumsikan sudah divalidasi form request di controller.
      */
     public function lengkapiKtp(string $nik, ?string $rekening): void
@@ -218,7 +218,7 @@ class ExtrasProfile extends Model
     /**
      * RF-06 (perluasan): simpan/ganti foto tambahan di slot tertentu (1-4).
      * Upload baru ke slot yang sama REPLACE foto lama di slot itu (hapus file
-     * fisik lama dulu), bukan menumpuk baris baru — sesuai keputusan "4 slot
+     * fisik lama dulu), bukan menumpuk baris baru, sesuai keputusan "4 slot
      * yang bisa diganti-ganti", bukan galeri tak terbatas.
      */
     public function simpanFotoTambahan(int $slot, UploadedFile $file): void
@@ -240,7 +240,7 @@ class ExtrasProfile extends Model
 
     /**
      * Hapus foto tambahan di slot tertentu (baris + file fisik), tanpa
-     * menggeser slot lain — slot yang dihapus jadi kosong lagi, bisa diisi ulang.
+     * menggeser slot lain, slot yang dihapus jadi kosong lagi, bisa diisi ulang.
      */
     public function hapusFotoTambahan(int $slot): void
     {

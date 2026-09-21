@@ -23,7 +23,7 @@
         <a href="{{ route('extras.profile.show') }}" class="btn btn-sm">Lihat Profil</a>
     </div>
     <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 20px; line-height: 1.5;">
-        Data ini yang dilihat Admin & Casting Director saat memilih pemain. Isi sesuai kondisi kamu sekarang — nggak perlu sempurna, bisa diubah kapan saja.
+        Data profil talenta untuk penilaian Admin dan Casting Director. Isi sesuai kondisi saat ini (dapat diubah sewaktu-waktu).
     </p>
 
     @if (session('status'))
@@ -98,7 +98,7 @@
     {{-- ===== Gallery ===== --}}
     <div class="profile-section">
         <div class="profile-section-title">Gallery</div>
-        <p class="field-hint" style="margin-top: -4px;">Foto lain buat Admin menilai — misal dari sisi samping, badan penuh, atau gaya lain. Boleh diisi sebagian, boleh diganti kapan saja.</p>
+        <p class="field-hint" style="margin-top: -4px;">Foto tambahan untuk penilaian Admin (tampak samping, seluruh badan, atau gaya lain).</p>
 
         <div class="photo-slot-grid">
             @foreach ($fotoTambahan as $slot => $foto)
@@ -213,7 +213,7 @@
             <textarea name="pengalaman" rows="3" placeholder="Contoh: Pernah jadi figuran di iklan A, sinetron B..."
                       @class(['input-error' => $errors->has('pengalaman')])>{{ old('pengalaman', $profile->pengalaman) }}</textarea>
             @error('pengalaman')<span class="field-error">{{ $message }}</span>@enderror
-            <p class="field-hint">Kosongkan saja kalau belum pernah punya pengalaman — nggak masalah.</p>
+            <p class="field-hint">Kosongkan bila belum memiliki pengalaman kerja.</p>
 
             <label>Bahasa yang Kamu Kuasai</label>
             <input type="text" name="bahasa" value="{{ old('bahasa', $profile->bahasa) }}"
@@ -224,7 +224,7 @@
 
         <div class="profile-section">
             <div class="profile-section-title">Tautan Tambahan</div>
-            <p class="field-hint" style="margin-top: -4px;">Instagram, TikTok, portofolio, atau link lain — opsional, boleh tambah lebih dari satu.</p>
+            <p class="field-hint" style="margin-top: -4px;">Instagram, TikTok, portofolio, atau tautan lain (opsional, dapat lebih dari satu).</p>
 
             @php $existingTautan = old('tautan_label') ? [] : ($profile->tautan_tambahan ?? []); @endphp
             <div id="tautan-wrap">
@@ -253,7 +253,7 @@
                    placeholder="Contoh: 300000" inputmode="numeric" min="0"
                    @class(['input-error' => $errors->has('rate_card')])>
             @error('rate_card')<span class="field-error">{{ $message }}</span>@enderror
-            <p class="field-hint">Ini cuma harapan awal kamu — nanti masih akan dibicarakan lagi sama Admin sebelum deal.</p>
+            <p class="field-hint">Tarif harapan awal. Nominal akhir akan didiskusikan bersama Admin.</p>
         </div>
 
         <button type="submit" class="btn btn-brand" style="width: 100%; margin-top: 8px;">Simpan Profil</button>

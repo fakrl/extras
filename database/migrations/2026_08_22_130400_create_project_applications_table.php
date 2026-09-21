@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('extras_id')->constrained('extras_profiles')->cascadeOnDelete();
 
             // RF-24: dua jalur status terpisah (partisipasi vs pembayaran).
-            // Tabel ini cuma nyimpen status partisipasi — status pembayaran
+            // Tabel ini cuma nyimpen status partisipasi - status pembayaran
             // ada di tabel `payments` sendiri. JANGAN digabung jadi satu
             // state machine (lihat CLAUDE.md §6).
             $table->enum('status_partisipasi', [

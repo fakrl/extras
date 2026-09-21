@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('project_application_id')->constrained()->cascadeOnDelete();
             $table->foreignId('cd_id')->constrained('users');
             $table->enum('keputusan', ['approve', 'reject']);
-            // RF-23: approve/reject massal — dilacak sebagai satu aksi
+            // RF-23: approve/reject massal - dilacak sebagai satu aksi
             $table->uuid('bulk_batch_id')->nullable();
             $table->timestamps();
         });

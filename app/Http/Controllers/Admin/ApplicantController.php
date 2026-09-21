@@ -12,9 +12,9 @@ use Illuminate\Http\Request;
 class ApplicantController extends Controller
 {
     /**
-     * RF-15: Admin Default menetapkan Grade (A/B/C) — penilaian kualitas,
+     * RF-15: Admin Default menetapkan Grade (A/B/C), penilaian kualitas,
      * independen dari besaran fee (yang diatur lewat modul Negosiasi Fee
-     * terpisah, Sprint 3). Status_partisipasi TIDAK diubah di sini —
+     * terpisah, Sprint 3). Status_partisipasi TIDAK diubah di sini,
      * penetapan grade tidak otomatis memindahkan status ke tahap berikutnya.
      */
     public function setGrade(Request $request, ProjectApplication $application): RedirectResponse

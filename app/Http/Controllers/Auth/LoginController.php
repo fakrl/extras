@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 class LoginController extends Controller
 {
     /**
-     * SPEC.md Bagian B5: sama seperti RegisterController::showExtras() —
+     * SPEC.md Bagian B5: sama seperti RegisterController::showExtras(),
      * simpan token event dari ?event=token (link publik), dibaca lagi
      * setelah login sukses di bawah.
      */
@@ -58,7 +58,7 @@ class LoginController extends Controller
         $request->session()->regenerate();
 
         // SPEC.md Bagian B5: mekanisme TERPISAH dari redirect()->intended()
-        // (sengaja tidak dipakai, lihat komentar di bawah) — session key
+        // (sengaja tidak dipakai, lihat komentar di bawah), session key
         // eksplisit yang cuma terisi kalau login ini datang dari link event
         // publik. Kosong = behavior tidak berubah sama sekali dari sebelumnya.
         $eventToken = $request->session()->pull('intended_event_token');
@@ -70,7 +70,7 @@ class LoginController extends Controller
             }
         }
 
-        // SENGAJA bukan redirect()->intended() — RF-03 mensyaratkan tiap role
+        // SENGAJA bukan redirect()->intended(), RF-03 mensyaratkan tiap role
         // selalu diarahkan ke dashboard masing-masing setelah login, terlepas
         // dari URL apa yang sempat dicoba diakses sebelum login (mis. Extras
         // yang tadinya nyasar ke /admin/dashboard dan kena redirect ke /login,

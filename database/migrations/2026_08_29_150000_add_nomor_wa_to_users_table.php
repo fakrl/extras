@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             // RF-37: nomor WA disimpan di users (bukan extras_profiles) supaya
-            // reusable lintas role (Admin/CD nanti). Nullable — user existing
+            // reusable lintas role (Admin/CD nanti). Nullable - user existing
             // belum tentu isi. Format disimpan seragam via mutator di model.
             $table->string('nomor_wa')->nullable()->after('status');
         });

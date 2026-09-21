@@ -13,7 +13,7 @@ use Tests\TestCase;
 /**
  * Fix SPEC.md Item 1 (30 Agu 2026 pagi): ProjectApplication::
  * pastikanMasihBisaNego() sebelumnya lupa masukin kontrak_ditandatangani/
- * selesai_produksi/dibatalkan ke blocklist status — nego fee bisa dibuka
+ * selesai_produksi/dibatalkan ke blocklist status - nego fee bisa dibuka
  * lagi & fee_final ditimpa SETELAH kontrak sudah ditandatangani kedua
  * pihak, dan ContractController::sign() bakal regenerate PDF dengan
  * angka baru, menimpa PDF yang sudah sah ditandatangani.
@@ -155,7 +155,7 @@ class NegoFeeGateSetelahKontrakTest extends TestCase
     public function test_ajukan_awal_tetap_terblokir_lewat_pengecekan_riwayat_existing(): void
     {
         // Bukan bug baru Item 1, tapi dicatat: ajukanAwal() tidak pernah
-        // panggil pastikanMasihBisaNego() sama sekali — proteksinya cuma
+        // panggil pastikanMasihBisaNego() sama sekali - proteksinya cuma
         // "sudah ada riwayat nego belum". Ini SELALU true untuk aplikasi
         // yang sudah lewat status deal (terimaFee() selalu bikin baris
         // nego dulu), jadi tidak reachable lewat alur normal. Test ini

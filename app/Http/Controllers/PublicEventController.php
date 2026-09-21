@@ -9,12 +9,12 @@ class PublicEventController extends Controller
 {
     /**
      * RF-56: landing page publik per proyek, link-nya dibagikan Admin lewat
-     * WA — kemungkinan dibuka belakangan setelah proyek closed, jadi token
+     * WA, kemungkinan dibuka belakangan setelah proyek closed, jadi token
      * salah/proyek sudah tidak menerima pendaftaran tetap tampil halaman
      * graceful, BUKAN 404/500 mentah.
      *
      * client_ph & budget_client SENGAJA tidak pernah dikirim ke view ini
-     * (CLAUDE.md §5 + SPEC.md Bagian B — rahasia di semua permukaan publik).
+     * (CLAUDE.md §5 + SPEC.md Bagian B, rahasia di semua permukaan publik).
      */
     public function show(Request $request, string $token)
     {
@@ -27,7 +27,7 @@ class PublicEventController extends Controller
 
         $user = $request->user();
 
-        // Login tapi bukan Extras (mis. Admin/CD buka link ini) — tidak
+        // Login tapi bukan Extras (mis. Admin/CD buka link ini), tidak
         // punya alur apply, lempar ke dashboard masing-masing daripada
         // menampilkan CTA yang tidak bisa mereka pakai.
         if ($user && ! $user->isExtras()) {
