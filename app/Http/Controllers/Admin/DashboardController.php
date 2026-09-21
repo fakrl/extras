@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CastingProject;
+use App\Models\EventShootingDate;
 use App\Models\Payment;
 use App\Models\ProjectApplication;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
@@ -14,13 +16,10 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Metrik ringkas, sama untuk semua sub-role (Talco/Korlap/Sosmed ikut lihat,
-        // aksinya yang dibatasi lewat middleware role:admin_default di routes).
         $proyekAktif = CastingProject::where('status', 'dibuka')->count();
         $totalPendaftar = ProjectApplication::count();
         $perluDinego = ProjectApplication::where('status_partisipasi', 'nego_fee')->count();
 
-        // Chart 1 (bar horizontal): funnel status partisipasi kandidat
         $statusPartisipasi = ProjectApplication::selectRaw('status_partisipasi, count(*) as total')
             ->groupBy('status_partisipasi')
             ->pluck('total', 'status_partisipasi');
@@ -44,7 +43,6 @@ class DashboardController extends Controller
             'data' => array_map(fn ($key) => (int) ($statusPartisipasi[$key] ?? 0), array_keys($partisipasiLabels)),
         ];
 
-        // Chart 2 (donut): status pembayaran Extras
         $statusPembayaran = Payment::selectRaw('status, count(*) as total')
             ->groupBy('status')
             ->pluck('total', 'status');
@@ -64,13 +62,21 @@ class DashboardController extends Controller
             ->filter(fn ($p) => $p->isUrgent())
             ->values();
 
+        $proyekIds = $user->adminProjectAssignments()->pluck('casting_project_id');
+        $jadwalBulanIni = EventShootingDate::whereIn('casting_project_id', $proyekIds)
+            ->whereBetween('tanggal', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])
+            ->with('castingProject:id,nama_produksi')
+            ->get()
+            ->map(fn ($e) => tap($e, fn ($e) => $e->nama_produksi = $e->castingProject?->nama_produksi));
+
         return view('admin.dashboard', compact(
             'proyekAktif',
             'totalPendaftar',
             'perluDinego',
             'chartStatusPartisipasi',
             'chartStatusPembayaran',
-            'urgentProjects'
+            'urgentProjects',
+            'jadwalBulanIni'
         ));
     }
 }

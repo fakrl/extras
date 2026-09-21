@@ -4,18 +4,19 @@ namespace App\Http\Controllers\Extras;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\EventShootingDate;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        $extrasProfile = Auth::user()->extrasProfile;
+        $user = Auth::user();
+        $extrasProfile = $user->extrasProfile;
 
-        // Semua pendaftaran ditampilkan (bukan cuma yang aktif), konsisten
-        // dengan tampilan lama, biar histori tidak hilang dari sudut pandang Extras.
         $pendaftaranSaya = $extrasProfile
             ? ProjectApplication::where('extras_id', $extrasProfile->id)
                 ->with('castingProject.shootingDates')
@@ -34,6 +35,18 @@ class DashboardController extends Controller
             })->latest('created_at')->take(5)->get();
         }
 
-        return view('extras.dashboard', compact('extrasProfile', 'pendaftaranSaya', 'aktivitasSaya'));
+        $proyekLolos = $extrasProfile
+            ? ProjectApplication::where('extras_id', $extrasProfile->id)
+                ->whereIn('status_partisipasi', ProjectApplication::STATUS_LOLOS_KE_ATAS)
+                ->pluck('casting_project_id')
+            : collect();
+
+        $jadwalBulanIni = EventShootingDate::whereIn('casting_project_id', $proyekLolos)
+            ->whereBetween('tanggal', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])
+            ->with('castingProject:id,nama_produksi')
+            ->get()
+            ->map(fn ($e) => tap($e, fn ($e) => $e->nama_produksi = $e->castingProject?->nama_produksi));
+
+        return view('extras.dashboard', compact('extrasProfile', 'pendaftaranSaya', 'aktivitasSaya', 'jadwalBulanIni'));
     }
 }

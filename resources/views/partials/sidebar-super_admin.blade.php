@@ -1,6 +1,6 @@
 @php
     $route = request()->path();
-    $isAppMonitoringActive = str_starts_with($route, 'super-admin/dashboard') || str_starts_with($route, 'super-admin/monitoring') || str_starts_with($route, 'super-admin/activity-logs');
+    $isAppMonitoringActive = str_starts_with($route, 'super-admin/dashboard') || str_starts_with($route, 'super-admin/monitoring') || str_starts_with($route, 'super-admin/activity-logs') || str_starts_with($route, 'super-admin/recap-margin');
     $isSettingsUsersActive = str_starts_with($route, 'super-admin/admins') || str_starts_with($route, 'super-admin/casting-directors');
 @endphp
 
@@ -18,6 +18,9 @@
         </a>
         <a href="{{ route('super-admin.activity-logs') }}" class="sidebar-link {{ str_starts_with($route, 'super-admin/activity-logs') ? 'active' : '' }}">
             <i class="ti ti-activity"></i> Log Aktivitas (Audit)
+        </a>
+        <a href="{{ route('super-admin.recap-margin') }}" class="sidebar-link {{ str_starts_with($route, 'super-admin/recap-margin') ? 'active' : '' }}">
+            <i class="ti ti-report-money"></i> Rekap Margin
         </a>
     </div>
 </details>

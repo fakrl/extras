@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\CastingProject;
 use App\Models\CdProjectAssignment;
 use App\Models\CdReview;
+use App\Models\EventShootingDate;
 use App\Models\Payment;
 use App\Models\ProjectApplication;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
@@ -55,8 +57,15 @@ class DashboardController extends Controller
             ])
             ->values();
 
+        $jadwalBulanIni = EventShootingDate::whereIn('casting_project_id', $proyekIds)
+            ->whereBetween('tanggal', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])
+            ->with('castingProject:id,nama_produksi')
+            ->get()
+            ->map(fn ($e) => tap($e, fn ($e) => $e->nama_produksi = $e->castingProject?->nama_produksi));
+
         return view('cd.dashboard', compact(
-            'perluDireview', 'chartKeputusan', 'proyekBerjalan', 'pelunasanPending', 'karakterPendaftar'
+            'perluDireview', 'chartKeputusan', 'proyekBerjalan', 'pelunasanPending', 'karakterPendaftar',
+            'jadwalBulanIni'
         ));
     }
 }
