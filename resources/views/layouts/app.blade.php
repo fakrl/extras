@@ -7,7 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'SIM Casting JBTB')</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
     @include('partials.theme-style')
     <style>
         body { transition: background 0.2s ease, color 0.2s ease; }
@@ -294,7 +294,10 @@
             font-family: inherit; width: 100%; margin-bottom: 14px;
         }
         input:focus, select:focus, textarea:focus {
-            outline: none; border-color: var(--accent);
+            border-color: var(--accent);
+        }
+        :focus-visible {
+            outline: 2px solid var(--accent); outline-offset: 2px;
         }
         input[type="checkbox"],
         input[type="radio"] {
@@ -380,9 +383,10 @@
         }
 
         .alert-info {
-            background: rgba(59,130,246,0.12); color: #60a5fa;
+            background: rgba(59,130,246,0.12); color: var(--info);
             padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 14px;
         }
+        .table-container { overflow-x: auto; }
 
         /* ===== Mobile: sidebar berubah jadi bottom navigation bar =====
            Extras (pengguna utama di HP) butuh navigasi yang selalu kelihatan
@@ -521,6 +525,15 @@
                 @if (session('error'))
                     <div class="alert-danger">{{ session('error') }}</div>
                 @endif
+                @if ($errors->any())
+                    <div class="alert-danger">
+                        <ul style="margin: 0; padding-left: 18px;">
+                            @foreach ($errors->all() as $pesan)
+                                <li>{{ $pesan }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
                 @yield('content')
             </main>
@@ -556,7 +569,6 @@
             });
         }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <script>
         (function() {
             var bellBtn = document.getElementById('notif-bell-btn');

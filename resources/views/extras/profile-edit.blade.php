@@ -30,14 +30,6 @@
         <div class="alert-success">{{ session('status') }}</div>
     @endif
 
-    @if ($errors->any())
-        <div class="alert-danger">
-            @foreach ($errors->all() as $error)
-                <div>{{ $error }}</div>
-            @endforeach
-        </div>
-    @endif
-
     {{-- ===== Foto Profil ===== --}}
     <div class="profile-section">
         <div class="profile-section-title">Foto Profil</div>

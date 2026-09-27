@@ -96,6 +96,7 @@
     </div>
 
     <div style="overflow-x: auto;">
+        <div class="table-container">
         <table style="width: 100%;">
             <thead>
                 <tr>
@@ -163,6 +164,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 
     <div style="margin-top: 16px;">
@@ -172,6 +174,7 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
 (function () {
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';

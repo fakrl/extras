@@ -30,6 +30,7 @@
 </div>
 
 <div class="card">
+    <div class="table-container">
     <table id="tabel-riwayat">
         <thead>
             <tr><th>Alias</th><th>Keputusan</th><th>Tanggal</th><th></th></tr>
@@ -80,6 +81,7 @@
             @endforelse
         </tbody>
     </table>
+    </div>
 </div>
 
 <dialog id="modal-profil">

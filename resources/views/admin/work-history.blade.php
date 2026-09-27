@@ -11,6 +11,7 @@
     <div style="font-size: 15px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
         <i class="ti ti-briefcase" style="color: var(--accent);"></i> Riwayat Honor Pokok Penugasan Proyek
     </div>
+    <div class="table-container">
     <table>
         <thead>
             <tr>
@@ -68,12 +69,14 @@
             @endforelse
         </tbody>
     </table>
+    </div>
 </div>
 
 <div class="card">
     <div style="font-size: 15px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
         <i class="ti ti-receipt" style="color: var(--accent);"></i> Riwayat Reimbursement &amp; Add-on Operasional
     </div>
+    <div class="table-container">
     <table>
         <thead>
             <tr>
@@ -102,5 +105,6 @@
             @endforelse
         </tbody>
     </table>
+    </div>
 </div>
 @endsection

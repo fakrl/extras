@@ -18,6 +18,7 @@
 
 <div class="card" style="margin-bottom: 16px;">
     <div style="font-weight: 600; margin-bottom: 12px;">Profil</div>
+    <div class="table-container">
     <table style="width: 100%; font-size: 13px;">
         <tr><td style="padding: 4px 0; width: 120px; color: var(--text-muted);">Nama</td><td>{{ $user->name }}</td></tr>
         <tr><td style="padding: 4px 0; color: var(--text-muted);">Email</td><td>{{ $user->email }}</td></tr>
@@ -28,6 +29,7 @@
         @endif
         <tr><td style="padding: 4px 0; color: var(--text-muted);">Bergabung</td><td>{{ $user->created_at->format('d M Y') }}</td></tr>
     </table>
+    </div>
 </div>
 
 {{-- 2a: Kinerja + Edit Honor untuk Admin & Korlap --}}
@@ -68,6 +70,7 @@
     @if ($assignments->isEmpty())
         <div style="color: var(--text-muted); text-align: center; padding: 20px; font-size: 13px;">Belum ada penugasan.</div>
     @else
+        <div class="table-container">
         <table style="width: 100%; font-size: 13px;">
             <thead>
                 <tr style="border-bottom: 1px solid var(--border-color);">
@@ -96,6 +99,7 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
     @endif
 </div>
 @endif
@@ -107,6 +111,7 @@
     @if ($clientProjects->isEmpty())
         <div style="color: var(--text-muted); text-align: center; padding: 20px; font-size: 13px;">Belum ada proyek.</div>
     @else
+        <div class="table-container">
         <table style="width: 100%; font-size: 13px;">
             <thead>
                 <tr style="border-bottom: 1px solid var(--border-color);">
@@ -125,6 +130,7 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
     @endif
 </div>
 @endif
@@ -183,6 +189,7 @@
             <div style="font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
                 <i class="ti ti-receipt" style="color: var(--accent);"></i> Riwayat Reimbursement &amp; Biaya Tambahan
             </div>
+            <div class="table-container">
             <table style="width: 100%; font-size: 13px;">
                 <thead>
                     <tr style="border-bottom: 1px solid var(--border-color);">
@@ -205,6 +212,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         </div>
     @endif
 @endif
@@ -215,6 +223,7 @@
     <div style="font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
         <i class="ti ti-activity" style="color: var(--accent);"></i> Aktivitas Akun Ini (Audit Trail)
     </div>
+    <div class="table-container">
     <table style="width: 100%; font-size: 13px;">
         <thead>
             <tr style="border-bottom: 1px solid var(--border-color);">
@@ -233,6 +242,7 @@
             @endforeach
         </tbody>
     </table>
+    </div>
 </div>
 @endif
 

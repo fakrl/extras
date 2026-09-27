@@ -40,6 +40,7 @@
         </p>
 
         <h2>Data yang kami simpan</h2>
+        <div class="table-container">
         <table>
             <thead>
                 <tr><th>Data</th><th>Disimpan untuk siapa</th></tr>
@@ -53,6 +54,7 @@
                 <tr><td>Riwayat pendaftaran, negosiasi fee, kontrak, pembayaran</td><td>Extras yang mendaftar proyek</td></tr>
             </tbody>
         </table>
+        </div>
 
         <h2>Siapa yang bisa melihat data kamu</h2>
         <p>Kami membatasi akses data berdasarkan peran (role), bukan membuka semua data ke semua orang:</p>

@@ -150,6 +150,7 @@ $periodLabel = match($period) { '7d' => '7 hari ini', '1y' => 'tahun ini', defau
 <div class="dashboard-grid-2col is-wide-narrow">
     <div class="card">
         <div class="card-title">Admin & Staff — Honor Berjalan (Top 5)</div>
+        <div class="table-container">
         <table>
             <thead>
                 <tr><th>Nama Admin</th><th>Role</th><th>Total Honor</th><th>Proyek Selesai</th><th>Proyek Berjalan</th></tr>
@@ -168,6 +169,7 @@ $periodLabel = match($period) { '7d' => '7 hari ini', '1y' => 'tahun ini', defau
                 @endforelse
             </tbody>
         </table>
+        </div>
         <div style="margin-top: 10px; text-align: right; font-size: 12.5px;">
             <a href="{{ route('super-admin.admins.index') }}" style="color: var(--accent);">Lihat semua &rarr;</a>
         </div>
@@ -181,6 +183,7 @@ $periodLabel = match($period) { '7d' => '7 hari ini', '1y' => 'tahun ini', defau
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
 (function () {
     var saColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-strong').trim() || '#15803D';

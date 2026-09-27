@@ -55,6 +55,7 @@
 
 <div class="card" style="margin-top: 16px;">
     <div class="card-title">Karakter &amp; Pendaftar</div>
+    <div class="table-container">
     <table>
         <thead>
             <tr><th>Proyek</th><th>Karakter</th><th>Pendaftar</th></tr>
@@ -71,10 +72,12 @@
             @endforelse
         </tbody>
     </table>
+    </div>
 </div>
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     var textColor = isDark ? '#9db3a2' : '#435449';

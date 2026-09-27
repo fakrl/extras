@@ -69,6 +69,7 @@
                 <span class="badge badge-pending" style="font-size: 11px;">{{ $attendances->count() }} absensi</span>
             </summary>
             <div style="overflow-x: auto; padding: 0 4px 4px;">
+                <div class="table-container">
                 <table style="font-size: 12.5px;">
                     <thead>
                         <tr>
@@ -98,6 +99,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             </div>
         </details>
     @empty

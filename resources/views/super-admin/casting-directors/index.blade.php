@@ -15,14 +15,6 @@
     <div style="padding: 18px;">
         <div style="font-size: 15px; font-weight: 600; margin-bottom: 14px;">Tambah Akun Client</div>
 
-        @if ($errors->any())
-            <div class="alert-danger">
-                @foreach ($errors->all() as $error)
-                    <div>{{ $error }}</div>
-                @endforeach
-            </div>
-        @endif
-
         <form method="POST" action="{{ route('super-admin.casting-directors.store') }}">
             @csrf
             <label>Nama</label>

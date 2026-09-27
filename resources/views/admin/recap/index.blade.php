@@ -29,6 +29,7 @@
         </select>
         <button type="submit" class="btn btn-sm">Filter</button>
     </form>
+    <div class="table-container">
     <table>
         <thead><tr><th>Alias</th><th>Jumlah Terpilih</th><th>Status</th><th>Kategori</th></tr></thead>
         <tbody>
@@ -50,6 +51,7 @@
             @endforeach
         </tbody>
     </table>
+    </div>
 </div>
 
 <div class="card" style="margin-top: 16px;">
@@ -57,6 +59,7 @@
     @if ($extrasSeringBatal->isEmpty())
         <p style="color: var(--text-muted); font-size: 13px; margin: 0;">Belum ada pembatalan tercatat.</p>
     @else
+        <div class="table-container">
         <table>
             <thead><tr><th>Alias</th><th>Jumlah Batal</th><th>Status</th></tr></thead>
             <tbody>
@@ -73,6 +76,7 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
     @endif
 </div>
 @endsection

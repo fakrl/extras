@@ -20,14 +20,6 @@
 <div class="card">
     <div style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Edit Proyek Casting</div>
 
-    @if ($errors->any())
-        <div class="alert-danger">
-            @foreach ($errors->all() as $error)
-                <div>{{ $error }}</div>
-            @endforeach
-        </div>
-    @endif
-
     @if ($applicantsCount > 0)
         <div class="alert-info">
             Proyek ini sudah ada {{ $applicantsCount }} pendaftar. Mengubah budget/kuota kelas TIDAK mengubah fee yang sudah di-nego dengan pendaftar. Kelas yang sudah ada tidak bisa dihapus, hanya bisa diubah atau ditambah kelas baru.
