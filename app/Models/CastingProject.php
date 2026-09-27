@@ -74,7 +74,7 @@ class CastingProject extends Model
      */
     public function kuotaPenuh(): bool
     {
-        return $this->applications()->count() >= $this->kuota;
+        return $this->applications()->whereNotIn('status_partisipasi', ['ditolak', 'dibatalkan'])->count() >= $this->kuota;
     }
 
     /**

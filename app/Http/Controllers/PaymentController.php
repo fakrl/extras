@@ -46,6 +46,14 @@ class PaymentController extends Controller
         abort_unless($request->user()->isAdmin(), 403);
         $this->guardStatusLolos($application);
 
+        if (! $application->payment) {
+            return back()->with('error', 'Data pembayaran belum ada untuk pendaftaran ini.');
+        }
+
+        if ($application->payment->status !== 'belum_dibayar') {
+            return back()->with('error', 'Transfer hanya bisa ditandai sekali, dari status Belum Dibayar.');
+        }
+
         $request->validate([
             'bukti_transfer' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
         ]);

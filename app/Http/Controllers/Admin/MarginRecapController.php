@@ -48,7 +48,7 @@ class MarginRecapController extends Controller
 
         ActivityLog::record(
             'STAFF_PAYROLL_PAID',
-            "Honor staf {$staffPayroll->assignment?->user?->name} untuk proyek '{$staffPayroll->assignment?->project?->nama_produksi}' ditandai sudah dibayar",
+            "Honor staf {$staffPayroll->assignment?->user?->name} untuk proyek '{$staffPayroll->assignment?->castingProject?->nama_produksi}' ditandai sudah dibayar",
             $staffPayroll
         );
 

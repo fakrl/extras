@@ -134,7 +134,7 @@ class KeuanganService
     public function daftarHonorStaf(): Collection
     {
         return StaffPayroll::with([
-            'assignment.project',
+            'assignment.castingProject',
             'assignment.user',
             'addons',
         ])->latest()->get();
@@ -146,10 +146,22 @@ class KeuanganService
     public function daftarHonorExtras(): Collection
     {
         return Payment::with([
-            'application.extras.user',
-            'application.castingProject',
+            'projectApplication.extras.user',
+            'projectApplication.castingProject',
             'addons',
         ])->latest()->get();
+    }
+
+    /**
+     * SPEC AY.1.15: total honor staf yang belum dibayar (pokok + addon),
+     * single source of truth dipakai dashboard Super Admin & tab Honor Staf.
+     */
+    public function totalHonorStafBelumDiproses(): float
+    {
+        return StaffPayroll::where('status_bayar', 'belum')
+            ->with('addons')
+            ->get()
+            ->sum(fn (StaffPayroll $p) => $p->nominalTotal());
     }
 
     /**

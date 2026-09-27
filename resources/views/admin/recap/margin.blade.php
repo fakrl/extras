@@ -34,10 +34,7 @@
        class="btn btn-sm {{ ($tab ?? '') === 'extras' ? 'btn-brand' : '' }}" style="border-radius: 6px;">
         <i class="ti ti-user-check"></i> Honor Extras
     </a>
-    <a href="{{ request()->fullUrlWithQuery(['tab' => 'invoice']) }}"
-       class="btn btn-sm {{ ($tab ?? '') === 'invoice' ? 'btn-brand' : '' }}" style="border-radius: 6px;">
-        <i class="ti ti-file-invoice"></i> Invoice Client
-    </a>
+    {{-- ditampilkan lagi setelah D5 --}}
 </div>
 
 <div style="position: relative; margin-bottom: 16px;">
@@ -171,7 +168,7 @@
                 @forelse ($staffPayrolls as $payroll)
                     @php
                         $user = $payroll->assignment?->user;
-                        $project = $payroll->assignment?->project;
+                        $project = $payroll->assignment?->castingProject;
                         $addonsSum = $payroll->addons->sum('nominal');
                     @endphp
                     <tr>
@@ -228,8 +225,8 @@
             <tbody>
                 @forelse ($extrasPayments as $pay)
                     @php
-                        $exUser = $pay->application?->extras?->user;
-                        $proj = $pay->application?->castingProject;
+                        $exUser = $pay->projectApplication?->extras?->user;
+                        $proj = $pay->projectApplication?->castingProject;
                     @endphp
                     <tr>
                         <td style="font-weight: 600;">{{ $exUser?->username ?? $exUser?->name ?? '-' }}</td>
@@ -249,8 +246,8 @@
                             @endif
                         </td>
                         <td>
-                            @if ($pay->application)
-                                <a href="{{ route('payments.show', $pay->application) }}" class="btn btn-sm">Lihat Pembayaran</a>
+                            @if ($pay->projectApplication)
+                                <a href="{{ route('payments.show', $pay->projectApplication) }}" class="btn btn-sm">Lihat Pembayaran</a>
                             @endif
                         </td>
                     </tr>
@@ -261,48 +258,9 @@
         </table>
     </div>
 
-@elseif ($tab === 'invoice')
-    {{-- TAB 4: INVOICE CLIENT --}}
-    <div class="card">
-        <div style="padding: 14px 16px; border-bottom: 1px solid var(--border-color); font-weight: 600;">
-            Daftar Invoice Client (Uang Masuk)
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>No. Invoice</th>
-                    <th>Proyek</th>
-                    <th>Client (PH)</th>
-                    <th>Total Tagihan</th>
-                    <th>Status Pembayaran</th>
-                    <th>Dokumen</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($clientInvoices as $inv)
-                    <tr>
-                        <td style="font-weight: 600;">{{ $inv->nomor_invoice ?? ('INV-'.$inv->id) }}</td>
-                        <td>{{ $inv->castingProject?->nama_produksi ?? '-' }}</td>
-                        <td>{{ $inv->castingProject?->client_ph ?? '-' }}</td>
-                        <td style="font-weight: 700;">Rp {{ number_format($inv->total_tagihan ?? 0, 0, ',', '.') }}</td>
-                        <td>
-                            @if ($inv->status_pembayaran === 'lunas')
-                                <span class="badge badge-aktif">Lunas</span>
-                            @else
-                                <span class="badge badge-pending">{{ ucwords(str_replace('_', ' ', $inv->status_pembayaran ?? 'Belum Lunas')) }}</span>
-                            @endif
-                        </td>
-                        <td>
-                            <a href="{{ route('invoices.show', $inv->castingProject) }}" class="btn btn-sm">Detail Invoice</a>
-                        </td>
-                    </tr>
-                @empty
-                    <tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 24px;">Belum ada invoice client.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
 @endif
+{{-- Tab Invoice Client disembunyikan: view baca kolom yang belum ada
+     (nomor_invoice, total_tagihan, status_pembayaran). ditampilkan lagi setelah D5 --}}
 
 @endsection
 

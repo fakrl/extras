@@ -89,14 +89,19 @@
     </div>
 @endif
 
-<form id="bulk-form" method="POST" action="{{ route('super-admin.admins.bulk-action') }}">
+{{-- Form bulk berdiri sendiri (bukan bungkus loop) supaya dialog per-akun di
+     dalam loop tidak bersarang di dalamnya - HTML tidak izinkan form dalam
+     form. Checkbox & tombol bulk terhubung lewat atribut form="bulk-form". --}}
+<form id="bulk-form" method="POST" action="{{ route('super-admin.admins.bulk-action') }}" style="display:none;">
     @csrf
-    @forelse ($admins as $user)
+</form>
+
+@forelse ($admins as $user)
         <div class="card" style="margin-bottom: 12px; position: relative;">
             <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
                 <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
                     @if (! $user->is_protected && $user->id !== auth()->id() && $user->role !== 'extras')
-                        <input type="checkbox" name="user_ids[]" value="{{ $user->id }}" class="bulk-cb">
+                        <input type="checkbox" name="user_ids[]" value="{{ $user->id }}" class="bulk-cb" form="bulk-form">
                     @else
                         <span style="display: inline-block; width: 15px;"></span>
                     @endif
@@ -227,7 +232,6 @@
             Tidak ada akun yang sesuai dengan pencarian atau filter.
         </div>
     @endforelse
-</form>
 
 {{-- Pagination Links --}}
 <div style="margin-top: 16px;">

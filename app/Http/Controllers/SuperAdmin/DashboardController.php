@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\CastingProject;
 use App\Models\EventShootingDate;
-use App\Models\StaffPayroll;
 use App\Models\User;
 use App\Notifications\InAppNotification;
 use App\Services\KeuanganService;
@@ -74,8 +73,8 @@ class DashboardController extends Controller
         $totalAkunPrev = User::whereBetween('created_at', [$prevStart, $prevEnd])->count();
         $trendTotalAkun = $this->trendBadge($totalAkunCurr, $totalAkunPrev);
 
-        // Metric: Honor Belum Diproses
-        $honorBelumDiproses = StaffPayroll::whereNull('generated_at')->count();
+        // Metric: Honor Belum Diproses (SPEC AY.1.15 — single source of truth KeuanganService)
+        $honorBelumDiproses = $this->keuanganService->totalHonorStafBelumDiproses();
         // ponytail: skip trend honorBelumDiproses — StaffPayroll tidak punya kolom waktu yang cocok untuk period filter ini
 
         // AT.2 & AV.6: Margin bulan ini (Single Source of Truth)

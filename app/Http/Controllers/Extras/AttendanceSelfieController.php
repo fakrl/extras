@@ -26,17 +26,29 @@ class AttendanceSelfieController extends Controller
 
         $request->validate([
             'foto' => ['required', 'image', 'max:5120'],
+            'event_shooting_date_id' => ['nullable', 'integer'],
         ]);
+
+        $shootingDateId = $request->input('event_shooting_date_id')
+            ?? $application->castingProject->shootingDates()->whereDate('tanggal', today())->value('id')
+            ?? $application->castingProject->shootingDates()->first()?->id;
+
+        if (! $shootingDateId || ! $application->castingProject->shootingDates()->whereKey($shootingDateId)->exists()) {
+            return back()->with('error', 'Tidak ada jadwal shooting untuk proyek ini.');
+        }
+
+        $existing = Attendance::where('project_application_id', $application->id)
+            ->where('event_shooting_date_id', $shootingDateId)
+            ->first();
+
+        if ($existing && $existing->status_validasi !== 'menunggu') {
+            return back()->with('error', 'Absensi hari ini sudah divalidasi Korlap.');
+        }
 
         $path = $request->file('foto')->store(
             'absensi/'.$application->id,
             'local'
         );
-
-        $shootingDateId = $request->input('event_shooting_date_id')
-            ?? $application->castingProject->shootingDates()->whereDate('tanggal', today())->value('id')
-            ?? $application->castingProject->shootingDates()->first()?->id
-            ?? abort(422, 'Tidak ada jadwal shooting untuk proyek ini.');
 
         $attendance = Attendance::updateOrCreate(
             [
