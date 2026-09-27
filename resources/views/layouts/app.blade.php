@@ -572,11 +572,11 @@
             }
         })();
     </script>
-    @stack('scripts')
     @auth
         @if(auth()->user()?->role === 'super_admin')
             <x-command-palette />
         @endif
     @endauth
+    @stack('scripts')
 </body>
 </html>

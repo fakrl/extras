@@ -17,7 +17,7 @@ class CastingProjectController extends Controller
     public function index()
     {
         $aktifStatuses = ['dibuka'];
-        $selesaiStatuses = ['ditutup', 'selesai_produksi'];
+        $selesaiStatuses = ['ditutup'];
 
         $aktif = CastingProject::whereIn('status', $aktifStatuses)
             ->withCount(['applications as terisi' => fn ($q) => $q->whereIn('status_partisipasi', ['lolos', 'kontrak_ditandatangani', 'selesai_produksi'])])

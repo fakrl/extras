@@ -32,7 +32,11 @@ class FeeNegotiationController extends Controller
             'catatan' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $application->ajukanFeeAwal($data['nominal'], $data['catatan'] ?? null);
+        try {
+            $application->ajukanFeeAwal($data['nominal'], $data['catatan'] ?? null);
+        } catch (\LogicException $e) {
+            return back()->with('status', $e->getMessage());
+        }
 
         return back()->with('status', 'Penawaran fee awal terkirim ke Extras.');
     }

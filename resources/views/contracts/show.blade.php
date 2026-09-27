@@ -49,7 +49,7 @@
     @endif
 
     @if ($application->contract->isFullySigned())
-        <div class="alert-info" style="margin-top: 12px;">Kontrak sudah ditandatangani lengkap kedua pihak. Lanjut to proses pembayaran.</div>
+        <div class="alert-info" style="margin-top: 12px;">Kontrak sudah ditandatangani lengkap kedua pihak. Lanjut ke proses pembayaran.</div>
     @endif
 @endif
 @endsection

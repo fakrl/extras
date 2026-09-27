@@ -570,7 +570,7 @@
                         @endguest
                         @auth
                             @if (auth()->user()->role === 'extras')
-                                <a href="/extras/projects" class="btn-outline" style="font-size: 13px;">Lihat semua lowongan</a>
+                                <a href="{{ route('extras.projects.index') }}" class="btn-outline" style="font-size: 13px;">Lihat semua lowongan</a>
                             @endif
                         @endauth
                     </div>

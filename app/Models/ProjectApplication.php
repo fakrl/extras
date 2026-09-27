@@ -124,6 +124,10 @@ class ProjectApplication extends Model
      */
     public function ajukanFeeAwal(float $nominal, ?string $catatan = null): FeeNegotiation
     {
+        if (! in_array($this->status_partisipasi, ['diajukan', 'direview_admin'], true)) {
+            throw new \LogicException('Kandidat ini tidak bisa diajukan fee awal, statusnya sudah bukan Diajukan/Direview Admin.');
+        }
+
         $this->update(['status_partisipasi' => 'nego_fee']);
 
         $negotiation = $this->feeNegotiations()->create([

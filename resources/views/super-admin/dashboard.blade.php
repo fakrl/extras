@@ -108,11 +108,11 @@ $periodLabel = match($period) { '7d' => '7 hari ini', '1y' => 'tahun ini', defau
             @endif
         </div>
     </div>
-    <div class="metric-card" title="Jumlah staf/admin yang honornya belum diproses untuk proyek yang sudah selesai">
+    <a href="{{ route('super-admin.recap-margin', ['tab' => 'staf']) }}" class="metric-card" style="display: block; text-decoration: none; color: inherit;" title="Total honor staf/admin yang belum dibayar, klik untuk lihat tab Honor Staf">
         <div class="metric-label">Honor Belum Diproses</div>
-        <div class="metric-value">{{ $honorBelumDiproses }}</div>
+        <div class="metric-value">Rp {{ number_format($honorBelumDiproses, 0, ',', '.') }}</div>
         <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">perlu tindak lanjut</div>
-    </div>
+    </a>
 </div>
 
 {{-- AT.2: Card Margin Bulan Ini --}}

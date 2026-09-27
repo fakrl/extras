@@ -137,7 +137,7 @@
                 <div>
                     <div style="font-weight: 600; font-size: 13.5px;">
                         {{ $person->name }}
-                        @if ($person->username) <span style="font-size: 12px; color: var(--text-muted);">@{{ $person->username }}</span> @endif
+                        @if ($person->username) <span style="font-size: 12px; color: var(--text-muted);">{{ '@'.$person->username }}</span> @endif
                     </div>
                     <div style="font-size: 12px; color: var(--text-muted);">{{ $person->email }} &bull; <span class="badge badge-pending" style="font-size: 10px;">{{ $person->role }}</span></div>
                 </div>

@@ -86,20 +86,24 @@ class ContractController extends Controller
     {
         abort_unless($application->bolehDilihatOleh($request->user()), 403);
 
+        $contract = $application->contract;
+        $role = $request->user()->role === 'extras' ? 'extras' : 'admin';
+        $kolomTtd = $role === 'extras' ? 'ttd_extras_signature_path' : 'ttd_admin_signature_path';
+
+        if (! $contract || $contract->isVoided() || $application->status_partisipasi !== 'lolos' || $contract->{$kolomTtd}) {
+            return back()->with('error', 'Kontrak tidak bisa ditandatangani untuk status pendaftaran saat ini.');
+        }
+
         $data = $request->validate([
             'signature' => ['required', 'string'],
         ]);
 
-        $role = $request->user()->role === 'extras' ? 'extras' : 'admin';
         $filename = "contracts/signatures/{$application->id}-{$role}-".Str::random(8).'.png';
 
         $base64 = preg_replace('#^data:image/\w+;base64,#', '', $data['signature']);
         Storage::disk('local')->put($filename, base64_decode($base64));
 
-        $contract = $application->contract;
-        $contract->update([
-            $role === 'extras' ? 'ttd_extras_signature_path' : 'ttd_admin_signature_path' => $filename,
-        ]);
+        $contract->update([$kolomTtd => $filename]);
 
         if ($contract->isFullySigned()) {
             $contract->update(['signed_at' => now()]);

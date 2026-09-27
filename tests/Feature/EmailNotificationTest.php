@@ -104,7 +104,9 @@ class EmailNotificationTest extends TestCase
     {
         Mail::fake();
 
-        $application = $this->buatAplikasi('nego_fee');
+        // SPEC AY.1.11: ajukanFeeAwal() sekarang guard status diajukan/direview_admin,
+        // jadi seed di sini pakai status sebelum nego (method sendiri yang transisi ke nego_fee).
+        $application = $this->buatAplikasi('direview_admin');
         $application->ajukanFeeAwal(200000);
 
         Mail::fake();

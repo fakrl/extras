@@ -38,10 +38,11 @@ class ApplicantController extends Controller
             'grade_diberikan_at' => now(),
         ]);
 
-        $application->update([
-            'grade' => $data['grade'],
-            'status_partisipasi' => 'direview_admin',
-        ]);
+        $updateData = ['grade' => $data['grade']];
+        if ($application->status_partisipasi === 'diajukan') {
+            $updateData['status_partisipasi'] = 'direview_admin';
+        }
+        $application->update($updateData);
 
         ActivityLog::record(
             'SET_EXTRAS_GRADE',

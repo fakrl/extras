@@ -195,8 +195,10 @@ class MarginRecapTest extends TestCase
         $response->assertSee('Rp 0');
     }
 
-    public function test_halaman_keuangan_menampilkan_4_tab(): void
+    public function test_halaman_keuangan_menampilkan_3_tab(): void
     {
+        // SPEC AY.1.2: tab "Invoice Client" disembunyikan sampai basis
+        // invoice diputuskan (D5), view-nya baca kolom yang belum ada.
         $admin = User::factory()->create(['role' => 'admin_default']);
 
         $response = $this->actingAs($admin)->get('/admin/rekap-margin');
@@ -205,7 +207,7 @@ class MarginRecapTest extends TestCase
         $response->assertSee('Margin Proyek');
         $response->assertSee('Honor Staf');
         $response->assertSee('Honor Extras');
-        $response->assertSee('Invoice Client');
+        $response->assertDontSee('Invoice Client');
     }
 
     public function test_tandai_dibayar_staff_payroll_berhasil(): void
