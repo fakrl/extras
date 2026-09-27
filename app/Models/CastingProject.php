@@ -24,6 +24,26 @@ class CastingProject extends Model
     /** @use HasFactory<CastingProjectFactory> */
     use HasFactory;
 
+    const LABELS = [
+        'dibuka' => 'Dibuka',
+        'ditutup' => 'Ditutup',
+    ];
+
+    const BADGES = [
+        'dibuka' => 'badge-aktif',
+        'ditutup' => 'badge-netral',
+    ];
+
+    public function label(): string
+    {
+        return self::LABELS[$this->status] ?? ucfirst(str_replace('_', ' ', $this->status));
+    }
+
+    public function badgeClass(): string
+    {
+        return self::BADGES[$this->status] ?? 'badge-netral';
+    }
+
     protected function casts(): array
     {
         return [

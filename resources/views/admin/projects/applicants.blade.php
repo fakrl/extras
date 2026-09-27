@@ -2,15 +2,6 @@
 
 @section('title', 'Lineup: ' . $castingProject->nama_produksi)
 
-@php
-    $badgeClass = [
-        'diajukan' => 'badge-pending', 'direview_admin' => 'badge-pending', 'nego_fee' => 'badge-pending',
-        'deal' => 'badge-aktif', 'diajukan_ke_cd' => 'badge-pending', 'direview_cd' => 'badge-pending',
-        'lolos' => 'badge-aktif', 'ditolak' => 'badge-tolak', 'kontrak_ditandatangani' => 'badge-aktif',
-        'selesai_produksi' => 'badge-aktif', 'dibatalkan' => 'badge-tolak',
-    ];
-@endphp
-
 @section('content')
 <div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">Lineup: {{ $castingProject->nama_produksi }}</div>
 <p style="color: var(--text-secondary); margin: 0 0 20px; font-size: 13.5px;">
@@ -32,7 +23,7 @@
 
 <div style="position: relative; margin-bottom: 16px;">
     <input type="text" id="search-applicants" placeholder="Cari nama pelamar, alias/username, peran, kelas..."
-           style="width: 100%; max-width: 400px; padding: 8px 14px 8px 36px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13.5px; background: var(--bg-card); color: var(--text-primary); margin-bottom: 0;">
+           style="width: 100%; max-width: 400px; padding: 8px 14px 8px 36px; border: 1px solid var(--border-color); border-radius: 8px; font-size: var(--fs-md); background: var(--bg-card); color: var(--text-primary); margin-bottom: 0;">
     <i class="ti ti-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 15px;"></i>
 </div>
 
@@ -119,7 +110,7 @@
                         @if ($app->jam_callingan || $app->castingProjectClass?->jam_callingan)
                             · Callingan: <strong>{{ $app->jam_callingan ?: $app->castingProjectClass->jam_callingan }}</strong>
                             @if ($app->castingProjectClass?->jam_callsheet)
-                                <span style="color: var(--text-muted); font-size: 11px;">(Callsheet: {{ $app->castingProjectClass->jam_callsheet }})</span>
+                                <span style="color: var(--text-muted); font-size: var(--fs-xs);">(Callsheet: {{ $app->castingProjectClass->jam_callsheet }})</span>
                             @endif
                         @endif
                         @if ($app->keterangan_scene || $app->castingProjectClass?->keterangan_scene)
@@ -127,7 +118,7 @@
                         @endif
                     </div>
                     <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
-                        <span class="badge {{ $badgeClass[$app->status_partisipasi] ?? 'badge-pending' }}">{{ $app->status_partisipasi }}</span>
+                        <x-status-badge :model="$app" />
                         @if ($app->bentrok_jadwal_flag)
                             <span class="badge badge-tolak">Bentrok Jadwal</span>
                         @endif

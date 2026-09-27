@@ -103,23 +103,12 @@
                     <th style="white-space: nowrap;">Waktu</th>
                     <th>Aktor</th>
                     <th>Role</th>
-                    <th>Kode Aksi</th>
                     <th>Deskripsi Aktivitas</th>
                     <th style="text-align: right;">IP Address</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse ($logs as $log)
-                    @php
-                        $roleBadgeClass = match($log->role) {
-                            'super_admin' => 'badge-pending',
-                            'admin' => 'badge-aktif',
-                            'korlap' => 'badge-pending',
-                            'client' => 'badge-aktif',
-                            'extras' => 'badge-pending',
-                            default => 'badge-pending',
-                        };
-                    @endphp
                     <tr>
                         <td style="white-space: nowrap; font-size: 12.5px; color: var(--text-secondary);">
                             {{ $log->created_at->format('d/m/Y H:i:s') }}
@@ -127,25 +116,18 @@
                         <td>
                             @if ($log->user)
                                 <span style="font-weight: 600;">{{ $log->user->name }}</span>
-                                <div style="font-size: 11.5px; color: var(--text-muted);">{{ $log->user->email }}</div>
+                                <div style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $log->user->email }}</div>
                             @else
                                 <span style="color: var(--text-muted); font-style: italic;">Sistem / Anonim</span>
                             @endif
                         </td>
                         <td>
-                            <span class="badge {{ $roleBadgeClass }}">
-                                {{ $log->role }}
-                            </span>
+                            <span class="badge badge-netral">{{ \App\Models\User::LABELS[$log->role] ?? ucfirst($log->role) }}</span>
                         </td>
-                        <td>
-                            <code style="font-size: 11.5px; background: var(--bg-nav-active); padding: 3px 6px; border-radius: 4px; color: var(--accent-strong);">
-                                {{ $log->action }}
-                            </code>
-                        </td>
-                        <td style="font-size: 13px;">
+                        <td style="font-size: 13px;" title="Kode aksi: {{ $log->action }}">
                             {{ $log->description }}
                             @if (!empty($log->properties))
-                                <details style="margin-top: 4px; font-size: 11.5px; color: var(--text-muted);">
+                                <details style="margin-top: 4px; font-size: var(--fs-xs); color: var(--text-muted);">
                                     <summary style="cursor: pointer; color: var(--accent);">Lihat Parameter</summary>
                                     <pre style="background: var(--bg-page); padding: 8px; border-radius: 6px; margin-top: 4px; overflow-x: auto;">{{ json_encode($log->properties, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                                 </details>
@@ -157,7 +139,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px 0;">
+                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px 0;">
                             Belum ada catatan aktivitas yang sesuai filter.
                         </td>
                     </tr>

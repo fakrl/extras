@@ -28,7 +28,7 @@
         .avatar-wrap { width: 160px; aspect-ratio: 3/4; margin: 0 auto 12px; border-radius: 14px; overflow: hidden; background: var(--bg-nav-active); display: flex; align-items: center; justify-content: center; }
         .avatar-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .alias { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 4px; }
-        .note-sensitive { font-size: 11.5px; color: var(--text-muted); text-align: center; margin: 0 0 20px; }
+        .note-sensitive { font-size: var(--fs-xs); color: var(--text-muted); text-align: center; margin: 0 0 20px; }
         p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
         @media (min-width: 900px) {
             html, body { height: 100%; overflow: hidden; }

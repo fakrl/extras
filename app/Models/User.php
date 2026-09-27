@@ -112,6 +112,24 @@ class User extends Authenticatable
         self::ROLE_EXTRAS,
     ];
 
+    public const LABELS = [
+        self::ROLE_SUPER_ADMIN => 'Super Admin',
+        self::ROLE_ADMIN => 'Admin',
+        self::ROLE_KORLAP => 'Korlap',
+        self::ROLE_CLIENT => 'Client',
+        self::ROLE_EXTRAS => 'Extras',
+    ];
+
+    public function label(): string
+    {
+        return self::LABELS[$this->role] ?? ucfirst(str_replace('_', ' ', $this->role));
+    }
+
+    public function badgeClass(): string
+    {
+        return 'badge-netral';
+    }
+
     public function isSuperAdmin(): bool
     {
         return $this->role === self::ROLE_SUPER_ADMIN;

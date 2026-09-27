@@ -37,7 +37,7 @@
     <div class="card" style="text-align:center; color: var(--text-muted); padding: 30px 0;">Proyek ini belum punya tanggal shooting.</div>
 @else
     <input type="text" id="search-extras" placeholder="Cari nama extras..."
-        style="width: 100%; max-width: 320px; padding: 7px 12px; border: 1px solid var(--border-color); border-radius: 7px; margin-bottom: 10px; font-size: 13px; background: var(--bg-card); color: var(--text-primary); display: block;">
+        style="width: 100%; max-width: 320px; padding: 7px 12px; border: 1px solid var(--border-color); border-radius: 7px; margin-bottom: 10px; font-size: var(--fs-md); background: var(--bg-card); color: var(--text-primary); display: block;">
     @forelse ($applicants as $app)
         @php
             $absen = $app->attendances->firstWhere('event_shooting_date_id', $shootingDate->id);
@@ -78,7 +78,7 @@
                                 @elseif ($absen->status_validasi === 'tervalidasi')
                                     <span class="badge badge-aktif">Tervalidasi ({{ $absen->divalidasiOleh?->name ?? 'Staf' }})</span>
                                 @endif
-                                <span style="font-size: 11.5px; color: var(--text-muted);">{{ $absen->created_at->format('H:i') }} WIB</span>
+                                <span style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $absen->created_at->format('H:i') }} WIB</span>
                             @else
                                 <span class="badge badge-pending">Belum diabsen</span>
                             @endif
@@ -88,7 +88,7 @@
 
                 {{-- Kolom Foto Selfie Hybrid --}}
                 @if ($absen && $absen->foto_path)
-                    <div style="text-align: center; font-size: 11px;">
+                    <div style="text-align: center; font-size: var(--fs-xs);">
                         <a href="{{ route('admin.absensi.foto', $absen) }}" target="_blank" style="display: block;">
                             <img src="{{ route('admin.absensi.foto', $absen) }}" alt="Selfie" style="width: 52px; height: 52px; border-radius: 8px; object-fit: cover; border: 2px solid var(--accent, #3b82f6);">
                         </a>

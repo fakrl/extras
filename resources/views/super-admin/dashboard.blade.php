@@ -52,7 +52,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color); gap: 8px; flex-wrap: wrap;">
                 <div>
                     <span style="font-weight: 500; font-size: 13.5px;">{{ $p->nama_produksi }}</span>
-                    @if ($p->isUrgent()) <span class="badge badge-tolak" style="font-size: 10px; margin-left: 6px;">URGENT</span> @endif
+                    @if ($p->isUrgent()) <span class="badge badge-tolak" style="font-size: var(--fs-xs); margin-left: 6px;">URGENT</span> @endif
                     <div style="font-size: 12px; color: var(--text-muted);">Deadline: {{ $p->deadline?->format('d M Y') ?? '-' }}</div>
                 </div>
             </div>
@@ -67,7 +67,7 @@
             @foreach ($ringkasanProyek->take(2) as $p)
                 <div style="font-size: 13px; padding: 4px 0;">
                     {{ $p->nama_produksi }}
-                    @if ($p->isUrgent()) <span class="badge badge-tolak" style="font-size: 10px;">URGENT</span> @endif
+                    @if ($p->isUrgent()) <span class="badge badge-tolak" style="font-size: var(--fs-xs);">URGENT</span> @endif
                 </div>
             @endforeach
         </div>
@@ -82,15 +82,15 @@ $periodLabel = match($period) { '7d' => '7 hari ini', '1y' => 'tahun ini', defau
     <div class="metric-card" title="Proyek casting yang sedang dalam proses (status dibuka)">
         <div class="metric-label">Proyek Berjalan</div>
         <div class="metric-value">{{ $proyekBerjalan }}</div>
-        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">status aktif saat ini</div>
+        <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 4px;">status aktif saat ini</div>
     </div>
     <div class="metric-card" title="Jumlah akun Extras dengan status aktif di sistem">
         <div class="metric-label">Extras Aktif</div>
         <div class="metric-value">{{ $extrasAktif }}</div>
-        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 6px;">
+        <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 6px;">
             <span>bergabung {{ $periodLabel }}</span>
             @if ($trendExtrasAktif)
-                <span style="font-size: 10.5px; font-weight: 600; color: {{ $trendExtrasAktif['up'] ? 'var(--accent-strong)' : 'var(--danger)' }};">
+                <span style="font-size: var(--fs-xs); font-weight: 600; color: {{ $trendExtrasAktif['up'] ? 'var(--accent-strong)' : 'var(--danger)' }};">
                     {{ $trendExtrasAktif['up'] ? '↑' : '↓' }} {{ $trendExtrasAktif['label'] }}
                 </span>
             @endif
@@ -99,10 +99,10 @@ $periodLabel = match($period) { '7d' => '7 hari ini', '1y' => 'tahun ini', defau
     <div class="metric-card" title="Total seluruh akun terdaftar di sistem (semua role)">
         <div class="metric-label">Total Akun Sistem</div>
         <div class="metric-value">{{ $totalAkun }}</div>
-        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 6px;">
+        <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 6px;">
             <span>daftar {{ $periodLabel }}</span>
             @if ($trendTotalAkun)
-                <span style="font-size: 10.5px; font-weight: 600; color: {{ $trendTotalAkun['up'] ? 'var(--accent-strong)' : 'var(--danger)' }};">
+                <span style="font-size: var(--fs-xs); font-weight: 600; color: {{ $trendTotalAkun['up'] ? 'var(--accent-strong)' : 'var(--danger)' }};">
                     {{ $trendTotalAkun['up'] ? '↑' : '↓' }} {{ $trendTotalAkun['label'] }}
                 </span>
             @endif
@@ -111,7 +111,7 @@ $periodLabel = match($period) { '7d' => '7 hari ini', '1y' => 'tahun ini', defau
     <a href="{{ route('super-admin.recap-margin', ['tab' => 'staf']) }}" class="metric-card" style="display: block; text-decoration: none; color: inherit;" title="Total honor staf/admin yang belum dibayar, klik untuk lihat tab Honor Staf">
         <div class="metric-label">Honor Belum Diproses</div>
         <div class="metric-value">Rp {{ number_format($honorBelumDiproses, 0, ',', '.') }}</div>
-        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">perlu tindak lanjut</div>
+        <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 4px;">perlu tindak lanjut</div>
     </a>
 </div>
 

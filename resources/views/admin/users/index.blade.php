@@ -14,7 +14,7 @@
             <option value="nonaktif">Nonaktif</option>
         </select>
         <input id="filter-cd-search" type="search" placeholder="Cari nama / email Client…"
-               style="width:220px; min-height:unset; margin-bottom:0; padding:4px 10px; font-size:12.5px;">
+               style="width:220px; min-height:unset; margin-bottom:0; padding:4px 10px; font-size:var(--fs-md);">
     </div>
 
     <div class="table-container">
@@ -73,7 +73,7 @@
             <option value="nonaktif">Nonaktif</option>
         </select>
         <input id="filter-ex-search" type="search" placeholder="Cari nama / alias / email…"
-               style="width:220px; min-height:unset; margin-bottom:0; padding:4px 10px; font-size:12.5px;">
+               style="width:220px; min-height:unset; margin-bottom:0; padding:4px 10px; font-size:var(--fs-md);">
     </div>
 
     <div class="table-container">
@@ -104,14 +104,14 @@
                     </td>
                     <td>
                         @foreach ($ex->extrasProfile?->categories ?? [] as $kat)
-                            <span class="badge badge-pending" style="font-size:11px; margin-bottom:2px;">{{ $kat->nama }}</span>
+                            <span class="badge badge-pending" style="font-size: var(--fs-xs); margin-bottom:2px;">{{ $kat->nama }}</span>
                         @endforeach
                         <details style="display:block; margin-top:4px;">
-                            <summary style="font-size:11px; cursor:pointer; color:var(--accent); list-style:none;">Edit Kategori</summary>
+                            <summary style="font-size: var(--fs-xs); cursor:pointer; color:var(--accent); list-style:none;">Edit Kategori</summary>
                             <form method="POST" action="{{ route('admin.users.kategori', $ex) }}" style="margin-top:6px; padding:6px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:4px;">
                                 @csrf @method('PATCH')
                                 @foreach ($allCategories as $kat)
-                                    <label style="display:block; font-size:11px; margin-bottom:2px;">
+                                    <label style="display:block; font-size: var(--fs-xs); margin-bottom:2px;">
                                         <input type="checkbox" name="kategori_ids[]" value="{{ $kat->id }}"
                                             {{ $ex->extrasProfile?->categories->contains('id', $kat->id) ? 'checked' : '' }}>
                                         {{ $kat->nama }}

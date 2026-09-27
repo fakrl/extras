@@ -2,35 +2,6 @@
 
 @section('title', 'Dashboard Extras')
 
-@php
-    $badgeClass = [
-        'diajukan' => 'badge-pending',
-        'direview_admin' => 'badge-pending',
-        'nego_fee' => 'badge-pending',
-        'deal' => 'badge-aktif',
-        'diajukan_ke_cd' => 'badge-pending',
-        'direview_cd' => 'badge-pending',
-        'lolos' => 'badge-aktif',
-        'ditolak' => 'badge-tolak',
-        'kontrak_ditandatangani' => 'badge-aktif',
-        'selesai_produksi' => 'badge-aktif',
-        'dibatalkan' => 'badge-tolak',
-    ];
-    $statusLabel = [
-        'diajukan' => 'Diajukan',
-        'direview_admin' => 'Direview Admin',
-        'nego_fee' => 'Nego Fee',
-        'deal' => 'Deal',
-        'diajukan_ke_cd' => 'Diajukan ke Client',
-        'direview_cd' => 'Direview Client',
-        'lolos' => 'Lolos',
-        'ditolak' => 'Ditolak',
-        'kontrak_ditandatangani' => 'Kontrak TTD',
-        'selesai_produksi' => 'Selesai Produksi',
-        'dibatalkan' => 'Dibatalkan',
-    ];
-@endphp
-
 @section('content')
 <p style="color: var(--text-secondary); margin: -8px 0 20px; font-size: 13.5px;">
     Halo, {{ auth()->user()->name }}! Cek lowongan casting terbaru dan pantau status pendaftaran kamu di sini.
@@ -51,7 +22,7 @@
             @if ($extrasProfile?->grade_saat_ini)
                 <span class="badge badge-aktif" style="font-weight: 600; font-size: 12px;">Grade {{ $extrasProfile->grade_saat_ini }}</span>
             @else
-                <span class="badge badge-pending" style="font-size: 11.5px;">Grade: Belum Dinilai</span>
+                <span class="badge badge-pending" style="font-size: var(--fs-xs);">Grade: Belum Dinilai</span>
             @endif
         </div>
     </div>
@@ -71,9 +42,9 @@
                                 <i class="ti ti-point"></i> {{ $log->action }}
                             @endif
                         </div>
-                        <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 2px;">{{ $log->description }}</div>
+                        <div style="font-size: var(--fs-xs); color: var(--text-secondary); margin-top: 2px;">{{ $log->description }}</div>
                     </div>
-                    <div style="font-size: 11px; color: var(--text-muted); white-space: nowrap;">
+                    <div style="font-size: var(--fs-xs); color: var(--text-muted); white-space: nowrap;">
                         {{ $log->created_at?->diffForHumans() }}
                     </div>
                 </div>
@@ -151,9 +122,7 @@
         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;">
             <div>
                 <div style="font-size: 14.5px; font-weight: 600;">{{ $app->castingProject->nama_produksi }}</div>
-                <span class="badge {{ $badgeClass[$app->status_partisipasi] ?? 'badge-pending' }}" style="margin-top: 4px; display: inline-block;">
-                    {{ $statusLabel[$app->status_partisipasi] ?? $app->status_partisipasi }}
-                </span>
+                <x-status-badge :model="$app" style="margin-top: 4px; display: inline-block;" />
             </div>
             @if ($app->status_partisipasi === 'nego_fee')
                 <a href="{{ route('extras.negotiations.show', $app) }}" class="btn btn-brand" style="min-height:32px; padding:0 12px; font-size:12.5px;">Lanjut Nego Fee</a>
@@ -182,24 +151,24 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; font-size: 12.5px; background: var(--bg-secondary, rgba(0,0,0,.03)); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
                     @if ($callingan)
                         <div>
-                            <div style="color: var(--text-muted); font-size: 11px; text-transform: uppercase;">Jam Callingan</div>
+                            <div style="color: var(--text-muted); font-size: var(--fs-xs); text-transform: uppercase;">Jam Callingan</div>
                             <div style="font-size: 16px; font-weight: 700; color: var(--danger, #d9534f);">{{ $callingan }} WIB</div>
-                            <div style="font-size: 11px; color: var(--text-muted);">(Wajib tiba di lokasi)</div>
+                            <div style="font-size: var(--fs-xs); color: var(--text-muted);">(Wajib tiba di lokasi)</div>
                         </div>
                     @endif
                     <div>
-                        <div style="color: var(--text-muted); font-size: 11px; text-transform: uppercase;">Peran / Tokoh</div>
+                        <div style="color: var(--text-muted); font-size: var(--fs-xs); text-transform: uppercase;">Peran / Tokoh</div>
                         <div style="font-weight: 600;">{{ $karakter ?: ($app->castingProjectClass->nama_kelas ?? 'Umum') }}</div>
-                        <div style="font-size: 11px; color: var(--text-muted);">Kelas: {{ $app->castingProjectClass->nama_kelas ?? 'Umum' }}</div>
+                        <div style="font-size: var(--fs-xs); color: var(--text-muted);">Kelas: {{ $app->castingProjectClass->nama_kelas ?? 'Umum' }}</div>
                     </div>
                     @if ($scene)
                         <div>
-                            <div style="color: var(--text-muted); font-size: 11px; text-transform: uppercase;">Scene & Catatan Kostum</div>
+                            <div style="color: var(--text-muted); font-size: var(--fs-xs); text-transform: uppercase;">Scene & Catatan Kostum</div>
                             <div>{{ $scene }}</div>
                         </div>
                     @endif
                     <div>
-                        <div style="color: var(--text-muted); font-size: 11px; text-transform: uppercase;">Kontinuitas</div>
+                        <div style="color: var(--text-muted); font-size: var(--fs-xs); text-transform: uppercase;">Kontinuitas</div>
                         <div>{{ $continuity }}</div>
                     </div>
                 </div>
@@ -208,7 +177,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; background: var(--bg-card); border: 1px dashed var(--border-color); border-radius: 8px; padding: 10px 12px;">
                     <div>
                         <div style="font-size: 12.5px; font-weight: 600;"><i class="ti ti-camera"></i> Absensi Lapangan Hybrid</div>
-                        <div style="font-size: 11.5px; color: var(--text-muted);">Ambil selfie langsung di lokasi syuting menggunakan kamera ponsel.</div>
+                        <div style="font-size: var(--fs-xs); color: var(--text-muted);">Ambil selfie langsung di lokasi syuting menggunakan kamera ponsel.</div>
                     </div>
                     <button type="button" class="btn btn-brand btn-sm" onclick="document.getElementById('dialog-absen-{{ $app->id }}').showModal()">
                         <i class="ti ti-camera"></i> Absen Selfie On-Site
@@ -245,7 +214,7 @@
                         <div style="margin-bottom: 16px;">
                             <label>Foto Selfie di Lokasi (Kamera Saja)</label>
                             <input type="file" name="foto" accept="image/*" capture="user" required style="width: 100%;">
-                            <span style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 4px;">Hanya kamera langsung (tidak bisa pilih dari galeri).</span>
+                            <span style="font-size: var(--fs-xs); color: var(--text-muted); display: block; margin-top: 4px;">Hanya kamera langsung (tidak bisa pilih dari galeri).</span>
                         </div>
 
                         <div style="display: flex; gap: 8px; justify-content: flex-end;">

@@ -2,15 +2,6 @@
 
 @section('title', 'Pembayaran')
 
-@php
-    $statusBadge = [
-        'belum_dibayar' => 'badge-tolak',
-        'ditransfer' => 'badge-pending',
-        'dikonfirmasi_diterima' => 'badge-aktif',
-        'disengketakan' => 'badge-pending',
-    ];
-@endphp
-
 @section('content')
 <p style="color: var(--text-secondary); margin: -8px 0 20px; font-size: 13.5px;">
     Proyek: {{ $application->castingProject->nama_produksi }} ·
@@ -18,7 +9,7 @@
 </p>
 
 <div class="card" style="margin-bottom: 16px;">
-    <p style="margin: 0 0 8px;">Status: <span class="badge {{ $statusBadge[$application->payment->status] ?? 'badge-pending' }}">{{ $application->payment->status }}</span></p>
+    <p style="margin: 0 0 8px;">Status: <x-status-badge :model="$application->payment" /></p>
 
     @if ($application->payment->addons->isNotEmpty())
         <p style="margin: 0 0 4px; font-size: 12.5px; color: var(--text-muted);">Komponen tambahan:</p>
@@ -51,10 +42,9 @@
 @endif
 
 @if (auth()->user()->role === 'extras' && $application->payment->status === 'ditransfer')
-    <form method="POST" action="{{ route('payments.confirm', $application) }}">
-        @csrf
-        <button class="btn btn-brand">Konfirmasi Sudah Terima</button>
-    </form>
+    <x-confirm-form :action="route('payments.confirm', $application)" message="Konfirmasi kamu sudah menerima pembayaran ini?">
+        <button type="submit" class="btn btn-brand">Konfirmasi Sudah Terima</button>
+    </x-confirm-form>
     <div style="margin-top: 12px;">
         <button onclick="var f=document.getElementById('form-sengketa');f.style.display=f.style.display==='none'?'block':'none'" class="btn btn-sm" style="background: var(--warning, #eab308); color: #000;">
             Laporkan Masalah

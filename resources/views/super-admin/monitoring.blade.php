@@ -66,7 +66,7 @@
         <details style="margin-bottom: 8px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
             <summary style="padding: 10px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); font-weight: 600; font-size: 13.5px; list-style: none;">
                 <span><i class="ti ti-movie" style="color: var(--accent); margin-right: 6px;"></i> {{ $namaProyek }}</span>
-                <span class="badge badge-pending" style="font-size: 11px;">{{ $attendances->count() }} absensi</span>
+                <span class="badge badge-pending" style="font-size: var(--fs-xs);">{{ $attendances->count() }} absensi</span>
             </summary>
             <div style="overflow-x: auto; padding: 0 4px 4px;">
                 <div class="table-container">
@@ -92,7 +92,7 @@
                                 </td>
                                 <td>
                                     @if ($att->foto_path)
-                                        <a href="{{ route('admin.absensi.foto', $att) }}" target="_blank" class="btn btn-sm" style="font-size: 11px; padding: 2px 6px;"><i class="ti ti-photo"></i></a>
+                                        <a href="{{ route('admin.absensi.foto', $att) }}" target="_blank" class="btn btn-sm" style="font-size: var(--fs-xs); padding: 2px 6px;"><i class="ti ti-photo"></i></a>
                                     @else <span style="color: var(--text-muted);">-</span> @endif
                                 </td>
                             </tr>
@@ -124,7 +124,7 @@
         <input type="hidden" name="type" value="{{ $unifiedType }}">
         <div style="position: relative; flex: 1;">
             <input type="text" name="q" value="{{ $unifiedSearch }}" placeholder="Cari nama, email, atau alias..."
-                   style="width: 100%; padding: 8px 12px 8px 34px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-card); color: var(--text-primary); font-size: 13.5px; margin: 0;"
+                   style="width: 100%; padding: 8px 12px 8px 34px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-card); color: var(--text-primary); font-size: var(--fs-md); margin: 0;"
                    id="unified-search-input">
             <i class="ti ti-search" style="position: absolute; left: 11px; top: 11px; color: var(--text-muted);"></i>
         </div>
@@ -141,7 +141,7 @@
                         {{ $person->name }}
                         @if ($person->username) <span style="font-size: 12px; color: var(--text-muted);">{{ '@'.$person->username }}</span> @endif
                     </div>
-                    <div style="font-size: 12px; color: var(--text-muted);">{{ $person->email }} &bull; <span class="badge badge-pending" style="font-size: 10px;">{{ $person->role }}</span></div>
+                    <div style="font-size: 12px; color: var(--text-muted);">{{ $person->email }} &bull; <x-status-badge :model="$person" style="font-size: var(--fs-xs);" /></div>
                 </div>
                 <details class="kebab-menu" style="position: relative;">
                     <summary style="list-style: none; cursor: pointer; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card);">

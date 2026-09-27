@@ -40,7 +40,7 @@
         }
         .sidebar-brand span { font-weight: 600; font-size: 15px; }
         .sidebar-group-label {
-            font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+            font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.5px;
             color: var(--text-muted); padding: 14px 10px 4px;
         }
         .sidebar-link {
@@ -90,7 +90,7 @@
             border: none; cursor: pointer;
         }
         .theme-toggle-btn { background: var(--bg-card-hover); color: var(--accent-strong); }
-        .avatar-badge { background: var(--accent); color: var(--accent-on); font-size: 11px; font-weight: 700; }
+        .avatar-badge { background: var(--accent); color: var(--accent-on); font-size: var(--fs-xs); font-weight: 700; }
         .avatar-badge-img { object-fit: cover; padding: 0; }
         .navbar-user-menu { position: relative; list-style: none; }
         .navbar-user-menu > summary { list-style: none; cursor: pointer; }
@@ -114,21 +114,21 @@
         .content { padding: 24px 28px; flex: 1; }
 
         .card {
-            background: var(--bg-card); border-radius: 12px; padding: 16px;
+            background: var(--bg-card); border-radius: var(--radius-lg); padding: var(--space-4);
             border: 1px solid var(--border-color);
         }
-        .metric-card { background: var(--bg-card); border-radius: 12px; padding: 14px; }
-        .metric-label { font-size: 11px; color: var(--text-secondary); }
-        .metric-value { font-size: 22px; font-weight: 600; color: var(--text-primary); margin-top: 4px; }
+        .metric-card { background: var(--bg-card); border-radius: var(--radius-lg); padding: var(--space-3); }
+        .metric-label { font-size: var(--fs-xs); color: var(--text-secondary); }
+        .metric-value { font-size: var(--fs-xl); font-weight: 600; color: var(--text-primary); margin-top: 4px; }
 
         .btn {
             min-height: 44px;
             padding: 0 18px;
-            border-radius: 10px;
+            border-radius: var(--radius-md);
             border: 1px solid var(--border-color);
             background: var(--bg-card);
             color: var(--text-primary);
-            font-size: 14px; font-weight: 500;
+            font-size: var(--fs-base); font-weight: 500;
             display: inline-flex; align-items: center; justify-content: center; gap: 6px;
             cursor: pointer;
         }
@@ -137,17 +137,19 @@
         .btn-brand:hover { filter: brightness(1.08); color: var(--accent-on); }
         .btn-danger-outline { color: var(--danger); border-color: var(--danger); background: transparent; }
 
-        .badge { display: inline-flex; padding: 3px 10px; border-radius: 6px; border: 1px solid transparent; font-size: 12px; font-weight: 500; }
+        .badge { display: inline-flex; padding: 3px 10px; border-radius: var(--radius-sm); border: 1px solid transparent; font-size: var(--fs-xs); font-weight: 500; }
         .badge-aktif { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.35); color: var(--accent-strong); }
         .badge-pending { background: rgba(234,179,8,0.15); border-color: rgba(234,179,8,0.35); color: var(--warning); }
         .badge-tolak { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.35); color: var(--danger); }
+        .badge-netral { background: rgba(148,163,184,0.18); border-color: rgba(148,163,184,0.4); color: var(--text-secondary); }
+        .badge-info { background: rgba(29,78,216,0.12); border-color: rgba(29,78,216,0.35); color: var(--info); }
 
         /* Grid util ringan: pengganti Bootstrap row/col, dipakai form multi-kolom */
         .form-row { display: flex; gap: 14px; flex-wrap: wrap; }
         .form-row > div { flex: 1; min-width: 180px; }
         .form-check { display: flex; align-items: center; gap: 8px; }
         .form-check input { min-height: auto; width: auto; margin: 0; }
-        .btn-sm { min-height: 32px; padding: 0 12px; font-size: 12.5px; }
+        .btn-sm { min-height: 32px; padding: 0 12px; font-size: var(--fs-sm); }
         .card-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
         .tautan-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
         .btn-icon-danger {
@@ -187,7 +189,7 @@
             min-width: 20px;
         }
         .step-bar-label {
-            font-size: 10.5px; color: var(--text-muted); text-align: center; margin-top: 6px;
+            font-size: var(--fs-xs); color: var(--text-muted); text-align: center; margin-top: 6px;
             line-height: 1.25; padding: 0 2px;
         }
         .step-bar-item.is-done .step-bar-circle { background: var(--accent); border-color: var(--accent); color: var(--accent-on); }
@@ -209,9 +211,9 @@
 
         @media (max-width: 480px) {
             .step-bar-item { width: 68px; }
-            .step-bar-circle { width: 22px; height: 22px; font-size: 11px; }
+            .step-bar-circle { width: 22px; height: 22px; font-size: var(--fs-xs); }
             .step-bar-line { margin-top: 11px; min-width: 14px; }
-            .step-bar-label { font-size: 10px; }
+            .step-bar-label { font-size: var(--fs-xs); }
         }
 
         /* Card grid untuk daftar Proyek Casting & Pendaftar, desktop/iPad-first
@@ -289,8 +291,8 @@
 
         input, select, textarea {
             background: var(--bg-card); color: var(--text-primary);
-            border: 1px solid var(--border-color); border-radius: 8px;
-            padding: 10px 12px; font-size: 15px; min-height: 48px;
+            border: 1px solid var(--border-color); border-radius: var(--radius-md);
+            padding: 10px 12px; font-size: var(--fs-md); min-height: 48px;
             font-family: inherit; width: 100%; margin-bottom: 14px;
         }
         input:focus, select:focus, textarea:focus {
@@ -354,7 +356,7 @@
         .media-upload-overlay {
             position: absolute; inset: auto 0 0 0;
             background: rgba(0,0,0,0.55); color: #fff;
-            font-size: 11.5px; text-align: center; padding: 6px 4px;
+            font-size: var(--fs-xs); text-align: center; padding: 6px 4px;
         }
 
         /* Grid 4 slot foto tambahan (RF-06 perluasan) */
@@ -384,7 +386,7 @@
 
         .alert-info {
             background: rgba(59,130,246,0.12); color: var(--info);
-            padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 14px;
+            padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 16px; font-size: var(--fs-base);
         }
         .table-container { overflow-x: auto; }
 
@@ -411,7 +413,7 @@
             .sidebar-link {
                 flex-direction: column; justify-content: center;
                 gap: 2px; padding: 6px 8px; min-height: 52px;
-                font-size: 10.5px; flex: 1 0 64px; min-width: 64px; text-align: center;
+                font-size: var(--fs-xs); flex: 1 0 64px; min-width: 64px; text-align: center;
                 border-radius: 10px; white-space: nowrap;
             }
             .sidebar-link i { font-size: 20px; }
@@ -431,7 +433,7 @@
         .notif-badge {
             position:absolute; top:-4px; right:-4px;
             background:var(--danger); color:#fff;
-            font-size:9px; font-weight:700; min-width:16px; height:16px;
+            font-size: var(--fs-xs); font-weight:700; min-width:16px; height:16px;
             border-radius:8px; display:flex; align-items:center; justify-content:center;
             padding:0 3px; pointer-events:none;
         }
@@ -475,7 +477,7 @@
                                     @if(auth()->user()->unreadNotifications->count() > 0)
                                         <form method="POST" action="{{ route('notifications.read-all') }}" style="margin:0;">
                                             @csrf
-                                            <button type="submit" style="font-size:11px;color:var(--accent-strong);background:none;border:none;cursor:pointer;padding:0;min-height:auto;">Tandai semua dibaca</button>
+                                            <button type="submit" style="font-size: var(--fs-xs);color:var(--accent-strong);background:none;border:none;cursor:pointer;padding:0;min-height:auto;">Tandai semua dibaca</button>
                                         </form>
                                     @endif
                                 </div>
@@ -483,7 +485,7 @@
                                     <div style="padding:10px 14px;border-bottom:1px solid var(--border-color);{{ $notif->read_at ? '' : 'background:var(--bg-nav-active);' }}">
                                         <div style="font-size:13px;font-weight:{{ $notif->read_at ? '400' : '600' }};margin-bottom:2px;">{{ $notif->data['judul'] ?? '' }}</div>
                                         <div style="font-size:12px;color:var(--text-secondary);line-height:1.4;">{{ mb_substr($notif->data['pesan'] ?? '', 0, 80) }}</div>
-                                        <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">{{ $notif->created_at->diffForHumans() }}</div>
+                                        <div style="font-size: var(--fs-xs);color:var(--text-muted);margin-top:3px;">{{ $notif->created_at->diffForHumans() }}</div>
                                     </div>
                                 @empty
                                     <div style="padding:16px 14px;font-size:13px;color:var(--text-muted);text-align:center;">Tidak ada notifikasi.</div>

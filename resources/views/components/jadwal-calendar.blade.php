@@ -26,7 +26,7 @@
 .jadwal-cal-wrap.has-detail { grid-template-columns: 1fr 260px; }
 @media (max-width: 640px) { .jadwal-cal-wrap.has-detail { grid-template-columns: 1fr; } }
 .jadwal-cal-compact .jadwal-cal-wrap.has-detail { grid-template-columns: 1fr; }
-.cal-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+.cal-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: var(--fs-xs); font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
 .cal-day { min-height: 32px; border-radius: 6px; display: flex; flex-direction: column; align-items: center; padding: 4px 2px; font-size: 12px; cursor: default; }
 .cal-day.has-event { cursor: pointer; }

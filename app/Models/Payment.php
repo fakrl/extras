@@ -10,6 +10,30 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 #[Fillable(['project_application_id', 'status', 'bukti_transfer_path', 'ditransfer_at', 'dikonfirmasi_at', 'alasan_sengketa'])]
 class Payment extends Model
 {
+    const LABELS = [
+        'belum_dibayar' => 'Belum Dibayar',
+        'ditransfer' => 'Sudah Ditransfer',
+        'dikonfirmasi_diterima' => 'Dikonfirmasi Diterima',
+        'disengketakan' => 'Disengketakan',
+    ];
+
+    const BADGES = [
+        'belum_dibayar' => 'badge-netral',
+        'ditransfer' => 'badge-info',
+        'dikonfirmasi_diterima' => 'badge-aktif',
+        'disengketakan' => 'badge-pending',
+    ];
+
+    public function label(): string
+    {
+        return self::LABELS[$this->status] ?? ucfirst(str_replace('_', ' ', $this->status));
+    }
+
+    public function badgeClass(): string
+    {
+        return self::BADGES[$this->status] ?? 'badge-netral';
+    }
+
     protected function casts(): array
     {
         return [

@@ -55,7 +55,7 @@
                         Grade {{ $profile->grade_saat_ini }}
                     </span>
                 @else
-                    <span class="badge badge-pending" style="font-size: 11px; padding: 2px 6px;">
+                    <span class="badge badge-pending" style="font-size: var(--fs-xs); padding: 2px 6px;">
                         Grade Belum Dinilai
                     </span>
                 @endif
