@@ -195,6 +195,55 @@ class SuperAdminAdminManagementTest extends TestCase
         $response->assertSee('action="'.route('super-admin.admins.store').'"', false);
     }
 
+    public function test_super_admin_bisa_update_profil_dan_role_admin(): void
+    {
+        $superAdmin = User::factory()->create(['role' => 'super_admin', 'is_protected' => true]);
+        $target = User::factory()->create(['role' => 'admin', 'name' => 'Nama Lama', 'email' => 'lama@example.com']);
+
+        $response = $this->actingAs($superAdmin)->patch(route('super-admin.admins.update', $target), [
+            'name' => 'Nama Baru',
+            'email' => 'baru@example.com',
+            'role' => 'korlap',
+        ]);
+
+        $response->assertRedirect(route('super-admin.admins.index'));
+        $target->refresh();
+        $this->assertSame('Nama Baru', $target->name);
+        $this->assertSame('baru@example.com', $target->email);
+        $this->assertSame('korlap', $target->role);
+    }
+
+    public function test_super_admin_biasa_tidak_bisa_ubah_role_menjadi_super_admin(): void
+    {
+        $superAdmin = User::factory()->create(['role' => 'super_admin', 'is_protected' => false]);
+        $target = User::factory()->create(['role' => 'admin', 'name' => 'Nama Staf', 'email' => 'staf@example.com']);
+
+        $response = $this->actingAs($superAdmin)->patch(route('super-admin.admins.update', $target), [
+            'name' => 'Nama Staf Edit',
+            'email' => 'staf@example.com',
+            'role' => 'super_admin',
+        ]);
+
+        $response->assertSessionHasErrors('role');
+        $this->assertSame('admin', $target->fresh()->role);
+    }
+
+    public function test_index_dengan_filter_pencarian(): void
+    {
+        $superAdmin = User::factory()->create(['role' => 'super_admin']);
+        $user1 = User::factory()->create(['role' => 'admin', 'name' => 'Budi Santoso', 'email' => 'budi@test.com']);
+        $user2 = User::factory()->create(['role' => 'korlap', 'name' => 'Siti Rahma', 'email' => 'siti@test.com']);
+
+        $response = $this->actingAs($superAdmin)->get(route('super-admin.admins.index', ['q' => 'Budi']));
+        $response->assertOk();
+        $response->assertSee('Budi Santoso');
+        $response->assertDontSee('Siti Rahma');
+
+        $responseRole = $this->actingAs($superAdmin)->get(route('super-admin.admins.index', ['role' => 'korlap']));
+        $responseRole->assertOk();
+        $responseRole->assertSee('Siti Rahma');
+    }
+
     public static function bukanSuperAdminProvider(): array
     {
         return [
@@ -210,5 +259,8 @@ class SuperAdminAdminManagementTest extends TestCase
 
         $this->actingAs($user)->patch(route('super-admin.admins.toggle-status', $target))->assertForbidden();
         $this->actingAs($user)->delete(route('super-admin.admins.destroy', $target))->assertForbidden();
+        $this->actingAs($user)->patch(route('super-admin.admins.update', $target), [
+            'name' => 'Test', 'email' => 'test@example.com', 'role' => 'admin',
+        ])->assertForbidden();
     }
 }

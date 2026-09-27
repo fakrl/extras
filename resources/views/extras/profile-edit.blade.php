@@ -2,7 +2,7 @@
 
 @section('title', 'Lengkapi Profil')
 
-@push('head')
+@push('styles')
 <style>
     .field-error { color: var(--danger); font-size: 12px; margin-top: 4px; display: block; }
     .input-error { border-color: var(--danger) !important; }
@@ -23,7 +23,7 @@
         <a href="{{ route('extras.profile.show') }}" class="btn btn-sm">Lihat Profil</a>
     </div>
     <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 20px; line-height: 1.5;">
-        Data profil talenta untuk penilaian Admin dan Casting Director. Isi sesuai kondisi saat ini (dapat diubah sewaktu-waktu).
+        Data profil talenta untuk penilaian Admin dan Client. Isi sesuai kondisi saat ini (dapat diubah sewaktu-waktu).
     </p>
 
     @if (session('status'))
@@ -41,7 +41,7 @@
     {{-- ===== Foto Profil ===== --}}
     <div class="profile-section">
         <div class="profile-section-title">Foto Profil</div>
-        <p class="field-hint" style="margin-top: -4px;">Ini yang pertama dilihat Casting Director. Pakai foto wajah yang jelas & terang.</p>
+        <p class="field-hint" style="margin-top: -4px;">Ini yang pertama dilihat Client. Pakai foto wajah yang jelas & terang.</p>
 
         <label for="upload-foto" class="media-upload-box" id="box-foto">
             @if ($profile->foto_profil_path)
@@ -159,7 +159,7 @@
                    placeholder="Contoh: rina_wulan" maxlength="50"
                    @class(['input-error' => $errors->has('username')])>
             @error('username')<span class="field-error">{{ $message }}</span>@enderror
-            <p class="field-hint">Nama panggung yang dilihat Casting Director. Huruf, angka, garis bawah, dan strip saja (tanpa spasi). Bisa dipakai untuk masuk selain email.</p>
+            <p class="field-hint">Nama panggung yang dilihat Client. Huruf, angka, garis bawah, dan strip saja (tanpa spasi). Bisa dipakai untuk masuk selain email.</p>
 
             <label>Nomor WhatsApp</label>
             <input type="text" name="nomor_wa" value="{{ old('nomor_wa', $profile->user->nomor_wa) }}"
@@ -171,7 +171,7 @@
 
         <div class="profile-section">
             <div class="profile-section-title">Data Diri & Ciri Fisik</div>
-            <p class="field-hint" style="margin-top: -4px;">Membantu Casting Director mencocokkan kamu dengan kebutuhan peran.</p>
+            <p class="field-hint" style="margin-top: -4px;">Membantu Client mencocokkan kamu dengan kebutuhan peran.</p>
 
             <label>Usia</label>
             <input type="number" name="usia" value="{{ old('usia', $profile->usia) }}"

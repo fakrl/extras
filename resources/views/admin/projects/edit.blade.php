@@ -3,6 +3,20 @@
 @section('title', 'Edit Proyek Casting')
 
 @section('content')
+
+@if ($castingProject->brief_catatan)
+    <div style="background: color-mix(in srgb, var(--accent, #15803d) 8%, var(--bg-card, #fff)); border-left: 4px solid var(--accent, #15803d); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+        <div style="font-size: 12px; font-weight: 600; color: var(--accent, #15803d); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px;">Brief dari Client (pengajuan asli)</div>
+        <div style="font-size: 13.5px; white-space: pre-line;">{{ $castingProject->brief_catatan }}</div>
+    </div>
+@endif
+
+@if ($castingProject->diajukan_oleh_client_id && $castingProject->classes->isEmpty())
+    <div style="background: #fef9c3; border: 1px solid #ca8a04; color: #713f12; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
+        <strong>Proyek dari Client — Breakdown belum lengkap.</strong> Kelas karakter &amp; jadwal syuting belum diisi. Lengkapi di bagian bawah halaman ini sebelum mulai buka pendaftaran.
+    </div>
+@endif
+
 <div class="card">
     <div style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Edit Proyek Casting</div>
 
@@ -160,10 +174,10 @@
 </div>
 
 <div class="card">
-    <div style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">CD yang Ditugaskan</div>
+    <div style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Client yang Ditugaskan</div>
 
     @if ($castingProject->cdAssignments->isEmpty())
-        <div style="color: var(--text-muted); margin-bottom: 12px;">Belum ada CD ditugaskan ke proyek ini.</div>
+        <div style="color: var(--text-muted); margin-bottom: 12px;">Belum ada Client ditugaskan ke proyek ini.</div>
     @else
         <ul style="margin-bottom: 12px;">
             @foreach ($castingProject->cdAssignments as $assignment)
@@ -175,9 +189,9 @@
     <form method="POST" action="{{ route('admin.projects.assign-cd', $castingProject) }}" style="display: flex; gap: 8px; align-items: flex-end;">
         @csrf
         <div style="flex: 1;">
-            <label>Tugaskan CD</label>
+            <label>Tugaskan Client</label>
             <select name="cd_user_id" required>
-                <option value="">Pilih Casting Director</option>
+                <option value="">Pilih Client</option>
                 @foreach ($cdUsers as $cd)
                     <option value="{{ $cd->id }}">{{ $cd->name }}</option>
                 @endforeach
@@ -190,7 +204,7 @@
 <div class="card">
     <div style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Jadwal Shooting (Read-only)</div>
     @if ($castingProject->shootingDates->whereNotNull('lokasi')->isEmpty())
-        <div style="color: var(--text-muted);">CD belum mengisi jadwal detail.</div>
+        <div style="color: var(--text-muted);">Client belum mengisi jadwal detail.</div>
     @else
         @foreach ($castingProject->shootingDates->sortBy('tanggal') as $date)
             @if ($date->lokasi || $date->jam_mulai || $date->catatan || $date->panggilan)

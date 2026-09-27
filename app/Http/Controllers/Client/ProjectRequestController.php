@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\CastingProject;
+use App\Models\User;
+use App\Notifications\InAppNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -69,6 +71,17 @@ class ProjectRequestController extends Controller
             "Client {$request->user()->name} mengajukan brief proyek casting baru: '{$project->nama_produksi}'",
             $project
         );
+
+        $client = $request->user();
+        User::where('role', 'super_admin')->get()
+            ->each(function ($sa) use ($project, $client) {
+                $judul5 = 'Ada Permintaan Proyek Baru';
+                $pesan5 = "Client '{$client->name}' mengajukan permintaan proyek baru: '{$project->nama_produksi}'.";
+                try {
+                    $sa->notify(new InAppNotification($judul5, $pesan5));
+                } catch (\Throwable) {
+                }
+            });
 
         return redirect()->route('cd.dashboard')->with('status', 'Brief permintaan proyek berhasil diajukan! Menunggu peninjauan & persetujuan Super Admin.');
     }

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-#[Fillable(['project_application_id', 'status', 'bukti_transfer_path', 'ditransfer_at', 'dikonfirmasi_at'])]
+#[Fillable(['project_application_id', 'status', 'bukti_transfer_path', 'ditransfer_at', 'dikonfirmasi_at', 'alasan_sengketa'])]
 class Payment extends Model
 {
     protected function casts(): array
@@ -48,6 +48,14 @@ class Payment extends Model
         $this->update([
             'status' => 'dikonfirmasi_diterima',
             'dikonfirmasi_at' => now(),
+        ]);
+    }
+
+    public function tandaiDisengketakan(string $alasan): void
+    {
+        $this->update([
+            'status' => 'disengketakan',
+            'alasan_sengketa' => $alasan,
         ]);
     }
 }

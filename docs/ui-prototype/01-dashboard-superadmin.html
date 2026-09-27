@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard Super Admin — SIM Casting JBTB</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar">
+        <div class="sidebar-brand"><div class="logo">J</div><span>JBTB Casting</span></div>
+
+        <div class="sidebar-group-label">Aplikasi &amp; Monitoring</div>
+        <a href="01-dashboard-superadmin.html" class="sidebar-link active"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+        <a href="#" class="sidebar-link"><i class="ti ti-eye"></i> Monitoring Akun</a>
+        <a href="#" class="sidebar-link"><i class="ti ti-activity"></i> Log Aktivitas</a>
+        <a href="#" class="sidebar-link"><i class="ti ti-report-money"></i> Rekap Margin</a>
+
+        <div class="sidebar-group-label">Manajemen Akun</div>
+        <details class="sidebar-dropdown" open>
+            <summary class="sidebar-dropdown-summary">
+                <span><i class="ti ti-users-group" style="margin-right:6px;"></i> Kelola Akun</span>
+                <i class="ti ti-chevron-right chevron-icon"></i>
+            </summary>
+            <div class="sidebar-submenu">
+                <a href="02-kelola-akun.html" class="sidebar-link"><i class="ti ti-shield"></i> Admin</a>
+                <a href="02-kelola-akun.html" class="sidebar-link"><i class="ti ti-map-pin"></i> Korlap</a>
+                <a href="02-kelola-akun.html" class="sidebar-link"><i class="ti ti-building"></i> Client</a>
+                <a href="02-kelola-akun.html" class="sidebar-link"><i class="ti ti-user-star"></i> Extras</a>
+            </div>
+        </details>
+
+        <div class="sidebar-group-label">Operasional</div>
+        <details class="sidebar-dropdown">
+            <summary class="sidebar-dropdown-summary">
+                <span><i class="ti ti-settings" style="margin-right:6px;"></i> Admin</span>
+                <i class="ti ti-chevron-right chevron-icon"></i>
+            </summary>
+            <div class="sidebar-submenu">
+                <a href="03-proyek-casting.html" class="sidebar-link"><i class="ti ti-movie"></i> Manajemen Proyek</a>
+                <a href="#" class="sidebar-link"><i class="ti ti-report"></i> Rekap Extras</a>
+                <a href="#" class="sidebar-link"><i class="ti ti-history"></i> Riwayat Kerja</a>
+                <a href="#" class="sidebar-link"><i class="ti ti-clipboard-check"></i> Presensi &amp; Absensi</a>
+            </div>
+        </details>
+    </aside>
+
+    <div class="main-area">
+        <div class="topbar">
+            <div class="topbar-title">Dashboard Super Admin</div>
+            <div class="topbar-actions">
+                <button type="button" class="theme-toggle-btn" onclick="document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark')"><i class="ti ti-moon"></i></button>
+                <div class="avatar-badge">SA</div>
+            </div>
+        </div>
+
+        <main class="content">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom:18px;">
+                <p style="color:var(--text-secondary); font-size:13.5px; margin:0;">
+                    Monitoring dan analitik sistem (read-only). Operasional harian dikelola oleh Admin.
+                </p>
+                <div style="display:flex; gap:6px;">
+                    <button class="btn btn-sm" style="min-height:30px; padding:0 12px; font-size:12px; border-radius:20px;">7 Hari</button>
+                    <button class="btn btn-sm btn-brand" style="min-height:30px; padding:0 12px; font-size:12px; border-radius:20px;">30 Hari</button>
+                    <button class="btn btn-sm" style="min-height:30px; padding:0 12px; font-size:12px; border-radius:20px;">1 Tahun</button>
+                </div>
+            </div>
+
+            <!-- Proyek Perlu Ditindak -->
+            <div class="card" style="border:2px solid var(--accent-strong); margin-bottom:20px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <div class="card-title" style="color:var(--accent-strong); margin:0;">
+                        <i class="ti ti-clipboard-list"></i> Proyek Perlu Ditindak
+                        <span class="badge badge-pending" style="margin-left:8px;">2 menunggu ACC</span>
+                    </div>
+                    <a href="03-proyek-casting.html" style="font-size:12px; color:var(--accent);">Lihat semua proyek &rarr;</a>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border-color); gap:8px; flex-wrap:wrap;">
+                    <div>
+                        <div style="font-weight:600; font-size:13.5px;">Iklan Kopi Kenangan — Ramadan Campaign</div>
+                        <div style="font-size:12px; color:var(--text-muted);">PT Kenangan Indonesia &bull; Budi Santoso (Client)</div>
+                    </div>
+                    <div style="display:flex; gap:6px; flex-shrink:0;">
+                        <button class="btn btn-sm btn-brand">ACC</button>
+                        <button class="btn btn-sm">Tolak</button>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; gap:8px; flex-wrap:wrap;">
+                    <div>
+                        <div style="font-weight:600; font-size:13.5px;">Serial Web "Anak Kos Kreatif" Season 2</div>
+                        <div style="font-size:12px; color:var(--text-muted);">Vidio Original &bull; Rina Wijaya (Client)</div>
+                    </div>
+                    <div style="display:flex; gap:6px; flex-shrink:0;">
+                        <button class="btn btn-sm btn-brand">ACC</button>
+                        <button class="btn btn-sm">Tolak</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metric cards -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:20px;">
+                <div class="metric-card" title="Proyek casting yang sedang dalam proses (status dibuka)">
+                    <div class="metric-label">Proyek Berjalan</div>
+                    <div class="metric-value">7</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">status aktif saat ini</div>
+                </div>
+                <div class="metric-card" title="Jumlah akun Extras dengan status aktif di sistem">
+                    <div class="metric-label">Extras Aktif</div>
+                    <div class="metric-value">128</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:4px; display:flex; align-items:center; gap:6px;">
+                        <span>bergabung 30 hari ini</span>
+                        <span style="font-size:10.5px; font-weight:600; color:var(--accent-strong);">↑ 8%</span>
+                    </div>
+                </div>
+                <div class="metric-card" title="Total seluruh akun terdaftar di sistem (semua role)">
+                    <div class="metric-label">Total Akun Sistem</div>
+                    <div class="metric-value">164</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:4px; display:flex; align-items:center; gap:6px;">
+                        <span>daftar 30 hari ini</span>
+                        <span style="font-size:10.5px; font-weight:600; color:var(--accent-strong);">↑ 5%</span>
+                    </div>
+                </div>
+                <div class="metric-card" title="Jumlah staf/admin yang honornya belum diproses untuk proyek yang sudah selesai">
+                    <div class="metric-label">Honor Belum Diproses</div>
+                    <div class="metric-value">3</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">perlu tindak lanjut</div>
+                </div>
+            </div>
+
+            <!-- Margin bulan ini -->
+            <div class="card" style="margin-bottom:20px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div class="metric-label">Margin Bulan Ini</div>
+                        <div class="metric-value" style="font-size:18px;">Rp 42.500.000</div>
+                    </div>
+                    <a href="#" style="font-size:12.5px; color:var(--accent); white-space:nowrap;">&rarr; Lihat Detail</a>
+                </div>
+            </div>
+
+            <!-- Honor Admin -->
+            <div class="card" style="margin-bottom:20px;">
+                <div class="card-title">Admin &amp; Staff — Honor Berjalan (Top 5)</div>
+                <table>
+                    <thead><tr><th>Nama Admin</th><th>Role</th><th>Total Honor</th><th>Proyek Selesai</th><th>Proyek Berjalan</th></tr></thead>
+                    <tbody>
+                        <tr><td>Dedi Kurniawan</td><td>korlap</td><td>Rp 8.400.000</td><td>12</td><td>2</td></tr>
+                        <tr><td>Sri Wahyuni</td><td>korlap</td><td>Rp 6.750.000</td><td>9</td><td>1</td></tr>
+                        <tr><td>Ahmad Fauzi</td><td>admin</td><td>Rp 5.200.000</td><td>15</td><td>3</td></tr>
+                        <tr><td>Nadia Putri</td><td>korlap</td><td>Rp 4.100.000</td><td>7</td><td>1</td></tr>
+                        <tr><td>Rangga Saputra</td><td>admin</td><td>Rp 3.600.000</td><td>6</td><td>0</td></tr>
+                    </tbody>
+                </table>
+                <div style="margin-top:10px; text-align:right; font-size:12.5px;"><a href="02-kelola-akun.html" style="color:var(--accent);">Lihat semua &rarr;</a></div>
+            </div>
+
+            <!-- Jadwal Shooting -->
+            <div class="card" style="margin-bottom:20px;">
+                <div class="card-title">Jadwal Shooting Bulan Ini</div>
+                <div style="max-width:420px;">
+                    <div class="cal-nav"><span>September 2026</span></div>
+                    <div class="cal-header"><span>S</span><span>S</span><span>R</span><span>K</span><span>J</span><span>S</span><span>M</span></div>
+                    <div class="cal-grid" id="cal-grid"></div>
+                </div>
+                <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">Klik tanggal bertanda untuk lihat detail acara.</p>
+            </div>
+        </main>
+    </div>
+</div>
+<script>
+// Grid kalender statis dummy, tanggal 5, 12, 21 dikasih titik event
+(function () {
+    var grid = document.getElementById('cal-grid');
+    var daysInMonth = 30, startOffset = 1; // 1 Sept 2026 = Selasa
+    var eventDays = [5, 12, 21, 23];
+    var today = 23;
+    var html = '';
+    for (var i = 0; i < startOffset; i++) html += '<div class="cal-day out-of-month"></div>';
+    for (var d = 1; d <= daysInMonth; d++) {
+        var cls = 'cal-day';
+        if (d === today) cls += ' is-today';
+        if (eventDays.indexOf(d) !== -1) cls += ' has-event';
+        html += '<div class="' + cls + '">' + d + (eventDays.indexOf(d) !== -1 ? '<span class="cal-dot"></span>' : '') + '</div>';
+    }
+    grid.innerHTML = html;
+})();
+</script>
+</body>
+</html>

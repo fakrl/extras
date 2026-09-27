@@ -30,7 +30,7 @@ class JadwalController extends Controller
     {
         $this->guardProject($project);
 
-        $project->load('shootingDates');
+        $project->load(['shootingDates', 'shootingDates.attendances']);
 
         return view('cd.jadwal.show', compact('project'));
     }

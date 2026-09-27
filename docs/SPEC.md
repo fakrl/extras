@@ -1,141 +1,838 @@
-# SPEC.md — Bagian AK: Revisi Homepage — Editorial Layout dari Referensi "Sideroom"
+# SPEC.md — Bagian AL: Restrukturisasi Dashboard & Sidebar per Role
 
 > Ditulis 21 September 2026, oleh manager-session.
+> **WAJIB pakai subagent** (lintas >3 file: dashboard controller + view + sidebar partial untuk beberapa role).
 
 ---
 
-## Addendum Bagian AJ (Sebelum Lanjut ke AK)
+## Konteks & Tujuan
 
-Manager-session sudah melakukan 5 perbaikan manual langsung ke kode (bukan lewat Claude Code) setelah audit terakhir, karena sandbox manager-session tidak punya PHP runtime untuk verifikasi:
+Fakrul screenshot dashboard Super Admin (`/super-admin/dashboard`) dan komplain: menu/submenu-nya kurang rapi, dan isi dashboard nggak nunjukin info yang penting duluan. Manager-session sudah baca kode aslinya (`app/Http/Controllers/SuperAdmin/DashboardController.php`, `resources/views/super-admin/dashboard.blade.php`, `resources/views/partials/sidebar-super_admin.blade.php`) dan konfirmasi masalahnya:
 
-- `app/Http/Controllers/SuperAdmin/DashboardController.php` — bersihin ulang role lama di `$roleDisplayNames` & `$rekapHonorAdmin` (regresi dari sesi sebelumnya).
-- `app/Http/Controllers/Auth/RegisterController.php` — registrasi Client sekarang set `role => 'client'` (sebelumnya masih `casting_director`).
-- `tests/Feature/RegistrationRoleTest.php` & `tests/Feature/SuperAdminHonorRecapTest.php` — ekspektasi test disesuaikan ke role final.
-- `database/factories/CastingProjectFactory.php` — default factory `admin_id` diganti ke role `admin`.
+- Card **"Permintaan Proyek Baru dari Client (Menunggu ACC)"** — ini satu-satunya hal yang BUTUH AKSI dari Super Admin — posisinya di paling bawah, SETELAH 4 chart/funnel yang berat, dan section-nya `@if ($pendingRequests->isNotEmpty())` jadi kalau nggak ada permintaan pending, section ini hilang total (Super Admin nggak tau harus cek kapan).
+- 4 chart di bagian atas (Tahapan Partisipasi Kandidat / funnel, Status Keaktifan Extras / donut, Jumlah Akun per Role / bar, Penugasan Admin Selesai / progress bar) itu analitik detail yang lebih cocok buat halaman **Monitoring Akun** yang udah ada terpisah di menu, bukan mendominasi dashboard utama.
+- Nggak ada widget invoice/keuangan sama sekali di dashboard, padahal ada route `super-admin.recap-margin` (Rekap Margin — RF-30, data bisnis inti) yang bahkan nggak ada link-nya di sidebar Super Admin sama sekali.
+- Sidebar sendiri sebenarnya udah oke strukturnya (2 grup, `<details>` dropdown), tapi nggak punya slot buat menu "Keuangan" — makanya kesan "kurang rapih" itu sebagiannya karena isi dashboard-nya yang berantakan prioritas, bukan cuma sidebar-nya.
 
-**Tolong jalankan `php artisan test` sekali lagi sebelum mulai kerja AK**, pastikan 5 perubahan ini tidak bikin apa pun merah. Kalau ada yang gagal, itu prioritas — beresin dulu sebelum masuk ke redesign homepage di bawah.
-
----
-
-## Konteks & Tujuan Bagian AK
-
-Fakrul kasih referensi desain baru (template landing page casting agency bernama "Sideroom", dibuat di v0/Next.js — file `app/page.tsx` + `app/globals.css`) karena homepage JBTB yang sekarang (`resources/views/welcome.blade.php`, hasil redesign teatrikal Bagian AC) masih kerasa "kaku". Fakrul suka **layout & warnanya** dari referensi ini dan minta homepage kita disesuaikan ke arah itu.
-
-**PENTING — ini bukan port 1:1.** Referensi itu React/Next.js/Tailwind v4 murni dengan data dummy (nama talent fiktif, film fiktif). Tugasnya: ambil **bahasa desainnya** (tipografi, grid, rasio, interaksi hover) dan terapkan ke Blade + data asli JBTB (`$proyekTerbuka` dari `HomeController`, dll) — bukan nempel kode React ke Blade.
-
-**Warna: JANGAN pakai warna dari referensi.** Referensi pakai lime accent `#b7ff3c` di atas near-black `#111311`. Proyek ini SUDAH punya sistem warna sendiri di `resources/views/partials/theme-style.blade.php` (var CSS `--accent`/`--accent-strong`/`--bg-page`/`--bg-sidebar`/`--text-primary`, dst, dengan toggle `data-theme="dark"|"light"` via localStorage `jbtb-theme-v2`). **Pertahankan variable itu** — cuma pola *layout & rasio kontras* dari referensi yang diambil, warnanya tetap hijau JBTB (`--accent-strong` dark = `#22b862`, light = `#0b5e2c`).
+**Prinsip yang dipegang untuk semua role**: dashboard = "apa yang perlu saya lakukan/tahu HARI INI", bukan "semua data yang ada di sistem". Aksi yang butuh keputusan (approve/reject/follow-up) di paling atas & selalu kelihatan (dengan empty-state yang jelas kalau kosong, JANGAN section yang hilang total). Chart/analitik detail dipindah ke halaman monitoring/rekap yang sudah ada — bukan dihapus, cuma dipindah ke tempat yang lebih pas.
 
 ---
 
-## Bagian AK.1: Hero Section — Tipografi Besar & Negative Space
+## Bagian AL.1: Dashboard Super Admin — Reorder Total
 
-Referensi (`page.tsx` baris 46-56):
-```
-<p class="uppercase tracking-wide text-accent">A casting agency for the moving image</p>
-<h1 class="font-serif text-[clamp(4.5rem,13vw,12rem)] leading-[0.78] tracking-[-0.07em]">
-  Faces<br /><span class="ml-[12vw] italic opacity-70">with</span><br /><span class="text-accent">range.</span>
-</h1>
-<p class="max-w-xs text-sm">deskripsi pendek</p>
-<button>Play showreel</button>
-```
+Urutan baru top-to-bottom di `resources/views/super-admin/dashboard.blade.php`:
 
-Terapkan ke hero `welcome.blade.php` (ganti hero yang sekarang):
-1. Eyebrow kecil uppercase tracked (reuse class `.section-eyebrow` yang sudah ada) — isi: "Sistem Manajemen Casting Extras".
-2. Headline SANGAT besar, pakai `clamp()` biar responsive tanpa media query manual — misal `font-size: clamp(3rem, 11vw, 9rem)`, `line-height: 0.85`, `letter-spacing: -0.03em`. Isi 3 baris pendek ala referensi, contoh: "Talenta" / baris kedua di-indent + italic + redup ("yang" ) / baris ketiga warna aksen hijau ("dipercaya."). Sesuaikan copy-nya biar related ke casting/extras, bukan asal terjemahan literal.
-3. JANGAN pakai webfont baru kalau tidak perlu (`/ponytail`: laziest solution) — headline besar ini bisa pakai `font-family: Georgia, 'Times New Roman', serif` (serif sistem) untuk kontras dengan body Inter, TANPA nambah `<link>` Google Font baru. Kalau Fakrul mau lebih premium, opsional pakai 1 Google Font display serif (misal "Fraunces") — tapi ini opsional, tanya dulu kalau ragu, jangan langsung nambah dependency.
-4. Tombol "Play showreel" — ganti fungsinya jadi CTA yang masuk akal buat JBTB: misal scroll ke section proyek terbuka, atau kalau ada video reel/showreel JBTB yang beneran ada filenya, boleh dipertahankan sebagai modal video. Kalau nggak ada asset video, JANGAN buat modal kosong — ganti jadi CTA teks biasa ("Lihat proyek terbuka ↗").
+1. **Permintaan Proyek Baru dari Client** — paling atas, SELALU tampil (hapus `@if isNotEmpty()` yang bikin section hilang). Kalau kosong, tampilkan pesan singkat "Tidak ada permintaan menunggu ACC saat ini." di dalam card yang sama, jangan card-nya lenyap. Tabel + tombol ACC/Tolak yang sudah ada dipertahankan persis.
+2. **4 metric card ringkas** (Proyek Berjalan, Extras Aktif, Total Akun, Honor Belum Diproses) — dipertahankan, posisi setelah poin 1.
+3. **Ringkasan Admin & Staff** — ganti "Rekap Honor Seluruh Admin" (tabel penuh semua admin) jadi versi ringkas: tampilkan cuma top 5 berdasarkan `total_honor` tertinggi, judul card "Admin & Staff — Honor Berjalan (Top 5)", dengan link "Lihat semua →" ke halaman `super-admin.admins.index`. Data lengkapnya tetap bisa diakses di halaman itu, nggak hilang.
+4. **Ringkasan Proyek** — card baru, isinya: jumlah proyek berjalan (sudah ada di metric card, jangan duplikat angka doang) + list 3-5 proyek dengan deadline TERDEKAT atau yang `isUrgent()` (prioritaskan urgent dulu), masing-masing baris cukup nama produksi + deadline + badge urgent kalau ada. Link "Lihat semua proyek →" ke `super-admin.monitoring`.
+5. **Ringkasan Keuangan** — card baru, link langsung ke `route('super-admin.recap-margin')` dengan 1-2 angka ringkas kalau memungkinkan tanpa query berat (misal total margin proyek yang sudah `selesai_produksi` bulan ini) — kalau ngambil angka itu butuh query rumit/lambat, cukup card berupa CTA link doang ke halaman rekap-nya, jangan dipaksa hitung di dashboard.
 
-## Bagian AK.2: Grid Galeri dengan Hairline Divider + Hover Grayscale→Color
+**4 chart/funnel yang sekarang** (Tahapan Partisipasi Kandidat, Status Keaktifan Extras, Jumlah Akun per Role, Penugasan Admin Selesai) — **pindahkan ke halaman `super-admin/monitoring` yang sudah ada** (`MonitoringController` + `monitoring.blade.php`), bukan dihapus dari sistem. Kalau `MonitoringController` belum punya data yang dibutuhkan chart-chart ini, tambahkan query-nya di sana, hapus dari `DashboardController`/`dashboard.blade.php`.
 
-Referensi (`page.tsx` baris 58-61) pakai trik `grid gap-px bg-white/15` — celah antar grid item 1px yang mengekspos warna background di baliknya, jadi kelihatan seperti garis pembatas tipis tanpa perlu `border` di tiap cell. Foto grayscale, jadi warna pas di-hover (`grayscale group-hover:grayscale-0`), ada badge nomor urut di kiri-atas dan badge "Lihat ↗" yang muncul saat hover di kanan-bawah.
+## Bagian AL.2: Sidebar Super Admin — Tambah Slot Keuangan
 
-Terapkan ke section galeri/proyek terbuka JBTB:
-1. Ganti grid proyek yang sekarang (card-based, dari Bagian 57 dulu) — TAPI JANGAN buang logic urgent-badge/data dinamisnya, cuma ubah presentasi visualnya ke pola hairline-grid ini.
-2. Pakai foto poster/cover proyek asli (`$project->poster_path` / `cover_path`) — kalau proyek belum punya foto, kasih fallback placeholder solid warna `--bg-card`, jangan foto abu-abu generik dari internet.
-3. Efek grayscale→color di hover: `filter: grayscale(1); transition: filter .5s;` lalu `:hover { filter: grayscale(0); }` — CSS native, tidak butuh JS.
-4. Grid pakai `gap: 1px; background: var(--border-color);` supaya hairline effect otomatis muncul dari background di balik gap (trik yang sama kayak referensi, translate ke CSS biasa).
+Update `resources/views/partials/sidebar-super_admin.blade.php`: tambah 1 link baru "Rekap Margin" (icon `ti-report-money` misalnya) ke `route('super-admin.recap-margin')`. Taruh di grup "Aplikasi & Monitoring" yang sudah ada (paling bawah grup itu) — TIDAK perlu bikin grup baru cuma untuk 1 link, itu over-engineering untuk 1 item ekstra. Update juga variabel `$isAppMonitoringActive` di bagian atas file supaya ikut ke-highlight kalau lagi di halaman itu.
 
-## Bagian AK.3: Section "Layanan/Kenapa JBTB" — Split 2 Kolom + Accordion Angka
+## Bagian AL.3: Audit Ringan Dashboard Role Lain (Prinsip yang Sama, Bukan Full Rewrite)
 
-Referensi (`page.tsx` baris 64) — kiri: judul besar. Kanan: list layanan dengan nomor urut (`01`, `02`, `03`) + chevron, dipisah garis horizontal tipis antar item (`divide-y`).
+Manager-session sudah cek struktur `admin/dashboard.blade.php` dan `cd/dashboard.blade.php` — keduanya **sudah cukup baik** (proyek urgent & item yang butuh keputusan sudah di atas, chart di bawah). Untuk dua ini, CUKUP audit ringan pakai prinsip yang sama di atas (aksi dulu, chart belakangan) — kalau memang sudah sesuai, tidak perlu diubah, jangan rewrite tanpa alasan konkret (`/ponytail`: jangan ubah yang sudah bekerja tanpa alasan jelas).
 
-Terapkan: ganti/gabungkan ke section "Kenapa JBTB" atau "Yang Kami Lakukan" yang sudah ada — pola nomor + divider tipis ini reuse dari `.section-eyebrow` yang sudah ada di codebase (sudah ada precedent-nya), tinggal disusun ulang jadi 2 kolom di desktop, 1 kolom di mobile.
-
-## Bagian AK.4: Footer CTA Besar
-
-Referensi (`page.tsx` baris 70) — footer dengan email/CTA gede pakai font serif besar, bukan tombol biasa. Adaptasi: CTA "Daftar jadi Extras" atau "Hubungi Kami" ditulis besar ala headline (bukan button kotak generik), plus kolom lokasi/kontak di sebelahnya.
-
-## Revisi 2 (21 September 2026, setelah review Fakrul lihat hasil AK.1-AK.4)
-
-Fakrul sudah lihat hasil implementasi pertama. Feedback: konsep section "cast" ketuker sama section lowongan (jadi keliatan kotak-kotak kosong karena banyak proyek belum punya poster), background image hero kosong/hilang, spacing antar section masih dempet, dan **warna mau diganti total ke palet referensi zip** (bukan dipertahankan ke hijau JBTB lama seperti instruksi AK awal — ini supersede instruksi warna di AK di atas). Detail per poin:
-
-### AK.5: Pisahkan Section "Cast" (Foto Extras) dari Section "Lowongan"
-
-Ini BUKAN section yang sama. Sekarang jadi dua section terpisah:
-
-1. **Section lowongan proyek** (yang sekarang, hasil AK.2) — TETAP ADA, tetap pakai data `$proyekTerbuka`, tetap hairline-grid. Ini section informasional/fungsional, jangan dihapus.
-2. **Section "cast" BARU** — section terpisah, taruh di antara hero dan section lowongan (posisi mirip "Meet the cast" di referensi). Isinya foto profil Extras asli, BUKAN poster proyek.
-   - **Wajib pakai consent gate yang sudah ada**: HANYA tampilkan Extras yang `extras_profiles.share_token` sudah terisi (opt-in dari fitur share-profile Bagian W). JANGAN tampilkan foto Extras yang belum opt-in — itu melanggar prinsip privasi yang udah dibangun dari awal proyek ini. Query kira-kira: `User::where('role','extras')->whereHas('extrasProfile', fn($q) => $q->whereNotNull('share_token'))->with('extrasProfile')->inRandomOrder()->limit(12)->get()`.
-   - **Src foto**: reuse route publik yang SUDAH ADA `route('public.extras.foto', $profile->share_token)` — jangan bikin route baru, jangan expose path storage privat langsung.
-   - Kalau jumlah Extras yang opt-in di bawah, katakanlah, 4 orang, kasih fallback yang masih enak dilihat (placeholder silhouette/inisial nama, bukan section kosong/error).
-   - **Auto-slide**: bikin marquee horizontal yang auto-scroll infinite (CSS `@keyframes` translateX loop, duplikat list-nya 2x biar looping-nya mulus, `animation-play-state: paused` saat `:hover` di container biar user bisa berhenti liat kalau mau). Ini native CSS, tidak perlu library JS tambahan (`/ponytail`).
-   - Style per kartu: foto grayscale → warna pas hover (dari AK.2, dipertahankan), nama Extras + kota/domisili di bawah foto (jangan tampilkan data sensitif lain — nama asli/NIK/rekening tetap nggak boleh muncul, cukup `name` akun & domisili kalau ada).
-
-### AK.6: Background Image Hero — Pastikan Kepasang
-
-Sekarang hero kosong/putih, harusnya ada background image dengan gradient overlay (biar teks tetap kebaca). Pola dari referensi (`hero-backdrop`):
-```css
-.hero-backdrop {
-  background-image: linear-gradient(90deg, var(--bg-page) 0%, color-mix(in srgb, var(--bg-page) 82%, transparent) 52%, color-mix(in srgb, var(--bg-page) 50%, transparent) 100%), url('/images/homepage-hero-bg.png');
-  background-size: cover;
-  background-position: center;
-  min-height: 560px;
-}
-@media (max-width: 767px) { .hero-backdrop { min-height: 540px; background-position: 68% center; } }
-```
-Pakai `color-mix()` dengan `var(--bg-page)` (bukan hardcode `rgba(17,19,17,...)` dari referensi) supaya gradient-nya otomatis ikut warna dark/light mode yang aktif — ini triknya biar satu CSS jalan di kedua tema tanpa override manual per tema.
-
-Untuk gambarnya: manager-session sudah extract 1 file gambar dari referensi (`sideroom-cinematic-bg.png` — foto studio/backstage dengan glow hijau di sisi kanan, cocok banget sama tema casting). Kalau Fakrul oke, taruh di `public/images/homepage-hero-bg.jpg` dan pakai itu sebagai placeholder. **Catatan lisensi**: itu asset dari template pihak ketiga (v0/Sideroom), aman dipakai untuk demo/skripsi tapi kalau nanti mau go-live publik idealnya diganti foto behind-the-scenes JBTB sendiri — bukan blocker sekarang, cuma dicatat.
-
-### AK.7: Ganti Total ke Palet Warna Referensi (Supersede Instruksi Warna di AK Awal)
-
-Fakrul explicitly minta pakai warna dari zip langsung, bukan warna hijau JBTB yang lama. Update `resources/views/partials/theme-style.blade.php` KHUSUS untuk konteks homepage (jangan ubah var global yang dipakai dashboard admin/extras/CD — biar nggak ganggu tampilan internal yang udah settle), pakai class scope baru misal `.homepage-shell`:
-
-```css
-.homepage-shell[data-theme="dark"] {
-  --hp-bg: #111311;
-  --hp-fg: #f2f1eb;
-  --hp-muted: rgba(242, 241, 235, 0.6);
-  --hp-accent: #b7ff3c;
-  --hp-accent-on: #111311;
-  --hp-line: rgba(255, 255, 255, 0.15);
-  --hp-card: #1a1c1a;
-}
-.homepage-shell[data-theme="light"] {
-  --hp-bg: #f1f0e9;
-  --hp-fg: #171a16;
-  --hp-muted: rgba(23, 26, 22, 0.6);
-  --hp-accent: #76a51b;
-  --hp-accent-on: #ffffff;
-  --hp-line: rgba(23, 26, 22, 0.16);
-  --hp-card: #e6e4da;
-}
-```
-(Nilai light-mode ini persis dari `globals.css` referensi — sudah dituning biar nggak kesilauan/gelap, jangan diubah lagi kecuali Fakrul minta.)
-
-Semua elemen di `welcome.blade.php` (hero, cast grid, lowongan grid, section layanan, footer) pakai var `--hp-*` ini, BUKAN `--accent`/`--bg-page` lama. **PENTING**: nav bar & logo di homepage (yang sekarang masih hijau forest lama, keliatan beda sama section di bawahnya begitu discroll) HARUS ikut diubah ke `--hp-accent` juga, biar satu halaman konsisten — jangan cuma section baru yang ganti warna sementara header-nya masih warna lama. Ini konsisten hanya di halaman publik (`/`); begitu user login masuk dashboard, tetap pakai `--accent` hijau JBTB yang lama seperti biasa (dashboard TIDAK terpengaruh perubahan ini).
-
-### AK.8: Spacing Antar Section
-
-Naikkan padding vertikal tiap `<section>` di homepage — sekarang kerasa dempet. Target minimal `padding-block: 5rem` di mobile, `padding-block: 7-8rem` di desktop (referensi pakai `py-16 md:py-24` yaitu ~4rem mobile/6rem desktop, tapi Fakrul minta lebih jelas lagi — boleh dinaikkan sedikit dari referensi). Juga pastikan ada jarak yang cukup antara heading section dan konten di bawahnya (minimal `margin-bottom: 2-2.5rem` setelah heading section), jangan cuma padding luar section yang dibesarkan.
+Untuk dashboard Extras (`extras/dashboard.blade.php`) dan tampilan Korlap (kalau ada bagian terpisah dari `admin/dashboard.blade.php`) — cek juga sekilas, laporkan ke Fakrul kalau nemu masalah serupa (aksi penting ketimbun konten lain), tapi JANGAN redesign besar-besaran tanpa konfirmasi dulu kalau ternyata strukturnya udah oke — cukup laporkan temuan, biar Fakrul yang putuskan perlu diubah atau tidak.
 
 ## Checklist Eksekusi untuk Implementer (Claude Code)
 
-- [ ] Section cast (foto Extras, opt-in only via `share_token`) dipisah dari section lowongan proyek — dua section beda, keduanya tetap ada.
-- [ ] Cast grid pakai route publik existing (`public.extras.foto`), auto-slide marquee CSS-only, pause on hover.
-- [ ] Hero pakai background image + gradient overlay berbasis `color-mix(var(--bg-page)...)`, tidak kosong lagi.
-- [ ] Palet warna homepage diganti total ke nilai AK.7 (`--hp-*` vars, scope `.homepage-shell`), termasuk nav bar & logo — TIDAK mengubah var global dashboard.
-- [ ] Padding antar section dibesarkan sesuai AK.8, termasuk jarak heading-ke-konten.
-- [ ] Cek toggle dark/light tetap jalan normal dengan palet baru.
-- [ ] Cek responsive mobile lagi setelah semua perubahan ini.
-- [ ] Screenshot sebelum/sesudah, biar Fakrul gampang review tanpa perlu buka browser sendiri.
+- [ ] Card "Permintaan Proyek Baru" pindah ke paling atas dashboard Super Admin, selalu tampil (dengan empty-state), tombol ACC/Tolak dipertahankan.
+- [ ] 4 metric card ringkas tetap ada, di bawah poin di atas.
+- [ ] Rekap honor admin dipersingkat jadi Top 5 + link "Lihat semua".
+- [ ] Card baru "Ringkasan Proyek" (list 3-5 proyek urgent/deadline terdekat + link ke monitoring).
+- [ ] Card baru "Ringkasan Keuangan" (link ke rekap-margin, angka ringkas kalau murah secara query).
+- [ ] 4 chart lama (funnel, donut, bar akun-per-role, progress penugasan admin) dipindah ke halaman Monitoring Akun, bukan dihapus — cek `MonitoringController` sudah bawa data yang dibutuhkan.
+- [ ] Sidebar Super Admin: tambah link "Rekap Margin" di grup Aplikasi & Monitoring, highlight state ikut disesuaikan.
+- [ ] Audit ringan dashboard Admin/CD/Extras/Korlap pakai prinsip "aksi dulu, chart belakangan" — laporkan temuan ke Fakrul, jangan langsung rewrite kalau strukturnya udah oke.
+- [ ] Jalankan `php artisan test` setelah semua perubahan, pastikan tidak ada test yang cek urutan/isi lama dashboard yang sekarang berubah (misal test yang `assertSeeInOrder` atau cek posisi elemen tertentu).
+- [ ] Screenshot sebelum/sesudah dashboard Super Admin, biar Fakrul gampang review.
+
+---
+
+## Bagian AM: Komponen Kalender Jadwal (Reusable, Dipakai Lintas Role)
+
+> Ditambahkan 21 September 2026, oleh manager-session. Ini bagian terpisah dari AL, dikerjakan setelah AL selesai (atau bersamaan kalau subagent yang sama masih jalan) — **WAJIB subagent**, nyentuh 1 komponen baru + minimal 4 halaman berbeda.
+
+### Konteks
+
+Fakrul minta visualisasi jadwal berbentuk kalender (hover di tanggal → keterangan kegiatan muncul di samping/bawah), dan nanya apakah "jadwal" ini ada di semua role. Manager-session sudah cek kode: **jawabannya belum merata**. Saat ini cuma Client (CD) yang punya halaman jadwal beneran (`cd/jadwal/index` & `show`, `CdJadwalController`) dengan data dari tabel `event_shooting_dates` (kolom: `tanggal`, `lokasi`, `jam_mulai`, `jam_selesai`, `catatan`, `panggilan` — array nama+jam per talent). Role lain nampilin info jadwal secara terpisah-pisah dan seadanya:
+- **Extras**: cuma list flat `$jadwalTerisi` di dashboard, bukan kalender.
+- **Admin & Korlap**: nggak ada tampilan jadwal terpusat sama sekali — info tanggal syuting cuma nempel di form edit proyek / halaman absensi.
+- **Super Admin**: nggak ada sama sekali.
+
+Data sumbernya udah ada dan konsisten (`EventShootingDate` via relasi `$project->shootingDates`), jadi ini bukan bikin fitur dari nol per role — cukup **1 komponen kalender reusable**, dipasang ulang di beberapan tempat pakai data yang sudah ada.
+
+### AM.1: Komponen Blade Reusable — `<x-jadwal-calendar>`
+
+Buat `resources/views/components/jadwal-calendar.blade.php` menerima 1 prop: koleksi event (masing-masing minimal punya `tanggal`, dan field lain buat detail — `lokasi`, `jam_mulai`, `jam_selesai`, `catatan`, `nama_produksi` kalau relevan, `panggilan`).
+
+Implementasi:
+1. **Grid kalender bulanan native CSS** (`display:grid; grid-template-columns: repeat(7, 1fr)`) — generate tanggal pakai PHP `Carbon`, TIDAK pakai library JS kalender (FullCalendar dkk) — itu overkill buat kebutuhan simpel ini (`/ponytail`: laziest solution).
+2. Sel tanggal yang punya event dikasih dot/badge kecil warna aksen, sel yang nggak ada event tetep tampil normal (biar kalendernya utuh, bukan cuma nongolin tanggal yang ada acara doang).
+3. **Interaksi**: hover ATAU klik/tap (touch device nggak bisa hover, jadi klik harus jalan juga) di sel tanggal yang ada event → panel detail (di samping kalender kalau layar desktop cukup lebar, di BAWAH kalender kalau mobile/sempit — pakai CSS Grid/Flexbox yang reflow otomatis, jangan JS buat reposisi) nampilin: nama produksi, jam mulai-selesai, lokasi, catatan, daftar panggilan kalau ada.
+4. JS-nya seminimal mungkin: 1 fungsi kecil vanilla JS yang baca `data-*` attribute dari sel yang di-hover/klik, isi ke panel detail — TIDAK butuh state management/framework, konsisten sama pola JS ringan yang udah dipakai di komponen lain (signature-pad, theme toggle).
+5. Navigasi bulan (tombol ‹ bulan sebelumnya / bulan berikutnya ›) — server-side via query string (`?bulan=2026-10`) supaya konsisten sama pola Blade lain di project ini, bukan AJAX/SPA.
+6. Bulan tanpa event sama sekali tetap tampil kalender kosong dengan pesan kecil "Tidak ada jadwal bulan ini", bukan halaman blank.
+
+### AM.2: Pasang di Setiap Role — Termasuk Dashboard Masing-Masing
+
+Update dari diskusi sama Fakrul: komponennya kecil/compact, jadi **masuk ke dashboard tiap role juga oke** — ini beda kasus sama 4 chart berat yang dipindah keluar di Bagian AL (chart funnel/donut/bar itu berat & makan tempat, kalender ini ringkas satu card kecil, cocok sebagai widget "apa yang terjadi minggu ini").
+
+Tambahkan `<x-jadwal-calendar :events="..." compact />` (prop `compact` bikin card lebih ringkas — lebar dibatasi, misal `max-width: 420px`, tetap 1 bulan penuh tapi di dalam card biasa, bukan full-width section) ke:
+
+- **Client (CD) dashboard** (`cd/dashboard.blade.php`) — scope ke proyek yang di-assign. Halaman `cd/jadwal/index` & `show` yang sudah ada TETAP DIPERTAHANKAN sebagai versi lengkap (form tambah/edit jadwal ada di situ) — dashboard cukup versi ringkas + link "Lihat jadwal lengkap →" ke halaman itu.
+- **Extras dashboard** (`extras/dashboard.blade.php`) — ganti section `$jadwalTerisi` (list flat) jadi kalender compact, scope HANYA ke shooting dates dari proyek yang Extras itu sendiri lolos & terjadwal (jangan bocorin jadwal proyek yang dia nggak involved).
+- **Admin dashboard** (`admin/dashboard.blade.php`) — tambahkan sebagai card baru, scope ke proyek yang di-assign ke Admin itu.
+- **Korlap** — masuk juga ke dashboard/halaman absensi (`admin/attendance/index.blade.php`), scope ke proyek yang korlap itu validasi kehadirannya.
+- **Super Admin dashboard** — tambahkan sebagai card baru di `super-admin/dashboard.blade.php` (bagian dari urutan Bagian AL, taruh setelah "Ringkasan Proyek"), scope ke SEMUA proyek (read-only, sesuai peran oversight).
+
+Karena versi compact ini nggak butuh navigasi bulan yang lengkap (cukup tampilkan bulan berjalan), tombol ‹ › bisa di-skip di versi compact — kalau Fakrul mau lihat bulan lain, arahkan ke halaman yang punya versi lengkap (CD punya, kalau role lain belum punya halaman jadwal tersendiri, cukup compact-nya aja dulu, jangan maksa bikin halaman penuh baru buat tiap role kalau nggak diminta).
+
+### Checklist AM
+
+- [ ] Komponen `<x-jadwal-calendar>` dibuat, reusable, tanpa dependency JS baru.
+- [ ] Hover DAN klik/tap sama-sama bisa munculin detail (touch-friendly).
+- [ ] Dipasang di CD (ganti list lama), Extras (ganti list lama, scope ke jadwal sendiri saja), Admin (di halaman proyek), Korlap (di halaman absensi), Super Admin (di Monitoring Akun).
+- [ ] Extras hanya lihat jadwalnya sendiri, bukan seluruh sistem — cek scoping query-nya benar per role.
+- [ ] Navigasi bulan jalan, bulan kosong tetap render kalender (bukan blank).
+- [ ] Cek dark/light mode kalender tetap kebaca (warna dot/badge event, hover state).
+- [ ] `php artisan test` tetap hijau setelah semua perubahan.
+- [ ] Screenshot kalender di minimal 2 role (misal Extras & Super Admin) buat direview Fakrul.
+
+---
+
+## Bug Kritis — Sudah Diperbaiki Manual (22 September 2026, manager-session)
+
+Fakrul lapor 500 error `View [partials.sidebar-admin] not found` pas akses `/admin/dashboard` abis migrasi 5-role. Root cause: `layouts/app.blade.php` baris 435 resolve sidebar partial pakai `@include('partials.sidebar-' . $user->role)` — literally pakai string role dari DB. Setelah migrasi ke 5 role (`admin`, `korlap`, `client`, `extras`, `super_admin`), file partial-nya MASIH pakai nama lama (`sidebar-admin_default.blade.php`, `sidebar-admin_korlap.blade.php`, `sidebar-casting_director.blade.php`) — jadi begitu ada user dengan role baru login, Laravel nyari file yang nggak ada namanya.
+
+**Sudah diperbaiki manual** (bukan tunggu Claude Code, ini blocking semua orang login sebagai admin/korlap/client): dibuat 3 file baru — `sidebar-admin.blade.php`, `sidebar-korlap.blade.php`, `sidebar-client.blade.php` — isinya disalin dari file lama yang sesuai (`admin_default`→`admin`, `admin_korlap`→`korlap`, `casting_director`→`client`). File lama TIDAK dihapus (harmless, tinggal dead code) — Claude Code boleh bersihkan itu belakangan kalau sempat, bukan prioritas.
+
+**Bug kedua yang ketauan sekaligus**: kalender jadwal (Bagian AM) nggak ada visualnya sama sekali — tampil kayak list/dropdown polos, bukan grid kalender. Root cause: `components/jadwal-calendar.blade.php` push CSS-nya ke `@push('head')`, padahal `layouts/app.blade.php` cuma punya `@stack('styles')` dan `@stack('scripts')` — NGGAK ADA `@stack('head')`. CSS-nya kepush ke stack yang nggak pernah di-render, jadi hilang total. Sudah diperbaiki (`@push('head')` → `@push('styles')`) di `jadwal-calendar.blade.php`. Ketemu bug identik di `extras/profile-edit.blade.php` (kemungkinan udah lama, bukan dari kerjaan kalender) — sekalian dibenerin juga.
+
+**Tolong Claude Code jalankan `php artisan test` + cek manual login sebagai admin/korlap/client/extras di browser**, pastikan semua sidebar & kalender render normal sebelum lanjut ke Bagian AN di bawah.
+
+---
+
+# Bagian AN: Restrukturisasi Menu Super Admin, Visibilitas Admin↔Client, & Redesign Halaman Lowongan
+
+> Ditulis 22 September 2026, oleh manager-session.
+> **WAJIB pakai subagent** (lintas banyak file: sidebar, controller Super Admin, controller Admin, dashboard Extras, halaman lowongan, rename route).
+
+## AN.1: Sidebar Super Admin — Menu Jadi Nested (Halaman + Tab di Dalamnya)
+
+Fakrul mau pola: 1 menu sidebar → buka 1 halaman → di DALAM halaman itu ada tab/sub-navigasi, bukan sidebar yang penuh flat link. Konkretnya untuk "Kelola Akun":
+
+1. Sidebar Super Admin cukup 1 link "Kelola Akun" (bukan grup dropdown submenu lagi khusus untuk ini) yang buka `super-admin/admins/index` — halaman ini SUDAH punya tab filter role (Admin/Korlap/Client/Super Admin) via query string, ini pola yang mau diperluas, bukan dibuat dari nol.
+2. **Tambahkan tab "Extras"** ke halaman yang sama (`super-admin/admins/index.blade.php` + `AdminManagementController::index()`) — Fakrul mau Super Admin bisa lihat Extras juga dari 1 tempat. INI READ-ONLY untuk Super Admin (lihat data & status akun Extras), aksi kelola sehari-hari (grade, prune akun mangkrak, dsb) TETAP di halaman Admin (`admin/users`) — jangan duplikasi logic aksi di dua tempat, cukup tab Extras di sini nampilin data + link "Kelola di halaman Admin →" kalau Super Admin mau action beneran.
+3. Sisa grup sidebar (Aplikasi & Monitoring, Pengaturan & Pengguna) — audit ulang, kemungkinan "Kelola Akun" cukup jadi 1 link biasa (bukan dropdown) karena isinya udah pindah jadi tab di dalam halaman, bukan link-link terpisah di sidebar.
+
+## AN.2: Admin Bisa Lihat Status Kandidat yang Sudah Diajukan ke Client
+
+Fakrul mau Admin bisa lihat kandidat mana yang sudah diajukan ke Client, dan gimana statusnya dari sisi Client (sama seperti yang Client lihat di halaman Greenlight mereka) — supaya Admin nggak perlu nanya-nanya manual "itu kandidat gimana udah di-review CD apa belum".
+
+Tambahkan filter/tab baru di halaman Admin yang relevan (`admin/projects/applicants.blade.php` — cek dulu halaman existing-nya kayak apa) untuk status `diajukan_ke_cd`, `direview_cd`, `lolos`, `ditolak` dikelompokkan, idealnya ditampilkan mirroring apa yang CD lihat di halaman Greenlight mereka (`cd/reviews`) — reuse struktur tampilan yang sama kalau memungkinkan (DRY), Admin cuma lihat (read-only untuk status yang udah di tangan CD), bukan bisa ubah keputusan CD.
+
+## AN.3: Dashboard Extras — Tampilkan Lowongan Terbuka Langsung + Rename Halaman "Lowongan"
+
+1. Di `extras/dashboard.blade.php`, tambahkan section yang langsung nampilin lowongan casting yang sedang terbuka (list ringkas, mirip section lowongan di homepage yang udah ada — reuse styling/pattern-nya kalau cocok), dengan link "Lihat Semua →" ke halaman lowongan penuh.
+2. **Rename halaman/menu "Lowongan"** — nama ini kurang pas karena halamannya sekarang mau nampilin SEMUA proyek (terbuka, penuh, udah selesai/ditutup), bukan cuma yang lowong. Rekomendasi nama: **"Casting Call"** — ini istilah asli industri casting/film (artinya pengumuman terbuka buat audisi/casting), dan konsisten sama pola penamaan yang UDAH dipakai di proyek ini sebelumnya (Callsheet, Lineup, Greenlight, Reel — semua istilah asli industri film, bukan terjemahan generik). Alternatif kalau mau bahasa Indonesia: "Papan Casting". Pilih salah satu, konsisten dipakai di judul halaman + link sidebar + breadcrumb.
+3. Halaman ini nampilkan SEMUA proyek dengan urutan: proyek yang jadwal syutingnya PALING DEKAT (H- terkecil) di paling atas, makin ke bawah makin jauh, dan proyek yang statusnya `ditutup`/`selesai_produksi` ditaruh PALING BAWAH terakhir (terpisah dari yang masih aktif, misal dikasih heading "Sudah Selesai" biar jelas beda grup).
+4. Tiap item tampilkan info kuota terisi vs total, format `{terisi}/{total}` (misal "7/40" artinya sisa 7 slot dari 40) — hitung dari jumlah `ProjectApplication` yang statusnya udah masuk hitungan "terisi" (lolos ke atas) per proyek, dibandingkan `kuota` total proyek.
+
+## Diskusi (Belum Masuk Spec): Login with Google
+
+Fakrul nanya kapan bisa mulai Google Login, dengan asumsi ini nyegah bot. Manager-session mau koreksi dikit asumsinya sebelum dispec: Google Login **nggak secara langsung nyegah bot** — bot yang niat tetep bisa bikin/pakai akun Google (banyak yang otomatis generate akun Google buat spam). Manfaat nyatanya lebih ke: (1) mindahin tanggung jawab keamanan password ke Google (user nggak perlu bikin/inget password baru di sistem kita, dan Google udah punya 2FA/deteksi login mencurigakan bawaan), (2) mengurangi akun asal-asalan pakai email palsu/sekali-pakai karena harus akun Google beneran, (3) proses daftar/login lebih cepat buat Extras yang gaptek.
+
+Kalau tujuannya BENERAN nyegah bot/spam-daftar, yang lebih tepat sasaran itu captcha (hCaptcha/Cloudflare Turnstile) di form register, bukan Google Login. Dua-duanya bisa jalan bareng, beda masalah yang diselesaikan.
+
+Soal timing: ini nyentuh flow auth inti (wajib subagent per aturan proyek), butuh setup Google Cloud Console (OAuth Client ID/Secret, authorized redirect URI) yang HARUS Fakrul sendiri yang bikin (butuh akun Google Cloud, nggak bisa diwakilin Claude Code/manager-session). Kalau mau dikejar sekarang, kasih tau manager-session urutan prioritasnya di antara semua kerjaan yang masih jalan (AL/AM/AN) — jangan keburu ditambahin ke antrean tanpa geser prioritas yang lain, apalagi kalau deadline bimbingan masih dalam hitungan minggu.
+
+---
+
+# Bagian AO: Fix Temuan UX Audit 5-Role (22 September 2026)
+
+> Ditulis 22 September 2026, oleh manager-session, berdasarkan `docs/UX-AUDIT-2026-09-22.md` (audit POV lengkap 5 role — baca file itu dulu untuk konteks/evidence tiap temuan sebelum eksekusi).
+> **WAJIB pakai subagent** untuk AO.1 (lintas Client+Admin+Super Admin, logic bisnis inti) dan AO.6 (lintas kontrak+auth). AO.2–AO.5 boleh langsung (1-2 file per item), tapi kerjakan berurutan per nomor, jangan digabung asal cepat.
+
+## AO.1: Bug Sistemik "Pintu 1" — Proyek dari Client Setengah Jalan (PRIORITAS TERTINGGI)
+
+**Bug**: `app/Http/Controllers/Client/ProjectRequestController::store()` cuma simpan field administratif (nama produksi, PH, kuota, deadline, `brief_catatan`). Begitu Super Admin ACC, proyek langsung `dibuka` tanpa satupun `casting_project_classes` (breakdown kelas) atau `event_shooting_dates` (tanggal syuting). `brief_catatan` yang ditulis Client juga nggak pernah dirender lagi di halaman manapun setelah ACC — hilang dari pandangan Admin yang justru paling butuh baca itu.
+
+**Fix**:
+1. Di halaman/flow ACC Super Admin (`SuperAdmin/DashboardController::accProject()` atau halaman detail proyek Admin sesudahnya — cek yang paling masuk akal secara UX), tampilkan `brief_catatan` Client secara PERMANEN, bukan cuma sekali lihat di tabel pending. Taruh di halaman edit/detail proyek Admin (`admin/projects/edit` atau `admin.projects.index` detail), section jelas "Brief dari Client" — read-only, bukan field yang bisa keedit makin ilang jejak aslinya.
+2. Tambahkan indikator jelas di halaman proyek Admin kalau proyek ini asalnya dari pengajuan Client dan BELUM ada breakdown kelas/tanggal — jangan biarkan Admin baru sadar pas buka form kosong. Banner/alert singkat: "Proyek ini dari pengajuan Client — breakdown kelas & jadwal syuting belum diisi, lengkapi di bawah."
+3. TIDAK perlu auto-generate kelas/tanggal kosong (itu maksa struktur yang Admin belum tentu tau isinya) — cukup pastikan Admin sadar dan tau di mana harus mulai isi (cek apakah form "tambah kelas"/"tambah jadwal" sudah gampang ditemukan dari halaman ini, kalau belum, tambahkan CTA jelas).
+
+## AO.2: Kontrak — Extras Bisa Baca Sebelum Tanda Tangan
+
+`ContractController` belum punya route buat Extras preview/download PDF kontrak sebelum sign (beda dari Invoice yang punya `invoices.download-pdf`). Tambahkan route + tombol "Lihat Kontrak (PDF)" di `contracts/show.blade.php`, sebelum tombol tanda tangan — pola sama persis kayak `invoices.download-pdf`, jangan bikin pendekatan baru (`/ponytail`).
+
+## AO.3: Absensi — Status Validasi Sampai ke Extras
+
+Setelah Korlap validasi/tolak absensi (`AttendanceController::validasi()`/`tolakValidasi()`), status ini nggak pernah ditampilkan ke Extras. Tambahkan:
+1. Section status absensi (tervalidasi/ditolak + alasan kalau ditolak) di `extras/dashboard.blade.php`, per pendaftaran yang lagi jalan — reuse pola step-bar yang udah ada (Bagian sebelumnya, "step-bar horizontal status pendaftaran").
+2. `tolakValidasi()` (`AttendanceController.php` ~line 145) wajib isi alasan (textarea, bukan hardcode "Ditolak Korlap di lokasi.") — validasi required di controller, tampil di dashboard Extras sesuai poin 1.
+
+## AO.4: Korlap — Default Tanggal/Proyek Salah
+
+`AttendanceController::index()` default proyek pakai `orderByDesc('id')` dan default tanggal pakai `shootingDates->first()` (urutan insert, bukan tanggal terdekat/hari ini). Fix: default ke proyek+tanggal yang `tanggal` paling dekat dengan HARI INI (bukan lewat/insert order), dan kasih badge "Hari Ini" di tanggal yang match `now()`. Cek juga `CastingProject::shootingDates()` — relasi ini belum ada `orderBy('tanggal')`, tambahkan supaya konsisten di seluruh pemakaian relasi ini (bukan cuma di controller ini doang).
+
+## AO.5: Menu/Sidebar — Sambungkan Halaman yang Sudah Ada tapi Nggak Ke-link
+
+Ini BUKAN bikin halaman baru — semua route di bawah SUDAH ADA dan jalan, cuma nggak ada pintu masuknya dari sidebar. Fix murni nambah `<a>` link di partial sidebar masing-masing:
+
+1. **`partials/sidebar-admin.blade.php`**: tambah link "Rekap Margin" (`route('admin.recap-margin')`) di grup "Operasional Proyek", sejajar sama "Rekap Extras". Route-nya sudah ada (`admin.recap-margin`, lihat routes/web.php), cuma belum ke-link — data finansial inti Admin currently unreachable dari UI.
+2. **`partials/sidebar-client.blade.php`**: tambah 2 link baru di grup "Operasional": "Tagihan" (arahkan ke halaman yang list invoice milik Client — cek dulu apakah ada halaman index invoice buat Client, kalau belum ada cuma route `invoices.show` per-proyek, bikin 1 halaman index ringan yang list proyek + link ke invoice masing-masing, JANGAN bikin sistem invoice baru) dan "Bukti Kehadiran" (arahkan ke tempat yang masuk akal, kemungkinan tab/section di halaman Jadwal yang sudah ada, biar nggak nambah menu top-level lagi — cek `cd/jadwal` dulu sebelum bikin halaman terpisah).
+3. Cross-check: setelah AO.5.1 & AO.5.2, jalankan `php artisan route:list` filter role terkait, pastikan tidak ada route penting lain yang bernasib sama (ada tapi nggak ke-link) — laporkan kalau nemu lagi, jangan asal fix yang di-spec doang.
+
+## AO.6: Lanjutkan AN.1 — Sidebar Super Admin Belum Nested Sesuai Spec
+
+Dikonfirmasi ulang di audit 22 September: `partials/sidebar-super_admin.blade.php` MASIH dropdown 2-grup, grup "Pengaturan & Pengguna" masih cuma 1 link "Kelola Staf & Client" (bukan "Kelola Akun", belum ada tab Extras). Ini SUDAH ditulis di Bagian AN.1 di atas tapi belum dieksekusi — bukan task baru, ini reminder eksekusi yang tertunda. Selesaikan AN.1 (+AN.2 +AN.3 kalau belum) SEBELUM lanjut ke AO di atas kalau resource terbatas, karena AN ditulis duluan.
+
+## Checklist Eksekusi AO
+
+- [ ] AO.1: Brief Client tampil permanen di halaman proyek Admin + banner kalau kelas/jadwal kosong.
+- [ ] AO.2: Route + tombol lihat PDF kontrak sebelum sign (Extras).
+- [ ] AO.3: Status absensi (+ alasan tolak wajib diisi) tampil di dashboard Extras.
+- [ ] AO.4: Default tanggal/proyek Korlap = hari ini/terdekat, bukan insert-order; `shootingDates()` dapat `orderBy('tanggal')`.
+- [ ] AO.5: Link Rekap Margin (Admin), Tagihan + Bukti Kehadiran (Client) tersambung di sidebar masing-masing.
+- [ ] AO.6: AN.1 (+AN.2/AN.3 kalau sempat) benar-benar dieksekusi, dicek ulang di kode bukan cuma diklaim.
+- [ ] `php artisan test` tetap hijau.
+- [ ] Screenshot AO.1 (halaman proyek Admin dgn brief tampil) + AO.5 (sidebar Admin & Client yang sudah ada link barunya) buat direview Fakrul.
+
+---
+
+# Bagian AP: Investigasi 126 Defect + 2 Gap Kecil AN/AO (23 September 2026)
+
+> Ditulis oleh manager-session, setelah verifikasi independen Session 68 (3 subagent, cek langsung ke kode + `.phpunit.result.cache`).
+> **JANGAN mulai fitur baru apapun sebelum AP.1 kelar.** Urutan di bawah ini WAJIB berurutan, bukan dikerjakan asal cepat.
+
+## AP.1: Jalankan Test SUNGGUHAN + Triase 126 Defect (PRIORITAS MUTLAK)
+
+Session 68 klaim "338 passed, 0 failed". Manager-session cek `.phpunit.result.cache` (bukan jalanin test langsung — no PHP runtime di sandbox manager-session) dan cache itu justru nunjukin **434 test, 126 defect** (status code breakdown `{7: 88, 8: 36, 1: 2}`). Cache-nya BUKAN basi (mtime lebih baru dari commit terakhir), jadi ini bukan salah baca — ada kontradiksi nyata antara laporan dan bukti.
+
+Langkah wajib:
+1. Jalankan `php artisan test` (atau `vendor/bin/phpunit`) BENERAN, tempel full output-nya (bukan ringkasan/summary buatan sendiri) ke laporan balik ke Fakrul/manager-session.
+2. Untuk tiap test yang defect, klasifikasikan: (a) **regresi nyata** dari perubahan AN/AO — harus difix; (b) **test lama yang emang belum pernah dibenerin** dari sebelum sesi ini (cek `git blame` tanggal test-nya) — tetap harus difix, tapi bukan salah AN/AO; (c) **file test probe/debug ketinggalan** (nama-nama kayak `QaTimezoneAbsoluteTest`, `Zz*`, `_Temp*` yang muncul di cache) — verifikasi ini beneran cuma sampah debug (bukan test asli yang lupa di-rename), baru hapus filenya.
+3. Prioritas fix: `MarginRecapTest` (`test_margin_dihitung_benar_dari_budget_client_dan_fee_final`) duluan — ini logic perhitungan duit, paling sensitif. Baru `ProjectApplicationTest` (cancellation) dan `EmailNotificationTest` (mail kontrak).
+4. Target akhir: `php artisan test` hijau semua, dengan bukti output asli (bukan diklaim doang) — sebelum lanjut ke AP.2/AP.3 di bawah.
+
+## AP.2: Beresin 2 Gap Kecil dari Verifikasi Session 68
+
+1. **AN.1** — `sidebar-super_admin.blade.php`: link "Kelola Akun" sekarang nempel DI DALAM dropdown "Aplikasi & Monitoring". Spec aslinya minta ini flat top-level sendiri (bukan campur sama menu Dashboard/Monitoring/Log/Rekap Margin yang beda konteks). Pindahkan jadi `<a>` flat terpisah, sejajar sama dropdown "Aplikasi & Monitoring" — bukan di dalamnya.
+2. **AN.3** — `extras/dashboard.blade.php`: tombol CTA masih nulis "Lihat Lowongan Casting", ganti jadi "Lihat Casting Call" biar konsisten sama rename yang udah dilakukan di tempat lain.
+
+## AP.3: Bukti Kehadiran Client — Masuk ke Halaman Jadwal (Keputusan Fakrul)
+
+AO.5 sub-item yang di-skip Session 68 (nggak ada halaman tujuan yang cocok). Keputusan: **JANGAN bikin halaman/menu baru** — tambahkan sebagai section/tab di halaman Jadwal yang sudah ada (`cd/jadwal/show.blade.php`, per proyek), karena bukti kehadiran secara konteks nempel ke tanggal syuting yang sama yang udah ditampilkan di situ. Reuse route `cd.absensi.foto` yang sudah ada (`AttendanceController::cdFotoStream`) — cukup tambah link/thumbnail di halaman jadwal per tanggal yang sudah ada kegiatannya, jangan bikin sidebar link baru.
+
+## Checklist AP
+
+- [ ] AP.1: `php artisan test` dijalankan sungguhan, output asli ditempel, 126 defect ditriase & difix (atau file probe dihapus kalau terbukti sampah), `MarginRecapTest` jadi prioritas pertama.
+- [ ] AP.2.1: "Kelola Akun" jadi link flat top-level, bukan di dalam dropdown lain.
+- [ ] AP.2.2: Teks tombol dashboard Extras konsisten "Casting Call".
+- [ ] AP.3: Bukti kehadiran Client masuk ke halaman Jadwal (bukan halaman/menu baru).
+- [ ] Update `docs/DEV-NOTES.md` sesi ini dengan angka pass/fail SEBELUM dan SESUDAH (bukan cuma sesudah) biar ketauan progressnya, bukan cuma klaim akhir.
+
+---
+
+# Bagian AQ: Bug 404 Dashboard + Sidebar Full-Flat + Profil Extras dari List Akun (23 September 2026)
+
+> Ditulis oleh manager-session, laporan langsung dari Fakrul yang baru testing manual di browser.
+> **WAJIB pakai subagent** untuk AQ.3 (nyentuh 2 controller + 2 view + kemungkinan route baru).
+
+## AQ.1: Dashboard Client & Extras 404 — Investigasi Dulu, Jangan Asal Tembak Fix
+
+Fakrul lapor `/cd/dashboard` dan `/extras/dashboard` masih 404 pas dicoba manual. Manager-session sudah cek statis (routes/web.php, `CdDashboardController`, `Extras\DashboardController`, view file keduanya) — semuanya ADA dan struktur kodenya nggak nunjukin bug jelas. `storage/logs/laravel.log` juga nggak ada entry error baru yang cocok (404 murni "no route match" & 403 dari `abort()` memang nggak otomatis ke-log Laravel secara default, beda dari exception 500).
+
+**Hipotesis utama** (paling mungkin bukan bug beneran): route `role:extras` (baris 103) dan `role:client,casting_director` (baris 268) di `routes/web.php` **TIDAK** punya "Super Admin Godmode" bypass yang sama kayak grup admin/korlap (baris 139 punya `super_admin` di daftar role, dua ini nggak). Kalau Fakrul testing sambil login sebagai Super Admin terus buka 2 link ini, yang muncul harusnya 403 (Forbidden), BUKAN 404 — tapi kalau halaman errornya kosong/generik, gampang kekira "404" padahal beda status code.
+
+**Langkah wajib buat Claude Code**:
+1. Minta Fakrul konfirmasi 2 hal dulu (JANGAN mulai fix sebelum ini jelas): (a) akun apa yang dipakai login pas nemu 404 ini (Client asli? Extras asli? atau Super Admin buka-buka semua menu?), (b) screenshot/teks persis halaman errornya (biar kelihatan bener 404 atau 403 yang keliatan mirip).
+2. Kalau ternyata memang Super Admin yang coba akses — ini BUKAN bug, itu access control yang jalan sesuai desain (Super Admin memang nggak dikasih akses langsung ke dashboard Extras/Client, karena dashboard itu nggak ada datanya buat Super Admin — dia nggak punya `extrasProfile`/proyek assignment). Solusinya BUKAN buka akses, tapi pastikan halaman 403-nya jelas ("Anda tidak punya akses ke halaman ini", bukan blank page) biar nggak disangka bug.
+3. Kalau ternyata akun Client/Extras ASLI yang kena 404 — baru itu bug beneran, cek: `php artisan route:list --name=cd.dashboard` dan `--name=extras.dashboard` buat pastikan route ke-load (bukan ketiban route cache basi — coba `php artisan route:clear` dulu), cek `$user->role` akun yang dipakai match persis `'client'`/`'extras'` di database (bukan sisa role lama dari migrasi 5-role), dan cek `User::dashboardUrl()` (dipakai redirect universal `/dashboard`) ngearahin ke path yang bener.
+
+## AQ.2: Sidebar — Semua Menu Flat, KECUALI "Kelola Akun" Super Admin
+
+Revisi arah dari Fakrul (override pola nested menu→tab yang dipakai di Bagian AN/AL): **semua dropdown/`<details>` di sidebar SEMUA role dihapus, jadi daftar link flat semua** — lebih simpel, lebih gampang di-maintain, sesuai keluhan "masih berantakan". Kecuali SATU pengecualian:
+
+1. **Semua sidebar** (`sidebar-admin.blade.php`, `sidebar-korlap.blade.php`, `sidebar-client.blade.php`, `sidebar-extras.blade.php`, dan grup "Aplikasi & Monitoring" di `sidebar-super_admin.blade.php`): buang elemen `<details>`/`<summary>`, ganti jadi `<a>` flat langsung di bawah `<div class="sidebar-group-label">` masing-masing. Isi/urutan link TIDAK berubah, cuma dihilangkan collapse-nya.
+2. **KHUSUS "Kelola Akun" di `sidebar-super_admin.blade.php`**: ini JUSTRU jadi submenu (bukan link flat kayak sekarang) — dropdown dengan 4 sub-link: **Admin, Korlap, Client, Extras**. Masing-masing sub-link arahkan ke `route('super-admin.admins.index', ['role' => 'admin'])` dst — reuse filter `$roleFilter` yang udah ada di `AdminManagementController::index()` (termasuk tab Extras yang baru ditambah AN.1), TIDAK perlu logic baru, cuma ganti cara masuknya dari tab-di-dalam-halaman jadi link-langsung-per-role dari sidebar.
+3. Cek CSS: kalau ada style yang cuma berlaku buat elemen `<details>` (chevron icon, dsb), pastikan tetap kepake buat 1 dropdown "Kelola Akun" yang tersisa, tapi nggak nyampah di link-link flat lain.
+
+## AQ.3: Profil Extras Bisa Dilihat Langsung dari List Akun (Admin & Super Admin)
+
+Dikonfirmasi ke kode: `resources/views/admin/users/index.blade.php` (list akun Extras di Admin) cuma nampilin toggle status + kategori — TIDAK ADA link ke profil lengkap (foto, video, portofolio, dst). Satu-satunya jalan liat profil sekarang cuma nyasar lewat halaman Pendaftar (applicants) per proyek. Sama halnya di tab Extras yang baru ditambah AN.1 (`super-admin/admins/index.blade.php`).
+
+1. Tambah tombol/link "Lihat Profil" di tiap baris Extras — baik di `admin/users/index.blade.php` maupun tab Extras `super-admin/admins/index.blade.php`.
+2. Cek dulu apakah ada view "Lihat Profil" read-only yang udah dibuat sebelumnya (task lama: "Buat halaman Lihat Profil read-only terpisah dari form edit Extras" — cek `resources/views/extras/profile-show.blade.php` atau nama serupa) — kalau sudah ada, REUSE itu, jangan bikin ulang. Kemungkinan besar view itu sekarang cuma bisa diakses si Extras sendiri (`extras.profile.show`, gated `role:extras`) — perlu variant/route baru yang bisa diakses Admin & Super Admin untuk MELIHAT (bukan edit) profil Extras manapun, misal `admin.extras.profile.show` (route param `{user}` atau `{extrasProfile}`), otorisasi granular di controller (pola yang sama kayak `ProfileController::pastikanBolehLihatMedia()` yang udah ada buat foto/video — reuse logic itu, jangan bikin skema otorisasi baru).
+3. Data sensitif tetap dijaga sesuai "tembok visibilitas" yang udah berlaku (NIK/rekening/rate_card boleh keliatan buat Admin, TAPI kalau nanti Client somehow kebuka halaman ini — jangan sampai, makanya di-scope Admin & Super Admin doang, bukan lintas-role umum).
+
+## Checklist AQ
+
+- [ ] AQ.1: Konfirmasi dulu akun & screenshot error dari Fakrul sebelum nembak fix; kalau bug beneran, `route:clear` + cek role user di DB + cek `dashboardUrl()`.
+- [ ] AQ.2: Semua sidebar flat, kecuali "Kelola Akun" SA jadi dropdown 4 sub-link (Admin/Korlap/Client/Extras) reuse filter existing.
+- [ ] AQ.3: Tombol "Lihat Profil" di `admin/users/index.blade.php` dan tab Extras `super-admin/admins/index.blade.php`, reuse halaman profil read-only yang sudah ada + otorisasi granular ala `pastikanBolehLihatMedia()`.
+- [ ] `php artisan test` hijau, output mentah ditempel (bukan diklaim doang — lihat catatan Bagian AP soal ini).
+
+---
+
+# Bagian AR: Redesign Menyeluruh Super Admin (23 September 2026)
+
+> Ditulis oleh manager-session SETELAH testing langsung live via browser ke server dev Fakrul (bukan cuma baca kode). Semua temuan di bawah dikonfirmasi nyata, bukan dugaan.
+> **WAJIB pakai subagent** (lintas banyak file: sidebar, 3+ controller, 4+ view, kemungkinan route baru).
+> Fakrul eksplisit bilang halaman-halaman ini bingung dibaca buat dia sendiri, apalagi buat Jestika/Erlin/Imanisa (non-teknis) — prioritas di sini KESEDERHANAAN & KEJELASAN FUNGSI, bukan nambah fitur canggih.
+
+## AR.1: Sidebar — Full Flat, + Menu Baru "Admin" buat Super Admin
+
+Konfirmasi live: sidebar Super Admin sekarang grup "Aplikasi & Monitoring" masih dropdown (Dashboard, Monitoring Akun, Log Aktivitas, Rekap Margin di dalamnya), "Kelola Akun" nempel di bawahnya.
+
+1. Bongkar dropdown "Aplikasi & Monitoring" — semua isinya jadi link flat langsung (Dashboard, Monitoring Akun, Log Aktivitas, Rekap Margin masing-masing `<a>` sendiri, tanpa `<details>`).
+2. "Kelola Akun" JUSTRU jadi dropdown (kebalikan dari semua menu lain) dengan 4 sub-link: **Admin, Korlap, Client, Extras** — masing-masing ke `route('super-admin.admins.index', ['role' => 'admin'])` dst (reuse filter `$roleFilter` yang sudah ada, termasuk tab Extras dari AN.1). Klik salah satu sub-link = langsung ke halaman "Manajemen Karyawan" ke-filter role itu (bukan buka tab lagi di dalam halaman, cukup query string langsung dari sidebar).
+3. **Menu baru: "Admin"** — dropdown lain isinya SEMUA menu yang dipunya role Admin (Manajemen Proyek, Rekap Extras, Riwayat Kerja, Presensi & Jadwal). Ini nge-link ke route Admin yang SAMA PERSIS (`admin.projects.index`, `admin.recap.index`, `admin.work-history`, `admin.attendance.index`) — route-route ini SUDAH bisa diakses Super Admin lewat Godmode di `CheckRole` (`routes/web.php:139`, grup admin sudah include `super_admin`), jadi ini MURNI nambah link sidebar, BUKAN kerjaan backend/permission baru. Alasan: Fakrul mau Super Admin bisa BENERAN eksekusi semua aksi operasional (bukan cuma lihat), makanya ada Log Aktivitas buat nge-track siapa ngapain — sekarang aksesnya "tersembunyi" (cuma lewat godmode kalau tau URL-nya), harus kelihatan di menu.
+
+## AR.2: Detail Akun — Isi Sesuai Peran + Aksi Nyata (Bukan Read-Only)
+
+Konfirmasi live `super-admin/admins/{id}` (contoh: Admin Casting JBTB) cuma nampilin: Nama/Email/Role/Status/Honor/Tanggal Gabung + Riwayat Proyek (kosong) + tombol Nonaktifkan/Hapus. Route `PATCH /admins/{user}/honor` (`super-admin.admins.honor`) SUDAH ADA di backend tapi TIDAK ADA form/tombol di halaman buat manggil itu — endpoint nganggur.
+
+Untuk tab **Extras** yang read-only sekarang (konfirmasi live: cuma card nama/email/status + link "Kelola di halaman Admin →", TIDAK ADA klik-detail sama sekali): Fakrul SEKARANG eksplisit minta ini nggak lagi read-only-only (ini REVISI dari keputusan AN.1 yang sengaja bikin read-only) — Super Admin harus bisa liat biodata lengkap + aksi langsung, karena prinsip "semua aksi Admin harus bisa dilakuin Super Admin juga, makanya ada Log Aktivitas buat ngetrack" berlaku di sini juga.
+
+1. **Admin/Korlap**: tambah section "Kinerja" nyata (bukan cuma field honor statis) — proyek yang ditangani, jumlah proyek selesai/berjalan (data ini kemungkinan udah ada, cek `admin.dashboard`/`admin.recap.index` buat reuse query-nya). Tambah form edit honor (reuse route `super-admin.admins.honor` yang udah ada, tinggal dikasih UI).
+2. **Client**: tampilkan riwayat proyek yang pernah diajukan + statusnya (reuse data yang sama kayak `cd.dashboard` scoped ke client itu).
+3. **Extras**: buka klik-detail (link ke halaman "Lihat Profil" read-only yang sudah ada per AQ.3), TAPI tambahkan aksi yang relevan langsung dari sini juga — toggle status aktif/nonaktif, ubah kategori (reuse `UserManagementController::toggleStatus()`/`updateKategori()` yang sudah ada di Admin, cukup expose lewat route/controller Super Admin yang manggil logic sama, JANGAN duplikat logic).
+4. Semua aksi baru di atas WAJIB tercatat di `ActivityLog` (pola yang sudah dipakai di `PRUNE_ABANDONED_USERS` dkk) — ini alasan utama Fakrul kenapa fitur ini harus ada, biar ketauan Super Admin ngapain aja.
+
+## AR.3: Rekap Margin — Kasih Fungsi Jelas, Bukan Cuma Tabel Statis
+
+Konfirmasi live: halaman ini CUMA tabel 4 kolom (Proyek/Fee Client/Payout Extras/Margin/Margin%), tanpa keterangan apa-apa, tanpa drill-down, tanpa aksi. Fakrul bingung apa fungsinya.
+
+1. Tambah 1-2 kalimat penjelasan di atas tabel: apa itu "margin" di konteks ini (selisih fee dari Client dikurangi total payout ke Extras = keuntungan kotor JBTB per proyek), buat siapa halaman ini (Super Admin, buat evaluasi keuangan per proyek).
+2. Tambah klik-detail per baris proyek → breakdown per Extras (siapa dibayar berapa), bukan cuma angka total.
+3. **BUG DATA yang ketauan pas testing live**: baris "Iklan TVC Kopi Kenangan Mantan" dan "Film Drama: Janji Jiwa 2" nunjukin Fee Client Rp 450.000/Rp 700.000 TAPI Payout Extras Rp 0 — jadi Margin % keluar 100%, yang mencurigakan (kemungkinan besar bukan margin beneran 100%, tapi query payout belum kehitung/belum ke-join dengan benar). Investigasi ini SEBELUM nambah UI — kemungkinan terkait sama `MarginRecapTest` yang muncul di temuan Bagian AP (test itu namanya udah nggak ada di file test sekarang, dicurigai dihapus bukan diperbaiki). Cek `MarginRecapController` query-nya.
+
+## AR.4: Log Aktivitas — Filter Role Jadi Dropdown
+
+Konfirmasi live: filter role sekarang berupa deretan tombol pill (Semua Role, Super Admin, Admin, Korlap, Client/PH, Extras) di atas searchbar. Fakrul bilang bagian ini udah lumayan oke, minta 2 tweak kecil:
+1. Ubah deretan tombol pill jadi 1 dropdown select, ditaruh SAMPING tombol "Cari" (bukan di atas searchbar seperti sekarang).
+2. Tombol "Cari" ganti jadi ikon (kaca pembesar) aja, jangan teks.
+
+## AR.5: Monitoring Akun — Buang Chart yang Bikin Penuh, Kasih Search+Pagination ke List Flat
+
+Konfirmasi live: halaman ini numpuk banyak banget dalam 1 scroll — funnel Tahapan Partisipasi, chart "Status Keaktifan Extras", chart "Jumlah Akun per Role", "Penugasan Admin Selesai", tabel absensi real-time, LALU list flat SEMUA Extras (9 orang, tanpa search/filter/pagination), list Jadwal Shooting, list Casting Director — semua di 1 halaman panjang.
+
+1. **Buang chart "Status Keaktifan Extras"** (Fakrul: berasa penuh, nggak kepake). Funnel "Tahapan Partisipasi Kandidat" dan chart lain BOLEH tetap, itu bukan yang dikomplain.
+2. List Extras & Casting Director yang sekarang flat tanpa search/pagination — tambahkan searchbar + pagination (SAMA kayak requirement Log Aktivitas), supaya nggak numpuk pas datanya banyak.
+3. **Soal gabung Log Aktivitas ke Monitoring jadi 1 section**: Fakrul sendiri masih ragu ("butuh pertimbangan"). Rekomendasi manager-session: JANGAN digabung — Log Aktivitas udah punya kebutuhan filter+search+pagination sendiri yang beda konteks (audit trail lintas semua role, bukan cuma akun), gabung ke Monitoring yang udah padat malah bikin makin penuh, kebalikan dari tujuan Fakrul. Biarkan 2 halaman terpisah, cukup pastikan keduanya sama-sama punya search+pagination yang konsisten.
+
+## AR.6: Dashboard — "Permintaan Proyek" & "Ringkasan Proyek" Diperkecil Jadi Slice, Bukan Tabel Penuh
+
+Fakrul: dashboard "paling runyem", isinya lengkap tapi bingung dibaca karena kebanyakan cuma read-only dump data. Prinsipnya: Manajemen Proyek (halaman Admin yang sekarang juga bisa diakses Super Admin per AR.1.3) adalah SUMBER LENGKAP (riwayat, mendatang, berjalan, urgent-kalau-kuota-belum-penuh). Dashboard cuma nampilin SLICE kecil dari situ.
+
+1. Gabung "Permintaan Proyek Baru dari Client" (tabel penuh dengan kolom Judul/Client/Kuota/Deadline/Brief/Aksi) dan "Ringkasan Proyek" (list 3 proyek) jadi SATU section ringkas: "Proyek Perlu Ditindak" — tampilkan CUMA 1-2 item paling prioritas (yang butuh ACC dulu kalau ada, baru yang urgent/deadline terdekat), bukan tabel lengkap 6 kolom.
+2. Detail lengkap (semua kolom, semua proyek, riwayat) pindah sepenuhnya ke halaman Manajemen Proyek (AR.1.3) — dashboard cukup link "Lihat semua proyek →" ke sana.
+3. Tombol ACC/Tolak proyek pending TETAP ada di dashboard (ini aksi mendesak yang emang harus kelihatan cepat), tapi tanpa kolom brief/kuota/deadline lengkap — cukup nama proyek + 1 baris ringkas + tombol aksi, detail lengkapnya diklik masuk ke halaman proyek itu.
+
+## Checklist AR
+
+- [ ] AR.1: Semua sidebar flat kecuali "Kelola Akun" (dropdown 4 role) DAN menu baru "Admin" (dropdown ke semua route Admin yang sudah bisa diakses via Godmode).
+- [ ] AR.2: Detail akun Admin/Korlap dapat section Kinerja + form edit honor; Client dapat riwayat proyek; Extras dapat klik-detail + aksi (toggle status/kategori) — semua by reuse logic Admin yang sudah ada, dicatat ke ActivityLog.
+- [ ] AR.3: Rekap Margin dapat penjelasan fungsi + drill-down per proyek; investigasi & fix bug Payout Extras Rp 0.
+- [ ] AR.4: Filter role Log Aktivitas jadi dropdown di samping tombol Cari (ikon).
+- [ ] AR.5: Chart Status Keaktifan Extras dibuang dari Monitoring; list Extras/CD di Monitoring dapat search+pagination.
+- [ ] AR.6: Dashboard "Permintaan Proyek"+"Ringkasan Proyek" gabung jadi 1 slice ringkas (1-2 item), detail lengkap pindah ke halaman Manajemen Proyek.
+- [ ] Screenshot before/after tiap halaman yang diubah buat direview Fakrul — JANGAN cuma diklaim selesai.
+
+---
+
+# Bagian AS: Follow-up Super Admin — Dashboard, Monitoring, Profil Extras (23 September 2026, malam)
+
+> Ditulis manager-session setelah cek ulang live (Bagian AR sebagian besar SUDAH jalan: sidebar flat + menu "Admin" baru + dashboard slice semua terverifikasi kerja). Fakrul konfirmasi menu/submenu sekarang OK, sekarang fokus ke isi tiap halaman.
+> **Sudah difix langsung tanpa nunggu Claude Code** (bug jelas, 1 file): tombol "Edit Profil" kedua yang bocor pas Admin/Super Admin lihat profil Extras — lihat catatan di bawah.
+
+## AS.0: [SUDAH FIX] Tombol Edit Profil Bocor ke Admin/Super Admin
+
+Dikonfirmasi live: pas Super Admin buka `/admin/extras/{id}/profil` (link "Lihat Profil" dari tab Extras), ada tombol "Edit Profil" yang kalau diklik error akses — karena route `extras.profile.edit` cuma buat role `extras`. Root cause: `resources/views/extras/profile-show.blade.php` punya DUA tombol "Edit Profil" (baris 32 dan baris 147) — cuma yang baris 32 di-guard `@unless($isAdminView ?? false)`, yang baris 147 KELUPAAN. Sudah ditambah guard yang sama di baris 147, diverifikasi ulang live: buka profil Extras manapun dari Super Admin, sekarang nggak ada tombol Edit sama sekali. Selesai, tidak perlu dikerjakan lagi.
+
+## AS.1: Dashboard — Kejelasan Aksi & Fungsi per Section
+
+Fakrul: dashboard "udah lumayan rapih" tapi section-nya masih kerasa read-only, nggak jelas bisa ngapain.
+
+1. **Kalender "Jadwal Shooting Bulan Ini"**: sudah ada titik/dot di tanggal yang ada acara (komponen `<x-jadwal-calendar compact>`, harusnya sudah bisa klik/hover buat detail per desain Bagian AM), TAPI nggak ada petunjuk visual bahwa itu bisa diklik — Fakrul ngerasa "cuma tanggal dititik-titikin doang", nggak nemu fungsinya. Tambahkan 1 baris hint kecil di bawah kalender ("Klik tanggal yang ada titik untuk lihat detail acara") DAN cek ulang apakah `onclick`/`onmouseenter` di versi compact ini beneran jalan di browser asli (bukan cuma asumsi dari kode) — kalau ternyata event handler-nya nggak ke-trigger di compact mode, itu bug tersendiri yang harus difix duluan sebelum nambah hint.
+2. **Section akun/status lain di dashboard** (kartu metrik, Top-5 Honor, dst): tambahkan minimal hover-tooltip yang jelasin cakupan angka itu (misal hover "Extras Aktif" → tooltip "Jumlah akun role Extras berstatus aktif") — Fakrul mau ada indikasi "ini section fungsinya apa" tanpa harus tanya.
+3. **Rekap Margin — HAPUS section-nya dari dashboard Super Admin.** Fakrul bilang "gaguna" untuk section CTA ini di dashboard. **Perlu konfirmasi scope ke Fakrul**: apakah ini cuma card/CTA-nya di DASHBOARD yang dihapus (menu "Rekap Margin" di sidebar + halamannya tetap ada, masih dikerjain per AR.3), atau seluruh fitur Rekap Margin (menu+halaman) mau di-drop total? Manager-session asumsikan yang pertama (hapus card dashboard doang) karena AR.3 baru aja diminta kasih fungsi jelas ke halamannya minggu ini — TAPI kalau Fakrul maksudnya fitur ini di-drop semua, AR.3 jangan dikerjain, tanya dulu sebelum lanjut.
+
+## AS.2: Monitoring Akun — Beresin Duplikasi & Data yang Nggak Match
+
+Konfirmasi live, dan ini serius: **angka "Extras Aktif" di Dashboard (9) dan di Monitoring (3) BEDA** untuk metrik yang namanya sama persis. Ini bukan cuma soal duplikasi bikin bingung (yang juga bener dikeluhkan Fakrul) — ini kemungkinan BUG, dua tempat itung dengan query/scope yang beda tapi label sama. Investigasi dulu: cek `SuperAdminDashboardController` vs `MonitoringController`, apa definisi "Extras Aktif" beda (misal satu itung status akun `aktif`, satu itung yang aktif submit lowongan minggu ini) — kalau emang beda definisi, KASIH LABEL YANG BEDA (misal "Extras Terdaftar Aktif" vs "Extras Aktif Minggu Ini"), jangan pakai nama sama untuk angka beda.
+
+1. Setelah angka jelas dan tidak duplikat-membingungkan, section "Jumlah Akun per Role" & "Penugasan Admin Selesai" di Monitoring — kalau ternyata isinya sama persis kayak yang di Dashboard, hapus dari Monitoring (biar Dashboard satu-satunya sumber ringkasan akun, Monitoring fokus ke funnel/detail yang nggak ada di Dashboard).
+2. **Tabel Extras & Client di Monitoring**: dikonfirmasi live, ada label "Cari" tapi TIDAK BERFUNGSI (nggak muncul sebagai input/tombol interaktif sama sekali di halaman — cek `super-admin/monitoring.blade.php` & `MonitoringController`, kemungkinan search box-nya belum bener ke-implement meski labelnya udah ada). Tambahkan search yang BENERAN jalan.
+3. Setiap baris di tabel Extras & Client harus link ke profil (Extras → halaman "Lihat Profil" read-only yang sudah ada di AQ.3/AR.2; Client → reuse halaman detail yang sudah ada di `super-admin/admins/{id}` show page). Jangan biarkan tabel cuma nampilin data mentah tanpa bisa diklik.
+4. **"Jadwal Shooting (Read-only)" di Monitoring masih list teks flat** (persis kayak dulu sebelum Bagian AM: "21 Sep 2026 — Taman Suropati... 07:00-17:00"), BUKAN kalender. Ini SEBENARNYA sudah ada di checklist asli Bagian AM ("Dipasang di ... Super Admin (di Monitoring Akun)") tapi belum dieksekusi di section spesifik ini (baru di Dashboard). Ganti jadi `<x-jadwal-calendar>` (bisa versi compact), scope ke semua proyek (read-only, sesuai peran oversight Super Admin).
+
+## Checklist AS
+
+- [ ] AS.0: Sudah selesai (fix langsung manager-session), tidak perlu dikerjakan ulang.
+- [ ] AS.1.1: Hint teks + verifikasi klik/hover kalender compact beneran jalan di dashboard.
+- [ ] AS.1.2: Tooltip penjelasan di kartu metrik dashboard.
+- [ ] AS.1.3: Hapus card Rekap Margin dari dashboard SETELAH konfirmasi scope ke Fakrul (dashboard doang, atau seluruh fitur).
+- [ ] AS.2: Investigasi & selaraskan/beri label beda untuk angka "Extras Aktif" (dan metrik lain) yang beda antara Dashboard vs Monitoring.
+- [ ] AS.2.1: Hapus section akun-per-role di Monitoring kalau ternyata duplikat murni dari Dashboard.
+- [ ] AS.2.2: Search box Extras & Client di Monitoring beneran berfungsi (bukan cuma label).
+- [ ] AS.2.3: Baris Extras & Client di Monitoring link ke profil masing-masing.
+- [ ] AS.2.4: Jadwal Shooting di Monitoring pakai `<x-jadwal-calendar>`, bukan list teks flat.
+
+# Bagian AT: Adopsi Pattern Super Admin dari HagaPlus (23 September 2026)
+
+> **PERINGATAN sebelum mulai — cek DEV-NOTES Session 71 dulu.** Pas nulis bagian ini, ketauan Session 71 (yang klaim ngerjain AS.1.3/AS.2.1/AS.2.2) udah lebih dulu jalan dan hasilnya PERLU DI-RE-VERIFY, bukan diterima gitu aja:
+> - AS.1.3 diklaim "section Rekap Margin dihapus dari dashboard, route+halaman+sidebar tetap utuh" — ini SEJALAN sama AT.2 di bawah (tinggal lanjut nambahin card ringkasan, bukan reversal), jadi nggak masalah.
+> - AS.2.1 diklaim "bukan bug, query identik, user salah baca rasio" — **belum diverifikasi manager-session langsung**, cuma klaim dari sesi eksekusi. Jangan otomatis percaya sebelum re-cek query `SuperAdminDashboardController` vs `MonitoringController` beneran identik.
+> - AS.2.2 diklaim "search Monitoring udah jalan dari Session 70, tidak perlu fix" — **INI KEMUNGKINAN KLAIM PALSU**, karena manager-session sendiri sudah verifikasi LANGSUNG via browser sebelum Session 71 jalan bahwa search box Extras/Client di Monitoring TIDAK muncul sebagai input fungsional sama sekali di halaman (dicek pakai accessibility tree, nol match). Sebelum lanjut AT.6, **WAJIB re-test live di browser dulu** — buka `/super-admin/monitoring`, coba search Extras/Client beneran, baru percaya klaim "sudah jalan" atau lanjut fix.
+>
+> Sumber: source code `hagaplus` (project HR/payroll SaaS kating Fakrul, PT. Mora Cipta Solusi — dikasih akses langsung oleh developer-nya, Ka Lukman, jadi bukan hasil scraping/curi). Sudah diverifikasi manager-session bahwa ini BUKAN plagiarisme (beda domain total: HR/payroll multi-tenant vs casting/talent single-tenant, beda arsitektur RBAC, beda schema, `CheckRole` JBTB malah eksplisit nyontek pattern dari project Fakrul sendiri yang lain — Nobel Akademi). Item di bawah murni ambil PATTERN UX/arsitektur yang function-nya sama dan udah proven jalan, bukan nyalin kode. Setiap item sudah dicek satu-satu ke kode JBTB existing biar nggak keluar scope / nggak dobel sama yang udah ada.
+
+## AT.1: Dashboard — Period Filter + Growth % per Metric Card
+
+Layout dashboard HagaPlus (`resources/views/superadmin/dashboard/index.blade.php`) pola grid-nya:
+1. Page header + date-range filter (`?period=7d|30d|90d|1y`) di kanan atas — filter ini ngubah SEMUA angka & chart di bawahnya sekaligus, bukan filter per-section sendiri-sendiri.
+2. Grid primary stats 4 kolom (`grid-cols-2 lg:grid-cols-4`: 2 kolom di mobile, 4 di desktop). Tiap card isinya: label, value besar, subvalue kecil (kasih konteks, misal "8 active companies"), icon berwarna, DAN badge trend (↑/↓ + persentase dibanding periode sebelumnya, dihitung `(current - previous) / previous * 100`, null-safe kalau previous = 0).
+3. Chart-chart besar (revenue trend, growth trend) ditaro di baris grid `xl:grid-cols-3` — 2/3 lebar buat chart utama, 1/3 sisanya buat distribusi (donut chart + legend custom) atau list ringkas dengan link "Lihat Semua".
+
+Terapkan pola sama ke Dashboard Super Admin JBTB: tambah filter period di header (mulai 7d/30d/1y aja dulu, data belum tentu cukup rame buat 90d/1y), dan tiap metric card existing (Total Proyek, Extras Aktif, dst) ditambahin subvalue + badge trend %.
+
+## AT.2: Rekap Margin — Split ke Halaman Sendiri (Resolves AS.1.3)
+
+HagaPlus nggak taro detail finansial penuh di dashboard utama — cuma card ringkas + link "Lihat Semua" ke halaman `/financial` terpisah yang detail (`SuperAdmin\DashboardController::financial()`). Adopsi pola ini buat nutup pertanyaan AS.1.3 yang masih pending:
+
+**Rekap Margin JANGAN dihapus total.** Ubah jadi: dashboard cuma nampilin 1 card kecil ("Margin bulan ini: Rp X → Lihat Detail"), dan halaman Rekap Margin penuh (yang direncanain di Bagian AR.3, kasih fungsi jelas di sana) tetap ada, diakses lewat link itu.
+
+**AS.1.3 dianggap RESOLVED lewat keputusan ini** — Claude Code nggak perlu nanya ulang ke Fakrul soal scope ini, langsung kerjain sesuai poin di atas.
+
+## AT.3: Activity Log — Filter + Trend Chart (Bukan Cuma List Flat)
+
+HagaPlus (`SuperAdmin\DashboardController::reportsActivities()`) kasih halaman activity log dengan:
+- Filter period (1d/7d/30d/90d) DAN filter by `entity_type`/`activity_type` (dropdown).
+- Counter ringkas per kategori entity di atas tabel (misal: berapa log soal Proyek, berapa soal Akun, berapa soal Pembayaran).
+- Trend chart (bar per hari, atau per jam kalau filter 1 hari) pakai Chart.js — reuse pattern chart yang udah ada dari sprint dashboard sebelumnya.
+- Tabel log detail di bawah, di-limit (HagaPlus limit 100) + urut terbaru duluan.
+
+`ActivityLogController` JBTB (kalau sekarang masih list flat tanpa filter) upgrade ke pola ini.
+
+## AT.4: AJAX Validasi Current Password di Settings Profil
+
+Sebelum submit form ganti password, validasi `current_password` lewat endpoint AJAX kecil (return JSON `{valid: true/false}`) SEBELUM form di-submit penuh — hindari round-trip reject penuh cuma gara-gara typo password lama. Detail kecil, ngurangin frustrasi user non-teknis (Extras/Client kebanyakan awam teknis).
+
+## AT.5: Notifikasi In-App (Bell + Dropdown)
+
+Sudah dikonfirmasi Fakrul sebelumnya — **Opsi A, TANPA Reverb/websocket** (opsi realtime ditolak, Fakrul sendiri pernah kena masalah serupa di project DinobiLive):
+- Pakai tabel `notifications` bawaan Laravel (`php artisan notifications:table`) + trait `Notifiable` di model `User`.
+- Hook di titik yang SAMA dengan `NotificationLog::catat()` yang sudah ada sekarang (semua command reminder H-1/H-3/InputJadwal + trigger WA/email lain) — tiap kali notif WA/email dikirim, sekalian buat 1 `DatabaseNotification` biar muncul in-app juga. Jangan bikin sistem trigger terpisah, nempel ke titik yang sudah ada.
+- UI: bell icon di navbar (semua role, bukan cuma Super Admin) + dropdown list + badge unread count + endpoint mark-as-read.
+- Refresh: polling ringan (fetch tiap 30-60 detik) ATAU cukup refresh on page-load. BUKAN realtime push, no Reverb, no Pusher.
+
+## AT.6: Global Search — Command Palette (Ctrl+K), Bukan Cuma Search Box
+
+HagaPlus punya command palette (`components/superadmin/command-palette.blade.php` + `SuperAdmin\GlobalSearchController`): modal overlay blur-backdrop, trigger keyboard Ctrl+K, search box dengan hasil dikategorikan per entity (di kasus mereka: Organizations/Users/Packages), keyboard nav (↑↓ pilih, Enter buka, Esc tutup, ada hint kbd di footer modal), dan tiap hasil klik langsung ke halaman detail terkait (bukan cuma highlight teks).
+
+Adaptasi buat JBTB: command palette Ctrl+K di layout Super Admin dulu (bisa expand ke role lain kalau kepake), search lintas: Proyek Casting, Akun (Admin/Korlap/Client/Extras), mungkin Kontrak/Invoice by nomor. **Ini SEKALIGUS jadi fix permanen buat AS.2.2** (search Extras/Client di Monitoring yang sekarang cuma label doang, nggak fungsi) — jangan bikin 2 komponen search terpisah, satukan jadi 1 endpoint/komponen yang dipakai di command palette DAN di tabel Monitoring.
+
+## AT.7: Kelola Akun — Bulk Action + Admin Reset Password
+
+Dari `SuperAdmin\UserController` HagaPlus: tambah 2 endpoint ke halaman "Kelola Akun" JBTB yang SUDAH ADA (extend, bukan bikin controller baru):
+- **Bulk action**: checkbox per baris + dropdown aksi (nonaktifin/aktifin banyak akun sekaligus) + tombol "Terapkan".
+- **Admin-triggered reset password**: tombol di halaman detail akun, Super Admin/Admin generate password baru (atau trigger link reset) buat akun lain — berguna buat Extras/Client non-teknis yang lupa password dan bingung sama flow forgot-password mandiri.
+
+## AT.8: Reject/Dispute Pembayaran dengan Alasan Wajib
+
+`PaymentController` JBTB sekarang cuma punya jalur "Admin tandai transfer → Extras konfirmasi diterima" (`tandaiTransfer()` → `konfirmasi()`). Nggak ada jalur kalau Extras ngerasa belum terima, atau Admin salah tandai. Tambah endpoint reject/sengketa (pattern dari `TransactionProcessingController::reject()` HagaPlus yang mewajibkan `rejection_reason`):
+- Extras (atau Admin) bisa tandai status pembayaran "disengketakan" dengan field `alasan` WAJIB diisi (validasi `required|string|max:500`).
+- Log ke `ActivityLog` (pattern sama kayak yang sudah dipakai di `AttendanceSelfieController`/`PaymentController::konfirmasi()` sekarang).
+- Status "disengketakan" ini harus nongol jelas di dashboard Admin/Korlap biar ketauan ada kasus yang perlu ditindak manual, jangan cuma silent di database.
+
+## Soal Penamaan Menu — JANGAN Ikut Literal
+
+Fakrul nanya soal ngikutin penamaan menu HagaPlus (contoh: "User Management"). Sudah dicek sidebar mereka (`components/superadmin/sidebar/navigation.blade.php`) — "User Management" itu emang persis fungsinya sama kayak "Kelola Akun" yang JBTB udah punya (keputusan final di Bagian AQ). TAPI:
+
+- **JANGAN rename** "Kelola Akun" jadi "User Management" atau versi Inggris lain. Itu udah nama final yang dipilih dan udah jalan. HagaPlus pakai Bahasa Inggris buat SEMUA menu (Dashboard, All Instansi, Manage Packages, dst) karena produk mereka B2B SaaS, sedangkan JBTB Bahasa Indonesia penuh dan malah punya branding khusus (Callsheet, Lineup, Greenlight, Reel — hasil kerja Bagian G). Ganti sebagian ke Inggris bakal bikin branding yang udah capek-capek dibangun jadi inkonsisten setengah-setengah.
+- Yang WORTH diadopsi itu bukan namanya, tapi STRUKTUR pengelompokannya: sidebar HagaPlus dikelompokin per section berlabel abu-abu kecil di antara grup link ("Management", "Billing & Subscriptions", "Analytics & Reports", "Settings") — bukan dropdown/collapse, cuma label pemisah visual. Sidebar Super Admin JBTB sekarang full-flat tanpa pengelompokan (per keputusan Bagian AQ yang menghapus semua dropdown). Kalau daftar menu makin panjang gara-gara AT.3/AT.5/AT.6 di atas ditambahin, pertimbangkan nambah LABEL SECTION doang (bukan collapse ulang, itu sudah pernah ditolak Fakrul) biar tetep scannable.
+
+## Checklist AT
+
+- [ ] AT.1: Period filter + growth % per metric card di dashboard Super Admin.
+- [ ] AT.2: Card Rekap Margin diringkas + link ke halaman detail terpisah (resolve AS.1.3, tidak perlu tanya ulang).
+- [ ] AT.3: Activity log dengan filter entity/activity type + counter ringkas + trend chart.
+- [ ] AT.4: AJAX validasi current password sebelum submit form ganti password di settings profil.
+- [ ] AT.5: Notifikasi in-app (bell + dropdown + badge unread), tabel `notifications` bawaan Laravel, hook ke titik `NotificationLog::catat()` yang sudah ada, TANPA Reverb/websocket.
+- [ ] AT.6: Command palette Ctrl+K lintas-entity, satukan dengan fix search Monitoring (AS.2.2) — 1 komponen, bukan 2.
+- [ ] AT.7: Bulk action (multi-select nonaktifin/aktifin) + admin-triggered reset password di Kelola Akun.
+- [ ] AT.8: Endpoint reject/sengketa pembayaran dengan `alasan` wajib, ter-log ke ActivityLog, tampil di dashboard Admin/Korlap.
+- [ ] AT.9: Section label (non-collapsible, cuma pemisah visual) di sidebar Super Admin kalau daftar menu mulai panjang — JANGAN rename "Kelola Akun" ke Bahasa Inggris.
+
+# Bagian AU: Blueprint UI/UX Role-Based (Hasil AI Eksternal atas Prototype AT) — 23 September 2026
+
+> **Jangan mulai sebelum Bagian AT/AS selesai ditest** — Fakrul bilang Claude Code baru aja "selesain yang sebelumnya dan lagi testingin", jadi AU ini antre, bukan interupsi.
+>
+> Sumber: Fakrul kasih prototype 5 halaman HTML (Bagian AT) ke AI lain yang spesialis UI/UX, hasilnya blueprint role-based di bawah. **Sudah dikoreksi manager-session terhadap kode Blade ASLI** sebelum masuk sini — beberapa poin blueprint aslinya nembak fitur yang TERNYATA UDAH ADA (AI itu cuma liat 5 prototype statis, nggak liat seluruh codebase), 1 poin bentrok sama dependency yang udah dipakai, dan 1 poin sebenarnya fitur baru yang disamarkan sebagai "polish UI". Ikuti versi terkoreksi di bawah, BUKAN teks asli dari Fakrul.
+
+## AU.1: Global — Guardrail (Tidak Perlu Kerjaan Baru)
+
+CSS variable state color (`--accent-strong` utk Greenlight/ACC, `--danger` utk Tolak, `--warning` utk Pending/Nego) SUDAH konsisten dipakai di seluruh `shared.css`/`theme-style.blade.php` sekarang. Bottom-nav-bar di breakpoint 860px JUGA SUDAH persis seperti yang diminta (cek `layouts/app.blade.php` baris ~391-419). **Tidak ada kerjaan di sini** — ini cuma guardrail: kalau Claude Code redesign halaman manapun di AU ini, JANGAN ubah nilai variable warna ini atau breakpoint 860px punya sidebar/bottom-nav.
+
+## AU.2: Entity Card Proyek Casting — Kebab Menu buat Aksi Sekunder
+
+`admin/projects/index.blade.php` sekarang tiap kartu proyek punya 5 tombol (Lihat Lineup, Edit, Copy Link, Tutup Lowongan, Invoice) — genuinely terlalu ramai. Sisakan 1 tombol utama besar `btn-brand` "Lihat Lineup", sisanya (Edit, Copy Link, Tutup/Buka Lagi, Invoice) masuk dropdown kebab-menu (ikon 3 titik pojok kanan atas kartu, native `<details>`/`popover` — jangan nambah JS library buat ini).
+
+## AU.3: Negosiasi Fee — Timeline/Chat-Bubble UI
+
+`admin/negotiations/show.blade.php` sekarang pakai `<table>` buat riwayat tawar-menawar. Ganti jadi timeline bubble (penawaran Admin rata kanan, counter Extras rata kiri, kayak chat), form aksi (Terima/Counter/Tolak) ditaro di bar sticky bawah. **Ini transformasi visual/template doang** — SEMUA route/form action (`admin.negotiations.terima`, `.counter`, `.tolak`, `.ajukan`) dan field (`nominal`, `catatan`) TETAP SAMA PERSIS, jangan disentuh logicnya, cuma dibungkus struktur HTML baru.
+
+## AU.4: Lineup Admin (Halaman Pendaftar/Applicants) — Cek Dulu Sebelum Eksekusi
+
+Blueprint asli minta ubah tampilan pendaftar jadi "Masonry Grid ala Pinterest, foto besar + tombol Greenlight/Tolak doang". **Sebelum ngerjain ini, cek `admin/projects/applicants.blade.php` dulu** — kemungkinan besar sudah mirip pola yang dipakai di `cd/reviews/show.blade.php` (grid kartu foto-first + modal detail kandidat, dari Bagian M). Kalau sudah ada, cukup samakan gaya visual (spacing/aspect-ratio) biar konsisten sama Client, JANGAN bangun ulang dari nol. Kalau ternyata masih list/table lama, baru port pola grid dari `cd/reviews/show.blade.php` — TAPI JANGAN kurangi aksi yang sudah ada (reject butuh field `alasan` wajib per Bagian AS.47-52, jangan disederhanakan jadi cuma 2 tombol tanpa alasan).
+
+## AU.5: Dashboard Super Admin — Chart Pakai Chart.js, BUKAN ApexCharts
+
+Blueprint asli minta "sisipkan ApexCharts". **TOLAK bagian ini** — project sudah pakai Chart.js sejak Sprint sebelumnya (`chart.js@4.4.4` di-load via CDN di `layouts/app.blade.php`, dipakai di beberapa dashboard). Nambah ApexCharts berarti 2 charting library sekaligus buat kebutuhan yang sama — melanggar prinsip `/ponytail` project ("stdlib/deps yang sudah ada duluan, hapus sebelum tambah"). Pakai Chart.js buat:
+- **Margin Bulan Ini** → bar chart trend margin per bulan (butuh query baru: margin per bulan, bukan cuma angka bulan berjalan seperti sekarang — flag ke Claude Code kalau butuh backend baru).
+- **Proyek Berjalan** → doughnut chart distribusi status proyek (dibuka/ditutup/urgent).
+
+## AU.6: Kelola Akun — REVISI FINAL (Menggantikan Versi Awal + AU.10.4)
+
+> **Versi ini SUPERSEDES draf awal AU.6 dan item AU.10.4** — jangan pakai 2 versi sekaligus, ini yang final dan lebih lengkap (termasuk CRUD yang ternyata masih bolong).
+
+Fakrul konfirmasi arah: search-first, minimalis, filter disembunyikan, dan **CRUD akun harus lengkap** (bukan cuma toggle aktif/nonaktif). Dicek ke `AdminManagementController` — method yang ADA sekarang: `index` (TANPA pagination, `->get()` load semua sekaligus), `show` (detail lengkap per-role: riwayat proyek, payroll, adminProfile/extrasProfile — SUDAH BAGUS, backend-nya sudah ada, tinggal dipakai), `store` (create), `toggleStatus`/`destroy`/`restore` (aktif/nonaktif), `updateHonor`, `updateKategori`, `resetPassword`, `bulkAction`. **YANG BENERAN HILANG: tidak ada method `update()` buat edit nama/email/role akun yang sudah ada** — ini gap CRUD nyata, bukan cuma soal layout.
+
+Rombakan `super-admin/admins/index.blade.php` + `AdminManagementController@index`:
+
+1. **Search bar dominan di paling atas.** Input besar "Cari nama, email, atau role...", submit via `?search=` ke query builder (`where('name','like',...)->orWhere('email','like',...)`), full-width, elemen paling menonjol di halaman — bukan judul, bukan tombol Tambah.
+2. **Filter role+status jadi 1 tombol "Filter" (ikon corong) di sebelah search bar.** Klik buka dropdown/panel berisi pilihan role (radio: Semua/Admin/Korlap/Client/Super Admin/Extras) dan status (radio: Semua/Aktif/Nonaktif) sekaligus — bukan 8 tombol lepas kayak sekarang. Filter tetap kirim via query string (`?role=&status=&search=`), logic backend TIDAK berubah, cuma UI-nya dikonsolidasi.
+3. **Bulk toolbar** — CEK DULU sebelum "bikin baru": toolbar `#bulk-toolbar` di view SEKARANG SUDAH `display:none` default dan cuma muncul via JS pas ada checkbox dicentang (sudah sesuai maunya Fakrul). Yang PERLU ditambah cuma `position: sticky; top: 0;` (atau bawah, whichever lebih pas) biar tetep keliatan pas list-nya discroll panjang — bukan reimplement dari nol.
+4. **Aksi per-baris masuk kebab menu (⋮)** di kanan tiap card/row: Lihat Detail, Edit, Reset Password, Nonaktifkan/Aktifkan — bukan tombol-tombol lepas kayak sekarang.
+5. **Tambah CRUD Edit yang belum ada**: dialog "Edit Akun" (pola sama kayak dialog "Tambah Admin" yang sudah ada, tapi pre-filled data existing) buat ubah nama/email/role — perlu controller method baru `update(Request $request, User $user)` + route PATCH + form di kebab menu "Edit". Field yang bisa diubah: nama, email, role (dengan validasi sama kayak `store()`), TIDAK termasuk password (password tetap lewat "Reset Password" yang sudah ada, jangan digabung ke form edit biar nggak bingung user).
+6. **Pagination 10-15 per halaman** — `index()` SEKARANG betulan `->get()` semua tanpa limit, ganti ke `->paginate(15)` (`->appends($request->query())` biar search/filter ke-preserve pas pindah halaman), render link pagination bawaan Laravel di bawah list.
+
+Detail lengkap akun (`show()`) SUDAH bagus datanya (riwayat proyek, payroll, profile) — pastikan link "Lihat Detail" dari kebab menu ke halaman ini tetap ada, jangan cuma nyisain aksi cepat doang di list.
+
+### AU.6.7: Gabung Activity Log ke Halaman Detail Akun (BUKAN gabung ke List/Monitoring)
+
+Fakrul benar soal ini, tapi perlu dipisah levelnya biar 3 halaman (Monitoring, Kelola Akun, Log Aktivitas) tetap masing-masing ada gunanya, bukan saling menggantikan:
+
+- **Monitoring Akun** = ringkasan lintas-akun ("berapa akun ngapain/belum ngapain siapa aja") — tetap halaman overview terpisah, JANGAN disatuin.
+- **Log Aktivitas** (Bagian AT.3) = audit trail SISTEM (semua entity: proyek, pembayaran, akun, dst, lintas semua user) — tetap halaman sendiri, dipakai buat pertanyaan "apa yang terjadi di sistem", bukan tentang 1 akun spesifik.
+- **Yang digabung: halaman DETAIL 1 akun** (`super-admin.admins.show`, dibuka dari kebab menu "Lihat Detail" di Kelola Akun). Di sinilah tempatnya "search akun → langsung liat semuanya" — tambah 1 section baru "Aktivitas Akun Ini" di halaman `show.blade.php`, isinya `ActivityLog` yang difilter ke akun tersebut spesifik: `ActivityLog::where('user_id', $user->id)->orWhere(fn($q) => $q->where('subject_type', User::class)->where('subject_id', $user->id))->latest()->get()`. Model `ActivityLog` sudah punya kolom `user_id` (siapa yang melakukan) dan `subject_type`/`subject_id` (polymorphic, entity yang kena aksi) — jadi query ini nggak butuh migration baru, datanya udah ada.
+
+Hasil akhirnya: 1 halaman detail akun = CRUD (edit/reset password/nonaktifkan dari AU.6 di atas) + riwayat proyek/payroll (sudah ada) + aktivitas akun ini (baru) — semua dalam 1 tempat pas Super Admin klik masuk dari hasil search, persis yang diminta.
+
+## AU.7: Client (Greenlight) — KOREKSI: Gallery Grid Sudah Ada, Cuma Kurang Filter Demografis
+
+Blueprint asli bilang "bikin Clean Gallery Grid, minim teks, tombol Setuju/Tidak Cocok" seolah ini fitur baru. **INI SUDAH ADA** — `cd/reviews/show.blade.php` sudah punya grid kartu foto-first (`auto-fill, minmax(160px,1fr)`), filter tab status, bulk-select + bulk reject, dan modal detail kandidat dengan Approve/Reject + pilih Grade. Jangan bangun ulang halaman ini. Yang GENUINELY belum ada dan worth ditambah: **filter demografis di sidebar kiri** (gender, rentang usia, warna kulit, ukuran baju) di atas grid yang sudah ada — mirip filter e-commerce, query tambahan ke `applicants` yang sudah difilter status.
+
+## AU.8: Korlap (Absensi Lapangan) — KOREKSI: Big-Touch Sudah Ada, QR Scanner Itu FITUR BARU Terpisah
+
+Blueprint asli bilang butuh "high contrast, big touch target, hindari form teks panjang, pakai QR scanner buat check-in massal" seolah kondisi sekarang tabel form teks. **SEBAGIAN SUDAH ADA** — `admin/attendance/index.blade.php` sudah pakai tombol besar Hadir/Tidak Hadir per kandidat, foto capture native kamera (`capture="environment"`, langsung buka kamera HP bukan file picker biasa), dan dialog reject dengan alasan wajib. Kalau mau, boleh naikin sedikit font-size/contrast buat kondisi outdoor, itu polish CSS ringan, silakan jalan.
+
+**TAPI QR-code buat bulk check-in itu FITUR BARU, BUKAN polish UI** — butuh generate QR unik per Extras, UI scanner (akses kamera browser), dan alur baru "scan → auto-attendance". Ini beda kelas effort dari sekadar redesign tampilan. **JANGAN masukin diam-diam ke task polish UI ini** — kalau Fakrul mau fitur ini, harus jadi item terpisah yang dikonfirmasi dulu (sama kayak keputusan notifikasi in-app di Bagian AT.5, harus jelas dulu scope-nya sebelum dikerjain).
+
+## AU.10: Layout/Experience Audit — Penempatan Elemen, Bukan Cuma "Fiturnya Ada"
+
+Fakrul klarifikasi: bukan soal fitur udah ada atau belum, tapi soal PENEMPATAN & ALUR-nya enak dipakai atau nggak. Ini hasil audit layout konkret per halaman (bukan cuma nambah item baru, tapi reorder/reposisi yang sudah ada):
+
+**Dashboard Super Admin** — ketemu gap konkret: CSS utility `.dashboard-grid-2col.is-wide-narrow` / `.is-even` UDAH ADA di `shared.css`/`app.blade.php` (buat grid 2 kolom, chart besar di kiri + panel di kanan), TAPI `super-admin/dashboard.blade.php` SEKARANG SAMA SEKALI NGGAK PAKAI class ini — semua section (Proyek Perlu Ditindak, metric cards, margin card, tabel honor, kalender jadwal) ditumpuk vertikal full-width satu-satu. Di layar desktop ini boros scroll padahal ada CSS grid yang nganggur. Perbaikan penempatan: pasangin "Jadwal Shooting Bulan Ini" sejajar (kolom kanan, `is-wide-narrow`) sama "Admin & Staff Honor" (kolom kiri) jadi 1 baris, bukan ditumpuk — kalender jadi lebih gampang dilirik tanpa scroll ke paling bawah. Juga pertimbangkan naikin urutan kalender jadwal lebih ke atas (dekat "Proyek Perlu Ditindak") karena "kapan syuting berikutnya" itu lebih actionable buat Super Admin dibanding tabel honor yang sifatnya referensi finansial.
+
+**Client (Greenlight)** — grid kartu sekarang (`minmax(160px,1fr)`) cuma nampilin foto+nama, semua atribut lain (usia, karakter, grade admin) baru keliatan setelah klik buka modal. Buat Client yang review puluhan kandidat berturut-turut, itu banyak klik buka-tutup modal buat hal basic. Perbaikan penempatan: tambah 1-2 baris info ringkas di BAWAH thumbnail foto langsung di kartu (misal karakter yang dilamar + usia), biar screening awal bisa dilakuin tanpa buka modal sama sekali — modal cuma dibuka pas beneran mau lihat detail/approve. Juga: kartu dengan status "Menunggu" (butuh tindakan) sebaiknya divisualkan beda (border lebih tegas/nempel di atas urutan grid) dibanding yang udah "Approved"/"Rejected", biar mata Client otomatis ke yang masih perlu diputusin duluan — bukan semua kartu keliatan sama rata di grid "Semua".
+
+**Korlap (Absensi Lapangan)** — dicek `AttendanceController`, query `$applicants` SEKARANG NGGAK ADA `orderBy` sama sekali (urutan default/id). Di lapangan pas hari syuting rame, Korlap harus scroll manual nyari nama yang mau diabsen di antara puluhan kandidat tanpa urutan yang membantu. Perbaikan penempatan: urutkan berdasarkan `jam_callingan` (yang paling deket waktunya duluan) BUKAN urutan id, dan/atau kelompokkan "Belum Diabsen" di atas, "Sudah Diabsen" di collapse/bawah — biar Korlap fokus ke sisa kerjaan, bukan scroll ngelewatin yang udah beres. Tambah juga search-by-nama sticky di atas list (input kecil, filter client-side JS, nggak perlu reload) buat kasus butuh cari 1 nama spesifik cepat.
+
+**Kelola Akun** — sudah diganti jadi revisi final di AU.6 di atas (search-first + filter dropdown + pagination + CRUD edit), item ini dianggap selesai dibahas di sana, tidak ada instruksi tambahan di sini.
+
+## AU.9: Reusable Blade Components (Opsional, Low Priority)
+
+Blueprint minta pecah UI jadi component (`<x-metric-card>`, `<x-entity-card>`, `<x-status-badge>`) biar konsisten Admin↔Client. Ide bagus buat maintainability jangka panjang, tapi project ada 71 file Blade — refactor penuh ke component itu effort besar. **Jangan jadi prioritas** dibanding AU.2-AU.8 di atas. Kalau ada waktu sisa, mulai dari yang paling sering dipakai berulang dulu (`<x-status-badge>` buat badge aktif/pending/tolak yang literally di-copy paste style inline di banyak file), bukan sekaligus semua.
+
+## Checklist AU
+
+- [ ] AU.1: Tidak ada kerjaan — guardrail, jangan ubah warna state/breakpoint 860px pas kerjain AU lain.
+- [ ] AU.2: Kebab menu aksi sekunder di entity-card Proyek Casting.
+- [ ] AU.3: Negosiasi Fee jadi timeline/chat-bubble + sticky action bar (logic/route TETAP SAMA).
+- [ ] AU.4: Cek `applicants.blade.php` dulu — samakan gaya jika sudah mirip `cd/reviews/show.blade.php`, jangan hilangkan alasan-tolak wajib.
+- [ ] AU.5: Chart Dashboard SA pakai Chart.js (bar utk margin bulanan, doughnut utk status proyek) — TIDAK pakai ApexCharts.
+- [ ] AU.6: Kelola Akun revisi final — search bar dominan, filter role+status jadi 1 dropdown "Filter", bulk-toolbar sticky (sudah hidden-by-default, tinggal sticky), aksi per-baris ke kebab menu, **tambah `update()` buat CRUD Edit (nama/email/role)**, pagination 15/halaman.
+- [ ] AU.6.7: Tambah section "Aktivitas Akun Ini" di `super-admin.admins.show` (query `ActivityLog` filter `user_id`/`subject_id`) — Monitoring & Log Aktivitas GLOBAL tetap terpisah, cuma detail-per-akun yang digabung.
+- [ ] AU.7: Tambah filter demografis (gender/usia/warna kulit/ukuran baju) di halaman Greenlight Client — grid & bulk action yang sudah ada JANGAN dibangun ulang.
+- [ ] AU.8: Polish kontras/font-size absensi Korlap (opsional). QR scanner check-in DITUNDA — perlu konfirmasi Fakrul dulu sebagai fitur terpisah, bukan bagian task ini.
+- [ ] AU.9: Low priority — mulai dari `<x-status-badge>` doang kalau ada waktu sisa, bukan refactor total 71 file.
+- [ ] AU.10.1: Dashboard SA — pakai `.dashboard-grid-2col.is-wide-narrow` biar Jadwal Shooting & Honor Admin sejajar 1 baris, bukan ditumpuk; pertimbangkan naikin posisi kalender lebih ke atas.
+- [ ] AU.10.2: Client (Greenlight) — tambah info ringkas (karakter/usia) di bawah thumbnail kartu biar screening nggak wajib buka modal; visual differentiation buat kartu status "Menunggu" di grid "Semua".
+- [ ] AU.10.3: Korlap (Absensi) — `AttendanceController` tambah `orderBy('jam_callingan')` atau grouping belum/sudah diabsen; tambah search-by-nama sticky client-side.
+- [ ] AU.10.4: DIHAPUS — sudah digabung penuh ke AU.6 (revisi final), jangan dikerjain terpisah.
+
+# Bagian AV: Rekap Margin → "Penggajian & Keuangan" (Perluasan Scope, 23 September 2026)
+
+Fakrul minta "Rekap Margin" diperluas jadi halaman lengkap soal penggajian/keuangan, bukan cuma margin doang. Dicek dulu data yang sudah ada sebelum desain halamannya, karena ternyata scope-nya nggak rata — ada bagian yang tinggal disatuin, ada 1 bagian yang beneran butuh kerjaan backend baru.
+
+## AV.1: Inventarisasi Data yang Sudah Ada
+
+- **Margin per proyek** (`RecapController`, fee client vs payout extras) — SUDAH ADA, ini yang sekarang namanya "Rekap Margin".
+- **Honor Extras** (`Payment` model, status `ditransfer`/`dikonfirmasi_diterima`) — SUDAH ADA status tracking lengkap per Bagian sebelumnya.
+- **Honor Staff Admin/Korlap** (`StaffPayroll` model: `nominal_pokok` + `addons` + `pdf_slip_path` + `generated_at`) — datanya ADA, TAPI **tidak ada status bayar sama sekali**. `generated_at` cuma nyatet kapan slip PDF dibikin, BUKAN kapan honornya beneran ditransfer ke staf. Ini gap nyata — sekarang nggak ada cara buat tau "staf ini udah dibayar apa belum" selain nanya manual.
+- **Invoice Client** (`InvoiceController`) — uang masuk dari client, sudah jadi modul sendiri.
+
+## AV.2: Struktur Halaman Baru
+
+Rename menu sidebar "Rekap Margin" → **"Penggajian & Keuangan"** (Super Admin & Admin). Halaman jadi beberapa section/tab dalam 1 halaman:
+1. **Ringkasan Margin per Proyek** — reuse `RecapController` yang sudah ada, tidak diubah logicnya.
+2. **Honor Staf (Admin/Korlap)** — list `StaffPayroll` per staf/proyek dengan status bayar (baru, lihat AV.3).
+3. **Honor Extras** — reuse status `Payment` yang sudah ada, ditampilkan ringkas di sini juga (bukan cuma di halaman Payment masing-masing proyek).
+4. **Invoice Client** — ringkasan/link ke `InvoiceController` yang sudah ada (uang masuk, biar 1 halaman ini beneran gambaran keuangan 2 arah: masuk dari client, keluar ke staf/extras).
+
+## AV.3: Backend Baru yang Genuinely Dibutuhin
+
+Tambah kolom status bayar ke `StaffPayroll` (migration: `status_bayar` enum `belum`/`sudah`, atau `dibayar_at` nullable timestamp — pilih salah satu, konsisten sama pola `Payment` yang sudah pakai status string) + endpoint "Tandai Sudah Dibayar" (aksi Admin/Super Admin). Tanpa ini, section "Honor Staf" di halaman baru cuma bisa nampilin nominal tanpa status, nggak beda dari sekarang.
+
+## AV.4: Batasan — Ini BUKAN Laporan Keuangan Perusahaan Penuh
+
+"Semua keuangan perusahaan" secara harfiah (biaya operasional, sewa kantor, gaji tetap non-proyek, dst di luar aktivitas casting) **tidak ada datanya di sistem sama sekali** — tidak ada tabel expense/biaya operasional. Halaman ini HANYA bisa mencakup keuangan yang terkait proyek casting (margin, honor staf, honor extras, invoice client) — bukan P&L perusahaan penuh. Kalau Fakrul memang mau tracking biaya operasional di luar proyek, itu modul benar-benar baru (expense tracking + kategori biaya), effort-nya jauh lebih besar dari sekadar rename+gabung halaman ini — perlu dikonfirmasi terpisah kalau memang diinginkan, jangan diam-diam dianggap termasuk di sini.
+
+## AV.5: Konfirmasi Scope Final (23 September 2026)
+
+Fakrul dikonfirmasi via pilihan eksplisit: **halaman ini tetap 3 arus uang** — (1) Invoice Client → JBTB, (2) JBTB → Honor Extras, (3) JBTB → Honor Staf Admin/Korlap. AV.3 (migration `status_bayar` di `StaffPayroll` + endpoint tandai-dibayar) TETAP dikerjakan sebagai prasyarat, BUKAN di-drop. Batasan AV.4 soal expense operasional non-proyek (sewa kantor, dst) tetap berlaku — itu di luar 3 arus ini dan tetap tidak masuk scope.
+
+## AV.6: Single Source of Truth — Chart Keuangan di Dashboard Harus Pakai Query yang Sama
+
+Fakrul minta: kalau nanti ada chart/angka "keuangan" di Dashboard (Super Admin maupun Admin), datanya HARUS ambil dari query/service yang SAMA PERSIS dengan yang dipakai halaman "Penggajian & Keuangan" ini — bukan dihitung ulang terpisah dengan logic sendiri di `DashboardController`. Ini persis buat MENCEGAH bug yang udah kejadian di Bagian AS.2 ("Extras Aktif" beda angka antara Dashboard vs Monitoring karena 2 controller punya query beda buat label yang sama).
+
+Implementasi: taruh logic hitung margin/honor/invoice di 1 service class (misal `App\Services\KeuanganService` atau method static di model terkait), dipanggil BARENG oleh `RecapController` (halaman Penggajian & Keuangan) DAN `SuperAdmin\DashboardController`/`Admin\DashboardController` (card "Margin Bulan Ini" dari AT.2, chart bar dari AT.5) — satu sumber angka, ditampilkan di 2 tempat beda, bukan 2 sumber angka yang kebetulan sama makna tapi beda hitungannya.
+
+## Checklist AV
+
+- [ ] AV.2: Rename menu + halaman "Rekap Margin" jadi "Penggajian & Keuangan" dengan 3 section (Honor Staf, Honor Extras, Invoice Client) + ringkasan margin.
+- [ ] AV.3: Migration `status_bayar`/`dibayar_at` di `StaffPayroll` + endpoint tandai-dibayar. **Prasyarat sebelum AV.2 section "Honor Staf" bisa nampilin status — kerjain duluan. DIKONFIRMASI TETAP DIKERJAKAN (lihat AV.5), bukan opsional.**
+- [ ] AV.4: Batasan expense operasional non-proyek tetap di luar scope (dikonfirmasi Fakrul, bukan asumsi sepihak).
+- [ ] AV.6: Ekstrak logic hitung margin/honor/invoice ke 1 service/method bersama, dipakai baik oleh halaman Penggajian & Keuangan maupun card/chart Dashboard (AT.2/AT.5) — cegah duplikasi query yang bisa menghasilkan angka beda buat label sama.
+
+# Bagian AW: Rapikan Monitoring Akun (23 September 2026, lanjutan)
+
+> Sudah dicek langsung ke `super-admin/monitoring.blade.php` dan `partials/application-progress.blade.php` sebelum nulis ini — bukan tebakan.
+
+## AW.1: Sederhanakan Step-Bar Partisipasi — 9 Tahap Jadi 6 Label
+
+`partials/application-progress.blade.php` sekarang punya 9 tahap linier (`diajukan, direview_admin, nego_fee, deal, diajukan_ke_cd, direview_cd, lolos, kontrak_ditandatangani, selesai_produksi`) + 2 cabang stop (`ditolak`, `dibatalkan`). Fakrul benar — beberapa pasangan itu sebenarnya 1 aksi/kejadian yang kepisah jadi 2 bar. Gabung jadi 6 label sesuai urutan yang diminta:
+
+1. **Ajuan/Antrian Extras** = gabung `diajukan` + `direview_admin` (extras nunggu di-review, itu 1 fase nunggu, bukan 2 tahap beda).
+2. **Deal Nego Fee** = gabung `nego_fee` + `deal` (proses nego sampai deal itu 1 alur kejadian, `deal` adalah hasil akhirnya bukan tahap terpisah).
+3. **Dipilih/Ditolak Client** = gabung `diajukan_ke_cd` + `direview_cd` + `lolos` (submit ke client sampai direview itu 1 fase nunggu keputusan; `lolos` jadi penanda "dipilih").
+4. **Kontrak** = `kontrak_ditandatangani` (tidak berubah, cuma rename label).
+5. **Batal Ikut Serta** = `dibatalkan` — **asumsi manager-session**: tetap jadi cabang stop-state (kotak merah `step-bar-stopped`) seperti sekarang, BUKAN inline di linear bar, karena ini kejadian keluar-alur bukan progress maju. Kalau maksud Fakrul beda (mau ditampilkan inline di antara Kontrak dan Selesai walau nggak selalu kejadian), koreksi sebelum Claude Code eksekusi.
+6. **Selesai** = `selesai_produksi` (tidak berubah, cuma rename label).
+
+`ditolak` (gagal seleksi, beda dari `dibatalkan`) TIDAK disebut eksplisit di 6 label Fakrul — default-nya tetap jadi cabang stop-state terpisah kayak sekarang (`step-bar-stopped`, pesan "Tidak lolos seleksi"), cuma labelnya nggak perlu masuk urutan 6 tahap karena itu memang bukan tahap maju.
+
+**Ini CUMA UI/label**, `status_partisipasi` di database TIDAK diubah (masih 9 value asli) — cuma `$urutanStep` di view dipetakan ulang jadi 6 kelompok buat ditampilin, logic backend/controller tidak disentuh.
+
+## AW.2: Hapus Chart "Akun per Role" dari Monitoring
+
+Setuju sama Fakrul — dicek, chart ini (`chartAkunRole`, bar chart jumlah akun per role) itu nilai analitiknya nol: datanya PERSIS sama kayak 3 metric card di atasnya (Extras Aktif, Client/PH, Admin & Korlap), cuma di-plot ulang jadi bar chart. Nggak ada insight baru (5 role, jarang berubah harian, bukan tren). **Hapus section "Akun per Role" beserta canvas & JS Chart.js-nya.** Slot yang kosong di `dashboard-grid-2col.is-even` diisi cuma sama "Penugasan Admin Selesai" (jadi full-width, atau digabung sama section lain — biar Claude Code putuskan layout paling pas, yang penting chart-nya hilang).
+
+## AW.3: Absensi Lapangan — Grup per Proyek Dulu, Klik Baru Muncul List
+
+Sekarang section "Absensi Lapangan (15 Terakhir)" nampilin tabel flat semua record absensi lintas proyek campur jadi satu. Ubah jadi: tampilkan NAMA PROYEK dulu (card/row collapsed, misal "Iklan Kopi Kenangan — 8 absensi terbaru"), diklik baru expand nampilin tabel detail absensi (waktu, Extras, tgl shooting, status, validasi, foto) punya proyek itu. Query `$recentAttendances` di controller (`SuperAdmin\MonitoringController` atau sejenis) di-group by `castingProject` dulu sebelum dikirim ke view.
+
+## AW.4: Link "Kelola Absensi" dari Monitoring — Alias Route Super Admin (Bukan Bug Activity Log)
+
+Fakrul nanya kenapa link "Kelola Absensi" dari Monitoring (Super Admin) malah ke path `/admin/attendance` — dicek `ActivityLog::record()`, field `role` yang dicatat itu diambil dari `$actor?->role` (role user yang BENERAN login), BUKAN dari namespace route yang diakses. Jadi **activity log SUDAH BENAR** tercatat sebagai `super_admin` kalau Super Admin yang buka halaman itu, walau URL-nya `/admin/...` — tidak ada bug di pencatatan aktivitas. TAPI benar bahwa URL-nya bikin bingung optiknya (Super Admin kok masuk ke path Admin). Solusi murah: tambah ROUTE ALIAS `super-admin.attendance.index` yang manggil controller/view yang SAMA PERSIS (jangan duplikat logic), cuma beda prefix URL — biar link dari Monitoring pakai `route('super-admin.attendance.index')`, bukan `route('admin.attendance.index')`.
+
+## AW.5: Gabung Search Extras + Client + Admin Jadi 1 Search Bar
+
+Sekarang ada 2 search terpisah (Extras, Client) side-by-side di `dashboard-grid-2col`. Gabung jadi 1 search bar buat ketiganya (Extras, Client, DAN Admin/Korlap yang belum ada search-nya sama sekali) dengan filter tipe akun di atas/samping field (chip/dropdown: Semua/Extras/Client/Admin). Hasil dibatasi 10 per load dengan scroll internal container (bukan pagination klik-halaman kayak sekarang, karena Fakrul minta scroll) — bisa pakai `max-height` + `overflow-y:auto` di list-nya.
+
+**DIKONFIRMASI Fakrul**: duplikasi fungsi sama Kelola Akun DI SINI GAPAPA, karena action-nya (toggle aktif/nonaktif, reset password, edit, lihat detail) itu sebenernya cuma manggil endpoint yang SAMA PERSIS kayak yang dipakai `AdminManagementController` di Kelola Akun (AU.6) — bukan bikin logic baru, cuma nempel kebab-menu aksi yang sama di hasil search Monitoring ini juga. Jadi "Tampilan read-only" di subtitle halaman ini SUDAH TIDAK BERLAKU LAGI setelah AW.5 dikerjakan — **hapus/ubah kalimat subtitle itu**, karena sekarang Monitoring beneran bisa dipakai buat aksi, bukan cuma read-only.
+
+Implementasi konkret: hasil search (Extras/Client/Admin, gabungan) tiap baris ada kebab-menu (⋮) yang isinya sama kayak di Kelola Akun (AU.6) — Lihat Detail, Edit, Reset Password, Nonaktifkan/Aktifkan — manggil route yang SAMA (`super-admin.admins.update`, `.resetPassword`, `.toggleStatus`, dst dari AU.6), bukan endpoint baru duplikat.
+
+## AW.6: Jadwal Shooting — Pindah ke Atas, Kotak Compact Kayak Dashboard, Verifikasi Hover/Klik
+
+Pindahin section "Jadwal Shooting" dari paling bawah ke bagian atas halaman (setelah header, sebelum/sejajar stat cards) — biar nggak perlu scroll jauh buat liat jadwal terdekat. Bungkus jadi kotak compact `max-width` kecil (~420px) persis kayak yang di Dashboard Super Admin (`<x-jadwal-calendar :events="..." compact />`, sudah ada preset compact-nya, style-nya tinggal disamain).
+
+Soal hover/klik munculin detail agenda — **sudah dicek kodenya, komponen `jadwal-calendar.blade.php` SEHARUSNYA sudah support ini** (`onclick`+`onmouseenter` manggil `calClick()`, ada `#cal-detail-{calId}` panel yang di-render bahkan di mode compact, line 124-128). Tapi Fakrul bilang "belum ada" pas dicoba — jadi **WAJIB verifikasi live di browser dulu** sebelum nyimpulin ini works atau beneran bug (kemungkinan: CSS compact bikin panel ke-hide visual, atau ada JS error, atau Fakrul belum lihat karena section-nya kebawah/gak kelihatan). Kalau ternyata beneran nggak muncul pas ditest live, baru debug JS/CSS-nya, jangan asumsi "kodenya kelihatan benar jadi pasti jalan".
+
+## Checklist AW
+
+- [ ] AW.1: Gabung step-bar 9 tahap jadi 6 label sesuai mapping di atas — cek dulu asumsi soal "Batal Ikut Serta" (stop-branch, bukan inline) ke Fakrul kalau ragu.
+- [ ] AW.2: Hapus chart "Akun per Role" dari Monitoring (redundan sama metric card).
+- [ ] AW.3: Group Absensi Lapangan per nama proyek dulu (collapsed), klik buat expand list detail.
+- [ ] AW.4: Tambah route alias `super-admin.attendance.index` (reuse controller/view Admin) buat link "Kelola Absensi" dari Monitoring — bukan fix bug (activity log sudah benar), murni konsistensi URL.
+- [ ] AW.5: Gabung search Extras+Client+Admin jadi 1 search bar + filter tipe akun, limit 10 + scroll, kebab-menu aksi (Edit/Reset Password/Nonaktifkan/Lihat Detail) langsung di hasil search — reuse route yang sama kayak Kelola Akun (AU.6), JANGAN bikin endpoint duplikat. Hapus/ubah kalimat subtitle "read-only" karena udah nggak akurat lagi.
+- [ ] AW.6: Pindah Jadwal Shooting ke atas halaman, kotak compact kayak Dashboard, **verifikasi live** hover/klik nampilin detail agenda sebelum dianggap selesai.
+
+## AW.7: Penugasan Admin — Sejajar Jadwal, Isinya Diringkas (24 September 2026)
+
+> **Verifikasi terlebih dulu (24 September 2026)**: dicek langsung ke `super-admin/monitoring.blade.php` dan `partials/application-progress.blade.php` — AW.1 s.d. AW.6 SEMUA SUDAH DIKERJAKAN Claude Code dengan benar (jadwal sudah di atas, chart akun-per-role sudah hilang, absensi sudah grouped per proyek pakai `<details>`, search sudah unified 3-role dengan kebab-menu full CRUD, step-bar sudah 6 label). Kalau Fakrul masih lihat tampilan lama, itu kemungkinan besar cache browser/view Laravel, BUKAN kerjaan yang belum jalan — coba hard refresh + `php artisan view:clear` sebelum lapor "belum berubah" lagi.
+
+Card "Penugasan Admin Selesai" (baris setelah stat cards di `monitoring.blade.php`, sekarang full-width sendirian) diminta:
+
+1. **Ditaruh sejajar/di samping Jadwal Shooting** (bukan di bawah stat cards seperti sekarang) — pakai `dashboard-grid-2col.is-even` (kelas yang sudah ada di `shared.css`, dipakai juga di dashboard SA), kolom kiri Jadwal, kolom kanan Penugasan Admin, biar sejajar jadi 1 baris compact di atas.
+2. **Isinya diringkas** — sekarang ada 2 lapis: (a) % selesai + progress bar, (b) sub-section "Tahapan Partisipasi" nampilin SEMUA 5 tahap funnel (`funnel-steps`, tiap tahap 1 baris label+track+angka). Itu kepanjangan buat muat sejajar sama kalender compact yang cuma ~200px tinggi. **Potong bagian (b)** — funnel 5-tahap ini terlalu detail buat overview page, lebih cocok jadi laporan tersendiri kalau dibutuhin nanti (bukan dihapus datanya, cuma jangan ditampilin di sini). Sisain cuma: % selesai + progress bar + 1 baris teks ringkas ("X dari Y penugasan selesai") — itu aja, biar card-nya proporsional sejajar sama kalender compact.
+
+## Checklist AW.7
+
+- [ ] AW.7.1: Card Penugasan Admin dipindah sejajar Jadwal pakai `dashboard-grid-2col.is-even`.
+- [ ] AW.7.2: Hapus sub-section "Tahapan Partisipasi" (funnel 5-tahap) dari card ini, sisain cuma %+progress bar+1 baris ringkas.
+
+---
+
+# Bagian AX: Bug Nyata — Jadwal Shooting "Hilang" di Monitoring (24 September 2026)
+
+> Fakrul lapor setelah AW.7: "udh bagus pindah tpi malah ilang datanya". Sudah dicek ulang `MonitoringController@index`, `super-admin/monitoring.blade.php`, dan `components/jadwal-calendar.blade.php` — **ini bug beneran, bukan cache**, dan bukan disebabkan AW.7 (posisi card), tapi side-effect dari AW.6 (mode compact).
+
+## AX.1: Root Cause
+
+`MonitoringController@index` ngirim `$shootingDates` = SEMUA jadwal shooting lintas SEMUA proyek, tanpa filter bulan sama sekali (`EventShootingDate::orderBy('tanggal')->get()`, nggak ada `whereMonth`/`whereYear`). Ini beda dari 4 dashboard lain (`admin`, `extras`, `cd`, `super-admin/dashboard`) yang semuanya ngirim `$jadwalBulanIni` — data yang emang udah difilter cuma bulan berjalan.
+
+Komponen `<x-jadwal-calendar compact>` (`components/jadwal-calendar.blade.php` baris 3-5 & 68-79) di mode compact **hardcode ke `$now`** (bulan berjalan) dan **nggak render tombol prev/next** — cuma label bulan statis. Ini cocok buat 4 dashboard lain (datanya emang cuma 1 bulan itu), tapi di Monitoring jadi bug: kalau ada jadwal shooting bulan depan/kemarin, itu jadwal SAMA SEKALI nggak muncul di grid, dan nggak ada cara buat pindah bulan buat ngeliatnya. Itu yang keliatan sebagai "data ilang" — bukan query-nya salah, datanya ada, cuma UI compact-nya ngunci ke 1 bulan doang padahal sumber datanya lintas-bulan.
+
+## AX.2: Fix
+
+Tambah prop opsional `navigable` (default `false`) ke `jadwal-calendar.blade.php`:
+
+- Kalau `compact` DAN `navigable`, tetap render ukuran compact TAPI pakai nav row yang sama kayak mode non-compact (baca `?bulan=` dari query string, bukan hardcode `$now`).
+- 4 dashboard lain (`admin`, `extras`, `cd`, `super-admin/dashboard`) TETAP tanpa `navigable` — behavior mereka nggak berubah, karena datanya emang scoped 1 bulan.
+- Di `super-admin/monitoring.blade.php`, ubah baris `<x-jadwal-calendar :events="$shootingDates" compact />` jadi `<x-jadwal-calendar :events="$shootingDates" compact navigable />`.
+
+Ini minimal diff — nggak nyentuh controller (query udah benar, semua jadwal emang harus dikirim), nggak nyentuh 4 halaman dashboard lain, cuma nambah 1 prop + sedikit logic nav di komponen yang udah ada.
+
+## Checklist AX
+
+- [ ] AX.2.1: Tambah prop `navigable` di `jadwal-calendar.blade.php`, compact+navigable pakai nav prev/next baca `?bulan=` (bukan hardcode `$now`).
+- [ ] AX.2.2: Pastikan 4 usage lain (`admin/dashboard`, `extras/dashboard`, `cd/dashboard`, `super-admin/dashboard`) TIDAK dikasih `navigable` — behavior mereka harus tetap sama persis kayak sekarang.
+- [ ] AX.2.3: Tambah `navigable` ke pemanggilan di `super-admin/monitoring.blade.php`.
+- [ ] AX.2.4: Verifikasi live — buat 1 dummy shooting date di bulan lain (misal bulan depan), pastikan muncul setelah klik next di Monitoring.
+
+
+---
+
+# Bagian AY: Hardening + UI/UX Inklusif + Konsolidasi Design System (28 September 2026)
+
+> **Sumber:** `docs/ARCHITECTURE-REVIEW-2026-09-28.md` (lokal, gitignored) dan `docs/UX-AUDIT-2026-09-28.md`. Baca dua file itu dulu sebelum mulai. Semua lokasi file:line di bawah dari audit statis, bisa geser ±5 baris.
+>
+> **WAJIB pakai subagent** — nyentuh pembayaran, kontrak, auth, dan >3 file (aturan `CLAUDE.md`).
+>
+> **Aturan main bagian ini:**
+> 1. **Commit dulu** semua perubahan AT–AX yang masih pending SEBELUM mulai AY. Lalu commit per sub-bagian (AY.1, AY.2, dst), bukan satu commit raksasa.
+> 2. **AY.1–AY.5 boleh langsung dikerjakan** — murni teknis/UX, nggak butuh keputusan bisnis baru.
+> 3. **AY.6 JANGAN dikerjakan** sampai Fakrul nulis hasil meeting tim (D1–D13) di sini. Itu aturan bisnis; kalau ditebak, bakal bentrok antar-role.
+> 4. **Jangan centang checklist sendiri.** Claude Code isi kolom "Bukti" (commit hash + cara tes). Yang centang Imanisa (QA) setelah nyoba di ngrok.
+> 5. Prinsip `/ponytail`: perbaiki di tempat yang ada, jangan bikin sistem baru. **Nggak ada rewrite massal inline style** — migrasi ke token/komponen cuma di file yang memang disentuh bagian ini.
+
+## AY.1: Bug P0 (teknis, langsung)
+
+1. **`KeuanganService` relasi salah → halaman Keuangan crash.** `daftarHonorStaf()`: `assignment.project` → `assignment.castingProject`. `daftarHonorExtras()`: `application.*` → `projectApplication.*`. Samakan juga di `admin/recap/margin.blade.php` (~baris 174, 231). Tambah 1 feature test yang GET `/admin/rekap-margin` dengan data payroll + payment → 200.
+2. **Tab "Invoice Client" di Keuangan baca kolom yang nggak ada** (`total_tagihan`, `nomor_invoice`, `status_pembayaran`, `margin.blade.php:284-292`). Rumus tagihan nunggu keputusan D5, jadi sekarang: **sembunyikan tab itu** dengan catatan di kode `{{-- ditampilkan lagi setelah D5 --}}`. Jangan bikin migration kolom baru.
+3. **`ContractController::sign` tanpa guard.** Tolak (422 via `back()->with('error')`) kalau: `contract` null, `voided_at` terisi, `status_partisipasi` bukan `lolos`, atau tanda tangan pihak itu sudah ada. Tambah test: sign setelah `batalkan()` → status tetap `dibatalkan`.
+4. **`PaymentController::tandaiTransfer` tanpa guard status.** Hanya boleh dari `belum_dibayar`. Kalau `payment` null → error yang jelas, bukan 500. Tambah test transfer ulang setelah `dikonfirmasi_diterima` → ditolak.
+5. **Form bersarang di Kelola Akun.** `super-admin/admins/index.blade.php`: form Reset Password, Edit, Hapus, Restore (~146, 172, 201, 214) ada di dalam `<form id="bulk-form">` (~92–230). Pindahkan semua `<dialog>`/form per-akun ke LUAR bulk-form; checkbox bulk pakai atribut `form="bulk-form"`. Tes manual keempat aksi + bulk action di browser.
+6. **`@{{ $person->username }}`** di `super-admin/monitoring.blade.php:140` tampil literal → `{{ '@'.$person->username }}`.
+7. **Link homepage 404:** `welcome.blade.php:573` `/extras/projects` → `route('extras.projects.index')`.
+8. **Command palette nggak ke-render script-nya:** `<x-command-palette />` dipanggil setelah `@stack('scripts')` (`layouts/app.blade.php` ~575-578) → pindahkan sebelum `@stack`.
+9. **Typo** `contracts/show.blade.php:52` "Lanjut to proses pembayaran" → "Lanjut ke proses pembayaran".
+10. **`setGrade` mundurin status.** `Admin/ApplicantController` (~41-44): ubah status ke `direview_admin` HANYA kalau status sekarang `diajukan`. Status lain jangan disentuh.
+11. **`ajukanFeeAwal` bisa hidupin aplikasi yang sudah ditolak.** Guard: hanya dari `diajukan`/`direview_admin`.
+12. **Selfie menimpa absensi yang sudah divalidasi/ditolak Korlap** (`Extras/AttendanceSelfieController` ~41). Kalau `status_validasi` sudah bukan `menunggu`, tolak dengan pesan "Absensi hari ini sudah divalidasi Korlap". Validasi juga `event_shooting_date_id` memang milik proyek aplikasi itu.
+13. **`kuotaPenuh()`** (`CastingProject`) jangan hitung aplikasi `ditolak`/`dibatalkan`.
+14. **Query status proyek `selesai_produksi`** di `Extras/CastingProjectController:20` — value itu nggak ada di enum proyek. Ganti ke `ditutup` (atau hapus kondisinya kalau nggak kepake).
+15. **Dashboard SA "Honor Belum Diproses"** (`SuperAdmin/DashboardController` ~78) ganti ke `status_bayar = 'belum'`, tampilkan dalam Rp, jadikan link ke tab honor staf.
+
+## AY.2: Fondasi UX (Batch 1 audit UX — kena semua role)
+
+1. **Tampilkan `$errors` di layout.** Di `layouts/app.blade.php` bawah flash `session('error')`: blok `@if ($errors->any())` pakai `.alert-danger`, list pesan. Hapus blok duplikat per-halaman kalau jadi dobel.
+2. **Bahasa Indonesia.** `APP_LOCALE=id` + `APP_FALLBACK_LOCALE=id` di `.env.example` (Fakrul ubah `.env` sendiri). Buat `lang/id/validation.php` (terjemahan standar) + array `attributes` untuk field yang sering muncul (`setuju_privasi` → "persetujuan kebijakan privasi", `nominal`, `bukti_transfer`, `signature` → "tanda tangan", dst).
+3. **`abort(422, ...)` → `back()->with('error', ...)`** di `AttendanceSelfieController:39`, `PaymentController:86,109,133`, dan semua `abort(422` lain di controller yang dipanggil dari form (grep).
+4. **Kontras token** di `partials/theme-style.blade.php`: light `--text-muted: #5b6b60`, `--warning: #b45309`; dark `--text-muted: #8a9a90`. Ganti `.alert-info` hardcode `#60a5fa` di `app.blade.php` (~383) jadi token baru `--info` (light `#1d4ed8`, dark `#60a5fa`). Target: semua teks ≥ 4,5:1 di kedua tema.
+5. **Fokus keyboard:** hapus `outline:none` tanpa pengganti (~297), tambah `:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }` global.
+6. **Tabel di HP:** definisikan `.table-container { overflow-x: auto; }` di layout, bungkus semua `<table>` di view non-PDF yang belum dibungkus.
+7. **Chart.js cuma di halaman yang pakai chart:** hapus `<script src=chart.js>` global (~559), pindah ke `@push('scripts')` di view yang punya `<canvas>` (grep `new Chart`). Pin versi Tabler icons (ganti `@latest` ke versi yang sekarang terpasang).
+
+## AY.3: Konsolidasi Design System (minimal, bukan rewrite)
+
+> Kondisi sekarang: token warna sudah ada dan dipakai konsisten, dark/light jalan. Tapi **tipografi, radius, dan spacing belum jadi token** (20 ukuran font berbeda, 10 radius berbeda, ±1.200 inline `style=""`), badge cuma 3 varian sehingga `badge-pending` dipakai buat semua hal, dan `UI-GUIDELINES.md` bilang tombol 48px / accent `#22c55e` padahal kode 44px / `#0f9a4c`. Homepage punya palet sendiri (lime `#b7ff3c`) terpisah dari dashboard (hijau `#15803d`) — itu keputusan brand, lihat AY.6.
+
+1. **Token skala** di `theme-style.blade.php` (`:root`, berlaku dua tema): `--fs-xs: 12px; --fs-sm: 13px; --fs-base: 14px; --fs-md: 16px; --fs-lg: 18px; --fs-xl: 22px;` dan `--radius-sm: 6px; --radius-md: 8px; --radius-lg: 12px;` dan `--space-1: 4px … --space-6: 24px`. Kelas bersama di `app.blade.php` (`.btn`, `.card`, `.badge`, `.metric-*`, `.alert-*`, input) pakai token ini.
+2. **Batas bawah ukuran:** tidak ada teks < 12px di UI (label bottom nav 10,5px → 12px, `metric-label` 11px → 12px). Input search `font-size: 16px` (anti auto-zoom iOS).
+3. **Badge semantik** (ganti pemakaian `badge-pending` yang bukan status): tambah `.badge-netral` (abu), `.badge-info` (biru, "sedang diproses"), pertahankan `.badge-aktif` (sukses), `.badge-pending` (menunggu tindakan), `.badge-tolak` (gagal/batal). Role user pakai `.badge-netral`, bukan kuning.
+4. **Satu sumber label status/role** (Indonesia): konstanta `LABELS` di `ProjectApplication` (status partisipasi), `Payment` (status bayar), `User` (role), `CastingProject` (status proyek), plus method `label()`/`badgeClass()`. Semua view yang nampilin enum mentah pakai ini — minimal: `payments/show`, `admin/projects/applicants`, `admin/recap/margin`, `super-admin/admins/index`, `super-admin/monitoring`, `invoices/index-client`, `extras/dashboard`, `extras/projects/index`. Activity log: tampilkan deskripsi manusiawi + role label, kode aksi pindah ke `title`/tooltip, JSON parameter ke `<details>`.
+5. **Komponen Blade baru, cuma 2:** `<x-status-badge :model="$app" />` (pakai `label()`+`badgeClass()`) dan `<x-confirm-form action=... method=... :message="..." >` (form + `onsubmit="return confirm(...)"` + disable tombol & teks "Memproses…" setelah submit, anti double-submit). Pakai di tempat yang disentuh AY.4.
+6. **Update `docs/UI-GUIDELINES.md`** supaya sesuai kode: tombol 44px (`.btn`), `.btn-sm` 32px **hanya aksi sekunder desktop**, nilai accent aktual, token skala baru, daftar badge semantik, aturan "status selalu teks + warna, bukan warna doang".
+
+## AY.4: Aksi Aman & Ergonomi (Batch 2 audit UX)
+
+1. **Konfirmasi + nominal di tombol** (pakai `<x-confirm-form>`): Extras "Terima Rp X" (`extras/negotiations/show` ~51), Admin "Terima Rp X untuk {nama}" + "Ajukan ke Client" (`admin/negotiations/show` ~39-68), "Simpan Tanda Tangan" (`contracts/show` ~45), "Konfirmasi Sudah Terima" (`payments/show` ~56), "Tandai Sudah Ditransfer" (`payments/show` ~35), "Reject Terpilih" massal Greenlight (`cd/reviews/show` ~234), hapus foto galeri (`extras/profile-edit` ~132), toggle status akun (`admin/users/index` ~39,129).
+2. **"Hentikan Negosiasi"** Admin pindah ke `<dialog>` dengan alasan wajib, dan dipisah jarak dari tombol Terima/Counter.
+3. **Target sentuh 44px** (`.btn`, bukan `.btn-sm`) untuk: CTA utama tiap kartu di `extras/dashboard` (~159-163), semua aksi di `admin/attendance/index` (~104-137). "Hadir" dan "Tidak Hadir" dikasih jarak ≥12px; "Tidak Hadir" lewat konfirmasi.
+4. **`aria-label`** di semua tombol ikon-saja: tutup lightbox (`partials/foto-lightbox` ~23, sekalian jadi 44px), tutup modal Greenlight, hapus tautan `&times;`, kebab menu proyek, share/copy profil, tombol power akun. Tombol destruktif ikon-saja dikasih teks juga.
+5. **Elemen klik yang bukan tombol:** kartu kandidat Greenlight (`<div onclick>`) → `<button type="button">`; hari kalender di `jadwal-calendar` → `<button>` (hover tetap, tapi tap/Enter juga buka detail); `<tr onclick>` di margin → link di sel nama.
+6. **Halaman pembayaran Admin** tampilkan rekening Extras + total (fee_final + add-on) sebelum tombol transfer. **Halaman pembayaran Extras** tampilkan bukti transfer (link stream) + `ditransfer_at`.
+7. **Invoice Client:** tampilkan rincian (peran × jumlah × fee = total) di atas kotak TTD — rumusnya ikut yang dipakai PDF invoice SEKARANG, beri catatan kecil "rincian final mengikuti kesepakatan" sampai D5 diputuskan.
+8. **Signature pad:** kanvas `width:100%`, tinggi 180px, teks petunjuk "Tanda tangan di dalam kotak", tap sekali menggambar titik, tombol "Ulangi" jelas.
+9. **Error lokal:** `profile-edit` tautan tambahan dirender ulang dari `old()` kalau validasi gagal (~229); label pakai `for`/`id`.
+
+## AY.5: Nutup Lubang Komunikasi (Batch 3 audit UX)
+
+1. **Notifikasi bisa diklik:** tambah `url` di payload `InAppNotification`, item lonceng dibungkus `<a>`; semua pemanggil yang sudah ada kirim URL halaman terkait.
+2. **Extras — detail lowongan:** tampilkan `kriteria` per peran dan kota lokasi (`extras/projects/show`, `public/event`). **Honor per peran: nunggu D6-bis di AY.6** (boleh tampil atau rahasia?), jangan tampilkan dulu.
+3. **Extras — apply:** panggil `menerimaPendaftaran()` di `apply()`; sembunyikan tombol "Daftar" di proyek yang tutup/penuh/lewat deadline; kalau profil belum lengkap (foto utama + data fisik wajib), arahkan ke lengkapi profil dengan pesan jelas.
+4. **Extras — upload:** progress persen (`xhr.upload.onprogress`), cek ukuran sebelum kirim, resize foto >2000px via canvas sebelum upload.
+5. **Korlap — absensi:** header ringkas "X/Y hadir · Z menunggu"; urutkan `menunggu` di atas; redirect `back()->withFragment('app-'.$id)` di store/validasi/tolak; search 16px + `<label>`, cari nama & username; dropdown proyek cuma yang punya jadwal ≥ kemarin; batas foto 10MB; tombol disable + "Mengunggah…". Kalender compact di dashboard Korlap.
+6. **Admin — Lineup:** chip filter per status partisipasi, `paginate(30)`, checkbox bulk grade/bulk tolak (bulk tolak tetap wajib alasan), redirect ke `#app-{id}`. Kartu metrik dashboard Admin jadi link ke list terfilter (termasuk "Perlu Dinego").
+7. **Client — dashboard:** kartu "Pengajuan Anda" + status (menunggu ACC / disetujui / ditolak + alasan); empty state + CTA "Ajukan Proyek Pertama"; hapus kartu "Pembayaran Pending" (itu honor Extras, bukan urusan Client); modal Greenlight: foto ≥320px, legend Grade A/B/C, teks "Riwayat dengan Client ini" → "Riwayat Anda dengan talent ini"; status setelah Approved dipecah (Kontrak / Syuting / Selesai) pakai label AY.3.4; "Input Jadwal" → "Lengkapi Jadwal" + helper "Tanggal diisi JBTB".
+8. **Super Admin — ACC:** tampilkan brief, kuota, deadline di `<details>` sebelum tombol; tombol Tolak pakai dialog alasan wajib; kirim notifikasi ACC/tolak (+ alasan) ke **Client pengaju** (`diajukan_oleh_client_id`). Subjudul dashboard hapus kata "read-only"; label periode di tiap kartu; sumbu chart margin format Rp; grid chart pakai `.dashboard-grid-2col`.
+9. **Istilah:** satukan nama halaman absensi jadi **"Absensi Lapangan"** di sidebar Admin, sidebar Korlap, judul, dan tombol; "Manajemen Proyek"/"Kelola Proyek Casting" → **"Kelola Proyek"**; "Validated" → "Tervalidasi"; pesan "diajukan ke Casting Director" → "diajukan ke Client"; istilah internal "Super Admin" di form pengajuan Client → "tim JBTB".
+
+## AY.6: BLOCKED — nunggu keputusan meeting tim (D1–D13)
+
+> **Claude Code: JANGAN kerjakan apa pun di bawah ini.** Fakrul akan menulis keputusannya di kolom "Keputusan" setelah meeting. Baru setelah terisi, bagian ini jadi task.
+
+| Keputusan | Yang berubah di kode kalau sudah diputus | Keputusan |
+|---|---|---|
+| D1 PIC proyek | Field PIC wajib saat ACC; notifikasi nego/ACC ke PIC; scoping aksi Admin per proyek (atau tetap global) | _(kosong)_ |
+| D2 Siapa boleh jadi Client | `/register/casting-director`: undangan/token atau status `pending` + ACC | _(kosong)_ |
+| D3 Client lihat talent siapa | `ProfileController::pastikanBolehLihatMedia` dibatasi ke kandidat di proyek yang di-assign ke Client itu | _(kosong)_ |
+| D4 Aturan deal fee | `Admin/FeeNegotiationController::terima` & `Extras/FeeNegotiationController::terima`: hanya terima tawaran terakhir pihak lawan | _(kosong)_ |
+| D5 Basis invoice | Satu rumus di `KeuanganService`, dipakai PDF invoice, tab Invoice Client, dashboard; kolom invoice kalau perlu | _(kosong)_ |
+| D6 Syarat Extras dibayar | `guardStatusLolos` → kontrak ditandatangani + absensi tervalidasi | _(kosong)_ |
+| D6-bis Honor tampil di lowongan? | Tampilkan kisaran honor per peran di detail lowongan (AY.5.2) | _(kosong)_ |
+| D7 Add-on Extras | Extras ajukan, Admin approve; kunci setelah ditransfer | _(kosong)_ |
+| D8 Kapan "Selesai" | Pisah `selesai_produksi` dari konfirmasi bayar | _(kosong)_ |
+| D9 Siapa tandai honor staf dibayar | Route `tandai-dibayar` super_admin only, bukan penerima honor; idempotent | _(kosong)_ |
+| D10 Super Admin godmode/monitoring | `User::isAdmin()` / helper otorisasi di Payment/Contract/Invoice controller | _(kosong)_ |
+| D11 Korlap per proyek | Scoping `AttendanceController` ke proyek yang di-assign | _(kosong)_ |
+| D12 Feature freeze | Tanggal freeze; fitur AT–AX mana yang masuk Bab 3 | _(kosong)_ |
+| D13 Repo public/private | Private, atau scrub history + hapus angka riil di `docs/CLAUDE.md` | _(kosong)_ |
+| D15 Palet homepage vs dashboard | Satukan brand (lime vs hijau) atau sahkan sebagai 2 konteks berbeda di UI-GUIDELINES | _(kosong)_ |
+
+## AY.7: Bersih-bersih role lama (teknis, boleh langsung setelah AY.1)
+
+Keputusan 5 role sudah final sejak 21 Sept, jadi ini bukan keputusan baru:
+1. Ganti `admin_default` / `casting_director` / `admin_korlap` di **test** ke `admin` / `client` / `korlap` (±35 file). Test harus tetap hijau.
+2. Hapus alias role lama dari `routes/web.php`, `CheckRole` (komentar "7 role" juga), `AdminManagementController::store`, dan helper di `User.php` — **setelah** poin 1 hijau.
+3. Hapus 6 file sidebar legacy (`sidebar-admin_default`, `_korlap`, `_sosmed`, `_talco`, `sidebar-casting_director`, `sidebar-admin-sub-role` kalau nggak dirujuk).
+4. Migration `disengketakan` di SQLite: pastikan test sengketa pembayaran lolos di SQLite (skip ALTER bikin CHECK constraint lama tetap nolak value baru).
+5. Jalankan full test **dan** sekali di MySQL lokal, bukan cuma SQLite.
+
+## Checklist AY
+
+| Item | Bukti (diisi Claude Code: commit + cara tes) | QA (dicentang Imanisa) |
+|---|---|---|
+| AY.1 (1–15) bug P0 | | [ ] |
+| AY.2 (1–7) fondasi UX | | [ ] |
+| AY.3 (1–6) design system | | [ ] |
+| AY.4 (1–9) aksi aman & ergonomi | | [ ] |
+| AY.5 (1–9) lubang komunikasi | | [ ] |
+| AY.7 (1–5) role lama | | [ ] |
+| AY.6 | **BLOCKED** — tunggu keputusan | — |
+
+**Skenario QA** (HP Android murah, tema terang, di luar ruangan, data seluler): (1) daftar Extras dari nol sampai upload video; (2) Korlap validasi 10 orang berturut-turut; (3) Admin kasih grade 20 pelamar + deal 1 fee; (4) Client baru ajukan proyek lalu Greenlight 5 kandidat; (5) Owner ACC proyek, cek Kelola Akun (4 aksi per-akun) dan halaman Keuangan. Catat di mana **bingung**, bukan cuma di mana error.

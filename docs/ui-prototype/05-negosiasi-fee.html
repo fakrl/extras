@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Negosiasi Fee — SIM Casting JBTB</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar">
+        <div class="sidebar-brand"><div class="logo">J</div><span>JBTB Casting</span></div>
+        <div class="sidebar-group-label">Menu Admin</div>
+        <a href="#" class="sidebar-link"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+        <a href="03-proyek-casting.html" class="sidebar-link"><i class="ti ti-movie"></i> Callsheet (Proyek Casting)</a>
+        <a href="05-negosiasi-fee.html" class="sidebar-link active"><i class="ti ti-currency-dollar"></i> Negosiasi Fee</a>
+        <a href="#" class="sidebar-link"><i class="ti ti-report"></i> Rekap Extras</a>
+        <a href="#" class="sidebar-link"><i class="ti ti-history"></i> Riwayat Kerja</a>
+        <a href="#" class="sidebar-link"><i class="ti ti-clipboard-check"></i> Presensi &amp; Absensi</a>
+        <a href="02-kelola-akun.html" class="sidebar-link"><i class="ti ti-users"></i> Manajemen Karyawan</a>
+    </aside>
+
+    <div class="main-area">
+        <div class="topbar">
+            <div class="topbar-title">Negosiasi Fee</div>
+            <div class="topbar-actions">
+                <button type="button" class="theme-toggle-btn" onclick="document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark')"><i class="ti ti-moon"></i></button>
+                <div class="avatar-badge">AD</div>
+            </div>
+        </div>
+
+        <main class="content">
+            <p style="color:var(--text-secondary); margin:-8px 0 20px; font-size:13.5px;">
+                Proyek: Iklan Kopi Kenangan — Ramadan Campaign ·
+                Rate card awal: Rp 750.000 ·
+                Status: <span class="badge badge-pending">nego</span>
+            </p>
+
+            <div class="card" style="margin-bottom:16px;">
+                <div style="font-size:14px; font-weight:500; margin-bottom:12px;">Riwayat Tawar-Menawar</div>
+                <table>
+                    <thead><tr><th>Ronde</th><th>Diajukan Oleh</th><th>Nominal</th><th>Aksi</th><th>Catatan / Alasan</th><th>Waktu</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td><td>admin</td>
+                            <td style="font-weight:600; color:var(--accent-strong);">Rp 600.000</td>
+                            <td><span class="badge badge-pending">counter</span></td>
+                            <td style="color:var(--text-secondary); font-size:12.5px;">Budget campaign terbatas</td>
+                            <td>21 Sep 2026 10:12</td>
+                        </tr>
+                        <tr>
+                            <td>2</td><td>extras</td>
+                            <td style="font-weight:600; color:var(--accent-strong);">Rp 700.000</td>
+                            <td><span class="badge badge-pending">counter</span></td>
+                            <td style="color:var(--text-secondary); font-size:12.5px;">Sudah termasuk transport pribadi</td>
+                            <td>21 Sep 2026 14:30</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                <form style="display:flex; gap:8px;">
+                    <input type="hidden" value="700000">
+                    <button class="btn btn-brand" type="button">Terima (Rp 700.000)</button>
+                </form>
+                <form style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <input type="number" class="input-inline" placeholder="Nominal counter" style="width:140px;">
+                    <input type="text" class="input-inline" placeholder="Catatan/alasan counter (opsional)" style="min-width:180px;">
+                    <button class="btn" type="button">Counter</button>
+                </form>
+                <button class="btn btn-danger-outline" type="button">Hentikan Negosiasi</button>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

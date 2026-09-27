@@ -1,7 +1,7 @@
 # SYSTEM-ARCHITECTURE.md — SIM Casting JBTB
 
 > **Status Dokumen:** Master Architecture & Requirement Specification (Resmi per 21 September 2026)  
-> **Dasar Keputusan:** Hasil sintesis Catatan Bimbingan Dosen (Erlina), Review Solution Architect, dan Validasi Stakeholder/Developer (Fakrul).  
+> **Dasar Keputusan:** Hasil sintesis Catatan Bimbingan Dospem (Pak Donna Endraswanto), arahan bisnis Erlina (Manager JBTB, penengah tim), Review Solution Architect (mentor), dan Validasi Stakeholder/Developer (Fakrul).  
 > **Fungsi File:** Blueprint arsitektural resmi untuk implementasi sistem, acuan penulisan Bab 3 Skripsi/Project Work, dan panduan lintas sesi AI.
 
 ---

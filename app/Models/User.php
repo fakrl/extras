@@ -168,7 +168,7 @@ class User extends Authenticatable
             self::ROLE_SUPER_ADMIN => '/super-admin/dashboard',
             self::ROLE_ADMIN, 'admin_default', 'admin_talco', 'admin_sosmed' => '/admin/dashboard',
             self::ROLE_KORLAP, 'admin_korlap' => '/admin/absensi',
-            self::ROLE_CLIENT, 'casting_director' => '/client/dashboard',
+            self::ROLE_CLIENT, 'casting_director' => '/cd/dashboard',
             self::ROLE_EXTRAS => '/extras/dashboard',
             default => '/login',
         };

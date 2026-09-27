@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Attendance;
 use App\Models\CastingProject;
+use App\Models\EventShootingDate;
 use App\Models\ProjectApplication;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,29 +23,47 @@ class AttendanceController extends Controller
      */
     public function index(Request $request)
     {
+        $today = now()->toDateString();
+
+        // Default proyek: yang punya shooting date paling dekat dengan hari ini
         $projects = CastingProject::orderByDesc('id')->get(['id', 'nama_produksi', 'client_ph']);
 
-        $castingProject = $projects->isNotEmpty()
-            ? CastingProject::with('shootingDates')->find($request->query('project', $projects->first()->id))
+        $defaultProjectId = $request->query('project');
+        if (! $defaultProjectId && $projects->isNotEmpty()) {
+            // Cari proyek yang punya shooting date paling dekat/sama dengan hari ini
+            $nearest = EventShootingDate::whereIn('casting_project_id', $projects->pluck('id'))
+                ->where('tanggal', '>=', $today)
+                ->orderBy('tanggal')
+                ->first();
+            $defaultProjectId = $nearest?->casting_project_id ?? $projects->first()->id;
+        }
+
+        $castingProject = $defaultProjectId
+            ? CastingProject::with('shootingDates')->find($defaultProjectId)
             : null;
 
         $shootingDate = null;
         $applicants = collect();
 
         if ($castingProject) {
-            $shootingDate = $request->filled('tanggal')
-                ? $castingProject->shootingDates->firstWhere('id', (int) $request->query('tanggal'))
-                : $castingProject->shootingDates->first();
+            if ($request->filled('tanggal')) {
+                $shootingDate = $castingProject->shootingDates->firstWhere('id', (int) $request->query('tanggal'));
+            } else {
+                // Default: tanggal paling dekat/sama dengan hari ini
+                $shootingDate = $castingProject->shootingDates->firstWhere(fn ($sd) => $sd->tanggal->toDateString() >= $today)
+                    ?? $castingProject->shootingDates->first();
+            }
 
             if ($shootingDate) {
                 $applicants = $castingProject->applications()
                     ->whereIn('status_partisipasi', ProjectApplication::STATUS_AKTIF)
                     ->with(['extras.user', 'castingProjectClass', 'attendances.divalidasiOleh'])
-                    ->get();
+                    ->get()
+                    ->sortBy(fn ($a) => $a->jam_callingan ?: $a->castingProjectClass?->jam_callingan ?: '99:99');
             }
         }
 
-        return view('admin.attendance.index', compact('projects', 'castingProject', 'shootingDate', 'applicants'));
+        return view('admin.attendance.index', compact('projects', 'castingProject', 'shootingDate', 'applicants', 'today'));
     }
 
     public function store(Request $request, ProjectApplication $application): RedirectResponse
@@ -144,12 +163,14 @@ class AttendanceController extends Controller
 
     public function tolakValidasi(Request $request, Attendance $attendance): RedirectResponse
     {
+        $data = $request->validate(['alasan' => ['required', 'string', 'max:500']]);
+
         $attendance->update([
             'status' => 'tidak_hadir',
             'status_validasi' => 'tervalidasi',
             'divalidasi_oleh' => $request->user()->id,
             'divalidasi_at' => now(),
-            'catatan' => ($attendance->catatan ? $attendance->catatan.' | ' : '').'Ditolak Korlap di lokasi.',
+            'catatan' => $data['alasan'],
         ]);
 
         ActivityLog::record(

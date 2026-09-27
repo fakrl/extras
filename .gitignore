@@ -28,3 +28,6 @@ Thumbs.db
 # File lama tetap ada di riwayat commit, ini bukan history rewrite.)
 docs/DEV-NOTES.md
 docs/CLAUDE.local.md
+
+# Review arsitektur berisi daftar celah keamanan, jangan dipublish (repo public)
+docs/ARCHITECTURE-REVIEW-*.md

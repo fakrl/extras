@@ -24,12 +24,65 @@
     @php $tabs = ['' => 'Semua', 'A' => 'Grade A', 'B' => 'Grade B', 'C' => 'Grade C', 'belum' => 'Belum Dinilai']; @endphp
     @foreach ($tabs as $value => $label)
         <a href="{{ route('admin.projects.applicants', [$castingProject, 'grade' => $value ?: null]) }}"
-           class="btn btn-sm {{ ($grade ?? '') === $value ? 'btn-brand' : '' }}">{{ $label }}</a>
+           class="btn btn-sm {{ ($tab ?? '') !== 'cd' && ($grade ?? '') === $value ? 'btn-brand' : '' }}">{{ $label }}</a>
     @endforeach
+    <a href="{{ route('admin.projects.applicants', [$castingProject, 'tab' => 'cd']) }}"
+       class="btn btn-sm {{ ($tab ?? '') === 'cd' ? 'btn-brand' : '' }}">Sudah ke Client</a>
 </div>
 
+<div style="position: relative; margin-bottom: 16px;">
+    <input type="text" id="search-applicants" placeholder="Cari nama pelamar, alias/username, peran, kelas..."
+           style="width: 100%; max-width: 400px; padding: 8px 14px 8px 36px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13.5px; background: var(--bg-card); color: var(--text-primary); margin-bottom: 0;">
+    <i class="ti ti-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 15px;"></i>
+</div>
+
+<div id="no-applicants-match" class="card" style="display: none; text-align: center; color: var(--text-muted); padding: 24px;">
+    Tidak ada pelamar yang sesuai dengan pencarian.
+</div>
+
+@if (($tab ?? '') === 'cd')
+    @php
+        $cdStatusLabel = [
+            'diajukan_ke_cd' => 'Menunggu Review Client',
+            'direview_cd' => 'Sedang Direview',
+            'lolos' => 'Lolos',
+            'ditolak' => 'Ditolak',
+        ];
+        $cdStatusBadge = [
+            'diajukan_ke_cd' => 'badge-pending',
+            'direview_cd' => 'badge-pending',
+            'lolos' => 'badge-aktif',
+            'ditolak' => 'badge-tolak',
+        ];
+    @endphp
+    @forelse ($applicants as $app)
+        <div class="card applicant-card-item" data-search="{{ strtolower(($app->extras->user->username ?? '') . ' ' . ($app->castingProjectClass->nama_kelas ?? '')) }}" style="margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <div>
+                    <div style="font-weight: 600; font-size: 14px;">{{ $app->extras->user->username ?? '(belum isi username)' }}</div>
+                    <div style="font-size: 12.5px; color: var(--text-secondary);">Kelas: {{ $app->castingProjectClass->nama_kelas ?? 'Umum' }}</div>
+                </div>
+                <span class="badge {{ $cdStatusBadge[$app->status_partisipasi] ?? 'badge-pending' }}">
+                    {{ $cdStatusLabel[$app->status_partisipasi] ?? $app->status_partisipasi }}
+                </span>
+            </div>
+        </div>
+    @empty
+        <div class="card" style="text-align: center; color: var(--text-muted); padding: 20px;">Belum ada kandidat yang diajukan ke Client.</div>
+    @endforelse
+@else
+
 @forelse ($applicants as $app)
-    <div class="applicant-card">
+    @php
+        $searchString = strtolower(
+            ($app->extras->user->username ?? '') . ' ' .
+            ($app->extras->user->name ?? '') . ' ' .
+            ($app->karakter ?: ($app->castingProjectClass->karakter ?? '')) . ' ' .
+            ($app->castingProjectClass->nama_kelas ?? '') . ' ' .
+            ($app->status_partisipasi ?? '')
+        );
+    @endphp
+    <div class="applicant-card applicant-card-item" data-search="{{ $searchString }}">
         <div class="applicant-card-photo">
             @if ($app->extras->foto_profil_path)
                 <img src="{{ route('extras.media.foto', $app->extras) }}" alt="Foto Extras">
@@ -276,4 +329,30 @@
         Belum ada pendaftar.
     </div>
 @endforelse
+@endif
+
+@push('scripts')
+<script>
+(function () {
+    var searchInput = document.getElementById('search-applicants');
+    var cards = document.querySelectorAll('.applicant-card-item');
+    var noMatch = document.getElementById('no-applicants-match');
+    if (!searchInput) return;
+
+    searchInput.addEventListener('input', function () {
+        var q = this.value.toLowerCase().trim();
+        var visibleCount = 0;
+        cards.forEach(function (card) {
+            var text = card.dataset.search || card.textContent.toLowerCase();
+            var match = !q || text.includes(q);
+            card.style.display = match ? '' : 'none';
+            if (match) visibleCount++;
+        });
+        if (noMatch) {
+            noMatch.style.display = (visibleCount === 0 && q.length > 0) ? 'block' : 'none';
+        }
+    });
+})();
+</script>
+@endpush
 @endsection

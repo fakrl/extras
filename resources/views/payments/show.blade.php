@@ -7,6 +7,7 @@
         'belum_dibayar' => 'badge-tolak',
         'ditransfer' => 'badge-pending',
         'dikonfirmasi_diterima' => 'badge-aktif',
+        'disengketakan' => 'badge-pending',
     ];
 @endphp
 
@@ -54,6 +55,25 @@
         @csrf
         <button class="btn btn-brand">Konfirmasi Sudah Terima</button>
     </form>
+    <div style="margin-top: 12px;">
+        <button onclick="var f=document.getElementById('form-sengketa');f.style.display=f.style.display==='none'?'block':'none'" class="btn btn-sm" style="background: var(--warning, #eab308); color: #000;">
+            Laporkan Masalah
+        </button>
+        <div id="form-sengketa" style="display:none; margin-top: 10px;">
+            <form method="POST" action="{{ route('payments.sengketa', $application) }}">
+                @csrf
+                <textarea name="alasan" rows="3" placeholder="Jelaskan masalahnya (maks 500 karakter)" maxlength="500" required style="width: 100%; margin-bottom: 8px; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); resize: vertical;"></textarea>
+                <button type="submit" class="btn btn-sm" style="background: var(--danger, #ef4444); color: #fff;">Kirim Laporan</button>
+            </form>
+        </div>
+    </div>
+@endif
+
+@if ($application->payment->status === 'disengketakan')
+    <div style="background: rgba(234, 179, 8, 0.1); border: 1px solid var(--warning, #eab308); border-radius: 8px; padding: 12px 16px; margin-top: 12px;">
+        <div style="font-weight: 600; color: var(--warning, #eab308); margin-bottom: 4px;"><i class="ti ti-alert-circle"></i> Pembayaran Sedang Disengketakan</div>
+        <div style="font-size: 13px; color: var(--text-secondary);">{{ $application->payment->alasan_sengketa }}</div>
+    </div>
 @endif
 
 @if ($application->payment->status === 'dikonfirmasi_diterima')

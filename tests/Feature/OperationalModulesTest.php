@@ -165,7 +165,7 @@ class OperationalModulesTest extends TestCase
         $this->assertSame($korlap->id, $attendance->divalidasi_oleh);
 
         // Korlap tolak validasi
-        $tolakResponse = $this->actingAs($korlap)->post(route('admin.absensi.tolak', $attendance));
+        $tolakResponse = $this->actingAs($korlap)->post(route('admin.absensi.tolak', $attendance), ['alasan' => 'Tidak terdeteksi di lokasi.']);
         $tolakResponse->assertRedirect();
 
         $attendance->refresh();

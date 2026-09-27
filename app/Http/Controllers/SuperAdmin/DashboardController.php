@@ -8,17 +8,78 @@ use App\Models\CastingProject;
 use App\Models\EventShootingDate;
 use App\Models\StaffPayroll;
 use App\Models\User;
+use App\Notifications\InAppNotification;
+use App\Services\KeuanganService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function __construct(
+        protected KeuanganService $keuanganService
+    ) {}
+
+    private function periodDates(string $period): array
     {
+        $now = Carbon::now();
+        $end = $now->copy()->endOfDay();
+
+        $start = match ($period) {
+            '7d' => $now->copy()->subDays(6)->startOfDay(),
+            '1y' => $now->copy()->subYear()->startOfDay(),
+            default => $now->copy()->subDays(29)->startOfDay(), // 30d
+        };
+
+        $length = $start->diffInDays($end) + 1;
+        $prevEnd = $start->copy()->subDay()->endOfDay();
+        $prevStart = $prevEnd->copy()->subDays($length - 1)->startOfDay();
+
+        return compact('start', 'end', 'prevStart', 'prevEnd');
+    }
+
+    private function trendBadge(int|float $current, int|float $previous): ?array
+    {
+        if ($current === 0 && $previous === 0) {
+            return null;
+        }
+        if ($previous === 0 && $current > 0) {
+            return ['label' => '+baru', 'up' => true];
+        }
+        $pct = ($current - $previous) / $previous * 100;
+
+        return ['label' => ($pct >= 0 ? '+' : '').round($pct, 1).'%', 'up' => $pct >= 0];
+    }
+
+    public function index(Request $request)
+    {
+        $period = in_array($request->query('period'), ['7d', '30d', '1y']) ? $request->query('period') : '30d';
+        ['start' => $start, 'end' => $end, 'prevStart' => $prevStart, 'prevEnd' => $prevEnd] = $this->periodDates($period);
+
+        // Metric: Proyek Berjalan (proyek dibuka, created_at dalam period)
         $proyekBerjalan = CastingProject::where('status', 'dibuka')->count();
+        // ponytail: skip trend proyekBerjalan — "dibuka" adalah status realtime, bukan time-series; period filter tidak relevan
+
+        // Metric: Extras Aktif (semua waktu, tapi trend dihitung dari created_at periode)
         $extrasAktif = User::where('role', 'extras')->where('status', 'aktif')->count();
+        $extrasAktifPrev = User::where('role', 'extras')->where('status', 'aktif')
+            ->whereBetween('created_at', [$prevStart, $prevEnd])->count();
+        $extrasAktifCurr = User::where('role', 'extras')->where('status', 'aktif')
+            ->whereBetween('created_at', [$start, $end])->count();
+        $trendExtrasAktif = $this->trendBadge($extrasAktifCurr, $extrasAktifPrev);
+
+        // Metric: Total Akun
         $totalAkun = User::count();
+        $totalAkunCurr = User::whereBetween('created_at', [$start, $end])->count();
+        $totalAkunPrev = User::whereBetween('created_at', [$prevStart, $prevEnd])->count();
+        $trendTotalAkun = $this->trendBadge($totalAkunCurr, $totalAkunPrev);
+
+        // Metric: Honor Belum Diproses
         $honorBelumDiproses = StaffPayroll::whereNull('generated_at')->count();
+        // ponytail: skip trend honorBelumDiproses — StaffPayroll tidak punya kolom waktu yang cocok untuk period filter ini
+
+        // AT.2 & AV.6: Margin bulan ini (Single Source of Truth)
+        $marginBulanIni = $this->keuanganService->marginBulanIni();
 
         $roleDisplayNames = [
             'super_admin' => 'Super Admin',
@@ -65,16 +126,32 @@ class DashboardController extends Controller
         ])->with('castingProject:id,nama_produksi')->get()
             ->map(fn ($e) => tap($e, fn ($e) => $e->nama_produksi = $e->castingProject?->nama_produksi));
 
+        $chartStatusProyek = [
+            'labels' => ['Dibuka', 'Ditutup'],
+            'data' => [
+                CastingProject::where('status', 'dibuka')->count(),
+                CastingProject::where('status', 'ditutup')->count(),
+            ],
+        ];
+
+        $chartMarginBulanan = $this->keuanganService->trendMarginBulanan();
+
         return view('super-admin.dashboard', compact(
+            'period',
             'proyekBerjalan',
             'extrasAktif',
             'totalAkun',
             'honorBelumDiproses',
+            'trendExtrasAktif',
+            'trendTotalAkun',
+            'marginBulanIni',
             'rekapHonorAdmin',
             'pendingRequests',
             'ringkasanProyek',
             'rekapMarginUrl',
-            'jadwalBulanIni'
+            'jadwalBulanIni',
+            'chartStatusProyek',
+            'chartMarginBulanan'
         ));
     }
 
@@ -90,6 +167,17 @@ class DashboardController extends Controller
             "Super Admin menyetujui (ACC) permintaan proyek '{$castingProject->nama_produksi}' dari Client",
             $castingProject
         );
+
+        $castingProject->loadMissing('admin');
+        $admin = $castingProject->admin;
+        if ($admin) {
+            $judulAcc = 'Proyek Baru Disetujui';
+            $pesanAcc = "Permintaan proyek '{$castingProject->nama_produksi}' telah disetujui Super Admin. Silakan lengkapi detail proyek.";
+            try {
+                $admin->notify(new InAppNotification($judulAcc, $pesanAcc));
+            } catch (\Throwable) {
+            }
+        }
 
         return back()->with('status', "Permintaan proyek '{$castingProject->nama_produksi}' berhasil disetujui (ACC). Proyek kini masuk antrean Admin.");
     }

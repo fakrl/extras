@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kelola Akun — SIM Casting JBTB</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar">
+        <div class="sidebar-brand"><div class="logo">J</div><span>JBTB Casting</span></div>
+        <div class="sidebar-group-label">Aplikasi &amp; Monitoring</div>
+        <a href="01-dashboard-superadmin.html" class="sidebar-link"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+        <a href="#" class="sidebar-link"><i class="ti ti-eye"></i> Monitoring Akun</a>
+        <a href="#" class="sidebar-link"><i class="ti ti-activity"></i> Log Aktivitas</a>
+        <a href="#" class="sidebar-link"><i class="ti ti-report-money"></i> Rekap Margin</a>
+
+        <div class="sidebar-group-label">Manajemen Akun</div>
+        <details class="sidebar-dropdown" open>
+            <summary class="sidebar-dropdown-summary">
+                <span><i class="ti ti-users-group" style="margin-right:6px;"></i> Kelola Akun</span>
+                <i class="ti ti-chevron-right chevron-icon"></i>
+            </summary>
+            <div class="sidebar-submenu">
+                <a href="02-kelola-akun.html" class="sidebar-link active"><i class="ti ti-shield"></i> Admin</a>
+                <a href="02-kelola-akun.html" class="sidebar-link"><i class="ti ti-map-pin"></i> Korlap</a>
+                <a href="02-kelola-akun.html" class="sidebar-link"><i class="ti ti-building"></i> Client</a>
+                <a href="02-kelola-akun.html" class="sidebar-link"><i class="ti ti-user-star"></i> Extras</a>
+            </div>
+        </details>
+
+        <div class="sidebar-group-label">Operasional</div>
+        <details class="sidebar-dropdown">
+            <summary class="sidebar-dropdown-summary">
+                <span><i class="ti ti-settings" style="margin-right:6px;"></i> Admin</span>
+                <i class="ti ti-chevron-right chevron-icon"></i>
+            </summary>
+            <div class="sidebar-submenu">
+                <a href="03-proyek-casting.html" class="sidebar-link"><i class="ti ti-movie"></i> Manajemen Proyek</a>
+                <a href="#" class="sidebar-link"><i class="ti ti-report"></i> Rekap Extras</a>
+                <a href="#" class="sidebar-link"><i class="ti ti-history"></i> Riwayat Kerja</a>
+                <a href="#" class="sidebar-link"><i class="ti ti-clipboard-check"></i> Presensi &amp; Absensi</a>
+            </div>
+        </details>
+    </aside>
+
+    <div class="main-area">
+        <div class="topbar">
+            <div class="topbar-title">Kelola Akun</div>
+            <div class="topbar-actions">
+                <button type="button" class="theme-toggle-btn" onclick="document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark')"><i class="ti ti-moon"></i></button>
+                <div class="avatar-badge">SA</div>
+            </div>
+        </div>
+
+        <main class="content">
+            <div class="card-header-row">
+                <div style="font-size:16px; font-weight:600;">Manajemen Admin &amp; Staf</div>
+                <button type="button" class="btn btn-brand">+ Tambah Admin</button>
+            </div>
+
+            <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+                <button class="btn btn-brand">Semua Role</button>
+                <button class="btn">Admin</button>
+                <button class="btn">Korlap</button>
+                <button class="btn">Client</button>
+                <button class="btn">Super Admin</button>
+                <button class="btn">Extras (Read-only)</button>
+            </div>
+            <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
+                <span style="font-size:12.5px; color:var(--text-muted); font-weight:600;">Filter Status:</span>
+                <button class="btn btn-brand">Semua</button>
+                <button class="btn">Aktif</button>
+                <button class="btn">Nonaktif / Arsip</button>
+            </div>
+
+            <div style="margin-bottom:8px;">
+                <label style="font-size:13px; color:var(--text-muted); cursor:pointer;">
+                    <input type="checkbox" style="margin-right:4px;"> Pilih Semua
+                </label>
+            </div>
+
+            <div style="display:flex; margin-bottom:12px; padding:10px 14px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:8px; gap:8px; align-items:center; flex-wrap:wrap;">
+                <span style="font-size:13px; color:var(--text-muted);">2 akun dipilih</span>
+                <select style="padding:6px 10px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary); font-size:13px; min-height:auto; margin-bottom:0; width:auto;">
+                    <option>— Pilih Aksi —</option>
+                    <option>Nonaktifkan</option>
+                    <option>Aktifkan</option>
+                </select>
+                <button class="btn btn-sm btn-brand">Terapkan</button>
+            </div>
+
+            <div class="card" style="margin-bottom:14px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <input type="checkbox" checked style="margin-top:4px;">
+                        <div>
+                            <div style="font-weight:600; font-size:14.5px; color:var(--text-primary);">
+                                Ahmad Fauzi <span class="badge badge-pending">admin</span> <span class="badge badge-aktif">aktif</span>
+                            </div>
+                            <div style="color:var(--text-muted); font-size:12.5px;">ahmad.fauzi@jbtbcasting.id</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <button class="btn btn-sm">Reset Password</button>
+                        <button class="btn btn-sm btn-danger-outline">Nonaktifkan</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom:14px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <input type="checkbox" checked style="margin-top:4px;">
+                        <div>
+                            <div style="font-weight:600; font-size:14.5px; color:var(--text-primary);">
+                                Dedi Kurniawan <span class="badge badge-pending">korlap</span> <span class="badge badge-aktif">aktif</span>
+                            </div>
+                            <div style="color:var(--text-muted); font-size:12.5px;">dedi.k@jbtbcasting.id</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <button class="btn btn-sm">Reset Password</button>
+                        <button class="btn btn-sm btn-danger-outline">Nonaktifkan</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom:14px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="display:inline-block; width:13px;"></span>
+                        <div>
+                            <div style="font-weight:600; font-size:14.5px; color:var(--text-primary);">
+                                Nadia Putri <span class="badge badge-pending">korlap</span> <span class="badge badge-tolak">nonaktif</span>
+                            </div>
+                            <div style="color:var(--text-muted); font-size:12.5px;">nadia.putri@jbtbcasting.id</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <button class="btn btn-sm btn-brand">Aktifkan Kembali</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

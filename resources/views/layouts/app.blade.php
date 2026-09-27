@@ -423,6 +423,21 @@
             .card, .metric-card { padding: 12px; }
         }
     </style>
+    <style>
+        .notif-badge {
+            position:absolute; top:-4px; right:-4px;
+            background:var(--danger); color:#fff;
+            font-size:9px; font-weight:700; min-width:16px; height:16px;
+            border-radius:8px; display:flex; align-items:center; justify-content:center;
+            padding:0 3px; pointer-events:none;
+        }
+        .notif-dropdown {
+            position:absolute; right:0; top:calc(100% + 8px); z-index:300;
+            background:var(--bg-card); border:1px solid var(--border-color);
+            border-radius:10px; min-width:280px; max-width:320px;
+            box-shadow:0 4px 16px rgba(0,0,0,0.18); overflow:hidden;
+        }
+    </style>
     @stack('styles')
 </head>
 <body>
@@ -443,6 +458,39 @@
                         <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Ganti tema">
                             <i class="ti ti-sun" id="theme-icon"></i>
                         </button>
+                        <div class="notif-bell-wrap" style="position:relative;">
+                            <button type="button" class="theme-toggle-btn" id="notif-bell-btn" aria-label="Notifikasi" style="position:relative;">
+                                <i class="ti ti-bell"></i>
+                                @if(auth()->user()->unreadNotifications->count() > 0)
+                                    <span class="notif-badge">{{ auth()->user()->unreadNotifications->count() }}</span>
+                                @endif
+                            </button>
+                            <div class="notif-dropdown" id="notif-dropdown" style="display:none;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px 6px;border-bottom:1px solid var(--border-color);">
+                                    <span style="font-size:13px;font-weight:600;">Notifikasi</span>
+                                    @if(auth()->user()->unreadNotifications->count() > 0)
+                                        <form method="POST" action="{{ route('notifications.read-all') }}" style="margin:0;">
+                                            @csrf
+                                            <button type="submit" style="font-size:11px;color:var(--accent-strong);background:none;border:none;cursor:pointer;padding:0;min-height:auto;">Tandai semua dibaca</button>
+                                        </form>
+                                    @endif
+                                </div>
+                                @forelse(auth()->user()->notifications->take(5) as $notif)
+                                    <div style="padding:10px 14px;border-bottom:1px solid var(--border-color);{{ $notif->read_at ? '' : 'background:var(--bg-nav-active);' }}">
+                                        <div style="font-size:13px;font-weight:{{ $notif->read_at ? '400' : '600' }};margin-bottom:2px;">{{ $notif->data['judul'] ?? '' }}</div>
+                                        <div style="font-size:12px;color:var(--text-secondary);line-height:1.4;">{{ mb_substr($notif->data['pesan'] ?? '', 0, 80) }}</div>
+                                        <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">{{ $notif->created_at->diffForHumans() }}</div>
+                                    </div>
+                                @empty
+                                    <div style="padding:16px 14px;font-size:13px;color:var(--text-muted);text-align:center;">Tidak ada notifikasi.</div>
+                                @endforelse
+                                @if(auth()->user()->notifications->count() > 5)
+                                    <div style="padding:8px 14px;text-align:center;">
+                                        <span style="font-size:12px;color:var(--text-muted);">+{{ auth()->user()->notifications->count() - 5 }} notifikasi lainnya</span>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
                         <details class="navbar-user-menu" id="topbar-user-menu">
                             <summary class="avatar-badge-summary">
                                 @if (auth()->user()->isExtras() && auth()->user()->extrasProfile?->foto_profil_path)
@@ -509,6 +557,26 @@
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script>
+        (function() {
+            var bellBtn = document.getElementById('notif-bell-btn');
+            var notifDrop = document.getElementById('notif-dropdown');
+            if (bellBtn && notifDrop) {
+                bellBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    notifDrop.style.display = notifDrop.style.display === 'none' ? 'block' : 'none';
+                });
+                document.addEventListener('click', function() {
+                    if (notifDrop) notifDrop.style.display = 'none';
+                });
+            }
+        })();
+    </script>
     @stack('scripts')
+    @auth
+        @if(auth()->user()?->role === 'super_admin')
+            <x-command-palette />
+        @endif
+    @endauth
 </body>
 </html>

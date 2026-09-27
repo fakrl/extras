@@ -12,9 +12,10 @@
 
             <div style="margin-bottom:16px;">
                 <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:500;">Kata Sandi Saat Ini</label>
-                <input type="password" name="current_password"
+                <input type="password" name="current_password" id="current-password-field"
                     class="{{ $errors->has('current_password') ? 'input-error' : '' }}"
                     style="width:100%; padding:9px 12px; border-radius:7px; border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary); font-size:14px;">
+                <span id="cp-hint" style="font-size:12px; margin-top:4px; display:block;"></span>
                 @error('current_password')
                     <span style="color:var(--danger); font-size:12px; margin-top:4px; display:block;">{{ $message }}</span>
                 @enderror
@@ -40,4 +41,37 @@
         </form>
     </div>
 </div>
+@push('scripts')
+<script>
+(function () {
+    var timer;
+    var hint = document.getElementById('cp-hint');
+    document.getElementById('current-password-field').addEventListener('input', function () {
+        var val = this.value;
+        clearTimeout(timer);
+        if (!val) { hint.textContent = ''; return; }
+        timer = setTimeout(function () {
+            fetch('{{ route('ubah-password.validate') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                },
+                body: JSON.stringify({ password: val }),
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.valid) {
+                    hint.textContent = '';
+                } else {
+                    hint.style.color = 'var(--danger)';
+                    hint.textContent = 'Password saat ini tidak cocok';
+                }
+            });
+        }, 500);
+    });
+}());
+</script>
+@endpush
+
 @endsection

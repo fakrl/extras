@@ -56,6 +56,8 @@ class DashboardController extends Controller
             ],
         ];
 
+        $pembayaranSengketa = Payment::where('status', 'disengketakan')->count();
+
         $urgentProjects = CastingProject::where('status', 'dibuka')
             ->with(['shootingDates', 'applications'])
             ->get()
@@ -76,7 +78,8 @@ class DashboardController extends Controller
             'chartStatusPartisipasi',
             'chartStatusPembayaran',
             'urgentProjects',
-            'jadwalBulanIni'
+            'jadwalBulanIni',
+            'pembayaranSengketa'
         ));
     }
 }

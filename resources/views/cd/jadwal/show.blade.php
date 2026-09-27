@@ -70,6 +70,35 @@
 
             <button type="submit" class="btn btn-brand" style="width: 100%;">Simpan Jadwal Tanggal Ini</button>
         </form>
+
+        @if ($date->attendances->isNotEmpty())
+            <div style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 14px;">
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 10px; color: var(--text-secondary);">
+                    <i class="ti ti-camera"></i> Bukti Kehadiran ({{ $date->attendances->count() }} peserta)
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    @foreach ($date->attendances as $absen)
+                        @if ($absen->foto_path)
+                            <div style="text-align: center;">
+                                <a href="{{ route('cd.absensi.foto', $absen) }}" target="_blank">
+                                    <img src="{{ route('cd.absensi.foto', $absen) }}" alt="Foto absensi"
+                                         style="width: 72px; height: 72px; object-fit: cover; border-radius: 6px; border: 2px solid {{ $absen->status_validasi === 'tervalidasi' ? 'var(--accent)' : 'var(--border-color)' }};">
+                                </a>
+                                <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">
+                                    @if ($absen->status_validasi === 'tervalidasi' && $absen->status === 'hadir')
+                                        <span style="color: var(--accent);">✓ Hadir</span>
+                                    @elseif ($absen->status_validasi === 'tervalidasi' && $absen->status === 'tidak_hadir')
+                                        <span style="color: var(--danger, #d9534f);">✗ Absen</span>
+                                    @else
+                                        <span>Pending</span>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+        @endif
     </div>
 @empty
     <div class="card" style="color: var(--text-muted);">Belum ada tanggal shooting untuk proyek ini.</div>
