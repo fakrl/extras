@@ -96,7 +96,7 @@
             @foreach ($fotoTambahan as $slot => $foto)
                 <div @if($slot === 1) style="grid-column: span 2;" @endif>
                     @if($slot === 1)
-                        <p style="font-size:11px; color:var(--accent-strong); font-weight:600; margin:0 0 4px; text-transform:uppercase; letter-spacing:.5px;">Foto Grid (kolase gaya Instagram)</p>
+                        <p style="font-size: var(--fs-xs); color:var(--accent-strong); font-weight:600; margin:0 0 4px; text-transform:uppercase; letter-spacing:.5px;">Foto Grid (kolase gaya Instagram)</p>
                     @endif
                     <label for="upload-slot-{{ $slot }}" class="media-upload-box photo-slot-box" id="box-slot-{{ $slot }}"
                            @if($slot === 1) style="aspect-ratio:2/1;" @endif>

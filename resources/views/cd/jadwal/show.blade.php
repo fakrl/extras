@@ -76,7 +76,7 @@
                                     <img src="{{ route('cd.absensi.foto', $absen) }}" alt="Foto absensi"
                                          style="width: 72px; height: 72px; object-fit: cover; border-radius: 6px; border: 2px solid {{ $absen->status_validasi === 'tervalidasi' ? 'var(--accent)' : 'var(--border-color)' }};">
                                 </a>
-                                <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">
+                                <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 2px;">
                                     @if ($absen->status_validasi === 'tervalidasi' && $absen->status === 'hadir')
                                         <span style="color: var(--accent);">✓ Hadir</span>
                                     @elseif ($absen->status_validasi === 'tervalidasi' && $absen->status === 'tidak_hadir')

@@ -3,13 +3,13 @@
         <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border-color);">
             <i class="ti ti-search" style="font-size:18px;color:var(--text-muted);flex-shrink:0;"></i>
             <input type="text" id="cmd-search-input" placeholder="Cari proyek, akun..." autocomplete="off"
-                style="flex:1;border:none;background:transparent;font-size:15px;color:var(--text-primary);outline:none;padding:0;margin:0;min-height:unset;width:auto;">
-            <kbd style="font-size:11px;color:var(--text-muted);border:1px solid var(--border-color);border-radius:4px;padding:2px 5px;">Esc</kbd>
+                style="flex:1;border:none;background:transparent;font-size:var(--fs-md);color:var(--text-primary);outline:none;padding:0;margin:0;min-height:unset;width:auto;">
+            <kbd style="font-size: var(--fs-xs);color:var(--text-muted);border:1px solid var(--border-color);border-radius:4px;padding:2px 5px;">Esc</kbd>
         </div>
         <div id="cmd-results" style="max-height:360px;overflow-y:auto;">
             <div id="cmd-empty" style="padding:20px 16px;text-align:center;color:var(--text-muted);font-size:13.5px;">Ketik minimal 2 karakter untuk mencari...</div>
         </div>
-        <div style="padding:8px 14px;border-top:1px solid var(--border-color);display:flex;gap:12px;font-size:11px;color:var(--text-muted);">
+        <div style="padding:8px 14px;border-top:1px solid var(--border-color);display:flex;gap:12px;font-size: var(--fs-xs);color:var(--text-muted);">
             <span><kbd style="border:1px solid var(--border-color);border-radius:3px;padding:1px 4px;">↑↓</kbd> navigasi</span>
             <span><kbd style="border:1px solid var(--border-color);border-radius:3px;padding:1px 4px;">Enter</kbd> buka</span>
             <span><kbd style="border:1px solid var(--border-color);border-radius:3px;padding:1px 4px;">Esc</kbd> tutup</span>
@@ -116,7 +116,7 @@
 
         if (data.proyek && data.proyek.length > 0) {
             var hdr = document.createElement('div');
-            hdr.style.cssText = 'padding:8px 16px 4px;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);font-weight:600;';
+            hdr.style.cssText = 'padding:8px 16px 4px;font-size: var(--fs-xs);text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);font-weight:600;';
             hdr.textContent = 'Proyek Casting';
             resultsEl.appendChild(hdr);
             data.proyek.forEach(function(item) { resultsEl.appendChild(makeItem(item)); });
@@ -124,7 +124,7 @@
 
         if (data.akun && data.akun.length > 0) {
             var hdr2 = document.createElement('div');
-            hdr2.style.cssText = 'padding:8px 16px 4px;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);font-weight:600;';
+            hdr2.style.cssText = 'padding:8px 16px 4px;font-size: var(--fs-xs);text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);font-weight:600;';
             hdr2.textContent = 'Akun';
             resultsEl.appendChild(hdr2);
             data.akun.forEach(function(item) { resultsEl.appendChild(makeItem(item)); });

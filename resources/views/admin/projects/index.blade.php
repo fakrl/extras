@@ -18,7 +18,7 @@
 @else
     <div style="position: relative; margin-bottom: 16px;">
         <input type="text" id="search-projects" placeholder="Cari nama produksi, client PH, atau status..."
-               style="width: 100%; max-width: 400px; padding: 8px 14px 8px 36px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13.5px; background: var(--bg-card); color: var(--text-primary); margin-bottom: 0;">
+               style="width: 100%; max-width: 400px; padding: 8px 14px 8px 36px; border: 1px solid var(--border-color); border-radius: 8px; font-size: var(--fs-md); background: var(--bg-card); color: var(--text-primary); margin-bottom: 0;">
         <i class="ti ti-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 15px;"></i>
     </div>
 

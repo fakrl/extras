@@ -26,6 +26,44 @@ class ProjectApplication extends Model
 
     const STATUS_LOLOS_KE_ATAS = ['lolos', 'kontrak_ditandatangani', 'selesai_produksi'];
 
+    const LABELS = [
+        'diajukan' => 'Diajukan',
+        'direview_admin' => 'Direview Admin',
+        'nego_fee' => 'Nego Fee',
+        'deal' => 'Deal',
+        'diajukan_ke_cd' => 'Diajukan ke Client',
+        'direview_cd' => 'Direview Client',
+        'lolos' => 'Lolos',
+        'ditolak' => 'Ditolak',
+        'kontrak_ditandatangani' => 'Kontrak Ditandatangani',
+        'selesai_produksi' => 'Selesai Produksi',
+        'dibatalkan' => 'Dibatalkan',
+    ];
+
+    const BADGES = [
+        'diajukan' => 'badge-netral',
+        'direview_admin' => 'badge-info',
+        'nego_fee' => 'badge-pending',
+        'deal' => 'badge-aktif',
+        'diajukan_ke_cd' => 'badge-info',
+        'direview_cd' => 'badge-info',
+        'lolos' => 'badge-aktif',
+        'ditolak' => 'badge-tolak',
+        'kontrak_ditandatangani' => 'badge-aktif',
+        'selesai_produksi' => 'badge-aktif',
+        'dibatalkan' => 'badge-tolak',
+    ];
+
+    public function label(): string
+    {
+        return self::LABELS[$this->status_partisipasi] ?? ucfirst(str_replace('_', ' ', $this->status_partisipasi));
+    }
+
+    public function badgeClass(): string
+    {
+        return self::BADGES[$this->status_partisipasi] ?? 'badge-netral';
+    }
+
     public function getKarakterAttribute(): ?string
     {
         return $this->karakter_override ?? $this->castingProjectClass?->karakter;

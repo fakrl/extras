@@ -44,7 +44,7 @@
                     </td>
                     <td>
                         @foreach ($ex->categories as $kat)
-                            <span class="badge badge-pending" style="font-size:11px;">{{ $kat->nama }}</span>
+                            <span class="badge badge-pending" style="font-size: var(--fs-xs);">{{ $kat->nama }}</span>
                         @endforeach
                     </td>
                 </tr>

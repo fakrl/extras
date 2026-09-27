@@ -8,7 +8,7 @@
 
 <div style="position: relative; margin-bottom: 16px;">
     <input type="text" id="search-casting-call" placeholder="Cari judul proyek, client PH..."
-           style="width: 100%; max-width: 400px; padding: 8px 14px 8px 36px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13.5px; background: var(--bg-card); color: var(--text-primary); margin-bottom: 0;">
+           style="width: 100%; max-width: 400px; padding: 8px 14px 8px 36px; border: 1px solid var(--border-color); border-radius: 8px; font-size: var(--fs-md); background: var(--bg-card); color: var(--text-primary); margin-bottom: 0;">
     <i class="ti ti-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 15px;"></i>
 </div>
 
@@ -44,7 +44,7 @@
         <div class="card casting-card-item" style="margin-bottom: 14px; opacity: 0.7;" data-search="{{ strtolower($project->nama_produksi . ' ' . $project->client_ph) }}">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div style="font-size: 15px; font-weight: 600;">{{ $project->nama_produksi }}</div>
-                <span class="badge {{ $project->status === 'selesai_produksi' ? 'badge-aktif' : 'badge-pending' }}">{{ $project->status }}</span>
+                <x-status-badge :model="$project" />
             </div>
             <p style="margin: 8px 0 4px; font-size: 13.5px;">Client: {{ $project->client_ph }}</p>
             <p style="margin: 0 0 12px; font-size: 12.5px; color: var(--text-muted);">

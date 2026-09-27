@@ -12,7 +12,7 @@
     </div>
     @if ($marginBulanIni->ada_data)
         <div style="text-align: right; background: var(--bg-card); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 8px;">
-            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Margin Selesai Bulan Ini</div>
+            <div style="font-size: var(--fs-xs); color: var(--text-muted); text-transform: uppercase;">Margin Selesai Bulan Ini</div>
             <div style="font-size: 16px; font-weight: 700; color: var(--accent-strong);">
                 Rp {{ number_format($marginBulanIni->margin, 0, ',', '.') }}
             </div>
@@ -39,7 +39,7 @@
 
 <div style="position: relative; margin-bottom: 16px;">
     <input type="text" id="search-keuangan" placeholder="Cari di tabel (nama proyek, staf, extras, invoice)..."
-           style="width: 100%; max-width: 400px; padding: 8px 14px 8px 36px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13.5px; background: var(--bg-card); color: var(--text-primary); margin-bottom: 0;">
+           style="width: 100%; max-width: 400px; padding: 8px 14px 8px 36px; border: 1px solid var(--border-color); border-radius: 8px; font-size: var(--fs-md); background: var(--bg-card); color: var(--text-primary); margin-bottom: 0;">
     <i class="ti ti-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 15px;"></i>
 </div>
 
@@ -132,7 +132,7 @@
                                                         <span style="color: var(--warning);">Belum diset</span>
                                                     @endif
                                                 </td>
-                                                <td style="padding: 4px 8px;"><span class="badge badge-pending">{{ $app->status_partisipasi }}</span></td>
+                                                <td style="padding: 4px 8px;"><x-status-badge :model="$app" /></td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -178,7 +178,7 @@
                     @endphp
                     <tr>
                         <td style="font-weight: 600;">{{ $user?->name ?? '-' }}</td>
-                        <td><span class="badge badge-pending">{{ $user?->role ?? '-' }}</span></td>
+                        <td>@if($user)<x-status-badge :model="$user" />@else - @endif</td>
                         <td>{{ $project?->nama_produksi ?? '-' }}</td>
                         <td>Rp {{ number_format($payroll->nominal_pokok, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($addonsSum, 0, ',', '.') }}</td>
@@ -186,7 +186,7 @@
                         <td>
                             @if ($payroll->isDibayar())
                                 <span class="badge badge-aktif">Sudah Dibayar</span>
-                                <div style="font-size: 11px; color: var(--text-muted);">{{ $payroll->dibayar_at?->format('d/m/Y H:i') }}</div>
+                                <div style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $payroll->dibayar_at?->format('d/m/Y H:i') }}</div>
                             @else
                                 <span class="badge badge-pending">Belum Dibayar</span>
                             @endif
@@ -241,17 +241,7 @@
                         <td>Rp {{ number_format($pay->nominal_pokok, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($pay->addons->sum('nominal'), 0, ',', '.') }}</td>
                         <td style="font-weight: 700;">Rp {{ number_format($pay->nominalTotal(), 0, ',', '.') }}</td>
-                        <td>
-                            @if ($pay->status === 'dikonfirmasi_diterima')
-                                <span class="badge badge-aktif">Diterima Extras</span>
-                            @elseif ($pay->status === 'ditransfer')
-                                <span class="badge badge-pending">Sudah Ditransfer</span>
-                            @elseif ($pay->status === 'disengketakan')
-                                <span class="badge badge-tolak">Disengketakan</span>
-                            @else
-                                <span class="badge badge-pending">Belum Ditransfer</span>
-                            @endif
-                        </td>
+                        <td><x-status-badge :model="$pay" /></td>
                         <td>
                             @if ($pay->projectApplication)
                                 <a href="{{ route('payments.show', $pay->projectApplication) }}" class="btn btn-sm">Lihat Pembayaran</a>

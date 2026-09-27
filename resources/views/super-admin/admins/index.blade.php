@@ -21,7 +21,7 @@
         <div style="position: relative; flex: 1;">
             <input type="text" name="search" value="{{ $search ?? '' }}"
                    placeholder="Cari nama, email, username, atau role..."
-                   style="width: 100%; min-height: 42px; padding: 8px 14px 8px 38px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-size: 14px; margin-bottom: 0;">
+                   style="width: 100%; min-height: 42px; padding: 8px 14px 8px 38px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-size: var(--fs-md); margin-bottom: 0;">
             <i class="ti ti-search" style="position: absolute; left: 12px; top: 13px; color: var(--text-muted); font-size: 16px;"></i>
         </div>
         <button type="submit" class="btn btn-brand" style="border-radius: 8px; padding: 0 16px;">Cari</button>
@@ -32,7 +32,7 @@
         <summary class="btn" style="min-height: 42px; border-radius: 8px; display: flex; align-items: center; gap: 6px; cursor: pointer; list-style: none;">
             <i class="ti ti-filter"></i> Filter
             @if ($roleFilter !== 'all' || $statusFilter !== 'all')
-                <span class="badge badge-aktif" style="font-size: 10px; padding: 2px 6px;">Aktif</span>
+                <span class="badge badge-aktif" style="font-size: var(--fs-xs); padding: 2px 6px;">Aktif</span>
             @endif
         </summary>
         <div style="position: absolute; right: 0; top: 48px; width: 260px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); padding: 14px; z-index: 50;">
@@ -112,7 +112,7 @@
                             @else
                                 <a href="{{ route('super-admin.admins.show', $user) }}" style="color: inherit; text-decoration: none;">{{ $user->name }}</a>
                             @endif
-                            <span class="badge badge-pending">{{ $user->role }}</span>
+                            <x-status-badge :model="$user" />
                             <span class="badge {{ $user->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">{{ $user->status }}</span>
                         </div>
                         <div style="color: var(--text-muted); font-size: 12.5px; margin-top: 2px;">

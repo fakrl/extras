@@ -33,7 +33,7 @@
 <form method="GET" action="{{ route('cd.reviews.show', $castingProject) }}" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; padding: 10px; background: var(--bg-secondary); border-radius: 8px; align-items: center;">
     @if($statusFilter) <input type="hidden" name="status" value="{{ $statusFilter }}"> @endif
     <input type="text" id="filter-candidate-search" placeholder="Cari nama, alias, peran..."
-           style="font-size: 12.5px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 180px; margin-bottom: 0;">
+           style="font-size: var(--fs-md); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 180px; margin-bottom: 0;">
     <label style="font-size: 12.5px; color: var(--text-muted);">Gender:</label>
     <select name="gender" id="filter-gender" style="font-size: 12.5px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);">
         <option value="">Semua</option>
@@ -124,7 +124,7 @@
                 data-fotos="{{ json_encode(array_column($fotosArr, 'url')) }}"
             >
                 <div style="position: absolute; top: 6px; right: 6px; z-index: 1;">
-                    <span class="badge {{ $statusBadge }}" style="font-size: 10px;">{{ $statusLabel }}</span>
+                    <span class="badge {{ $statusBadge }}" style="font-size: var(--fs-xs);">{{ $statusLabel }}</span>
                 </div>
 
                 @if ($isPending)
@@ -144,7 +144,7 @@
                     @endif
                 </div>
 
-                <div style="padding: 6px 8px 2px; font-size: 11.5px; color: var(--text-secondary);">
+                <div style="padding: 6px 8px 2px; font-size: var(--fs-xs); color: var(--text-secondary);">
                     {{ $app->karakter ?: ($app->castingProjectClass->nama_kelas ?? '-') }}
                     @if($app->extras->usia) · {{ $app->extras->usia }} th @endif
                 </div>
@@ -349,7 +349,7 @@
             formArea.innerHTML =
                 '<div style="border-top: 1px solid var(--border-color); padding-top: 12px; font-size: 13px; color: var(--text-secondary);">' +
                 'Keputusan: <strong>' + kep.charAt(0).toUpperCase() + kep.slice(1) + grCd + '</strong><br>' +
-                '<span style="font-size: 11px;">' + (kartu.dataset.reviewTgl || '') + '</span></div>';
+                '<span style="font-size: var(--fs-xs);">' + (kartu.dataset.reviewTgl || '') + '</span></div>';
         }
 
         dlg.showModal();

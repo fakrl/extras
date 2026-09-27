@@ -18,6 +18,11 @@
         --info: #60a5fa;
         --highlight-cream: #f3ebd6;
     }
+    :root {
+        --fs-xs: 12px; --fs-sm: 13px; --fs-base: 14px; --fs-md: 16px; --fs-lg: 18px; --fs-xl: 22px;
+        --radius-sm: 6px; --radius-md: 8px; --radius-lg: 12px;
+        --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 20px; --space-6: 24px;
+    }
     :root[data-theme="light"] {
         color-scheme: light;
         --bg-page: #eef2ea;
@@ -60,10 +65,10 @@
 
     .alert-success {
         background: rgba(34,197,94,0.12); color: var(--accent-strong);
-        padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 14px;
+        padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 16px; font-size: var(--fs-base);
     }
     .alert-danger {
         background: rgba(239,68,68,0.12); color: var(--danger);
-        padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 14px;
+        padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 16px; font-size: var(--fs-base);
     }
 </style>

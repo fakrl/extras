@@ -22,7 +22,7 @@
                     @if ($nego->catatan)
                         <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">{{ $nego->catatan }}</div>
                     @endif
-                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px; text-align: {{ $isAdmin ? 'right' : 'left' }};">
+                    <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 6px; text-align: {{ $isAdmin ? 'right' : 'left' }};">
                         {{ ucfirst($nego->diajukan_oleh) }} · {{ $nego->created_at->format('d M Y H:i') }}
                     </div>
                 </div>
