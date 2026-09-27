@@ -49,6 +49,7 @@
         <div style="padding: 14px 16px; border-bottom: 1px solid var(--border-color); font-weight: 600;">
             Ringkasan Margin per Proyek
         </div>
+        <div class="table-container">
         <table>
             <thead>
                 <tr>
@@ -111,6 +112,7 @@
                     <tr id="extras-{{ $i }}" style="display:none;">
                         <td colspan="6" style="padding: 0; background: var(--bg-page);">
                             <div style="padding: 12px 24px;">
+                                <div class="table-container">
                                 <table style="width: 100%; font-size: 12.5px;">
                                     <thead>
                                         <tr style="color: var(--text-muted);">
@@ -135,6 +137,7 @@
                                         @endforeach
                                     </tbody>
                                 </table>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -143,6 +146,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 
 @elseif ($tab === 'staf')
@@ -151,6 +155,7 @@
         <div style="padding: 14px 16px; border-bottom: 1px solid var(--border-color); font-weight: 600;">
             Daftar Honor Staf Admin & Korlap
         </div>
+        <div class="table-container">
         <table>
             <thead>
                 <tr>
@@ -202,6 +207,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 
 @elseif ($tab === 'extras')
@@ -210,6 +216,7 @@
         <div style="padding: 14px 16px; border-bottom: 1px solid var(--border-color); font-weight: 600;">
             Status Pembayaran Honor Extras
         </div>
+        <div class="table-container">
         <table>
             <thead>
                 <tr>
@@ -256,6 +263,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 
 @endif

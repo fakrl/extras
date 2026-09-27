@@ -97,6 +97,7 @@
 
 @if (auth()->user()->isAdmin())
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     var gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';

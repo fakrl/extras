@@ -13,14 +13,6 @@
 </div>
 
 <div class="card" style="margin-bottom: 24px; max-width: 720px;">
-    @if ($errors->any())
-        <div class="alert-danger" style="margin-bottom: 14px;">
-            @foreach ($errors->all() as $error)
-                <div>{{ $error }}</div>
-            @endforeach
-        </div>
-    @endif
-
     <form method="POST" action="{{ route('cd.projects.request.store') }}" enctype="multipart/form-data">
         @csrf
         <label>Nama Produksi / Judul Film / Iklan <span style="color: red;">*</span></label>

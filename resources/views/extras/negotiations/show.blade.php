@@ -9,6 +9,7 @@
 
 <div class="card" style="margin-bottom: 16px;">
     <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Riwayat Tawar-Menawar</div>
+    <div class="table-container">
     <table>
         <thead><tr><th>Ronde</th><th>Diajukan Oleh</th><th>Nominal</th><th>Aksi</th><th>Catatan / Alasan</th></tr></thead>
         <tbody>
@@ -23,6 +24,7 @@
             @endforeach
         </tbody>
     </table>
+    </div>
 </div>
 
 @if ($application->status_partisipasi === 'deal')

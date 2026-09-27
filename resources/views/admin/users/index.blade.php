@@ -17,6 +17,7 @@
                style="width:220px; min-height:unset; margin-bottom:0; padding:4px 10px; font-size:12.5px;">
     </div>
 
+    <div class="table-container">
     <table id="tabel-cd">
         <thead>
             <tr><th>Nama</th><th>Email</th><th>Status</th><th></th></tr>
@@ -43,6 +44,7 @@
             @endforeach
         </tbody>
     </table>
+    </div>
 </div>
 
 @if (($mangkrakCount ?? 0) > 0)
@@ -74,6 +76,7 @@
                style="width:220px; min-height:unset; margin-bottom:0; padding:4px 10px; font-size:12.5px;">
     </div>
 
+    <div class="table-container">
     <table id="tabel-extras">
         <thead>
             <tr><th>Nama</th><th>Alias</th><th>Email</th><th>Status</th><th>Pembatalan Mendadak</th><th>Kategori</th><th></th></tr>
@@ -133,6 +136,7 @@
             @endforeach
         </tbody>
     </table>
+    </div>
 </div>
 @endsection
 

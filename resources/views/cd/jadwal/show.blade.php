@@ -14,14 +14,6 @@
     <div class="alert-success" style="margin-bottom: 16px;">{{ session('success') }}</div>
 @endif
 
-@if ($errors->any())
-    <div class="alert-danger" style="margin-bottom: 16px;">
-        @foreach ($errors->all() as $error)
-            <div>{{ $error }}</div>
-        @endforeach
-    </div>
-@endif
-
 @forelse ($project->shootingDates->sortBy('tanggal') as $date)
     <div class="card" style="margin-bottom: 16px;">
         <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">

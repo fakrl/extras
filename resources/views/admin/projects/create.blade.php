@@ -6,14 +6,6 @@
 <div class="card">
     <div style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Buka Lowongan Casting Baru</div>
 
-    @if ($errors->any())
-        <div class="alert-danger">
-            @foreach ($errors->all() as $error)
-                <div>{{ $error }}</div>
-            @endforeach
-        </div>
-    @endif
-
     <form method="POST" action="{{ route('admin.projects.store') }}" enctype="multipart/form-data">
         @csrf
 

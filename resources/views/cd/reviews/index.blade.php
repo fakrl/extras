@@ -9,6 +9,7 @@
 </p>
 
 <div class="card">
+    <div class="table-container">
     <table>
         <thead>
             <tr>
@@ -41,5 +42,6 @@
             @endforelse
         </tbody>
     </table>
+    </div>
 </div>
 @endsection

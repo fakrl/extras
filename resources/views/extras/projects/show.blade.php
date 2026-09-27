@@ -18,6 +18,7 @@
 
 <div class="card" style="margin-bottom: 16px;">
     <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Karakter yang Dibutuhkan</div>
+    <div class="table-container">
     <table>
         <thead><tr><th>Karakter</th><th>Kuota</th></tr></thead>
         <tbody>
@@ -29,6 +30,7 @@
             @endforeach
         </tbody>
     </table>
+    </div>
 </div>
 
 <form method="POST" action="{{ route('extras.projects.apply', $castingProject) }}">

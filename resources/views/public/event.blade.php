@@ -7,7 +7,7 @@
     <meta name="color-scheme" content="dark light">
     <title>{{ $valid ? $project->nama_produksi : 'Pendaftaran Ditutup' }} | SIM Casting JBTB</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
     @include('partials.theme-style')
     <style>
         .wrap { max-width: 560px; margin: 0 auto; padding: 48px 24px 80px; }
