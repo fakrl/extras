@@ -1,12 +1,12 @@
 @extends('layouts.auth')
 
-@section('title', 'Registrasi Casting Director | SIM Casting JBTB')
+@section('title', 'Registrasi Client | SIM Casting JBTB')
 
 @section('content')
-<h1 class="auth-title">Registrasi Casting Director</h1>
+<h1 class="auth-title">Registrasi Client</h1>
 <p class="auth-subtitle">
-    Halaman ini khusus untuk Casting Director yang diundang oleh PT. JBTB Casting Creative Group.
-    Akun yang dibuat lewat halaman ini otomatis berperan sebagai Casting Director.
+    Halaman ini khusus untuk Client yang diundang oleh PT. JBTB Casting Creative Group.
+    Akun yang dibuat lewat halaman ini otomatis berperan sebagai Client.
 </p>
 
 @if ($errors->any())
@@ -35,6 +35,6 @@
         </label>
     </div>
 
-    <button type="submit" class="btn-brand">Daftar sebagai Casting Director</button>
+    <button type="submit" class="btn-brand">Daftar sebagai Client</button>
 </form>
 @endsection

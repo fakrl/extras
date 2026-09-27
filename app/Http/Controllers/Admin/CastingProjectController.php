@@ -232,15 +232,26 @@ class CastingProjectController extends Controller
     public function showApplicants(Request $request, CastingProject $castingProject)
     {
         $grade = $request->query('grade');
+        $tab = $request->query('tab');
 
-        $applicants = $castingProject->applications()
-            ->with('extras', 'extras.user', 'extras.photos', 'fieldNotes.korlap')
-            ->when($grade === 'belum', fn ($q) => $q->whereNull('grade'))
-            ->when(in_array($grade, ['A', 'B', 'C'], true), fn ($q) => $q->where('grade', $grade))
-            ->latest()
-            ->get();
+        $cdStatuses = ['diajukan_ke_cd', 'direview_cd', 'lolos', 'ditolak'];
 
-        return view('admin.projects.applicants', compact('castingProject', 'applicants', 'grade'));
+        if ($tab === 'cd') {
+            $applicants = $castingProject->applications()
+                ->with('extras.user', 'castingProjectClass')
+                ->whereIn('status_partisipasi', $cdStatuses)
+                ->latest()
+                ->get();
+        } else {
+            $applicants = $castingProject->applications()
+                ->with('extras', 'extras.user', 'extras.photos', 'fieldNotes.korlap')
+                ->when($grade === 'belum', fn ($q) => $q->whereNull('grade'))
+                ->when(in_array($grade, ['A', 'B', 'C'], true), fn ($q) => $q->where('grade', $grade))
+                ->latest()
+                ->get();
+        }
+
+        return view('admin.projects.applicants', compact('castingProject', 'applicants', 'grade', 'tab'));
     }
 
     /**

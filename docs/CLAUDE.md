@@ -1,7 +1,7 @@
 # CLAUDE.md — SIM Casting JBTB (Project Work / Skripsi Pengganti)
 
 > **Fungsi file ini:** handoff konteks lengkap dari sesi diskusi sebelumnya. Baca ini dulu sebelum lanjut. Semua keputusan, model bisnis, alur, dan backlog ada di sini.
-> **Terakhir diperbarui:** 21 September 2026 · **Status:** Blueprint arsitektur resmi diperbarui di `docs/SYSTEM-ARCHITECTURE.md` berdasarkan hasil bimbingan Dospem (Erlina) dan review Solution Architect. Role resmi dirampingkan menjadi **5 role** (`super_admin`, `admin`, `korlap`, `client`, `extras`). Modul SoftDeletes & UI dropdown sidebar (Bagian AI) sedang dalam proses verifikasi final.
+> **Terakhir diperbarui:** 21 September 2026 · **Status:** Blueprint arsitektur resmi diperbarui di `docs/SYSTEM-ARCHITECTURE.md` berdasarkan hasil bimbingan Dospem (Pak Donna Endraswanto), arahan bisnis Erlina (Manager JBTB), dan review Solution Architect. Role resmi dirampingkan menjadi **5 role** (`super_admin`, `admin`, `korlap`, `client`, `extras`). Modul SoftDeletes & UI dropdown sidebar (Bagian AI) sedang dalam proses verifikasi final.
 
 ---
 

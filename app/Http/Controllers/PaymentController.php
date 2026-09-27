@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
 use App\Models\ProjectApplication;
+use App\Notifications\InAppNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -59,6 +60,15 @@ class PaymentController extends Controller
             $application
         );
 
+        $application->loadMissing('extras.user', 'castingProject');
+        $extrasUser = $application->extras->user;
+        $judulPay = 'Pembayaran Ditransfer';
+        $pesanPay = "Honor kamu untuk proyek {$application->castingProject->nama_produksi} sudah ditransfer. Silakan konfirmasi penerimaan.";
+        try {
+            $extrasUser->notify(new InAppNotification($judulPay, $pesanPay));
+        } catch (\Throwable) {
+        }
+
         return back()->with('status', 'Status pembayaran ditandai "Sudah Ditransfer".');
     }
 
@@ -110,5 +120,29 @@ class PaymentController extends Controller
         ]);
 
         return back()->with('status', 'Komponen tambahan berhasil ditambahkan.');
+    }
+
+    public function sengketa(Request $request, ProjectApplication $application): RedirectResponse
+    {
+        $isExtrasOwner = $request->user()->role === 'extras'
+            && $application->extras_id === $request->user()->extrasProfile->id;
+
+        abort_unless($isExtrasOwner || $request->user()->isAdmin(), 403);
+        $this->guardStatusLolos($application);
+
+        abort_unless($application->payment->status === 'ditransfer', 422, 'Sengketa hanya bisa diajukan untuk pembayaran yang sudah ditransfer.');
+
+        $request->validate(['alasan' => ['required', 'string', 'max:500']]);
+
+        $application->payment->tandaiDisengketakan($request->alasan);
+
+        $aktor = $request->user()->isAdmin() ? "Admin {$request->user()->name}" : "Extras {$request->user()->name}";
+        ActivityLog::record(
+            'DISPUTE_PAYMENT',
+            "{$aktor} menandai pembayaran sebagai sengketa untuk proyek '{$application->castingProject->nama_produksi}'",
+            $application
+        );
+
+        return back()->with('status', 'Pembayaran ditandai sebagai sengketa. Admin akan menindaklanjuti.');
     }
 }

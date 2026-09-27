@@ -24,12 +24,14 @@ use App\Http\Controllers\Extras\FeeNegotiationController as ExtrasFeeNegotiation
 use App\Http\Controllers\Extras\ProfileController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PublicEventController;
 use App\Http\Controllers\PublicExtrasProfileController;
 use App\Http\Controllers\SuperAdmin\ActivityLogController;
 use App\Http\Controllers\SuperAdmin\AdminManagementController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
+use App\Http\Controllers\SuperAdmin\GlobalSearchController;
 use App\Http\Controllers\SuperAdmin\MonitoringController;
 use App\Http\Controllers\SuperAdmin\ProjectAssignmentController;
 use App\Http\Controllers\UbahPasswordController;
@@ -96,6 +98,8 @@ Route::post('/logout', [LoginController::class, 'logout'])
 Route::middleware('auth')->group(function () {
     Route::get('/ubah-password', [UbahPasswordController::class, 'edit'])->name('ubah-password');
     Route::post('/ubah-password', [UbahPasswordController::class, 'update'])->name('ubah-password.update');
+    Route::post('/validate-current-password', [UbahPasswordController::class, 'validateCurrentPassword'])->name('ubah-password.validate');
+    Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
 });
 
 // ==================== EXTRAS ====================
@@ -147,6 +151,7 @@ Route::middleware(['auth', 'role:admin,admin_default,admin_talco,korlap,admin_ko
         // Operasional Proyek: Admin & Super Admin (Godmode)
         Route::middleware('role:admin,admin_default,super_admin')->group(function () {
             Route::get('/users', [UserManagementController::class, 'index'])->name('admin.users.index');
+            Route::get('/extras/{user}/profil', [UserManagementController::class, 'showProfile'])->name('admin.extras.profil');
             Route::patch('/users/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])
                 ->name('admin.users.toggle-status');
             Route::patch('/users/{user}/kategori', [UserManagementController::class, 'updateKategori'])
@@ -217,13 +222,17 @@ Route::middleware(['auth', 'role:admin,admin_default,admin_talco,korlap,admin_ko
         });
     });
 
-// RF-30: rekap margin - RAHASIA bisnis inti, cuma Admin & Super Admin.
+// RF-30 & SPEC AV: Keuangan & Penggajian - Admin & Super Admin.
 Route::middleware(['auth', 'role:admin,admin_default,super_admin'])->prefix('admin')->group(function () {
     Route::get('/rekap-margin', [MarginRecapController::class, 'index'])->name('admin.recap-margin');
+    Route::patch('/payrolls/{staffPayroll}/tandai-dibayar', [MarginRecapController::class, 'tandaiDibayar'])
+        ->name('admin.payrolls.tandai-dibayar');
 });
 
 Route::middleware(['auth', 'role:admin,admin_default,super_admin'])->prefix('super-admin')->group(function () {
     Route::get('/rekap-margin', [MarginRecapController::class, 'index'])->name('super-admin.recap-margin');
+    Route::patch('/payrolls/{staffPayroll}/tandai-dibayar', [MarginRecapController::class, 'tandaiDibayar'])
+        ->name('super-admin.payrolls.tandai-dibayar');
 });
 
 // ==================== SUPER ADMIN ====================
@@ -233,11 +242,18 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
 
     Route::get('/monitoring', [MonitoringController::class, 'index'])->name('super-admin.monitoring');
 
+    Route::get('/attendance', [AttendanceController::class, 'index'])
+        ->name('super-admin.attendance.index');
+
     Route::get('/admins', [AdminManagementController::class, 'index'])->name('super-admin.admins.index');
     Route::post('/admins', [AdminManagementController::class, 'store'])->name('super-admin.admins.store');
+    Route::post('/admins/bulk-action', [AdminManagementController::class, 'bulkAction'])->name('super-admin.admins.bulk-action');
+    Route::post('/admins/{user}/reset-password', [AdminManagementController::class, 'resetPassword'])->name('super-admin.admins.reset-password');
     Route::get('/admins/{user}', [AdminManagementController::class, 'show'])->name('super-admin.admins.show');
+    Route::patch('/admins/{user}', [AdminManagementController::class, 'update'])->name('super-admin.admins.update');
     Route::patch('/admins/{user}/honor', [AdminManagementController::class, 'updateHonor'])->name('super-admin.admins.honor');
     Route::patch('/admins/{user}/toggle-status', [AdminManagementController::class, 'toggleStatus'])->name('super-admin.admins.toggle-status');
+    Route::patch('/admins/{user}/kategori', [AdminManagementController::class, 'updateKategori'])->name('super-admin.admins.kategori');
     Route::patch('/admins/{user}/restore', [AdminManagementController::class, 'restore'])->name('super-admin.admins.restore');
     Route::delete('/admins/{user}', [AdminManagementController::class, 'destroy'])->name('super-admin.admins.destroy');
 
@@ -261,6 +277,8 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
     // Audit Trail: Log Aktivitas Seluruh Role
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])
         ->name('super-admin.activity-logs');
+
+    Route::get('/search', [GlobalSearchController::class, 'search'])->name('super-admin.search');
 });
 
 // ==================== CLIENT (CASTING DIRECTOR) ====================
@@ -292,11 +310,13 @@ Route::middleware(['auth', 'role:client,casting_director'])->prefix('cd')->group
 Route::middleware('auth')->prefix('kontrak')->group(function () {
     Route::get('/{application}', [ContractController::class, 'show'])->name('contracts.show');
     Route::post('/{application}/sign', [ContractController::class, 'sign'])->name('contracts.sign');
+    Route::get('/{application}/pdf', [ContractController::class, 'downloadPdf'])->name('contracts.download-pdf');
 });
 
 // ==================== INVOICE (lintas role: Admin Default & CD) ====================
 
 Route::middleware('auth')->prefix('invoice')->group(function () {
+    Route::get('/', [InvoiceController::class, 'indexClient'])->name('invoices.index-client');
     Route::get('/{castingProject}', [InvoiceController::class, 'show'])->name('invoices.show');
     Route::post('/{castingProject}/sign', [InvoiceController::class, 'sign'])->name('invoices.sign');
     Route::post('/{castingProject}/custom-doc', [InvoiceController::class, 'uploadCustomDoc'])->name('invoices.upload-custom');
@@ -311,6 +331,7 @@ Route::middleware('auth')->prefix('pembayaran')->group(function () {
     Route::post('/{application}/transfer', [PaymentController::class, 'tandaiTransfer'])->name('payments.transfer');
     Route::post('/{application}/konfirmasi', [PaymentController::class, 'konfirmasi'])->name('payments.confirm');
     Route::post('/{application}/addon', [PaymentController::class, 'addAddon'])->name('payments.addon');
+    Route::post('/{application}/sengketa', [PaymentController::class, 'sengketa'])->name('payments.sengketa');
 });
 
 // ==================== MEDIA PROFIL EXTRAS (lintas role: pemilik, Admin, CD) ====================

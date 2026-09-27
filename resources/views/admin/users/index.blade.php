@@ -1,18 +1,20 @@
 @extends('layouts.app')
 
-@section('title', 'Kelola Akun CD & Extras')
+@section('title', 'Kelola Akun Client & Extras')
 
 @section('content')
 <div class="card" style="margin-bottom: 20px;">
-    <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Casting Director</div>
+    <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Client</div>
 
-    <div style="display:flex; gap:8px; margin-bottom:10px; align-items:center;">
+    <div style="display:flex; gap:8px; margin-bottom:10px; align-items:center; flex-wrap:wrap;">
         <label style="margin:0; font-size:12.5px; color:var(--text-secondary);">Status:</label>
         <select id="filter-cd-status" style="width:auto; min-height:unset; margin-bottom:0; padding:4px 8px; font-size:12.5px;">
             <option value="">Semua</option>
             <option value="aktif">Aktif</option>
             <option value="nonaktif">Nonaktif</option>
         </select>
+        <input id="filter-cd-search" type="search" placeholder="Cari nama / email Client…"
+               style="width:220px; min-height:unset; margin-bottom:0; padding:4px 10px; font-size:12.5px;">
     </div>
 
     <table id="tabel-cd">
@@ -21,7 +23,9 @@
         </thead>
         <tbody>
             @foreach ($castingDirectors as $cd)
-                <tr data-status="{{ $cd->status }}">
+                <tr data-status="{{ $cd->status }}"
+                    data-nama="{{ strtolower($cd->name) }}"
+                    data-email="{{ strtolower($cd->email) }}">
                     <td>{{ $cd->name }}</td>
                     <td>{{ $cd->email }}</td>
                     <td>
@@ -114,8 +118,13 @@
                             </form>
                         </details>
                     </td>
-                    <td>
-                        <form method="POST" action="{{ route('admin.users.toggle-status', $ex) }}">
+                    <td style="white-space:nowrap;">
+                        @if ($ex->extrasProfile)
+                            <a href="{{ route('admin.extras.profil', $ex) }}" class="btn btn-sm" title="Lihat Profil" style="margin-bottom:4px; display:inline-block;">
+                                <i class="ti ti-user"></i> Lihat Profil
+                            </a>
+                        @endif
+                        <form method="POST" action="{{ route('admin.users.toggle-status', $ex) }}" style="display:inline;">
                             @csrf @method('PATCH')
                             <button class="btn btn-sm" title="Ubah Status"><i class="ti ti-power"></i></button>
                         </form>
@@ -140,9 +149,12 @@
     }
 
     var cdStatus = document.getElementById('filter-cd-status');
-    cdStatus && cdStatus.addEventListener('change', function () {
-        filterRows('tabel-cd', this.value, '');
-    });
+    var cdSearch = document.getElementById('filter-cd-search');
+    function applyCdFilter() {
+        filterRows('tabel-cd', cdStatus ? cdStatus.value : '', cdSearch ? cdSearch.value.toLowerCase().trim() : '');
+    }
+    cdStatus && cdStatus.addEventListener('change', applyCdFilter);
+    cdSearch && cdSearch.addEventListener('input', applyCdFilter);
 
     var exStatus = document.getElementById('filter-ex-status');
     var exSearch = document.getElementById('filter-ex-search');

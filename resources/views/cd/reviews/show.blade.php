@@ -29,6 +29,39 @@
     @endforeach
 </div>
 
+{{-- AU.7: Filter demografis (server-side: gender, usia) + Live Search & filter klien (ukuran baju, warna kulit) --}}
+<form method="GET" action="{{ route('cd.reviews.show', $castingProject) }}" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; padding: 10px; background: var(--bg-secondary); border-radius: 8px; align-items: center;">
+    @if($statusFilter) <input type="hidden" name="status" value="{{ $statusFilter }}"> @endif
+    <input type="text" id="filter-candidate-search" placeholder="Cari nama, alias, peran..."
+           style="font-size: 12.5px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 180px; margin-bottom: 0;">
+    <label style="font-size: 12.5px; color: var(--text-muted);">Gender:</label>
+    <select name="gender" id="filter-gender" style="font-size: 12.5px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);">
+        <option value="">Semua</option>
+        <option value="laki-laki" @selected(($genderFilter ?? '') === 'laki-laki')>Laki-laki</option>
+        <option value="perempuan" @selected(($genderFilter ?? '') === 'perempuan')>Perempuan</option>
+    </select>
+    <label style="font-size: 12.5px; color: var(--text-muted);">Usia:</label>
+    <input type="number" name="usia_min" id="filter-usia-min" placeholder="Min" value="{{ $usiaMin ?? '' }}" style="width: 50px; font-size: 12.5px; padding: 4px 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);">
+    <span style="font-size: 12.5px;">-</span>
+    <input type="number" name="usia_max" id="filter-usia-max" placeholder="Max" value="{{ $usiaMax ?? '' }}" style="width: 50px; font-size: 12.5px; padding: 4px 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);">
+    <button type="submit" class="btn btn-sm">Terapkan</button>
+    @if($genderFilter || $usiaMin || $usiaMax)
+        <a href="{{ route('cd.reviews.show', array_filter(['castingProject' => $castingProject->id, 'status' => $statusFilter ?: null])) }}" class="btn btn-sm">Reset</a>
+    @endif
+    <select id="filter-ukuran-baju" style="font-size: 12.5px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);">
+        <option value="">Semua Ukuran</option>
+        <option value="S">S</option><option value="M">M</option>
+        <option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option>
+    </select>
+    <select id="filter-warna-kulit" style="font-size: 12.5px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);">
+        <option value="">Semua Warna Kulit</option>
+        <option value="sawo matang">Sawo Matang</option>
+        <option value="kuning langsat">Kuning Langsat</option>
+        <option value="hitam">Hitam</option>
+        <option value="putih">Putih</option>
+    </select>
+</form>
+
 {{-- Select-all pending --}}
 <div style="margin-bottom: 8px; display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary);">
     <input type="checkbox" id="check-all-outer">
@@ -66,7 +99,7 @@
             @endphp
 
             <div class="kandidat-card"
-                style="position: relative; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; cursor: pointer; background: var(--bg-card);"
+                style="position: relative; border: {{ $isPending ? '2px solid var(--accent-strong)' : '1px solid var(--border-color)' }}; border-radius: 12px; overflow: hidden; cursor: pointer; background: var(--bg-card);"
                 onclick="bukaModalKandidat({{ $app->id }})"
                 data-appid="{{ $app->id }}"
                 data-alias="{{ $app->extras->user->username ?? '-' }}"
@@ -111,6 +144,10 @@
                     @endif
                 </div>
 
+                <div style="padding: 6px 8px 2px; font-size: 11.5px; color: var(--text-secondary);">
+                    {{ $app->karakter ?: ($app->castingProjectClass->nama_kelas ?? '-') }}
+                    @if($app->extras->usia) · {{ $app->extras->usia }} th @endif
+                </div>
                 <div style="padding: 8px; font-size: 12.5px; font-weight: 600; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     {{ $app->extras->user->username ?? '-' }}
                 </div>
@@ -166,7 +203,7 @@
         </div>
 
         <div style="margin-bottom: 14px; font-size: 13px; padding: 10px; border-radius: 8px; background: var(--bg-nav-active);">
-            Riwayat dengan CD ini: <span id="mk-riwayat"></span>
+            Riwayat dengan Client ini: <span id="mk-riwayat"></span>
         </div>
 
         <div id="mk-form-area"></div>
@@ -295,7 +332,7 @@
         if (kartu.dataset.isPending === '1') {
             formArea.innerHTML =
                 '<div style="border-top: 1px solid var(--border-color); padding-top: 12px; display: flex; flex-direction: column; gap: 8px;">' +
-                '<label style="font-size: 13px; font-weight: 600;">Grade CD (wajib untuk Approve)</label>' +
+                '<label style="font-size: 13px; font-weight: 600;">Grade Client (wajib untuk Approve)</label>' +
                 '<select id="mk-grade-select" style="width: 100%; min-height: 36px; padding: 4px 8px; margin-bottom: 0;">' +
                 '<option value="">Pilih Grade</option>' +
                 '<option value="A">A</option>' +
@@ -318,10 +355,30 @@
         dlg.showModal();
     };
 
+    (function () {
+        function applyDemoFilter() {
+            var search = (document.getElementById('filter-candidate-search')?.value || '').toLowerCase().trim();
+            var ukuran = document.getElementById('filter-ukuran-baju').value.toUpperCase();
+            var warna = document.getElementById('filter-warna-kulit').value.toLowerCase();
+            document.querySelectorAll('.kandidat-card').forEach(function (card) {
+                var u = (card.dataset.ukuranBaju || '').toUpperCase();
+                var w = (card.dataset.warnaKulit || '').toLowerCase();
+                var text = (card.textContent || '').toLowerCase();
+                var matchSearch = !search || text.includes(search);
+                var visible = matchSearch && (!ukuran || u === ukuran) && (!warna || w === warna);
+                card.style.display = visible ? '' : 'none';
+            });
+        }
+        ['filter-candidate-search', 'filter-ukuran-baju', 'filter-warna-kulit'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) { el.addEventListener('change', applyDemoFilter); el.addEventListener('input', applyDemoFilter); }
+        });
+    }());
+
     window.submitSingle = function (appId, keputusan) {
         if (keputusan === 'approve') {
             var grade = document.getElementById('mk-grade-select')?.value;
-            if (!grade) { alert('Pilih Grade CD dulu sebelum Approve.'); return; }
+            if (!grade) { alert('Pilih Grade Client dulu sebelum Approve.'); return; }
             document.getElementById('hidden-grade-cd').value = grade;
         } else {
             document.getElementById('hidden-grade-cd').value = '';

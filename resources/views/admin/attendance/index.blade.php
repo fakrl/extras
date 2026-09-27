@@ -22,7 +22,9 @@
             <label>Tanggal Shooting</label>
             <select name="tanggal" onchange="this.form.submit()">
                 @foreach ($castingProject->shootingDates as $tgl)
-                    <option value="{{ $tgl->id }}" @selected($shootingDate?->id === $tgl->id)>{{ $tgl->tanggal->format('d M Y') }}</option>
+                    <option value="{{ $tgl->id }}" @selected($shootingDate?->id === $tgl->id)>
+                        {{ $tgl->tanggal->format('d M Y') }}{{ $tgl->tanggal->toDateString() === $today ? ' (Hari Ini)' : '' }}
+                    </option>
                 @endforeach
             </select>
         </div>
@@ -34,6 +36,8 @@
 @elseif (! $shootingDate)
     <div class="card" style="text-align:center; color: var(--text-muted); padding: 30px 0;">Proyek ini belum punya tanggal shooting.</div>
 @else
+    <input type="text" id="search-extras" placeholder="Cari nama extras..."
+        style="width: 100%; max-width: 320px; padding: 7px 12px; border: 1px solid var(--border-color); border-radius: 7px; margin-bottom: 10px; font-size: 13px; background: var(--bg-card); color: var(--text-primary); display: block;">
     @forelse ($applicants as $app)
         @php
             $absen = $app->attendances->firstWhere('event_shooting_date_id', $shootingDate->id);
@@ -41,7 +45,7 @@
             $callingan = $app->jam_callingan ?: $app->castingProjectClass?->jam_callingan;
             $scene = $app->keterangan_scene ?: $app->castingProjectClass?->keterangan_scene;
         @endphp
-        <div class="entity-card" style="margin-bottom: 12px;">
+        <div class="entity-card extras-row" data-nama="{{ strtolower($app->extras->user->username ?? '') }}" style="margin-bottom: 12px;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap;">
                 <div style="display: flex; gap: 12px; align-items: center;">
                     @if ($app->extras->foto_profil_path)
@@ -99,10 +103,19 @@
                             @csrf
                             <button class="btn btn-brand btn-sm" title="Setujui selfie kehadiran extras"><i class="ti ti-check"></i> Setujui Hadir</button>
                         </form>
-                        <form method="POST" action="{{ route('admin.absensi.tolak', $absen) }}">
-                            @csrf
-                            <button class="btn btn-danger-outline btn-sm" title="Tolak selfie kehadiran extras"><i class="ti ti-x"></i> Tolak</button>
-                        </form>
+                        <button type="button" class="btn btn-danger-outline btn-sm" onclick="document.getElementById('tolak-dialog-{{ $absen->id }}').showModal()"><i class="ti ti-x"></i> Tolak</button>
+                        <dialog id="tolak-dialog-{{ $absen->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
+                            <form method="POST" action="{{ route('admin.absensi.tolak', $absen) }}" style="padding: 18px;">
+                                @csrf
+                                <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Tolak kehadiran?</div>
+                                <label style="font-size: 12.5px;">Alasan penolakan</label>
+                                <textarea name="alasan" rows="3" required placeholder="Tulis alasan penolakan..." style="width: 100%; margin-bottom: 12px;"></textarea>
+                                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                                    <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
+                                    <button type="submit" class="btn btn-sm btn-danger-outline">Tolak</button>
+                                </div>
+                            </form>
+                        </dialog>
                     @else
                         <form method="POST" action="{{ route('admin.attendance.store', $app) }}">
                             @csrf
@@ -163,4 +176,15 @@
         <div class="card" style="text-align:center; color: var(--text-muted); padding: 30px 0;">Tidak ada Extras aktif di proyek ini.</div>
     @endforelse
 @endif
+
+@push('scripts')
+<script>
+document.getElementById('search-extras')?.addEventListener('input', function () {
+    var q = this.value.toLowerCase();
+    document.querySelectorAll('.extras-row').forEach(function (el) {
+        el.style.display = el.dataset.nama.includes(q) ? '' : 'none';
+    });
+});
+</script>
+@endpush
 @endsection

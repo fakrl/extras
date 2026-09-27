@@ -19,6 +19,18 @@ class InvoiceController extends Controller
 {
     public function __construct(private PdfGeneratorService $pdfGenerator) {}
 
+    public function indexClient(Request $request)
+    {
+        $user = $request->user();
+        abort_unless($user->isClient(), 403);
+
+        $assigned = CastingProject::whereHas('cdAssignments', fn ($q) => $q->where('cd_user_id', $user->id))->get();
+        $owned = CastingProject::where('diajukan_oleh_client_id', $user->id)->get();
+        $projects = $assigned->merge($owned)->unique('id')->sortByDesc('id')->values();
+
+        return view('invoices.index-client', compact('projects'));
+    }
+
     public function show(Request $request, CastingProject $castingProject)
     {
         $this->pastikanBolehLihat($request, $castingProject);

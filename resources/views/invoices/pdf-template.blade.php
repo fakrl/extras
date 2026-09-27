@@ -37,7 +37,7 @@
             @endif
         </div>
         <div class="signature-box" style="float:right">
-            <p>Casting Director</p>
+            <p>Client</p>
             @if ($invoice->ttd_cd_signature_path)
                 <img src="{{ storage_path('app/private/' . $invoice->ttd_cd_signature_path) }}">
             @endif

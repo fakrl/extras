@@ -44,7 +44,7 @@ class CastingProject extends Model
 
     public function shootingDates(): HasMany
     {
-        return $this->hasMany(EventShootingDate::class);
+        return $this->hasMany(EventShootingDate::class)->orderBy('tanggal');
     }
 
     public function applications(): HasMany

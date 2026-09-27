@@ -3,79 +3,55 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\CastingProject;
-use App\Models\ProjectApplication;
+use App\Models\ActivityLog;
+use App\Models\StaffPayroll;
+use App\Services\KeuanganService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class MarginRecapController extends Controller
 {
-    /**
-     * RF-30: margin = rahasia bisnis inti, hanya Admin Default & Super Admin
-     * (route middleware role:admin_default,super_admin, bukan grup admin umum).
-     *
-     * Margin dihitung eksak per aplikasi: tiap ProjectApplication yang lolos
-     * ke atas tahu kelasnya sendiri (casting_project_class_id), jadi
-     * fee_client aplikasi itu = budget_client kelasnya, bukan lagi
-     * budget_client x kuota_kelas di level proyek. Aplikasi lama/tanpa kelas
-     * (casting_project_class_id null) tidak di-drop, masuk baris terpisah
-     * "Belum terklasifikasi" supaya payout-nya tetap terlihat di total.
-     */
-    public function index()
-    {
-        $projects = CastingProject::with(['applications' => function ($q) {
-            $q->whereIn('status_partisipasi', ProjectApplication::STATUS_LOLOS_KE_ATAS)->with('castingProjectClass');
-        }])->get()->map(fn (CastingProject $project) => $this->hitungMargin($project));
+    public function __construct(
+        protected KeuanganService $keuanganService
+    ) {}
 
-        return view('admin.recap.margin', compact('projects'));
+    /**
+     * SPEC AV.2 & RF-30: Halaman Penggajian & Keuangan (Keuangan)
+     * Mencakup 4 pilar: Margin Proyek, Honor Staf, Honor Extras, dan Invoice Client.
+     */
+    public function index(Request $request)
+    {
+        $tab = $request->query('tab', 'margin');
+
+        $projects = $this->keuanganService->ringkasanMarginSemuaProyek();
+        $staffPayrolls = $this->keuanganService->daftarHonorStaf();
+        $extrasPayments = $this->keuanganService->daftarHonorExtras();
+        $clientInvoices = $this->keuanganService->daftarInvoiceClient();
+        $marginBulanIni = $this->keuanganService->marginBulanIni();
+
+        return view('admin.recap.margin', compact(
+            'tab',
+            'projects',
+            'staffPayrolls',
+            'extrasPayments',
+            'clientInvoices',
+            'marginBulanIni'
+        ));
     }
 
-    private function hitungMargin(CastingProject $project): object
+    /**
+     * SPEC AV.3: Tandai honor staf sudah dibayarkan.
+     */
+    public function tandaiDibayar(StaffPayroll $staffPayroll): RedirectResponse
     {
-        $breakdown = collect();
-        $belumTerklasifikasi = null;
-        $totalFeeClient = 0.0;
-        $totalPayout = 0.0;
+        $staffPayroll->tandaiDibayar();
 
-        $tanpaKelas = $project->applications->whereNull('casting_project_class_id');
+        ActivityLog::record(
+            'STAFF_PAYROLL_PAID',
+            "Honor staf {$staffPayroll->assignment?->user?->name} untuk proyek '{$staffPayroll->assignment?->project?->nama_produksi}' ditandai sudah dibayar",
+            $staffPayroll
+        );
 
-        if ($tanpaKelas->isNotEmpty()) {
-            $payout = (float) $tanpaKelas->sum('fee_final');
-            $totalPayout += $payout;
-
-            $belumTerklasifikasi = (object) [
-                'jumlah_aplikasi' => $tanpaKelas->count(),
-                'total_payout' => $payout,
-            ];
-        }
-
-        // groupBy('casting_project_class_id') memperlakukan kunci null sebagai
-        // string kosong (bukan null), makanya null di-filter manual di atas
-        // sebelum group ini dibentuk (cuma berisi aplikasi berkelas).
-        foreach ($project->applications->whereNotNull('casting_project_class_id')->groupBy('casting_project_class_id') as $aplikasi) {
-            $payout = (float) $aplikasi->sum('fee_final');
-            $totalPayout += $payout;
-
-            $feeClient = (float) $aplikasi->first()->castingProjectClass->budget_client * $aplikasi->count();
-            $totalFeeClient += $feeClient;
-
-            $breakdown->push((object) [
-                'kelas' => $aplikasi->first()->castingProjectClass,
-                'jumlah_aplikasi' => $aplikasi->count(),
-                'total_fee_client' => $feeClient,
-                'total_payout' => $payout,
-                'margin' => $feeClient - $payout,
-            ]);
-        }
-
-        $margin = $totalFeeClient - $totalPayout;
-
-        return (object) [
-            'project' => $project,
-            'breakdown' => $breakdown,
-            'belum_terklasifikasi' => $belumTerklasifikasi,
-            'total_fee_client' => $totalFeeClient,
-            'total_payout' => $totalPayout,
-            'margin' => $margin,
-            'margin_persen' => $totalFeeClient > 0 ? $margin / $totalFeeClient * 100 : 0,
-        ];
+        return back()->with('status', 'Honor staf berhasil ditandai sudah dibayar.');
     }
 }

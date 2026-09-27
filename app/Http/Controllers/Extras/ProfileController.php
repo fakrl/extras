@@ -25,7 +25,17 @@ class ProfileController extends Controller
     public function show(Request $request)
     {
         $profile = $request->user()->extrasProfile;
-        $profile?->generateShareToken();
+
+        // Akun yang belum pernah isi profil sama sekali: view read-only ini
+        // asumsi $profile selalu ada (foto_profil_path, grade_saat_ini, dst
+        // diakses langsung tanpa null-check). Daripada bikin view null-safe
+        // di puluhan tempat, arahkan ke form lengkapi profil dulu.
+        if (! $profile) {
+            return redirect()->route('extras.profile.edit')
+                ->with('status', 'Lengkapi profil kamu dulu sebelum bisa melihat tampilan profil.');
+        }
+
+        $profile->generateShareToken();
 
         return view('extras.profile-show', [
             'profile' => $profile,
@@ -40,7 +50,20 @@ class ProfileController extends Controller
      */
     public function edit(Request $request)
     {
+        // Sama kayak show(): akun yang extras_profiles-nya kosong (seharusnya
+        // tidak terjadi lewat alur registrasi normal - lihat RegisterController
+        // - tapi bisa kejadian di akun test/seed manual) butuh instance kosong
+        // biar form render, bukan crash. update() di bawah pakai updateOrCreate
+        // supaya baris extras_profiles otomatis kebuat begitu form ini disubmit.
         $profile = $request->user()->extrasProfile;
+        if (! $profile) {
+            $profile = new ExtrasProfile;
+            // View baca $profile->user->username/nomor_wa (kolom lintas-role
+            // yang disimpan di tabel users, bukan extras_profiles) - instance
+            // baru belum tersimpan jadi relasi ini nggak bisa di-lazy-load
+            // dari DB, set manual dari user yang lagi login.
+            $profile->setRelation('user', $request->user());
+        }
 
         return view('extras.profile-edit', [
             'profile' => $profile,
@@ -52,8 +75,12 @@ class ProfileController extends Controller
      * Array 4 slot (index 1-4), isi ExtrasPhoto kalau ada atau null kalau
      * kosong, biar view tinggal loop 1..4 tanpa perlu cek collection manual.
      */
-    private function fotoTambahanPerSlot(ExtrasProfile $profile): array
+    private function fotoTambahanPerSlot(?ExtrasProfile $profile): array
     {
+        if (! $profile) {
+            return [1 => null, 2 => null, 3 => null, 4 => null];
+        }
+
         $bySlot = $profile->photos->keyBy('urutan');
 
         return [
@@ -106,7 +133,7 @@ class ProfileController extends Controller
         // atau 'video_profil_path' dari request ini, kolom-kolom itu tidak
         // ada di $fillable ExtrasProfile, jadi mass-update() di bawah otomatis
         // aman (lihat catatan di model).
-        $request->user()->extrasProfile->update($dataDisimpan);
+        $request->user()->extrasProfile()->updateOrCreate([], $dataDisimpan);
 
         // nomor_wa & username ada di tabel users (reusable lintas role),
         // BUKAN extras_profiles, simpan terpisah dari update() di atas.

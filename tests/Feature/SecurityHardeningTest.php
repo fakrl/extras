@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class SecurityHardeningTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_login_kena_rate_limit_pada_percobaan_keenam(): void
     {
         for ($i = 0; $i < 5; $i++) {

@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\AdminProjectAssignment;
 use App\Models\CastingProject;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
+use App\Models\StaffPayroll;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -191,5 +193,55 @@ class MarginRecapTest extends TestCase
         $response->assertOk();
         // payout harus 0 karena status "ditolak" tidak masuk hitungan
         $response->assertSee('Rp 0');
+    }
+
+    public function test_halaman_keuangan_menampilkan_4_tab(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin_default']);
+
+        $response = $this->actingAs($admin)->get('/admin/rekap-margin');
+
+        $response->assertOk();
+        $response->assertSee('Margin Proyek');
+        $response->assertSee('Honor Staf');
+        $response->assertSee('Honor Extras');
+        $response->assertSee('Invoice Client');
+    }
+
+    public function test_tandai_dibayar_staff_payroll_berhasil(): void
+    {
+        $superAdmin = User::factory()->create(['role' => 'super_admin']);
+        $korlap = User::factory()->create(['role' => 'korlap', 'name' => 'Staf Lapangan']);
+        $project = CastingProject::create([
+            'admin_id' => $superAdmin->id,
+            'nama_produksi' => 'Proyek Payroll Test',
+            'client_ph' => 'PH Test',
+            'deadline' => now()->addDays(7),
+            'kuota' => 5,
+        ]);
+
+        $assignment = AdminProjectAssignment::create([
+            'casting_project_id' => $project->id,
+            'user_id' => $korlap->id,
+            'assigned_by' => $superAdmin->id,
+            'status_log' => 'selesai',
+        ]);
+
+        $payroll = StaffPayroll::create([
+            'admin_project_assignment_id' => $assignment->id,
+            'nominal_pokok' => 450000,
+            'status_bayar' => 'belum_dibayar',
+        ]);
+
+        $this->assertFalse($payroll->isDibayar());
+
+        $response = $this->actingAs($superAdmin)
+            ->patch(route('super-admin.payrolls.tandai-dibayar', $payroll));
+
+        $response->assertRedirect();
+        $payroll->refresh();
+        $this->assertTrue($payroll->isDibayar());
+        $this->assertSame('sudah', $payroll->status_bayar);
+        $this->assertNotNull($payroll->dibayar_at);
     }
 }

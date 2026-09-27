@@ -11,19 +11,29 @@ use Illuminate\Http\Request;
 class CastingProjectController extends Controller
 {
     /**
-     * RF-11: Extras melihat daftar proyek casting yang dibuka, diurutkan
-     * berdasarkan fee tertinggi (proxy: budget_client kelas tertinggi di
-     * proyek itu) dan status urgent di posisi teratas.
+     * RF-11: Extras melihat semua proyek casting.
+     * Aktif dulu (urut deadline terdekat), selesai/ditutup paling bawah.
      */
     public function index()
     {
-        $projects = CastingProject::where('status', 'dibuka')
+        $aktifStatuses = ['dibuka'];
+        $selesaiStatuses = ['ditutup', 'selesai_produksi'];
+
+        $aktif = CastingProject::whereIn('status', $aktifStatuses)
+            ->withCount(['applications as terisi' => fn ($q) => $q->whereIn('status_partisipasi', ['lolos', 'kontrak_ditandatangani', 'selesai_produksi'])])
             ->with('classes', 'shootingDates')
+            ->orderBy('deadline')
             ->get()
-            ->sortByDesc(fn ($p) => [$p->is_urgent, $p->classes->max('budget_client')])
+            ->filter(fn ($p) => $p->menerimaPendaftaran())
             ->values();
 
-        return view('extras.projects.index', compact('projects'));
+        $selesai = CastingProject::whereIn('status', $selesaiStatuses)
+            ->withCount(['applications as terisi' => fn ($q) => $q->whereIn('status_partisipasi', ['lolos', 'kontrak_ditandatangani', 'selesai_produksi'])])
+            ->with('classes', 'shootingDates')
+            ->orderByDesc('deadline')
+            ->get();
+
+        return view('extras.projects.index', compact('aktif', 'selesai'));
     }
 
     public function show(CastingProject $castingProject)

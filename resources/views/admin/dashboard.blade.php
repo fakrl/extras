@@ -20,6 +20,15 @@
         </div>
     @endif
 
+    @if ($pembayaranSengketa > 0)
+        <div style="background: rgba(234, 179, 8, 0.1); border: 1px solid var(--warning, #eab308); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <div style="font-weight: 600; color: var(--warning, #eab308); font-size: 13.5px;">
+                <i class="ti ti-alert-circle"></i> Pembayaran Bermasalah ({{ $pembayaranSengketa }} kasus)
+            </div>
+            <a href="{{ route('admin.projects.index') }}" class="btn btn-sm">Tinjau Pembayaran &rarr;</a>
+        </div>
+    @endif
+
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px;">
         <div class="metric-card">
             <div class="metric-label">Proyek Aktif</div>
@@ -64,7 +73,7 @@
     </div>
 
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <a href="{{ route('admin.users.index') }}" class="btn">Kelola Akun CD & Extras</a>
+        <a href="{{ route('admin.users.index') }}" class="btn">Kelola Akun Client & Extras</a>
         <a href="{{ route('admin.projects.index') }}" class="btn btn-brand">Manajemen Proyek Casting</a>
         <a href="{{ route('admin.attendance.index') }}" class="btn">Kelola Absensi Lapangan</a>
         <a href="{{ route('admin.recap.index') }}" class="btn">Rekap Extras</a>

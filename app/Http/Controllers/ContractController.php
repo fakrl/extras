@@ -6,6 +6,7 @@ use App\Mail\KontrakSiapTtdMail;
 use App\Models\ActivityLog;
 use App\Models\NotificationLog;
 use App\Models\ProjectApplication;
+use App\Notifications\InAppNotification;
 use App\Services\PdfGeneratorService;
 use App\Services\WhatsAppService;
 use Illuminate\Http\RedirectResponse;
@@ -115,6 +116,20 @@ class ContractController extends Controller
         return back()->with('status', 'Tanda tangan berhasil disimpan.');
     }
 
+    public function downloadPdf(Request $request, ProjectApplication $application)
+    {
+        abort_unless($application->bolehDilihatOleh($request->user()), 403);
+        abort_unless($application->contract, 404, 'Kontrak belum dibuat.');
+        abort_unless($application->contract->pdf_path && Storage::disk('local')->exists($application->contract->pdf_path), 404, 'PDF kontrak belum tersedia.');
+
+        $application->load('castingProject');
+
+        return Storage::disk('local')->download(
+            $application->contract->pdf_path,
+            'Kontrak-JBTB-'.Str::slug($application->castingProject->nama_produksi).'.pdf'
+        );
+    }
+
     private function renderPdf(ProjectApplication $application): void
     {
         $application->load('contract', 'extras', 'castingProject');
@@ -146,6 +161,13 @@ class ContractController extends Controller
 
             $pesan = "Halo {$penerima->name}, kontrak untuk proyek {$application->castingProject->nama_produksi} sudah siap ditandatangani. Silakan cek sistem.";
             $this->whatsapp->kirimNotifikasi($penerima, 'kontrak_siap_ttd', $pesan);
+
+            $judulKontrak = 'Kontrak Siap Ditandatangani';
+            $pesanKontrak = "Kontrak proyek {$application->castingProject->nama_produksi} sudah siap. Silakan tanda tangani.";
+            try {
+                $penerima->notify(new InAppNotification($judulKontrak, $pesanKontrak));
+            } catch (\Throwable) {
+            }
         }
     }
 }

@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\AdminProfile;
 use App\Models\CastingProject;
+use App\Models\ExtrasCategory;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AdminManagementController extends Controller
 {
@@ -24,12 +27,24 @@ class AdminManagementController extends Controller
     {
         $roleFilter = $request->query('role', 'all');
         $statusFilter = $request->query('status', 'all');
+        $search = $request->query('search') ?: $request->query('q');
 
         $query = User::withTrashed()->where('id', '!=', auth()->id());
 
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('username', 'like', "%{$search}%")
+                    ->orWhere('role', 'like', "%{$search}%");
+            });
+        }
+
         if ($roleFilter === 'all') {
-            // Default: hanya Admin roles (tidak termasuk CD/Client)
+            // Default: hanya Admin roles (tidak termasuk CD/Client/Extras)
             $query->whereIn('role', ['admin', 'korlap', 'super_admin', 'admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed']);
+        } elseif ($roleFilter === 'extras') {
+            $query->where('role', 'extras');
         } elseif ($roleFilter === 'client' || $roleFilter === 'casting_director') {
             $query->whereIn('role', ['client', 'casting_director']);
         } else {
@@ -50,22 +65,24 @@ class AdminManagementController extends Controller
             });
         }
 
-        $admins = $query->with([
-            'adminProfile',
-            'adminProjectAssignments.castingProject',
-            'adminProjectAssignments.payroll',
-            'cdProjectAssignments.castingProject',
-        ])
-            ->get()
-            ->each(fn (User $admin) => $admin->has_history = $this->hasHistory($admin));
+        $withs = $roleFilter === 'extras'
+            ? []
+            : ['adminProfile', 'adminProjectAssignments.castingProject', 'adminProjectAssignments.payroll', 'cdProjectAssignments.castingProject'];
+
+        $admins = $query->with($withs)
+            ->latest()
+            ->paginate(15)
+            ->appends($request->query());
+
+        $admins->each(fn (User $admin) => $admin->has_history = $this->hasHistory($admin));
 
         $projects = CastingProject::orderByDesc('id')->get();
 
-        return view('super-admin.admins.index', compact('admins', 'projects', 'roleFilter', 'statusFilter'));
+        return view('super-admin.admins.index', compact('admins', 'projects', 'roleFilter', 'statusFilter', 'search'));
     }
 
     /**
-     * Bagian AG: halaman detail per-akun Admin/CD dengan riwayat kerja lengkap.
+     * Bagian AG/AR.2/AU.6.7: halaman detail per-akun Admin/CD/Extras dengan riwayat kerja lengkap & aktivitas.
      */
     public function show(User $user)
     {
@@ -73,16 +90,61 @@ class AdminManagementController extends Controller
         abort_if($user->is_protected && $user->id !== auth()->id(), 403);
         abort_if($user->id === auth()->id(), 403);
 
+        $clientProjects = null;
+        $availableKategori = null;
+
         // Load riwayat berdasarkan role
         if ($user->isClient()) {
             $user->load('cdProjectAssignments.castingProject', 'cdProjectAssignments.cdReviews');
             $assignments = $user->cdProjectAssignments;
+            $clientProjects = CastingProject::where('diajukan_oleh_client_id', $user->id)
+                ->orderByDesc('id')->get();
+        } elseif ($user->role === 'extras') {
+            $user->load('extrasProfile.categories', 'adminProjectAssignments');
+            $assignments = collect();
+            $availableKategori = ExtrasCategory::orderBy('nama')->get();
         } else {
             $user->load('adminProjectAssignments.castingProject', 'adminProjectAssignments.payroll.addons', 'adminProfile');
             $assignments = $user->adminProjectAssignments;
         }
 
-        return view('super-admin.admins.show', compact('user', 'assignments'));
+        // AU.6.7: Aktivitas akun ini
+        $userActivities = ActivityLog::where('user_id', $user->id)
+            ->orWhere(fn ($q) => $q->where('subject_type', User::class)->where('subject_id', $user->id))
+            ->latest()
+            ->take(20)
+            ->get();
+
+        return view('super-admin.admins.show', compact('user', 'assignments', 'clientProjects', 'availableKategori', 'userActivities'));
+    }
+
+    /**
+     * AU.6: Super Admin update data akun (nama, email, role).
+     */
+    public function update(Request $request, User $user): RedirectResponse
+    {
+        $this->guardTarget($user);
+
+        $allowedRoles = ['admin', 'korlap', 'client', 'extras'];
+        if ($request->user()->is_protected) {
+            $allowedRoles[] = 'super_admin';
+        }
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'unique:users,email,'.$user->id],
+            'role' => ['required', 'in:'.implode(',', $allowedRoles)],
+        ]);
+
+        $user->update([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'role' => $data['role'],
+        ]);
+
+        ActivityLog::record('UPDATE_USER', "Super Admin mengubah data akun {$user->name} (Role: {$user->role}).", $user);
+
+        return redirect()->back(fallback: route('super-admin.admins.index'))->with('status', "Data akun {$user->name} berhasil diperbarui.");
     }
 
     /**
@@ -184,7 +246,27 @@ class AdminManagementController extends Controller
         $user->status = $user->status === 'aktif' ? 'nonaktif' : 'aktif';
         $user->save();
 
-        return back()->with('status', 'Status akun diperbarui.');
+        ActivityLog::record('TOGGLE_USER_STATUS', "Super Admin mengubah status {$user->name} ke {$user->status}.", $user);
+
+        return back()->with('status', "Status akun {$user->name} diperbarui.");
+    }
+
+    /**
+     * AR.2: Super Admin memperbarui kategori akun Extras.
+     */
+    public function updateKategori(User $user, Request $request): RedirectResponse
+    {
+        abort_unless($user->role === 'extras', 403);
+
+        $data = $request->validate([
+            'kategori_ids' => ['nullable', 'array'],
+            'kategori_ids.*' => ['exists:extras_categories,id'],
+        ]);
+
+        $user->extrasProfile?->categories()->sync($data['kategori_ids'] ?? []);
+        ActivityLog::record('UPDATE_EXTRAS_KATEGORI', "Super Admin memperbarui kategori {$user->name}.", $user);
+
+        return back()->with('status', 'Kategori extras diperbarui.');
     }
 
     /**
@@ -215,6 +297,43 @@ class AdminManagementController extends Controller
         $user->save();
 
         return back()->with('status', 'Akun berhasil diaktifkan kembali.');
+    }
+
+    public function bulkAction(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'user_ids' => ['required', 'array'],
+            'user_ids.*' => ['exists:users,id'],
+            'action' => ['required', 'in:aktifkan,nonaktifkan'],
+        ]);
+
+        $users = User::whereIn('id', $data['user_ids'])
+            ->where('id', '!=', auth()->id())
+            ->get()
+            ->filter(fn ($u) => ! $u->is_protected);
+
+        $status = $data['action'] === 'aktifkan' ? 'aktif' : 'nonaktif';
+
+        foreach ($users as $u) {
+            $u->status = $status;
+            $u->save();
+            ActivityLog::record('TOGGLE_USER_STATUS', "Bulk action: status {$u->name} diubah ke {$status}.", $u);
+        }
+
+        return back()->with('status', "{$users->count()} akun berhasil di{$data['action']}.");
+    }
+
+    public function resetPassword(User $user): RedirectResponse
+    {
+        $this->guardTarget($user);
+
+        $newPassword = Str::random(12);
+        $user->password = Hash::make($newPassword);
+        $user->save();
+
+        ActivityLog::record('RESET_USER_PASSWORD', "Super Admin mereset password {$user->name}.", $user);
+
+        return back()->with('status', "Password berhasil direset. Password baru: {$newPassword}");
     }
 
     private function guardTarget(User $user): void

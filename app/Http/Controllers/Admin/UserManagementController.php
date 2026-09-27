@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\ExtrasCategory;
 use App\Models\User;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -99,5 +100,21 @@ class UserManagementController extends Controller
         $user->extrasProfile?->categories()->sync($data['kategori_ids'] ?? []);
 
         return back()->with('status', 'Kategori extras diperbarui.');
+    }
+
+    /**
+     * AQ.3: Admin/SA melihat profil lengkap Extras (read-only admin view).
+     */
+    public function showProfile(User $user): View
+    {
+        abort_unless($user->role === 'extras', 403);
+        $user->load('extrasProfile.categories', 'extrasProfile.photos');
+        $profile = $user->extrasProfile;
+        abort_if(! $profile, 404);
+
+        $bySlot = $profile->photos->keyBy('urutan');
+        $fotoTambahan = [1 => $bySlot->get(1), 2 => $bySlot->get(2), 3 => $bySlot->get(3), 4 => $bySlot->get(4)];
+
+        return view('extras.profile-show', compact('user', 'profile', 'fotoTambahan') + ['isAdminView' => true]);
     }
 }

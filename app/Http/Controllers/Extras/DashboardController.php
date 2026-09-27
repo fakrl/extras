@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Extras;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\Attendance;
+use App\Models\CastingProject;
 use App\Models\EventShootingDate;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
@@ -47,6 +49,23 @@ class DashboardController extends Controller
             ->get()
             ->map(fn ($e) => tap($e, fn ($e) => $e->nama_produksi = $e->castingProject?->nama_produksi));
 
-        return view('extras.dashboard', compact('extrasProfile', 'pendaftaranSaya', 'aktivitasSaya', 'jadwalBulanIni'));
+        $castingCallTerbuka = CastingProject::where('status', 'dibuka')
+            ->select(['id', 'nama_produksi', 'deadline', 'kuota', 'is_urgent', 'status'])
+            ->orderBy('deadline')
+            ->with(['classes:id,casting_project_id,nama_kelas,kuota_kelas', 'shootingDates:id,casting_project_id,tanggal'])
+            ->get()
+            ->filter(fn ($p) => $p->menerimaPendaftaran())
+            ->take(3)
+            ->values();
+
+        $riwayatAbsensi = $extrasProfile
+            ? Attendance::whereHas('projectApplication', fn ($q) => $q->where('extras_id', $extrasProfile->id))
+                ->with(['projectApplication.castingProject:id,nama_produksi', 'eventShootingDate:id,tanggal'])
+                ->latest()
+                ->take(5)
+                ->get()
+            : collect();
+
+        return view('extras.dashboard', compact('extrasProfile', 'pendaftaranSaya', 'aktivitasSaya', 'jadwalBulanIni', 'castingCallTerbuka', 'riwayatAbsensi'));
     }
 }

@@ -20,7 +20,7 @@
 @endphp
 
 @once
-@push('head')
+@push('styles')
 <style>
 .jadwal-cal-wrap { display: grid; grid-template-columns: 1fr; gap: 16px; }
 .jadwal-cal-wrap.has-detail { grid-template-columns: 1fr 260px; }

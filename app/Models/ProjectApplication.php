@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Mail\HasilSeleksiMail;
 use App\Mail\KonfirmasiFeeMail;
+use App\Notifications\InAppNotification;
 use App\Services\PdfGeneratorService;
 use App\Services\WhatsAppService;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -358,6 +359,15 @@ class ProjectApplication extends Model
             : "Halo {$user->name}, mohon maaf, kamu belum lolos seleksi untuk proyek {$this->castingProject->nama_produksi} kali ini.";
 
         app(WhatsAppService::class)->kirimNotifikasi($user, 'hasil_seleksi', $pesan);
+
+        $judul = $this->status_partisipasi === 'lolos' ? 'Selamat, Kamu Lolos!' : 'Hasil Seleksi';
+        $pesan = $this->status_partisipasi === 'lolos'
+            ? "Kamu lolos seleksi proyek {$this->castingProject->nama_produksi}. Cek sistem untuk info lebih lanjut."
+            : "Mohon maaf, kamu belum lolos seleksi proyek {$this->castingProject->nama_produksi} kali ini.";
+        try {
+            $user->notify(new InAppNotification($judul, $pesan));
+        } catch (\Throwable) {
+        }
     }
 
     /**

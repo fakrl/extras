@@ -1,19 +1,19 @@
 @extends('layouts.app')
 
-@section('title', 'Kelola Casting Director')
+@section('title', 'Kelola Client')
 
 @section('content')
 <div class="card-header-row">
-    <div style="font-size: 16px; font-weight: 600;">Kelola Casting Director</div>
+    <div style="font-size: 16px; font-weight: 600;">Kelola Client</div>
     <div style="display: flex; gap: 8px;">
-        <button type="button" class="btn" data-copy-link="{{ route('register.cd') }}">Copy Link Register CD</button>
-        <button type="button" class="btn btn-brand" onclick="document.getElementById('add-cd-dialog').showModal()">+ Tambah Casting Director</button>
+        <button type="button" class="btn" data-copy-link="{{ route('register.cd') }}">Copy Link Register Client</button>
+        <button type="button" class="btn btn-brand" onclick="document.getElementById('add-cd-dialog').showModal()">+ Tambah Client</button>
     </div>
 </div>
 
 <dialog id="add-cd-dialog" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 480px; width: 90%;">
     <div style="padding: 18px;">
-        <div style="font-size: 15px; font-weight: 600; margin-bottom: 14px;">Tambah Akun Casting Director</div>
+        <div style="font-size: 15px; font-weight: 600; margin-bottom: 14px;">Tambah Akun Client</div>
 
         @if ($errors->any())
             <div class="alert-danger">

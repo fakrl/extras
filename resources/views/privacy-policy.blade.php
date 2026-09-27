@@ -49,7 +49,7 @@
                 <tr><td>Nomor rekening</td><td>Extras (untuk pembayaran)</td></tr>
                 <tr><td>Nama panggung/alias, foto, video perkenalan</td><td>Extras</td></tr>
                 <tr><td>Tautan sosial media/portofolio (opsional)</td><td>Extras</td></tr>
-                <tr><td>Nama, email, password (terenkripsi)</td><td>Semua akun (Admin, CD, Extras)</td></tr>
+                <tr><td>Nama, email, password (terenkripsi)</td><td>Semua akun (Admin, Client, Extras)</td></tr>
                 <tr><td>Riwayat pendaftaran, negosiasi fee, kontrak, pembayaran</td><td>Extras yang mendaftar proyek</td></tr>
             </tbody>
         </table>
@@ -57,7 +57,7 @@
         <h2>Siapa yang bisa melihat data kamu</h2>
         <p>Kami membatasi akses data berdasarkan peran (role), bukan membuka semua data ke semua orang:</p>
         <ul>
-            <li><strong>Casting Director / Client</strong> hanya melihat nama panggung (alias), foto, dan video . Nama asli, NIK, kontak, rekening, dan tautan sosial media/portofolio Extras <strong>tidak pernah</strong> ditampilkan ke Casting Director.</li>
+            <li><strong>Client</strong> hanya melihat nama panggung (alias), foto, dan video . Nama asli, NIK, kontak, rekening, dan tautan sosial media/portofolio Extras <strong>tidak pernah</strong> ditampilkan ke Client.</li>
             <li><strong>Admin</strong> dapat melihat data lengkap Extras (termasuk nama asli & NIK) untuk keperluan verifikasi dan administrasi, serta data fee/pembayaran untuk keperluan operasional.</li>
             <li><strong>Extras</strong> hanya bisa melihat profilnya sendiri secara lengkap, bukan data Extras lain.</li>
         </ul>

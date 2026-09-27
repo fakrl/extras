@@ -33,6 +33,11 @@
 </div>
 
 @if (! $application->contract->isVoided())
+    @if ($application->contract->pdf_path)
+        <div style="margin-bottom: 12px;">
+            <a href="{{ route('contracts.download-pdf', $application) }}" class="btn">Lihat Kontrak (PDF)</a>
+        </div>
+    @endif
     @if (! $sudahTtd)
         <form method="POST" action="{{ route('contracts.sign', $application) }}" id="sign-form">
             @csrf

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Profil Saya')
+@section('title', ($isAdminView ?? false) ? 'Profil Extras — ' . $user->name : 'Profil Saya')
 
 @push('styles')
 <style>
@@ -23,13 +23,15 @@
 @section('content')
 <div class="card profile-layout">
     <div class="profile-layout-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
-        <div style="font-size: 17px; font-weight: 600;">Profil Saya</div>
+        <div style="font-size: 17px; font-weight: 600;">{{ ($isAdminView ?? false) ? $user->name : 'Profil Saya' }}</div>
+        @unless ($isAdminView ?? false)
         <div style="display: flex; gap: 8px; align-items: center;">
             <button type="button" id="btn-share" class="btn btn-sm btn-outline" style="font-size: 12px;">
                 <i class="ti ti-share"></i> Share
             </button>
             <a href="{{ route('extras.profile.edit') }}" class="btn btn-sm btn-brand">Edit Profil</a>
         </div>
+        @endunless
     </div>
     @if (session('status'))
         <div class="alert-success profile-layout-header">{{ session('status') }}</div>
@@ -142,10 +144,13 @@
             @include('partials.foto-lightbox', ['fotos' => $fotosArr, 'lightboxId' => 'profil-lb'])
         </div>
 
+        @unless ($isAdminView ?? false)
         <a href="{{ route('extras.profile.edit') }}" class="btn btn-brand" style="width: 100%; margin-top: 8px; display: flex;">Edit Profil</a>
+        @endunless
     </div>
 </div>
 
+@unless ($isAdminView ?? false)
 <dialog id="modal-share" style="border:1px solid var(--border-color); border-radius:16px; padding:0; max-width:360px; width:95%;">
     <div style="padding:20px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
@@ -201,4 +206,5 @@
 })();
 </script>
 @endpush
+@endunless
 @endsection

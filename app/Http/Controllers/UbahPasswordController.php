@@ -12,6 +12,13 @@ class UbahPasswordController extends Controller
         return view('auth.ubah-password');
     }
 
+    public function validateCurrentPassword(Request $request)
+    {
+        return response()->json([
+            'valid' => Hash::check($request->input('password', ''), $request->user()->password),
+        ]);
+    }
+
     public function update(Request $request)
     {
         $request->validate([

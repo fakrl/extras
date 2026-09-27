@@ -99,6 +99,9 @@ class ReviewController extends Controller
         );
 
         $statusFilter = $request->query('status');
+        $genderFilter = $request->query('gender');
+        $usiaMin = $request->query('usia_min');
+        $usiaMax = $request->query('usia_max');
 
         $query = ProjectApplication::where('casting_project_id', $castingProject->id)
             ->whereIn('status_partisipasi', [
@@ -120,9 +123,21 @@ class ReviewController extends Controller
             $query->where('status_partisipasi', 'ditolak');
         }
 
+        if ($genderFilter) {
+            $query->whereHas('extras', fn ($q) => $q->where('gender', $genderFilter));
+        }
+
+        if ($usiaMin !== null && $usiaMin !== '') {
+            $query->whereHas('extras', fn ($q) => $q->where('usia', '>=', (int) $usiaMin));
+        }
+
+        if ($usiaMax !== null && $usiaMax !== '') {
+            $query->whereHas('extras', fn ($q) => $q->where('usia', '<=', (int) $usiaMax));
+        }
+
         $applications = $query->latest()->get();
 
-        return response()->view('cd.reviews.show', compact('applications', 'castingProject', 'statusFilter'));
+        return response()->view('cd.reviews.show', compact('applications', 'castingProject', 'statusFilter', 'genderFilter', 'usiaMin', 'usiaMax'));
     }
 
     public function exportRiwayatXlsx(Request $request, CastingProject $castingProject)

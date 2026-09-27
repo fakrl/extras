@@ -21,8 +21,8 @@
         'direview_admin' => 'Direview Admin',
         'nego_fee' => 'Nego Fee',
         'deal' => 'Deal',
-        'diajukan_ke_cd' => 'Diajukan ke CD',
-        'direview_cd' => 'Direview CD',
+        'diajukan_ke_cd' => 'Diajukan ke Client',
+        'direview_cd' => 'Direview Client',
         'lolos' => 'Lolos',
         'ditolak' => 'Ditolak',
         'kontrak_ditandatangani' => 'Kontrak TTD',
@@ -38,7 +38,7 @@
 
 <div style="display: flex; gap: 8px; margin-bottom: 20px;">
     <a href="{{ route('extras.profile.show') }}" class="btn">Lihat Profil Saya</a>
-    <a href="{{ route('extras.projects.index') }}" class="btn btn-brand">Lihat Lowongan Casting</a>
+    <a href="{{ route('extras.projects.index') }}" class="btn btn-brand">Lihat Casting Call</a>
 </div>
 
 {{-- Status Akun, Grade, & Linimasa Aktivitas --}}
@@ -87,9 +87,62 @@
 </div>
 
 <div class="card" style="margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div style="font-size: 14px; font-weight: 600;"><i class="ti ti-microphone"></i> Casting Call Terbuka</div>
+        <a href="{{ route('extras.projects.index') }}" style="font-size: 12.5px; color: var(--accent);">Lihat Semua &rarr;</a>
+    </div>
+    @forelse ($castingCallTerbuka as $project)
+        <div style="padding: 8px 0; border-bottom: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                <div>
+                    <div style="font-size: 13.5px; font-weight: 600;">
+                        {{ $project->nama_produksi }}
+                        @if ($project->isUrgent()) <span class="badge badge-tolak">Dadakan</span> @endif
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Deadline: {{ $project->deadline->format('d M Y') }} · {{ $project->classes->count() }} kelas</div>
+                </div>
+                <a href="{{ route('extras.projects.show', $project) }}" class="btn btn-sm">Lihat</a>
+            </div>
+        </div>
+    @empty
+        <div style="font-size: 13px; color: var(--text-muted); text-align: center; padding: 12px 0;">Tidak ada casting call terbuka saat ini.</div>
+    @endforelse
+</div>
+
+<div class="card" style="margin-bottom: 20px;">
     <div class="card-title">Jadwal Shooting Bulan Ini</div>
     <x-jadwal-calendar :events="$jadwalBulanIni" :compact="true" />
 </div>
+
+@if ($riwayatAbsensi->isNotEmpty())
+<div class="card" style="margin-bottom: 20px;">
+    <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;"><i class="ti ti-clipboard-check"></i> Status Absensi Saya</div>
+    @foreach ($riwayatAbsensi as $absen)
+        @php
+            $namaProyek = $absen->projectApplication->castingProject->nama_produksi ?? '-';
+            $tanggal = $absen->eventShootingDate->tanggal->format('d M Y') ?? '-';
+        @endphp
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--border-color); font-size: 12.5px; gap: 8px;">
+            <div>
+                <div style="font-weight: 500;">{{ $namaProyek }}</div>
+                <div style="color: var(--text-muted);">{{ $tanggal }}</div>
+                @if ($absen->catatan && $absen->status_validasi === 'tervalidasi' && $absen->status === 'tidak_hadir')
+                    <div style="color: var(--danger, #d9534f); margin-top: 2px;">Alasan: {{ $absen->catatan }}</div>
+                @endif
+            </div>
+            <div style="white-space: nowrap;">
+                @if ($absen->status_validasi === 'tervalidasi' && $absen->status === 'hadir')
+                    <span class="badge badge-aktif">Hadir Tervalidasi</span>
+                @elseif ($absen->status_validasi === 'tervalidasi' && $absen->status === 'tidak_hadir')
+                    <span class="badge badge-tolak">Tidak Hadir</span>
+                @else
+                    <span class="badge badge-pending">Menunggu Validasi</span>
+                @endif
+            </div>
+        </div>
+    @endforeach
+</div>
+@endif
 
 <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Pendaftaran Saya</div>
 
@@ -230,7 +283,7 @@
         <div style="font-size: 14px; font-weight: 600; margin-bottom: 16px;">Cara Kerja buat Calon Extras</div>
         <div class="step-bar-wrap">
             <div class="step-bar">
-                @foreach (['Daftar akun', 'Lengkapi profil', 'Apply proyek casting terbuka', 'Seleksi Admin & CD', 'Tanda tangan kontrak digital', 'Kerja & dibayar'] as $i => $step)
+                @foreach (['Daftar akun', 'Lengkapi profil', 'Apply proyek casting terbuka', 'Seleksi Admin & Client', 'Tanda tangan kontrak digital', 'Kerja & dibayar'] as $i => $step)
                     <div class="step-bar-item">
                         <div class="step-bar-circle">{{ $i + 1 }}</div>
                         <div class="step-bar-label">{{ $step }}</div>
