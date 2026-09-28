@@ -158,6 +158,21 @@ class ProjectApplication extends Model
     }
 
     /**
+     * BA.3: % tag peran yang dimiliki Extras. Null kalau peran tanpa tag.
+     * Eager-load `castingProjectClass.categories` + `extras.categories` di list.
+     */
+    public function persenCocok(): ?int
+    {
+        $dicari = $this->castingProjectClass?->categories->modelKeys() ?? [];
+        if (! $dicari) {
+            return null;
+        }
+        $dimiliki = $this->extras?->categories->modelKeys() ?? [];
+
+        return (int) round(count(array_intersect($dicari, $dimiliki)) / count($dicari) * 100);
+    }
+
+    /**
      * RF-16: Admin ajukan penawaran fee awal. Ronde 1, selalu dari admin.
      */
     public function ajukanFeeAwal(float $nominal, ?string $catatan = null): FeeNegotiation
