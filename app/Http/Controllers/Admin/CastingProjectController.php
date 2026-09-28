@@ -253,6 +253,8 @@ class CastingProjectController extends Controller
         $status = array_key_exists($request->query('status', ''), ProjectApplication::LABELS) ? $request->query('status') : null;
 
         $cdStatuses = ['diajukan_ke_cd', 'direview_cd', 'lolos', 'ditolak'];
+        $tagIds = array_map('intval', array_filter((array) $request->query('tag', []), 'is_numeric'));
+        $urut = $request->query('urut') === 'cocok' ? 'cocok' : null;
 
         $applicants = $castingProject->applications()
             ->with([
@@ -264,11 +266,15 @@ class CastingProjectController extends Controller
             ->when($tab !== 'cd' && $grade === 'belum', fn ($q) => $q->whereNull('grade'))
             ->when($tab !== 'cd' && in_array($grade, ['A', 'B', 'C'], true), fn ($q) => $q->where('grade', $grade))
             ->when($tab !== 'cd' && $status, fn ($q) => $q->where('status_partisipasi', $status))
+            ->when($tagIds, fn ($q) => $q->whereHas('extras.categories', fn ($c) => $c->whereIn('extras_categories.id', $tagIds)))
+            ->when($urut, fn ($q) => $q->urutPalingCocok())
             ->latest()
             ->paginate(30)
             ->withQueryString();
 
-        return view('admin.projects.applicants', compact('castingProject', 'applicants', 'grade', 'tab', 'status'));
+        $tagDicari = ExtrasCategory::dicariDiProyek($castingProject->id);
+
+        return view('admin.projects.applicants', compact('castingProject', 'applicants', 'grade', 'tab', 'status', 'tagIds', 'urut', 'tagDicari'));
     }
 
     /**

@@ -57,6 +57,42 @@ class BaKartuExtrasTest extends TestCase
             ->assertSee('ti-circle-check', false);
     }
 
+    public function test_lineup_filter_tag_dan_urut_paling_cocok_lintas_halaman(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $project = CastingProject::factory()->create(['admin_id' => $admin->id]);
+        $t = $this->tags();
+        $a33 = $this->lamaran($project, 'satu_tag', [$t[0]]);
+        $a100 = $this->lamaran($project, 'semua_tag', $t);
+        $a0 = $this->lamaran($project, 'tanpa_tag', []);
+        $a33->castingProjectClass->categories()->sync($t);
+        $url = fn (array $q) => route('admin.projects.applicants', [$project] + $q);
+
+        $ids = fn ($res) => $res->viewData('applicants')->pluck('id')->all();
+        $this->assertSame([$a100->id, $a33->id, $a0->id], $ids($this->actingAs($admin)->get($url(['urut' => 'cocok']))));
+
+        $res = $this->actingAs($admin)->get($url(['tag' => [$t[1]]]));
+        $this->assertSame([$a100->id], $ids($res));
+        $res->assertSee('#Mahasiswa')->assertSee('Paling cocok');
+    }
+
+    public function test_greenlight_chip_tag_dan_data_cocok(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $client = User::factory()->create(['role' => 'client']);
+        $project = CastingProject::factory()->create(['admin_id' => $admin->id]);
+        $project->cdAssignments()->create(['cd_user_id' => $client->id]);
+        $t = $this->tags();
+        $app = $this->lamaran($project, 'bagas_22', [$t[0], $t[1]], 'diajukan_ke_cd');
+        $app->castingProjectClass->categories()->sync($t);
+
+        $this->actingAs($client)->get(route('cd.reviews.show', $project))
+            ->assertOk()
+            ->assertSee('class="btn btn-sm gl-tag" data-tag="'.$t[2].'"', false)
+            ->assertSee('data-cocok="67"', false)
+            ->assertSee('Paling cocok');
+    }
+
     public function test_data_extras_admin_pakai_kartu_tanpa_aplikasi(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);

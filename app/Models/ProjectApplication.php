@@ -173,6 +173,20 @@ class ProjectApplication extends Model
     }
 
     /**
+     * BA.5: urut persenCocok() desc di SQL biar berlaku lintas halaman paginate.
+     * Peran tanpa tag (rasio NULL) jatuh di akhir, MySQL & SQLite sama.
+     */
+    public function scopeUrutPalingCocok($query)
+    {
+        return $query->orderByRaw('(select count(*) from casting_project_class_extras_category k
+            join extras_category_extras_profile e on e.extras_category_id = k.extras_category_id
+            where k.casting_project_class_id = project_applications.casting_project_class_id
+            and e.extras_profile_id = project_applications.extras_id) * 1.0
+            / nullif((select count(*) from casting_project_class_extras_category k2
+            where k2.casting_project_class_id = project_applications.casting_project_class_id), 0) desc');
+    }
+
+    /**
      * RF-16: Admin ajukan penawaran fee awal. Ronde 1, selalu dari admin.
      */
     public function ajukanFeeAwal(float $nominal, ?string $catatan = null): FeeNegotiation

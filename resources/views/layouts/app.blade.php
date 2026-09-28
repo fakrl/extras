@@ -275,7 +275,10 @@
         .btn-outline-brand { border-color: var(--accent); color: var(--accent-strong); }
         .xfilter { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: var(--space-3); }
         .xfilter-label { font-size: var(--fs-xs); color: var(--text-muted); font-weight: 600; margin-right: 2px; }
-        .xfilter .btn.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-on); }
+        .xtoolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 10px 12px; margin-bottom: var(--space-3); }
+        .xtoolbar input, .xtoolbar select { width: auto; min-height: 40px; margin: 0; padding: 6px 10px; font-size: var(--fs-sm); }
+        .xtoolbar .xtoolbar-cari { flex: 1 1 220px; font-size: var(--fs-md); }
+        .xtoolbar label { margin: 0; font-size: var(--fs-xs); color: var(--text-muted); }
         @media (max-width: 480px) { .xgrid { grid-template-columns: 1fr; } }
 
         .xmodal { border: 0; padding: 0; border-radius: 16px; width: min(560px, 94vw); max-height: 92vh; background: var(--bg-card); color: var(--text-primary); box-shadow: 0 20px 60px rgba(0,0,0,0.3); }

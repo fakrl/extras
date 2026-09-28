@@ -50,6 +50,20 @@
     </form>
 @endif
 
+<div class="xfilter" aria-label="Filter tag dan urutan">
+    @if ($tagDicari->isNotEmpty())
+        <span class="xfilter-label">Tag dicari</span>
+        @foreach ($tagDicari as $tag)
+            @php $on = in_array($tag->id, $tagIds); @endphp
+            <a href="{{ request()->fullUrlWithQuery(['tag' => ($on ? array_values(array_diff($tagIds, [$tag->id])) : [...$tagIds, $tag->id]) ?: null, 'page' => null]) }}"
+               class="btn btn-sm {{ $on ? 'btn-brand' : '' }}" @if ($on) aria-current="true" @endif>#{{ $tag->nama }}</a>
+        @endforeach
+    @endif
+    <span class="xfilter-label" style="margin-left: auto;">Urutkan</span>
+    <a href="{{ request()->fullUrlWithQuery(['urut' => null, 'page' => null]) }}" class="btn btn-sm {{ $urut ? '' : 'btn-brand' }}">Terbaru</a>
+    <a href="{{ request()->fullUrlWithQuery(['urut' => 'cocok', 'page' => null]) }}" class="btn btn-sm {{ $urut ? 'btn-brand' : '' }}">Paling cocok</a>
+</div>
+
 <div style="position: relative; margin-bottom: 16px;">
     <input type="text" id="search-applicants" placeholder="Cari nama pelamar, alias/username, peran, kelas..."
            style="width: 100%; max-width: 400px; padding: 8px 14px 8px 36px; border: 1px solid var(--border-color); border-radius: 8px; font-size: var(--fs-md); background: var(--bg-card); color: var(--text-primary); margin-bottom: 0;">
