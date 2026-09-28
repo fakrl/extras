@@ -83,6 +83,6 @@ class ProjectRequestController extends Controller
                 }
             });
 
-        return redirect()->route('cd.dashboard')->with('status', 'Brief permintaan proyek berhasil diajukan! Menunggu peninjauan & persetujuan Super Admin.');
+        return redirect()->route('cd.dashboard')->with('status', 'Brief permintaan proyek berhasil diajukan! Menunggu peninjauan & persetujuan tim JBTB.');
     }
 }

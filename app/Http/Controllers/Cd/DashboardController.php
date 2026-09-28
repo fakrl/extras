@@ -7,7 +7,6 @@ use App\Models\CastingProject;
 use App\Models\CdProjectAssignment;
 use App\Models\CdReview;
 use App\Models\EventShootingDate;
-use App\Models\Payment;
 use App\Models\ProjectApplication;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -36,12 +35,10 @@ class DashboardController extends Controller
             ->where('status', 'dibuka')
             ->get(['id', 'nama_produksi', 'deadline']);
 
-        $pelunasanPending = Payment::whereIn('status', ['belum_dibayar', 'ditransfer'])
-            ->whereHas('projectApplication', fn ($q) => $q->whereIn('casting_project_id', $proyekIds))
-            ->with('projectApplication.castingProject:id,nama_produksi')
-            ->get()
-            ->groupBy(fn ($p) => $p->projectApplication->castingProject->nama_produksi)
-            ->map(fn ($group) => $group->count());
+        $pengajuan = CastingProject::where('diajukan_oleh_client_id', $cdId)
+            ->latest()
+            ->take(5)
+            ->get(['id', 'nama_produksi', 'client_request_status', 'alasan_tolak', 'created_at']);
 
         $karakterPendaftar = ProjectApplication::whereIn('casting_project_id', $proyekIds)
             ->whereIn('status_partisipasi', [
@@ -64,7 +61,7 @@ class DashboardController extends Controller
             ->map(fn ($e) => tap($e, fn ($e) => $e->nama_produksi = $e->castingProject?->nama_produksi));
 
         return view('cd.dashboard', compact(
-            'perluDireview', 'chartKeputusan', 'proyekBerjalan', 'pelunasanPending', 'karakterPendaftar',
+            'perluDireview', 'chartKeputusan', 'proyekBerjalan', 'pengajuan', 'karakterPendaftar',
             'jadwalBulanIni'
         ));
     }

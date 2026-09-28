@@ -15,7 +15,7 @@
                         Tanggal shooting sudah sangat dekat namun kuota kandidat belum terpenuhi. Segera bagikan link pendaftaran ke grup WA atau review lineup.
                     </div>
                 </div>
-                <a href="{{ route('admin.projects.index') }}" class="btn btn-sm btn-brand">Lihat Proyek Urgent &rarr;</a>
+                <a href="{{ route('admin.projects.index', ['urgent' => 1]) }}" class="btn btn-sm btn-brand">Lihat Proyek Urgent &rarr;</a>
             </div>
         </div>
     @endif
@@ -30,18 +30,18 @@
     @endif
 
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px;">
-        <div class="metric-card">
+        <a href="{{ route('admin.projects.index', ['status' => 'dibuka']) }}" class="metric-card" style="display: block; color: inherit; text-decoration: none;">
             <div class="metric-label">Proyek Aktif</div>
             <div class="metric-value">{{ $proyekAktif }}</div>
-        </div>
-        <div class="metric-card">
+        </a>
+        <a href="{{ route('admin.projects.index') }}" class="metric-card" style="display: block; color: inherit; text-decoration: none;">
             <div class="metric-label">Total Pendaftar</div>
             <div class="metric-value">{{ $totalPendaftar }}</div>
-        </div>
-        <div class="metric-card">
+        </a>
+        <a href="{{ route('admin.projects.index', ['peserta' => 'nego_fee']) }}" class="metric-card" style="display: block; color: inherit; text-decoration: none;">
             <div class="metric-label">Perlu Dinego</div>
             <div class="metric-value">{{ $perluDinego }}</div>
-        </div>
+        </a>
     </div>
 
     <div class="card" style="margin-bottom: 20px;">
@@ -74,8 +74,8 @@
 
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
         <a href="{{ route('admin.users.index') }}" class="btn">Kelola Akun Client & Extras</a>
-        <a href="{{ route('admin.projects.index') }}" class="btn btn-brand">Manajemen Proyek Casting</a>
-        <a href="{{ route('admin.attendance.index') }}" class="btn">Kelola Absensi Lapangan</a>
+        <a href="{{ route('admin.projects.index') }}" class="btn btn-brand">Kelola Proyek</a>
+        <a href="{{ route('admin.attendance.index') }}" class="btn">Absensi Lapangan</a>
         <a href="{{ route('admin.recap.index') }}" class="btn">Rekap Extras</a>
         <a href="{{ route('admin.work-history') }}" class="btn">Riwayat Kerja & Status Gaji Saya</a>
     </div>

@@ -5,7 +5,7 @@
 @section('content')
 <div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">Lineup: {{ $castingProject->nama_produksi }}</div>
 <p style="color: var(--text-secondary); margin: 0 0 20px; font-size: 13.5px;">
-    Client: {{ $castingProject->client_ph }} · {{ $applicants->count() }} pendaftar
+    Client: {{ $castingProject->client_ph }} · {{ $applicants->total() }} pendaftar
     @if ($castingProject->wa_group_link)
         · <a href="{{ $castingProject->wa_group_link }}" target="_blank">Grup WA</a>
     @endif
@@ -20,6 +20,35 @@
     <a href="{{ route('admin.projects.applicants', [$castingProject, 'tab' => 'cd']) }}"
        class="btn btn-sm {{ ($tab ?? '') === 'cd' ? 'btn-brand' : '' }}">Sudah ke Client</a>
 </div>
+
+@if (($tab ?? '') !== 'cd')
+    <div style="display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap;" aria-label="Filter status">
+        @foreach (['' => 'Semua Status'] + \App\Models\ProjectApplication::LABELS as $value => $label)
+            <a href="{{ route('admin.projects.applicants', [$castingProject, 'grade' => $grade ?: null, 'status' => $value ?: null]) }}"
+               class="btn btn-sm {{ ($status ?? '') === $value ? 'btn-brand' : '' }}">{{ $label }}</a>
+        @endforeach
+    </div>
+
+    <form method="POST" action="{{ route('admin.projects.applicants.bulk', $castingProject) }}" id="bulk-form" class="card" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; padding: 12px;">
+        @csrf
+        <label style="margin: 0; display: flex; align-items: center; gap: 6px;"><input type="checkbox" onclick="document.querySelectorAll('.bulk-check').forEach(c => c.checked = this.checked)"> Pilih semua</label>
+        <label for="bulk-grade" style="margin: 0;">Grade</label>
+        <select name="grade" id="bulk-grade" style="width: 70px; min-height: 36px; margin-bottom: 0;">
+            <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+        </select>
+        <button type="submit" name="aksi" value="grade" class="btn btn-sm" formnovalidate>Set Grade Terpilih</button>
+        <button type="button" class="btn btn-sm btn-danger-outline" onclick="document.getElementById('bulk-tolak-dialog').showModal()">Tolak Terpilih</button>
+        <dialog id="bulk-tolak-dialog" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 18px; max-width: 360px; width: 90%;">
+            <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Tolak semua kandidat terpilih?</div>
+            <label for="bulk-alasan">Alasan penolakan (dikirim ke Extras)</label>
+            <textarea name="alasan_tolak" id="bulk-alasan" rows="3" required maxlength="1000" style="width: 100%; margin-bottom: 12px;"></textarea>
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
+                <button type="submit" name="aksi" value="tolak" class="btn btn-sm btn-danger-outline">Tolak Terpilih</button>
+            </div>
+        </dialog>
+    </form>
+@endif
 
 <div style="position: relative; margin-bottom: 16px;">
     <input type="text" id="search-applicants" placeholder="Cari nama pelamar, alias/username, peran, kelas..."
@@ -73,8 +102,9 @@
             ($app->status_partisipasi ?? '')
         );
     @endphp
-    <div class="applicant-card applicant-card-item" data-search="{{ $searchString }}">
+    <div class="applicant-card applicant-card-item" id="app-{{ $app->id }}" data-search="{{ $searchString }}" style="scroll-margin-top: 80px;">
         <div class="applicant-card-photo">
+            <label style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;"><input type="checkbox" name="ids[]" value="{{ $app->id }}" form="bulk-form" class="bulk-check"> Pilih</label>
             @if ($app->extras->foto_profil_path)
                 <img src="{{ route('extras.media.foto', $app->extras) }}" alt="Foto Extras">
             @else
@@ -321,6 +351,8 @@
     </div>
 @endforelse
 @endif
+
+{{ $applicants->links() }}
 
 @push('scripts')
 <script>

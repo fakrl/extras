@@ -31,7 +31,7 @@ class FeeNegotiationController extends Controller
 
         $application->terimaFee('extras', $nominalTerakhir);
 
-        return back()->with('status', 'Fee Deal! Kamu akan diajukan ke Casting Director.');
+        return back()->with('status', 'Fee Deal! Kamu akan diajukan ke Client.');
     }
 
     /**

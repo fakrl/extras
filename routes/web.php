@@ -168,6 +168,8 @@ Route::middleware(['auth', 'role:admin,admin_default,admin_talco,korlap,admin_ko
                 ->name('admin.projects.toggle-status');
             Route::get('/projects/{castingProject}/applicants', [AdminCastingProjectController::class, 'showApplicants'])
                 ->name('admin.projects.applicants');
+            Route::post('/projects/{castingProject}/applicants/bulk', [ApplicantController::class, 'bulk'])
+                ->name('admin.projects.applicants.bulk');
             Route::post('/projects/{castingProject}/assign-cd', [AdminCastingProjectController::class, 'assignCd'])
                 ->name('admin.projects.assign-cd');
 

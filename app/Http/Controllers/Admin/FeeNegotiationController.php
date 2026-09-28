@@ -101,8 +101,8 @@ class FeeNegotiationController extends Controller
         }
 
         $pesan = $adaBentrok
-            ? 'Kandidat diajukan ke Casting Director, tapi ada tanggal yang bertabrakan dengan proyek lain yang sedang diikuti. Silakan cek kembali komitmennya.'
-            : 'Kandidat diajukan ke Casting Director.';
+            ? 'Kandidat diajukan ke Client, tapi ada tanggal yang bertabrakan dengan proyek lain yang sedang diikuti. Silakan cek kembali komitmennya.'
+            : 'Kandidat diajukan ke Client.';
 
         return back()->with('status', $pesan);
     }

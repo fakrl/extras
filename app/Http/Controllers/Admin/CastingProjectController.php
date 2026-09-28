@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CastingProject;
+use App\Models\ProjectApplication;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,14 +14,18 @@ use Illuminate\Support\Str;
 
 class CastingProjectController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $peserta = $request->query('peserta');
         $projects = CastingProject::withCount('applications')
+            ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
+            ->when($peserta, fn ($q) => $q->whereHas('applications', fn ($a) => $a->where('status_partisipasi', $peserta)))
             ->orderByDesc('is_urgent')
             ->latest()
-            ->get();
+            ->get()
+            ->when($request->boolean('urgent'), fn ($c) => $c->filter(fn ($p) => $p->isUrgent())->values());
 
-        return view('admin.projects.index', compact('projects'));
+        return view('admin.projects.index', compact('projects', 'peserta'));
     }
 
     public function create()
@@ -233,6 +238,7 @@ class CastingProjectController extends Controller
     {
         $grade = $request->query('grade');
         $tab = $request->query('tab');
+        $status = array_key_exists($request->query('status', ''), ProjectApplication::LABELS) ? $request->query('status') : null;
 
         $cdStatuses = ['diajukan_ke_cd', 'direview_cd', 'lolos', 'ditolak'];
 
@@ -241,17 +247,20 @@ class CastingProjectController extends Controller
                 ->with('extras.user', 'castingProjectClass')
                 ->whereIn('status_partisipasi', $cdStatuses)
                 ->latest()
-                ->get();
+                ->paginate(30)
+                ->withQueryString();
         } else {
             $applicants = $castingProject->applications()
                 ->with('extras', 'extras.user', 'extras.photos', 'fieldNotes.korlap')
                 ->when($grade === 'belum', fn ($q) => $q->whereNull('grade'))
                 ->when(in_array($grade, ['A', 'B', 'C'], true), fn ($q) => $q->where('grade', $grade))
+                ->when($status, fn ($q) => $q->where('status_partisipasi', $status))
                 ->latest()
-                ->get();
+                ->paginate(30)
+                ->withQueryString();
         }
 
-        return view('admin.projects.applicants', compact('castingProject', 'applicants', 'grade', 'tab'));
+        return view('admin.projects.applicants', compact('castingProject', 'applicants', 'grade', 'tab', 'status'));
     }
 
     /**

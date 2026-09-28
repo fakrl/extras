@@ -26,7 +26,10 @@ class AttendanceController extends Controller
         $today = now()->toDateString();
 
         // Default proyek: yang punya shooting date paling dekat dengan hari ini
-        $projects = CastingProject::orderByDesc('id')->get(['id', 'nama_produksi', 'client_ph']);
+        $projects = CastingProject::whereHas('shootingDates', fn ($q) => $q->where('tanggal', '>=', now()->subDay()->toDateString()))
+            ->when($request->query('project'), fn ($q, $id) => $q->orWhere('id', $id))
+            ->orderByDesc('id')
+            ->get(['id', 'nama_produksi', 'client_ph']);
 
         $defaultProjectId = $request->query('project');
         if (! $defaultProjectId && $projects->isNotEmpty()) {
@@ -59,11 +62,20 @@ class AttendanceController extends Controller
                     ->whereIn('status_partisipasi', ProjectApplication::STATUS_AKTIF)
                     ->with(['extras.user', 'castingProjectClass', 'attendances.divalidasiOleh'])
                     ->get()
-                    ->sortBy(fn ($a) => $a->jam_callingan ?: $a->castingProjectClass?->jam_callingan ?: '99:99');
+                    ->each(fn ($a) => $a->setRelation('absen', $a->attendances->firstWhere('event_shooting_date_id', $shootingDate->id)))
+                    ->sortBy(fn ($a) => [
+                        $a->absen && $a->absen->status_validasi !== 'menunggu' ? 1 : 0,
+                        $a->jam_callingan ?: $a->castingProjectClass?->jam_callingan ?: '99:99',
+                    ]);
             }
         }
 
-        return view('admin.attendance.index', compact('projects', 'castingProject', 'shootingDate', 'applicants', 'today'));
+        $jadwalBulanIni = EventShootingDate::whereBetween('tanggal', [now()->startOfMonth(), now()->endOfMonth()])
+            ->with('castingProject:id,nama_produksi')
+            ->get()
+            ->map(fn ($e) => tap($e, fn ($e) => $e->nama_produksi = $e->castingProject?->nama_produksi));
+
+        return view('admin.attendance.index', compact('projects', 'castingProject', 'shootingDate', 'applicants', 'today', 'jadwalBulanIni'));
     }
 
     public function store(Request $request, ProjectApplication $application): RedirectResponse
@@ -72,7 +84,7 @@ class AttendanceController extends Controller
             'event_shooting_date_id' => ['required', 'integer'],
             'status' => ['required', 'in:hadir,tidak_hadir'],
             'catatan' => ['nullable', 'string', 'max:1000'],
-            'foto' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+            'foto' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
         ]);
 
         $shootingDate = $application->castingProject->shootingDates()->find($data['event_shooting_date_id']);
@@ -102,7 +114,7 @@ class AttendanceController extends Controller
             $updatePayload
         );
 
-        return back()->with('status', 'Absensi berhasil dicatat.');
+        return back()->withFragment('app-'.$application->id)->with('status', 'Absensi berhasil dicatat.');
     }
 
     /**
@@ -158,7 +170,7 @@ class AttendanceController extends Controller
             $attendance
         );
 
-        return back()->with('status', 'Absensi berhasil divalidasi.');
+        return back()->withFragment('app-'.$attendance->project_application_id)->with('status', 'Absensi berhasil divalidasi.');
     }
 
     public function tolakValidasi(Request $request, Attendance $attendance): RedirectResponse
@@ -179,7 +191,7 @@ class AttendanceController extends Controller
             $attendance
         );
 
-        return back()->with('status', 'Validasi kehadiran ditolak (Status: Tidak Hadir).');
+        return back()->withFragment('app-'.$attendance->project_application_id)->with('status', 'Validasi kehadiran ditolak (Status: Tidak Hadir).');
     }
 
     public function fotoStream(Attendance $attendance): StreamedResponse

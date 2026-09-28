@@ -90,6 +90,7 @@ class OperationalModulesTest extends TestCase
         $project->refresh();
         $this->assertSame('disetujui', $project->client_request_status);
         $this->assertSame('dibuka', $project->status);
+        $this->assertSame('Pengajuan Proyek Disetujui', $client->notifications()->first()?->data['judul']);
     }
 
     public function test_super_admin_bisa_tolak_pengajuan_proyek_client(): void
@@ -107,12 +108,29 @@ class OperationalModulesTest extends TestCase
             'kuota' => 5,
         ]);
 
-        $response = $this->actingAs($superAdmin)->post(route('super-admin.projects.reject', $project));
+        $this->actingAs($superAdmin)->post(route('super-admin.projects.reject', $project))
+            ->assertSessionHasErrors('alasan_tolak');
+        $this->assertSame('menunggu_acc', $project->fresh()->client_request_status);
+
+        $response = $this->actingAs($superAdmin)->post(route('super-admin.projects.reject', $project), [
+            'alasan_tolak' => 'Budget belum sesuai.',
+        ]);
         $response->assertRedirect();
 
         $project->refresh();
         $this->assertSame('ditolak', $project->client_request_status);
         $this->assertSame('ditutup', $project->status);
+        $this->assertSame('Budget belum sesuai.', $project->alasan_tolak);
+
+        $notif = $client->notifications()->first();
+        $this->assertNotNull($notif);
+        $this->assertStringContainsString('Budget belum sesuai.', $notif->data['pesan']);
+        $this->assertSame(route('cd.dashboard'), $notif->data['url']);
+
+        $this->actingAs($client)->get(route('cd.dashboard'))
+            ->assertOk()
+            ->assertSee('Proyek Ditolak')
+            ->assertSee('Budget belum sesuai.');
     }
 
     public function test_hybrid_attendance_extras_selfie_dan_validasi_korlap(): void
