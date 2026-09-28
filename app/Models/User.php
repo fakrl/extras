@@ -137,12 +137,12 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return in_array($this->role, [self::ROLE_ADMIN, 'admin_default'], true);
+        return $this->role === self::ROLE_ADMIN;
     }
 
     public function isKorlap(): bool
     {
-        return in_array($this->role, [self::ROLE_KORLAP, 'admin_korlap'], true);
+        return $this->role === self::ROLE_KORLAP;
     }
 
     public function isExtras(): bool
@@ -156,16 +156,12 @@ class User extends Authenticatable
             self::ROLE_SUPER_ADMIN,
             self::ROLE_ADMIN,
             self::ROLE_KORLAP,
-            'admin_default',
-            'admin_talco',
-            'admin_korlap',
-            'admin_sosmed',
         ], true);
     }
 
     public function isClient(): bool
     {
-        return in_array($this->role, [self::ROLE_CLIENT, 'casting_director'], true);
+        return $this->role === self::ROLE_CLIENT;
     }
 
     public function isCastingDirector(): bool
@@ -184,9 +180,9 @@ class User extends Authenticatable
     {
         return match ($this->role) {
             self::ROLE_SUPER_ADMIN => '/super-admin/dashboard',
-            self::ROLE_ADMIN, 'admin_default', 'admin_talco', 'admin_sosmed' => '/admin/dashboard',
-            self::ROLE_KORLAP, 'admin_korlap' => '/admin/absensi',
-            self::ROLE_CLIENT, 'casting_director' => '/cd/dashboard',
+            self::ROLE_ADMIN => '/admin/dashboard',
+            self::ROLE_KORLAP => '/admin/absensi',
+            self::ROLE_CLIENT => '/cd/dashboard',
             self::ROLE_EXTRAS => '/extras/dashboard',
             default => '/login',
         };

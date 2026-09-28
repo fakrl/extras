@@ -21,7 +21,7 @@ class AdminManagementController extends Controller
      * dikecualikan (tidak boleh aksi ke dirinya sendiri).
      *
      * Bagian AG: Default listing (role=all) HANYA tampilkan Admin roles, bukan CD.
-     * CD hanya muncul kalau explicit filter role=casting_director.
+     * CD hanya muncul kalau explicit filter role=client.
      */
     public function index(Request $request)
     {
@@ -42,19 +42,9 @@ class AdminManagementController extends Controller
 
         if ($roleFilter === 'all') {
             // Default: hanya Admin roles (tidak termasuk CD/Client/Extras)
-            $query->whereIn('role', ['admin', 'korlap', 'super_admin', 'admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed']);
-        } elseif ($roleFilter === 'extras') {
-            $query->where('role', 'extras');
-        } elseif ($roleFilter === 'client' || $roleFilter === 'casting_director') {
-            $query->whereIn('role', ['client', 'casting_director']);
+            $query->whereIn('role', ['admin', 'korlap', 'super_admin']);
         } else {
-            // Support aliases
-            $targetRole = match ($roleFilter) {
-                'admin' => ['admin', 'admin_default'],
-                'korlap' => ['korlap', 'admin_korlap'],
-                default => [$roleFilter],
-            };
-            $query->whereIn('role', $targetRole);
+            $query->where('role', $roleFilter);
         }
 
         if ($statusFilter === 'aktif') {
@@ -152,7 +142,7 @@ class AdminManagementController extends Controller
      */
     public function indexCd()
     {
-        $cds = User::whereIn('role', ['client', 'casting_director'])
+        $cds = User::where('role', 'client')
             ->where('id', '!=', auth()->id())
             ->get()
             ->each(fn (User $cd) => $cd->has_history = $this->hasHistory($cd));
@@ -188,7 +178,7 @@ class AdminManagementController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $allowedRoles = ['admin', 'korlap', 'admin_default', 'admin_talco', 'admin_korlap', 'admin_sosmed'];
+        $allowedRoles = ['admin', 'korlap'];
         if ($request->user()->is_protected) {
             $allowedRoles[] = 'super_admin';
         }
