@@ -872,9 +872,9 @@ Kalau ada yang merah, tempel output-nya ke manager-session. Tujuannya mastiin en
 
 | Item | Bukti | QA |
 |---|---|---|
-| AZ.1 lokasi disembunyikan | | [ ] |
-| AZ.2 untrack settings.local | | [ ] |
-| AZ.3 worktree prune | | [ ] |
+| AZ.1 lokasi disembunyikan | `898993f` — buka `/event/{slug}` & detail lowongan Extras: tanggal tampil, lokasi nggak | [ ] |
+| AZ.2 untrack settings.local | `898993f` — `git ls-files .claude` kosong; `.gitignore` + `.claude/worktrees/` | [ ] |
+| AZ.3 worktree prune | dilakukan (bukan commit) — `git worktree list` tinggal main. Worktree lama punya 8 file uncommitted → dibackup ke `.claude/_backup-worktree-a2a1a763.patch` (gitignored) sebelum dihapus | [ ] |
 | AZ.4 test MySQL (Fakrul) | | [ ] |
 
 ---
@@ -940,11 +940,11 @@ Di kartu Greenlight **hapus atribut `data-grade-admin`** dan data kontak/nama as
 
 | Item | Bukti | QA |
 |---|---|---|
-| BA.1 fix 404 | | [ ] |
-| BA.2 tag grup + Extras pilih sendiri + tag per peran | | [ ] |
-| BA.3 persenCocok | | [ ] |
-| BA.4 kartu baru di 3 halaman | | [ ] |
-| BA.5 filter + urut paling cocok | | [ ] |
-| BA.6 hapus data-grade-admin dari HTML Client | | [ ] |
+| BA.1 fix 404 | `fa6ddf2` — `--filter BaProfilFixTest` | [ ] |
+| BA.2 tag grup + Extras pilih sendiri + tag per peran | `7725df6` — `--filter BaKategoriTagTest`. **Perlu `php artisan migrate` + `php artisan db:seed --class=ExtrasCategorySeeder`** | [ ] |
+| BA.3 persenCocok | `47db3e9` — `--filter PersenCocokTest` (3 tag, punya 2 → 67; tanpa tag → null) | [ ] |
+| BA.4 kartu baru di 3 halaman | `d5ee245`, polish `494eaa5` — `--filter BaKartuExtrasTest`; Manual HP: Lineup, Greenlight, Data Extras (kartu 1 kolom, filter dilipat, chip digeser) | [ ] |
+| BA.5 filter + urut paling cocok | `41f9edc` — Lineup `?tag[]=&urut=cocok` (server, lintas halaman), Greenlight client-side | [ ] |
+| BA.6 hapus data-grade-admin dari HTML Client | `aebf470` — test `assertDontSee('data-grade-admin')` + nama asli/email; Manual: view-source Greenlight sebagai Client | [ ] |
 
 **Tes QA:** Extras isi 5 tag dari HP → Admin bikin peran dengan 3 tag → Lineup nampilin ring % yang bener + filter tag jalan → Client lihat kartu yang sama tanpa grade admin di view-source.
