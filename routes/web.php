@@ -140,7 +140,7 @@ Route::middleware(['auth', 'role:extras'])->prefix('extras')->group(function () 
 
 // ==================== ADMIN & KORLAP ====================
 
-Route::middleware(['auth', 'role:admin,admin_default,admin_talco,korlap,admin_korlap,admin_sosmed,super_admin'])
+Route::middleware(['auth', 'role:admin,korlap,super_admin'])
     ->prefix('admin')
     ->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
@@ -149,7 +149,7 @@ Route::middleware(['auth', 'role:admin,admin_default,admin_talco,korlap,admin_ko
         Route::get('/riwayat-kerja', [WorkHistoryController::class, 'index'])->name('admin.work-history');
 
         // Operasional Proyek: Admin & Super Admin (Godmode)
-        Route::middleware('role:admin,admin_default,super_admin')->group(function () {
+        Route::middleware('role:admin,super_admin')->group(function () {
             Route::get('/users', [UserManagementController::class, 'index'])->name('admin.users.index');
             Route::get('/extras/{user}/profil', [UserManagementController::class, 'showProfile'])->name('admin.extras.profil');
             Route::patch('/users/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])
@@ -203,13 +203,13 @@ Route::middleware(['auth', 'role:admin,admin_default,admin_talco,korlap,admin_ko
         });
 
         // RF-35: Korlap, Admin, dan Super Admin boleh nulis catatan lapangan.
-        Route::middleware('role:admin,admin_default,korlap,admin_korlap,super_admin')->group(function () {
+        Route::middleware('role:admin,korlap,super_admin')->group(function () {
             Route::post('/applications/{application}/catatan', [ApplicantController::class, 'tambahCatatan'])
                 ->name('admin.applications.catatan');
         });
 
         // Absensi Extras - Korlap, Admin, dan Super Admin (Godmode)
-        Route::middleware('role:korlap,admin_korlap,admin,admin_default,super_admin')->group(function () {
+        Route::middleware('role:korlap,admin,super_admin')->group(function () {
             Route::get('/absensi', [AttendanceController::class, 'index'])->name('admin.attendance.index');
             Route::post('/applications/{application}/absen', [AttendanceController::class, 'store'])
                 ->name('admin.attendance.store');
@@ -223,13 +223,13 @@ Route::middleware(['auth', 'role:admin,admin_default,admin_talco,korlap,admin_ko
     });
 
 // RF-30 & SPEC AV: Keuangan & Penggajian - Admin & Super Admin.
-Route::middleware(['auth', 'role:admin,admin_default,super_admin'])->prefix('admin')->group(function () {
+Route::middleware(['auth', 'role:admin,super_admin'])->prefix('admin')->group(function () {
     Route::get('/rekap-margin', [MarginRecapController::class, 'index'])->name('admin.recap-margin');
     Route::patch('/payrolls/{staffPayroll}/tandai-dibayar', [MarginRecapController::class, 'tandaiDibayar'])
         ->name('admin.payrolls.tandai-dibayar');
 });
 
-Route::middleware(['auth', 'role:admin,admin_default,super_admin'])->prefix('super-admin')->group(function () {
+Route::middleware(['auth', 'role:admin,super_admin'])->prefix('super-admin')->group(function () {
     Route::get('/rekap-margin', [MarginRecapController::class, 'index'])->name('super-admin.recap-margin');
     Route::patch('/payrolls/{staffPayroll}/tandai-dibayar', [MarginRecapController::class, 'tandaiDibayar'])
         ->name('super-admin.payrolls.tandai-dibayar');
@@ -258,7 +258,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
     Route::delete('/admins/{user}', [AdminManagementController::class, 'destroy'])->name('super-admin.admins.destroy');
 
     // Bagian AG: route lama CD di-redirect ke index admin dengan filter role
-    Route::redirect('/casting-directors', '/super-admin/admins?role=casting_director');
+    Route::redirect('/casting-directors', '/super-admin/admins?role=client');
     Route::post('/casting-directors', [AdminManagementController::class, 'storeCd'])->name('super-admin.casting-directors.store');
 
     Route::post('/projects/{castingProject}/assign', [ProjectAssignmentController::class, 'assign'])
@@ -283,7 +283,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
 
 // ==================== CLIENT (CASTING DIRECTOR) ====================
 
-Route::middleware(['auth', 'role:client,casting_director'])->prefix('cd')->group(function () {
+Route::middleware(['auth', 'role:client'])->prefix('cd')->group(function () {
     Route::get('/dashboard', [CdDashboardController::class, 'index'])->name('cd.dashboard');
 
     // Modul 2: Pengajuan brief permintaan proyek oleh Client (Pintu 1)
