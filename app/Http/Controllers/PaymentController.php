@@ -7,6 +7,8 @@ use App\Models\ProjectApplication;
 use App\Notifications\InAppNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Diakses lintas role (Admin Default & Extras) untuk resource yang sama,
@@ -128,6 +130,18 @@ class PaymentController extends Controller
         ]);
 
         return back()->with('status', 'Komponen tambahan berhasil ditambahkan.');
+    }
+
+    public function buktiStream(Request $request, ProjectApplication $application): StreamedResponse
+    {
+        $user = $request->user();
+        $isOwnerExtras = $user->role === 'extras' && $application->extras_id === $user->extrasProfile?->id;
+        abort_unless($user->isAdmin() || $user->isSuperAdmin() || $isOwnerExtras, 403);
+
+        $path = $application->payment?->bukti_transfer_path;
+        abort_unless($path && Storage::disk('local')->exists($path), 404);
+
+        return Storage::disk('local')->response($path);
     }
 
     public function sengketa(Request $request, ProjectApplication $application): RedirectResponse

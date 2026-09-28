@@ -72,7 +72,7 @@
                     </div>
                     <div style="font-size: 12px; color: var(--text-muted);">Deadline: {{ $project->deadline->format('d M Y') }} · {{ $project->classes->count() }} kelas</div>
                 </div>
-                <a href="{{ route('extras.projects.show', $project) }}" class="btn btn-sm">Lihat</a>
+                <a href="{{ route('extras.projects.show', $project) }}" class="btn">Lihat</a>
             </div>
         </div>
     @empty
@@ -125,11 +125,11 @@
                 <x-status-badge :model="$app" style="margin-top: 4px; display: inline-block;" />
             </div>
             @if ($app->status_partisipasi === 'nego_fee')
-                <a href="{{ route('extras.negotiations.show', $app) }}" class="btn btn-brand" style="min-height:32px; padding:0 12px; font-size:12.5px;">Lanjut Nego Fee</a>
+                <a href="{{ route('extras.negotiations.show', $app) }}" class="btn btn-brand">Lanjut Nego Fee</a>
             @elseif ($app->status_partisipasi === 'lolos')
-                <a href="{{ route('contracts.show', $app) }}" class="btn btn-brand" style="min-height:32px; padding:0 12px; font-size:12.5px;">Kontrak</a>
+                <a href="{{ route('contracts.show', $app) }}" class="btn btn-brand">Kontrak</a>
             @elseif (in_array($app->status_partisipasi, ['kontrak_ditandatangani', 'selesai_produksi']))
-                <a href="{{ route('payments.show', $app) }}" class="btn btn-brand" style="min-height:32px; padding:0 12px; font-size:12.5px;">Pembayaran</a>
+                <a href="{{ route('payments.show', $app) }}" class="btn btn-brand">Pembayaran</a>
             @endif
         </div>
 
@@ -179,7 +179,7 @@
                         <div style="font-size: 12.5px; font-weight: 600;"><i class="ti ti-camera"></i> Absensi Lapangan Hybrid</div>
                         <div style="font-size: var(--fs-xs); color: var(--text-muted);">Ambil selfie langsung di lokasi syuting menggunakan kamera ponsel.</div>
                     </div>
-                    <button type="button" class="btn btn-brand btn-sm" onclick="document.getElementById('dialog-absen-{{ $app->id }}').showModal()">
+                    <button type="button" class="btn btn-brand" onclick="document.getElementById('dialog-absen-{{ $app->id }}').showModal()">
                         <i class="ti ti-camera"></i> Absen Selfie On-Site
                     </button>
                 </div>
@@ -218,8 +218,8 @@
                         </div>
 
                         <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                            <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
-                            <button type="submit" class="btn btn-brand btn-sm">Kirim Selfie Kehadiran</button>
+                            <button type="button" class="btn" onclick="this.closest('dialog').close()">Batal</button>
+                            <button type="submit" class="btn btn-brand">Kirim Selfie Kehadiran</button>
                         </div>
                     </form>
                 </dialog>

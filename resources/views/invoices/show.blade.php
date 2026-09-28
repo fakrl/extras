@@ -88,6 +88,33 @@
     </form>
 </div>
 
+{{-- Rincian Invoice --}}
+<div class="card" style="margin-bottom: 16px;">
+    <div style="font-size: 14.5px; font-weight: 600; margin-bottom: 10px;">Rincian Invoice</div>
+    <div class="table-container">
+    <table>
+        <thead><tr><th>Peran / Kelas</th><th>Jumlah</th><th>Fee per Orang</th><th>Subtotal</th></tr></thead>
+        <tbody>
+            @forelse ($rincian->rows as $row)
+                <tr>
+                    <td>{{ $row->nama_kelas }}</td>
+                    <td>{{ $row->kuota_kelas }}</td>
+                    <td>Rp {{ number_format($row->budget_client, 0, ',', '.') }}</td>
+                    <td>Rp {{ number_format($row->subtotal, 0, ',', '.') }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="4" style="text-align:center; color: var(--text-muted);">Belum ada kelas karakter.</td></tr>
+            @endforelse
+            <tr>
+                <td colspan="3" style="text-align: right; font-weight: 600;">Total</td>
+                <td style="font-weight: 600;">Rp {{ number_format($rincian->total, 0, ',', '.') }}</td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+    <p style="font-size: 12px; color: var(--text-muted); margin: 10px 0 0;">Rincian final mengikuti kesepakatan.</p>
+</div>
+
 {{-- Form Tanda Tangan Digital --}}
 @if (! $sudahTtd)
     <div class="card">

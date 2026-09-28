@@ -40,6 +40,7 @@
 .cal-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 13px; font-weight: 600; }
 .cal-nav a { color: var(--text-secondary); text-decoration: none; font-size: 18px; line-height: 1; padding: 2px 6px; border-radius: 4px; }
 .cal-nav a:hover { background: var(--bg-nav-active); }
+button.cal-day { border: none; margin: 0; font: inherit; color: inherit; width: 100%; background: transparent; }
 </style>
 @endpush
 @endonce
@@ -101,19 +102,22 @@ function calClick(el, calId) {
                             'catatan' => $e->catatan,
                         ])->toArray();
                     @endphp
-                    <div
-                        class="cal-day {{ $dayEvents->isNotEmpty() ? 'has-event' : '' }} {{ $isToday ? 'is-today' : '' }} {{ $isOutOfMonth ? 'out-of-month' : '' }}"
-                        @if ($dayEvents->isNotEmpty())
+                    @if ($dayEvents->isNotEmpty())
+                        <button type="button"
+                            class="cal-day has-event {{ $isToday ? 'is-today' : '' }} {{ $isOutOfMonth ? 'out-of-month' : '' }}"
                             data-events="{{ htmlspecialchars(json_encode($eventsData), ENT_QUOTES) }}"
                             onclick="calClick(this, '{{ $calId }}')"
                             onmouseenter="calClick(this, '{{ $calId }}')"
-                        @endif
-                    >
-                        {{ $cur->day }}
-                        @if ($dayEvents->isNotEmpty())
+                            aria-label="{{ $cur->translatedFormat('d F Y') }}, ada jadwal"
+                        >
+                            {{ $cur->day }}
                             <div class="cal-dot"></div>
-                        @endif
-                    </div>
+                        </button>
+                    @else
+                        <div class="cal-day {{ $isToday ? 'is-today' : '' }} {{ $isOutOfMonth ? 'out-of-month' : '' }}">
+                            {{ $cur->day }}
+                        </div>
+                    @endif
                     @php $cur->addDay(); @endphp
                 @endwhile
             </div>

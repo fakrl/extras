@@ -165,6 +165,27 @@ class KeuanganService
     }
 
     /**
+     * Rincian invoice per kelas (peran x jumlah x fee = subtotal), dipakai
+     * sama-sama oleh PDF invoice dan halaman invoices/show Client. Basis
+     * kuota_kelas x budget_client, BUKAN jumlah aplikasi aktual (D5 belum
+     * diputus, rumus ini yang dipakai PDF invoice sekarang).
+     */
+    public function rincianInvoice(CastingProject $project): object
+    {
+        $rows = $project->classes->map(fn ($class) => (object) [
+            'nama_kelas' => $class->nama_kelas,
+            'kuota_kelas' => $class->kuota_kelas,
+            'budget_client' => (float) $class->budget_client,
+            'subtotal' => (float) $class->budget_client * $class->kuota_kelas,
+        ]);
+
+        return (object) [
+            'rows' => $rows,
+            'total' => $rows->sum('subtotal'),
+        ];
+    }
+
+    /**
      * Dapatkan daftar invoice client.
      */
     public function daftarInvoiceClient(): Collection

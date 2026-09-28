@@ -39,11 +39,10 @@
         </div>
     @endif
     @if (! $sudahTtd)
-        <form method="POST" action="{{ route('contracts.sign', $application) }}" id="sign-form">
-            @csrf
+        <x-confirm-form action="{{ route('contracts.sign', $application) }}" message="Simpan tanda tangan ini? Kontrak akan mengikat begitu kedua pihak sudah TTD dan tidak bisa diubah lagi.">
             <x-signature-pad name="signature" />
             <button type="submit" class="btn btn-brand" style="margin-top: 10px;">Simpan Tanda Tangan</button>
-        </form>
+        </x-confirm-form>
     @else
         <div class="alert-success">Kamu sudah menandatangani kontrak ini.</div>
     @endif

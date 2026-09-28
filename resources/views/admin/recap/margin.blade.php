@@ -63,8 +63,10 @@
             </thead>
             <tbody>
                 @forelse ($projects as $i => $row)
-                    <tr style="cursor: pointer;" onclick="toggleExtras({{ $i }})">
-                        <td style="font-weight: 600;">{{ $row->project->nama_produksi }}</td>
+                    <tr>
+                        <td style="font-weight: 600;">
+                            <button type="button" onclick="toggleExtras({{ $i }})" style="background:none; border:none; padding:0; font:inherit; font-weight:600; color:inherit; text-decoration:underline; cursor:pointer;">{{ $row->project->nama_produksi }}</button>
+                        </td>
                         <td>Rp {{ number_format($row->total_fee_client, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($row->total_payout, 0, ',', '.') }}</td>
                         <td>
@@ -76,7 +78,9 @@
                             @endif
                         </td>
                         <td>{{ number_format($row->margin_persen, 1) }}%</td>
-                        <td style="white-space: nowrap; font-size: 12px; color: var(--accent);">Detail Extras &rarr;</td>
+                        <td style="white-space: nowrap; font-size: 12px; color: var(--accent);">
+                            <button type="button" onclick="toggleExtras({{ $i }})" style="background:none; border:none; padding:0; font:inherit; color:var(--accent); cursor:pointer;">Detail Extras &rarr;</button>
+                        </td>
                     </tr>
                     @if ($row->breakdown->count() > 1 || $row->belum_terklasifikasi)
                         @foreach ($row->breakdown as $kelas)

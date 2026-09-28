@@ -155,10 +155,12 @@ class FeeNegotiationFlowTest extends TestCase
         $extras = $application->extras->user;
 
         $this->actingAs($admin)->post(route('admin.negotiations.ajukan', $application), ['nominal' => 200000]);
-        $this->actingAs($admin)->post(route('admin.negotiations.tolak', $application))->assertRedirect();
+        $this->actingAs($admin)->post(route('admin.negotiations.tolak', $application))->assertSessionHasErrors('alasan');
+        $this->actingAs($admin)->post(route('admin.negotiations.tolak', $application), ['alasan' => 'Tidak sesuai kriteria'])->assertRedirect();
 
         $application->refresh();
         $this->assertSame('ditolak', $application->status_partisipasi);
+        $this->assertSame('Tidak sesuai kriteria', $application->feeNegotiations()->where('aksi', 'tolak')->first()->catatan);
 
         $this->actingAs($extras)->post(route('extras.negotiations.counter', $application), ['nominal' => 999999])
             ->assertStatus(422);

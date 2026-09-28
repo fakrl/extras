@@ -48,11 +48,10 @@
     <div class="card" style="padding: 16px;">
         <div style="font-weight: 600; margin-bottom: 10px;">Tanggapan Kamu:</div>
         <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-start;">
-            <form method="POST" action="{{ route('extras.negotiations.terima', $application) }}">
-                @csrf
-                <button class="btn btn-brand">Terima Penawaran Terakhir</button>
-            </form>
-            
+            <x-confirm-form action="{{ route('extras.negotiations.terima', $application) }}" message="Terima Rp {{ number_format($application->feeNegotiations->last()->nominal, 0, ',', '.') }}? Fee akan terkunci dan tidak bisa dinego ulang.">
+                <button type="submit" class="btn btn-brand">Terima Rp {{ number_format($application->feeNegotiations->last()->nominal, 0, ',', '.') }}</button>
+            </x-confirm-form>
+
             <form method="POST" action="{{ route('extras.negotiations.counter', $application) }}" style="display: flex; gap: 8px; flex-wrap: wrap; flex: 1;">
                 @csrf
                 <input type="number" name="nominal" class="input-inline" placeholder="Nominal counter (Rp)" required style="min-width: 150px;">
