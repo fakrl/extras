@@ -78,7 +78,7 @@ class ProjectRequestController extends Controller
                 $judul5 = 'Ada Permintaan Proyek Baru';
                 $pesan5 = "Client '{$client->name}' mengajukan permintaan proyek baru: '{$project->nama_produksi}'.";
                 try {
-                    $sa->notify(new InAppNotification($judul5, $pesan5));
+                    $sa->notify(new InAppNotification($judul5, $pesan5, route('super-admin.dashboard')));
                 } catch (\Throwable) {
                 }
             });

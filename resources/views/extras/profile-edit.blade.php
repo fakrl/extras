@@ -6,12 +6,7 @@
 <style>
     .field-error { color: var(--danger); font-size: 12px; margin-top: 4px; display: block; }
     .input-error { border-color: var(--danger) !important; }
-    .upload-spinner {
-        display: none; width: 22px; height: 22px; margin-top: 8px;
-        border: 3px solid var(--border-color); border-top-color: var(--accent-strong);
-        border-radius: 50%; animation: spin 0.7s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .upload-progress { display: none; width: 100%; height: 10px; margin-top: 8px; accent-color: var(--accent-strong); }
     .upload-error-msg { color: var(--danger); font-size: 12px; margin-top: 6px; display: none; }
 </style>
 @endpush
@@ -50,9 +45,10 @@
         <input type="file" name="foto" id="upload-foto" accept="image/jpeg,image/png" style="display: none;"
                data-endpoint="{{ route('extras.profile.foto.ajax') }}"
                data-progress="progress-foto"
+               data-max="5120"
                data-preview="preview-foto"
                data-error="err-foto">
-        <div id="progress-foto" class="upload-spinner"></div>
+        <progress id="progress-foto" class="upload-progress" max="100" value="0"></progress>
         <span id="err-foto" class="upload-error-msg"></span>
         <p class="field-hint">Format JPG/PNG, maksimal 5MB.</p>
     </div>
@@ -76,10 +72,11 @@
         <input type="file" name="video" id="upload-video" accept="video/mp4,video/quicktime,video/webm" style="display: none;"
                data-endpoint="{{ route('extras.profile.video.ajax') }}"
                data-progress="progress-video"
+               data-max="51200"
                data-preview="preview-video"
                data-error="err-video"
                data-type="video">
-        <div id="progress-video" class="upload-spinner"></div>
+        <progress id="progress-video" class="upload-progress" max="100" value="0"></progress>
         <span id="err-video" class="upload-error-msg"></span>
         @if ($profile->video_profil_path)
             <label for="upload-video" class="btn btn-sm" style="margin-top: 8px; cursor: pointer;">Ganti Video</label>
@@ -115,10 +112,11 @@
                            style="display: none;"
                            data-endpoint="{{ route('extras.profile.foto-tambahan.ajax', $slot) }}"
                            data-progress="progress-slot-{{ $slot }}"
+                           data-max="5120"
                            data-preview="preview-slot-{{ $slot }}"
                            data-error="err-slot-{{ $slot }}"
                            data-empty="empty-slot-{{ $slot }}">
-                    <div id="progress-slot-{{ $slot }}" class="upload-spinner"></div>
+                    <progress id="progress-slot-{{ $slot }}" class="upload-progress" max="100" value="0"></progress>
                     <span id="err-slot-{{ $slot }}" class="upload-error-msg"></span>
                     @if ($foto)
                         <x-confirm-form action="{{ route('extras.profile.foto-tambahan.hapus', $slot) }}" method="DELETE" style="margin-top: 4px;" message="Hapus foto galeri ini? Foto yang sudah dihapus tidak bisa dikembalikan.">
@@ -270,12 +268,27 @@
 (function () {
     var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-    function uploadWithProgress(input, progressEl, previewEl, onSuccess, onError) {
-        var file = input.files[0];
-        if (!file) return;
+    function resizeFoto(file, done) {
+        var img = new Image();
+        img.onload = function () {
+            URL.revokeObjectURL(img.src);
+            var skala = 2000 / Math.max(img.width, img.height);
+            if (skala >= 1) return done(file);
+            var canvas = document.createElement('canvas');
+            canvas.width = Math.round(img.width * skala);
+            canvas.height = Math.round(img.height * skala);
+            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob(function (blob) {
+                done(blob ? new File([blob], file.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' }) : file);
+            }, 'image/jpeg', 0.85);
+        };
+        img.onerror = function () { done(file); };
+        img.src = URL.createObjectURL(file);
+    }
 
+    function uploadWithProgress(input, file, progressEl, previewEl, onSuccess, onError) {
         var form = new FormData();
-        form.append(input.name, file);
+        form.append(input.name, file, file.name);
         form.append('_token', csrfToken);
 
         var xhr = new XMLHttpRequest();
@@ -303,11 +316,18 @@
             }
         };
 
+        xhr.upload.onprogress = function (e) {
+            if (e.lengthComputable) progressEl.value = Math.round(e.loaded / e.total * 100);
+            progressEl.textContent = progressEl.value + '%';
+            progressEl.title = progressEl.value + '%';
+        };
+
         xhr.onerror = function () {
             progressEl.style.display = 'none';
             onError('Koneksi bermasalah, coba lagi.');
         };
 
+        progressEl.value = 0;
         progressEl.style.display = 'block';
         xhr.send(form);
     }
@@ -321,20 +341,29 @@
         var emptyEl    = input.dataset.empty ? document.getElementById(input.dataset.empty) : null;
         var isVideo    = input.dataset.type === 'video';
 
+        function tampilError(msg) {
+            errorEl.textContent = msg;
+            errorEl.style.display = 'block';
+        }
+
         input.addEventListener('change', function () {
             errorEl.style.display = 'none';
-            uploadWithProgress(input, progressEl, previewEl,
-                function (data) {
-                    previewEl.src = data.url;
-                    previewEl.style.display = 'block';
-                    if (emptyEl) emptyEl.style.display = 'none';
-                    if (!isVideo) previewEl.onload = null;
-                },
-                function (msg) {
-                    errorEl.textContent = msg;
-                    errorEl.style.display = 'block';
+            if (!input.files[0]) return;
+            (isVideo ? function (f, done) { done(f); } : resizeFoto)(input.files[0], function (file) {
+                var maxKb = parseInt(input.dataset.max, 10);
+                if (file.size > maxKb * 1024) {
+                    return tampilError('Ukuran file ' + (file.size / 1048576).toFixed(1) + 'MB, maksimal ' + (maxKb / 1024) + 'MB.');
                 }
-            );
+                uploadWithProgress(input, file, progressEl, previewEl,
+                    function (data) {
+                        previewEl.src = data.url;
+                        previewEl.style.display = 'block';
+                        if (emptyEl) emptyEl.style.display = 'none';
+                        if (!isVideo) previewEl.onload = null;
+                    },
+                    tampilError
+                );
+            });
         });
     }
 

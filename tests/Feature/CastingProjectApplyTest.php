@@ -36,9 +36,38 @@ class CastingProjectApplyTest extends TestCase
     private function buatExtras(): User
     {
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        ExtrasProfile::create(['user_id' => $extrasUser->id]);
+        ExtrasProfile::create(['user_id' => $extrasUser->id, 'foto_profil_path' => 'extras/foto.jpg', 'usia' => 25, 'gender' => 'Wanita', 'tinggi_badan' => 160]);
 
         return $extrasUser;
+    }
+
+    public function test_apply_ke_proyek_ditutup_ditolak(): void
+    {
+        $project = $this->buatProyekDenganKelas();
+        $project->update(['status' => 'ditutup']);
+        $extrasUser = $this->buatExtras();
+
+        $response = $this->actingAs($extrasUser)->post("/extras/lowongan/{$project->id}/daftar", [
+            'casting_project_class_id' => $project->classes()->first()->id,
+        ]);
+
+        $response->assertSessionHas('error');
+        $this->assertDatabaseMissing('project_applications', ['casting_project_id' => $project->id]);
+    }
+
+    public function test_apply_dengan_profil_belum_lengkap_diarahkan_ke_profil(): void
+    {
+        $project = $this->buatProyekDenganKelas();
+        $extrasUser = User::factory()->create(['role' => 'extras']);
+        ExtrasProfile::create(['user_id' => $extrasUser->id]);
+
+        $response = $this->actingAs($extrasUser)->post("/extras/lowongan/{$project->id}/daftar", [
+            'casting_project_class_id' => $project->classes()->first()->id,
+        ]);
+
+        $response->assertRedirect(route('extras.profile.edit'));
+        $response->assertSessionHas('error');
+        $this->assertDatabaseMissing('project_applications', ['casting_project_id' => $project->id]);
     }
 
     public function test_apply_dengan_kelas_milik_proyek_ini_berhasil(): void

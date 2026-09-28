@@ -11,7 +11,7 @@
     <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Tanggal Shooting</div>
     <ul style="margin: 0; padding-left: 18px; font-size: 13.5px;">
         @foreach ($castingProject->shootingDates as $date)
-            <li>{{ $date->tanggal->format('d M Y') }}</li>
+            <li>{{ $date->tanggal->format('d M Y') }}@if ($date->lokasi) · {{ $date->lokasi }}@endif</li>
         @endforeach
     </ul>
 </div>
@@ -20,11 +20,12 @@
     <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Karakter yang Dibutuhkan</div>
     <div class="table-container">
     <table>
-        <thead><tr><th>Karakter</th><th>Kuota</th></tr></thead>
+        <thead><tr><th>Karakter</th><th>Kriteria</th><th>Kuota</th></tr></thead>
         <tbody>
             @foreach ($castingProject->classes as $class)
                 <tr>
                     <td>{{ $class->nama_kelas }}</td>
+                    <td>{{ $class->kriteria ?: '-' }}</td>
                     <td>{{ $class->kuota_kelas }}</td>
                 </tr>
             @endforeach
@@ -33,6 +34,9 @@
     </div>
 </div>
 
+@if (! $castingProject->menerimaPendaftaran())
+<div class="alert-info">Proyek ini sudah tidak menerima pendaftaran (ditutup, kuota penuh, atau lewat deadline).</div>
+@else
 <form method="POST" action="{{ route('extras.projects.apply', $castingProject) }}">
     @csrf
     @if ($castingProject->classes->isNotEmpty())
@@ -48,4 +52,5 @@
     @endif
     <button type="submit" class="btn btn-brand">Daftar ke Proyek Ini</button>
 </form>
+@endif
 @endsection

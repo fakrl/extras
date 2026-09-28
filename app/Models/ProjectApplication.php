@@ -407,7 +407,7 @@ class ProjectApplication extends Model
             ? "Kamu lolos seleksi proyek {$this->castingProject->nama_produksi}. Cek sistem untuk info lebih lanjut."
             : "Mohon maaf, kamu belum lolos seleksi proyek {$this->castingProject->nama_produksi} kali ini.";
         try {
-            $user->notify(new InAppNotification($judul, $pesan));
+            $user->notify(new InAppNotification($judul, $pesan, route('extras.dashboard')));
         } catch (\Throwable) {
         }
     }

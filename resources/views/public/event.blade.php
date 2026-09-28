@@ -58,12 +58,15 @@
         @else
             <h1>{{ $project->nama_produksi }}</h1>
             <p class="meta">Deadline pendaftaran: {{ $project->deadline->format('d M Y') }} · Kuota: {{ $project->kuota }} orang</p>
+            @php($lokasi = $project->shootingDates->pluck('lokasi')->filter()->unique()->implode(', '))
+            @if ($lokasi) <p class="meta">Lokasi: {{ $lokasi }}</p> @endif
 
             <div class="card">
                 <div class="card-title">Karakter yang Dibutuhkan</div>
                 @forelse ($project->classes as $class)
                     <div class="class-row">
                         <div class="class-name">{{ $class->nama_kelas }}</div>
+                        @if ($class->kriteria) <div class="class-detail">{{ $class->kriteria }}</div> @endif
                         <div class="class-detail">Kuota: {{ $class->kuota_kelas }} orang</div>
                     </div>
                 @empty

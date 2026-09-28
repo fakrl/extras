@@ -63,7 +63,7 @@ class WhatsAppNotificationTest extends TestCase
         Http::fake(['*/send' => Http::response(['sukses' => true], 200)]);
 
         $extrasUser = User::factory()->create(['role' => 'extras', 'nomor_wa' => '081234567890']);
-        ExtrasProfile::create(['user_id' => $extrasUser->id]);
+        ExtrasProfile::create(['user_id' => $extrasUser->id, 'foto_profil_path' => 'extras/foto.jpg', 'usia' => 25, 'gender' => 'Pria', 'tinggi_badan' => 170]);
         $admin = User::factory()->create(['role' => 'admin_default']);
         $project = CastingProject::create([
             'admin_id' => $admin->id,
