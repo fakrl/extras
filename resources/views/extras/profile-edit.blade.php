@@ -212,6 +212,15 @@
         </div>
 
         <div class="profile-section">
+            <div class="profile-section-title">Tentang Kamu</div>
+            <p class="field-hint">Pilih tag yang sesuai denganmu (boleh lebih dari satu). Dipakai Admin untuk mencocokkan peran.</p>
+            <input type="hidden" name="categories_present" value="1">
+            @include('partials.tag-chips', ['name' => 'categories[]', 'selected' => array_map('intval', old('categories', $profile->categories->pluck('id')->all()))])
+            @error('categories')<span class="field-error">{{ $message }}</span>@enderror
+            @error('categories.*')<span class="field-error">{{ $message }}</span>@enderror
+        </div>
+
+        <div class="profile-section">
             <div class="profile-section-title">Tautan Tambahan</div>
             <p class="field-hint" style="margin-top: -4px;">Instagram, TikTok, portofolio, atau tautan lain (opsional, dapat lebih dari satu).</p>
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CastingProject;
+use App\Models\ExtrasCategory;
 use App\Models\ProjectApplication;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -30,7 +31,7 @@ class CastingProjectController extends Controller
 
     public function create()
     {
-        return view('admin.projects.create');
+        return view('admin.projects.create', ['tagGroups' => ExtrasCategory::perGrup()]);
     }
 
     /**
@@ -62,6 +63,8 @@ class CastingProjectController extends Controller
             'kelas.*.karakter' => ['nullable', 'string', 'max:255'],
             'kelas.*.keterangan_scene' => ['nullable', 'string', 'max:255'],
             'kelas.*.tipe_continuity' => ['nullable', 'in:continuity,free'],
+            'kelas.*.categories' => ['nullable', 'array'],
+            'kelas.*.categories.*' => ['integer', 'exists:extras_categories,id'],
         ]);
 
         $posterPath = $request->hasFile('poster_path')
@@ -95,7 +98,7 @@ class CastingProjectController extends Controller
             if (! empty($kelas['jam_callsheet']) && empty($kelas['jam_callingan'])) {
                 $kelas['jam_callingan'] = date('H:i', strtotime($kelas['jam_callsheet'].' -1 hour'));
             }
-            $project->classes()->create($kelas);
+            $this->simpanKelas($project, $kelas);
         }
 
         return redirect()->route('admin.projects.index')->with('status', 'Proyek casting berhasil dibuat.');
@@ -106,12 +109,14 @@ class CastingProjectController extends Controller
      */
     public function edit(CastingProject $castingProject)
     {
-        $castingProject->load('classes', 'shootingDates', 'cdAssignments.cdUser');
+        $castingProject->load('classes.categories', 'shootingDates', 'cdAssignments.cdUser');
 
         $applicantsCount = $castingProject->applications()->count();
         $cdUsers = User::where('role', 'client')->orderBy('name')->get();
 
-        return view('admin.projects.edit', compact('castingProject', 'applicantsCount', 'cdUsers'));
+        $tagGroups = ExtrasCategory::perGrup();
+
+        return view('admin.projects.edit', compact('castingProject', 'applicantsCount', 'cdUsers', 'tagGroups'));
     }
 
     /**
@@ -146,6 +151,8 @@ class CastingProjectController extends Controller
             'kelas.*.karakter' => ['nullable', 'string', 'max:255'],
             'kelas.*.keterangan_scene' => ['nullable', 'string', 'max:255'],
             'kelas.*.tipe_continuity' => ['nullable', 'in:continuity,free'],
+            'kelas.*.categories' => ['nullable', 'array'],
+            'kelas.*.categories.*' => ['integer', 'exists:extras_categories,id'],
         ]);
 
         $hasApplicants = $castingProject->applications()->exists();
@@ -199,24 +206,29 @@ class CastingProjectController extends Controller
         }
         unset($k);
 
-        if ($hasApplicants) {
-            foreach ($data['kelas'] as $kelas) {
-                $kelasData = Arr::except($kelas, 'id');
-
-                if (! empty($kelas['id'])) {
-                    $castingProject->classes()->whereKey($kelas['id'])->update($kelasData);
-                } else {
-                    $castingProject->classes()->create($kelasData);
-                }
-            }
-        } else {
+        if (! $hasApplicants) {
             $castingProject->classes()->delete();
-            foreach ($data['kelas'] as $kelas) {
-                $castingProject->classes()->create(Arr::except($kelas, 'id'));
-            }
+        }
+        foreach ($data['kelas'] as $kelas) {
+            $this->simpanKelas($castingProject, $hasApplicants ? $kelas : Arr::except($kelas, 'id'));
         }
 
         return redirect()->route('admin.projects.index')->with('status', 'Proyek casting berhasil diperbarui.');
+    }
+
+    private function simpanKelas(CastingProject $project, array $kelas): void
+    {
+        $data = Arr::except($kelas, ['id', 'categories']);
+
+        if (empty($kelas['id'])) {
+            $class = $project->classes()->create($data);
+        } elseif ($class = $project->classes()->find($kelas['id'])) {
+            $class->update($data);
+        } else {
+            return;
+        }
+
+        $class->categories()->sync($kelas['categories'] ?? []);
     }
 
     /**

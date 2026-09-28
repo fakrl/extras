@@ -9,8 +9,10 @@ class ExtrasCategorySeeder extends Seeder
 {
     public function run(): void
     {
-        foreach (['Anak-anak', 'Remaja', 'Dewasa', 'Orang Tua', 'Chinese/Tionghoa'] as $nama) {
-            ExtrasCategory::firstOrCreate(['nama' => $nama]);
+        foreach (ExtrasCategory::GRUP as $grup => $tags) {
+            foreach ($tags as $nama) {
+                ExtrasCategory::updateOrCreate(['nama' => $nama], ['grup' => $grup]);
+            }
         }
     }
 }
