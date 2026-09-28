@@ -7,6 +7,7 @@ use App\Models\ActivityLog;
 use App\Models\AdminProfile;
 use App\Models\CastingProject;
 use App\Models\ExtrasCategory;
+use App\Models\ExtrasProfile;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -131,6 +132,10 @@ class AdminManagementController extends Controller
             'email' => $data['email'],
             'role' => $data['role'],
         ]);
+
+        if ($user->role === 'extras') {
+            ExtrasProfile::firstOrCreate(['user_id' => $user->id]);
+        }
 
         ActivityLog::record('UPDATE_USER', "Super Admin mengubah data akun {$user->name} (Role: {$user->role}).", $user);
 
