@@ -11,7 +11,7 @@
     @endif
 </p>
 
-<div style="display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap;">
+<div class="xfilter">
     @php $tabs = ['' => 'Semua', 'A' => 'Grade A', 'B' => 'Grade B', 'C' => 'Grade C', 'belum' => 'Belum Dinilai']; @endphp
     @foreach ($tabs as $value => $label)
         <a href="{{ route('admin.projects.applicants', [$castingProject, 'grade' => $value ?: null]) }}"
@@ -22,7 +22,7 @@
 </div>
 
 @if (($tab ?? '') !== 'cd')
-    <div style="display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap;" aria-label="Filter status">
+    <div class="xfilter" aria-label="Filter status">
         @foreach (['' => 'Semua Status'] + \App\Models\ProjectApplication::LABELS as $value => $label)
             <a href="{{ route('admin.projects.applicants', [$castingProject, 'grade' => $grade ?: null, 'status' => $value ?: null]) }}"
                class="btn btn-sm {{ ($status ?? '') === $value ? 'btn-brand' : '' }}">{{ $label }}</a>
