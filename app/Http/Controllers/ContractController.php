@@ -169,7 +169,7 @@ class ContractController extends Controller
             $judulKontrak = 'Kontrak Siap Ditandatangani';
             $pesanKontrak = "Kontrak proyek {$application->castingProject->nama_produksi} sudah siap. Silakan tanda tangani.";
             try {
-                $penerima->notify(new InAppNotification($judulKontrak, $pesanKontrak));
+                $penerima->notify(new InAppNotification($judulKontrak, $pesanKontrak, route('contracts.show', $application)));
             } catch (\Throwable) {
             }
         }

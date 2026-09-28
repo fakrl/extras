@@ -75,7 +75,7 @@ class PaymentController extends Controller
         $judulPay = 'Pembayaran Ditransfer';
         $pesanPay = "Honor kamu untuk proyek {$application->castingProject->nama_produksi} sudah ditransfer. Silakan konfirmasi penerimaan.";
         try {
-            $extrasUser->notify(new InAppNotification($judulPay, $pesanPay));
+            $extrasUser->notify(new InAppNotification($judulPay, $pesanPay, route('payments.show', $application)));
         } catch (\Throwable) {
         }
 

@@ -173,7 +173,7 @@ class DashboardController extends Controller
             $judulAcc = 'Proyek Baru Disetujui';
             $pesanAcc = "Permintaan proyek '{$castingProject->nama_produksi}' telah disetujui Super Admin. Silakan lengkapi detail proyek.";
             try {
-                $admin->notify(new InAppNotification($judulAcc, $pesanAcc));
+                $admin->notify(new InAppNotification($judulAcc, $pesanAcc, route('admin.projects.edit', $castingProject)));
             } catch (\Throwable) {
             }
         }

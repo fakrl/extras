@@ -34,7 +34,7 @@ class PublicEventController extends Controller
             return redirect($user->dashboardUrl());
         }
 
-        $project->load('classes');
+        $project->load('classes:id,casting_project_id,nama_kelas,kriteria,kuota_kelas', 'shootingDates');
 
         return view('public.event', [
             'valid' => true,

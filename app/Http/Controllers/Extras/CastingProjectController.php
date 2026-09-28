@@ -52,6 +52,15 @@ class CastingProjectController extends Controller
     {
         $profile = $request->user()->extrasProfile;
 
+        if (! $castingProject->menerimaPendaftaran()) {
+            return back()->with('error', 'Proyek ini sudah tidak menerima pendaftaran (ditutup, kuota penuh, atau lewat deadline).');
+        }
+
+        if (! $profile?->profilLengkap()) {
+            return redirect()->route('extras.profile.edit')
+                ->with('error', 'Lengkapi profil dulu sebelum mendaftar: foto utama, usia, gender, dan tinggi badan.');
+        }
+
         if ($castingProject->applications()->where('extras_id', $profile->id)->exists()) {
             return back()->with('status', 'Kamu sudah mendaftar ke proyek ini sebelumnya.');
         }

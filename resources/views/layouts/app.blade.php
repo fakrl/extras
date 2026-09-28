@@ -486,11 +486,12 @@
                                     @endif
                                 </div>
                                 @forelse(auth()->user()->notifications->take(5) as $notif)
-                                    <div style="padding:10px 14px;border-bottom:1px solid var(--border-color);{{ $notif->read_at ? '' : 'background:var(--bg-nav-active);' }}">
+                                    @php($notifUrl = $notif->data['url'] ?? null)
+                                    <{{ $notifUrl ? 'a' : 'div' }} @if($notifUrl) href="{{ $notifUrl }}" @endif style="display:block;color:inherit;text-decoration:none;padding:10px 14px;border-bottom:1px solid var(--border-color);{{ $notif->read_at ? '' : 'background:var(--bg-nav-active);' }}">
                                         <div style="font-size:13px;font-weight:{{ $notif->read_at ? '400' : '600' }};margin-bottom:2px;">{{ $notif->data['judul'] ?? '' }}</div>
                                         <div style="font-size:12px;color:var(--text-secondary);line-height:1.4;">{{ mb_substr($notif->data['pesan'] ?? '', 0, 80) }}</div>
                                         <div style="font-size: var(--fs-xs);color:var(--text-muted);margin-top:3px;">{{ $notif->created_at->diffForHumans() }}</div>
-                                    </div>
+                                    </{{ $notifUrl ? 'a' : 'div' }}>
                                 @empty
                                     <div style="padding:16px 14px;font-size:13px;color:var(--text-muted);text-align:center;">Tidak ada notifikasi.</div>
                                 @endforelse

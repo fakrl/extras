@@ -71,6 +71,11 @@ class ExtrasProfile extends Model
         ];
     }
 
+    public function profilLengkap(): bool
+    {
+        return $this->foto_profil_path && $this->usia && $this->gender && $this->tinggi_badan;
+    }
+
     /**
      * RF-04: satu-satunya titik yang mengisi nik_hash, kolom teknis untuk
      * lookup duplikat, karena `nik` di-cast `encrypted` (IV random, tidak
