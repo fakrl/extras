@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prototype — Kartu Daftar Extras + Detail (Client & Admin)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root[data-theme="light"]{--bg-page:#eef2ea;--bg-card:#fff;--bg-soft:#f4f7f2;--text-primary:#0c1a10;--text-secondary:#435449;--text-muted:#5b6b60;--border:rgba(0,0,0,.09);--accent:#15803d;--accent-strong:#0b5e2c;--accent-on:#fff;--danger:#dc2626;--warning:#b45309;--info:#1d4ed8}
+:root[data-theme="dark"]{--bg-page:#17181a;--bg-card:#1c1e1e;--bg-soft:#232524;--text-primary:#eef4ef;--text-secondary:#9db3a2;--text-muted:#8a9a90;--border:rgba(255,255,255,.08);--accent:#0f9a4c;--accent-strong:#22b862;--accent-on:#04140a;--danger:#f0565c;--warning:#f59e0b;--info:#60a5fa}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,sans-serif;background:var(--bg-page);color:var(--text-primary);font-size:14px}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+.demo{background:var(--bg-card);border:1px dashed var(--border);border-radius:12px;padding:12px;margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.demo small{width:100%;color:var(--text-muted);font-size:12px}
+.chip{min-height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-soft);color:var(--text-primary);font:500 13px Inter;cursor:pointer}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-on)}
+h2{font-size:18px;margin:0 0 4px}.lead{color:var(--text-muted);font-size:13px;margin:0 0 12px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.toolbar input{flex:1;min-width:200px;min-height:44px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);padding:0 12px;font:16px Inter}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.xcard{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.xcard.pending{border:2px solid var(--accent)}
+.ph{position:relative;aspect-ratio:3/4;background:linear-gradient(160deg,var(--c1),var(--c2))}
+.ph .st{position:absolute;top:10px;left:10px}
+.ph .ck{position:absolute;top:10px;right:10px;width:26px;height:26px;accent-color:var(--accent)}
+.ring{position:absolute;right:10px;bottom:-24px;width:56px;height:56px;border-radius:50%;background:conic-gradient(var(--accent) 0 var(--p),var(--border) var(--p) 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.ring span{width:46px;height:46px;border-radius:50%;background:var(--bg-card);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--accent-strong)}
+.gradechip{position:absolute;right:10px;bottom:10px;background:var(--bg-card);border-radius:8px;padding:6px 10px;font-weight:700;font-size:13px}
+.body{padding:14px 14px 12px;display:flex;flex-direction:column;gap:6px;flex:1}
+.name{font-size:16px;font-weight:700}
+.hint{font-size:12px;color:var(--text-muted);font-style:italic;margin-top:-4px}
+.line{display:flex;gap:8px;font-size:13px;color:var(--text-secondary)}
+.line i{font-style:normal;width:18px;text-align:center}
+.tags{display:flex;flex-wrap:wrap;gap:4px}.tag{font-size:12px;padding:3px 7px;border-radius:6px;background:var(--bg-soft);border:1px solid var(--border);color:var(--text-secondary)}.tag.hit{color:var(--accent-strong);border-color:rgba(34,197,94,.45)}
+.btns{display:flex;gap:8px;margin-top:auto;padding-top:8px}
+.btn{min-height:44px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary);font:600 13.5px Inter;padding:0 12px;cursor:pointer;flex:1}
+.btn-out{border-color:var(--accent);color:var(--accent-strong)}
+.btn-brand{background:var(--accent);border-color:var(--accent);color:var(--accent-on)}
+.btn-danger{color:var(--danger);border-color:var(--danger);background:transparent}
+.badge{display:inline-flex;padding:4px 8px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid;background:var(--bg-card)}
+.b-ok{color:var(--accent-strong);border-color:rgba(34,197,94,.45)}.b-warn{color:var(--warning);border-color:rgba(234,179,8,.5)}.b-info{color:var(--info);border-color:rgba(59,130,246,.4)}.b-netral{color:var(--text-secondary);border-color:var(--border)}
+.bulk{position:sticky;bottom:0;background:var(--bg-card);border-top:1px solid var(--border);padding:10px 16px;display:none;gap:8px;align-items:center;margin:16px -16px -16px}
+/* Modal */
+dialog{border:0;padding:0;border-radius:16px;width:min(560px,94vw);max-height:92vh;background:var(--bg-card);color:var(--text-primary)}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+.m-ph{position:relative;height:260px;background:linear-gradient(160deg,var(--c1),var(--c2))}
+.m-thumbs{display:flex;gap:6px;padding:10px 18px 0}.m-thumbs div{flex:1;height:60px;border-radius:8px;background:linear-gradient(160deg,var(--c1),var(--c2));opacity:.8}
+.m-x{position:absolute;top:10px;right:10px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.9);font-size:20px;cursor:pointer}
+.m-body{padding:18px}
+.sec{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin:16px 0 8px}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kv div{background:var(--bg-soft);border:1px solid var(--border);border-radius:8px;padding:10px}
+.kv label{display:block;font-size:12px;color:var(--text-muted)}.kv b{font-size:14px}.kv .full{grid-column:1/-1}
+.lock{display:flex;gap:10px;background:var(--bg-soft);border:1px dashed var(--border);border-radius:8px;padding:12px;font-size:13px;color:var(--text-secondary)}
+.row{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border);font-size:13px}.row:first-child{border-top:0}
+.m-foot{position:sticky;bottom:0;background:var(--bg-card);border-top:1px solid var(--border);padding:12px 18px;display:flex;gap:8px}
+[data-r]{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="demo">
+    <small>DEMO — satu komponen kartu, dipakai di 3 halaman. Ganti role buat lihat bedanya.</small>
+    <button class="chip on" data-role="client">Client · Greenlight</button>
+    <button class="chip" data-role="admin">Admin · Lineup proyek</button>
+    <button class="chip" onclick="document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'">Ganti tema</button>
+  </div>
+
+  <div data-r="client"><h2>Pilih Kandidat — Iklan Minuman</h2><p class="lead">Peran "Mahasiswa kampus" · dicari #Dewasa muda #Mahasiswa #Naik motor · butuh 12 · sudah dipilih 5. Nama asli & kontak dipegang JBTB.</p></div>
+  <div data-r="admin"><h2>Lineup — Iklan Minuman</h2><p class="lead">48 pendaftar · 12 kuota · 7 menunggu nego.</p></div>
+
+  <div class="toolbar">
+    <input placeholder="Cari username atau peran…" aria-label="Cari kandidat">
+    <button class="chip on">Semua</button>
+    <button class="chip" data-r="client">Menunggu keputusan</button><button class="chip" data-r="client">Dipilih</button>
+    <button class="chip" data-r="admin">Baru daftar</button><button class="chip" data-r="admin">Nego</button><button class="chip" data-r="admin">Deal</button><button class="chip" data-r="admin">Ke Client</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="bulk" id="bulk"><b id="nsel">0</b> dipilih
+    <button class="btn" style="flex:0 0 auto">Beri grade</button><button class="btn btn-danger" style="flex:0 0 auto">Tolak (wajib alasan)</button>
+  </div>
+</div>
+
+<dialog id="m">
+  <div class="m-ph" id="mph"><button class="m-x" aria-label="Tutup" onclick="m.close()">×</button></div>
+  <div class="m-thumbs"><div></div><div></div><div></div><div></div></div>
+  <div class="m-body">
+    <div style="display:flex;justify-content:space-between;align-items:start;gap:8px">
+      <div><div class="name" id="mn" style="font-size:20px"></div>
+        <div class="hint" data-r="client">Nama asli terbuka setelah kandidat terpilih & kontrak</div>
+        <div data-r="admin" style="color:var(--text-secondary);font-size:13px" id="mreal"></div></div>
+      <span class="badge b-info" id="mst"></span>
+    </div>
+
+    <div data-r="client"><div class="sec">Cocok dengan peran</div>
+      <div class="row"><span>✅ Usia 20–25</span><span>sesuai</span></div><div class="row"><span>✅ Tinggi ≥ 165 cm</span><span>sesuai</span></div><div class="row"><span>⬜ Bisa naik motor</span><span style="color:var(--text-muted)">belum diisi</span></div></div>
+
+    <div class="sec">Fisik & kemampuan</div>
+    <div class="kv"><div><label>Usia</label><b id="mu"></b></div><div><label>Tinggi / berat</label><b>172 cm / 64 kg</b></div><div><label>Ukuran baju</label><b>L</b></div><div><label>Domisili</label><b>Depok</b></div><div class="full"><label>Kemampuan</label><b>Naik motor, bahasa Sunda</b></div></div>
+
+    <div class="sec">Video perkenalan</div>
+    <div style="height:150px;border-radius:8px;background:#1f2a22;display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px">▶</div>
+
+    <div class="sec">Riwayat</div>
+    <div class="row"><span>6 proyek selesai</span><span data-r="admin" style="color:var(--warning)">1× batal (ada surat)</span></div>
+
+    <div data-r="admin"><div class="sec">Negosiasi & internal</div>
+      <div class="kv"><div><label>Tarif diajukan</label><b>Rp 250.000</b></div><div><label>Fee deal</label><b id="mfee">—</b></div><div><label>WhatsApp</label><b>0812-••••-4471</b></div><div><label>Grade admin</label><b id="mg"></b></div><div class="full"><label>Catatan Korlap</label><b>"Datang on time, gampang diarahkan"</b></div></div></div>
+
+    <div data-r="client"><div class="sec">Kontak</div><div class="lock">🔒 <div><b>Kontak & rekening dipegang JBTB.</b><br>Jadwal dan kebutuhan lain lewat tim JBTB, biar semuanya tercatat.</div></div></div>
+  </div>
+  <div class="m-foot">
+    <button class="btn btn-danger" data-r="client">Tolak</button><button class="btn btn-brand" data-r="client">Pilih kandidat</button>
+    <button class="btn" data-r="admin">Beri grade</button><button class="btn btn-brand" data-r="admin" id="mact"></button>
+  </div>
+</dialog>
+
+<script>
+const data=[
+ {u:'dimas.rk',tags:['Dewasa muda', 'Mahasiswa', 'Naik motor', 'Sunda'],real:'Dimas Rizky K.',age:23,range:'20–25',tall:172,city:'Depok',role:'Mahasiswa kampus',p:82,g:'A',st:'nego',exp:6,c:['#9bb59f','#556b5a']},
+ {u:'sari.mei',tags:['Dewasa muda', 'Berhijab', 'Mahasiswa'],real:'Sari Meilani',age:21,range:'20–25',tall:160,city:'Jakarta Selatan',role:'Mahasiswa kampus',p:74,g:'B',st:'deal',exp:3,c:['#c9b3a3','#7d6152']},
+ {u:'bagas_22',tags:['Dewasa muda', 'Mahasiswa', 'Atlet', 'Naik motor', 'Jawa'],real:'Bagas Pratama',age:22,range:'20–25',tall:175,city:'Tangerang',role:'Mahasiswa kampus',p:91,g:'A',st:'ke_client',exp:9,c:['#a3b8c9','#526a7d']},
+ {u:'nadia.pu',tags:['Dewasa muda', 'Rambut panjang'],real:'Nadia Putri',age:24,range:'20–25',tall:158,city:'Bekasi',role:'Mahasiswa kampus',p:63,g:'C',st:'baru',exp:0,c:['#c9a3bb','#7d5270']},
+ {u:'rehan.x',tags:['Remaja', 'Mahasiswa', 'Naik motor'],real:'Rehan Saputra',age:20,range:'20–25',tall:169,city:'Bogor',role:'Mahasiswa kampus',p:78,g:'B',st:'ke_client',exp:2,c:['#b7c9a3','#667d52']},
+ {u:'citra.ay',tags:['Dewasa muda', 'Berhijab', 'Mahasiswa', 'Menari'],real:'Citra Ayu',age:25,range:'20–25',tall:163,city:'Depok',role:'Mahasiswa kampus',p:69,g:'B',st:'dipilih',exp:4,c:['#c9c1a3','#7d7352']}];
+const ST={baru:['Baru daftar','b-netral','Mulai nego'],nego:['Nego fee','b-warn','Lanjut nego'],deal:['Deal','b-ok','Ajukan ke Client'],ke_client:['Menunggu Client','b-info','Lihat status'],dipilih:['Dipilih Client','b-ok','Siapkan kontrak']};
+let role='client';const WANT=['Dewasa muda','Mahasiswa','Naik motor'];
+function render(){
+ const list=role==='client'?data.filter(d=>['ke_client','dipilih'].includes(d.st)):data;
+ grid.innerHTML=list.map((d,i)=>{const s=ST[d.st];d.p=Math.round(d.tags.filter(t=>WANT.includes(t)).length/WANT.length*100);const pend=role==='client'&&d.st==='ke_client';
+ const stLabel=role==='client'?(pend?'Menunggu keputusan':'Dipilih'):s[0];
+ return `<article class="xcard ${pend?'pending':''}">
+  <div class="ph" style="--c1:${d.c[0]};--c2:${d.c[1]}">
+   <span class="badge ${role==='client'?(pend?'b-warn':'b-ok'):s[1]} st">${stLabel}</span>
+   ${role==='admin'?`<input type="checkbox" class="ck" aria-label="Pilih ${d.u}" onchange="sel()">`:''}
+   ${role==='client'?`<div class="ring" style="--p:${d.p}%"><span>${d.p}%</span></div>`:`<span class="gradechip">Grade ${d.g}</span>`}
+  </div>
+  <div class="body">
+   <div class="name">@${d.u}</div>
+   <div class="hint">${role==='client'?'Nama asli terbuka setelah terpilih':d.real}</div>
+   <div class="line"><i>🎭</i>${d.role}</div>
+   <div class="line"><i>📏</i>${role==='client'?d.range:d.age} th · ${d.tall} cm · ${d.city}</div>
+   <div class="tags">${d.tags.slice(0,3).map(t=>`<span class="tag ${WANT.includes(t)?'hit':''}">#${t}</span>`).join('')}${d.tags.length>3?`<span class="tag">+${d.tags.length-3}</span>`:''}</div>
+   <div class="line"><i>🎬</i>${d.exp?d.exp+' proyek selesai':'Belum pernah ikut proyek'}</div>
+   <div class="btns"><button class="btn btn-out" onclick="openM(${data.indexOf(d)})">Lihat Profil</button>
+    ${role==='client'?(pend?`<button class="btn btn-brand" onclick="openM(${data.indexOf(d)})">Pilih</button>`:''):`<button class="btn btn-brand">${s[2]}</button>`}</div>
+  </div></article>`}).join('');
+ document.querySelectorAll('[data-r]').forEach(e=>e.style.display=e.dataset.r===role?'':'none');
+ document.querySelectorAll('[data-role]').forEach(c=>c.classList.toggle('on',c.dataset.role===role));sel();
+}
+function sel(){const n=document.querySelectorAll('.ck:checked').length;bulk.style.display=n&&role==='admin'?'flex':'none';nsel.textContent=n}
+function openM(i){const d=data[i];mph.style.setProperty('--c1',d.c[0]);mph.style.setProperty('--c2',d.c[1]);
+ mn.textContent='@'+d.u;mreal.textContent=d.real;mu.textContent=(role==='client'?d.range:d.age)+' th';
+ mst.textContent=role==='client'?(d.st==='ke_client'?'Menunggu keputusan':'Dipilih'):ST[d.st][0];
+ mg.textContent=d.g;mfee.textContent=['deal','ke_client','dipilih'].includes(d.st)?'Rp 200.000':'—';mact.textContent=ST[d.st][2];m.showModal()}
+document.querySelectorAll('[data-role]').forEach(c=>c.onclick=()=>{role=c.dataset.role;render()});render();
+</script>
+</body>
+</html>

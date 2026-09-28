@@ -31,3 +31,8 @@ docs/CLAUDE.local.md
 
 # Review arsitektur berisi daftar celah keamanan, jangan dipublish (repo public)
 docs/ARCHITECTURE-REVIEW-*.md
+
+# File izin lokal Claude Code + worktree subagent (AZ.2)
+.claude/settings.local.json
+.claude/worktrees/
+.claude/_backup-*.patch

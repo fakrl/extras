@@ -58,8 +58,7 @@
         @else
             <h1>{{ $project->nama_produksi }}</h1>
             <p class="meta">Deadline pendaftaran: {{ $project->deadline->format('d M Y') }} · Kuota: {{ $project->kuota }} orang</p>
-            @php($lokasi = $project->shootingDates->pluck('lokasi')->filter()->unique()->implode(', '))
-            @if ($lokasi) <p class="meta">Lokasi: {{ $lokasi }}</p> @endif
+            {{-- lokasi disembunyikan sebelum lolos (AZ.1, keputusan akhir D17) --}}
 
             <div class="card">
                 <div class="card-title">Karakter yang Dibutuhkan</div>
