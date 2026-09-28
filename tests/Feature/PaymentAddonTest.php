@@ -37,7 +37,7 @@ class PaymentAddonTest extends TestCase
 
     public function test_extras_bisa_tambah_addon_untuk_aplikasi_sendiri(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $application = $this->buatAplikasi($admin, $extras);
@@ -57,7 +57,7 @@ class PaymentAddonTest extends TestCase
 
     public function test_extras_tidak_bisa_tambah_addon_aplikasi_extras_lain(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $application = $this->buatAplikasi($admin, $extras);
@@ -73,9 +73,9 @@ class PaymentAddonTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function test_admin_default_tetap_bisa_tambah_addon(): void
+    public function test_admin_tetap_bisa_tambah_addon(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $application = $this->buatAplikasi($admin, $extras);
@@ -95,7 +95,7 @@ class PaymentAddonTest extends TestCase
 
     public function test_addon_ditolak_untuk_admin_setelah_dikonfirmasi_diterima(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $application = $this->buatAplikasi($admin, $extras, 'dikonfirmasi_diterima');
@@ -111,7 +111,7 @@ class PaymentAddonTest extends TestCase
 
     public function test_addon_ditolak_untuk_extras_setelah_dikonfirmasi_diterima(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $application = $this->buatAplikasi($admin, $extras, 'dikonfirmasi_diterima');

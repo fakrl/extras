@@ -17,7 +17,7 @@ class ReminderH1ShootingCommandTest extends TestCase
 
     private function buatProyekDenganShootingBesok(): CastingProject
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
 
         $project = CastingProject::create([
             'admin_id' => $admin->id,
@@ -84,7 +84,7 @@ class ReminderH1ShootingCommandTest extends TestCase
     {
         Http::fake(['*/send' => Http::response(['sukses' => true], 200)]);
 
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $project = CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Proyek Lain Hari',

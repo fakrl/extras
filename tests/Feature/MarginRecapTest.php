@@ -27,9 +27,9 @@ class MarginRecapTest extends TestCase
     public static function rolePassProvider(): array
     {
         return [
-            ['admin_default', '/admin/rekap-margin'],
+            ['admin', '/admin/rekap-margin'],
             ['super_admin', '/super-admin/rekap-margin'],
-            ['admin_default', '/super-admin/rekap-margin'],
+            ['admin', '/super-admin/rekap-margin'],
             ['super_admin', '/admin/rekap-margin'],
         ];
     }
@@ -45,7 +45,7 @@ class MarginRecapTest extends TestCase
     public static function roleBlockProvider(): array
     {
         $urls = ['/admin/rekap-margin', '/super-admin/rekap-margin'];
-        $roles = ['admin_talco', 'admin_korlap', 'admin_sosmed'];
+        $roles = ['korlap', 'client'];
 
         $cases = [];
         foreach ($roles as $role) {
@@ -59,7 +59,7 @@ class MarginRecapTest extends TestCase
 
     public function test_margin_dihitung_benar_per_kelas_bukan_dikali_kuota(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
 
         $project = CastingProject::create([
             'admin_id' => $admin->id,
@@ -113,7 +113,7 @@ class MarginRecapTest extends TestCase
 
     public function test_aplikasi_tanpa_kelas_tetap_masuk_total_sebagai_belum_terklasifikasi(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
 
         $project = CastingProject::create([
             'admin_id' => $admin->id,
@@ -162,7 +162,7 @@ class MarginRecapTest extends TestCase
 
     public function test_aplikasi_ditolak_tidak_dihitung_sebagai_payout(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
 
         $project = CastingProject::create([
             'admin_id' => $admin->id,
@@ -199,7 +199,7 @@ class MarginRecapTest extends TestCase
     {
         // SPEC AY.1.2: tab "Invoice Client" disembunyikan sampai basis
         // invoice diputuskan (D5), view-nya baca kolom yang belum ada.
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
 
         $response = $this->actingAs($admin)->get('/admin/rekap-margin');
 

@@ -46,8 +46,8 @@ class GreenlightGridTest extends TestCase
 
     public function test_show_tidak_bocorkan_nama_asli_nik_rate_card(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cd = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cd = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
         $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
         $this->buatApplication($project, 'diajukan_ke_cd', 'alias_aman');
@@ -62,8 +62,8 @@ class GreenlightGridTest extends TestCase
 
     public function test_riwayat_cd_muncul_kalau_pernah_approve(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cd = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cd = User::factory()->create(['role' => 'client']);
 
         $project1 = $this->buatProyek($admin);
         $project1->cdAssignments()->create(['cd_user_id' => $cd->id]);
@@ -93,8 +93,8 @@ class GreenlightGridTest extends TestCase
 
     public function test_grade_cd_wajib_saat_approve(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cd = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cd = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
         $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
         $app = $this->buatApplication($project, 'diajukan_ke_cd');
@@ -109,8 +109,8 @@ class GreenlightGridTest extends TestCase
 
     public function test_bulk_reject_masih_jalan(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cd = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cd = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
         $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
 

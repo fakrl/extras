@@ -27,7 +27,7 @@ class ApplicantGradeFilterTest extends TestCase
 
     public function test_filter_grade_a_hanya_menampilkan_pendaftar_grade_a(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $project = CastingProject::factory()->create(['admin_id' => $admin->id]);
 
         $appA = $this->buatAplikasi($project, 'A');
@@ -46,7 +46,7 @@ class ApplicantGradeFilterTest extends TestCase
 
     public function test_filter_belum_dinilai_hanya_menampilkan_grade_null(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $project = CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Proyek Test',
@@ -69,7 +69,7 @@ class ApplicantGradeFilterTest extends TestCase
 
     public function test_tanpa_filter_menampilkan_semua_pendaftar(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $project = CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Proyek Test',

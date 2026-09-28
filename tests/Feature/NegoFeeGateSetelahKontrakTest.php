@@ -53,7 +53,7 @@ class NegoFeeGateSetelahKontrakTest extends TestCase
     #[DataProvider('statusBaruYangHarusDiblokir')]
     public function test_admin_counter_diblokir_untuk_status_baru(string $status): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $application = $this->buatAplikasi($admin, $status);
 
         $response = $this->actingAs($admin)->post("/admin/applications/{$application->id}/nego/counter", ['nominal' => 999999]);
@@ -65,7 +65,7 @@ class NegoFeeGateSetelahKontrakTest extends TestCase
     #[DataProvider('statusBaruYangHarusDiblokir')]
     public function test_admin_terima_diblokir_untuk_status_baru(string $status): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $application = $this->buatAplikasi($admin, $status);
 
         $response = $this->actingAs($admin)->post("/admin/applications/{$application->id}/nego/terima", ['nominal' => 999999]);
@@ -77,7 +77,7 @@ class NegoFeeGateSetelahKontrakTest extends TestCase
     #[DataProvider('statusBaruYangHarusDiblokir')]
     public function test_admin_tolak_diblokir_untuk_status_baru(string $status): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $application = $this->buatAplikasi($admin, $status);
 
         $response = $this->actingAs($admin)->post("/admin/applications/{$application->id}/nego/tolak");
@@ -89,7 +89,7 @@ class NegoFeeGateSetelahKontrakTest extends TestCase
     #[DataProvider('statusBaruYangHarusDiblokir')]
     public function test_extras_counter_diblokir_untuk_status_baru(string $status): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $application = $this->buatAplikasi($admin, $status);
 
         $response = $this->actingAs($application->extras->user)
@@ -102,7 +102,7 @@ class NegoFeeGateSetelahKontrakTest extends TestCase
     #[DataProvider('statusBaruYangHarusDiblokir')]
     public function test_extras_terima_diblokir_untuk_status_baru(string $status): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $application = $this->buatAplikasi($admin, $status);
 
         $response = $this->actingAs($application->extras->user)
@@ -122,7 +122,7 @@ class NegoFeeGateSetelahKontrakTest extends TestCase
     #[DataProvider('statusLamaYangSudahDiblokir')]
     public function test_regresi_status_lama_tetap_diblokir(string $status): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $application = $this->buatAplikasi($admin, $status);
 
         $response = $this->actingAs($admin)->post("/admin/applications/{$application->id}/nego/counter", ['nominal' => 999999]);
@@ -140,7 +140,7 @@ class NegoFeeGateSetelahKontrakTest extends TestCase
     #[DataProvider('statusYangMasihBolehNego')]
     public function test_regresi_status_aktif_masih_bisa_nego(string $status): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $application = $this->buatAplikasi($admin, $status);
 
         $response = $this->actingAs($admin)->post("/admin/applications/{$application->id}/nego/counter", ['nominal' => 300000]);
@@ -161,7 +161,7 @@ class NegoFeeGateSetelahKontrakTest extends TestCase
         // nego dulu), jadi tidak reachable lewat alur normal. Test ini
         // membuktikan proteksi existing itu memang menutup celah yang sama,
         // bukan menguji fix baru.
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $application = $this->buatAplikasi($admin, 'kontrak_ditandatangani');
 
         $response = $this->actingAs($admin)

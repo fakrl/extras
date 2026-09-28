@@ -24,7 +24,7 @@ class LengkapiKtpTest extends TestCase
 
     private function buatApplication(string $status): ProjectApplication
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'nama_asli' => 'Nama Asli Test']);
 

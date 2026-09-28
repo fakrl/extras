@@ -27,7 +27,7 @@ class FillableTimestampRegressionTest extends TestCase
     {
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $project = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',
             'deadline' => now()->addDays(7), 'kuota' => 5,
@@ -48,7 +48,7 @@ class FillableTimestampRegressionTest extends TestCase
     {
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $project = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',
             'deadline' => now()->addDays(7), 'kuota' => 5,
@@ -69,7 +69,7 @@ class FillableTimestampRegressionTest extends TestCase
     {
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $project = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',
             'deadline' => now()->addDays(7), 'kuota' => 5,
@@ -91,7 +91,7 @@ class FillableTimestampRegressionTest extends TestCase
     public function test_admin_project_assignment_tandai_selesai_tidak_lempar_exception(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        $admin = User::factory()->create(['role' => 'admin_korlap']);
+        $admin = User::factory()->create(['role' => 'korlap']);
         AdminProfile::create(['user_id' => $admin->id, 'honor_nominal' => 500000, 'created_by' => $superAdmin->id]);
         $project = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',
@@ -112,7 +112,7 @@ class FillableTimestampRegressionTest extends TestCase
     public function test_staff_payroll_tandai_slip_dibuat_tidak_lempar_exception(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        $admin = User::factory()->create(['role' => 'admin_korlap']);
+        $admin = User::factory()->create(['role' => 'korlap']);
         $project = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',
             'deadline' => now()->addDays(7), 'kuota' => 5,
@@ -132,7 +132,7 @@ class FillableTimestampRegressionTest extends TestCase
     public function test_admin_profile_update_honor_tidak_lempar_exception(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        $admin = User::factory()->create(['role' => 'admin_korlap']);
+        $admin = User::factory()->create(['role' => 'korlap']);
         $profile = AdminProfile::create(['user_id' => $admin->id, 'honor_nominal' => 500000, 'created_by' => $superAdmin->id]);
 
         $profile->updateHonor(750000);

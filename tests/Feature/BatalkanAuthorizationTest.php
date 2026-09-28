@@ -23,7 +23,7 @@ class BatalkanAuthorizationTest extends TestCase
 
     private function buatApplicationDeal(): ProjectApplication
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
@@ -84,16 +84,14 @@ class BatalkanAuthorizationTest extends TestCase
     public static function subRoleAdminProvider(): array
     {
         return [
-            'admin_talco' => ['admin_talco'],
-            'admin_korlap' => ['admin_korlap'],
-            'admin_sosmed' => ['admin_sosmed'],
+            'korlap' => ['korlap'],
         ];
     }
 
-    public function test_admin_default_hit_batalkan_via_http_berhasil(): void
+    public function test_admin_hit_batalkan_via_http_berhasil(): void
     {
         $application = $this->buatApplicationDeal();
-        $adminDefault = User::factory()->create(['role' => 'admin_default']);
+        $adminDefault = User::factory()->create(['role' => 'admin']);
 
         $response = $this->actingAs($adminDefault)
             ->post(route('admin.negotiations.batalkan', $application), ['alasan' => 'Client reschedule']);

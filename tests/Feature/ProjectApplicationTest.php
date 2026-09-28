@@ -35,8 +35,8 @@ class ProjectApplicationTest extends TestCase
 
     public function test_ajukan_ke_cd_dengan_bentrok_jadwal_tetap_lanjut_tapi_flag_true(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cd = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cd = User::factory()->create(['role' => 'client']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
@@ -66,8 +66,8 @@ class ProjectApplicationTest extends TestCase
 
     public function test_ajukan_ke_cd_tanpa_bentrok_flag_tetap_false(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cd = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cd = User::factory()->create(['role' => 'client']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
@@ -89,7 +89,7 @@ class ProjectApplicationTest extends TestCase
 
     public function test_ajukan_ke_cd_selain_status_deal_ditolak(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
@@ -107,7 +107,7 @@ class ProjectApplicationTest extends TestCase
 
     public function test_batalkan_status_deal_mencatat_cancellation_dan_ubah_status(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
@@ -131,7 +131,7 @@ class ProjectApplicationTest extends TestCase
 
     public function test_batalkan_selain_status_deal_ditolak(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
@@ -152,7 +152,7 @@ class ProjectApplicationTest extends TestCase
      */
     public function test_batalkan_status_lolos_berhasil(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
@@ -170,7 +170,7 @@ class ProjectApplicationTest extends TestCase
 
     public function test_batalkan_status_kontrak_ditandatangani_berhasil(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
@@ -188,7 +188,7 @@ class ProjectApplicationTest extends TestCase
 
     public function test_batalkan_status_selesai_produksi_tetap_ditolak(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
@@ -207,7 +207,7 @@ class ProjectApplicationTest extends TestCase
     #[DataProvider('statusPraLolosProvider')]
     public function test_batalkan_status_pra_lolos_tetap_ditolak(string $status): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
@@ -240,7 +240,7 @@ class ProjectApplicationTest extends TestCase
      */
     public function test_tiga_kali_batalkan_mendadak_status_lolos_pada_proyek_berbeda_membuat_status_melanggar(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
@@ -260,7 +260,7 @@ class ProjectApplicationTest extends TestCase
 
     public function test_batalkan_mendadak_kurang_dari_h2_increment_cancel_count(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = $this->buatProyek($admin, now()->addDay()->toDateString());
@@ -279,7 +279,7 @@ class ProjectApplicationTest extends TestCase
 
     public function test_batalkan_tepat_h2_dua_hari_tidak_mendadak(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = $this->buatProyek($admin, now()->addDays(2)->toDateString());
@@ -298,7 +298,7 @@ class ProjectApplicationTest extends TestCase
 
     public function test_batalkan_tidak_mendadak_tidak_increment_cancel_count(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = $this->buatProyek($admin, now()->addDays(10)->toDateString());
@@ -316,7 +316,7 @@ class ProjectApplicationTest extends TestCase
 
     public function test_tiga_kali_batalkan_mendadak_pada_proyek_berbeda_membuat_status_melanggar(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
@@ -346,7 +346,7 @@ class ProjectApplicationTest extends TestCase
         Carbon::setTestNow(Carbon::create(2026, 9, 1, 1, 0, 0, 'Asia/Jakarta'));
 
         try {
-            $admin = User::factory()->create(['role' => 'admin_default']);
+            $admin = User::factory()->create(['role' => 'admin']);
             $extrasUser = User::factory()->create(['role' => 'extras']);
             $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
             // 1 hari dari "hari ini" versi WIB (2026-09-01), tapi 2 hari
@@ -369,7 +369,7 @@ class ProjectApplicationTest extends TestCase
 
     public function test_admin_batalkan_mendadak_3x_tidak_membuat_status_melanggar(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
@@ -394,7 +394,7 @@ class ProjectApplicationTest extends TestCase
         Storage::fake('local');
         Mail::fake();
 
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create([
             'user_id' => $extrasUser->id,
@@ -442,7 +442,7 @@ class ProjectApplicationTest extends TestCase
         Storage::fake('local');
         Mail::fake();
 
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create([
             'user_id' => $extrasUser->id,
@@ -479,7 +479,7 @@ class ProjectApplicationTest extends TestCase
 
     public function test_batalkan_tanpa_kontrak_tidak_error(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create([
             'user_id' => $extrasUser->id,
@@ -502,7 +502,7 @@ class ProjectApplicationTest extends TestCase
         Storage::fake('local');
         Mail::fake();
 
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create([
             'user_id' => $extrasUser->id,
