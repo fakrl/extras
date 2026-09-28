@@ -156,6 +156,9 @@ class DashboardController extends Controller
 
     public function accProject(CastingProject $castingProject): RedirectResponse
     {
+        if ($castingProject->client_request_status !== 'menunggu_acc') {
+            return back()->with('error', 'Pengajuan ini sudah diproses sebelumnya.');
+        }
         $castingProject->update([
             'client_request_status' => 'disetujui',
             'status' => 'dibuka',
@@ -185,6 +188,9 @@ class DashboardController extends Controller
 
     public function rejectProject(Request $request, CastingProject $castingProject): RedirectResponse
     {
+        if ($castingProject->client_request_status !== 'menunggu_acc') {
+            return back()->with('error', 'Pengajuan ini sudah diproses sebelumnya.');
+        }
         $data = $request->validate(['alasan_tolak' => ['required', 'string', 'max:500']]);
 
         $castingProject->update([

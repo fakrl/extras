@@ -31,12 +31,12 @@
 
     <form method="POST" action="{{ route('admin.projects.applicants.bulk', $castingProject) }}" id="bulk-form" class="card" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; padding: 12px;">
         @csrf
-        <label style="margin: 0; display: flex; align-items: center; gap: 6px;"><input type="checkbox" onclick="document.querySelectorAll('.bulk-check').forEach(c => c.checked = this.checked)"> Pilih semua</label>
+        <label style="margin: 0; display: flex; align-items: center; gap: 6px;"><input type="checkbox" onclick="document.querySelectorAll('.bulk-check').forEach(c => { if (c.offsetParent !== null) c.checked = this.checked; })"> Pilih semua</label>
         <label for="bulk-grade" style="margin: 0;">Grade</label>
         <select name="grade" id="bulk-grade" style="width: 70px; min-height: 36px; margin-bottom: 0;">
             <option value="A">A</option><option value="B">B</option><option value="C">C</option>
         </select>
-        <button type="submit" name="aksi" value="grade" class="btn btn-sm" formnovalidate>Set Grade Terpilih</button>
+        <button type="submit" name="aksi" value="grade" class="btn btn-sm" formnovalidate onclick="var n = document.querySelectorAll('.bulk-check:checked').length; return n > 0 && confirm('Set grade ' + document.getElementById('bulk-grade').value + ' untuk ' + n + ' kandidat? Grade terkunci 2 bulan.');">Set Grade Terpilih</button>
         <button type="button" class="btn btn-sm btn-danger-outline" onclick="document.getElementById('bulk-tolak-dialog').showModal()">Tolak Terpilih</button>
         <dialog id="bulk-tolak-dialog" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 18px; max-width: 360px; width: 90%;">
             <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Tolak semua kandidat terpilih?</div>

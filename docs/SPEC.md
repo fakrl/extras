@@ -827,12 +827,12 @@ Keputusan 5 role sudah final sejak 21 Sept, jadi ini bukan keputusan baru:
 
 | Item | Bukti (diisi Claude Code: commit + cara tes) | QA (dicentang Imanisa) |
 |---|---|---|
-| AY.1 (1–15) bug P0 | | [ ] |
-| AY.2 (1–7) fondasi UX | | [ ] |
-| AY.3 (1–6) design system | | [ ] |
-| AY.4 (1–9) aksi aman & ergonomi | | [ ] |
-| AY.5 (1–9) lubang komunikasi | | [ ] |
-| AY.7 (1–5) role lama | | [ ] |
+| AY.1 (1–15) bug P0 | `38465e8` — `php artisan test --filter AyP0GuardsTest` (9 test: keuangan 200, sign setelah batal, transfer ulang, selfie tervalidasi, setGrade, ajukanFeeAwal, kuota, form bersarang). Manual: Kelola Akun 4 aksi per-akun + bulk; buka `/admin/rekap-margin` | [ ] |
+| AY.2 (1–7) fondasi UX | `a1c8a40` — set `APP_LOCALE=id` di `.env` + `php artisan config:clear`, submit form kosong → error Indonesia di atas halaman; Tab keyboard → ring fokus; tabel di lebar HP scroll sendiri; chart.js cuma load di halaman chart | [ ] |
+| AY.3 (1–6) design system | `4606f9a` — `--filter StatusLabelsTest`; Manual: role abu (bukan kuning) di Kelola Akun/Monitoring, status Lineup berwarna + teks Indonesia, Log Aktivitas tanpa kode mentah; cek dark/light | [ ] |
+| AY.4 (1–9) aksi aman & ergonomi | `4d252f3` — `--filter AyAksiAmanTest` + `FeeNegotiationFlowTest`; Manual: tombol uang munculin konfirmasi + nominal, "Hentikan Negosiasi" wajib alasan, TTD di HP 360px, rincian di halaman invoice Client | [ ] |
+| AY.5 (1–9) lubang komunikasi | `b42eb11`, `b43d76c` — `--filter "AyKomunikasiTest|CastingProjectApplyTest|OperationalModulesTest"`; Manual: klik notif lonceng, Daftar di lowongan tutup hilang, absensi Korlap X/Y + balik ke kartu, Lineup chip+bulk, ACC/Tolak SA + notif Client. **Perlu `php artisan migrate`** (kolom `alasan_tolak`) | [ ] |
+| AY.7 (1–5) role lama | merge `e4bab82` (7a537c9, bea4837, f95ab1f, 6d57df0) — SQLite hijau, `--filter PaymentStatusGateTest` (sengketa tersimpan). **Poin 5 (MySQL) BELUM** — diblokir izin kredensial, perlu dijalankan Fakrul | [ ] |
 | AY.6 | **BLOCKED** — tunggu keputusan | — |
 
 **Skenario QA** (HP Android murah, tema terang, di luar ruangan, data seluler): (1) daftar Extras dari nol sampai upload video; (2) Korlap validasi 10 orang berturut-turut; (3) Admin kasih grade 20 pelamar + deal 1 fee; (4) Client baru ajukan proyek lalu Greenlight 5 kandidat; (5) Owner ACC proyek, cek Kelola Akun (4 aksi per-akun) dan halaman Keuangan. Catat di mana **bingung**, bukan cuma di mana error.

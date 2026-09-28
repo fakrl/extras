@@ -63,7 +63,9 @@ class ContractController extends Controller
                     ->with('error', $pesanAdmin);
             }
 
-            abort_if($application->status_partisipasi !== 'lolos', 422, 'Kontrak hanya dibuat setelah Extras dinyatakan Lolos.');
+            if ($application->status_partisipasi !== 'lolos') {
+                return back()->with('error', 'Kontrak hanya dibuat setelah Extras dinyatakan Lolos.');
+            }
 
             // RF-25: auto-generate dari data proyek, Extras, dan fee yang disepakati.
             $application->contract()->create([]);

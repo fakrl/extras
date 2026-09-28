@@ -51,11 +51,13 @@ function calClick(el, calId) {
     if (!el.dataset.events) return;
     var events = JSON.parse(el.dataset.events);
     var panel = document.getElementById('cal-detail-' + calId);
+    // lokasi/catatan diisi Client, jadi wajib di-escape sebelum masuk innerHTML
+    var esc = function(v) { var d = document.createElement('div'); d.textContent = v == null ? '' : v; return d.innerHTML; };
     var html = events.map(function(e) {
-        return '<div class="cal-event-item"><strong>' + (e.nama || 'Jadwal') + '</strong>' +
-               (e.jam_mulai ? '<br>' + e.jam_mulai + (e.jam_selesai ? '&ndash;' + e.jam_selesai : '') : '') +
-               (e.lokasi ? '<br><span class="cal-meta">' + e.lokasi + '</span>' : '') +
-               (e.catatan ? '<br><em class="cal-meta">' + e.catatan + '</em>' : '') +
+        return '<div class="cal-event-item"><strong>' + esc(e.nama || 'Jadwal') + '</strong>' +
+               (e.jam_mulai ? '<br>' + esc(e.jam_mulai) + (e.jam_selesai ? '&ndash;' + esc(e.jam_selesai) : '') : '') +
+               (e.lokasi ? '<br><span class="cal-meta">' + esc(e.lokasi) + '</span>' : '') +
+               (e.catatan ? '<br><em class="cal-meta">' + esc(e.catatan) + '</em>' : '') +
                '</div>';
     }).join('');
     panel.innerHTML = html;
@@ -105,7 +107,7 @@ function calClick(el, calId) {
                     @if ($dayEvents->isNotEmpty())
                         <button type="button"
                             class="cal-day has-event {{ $isToday ? 'is-today' : '' }} {{ $isOutOfMonth ? 'out-of-month' : '' }}"
-                            data-events="{{ htmlspecialchars(json_encode($eventsData), ENT_QUOTES) }}"
+                            data-events="{{ json_encode($eventsData) }}"
                             onclick="calClick(this, '{{ $calId }}')"
                             onmouseenter="calClick(this, '{{ $calId }}')"
                             aria-label="{{ $cur->translatedFormat('d F Y') }}, ada jadwal"

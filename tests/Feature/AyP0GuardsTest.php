@@ -246,4 +246,25 @@ class AyP0GuardsTest extends TestCase
 
         $this->assertStringContainsString('class="bulk-cb" form="bulk-form"', $response->getContent());
     }
+
+    public function test_tolak_pengajuan_yang_sudah_disetujui_ditolak(): void
+    {
+        $sa = User::factory()->create(['role' => 'super_admin']);
+        $project = CastingProject::create([
+            'admin_id' => $sa->id,
+            'nama_produksi' => 'Proyek Sudah Jalan',
+            'client_ph' => 'PH Test',
+            'deadline' => now()->addDays(7),
+            'kuota' => 5,
+            'status' => 'dibuka',
+            'client_request_status' => 'disetujui',
+        ]);
+
+        $this->actingAs($sa)->post(route('super-admin.projects.reject', $project), ['alasan_tolak' => 'Salah klik'])
+            ->assertSessionHas('error');
+
+        $project->refresh();
+        $this->assertSame('dibuka', $project->status);
+        $this->assertSame('disetujui', $project->client_request_status);
+    }
 }

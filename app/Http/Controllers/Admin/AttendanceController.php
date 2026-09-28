@@ -88,7 +88,9 @@ class AttendanceController extends Controller
         ]);
 
         $shootingDate = $application->castingProject->shootingDates()->find($data['event_shooting_date_id']);
-        abort_unless($shootingDate, 422, 'Tanggal shooting tidak valid untuk proyek ini.');
+        if (! ($shootingDate)) {
+            return back()->with('error', 'Tanggal shooting tidak valid untuk proyek ini.');
+        }
 
         $fotoPath = $request->hasFile('foto')
             ? $request->file('foto')->store('attendances', 'local')
@@ -132,7 +134,9 @@ class AttendanceController extends Controller
         ]);
 
         $shootingDate = $application->castingProject->shootingDates()->find($data['event_shooting_date_id']);
-        abort_unless($shootingDate, 422, 'Tanggal shooting tidak valid.');
+        if (! ($shootingDate)) {
+            return back()->with('error', 'Tanggal shooting tidak valid.');
+        }
 
         $fotoPath = $request->file('foto')->store('attendances', 'local');
 
@@ -155,7 +159,9 @@ class AttendanceController extends Controller
 
     public function validasi(Request $request, Attendance $attendance): RedirectResponse
     {
-        abort_if($attendance->status_validasi === 'tervalidasi', 422, 'Sudah divalidasi.');
+        if ($attendance->status_validasi === 'tervalidasi') {
+            return back()->with('error', 'Sudah divalidasi.');
+        }
 
         $attendance->update([
             'status' => 'hadir',
