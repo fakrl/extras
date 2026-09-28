@@ -58,8 +58,8 @@ class MonitoringController extends Controller
         if ($unifiedType !== 'all') {
             $roleMap = [
                 'extras' => ['extras'],
-                'client' => ['client', 'casting_director'],
-                'admin' => ['admin', 'korlap', 'admin_default', 'admin_korlap'],
+                'client' => ['client'],
+                'admin' => ['admin', 'korlap'],
             ];
             $query->whereIn('role', $roleMap[$unifiedType] ?? []);
         } else {

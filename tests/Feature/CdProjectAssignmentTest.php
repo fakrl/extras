@@ -41,10 +41,10 @@ class CdProjectAssignmentTest extends TestCase
         ]);
     }
 
-    public function test_admin_default_bisa_assign_cd_ke_proyek(): void
+    public function test_admin_bisa_assign_cd_ke_proyek(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cd = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cd = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
 
         $response = $this->actingAs($admin)->post(route('admin.projects.assign-cd', $project), [
@@ -60,9 +60,9 @@ class CdProjectAssignmentTest extends TestCase
 
     public function test_satu_proyek_bisa_punya_multiple_cd_assigned(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cdA = User::factory()->create(['role' => 'casting_director']);
-        $cdB = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cdA = User::factory()->create(['role' => 'client']);
+        $cdB = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
 
         $this->actingAs($admin)->post(route('admin.projects.assign-cd', $project), ['cd_user_id' => $cdA->id]);
@@ -71,9 +71,9 @@ class CdProjectAssignmentTest extends TestCase
         $this->assertSame(2, $project->cdAssignments()->count());
     }
 
-    public function test_assign_cd_ditolak_untuk_user_bukan_casting_director(): void
+    public function test_assign_cd_ditolak_untuk_user_bukan_client(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $bukanCd = User::factory()->create(['role' => 'extras']);
         $project = $this->buatProyek($admin);
 
@@ -84,8 +84,8 @@ class CdProjectAssignmentTest extends TestCase
 
     public function test_assign_cd_duplikat_tidak_bikin_record_ganda(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cd = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cd = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
 
         $this->actingAs($admin)->post(route('admin.projects.assign-cd', $project), ['cd_user_id' => $cd->id]);
@@ -96,8 +96,8 @@ class CdProjectAssignmentTest extends TestCase
 
     public function test_cd_yang_diassign_tetap_bisa_akses_invoice(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cdA = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cdA = User::factory()->create(['role' => 'client']);
         $project1 = $this->buatProyek($admin);
         $project1->cdAssignments()->create(['cd_user_id' => $cdA->id]);
 
@@ -106,9 +106,9 @@ class CdProjectAssignmentTest extends TestCase
 
     public function test_cd_yang_tidak_diassign_ditolak_akses_invoice(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cdA = User::factory()->create(['role' => 'casting_director']);
-        $cdB = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cdA = User::factory()->create(['role' => 'client']);
+        $cdB = User::factory()->create(['role' => 'client']);
         $project1 = $this->buatProyek($admin);
         $project2 = $this->buatProyek($admin);
         $project1->cdAssignments()->create(['cd_user_id' => $cdA->id]);
@@ -119,8 +119,8 @@ class CdProjectAssignmentTest extends TestCase
 
     public function test_cd_tanpa_assignment_sama_sekali_ditolak_akses_invoice(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cdTanpaProyek = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cdTanpaProyek = User::factory()->create(['role' => 'client']);
         $project1 = $this->buatProyek($admin);
 
         $this->actingAs($cdTanpaProyek)->get(route('invoices.show', $project1))->assertStatus(403);
@@ -128,8 +128,8 @@ class CdProjectAssignmentTest extends TestCase
 
     public function test_cd_yang_diassign_bisa_lihat_dan_approve_kandidat_proyeknya(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cdA = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cdA = User::factory()->create(['role' => 'client']);
         $project1 = $this->buatProyek($admin);
         $project1->cdAssignments()->create(['cd_user_id' => $cdA->id]);
         $application = $this->buatApplicationDiajukanKeCd($project1);
@@ -149,9 +149,9 @@ class CdProjectAssignmentTest extends TestCase
 
     public function test_cd_yang_tidak_diassign_tidak_lihat_kandidat_proyek_lain(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cdA = User::factory()->create(['role' => 'casting_director']);
-        $cdB = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cdA = User::factory()->create(['role' => 'client']);
+        $cdB = User::factory()->create(['role' => 'client']);
         $project1 = $this->buatProyek($admin);
         $project2 = $this->buatProyek($admin);
         $project1->cdAssignments()->create(['cd_user_id' => $cdA->id]);
@@ -166,9 +166,9 @@ class CdProjectAssignmentTest extends TestCase
 
     public function test_cd_yang_tidak_diassign_aksi_approve_tidak_berefek(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cdA = User::factory()->create(['role' => 'casting_director']);
-        $cdB = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cdA = User::factory()->create(['role' => 'client']);
+        $cdB = User::factory()->create(['role' => 'client']);
         $project1 = $this->buatProyek($admin);
         $project1->cdAssignments()->create(['cd_user_id' => $cdA->id]);
         $application = $this->buatApplicationDiajukanKeCd($project1);
@@ -183,8 +183,8 @@ class CdProjectAssignmentTest extends TestCase
 
     public function test_cd_tanpa_assignment_sama_sekali_tidak_bisa_approve(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cdTanpaProyek = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cdTanpaProyek = User::factory()->create(['role' => 'client']);
         $project1 = $this->buatProyek($admin);
         $application = $this->buatApplicationDiajukanKeCd($project1);
 
@@ -198,7 +198,7 @@ class CdProjectAssignmentTest extends TestCase
 
     public function test_ajukan_ke_cd_gagal_kalau_proyek_belum_ada_cd_assignment(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $project = $this->buatProyek($admin);
 
         $extrasUser = User::factory()->create(['role' => 'extras']);
@@ -218,9 +218,9 @@ class CdProjectAssignmentTest extends TestCase
 
     public function test_cd_hanya_lihat_riwayat_keputusan_sendiri(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cdA = User::factory()->create(['role' => 'casting_director']);
-        $cdB = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cdA = User::factory()->create(['role' => 'client']);
+        $cdB = User::factory()->create(['role' => 'client']);
         $projectA = $this->buatProyek($admin);
         $projectB = $this->buatProyek($admin);
         $projectA->cdAssignments()->create(['cd_user_id' => $cdA->id]);
@@ -234,8 +234,8 @@ class CdProjectAssignmentTest extends TestCase
 
     public function test_riwayat_tidak_expose_fee_nama_asli_nik(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cd = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cd = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
         $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
 

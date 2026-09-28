@@ -44,9 +44,9 @@
                     <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Filter Role</label>
                     <select name="role" style="width: 100%; font-size: 13px; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-page); color: var(--text-primary); margin-top: 4px;">
                         <option value="all" @selected($roleFilter==='all')>Semua Admin/Staf</option>
-                        <option value="admin" @selected(in_array($roleFilter, ['admin','admin_default']))>Admin</option>
-                        <option value="korlap" @selected(in_array($roleFilter, ['korlap','admin_korlap']))>Korlap</option>
-                        <option value="client" @selected(in_array($roleFilter, ['client','casting_director']))>Client</option>
+                        <option value="admin" @selected($roleFilter === 'admin')>Admin</option>
+                        <option value="korlap" @selected($roleFilter === 'korlap')>Korlap</option>
+                        <option value="client" @selected($roleFilter === 'client')>Client</option>
                         <option value="extras" @selected($roleFilter==='extras')>Extras</option>
                         <option value="super_admin" @selected($roleFilter==='super_admin')>Super Admin</option>
                     </select>
@@ -184,9 +184,9 @@
 
                         <label>Role</label>
                         <select name="role" required style="width: 100%; margin-bottom: 16px;">
-                            <option value="admin" @selected($user->role === 'admin' || $user->role === 'admin_default')>Admin</option>
-                            <option value="korlap" @selected($user->role === 'korlap' || $user->role === 'admin_korlap')>Korlap</option>
-                            <option value="client" @selected($user->role === 'client' || $user->role === 'casting_director')>Client</option>
+                            <option value="admin" @selected($user->role === 'admin')>Admin</option>
+                            <option value="korlap" @selected($user->role === 'korlap')>Korlap</option>
+                            <option value="client" @selected($user->role === 'client')>Client</option>
                             <option value="extras" @selected($user->role === 'extras')>Extras</option>
                             @if (auth()->user()->is_protected)
                                 <option value="super_admin" @selected($user->role === 'super_admin')>Super Admin</option>
@@ -255,8 +255,8 @@
 
             <label>Role</label>
             <select name="role" required style="width: 100%; margin-bottom: 4px;">
-                <option value="admin" @selected(old('role') === 'admin' || old('role') === 'admin_default')>Admin (operasional proyek penuh)</option>
-                <option value="korlap" @selected(old('role') === 'korlap' || old('role') === 'admin_korlap')>Korlap (Koordinator Lapangan)</option>
+                <option value="admin" @selected(old('role') === 'admin')>Admin (operasional proyek penuh)</option>
+                <option value="korlap" @selected(old('role') === 'korlap')>Korlap (Koordinator Lapangan)</option>
                 <option value="client" @selected(old('role') === 'client')>Client / Production House</option>
                 @if (auth()->user()->is_protected)
                     <option value="super_admin" @selected(old('role') === 'super_admin')>Super Admin</option>

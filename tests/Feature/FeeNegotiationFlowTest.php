@@ -30,7 +30,7 @@ class FeeNegotiationFlowTest extends TestCase
 
     private function buatAplikasi(string $status = 'direview_admin'): ProjectApplication
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
@@ -184,7 +184,7 @@ class FeeNegotiationFlowTest extends TestCase
         $application = $this->buatAplikasi('direview_admin');
         $admin = $application->castingProject->admin;
         $extras = $application->extras->user;
-        $cd = User::factory()->create(['role' => 'casting_director']);
+        $cd = User::factory()->create(['role' => 'client']);
         $application->castingProject->cdAssignments()->create(['cd_user_id' => $cd->id]);
 
         $this->actingAs($admin)->post(route('admin.negotiations.ajukan', $application), ['nominal' => 200000]);
@@ -219,7 +219,7 @@ class FeeNegotiationFlowTest extends TestCase
     }
 
     #[DataProvider('bukanAdminDefaultProvider')]
-    public function test_role_selain_admin_default_ditolak_di_route_negosiasi_admin(string $role): void
+    public function test_role_selain_admin_ditolak_di_route_negosiasi_admin(string $role): void
     {
         $application = $this->buatAplikasi('direview_admin');
         $user = User::factory()->create(['role' => $role]);
@@ -232,9 +232,9 @@ class FeeNegotiationFlowTest extends TestCase
     {
         Excel::fake();
 
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cdA = User::factory()->create(['role' => 'casting_director']);
-        $cdB = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cdA = User::factory()->create(['role' => 'client']);
+        $cdB = User::factory()->create(['role' => 'client']);
 
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
@@ -268,8 +268,8 @@ class FeeNegotiationFlowTest extends TestCase
 
     public function test_riwayat_level1_hanya_proyek_milik_cd(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cd = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cd = User::factory()->create(['role' => 'client']);
 
         $projectA = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Ada Review', 'client_ph' => 'PH',
@@ -292,8 +292,8 @@ class FeeNegotiationFlowTest extends TestCase
 
     public function test_riwayat_level2_tidak_expose_data_terlarang(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cd = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cd = User::factory()->create(['role' => 'client']);
 
         $project = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Level2', 'client_ph' => 'PH',
@@ -324,8 +324,8 @@ class FeeNegotiationFlowTest extends TestCase
 
     public function test_export_pdf_riwayat(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cd = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cd = User::factory()->create(['role' => 'client']);
 
         $project = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'Proyek PDF', 'client_ph' => 'PH',

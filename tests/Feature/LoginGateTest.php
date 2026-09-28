@@ -14,7 +14,7 @@ class LoginGateTest extends TestCase
 
     public function test_akun_nonaktif_gagal_login(): void
     {
-        $user = User::factory()->create(['role' => 'admin_default', 'status' => 'nonaktif', 'password' => bcrypt('password')]);
+        $user = User::factory()->create(['role' => 'admin', 'status' => 'nonaktif', 'password' => bcrypt('password')]);
 
         $response = $this->from('/login')->post('/login', ['email' => $user->email, 'password' => 'password']);
 
@@ -36,7 +36,7 @@ class LoginGateTest extends TestCase
 
     public function test_akun_aktif_tetap_bisa_login(): void
     {
-        $user = User::factory()->create(['role' => 'admin_default', 'password' => bcrypt('password')]);
+        $user = User::factory()->create(['role' => 'admin', 'password' => bcrypt('password')]);
 
         $response = $this->post('/login', ['email' => $user->email, 'password' => 'password']);
 

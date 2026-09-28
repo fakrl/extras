@@ -16,7 +16,7 @@ class FieldNoteTest extends TestCase
 
     private function buatAplikasi(): ProjectApplication
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extras = ExtrasProfile::factory()->create();
         $project = CastingProject::factory()->create(['admin_id' => $admin->id]);
 
@@ -29,7 +29,7 @@ class FieldNoteTest extends TestCase
 
     public function test_korlap_bisa_tambah_catatan(): void
     {
-        $korlap = User::factory()->create(['role' => 'admin_korlap']);
+        $korlap = User::factory()->create(['role' => 'korlap']);
         $application = $this->buatAplikasi();
 
         $response = $this->actingAs($korlap)->post(route('admin.applications.catatan', $application), [
@@ -46,9 +46,9 @@ class FieldNoteTest extends TestCase
         ]);
     }
 
-    public function test_admin_default_bisa_tambah_sanksi(): void
+    public function test_admin_bisa_tambah_sanksi(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $application = $this->buatAplikasi();
 
         $response = $this->actingAs($admin)->post(route('admin.applications.catatan', $application), [
@@ -82,9 +82,7 @@ class FieldNoteTest extends TestCase
     {
         return [
             ['extras'],
-            ['casting_director'],
-            ['admin_talco'],
-            ['admin_sosmed'],
+            ['client'],
         ];
     }
 }

@@ -15,6 +15,10 @@ return new class extends Migration
 
         if (DB::getDriverName() !== 'sqlite') {
             DB::statement("ALTER TABLE payments MODIFY COLUMN status ENUM('belum_dibayar', 'ditransfer', 'dikonfirmasi_diterima', 'disengketakan') DEFAULT 'belum_dibayar'");
+        } else {
+            Schema::table('payments', function (Blueprint $table) {
+                $table->enum('status', ['belum_dibayar', 'ditransfer', 'dikonfirmasi_diterima', 'disengketakan'])->default('belum_dibayar')->change();
+            });
         }
     }
 
@@ -22,6 +26,10 @@ return new class extends Migration
     {
         if (DB::getDriverName() !== 'sqlite') {
             DB::statement("ALTER TABLE payments MODIFY COLUMN status ENUM('belum_dibayar', 'ditransfer', 'dikonfirmasi_diterima') DEFAULT 'belum_dibayar'");
+        } else {
+            Schema::table('payments', function (Blueprint $table) {
+                $table->enum('status', ['belum_dibayar', 'ditransfer', 'dikonfirmasi_diterima'])->default('belum_dibayar')->change();
+            });
         }
 
         Schema::table('payments', function (Blueprint $table) {

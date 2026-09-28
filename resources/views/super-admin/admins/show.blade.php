@@ -33,7 +33,7 @@
 </div>
 
 {{-- 2a: Kinerja + Edit Honor untuk Admin & Korlap --}}
-@if (in_array($user->role, ['admin', 'admin_default', 'admin_talco', 'admin_sosmed', 'korlap', 'admin_korlap']))
+@if (in_array($user->role, ['admin', 'korlap']))
     @php
         $totalProyek = $assignments->count();
         $selesai = $assignments->where('status_log', 'selesai_produksi')->count();

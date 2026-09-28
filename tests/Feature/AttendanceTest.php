@@ -18,7 +18,7 @@ class AttendanceTest extends TestCase
 
     private function buatAplikasi(): ProjectApplication
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
@@ -41,7 +41,7 @@ class AttendanceTest extends TestCase
 
     public function test_korlap_bisa_akses_halaman_absensi(): void
     {
-        $korlap = User::factory()->create(['role' => 'admin_korlap']);
+        $korlap = User::factory()->create(['role' => 'korlap']);
         $this->buatAplikasi();
 
         $response = $this->actingAs($korlap)->get(route('admin.attendance.index'));
@@ -49,9 +49,9 @@ class AttendanceTest extends TestCase
         $response->assertOk();
     }
 
-    public function test_admin_default_bisa_akses_halaman_absensi(): void
+    public function test_admin_bisa_akses_halaman_absensi(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $this->buatAplikasi();
 
         $response = $this->actingAs($admin)->get(route('admin.attendance.index'));
@@ -61,7 +61,7 @@ class AttendanceTest extends TestCase
 
     public function test_korlap_bisa_tandai_hadir(): void
     {
-        $korlap = User::factory()->create(['role' => 'admin_korlap']);
+        $korlap = User::factory()->create(['role' => 'korlap']);
         $application = $this->buatAplikasi();
         $shootingDate = $application->castingProject->shootingDates->first();
 
@@ -81,7 +81,7 @@ class AttendanceTest extends TestCase
 
     public function test_korlap_bisa_tandai_tidak_hadir(): void
     {
-        $korlap = User::factory()->create(['role' => 'admin_korlap']);
+        $korlap = User::factory()->create(['role' => 'korlap']);
         $application = $this->buatAplikasi();
         $shootingDate = $application->castingProject->shootingDates->first();
 
@@ -100,7 +100,7 @@ class AttendanceTest extends TestCase
 
     public function test_korlap_bisa_submit_catatan_lapangan_dari_halaman_absensi(): void
     {
-        $korlap = User::factory()->create(['role' => 'admin_korlap']);
+        $korlap = User::factory()->create(['role' => 'korlap']);
         $application = $this->buatAplikasi();
 
         $response = $this->actingAs($korlap)->post(route('admin.applications.catatan', $application), [
@@ -145,15 +145,13 @@ class AttendanceTest extends TestCase
     {
         return [
             ['extras'],
-            ['casting_director'],
-            ['admin_talco'],
-            ['admin_sosmed'],
+            ['client'],
         ];
     }
 
     public function test_submit_absen_dua_kali_update_bukan_duplikat(): void
     {
-        $korlap = User::factory()->create(['role' => 'admin_korlap']);
+        $korlap = User::factory()->create(['role' => 'korlap']);
         $application = $this->buatAplikasi();
         $shootingDate = $application->castingProject->shootingDates->first();
 
@@ -182,7 +180,7 @@ class AttendanceTest extends TestCase
 
     public function test_unique_constraint_mencegah_duplikat_langsung_di_db(): void
     {
-        $korlap = User::factory()->create(['role' => 'admin_korlap']);
+        $korlap = User::factory()->create(['role' => 'korlap']);
         $application = $this->buatAplikasi();
         $shootingDate = $application->castingProject->shootingDates->first();
 
