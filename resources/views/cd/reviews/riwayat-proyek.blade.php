@@ -67,7 +67,7 @@
                         {{ $review->created_at->format('d M Y') }}
                     </td>
                     <td>
-                        <button type="button" class="btn btn-sm btn-icon btn-lihat-profil" title="Lihat Profil">
+                        <button type="button" class="btn btn-sm btn-icon btn-lihat-profil" title="Lihat Profil" aria-label="Lihat Profil">
                             <i class="ti ti-eye"></i>
                         </button>
                     </td>
@@ -88,7 +88,7 @@
     <div class="modal-body" style="padding:20px; min-width:260px; max-width:440px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
             <div id="modal-alias" style="font-size:15px; font-weight:600;"></div>
-            <button type="button" id="modal-close" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-muted);">
+            <button type="button" id="modal-close" aria-label="Tutup" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-muted);">
                 <i class="ti ti-x"></i>
             </button>
         </div>

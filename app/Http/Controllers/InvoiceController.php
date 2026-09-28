@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
 use App\Models\CastingProject;
+use App\Services\KeuanganService;
 use App\Services\PdfGeneratorService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,7 +18,10 @@ use Illuminate\Support\Str;
  */
 class InvoiceController extends Controller
 {
-    public function __construct(private PdfGeneratorService $pdfGenerator) {}
+    public function __construct(
+        private PdfGeneratorService $pdfGenerator,
+        private KeuanganService $keuangan,
+    ) {}
 
     public function indexClient(Request $request)
     {
@@ -39,7 +43,9 @@ class InvoiceController extends Controller
 
         $castingProject->load('classes', 'applications.extras');
 
-        return view('invoices.show', compact('castingProject', 'invoice'));
+        $rincian = $this->keuangan->rincianInvoice($castingProject);
+
+        return view('invoices.show', compact('castingProject', 'invoice', 'rincian'));
     }
 
     public function sign(Request $request, CastingProject $castingProject): RedirectResponse
@@ -61,8 +67,9 @@ class InvoiceController extends Controller
 
         if ($invoice->ttd_admin_signature_path && $invoice->ttd_cd_signature_path) {
             $castingProject->load('classes', 'applications.extras');
+            $rincian = $this->keuangan->rincianInvoice($castingProject);
             $path = "invoices/pdf/{$castingProject->id}.pdf";
-            $this->pdfGenerator->generate('invoices.pdf-template', compact('castingProject', 'invoice'), $path);
+            $this->pdfGenerator->generate('invoices.pdf-template', compact('castingProject', 'invoice', 'rincian'), $path);
             $invoice->update(['pdf_path' => $path]);
         }
 

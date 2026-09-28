@@ -99,8 +99,7 @@
             @endphp
 
             <div class="kandidat-card"
-                style="position: relative; border: {{ $isPending ? '2px solid var(--accent-strong)' : '1px solid var(--border-color)' }}; border-radius: 12px; overflow: hidden; cursor: pointer; background: var(--bg-card);"
-                onclick="bukaModalKandidat({{ $app->id }})"
+                style="position: relative; border: {{ $isPending ? '2px solid var(--accent-strong)' : '1px solid var(--border-color)' }}; border-radius: 12px; overflow: hidden; background: var(--bg-card);"
                 data-appid="{{ $app->id }}"
                 data-alias="{{ $app->extras->user->username ?? '-' }}"
                 data-foto="{{ $app->extras->foto_profil_path ? route('extras.media.foto', $app->extras) : '' }}"
@@ -123,34 +122,38 @@
                 data-riwayat-reject="{{ $riwayatReject }}"
                 data-fotos="{{ json_encode(array_column($fotosArr, 'url')) }}"
             >
-                <div style="position: absolute; top: 6px; right: 6px; z-index: 1;">
-                    <span class="badge {{ $statusBadge }}" style="font-size: var(--fs-xs);">{{ $statusLabel }}</span>
-                </div>
+                <button type="button" onclick="bukaModalKandidat({{ $app->id }})"
+                    aria-label="Lihat detail {{ $app->extras->user->username ?? 'kandidat' }}"
+                    style="all: unset; box-sizing: border-box; display: block; width: 100%; cursor: pointer; text-align: left;">
+                    <div style="position: absolute; top: 6px; right: 6px; z-index: 1;">
+                        <span class="badge {{ $statusBadge }}" style="font-size: var(--fs-xs);">{{ $statusLabel }}</span>
+                    </div>
+
+                    <div style="aspect-ratio: 3/4; background: var(--bg-nav-active); overflow: hidden;">
+                        @if ($app->extras->foto_profil_path)
+                            <img src="{{ route('extras.media.foto', $app->extras) }}" alt="{{ $app->extras->user->username ?? '' }}"
+                                 style="width: 100%; height: 100%; object-fit: cover;">
+                        @else
+                            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+                                <i class="ti ti-user" style="font-size: 36px;"></i>
+                            </div>
+                        @endif
+                    </div>
+
+                    <div style="padding: 6px 8px 2px; font-size: var(--fs-xs); color: var(--text-secondary);">
+                        {{ $app->karakter ?: ($app->castingProjectClass->nama_kelas ?? '-') }}
+                        @if($app->extras->usia) · {{ $app->extras->usia }} th @endif
+                    </div>
+                    <div style="padding: 8px; font-size: 12.5px; font-weight: 600; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        {{ $app->extras->user->username ?? '-' }}
+                    </div>
+                </button>
 
                 @if ($isPending)
-                    <div style="position: absolute; top: 6px; left: 6px; z-index: 2;" onclick="event.stopPropagation()">
+                    <div style="position: absolute; top: 6px; left: 6px; z-index: 2;">
                         <input type="checkbox" name="application_ids[]" value="{{ $app->id }}" class="app-checkbox">
                     </div>
                 @endif
-
-                <div style="aspect-ratio: 3/4; background: var(--bg-nav-active); overflow: hidden;">
-                    @if ($app->extras->foto_profil_path)
-                        <img src="{{ route('extras.media.foto', $app->extras) }}" alt="{{ $app->extras->user->username ?? '' }}"
-                             style="width: 100%; height: 100%; object-fit: cover;">
-                    @else
-                        <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
-                            <i class="ti ti-user" style="font-size: 36px;"></i>
-                        </div>
-                    @endif
-                </div>
-
-                <div style="padding: 6px 8px 2px; font-size: var(--fs-xs); color: var(--text-secondary);">
-                    {{ $app->karakter ?: ($app->castingProjectClass->nama_kelas ?? '-') }}
-                    @if($app->extras->usia) · {{ $app->extras->usia }} th @endif
-                </div>
-                <div style="padding: 8px; font-size: 12.5px; font-weight: 600; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    {{ $app->extras->user->username ?? '-' }}
-                </div>
             </div>
         @empty
             <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 30px 0;">
@@ -173,7 +176,7 @@
     <div style="padding: 20px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
             <div id="mk-alias" style="font-size: 16px; font-weight: 700;"></div>
-            <button type="button" onclick="document.getElementById('modal-kandidat').close()" style="background: none; border: none; cursor: pointer; font-size: 20px; color: var(--text-muted);"><i class="ti ti-x"></i></button>
+            <button type="button" onclick="document.getElementById('modal-kandidat').close()" aria-label="Tutup" style="background: none; border: none; cursor: pointer; font-size: 20px; color: var(--text-muted);"><i class="ti ti-x"></i></button>
         </div>
 
         <div style="text-align: center; margin-bottom: 12px;">
@@ -215,11 +218,11 @@
     style="border:1px solid var(--border-color); border-radius:12px; padding:0; background:#000; max-width:95vw; position:relative;"
     data-fotos="[]" data-current="0">
     <img id="mk-lb-img" src="" alt="" style="max-width:90vw; max-height:90vh; object-fit:contain; display:block;">
-    <button type="button" onclick="document.getElementById('mk-lb-dialog').close()"
+    <button type="button" onclick="document.getElementById('mk-lb-dialog').close()" aria-label="Tutup"
         style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,.6); color:#fff; border:none; border-radius:50%; width:28px; height:28px; cursor:pointer; font-size:16px; line-height:1;">×</button>
-    <button type="button" id="mk-lb-prev"
+    <button type="button" id="mk-lb-prev" aria-label="Foto sebelumnya"
         style="position:absolute; top:50%; left:8px; transform:translateY(-50%); background:rgba(0,0,0,.6); color:#fff; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:20px; line-height:1; display:none;">‹</button>
-    <button type="button" id="mk-lb-next"
+    <button type="button" id="mk-lb-next" aria-label="Foto berikutnya"
         style="position:absolute; top:50%; right:8px; transform:translateY(-50%); background:rgba(0,0,0,.6); color:#fff; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:20px; line-height:1; display:none;">›</button>
 </dialog>
 @endsection
@@ -232,8 +235,11 @@
     });
 
     document.getElementById('btn-bulk-reject')?.addEventListener('click', function () {
-        var any = Array.from(document.querySelectorAll('.app-checkbox')).some(function (cb) { return cb.checked; });
-        if (!any) { alert('Centang minimal 1 kandidat.'); return; }
+        var jumlah = Array.from(document.querySelectorAll('.app-checkbox')).filter(function (cb) { return cb.checked; }).length;
+        if (!jumlah) { alert('Centang minimal 1 kandidat.'); return; }
+        if (!confirm('Reject ' + jumlah + ' kandidat terpilih? Kandidat yang direject tidak bisa diajukan ulang ke proyek ini.')) return;
+        this.disabled = true;
+        this.textContent = 'Memproses…';
         document.getElementById('hidden-grade-cd').value = '';
         document.getElementById('hidden-keputusan').value = 'reject';
         document.getElementById('form-review').submit();

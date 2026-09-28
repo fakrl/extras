@@ -50,23 +50,36 @@
             <button class="btn btn-brand">Ajukan Fee Awal</button>
         </form>
     @else
+        @php $nominalTerakhir = $application->feeNegotiations->last()->nominal; @endphp
         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-            <form method="POST" action="{{ route('admin.negotiations.terima', $application) }}" style="display: flex; gap: 8px;">
-                @csrf
-                <input type="hidden" name="nominal" value="{{ $application->feeNegotiations->last()->nominal }}">
-                <button class="btn btn-brand">Terima (Rp {{ number_format($application->feeNegotiations->last()->nominal, 0, ',', '.') }})</button>
-            </form>
+            <x-confirm-form action="{{ route('admin.negotiations.terima', $application) }}" message="Terima Rp {{ number_format($nominalTerakhir, 0, ',', '.') }} untuk {{ $application->extras->user->name }}? Fee akan terkunci dan tidak bisa dinego ulang.">
+                <input type="hidden" name="nominal" value="{{ $nominalTerakhir }}">
+                <button type="submit" class="btn btn-brand">Terima Rp {{ number_format($nominalTerakhir, 0, ',', '.') }} untuk {{ $application->extras->user->name }}</button>
+            </x-confirm-form>
             <form method="POST" action="{{ route('admin.negotiations.counter', $application) }}" style="display: flex; gap: 8px; flex-wrap: wrap;">
                 @csrf
                 <input type="number" name="nominal" class="input-inline" placeholder="Nominal counter" required style="width: 140px;">
                 <input type="text" name="catatan" class="input-inline" placeholder="Catatan/alasan counter (opsional)" style="min-width: 180px;">
                 <button class="btn">Counter</button>
             </form>
-            <form method="POST" action="{{ route('admin.negotiations.tolak', $application) }}">
-                @csrf
-                <button class="btn btn-danger-outline">Hentikan Negosiasi</button>
-            </form>
         </div>
+
+        <div style="margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+            <button type="button" class="btn btn-sm btn-danger-outline" onclick="document.getElementById('hentikan-nego-dialog').showModal()">Hentikan Negosiasi</button>
+        </div>
+
+        <dialog id="hentikan-nego-dialog" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 380px; width: 90%;">
+            <form method="POST" action="{{ route('admin.negotiations.tolak', $application) }}" style="padding: 18px;">
+                @csrf
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Hentikan negosiasi fee untuk {{ $application->extras->user->name }}?</div>
+                <p style="font-size: var(--fs-sm); color: var(--text-secondary); margin: 0 0 10px;">Pendaftar ini tidak bisa lanjut ke proses berikutnya. Jelaskan alasannya.</p>
+                <textarea name="alasan" rows="3" required placeholder="Alasan menghentikan negosiasi" style="width: 100%; margin-bottom: 12px;"></textarea>
+                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
+                    <button type="submit" class="btn btn-sm btn-danger-outline">Hentikan Negosiasi</button>
+                </div>
+            </form>
+        </dialog>
     @endif
 </div>
 @endsection

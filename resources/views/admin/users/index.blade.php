@@ -35,10 +35,9 @@
                         </span>
                     </td>
                     <td>
-                        <form method="POST" action="{{ route('admin.users.toggle-status', $cd) }}">
-                            @csrf @method('PATCH')
-                            <button class="btn btn-sm" title="Ubah Status"><i class="ti ti-power"></i></button>
-                        </form>
+                        <x-confirm-form action="{{ route('admin.users.toggle-status', $cd) }}" method="PATCH" message="{{ $cd->status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }} akun {{ $cd->name }}?">
+                            <button type="submit" class="btn btn-sm" aria-label="{{ $cd->status === 'aktif' ? 'Nonaktifkan akun' : 'Aktifkan akun' }}"><i class="ti ti-power"></i> {{ $cd->status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }}</button>
+                        </x-confirm-form>
                     </td>
                 </tr>
             @endforeach
@@ -127,10 +126,9 @@
                                 <i class="ti ti-user"></i> Lihat Profil
                             </a>
                         @endif
-                        <form method="POST" action="{{ route('admin.users.toggle-status', $ex) }}" style="display:inline;">
-                            @csrf @method('PATCH')
-                            <button class="btn btn-sm" title="Ubah Status"><i class="ti ti-power"></i></button>
-                        </form>
+                        <x-confirm-form action="{{ route('admin.users.toggle-status', $ex) }}" method="PATCH" style="display:inline;" message="{{ $ex->status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }} akun {{ $ex->name }}?">
+                            <button type="submit" class="btn btn-sm" aria-label="{{ $ex->status === 'aktif' ? 'Nonaktifkan akun' : 'Aktifkan akun' }}"><i class="ti ti-power"></i> {{ $ex->status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }}</button>
+                        </x-confirm-form>
                     </td>
                 </tr>
             @endforeach

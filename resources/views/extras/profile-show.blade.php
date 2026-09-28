@@ -155,14 +155,14 @@
     <div style="padding:20px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
             <span style="font-size:15px; font-weight:600;">Bagikan Profil Kamu</span>
-            <button type="button" onclick="document.getElementById('modal-share').close()"
+            <button type="button" onclick="document.getElementById('modal-share').close()" aria-label="Tutup"
                 style="background:none; border:none; cursor:pointer; font-size:20px; color:var(--text-muted); line-height:1;">×</button>
         </div>
 
         <div style="display:flex; gap:8px; margin-bottom:16px;">
             <input id="share-url-modal" readonly type="text" value="{{ route('public.extras.profile', $profile->share_token) }}"
                 style="flex:1; font-size:12px; padding:8px 10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-card-hover); color:var(--text-primary); min-width:0;">
-            <button type="button" id="btn-copy-link" title="Salin link"
+            <button type="button" id="btn-copy-link" title="Salin link" aria-label="Salin link"
                 style="flex-shrink:0; align-self:stretch; padding:0 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-card-hover); cursor:pointer; color:var(--text-primary); display:flex; align-items:center;">
                 <i class="ti ti-copy" style="font-size:16px; line-height:1; display:block;"></i>
             </button>

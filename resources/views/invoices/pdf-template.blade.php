@@ -18,14 +18,18 @@
     <table>
         <thead><tr><th>Kelas</th><th>Kuota</th><th>Budget per Orang</th><th>Subtotal</th></tr></thead>
         <tbody>
-            @foreach ($castingProject->classes as $class)
+            @foreach ($rincian->rows as $row)
                 <tr>
-                    <td>{{ $class->nama_kelas }}</td>
-                    <td>{{ $class->kuota_kelas }}</td>
-                    <td>Rp {{ number_format($class->budget_client, 0, ',', '.') }}</td>
-                    <td>Rp {{ number_format($class->budget_client * $class->kuota_kelas, 0, ',', '.') }}</td>
+                    <td>{{ $row->nama_kelas }}</td>
+                    <td>{{ $row->kuota_kelas }}</td>
+                    <td>Rp {{ number_format($row->budget_client, 0, ',', '.') }}</td>
+                    <td>Rp {{ number_format($row->subtotal, 0, ',', '.') }}</td>
                 </tr>
             @endforeach
+            <tr>
+                <td colspan="3" style="text-align:right; font-weight:bold;">Total</td>
+                <td style="font-weight:bold;">Rp {{ number_format($rincian->total, 0, ',', '.') }}</td>
+            </tr>
         </tbody>
     </table>
 

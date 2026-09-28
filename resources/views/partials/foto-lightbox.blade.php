@@ -20,12 +20,12 @@
     data-fotos="{{ json_encode(array_column($fotos, 'url')) }}"
     data-current="0">
     <img id="{{ $imgId }}" src="" alt="" style="max-width:90vw; max-height:90vh; object-fit:contain; display:block;">
-    <button type="button" onclick="document.getElementById('{{ $dlgId }}').close()"
-        style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,.6); color:#fff; border:none; border-radius:50%; width:28px; height:28px; cursor:pointer; font-size:16px; line-height:1;">×</button>
+    <button type="button" onclick="document.getElementById('{{ $dlgId }}').close()" aria-label="Tutup"
+        style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,.6); color:#fff; border:none; border-radius:50%; width:44px; height:44px; cursor:pointer; font-size:16px; line-height:1;">×</button>
     @if (count($fotos) > 1)
-        <button type="button" onclick="_lbPrev('{{ $lightboxId }}')"
+        <button type="button" onclick="_lbPrev('{{ $lightboxId }}')" aria-label="Foto sebelumnya"
             style="position:absolute; top:50%; left:8px; transform:translateY(-50%); background:rgba(0,0,0,.6); color:#fff; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:20px; line-height:1;">‹</button>
-        <button type="button" onclick="_lbNext('{{ $lightboxId }}')"
+        <button type="button" onclick="_lbNext('{{ $lightboxId }}')" aria-label="Foto berikutnya"
             style="position:absolute; top:50%; right:8px; transform:translateY(-50%); background:rgba(0,0,0,.6); color:#fff; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:20px; line-height:1;">›</button>
     @endif
 </dialog>

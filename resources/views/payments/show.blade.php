@@ -21,14 +21,30 @@
     @endif
 </div>
 
+@php $totalHonor = $application->fee_final + $application->payment->addons->sum('nominal'); @endphp
+
+@if (auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
+    <div class="card" style="margin-bottom: 14px;">
+        <div style="font-size: 14px; font-weight: 500; margin-bottom: 8px;">Rekening Tujuan Transfer</div>
+        <p style="margin: 0 0 4px;">{{ $application->extras->rekening ?: 'Extras belum mengisi nomor rekening.' }}</p>
+        <p style="margin: 0; font-weight: 600;">Total dibayar: Rp {{ number_format($totalHonor, 0, ',', '.') }}</p>
+    </div>
+@endif
+
 @if (auth()->user()->isAdmin() && $application->payment->status === 'belum_dibayar')
     <div class="card" style="margin-bottom: 14px;">
-        <form method="POST" action="{{ route('payments.transfer', $application) }}" enctype="multipart/form-data">
-            @csrf
+        <x-confirm-form action="{{ route('payments.transfer', $application) }}" enctype="multipart/form-data" message="Tandai Rp {{ number_format($totalHonor, 0, ',', '.') }} sudah ditransfer ke {{ $application->extras->user->name }}? Aksi ini cuma bisa sekali.">
             <label>Unggah Bukti Transfer</label>
             <input type="file" name="bukti_transfer" accept=".jpg,.jpeg,.png,.pdf" required style="margin-bottom: 10px;">
-            <button type="submit" class="btn btn-brand">Tandai Sudah Ditransfer</button>
-        </form>
+            <button type="submit" class="btn btn-brand">Tandai Sudah Ditransfer (Rp {{ number_format($totalHonor, 0, ',', '.') }})</button>
+        </x-confirm-form>
+    </div>
+@endif
+
+@if (auth()->user()->role === 'extras' && in_array($application->payment->status, ['ditransfer', 'disengketakan', 'dikonfirmasi_diterima'], true) && $application->payment->bukti_transfer_path)
+    <div class="card" style="margin-bottom: 14px;">
+        <p style="margin: 0 0 4px;"><a href="{{ route('payments.bukti', $application) }}" target="_blank">Lihat Bukti Transfer</a></p>
+        <p style="margin: 0; color: var(--text-secondary); font-size: var(--fs-sm);">Ditransfer pada: {{ $application->payment->ditransfer_at?->format('d M Y H:i') }}</p>
     </div>
 @endif
 
@@ -42,8 +58,8 @@
 @endif
 
 @if (auth()->user()->role === 'extras' && $application->payment->status === 'ditransfer')
-    <x-confirm-form :action="route('payments.confirm', $application)" message="Konfirmasi kamu sudah menerima pembayaran ini?">
-        <button type="submit" class="btn btn-brand">Konfirmasi Sudah Terima</button>
+    <x-confirm-form :action="route('payments.confirm', $application)" message="Konfirmasi kamu sudah menerima Rp {{ number_format($totalHonor, 0, ',', '.') }}? Proyek ini akan ditandai selesai setelah ini.">
+        <button type="submit" class="btn btn-brand">Konfirmasi Sudah Terima (Rp {{ number_format($totalHonor, 0, ',', '.') }})</button>
     </x-confirm-form>
     <div style="margin-top: 12px;">
         <button onclick="var f=document.getElementById('form-sengketa');f.style.display=f.style.display==='none'?'block':'none'" class="btn btn-sm" style="background: var(--warning, #eab308); color: #000;">

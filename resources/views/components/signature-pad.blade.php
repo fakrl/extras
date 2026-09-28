@@ -10,11 +10,12 @@
 @props(['name'])
 
 <div class="signature-pad-wrap" style="text-align: center;">
-    <canvas id="canvas-{{ $name }}" width="500" height="200"
-            style="border:1px solid #ccc; border-radius:8px; background:#fff; touch-action:none; max-width:100%; display:inline-block;"></canvas>
+    <p style="font-size: var(--fs-sm); color: var(--text-secondary); margin: 0 0 6px;">Tanda tangan di dalam kotak</p>
+    <canvas id="canvas-{{ $name }}"
+            style="border:1px solid var(--border-color); border-radius:8px; background:#fff; touch-action:none; width:100%; height:180px; display:block;"></canvas>
     <input type="hidden" name="{{ $name }}" id="input-{{ $name }}">
     <div style="margin-top: 8px;">
-        <button type="button" class="btn btn-sm" onclick="clearSignature('{{ $name }}')">Hapus & Ulangi</button>
+        <button type="button" class="btn btn-sm" onclick="clearSignature('{{ $name }}')">Ulangi (Hapus Tanda Tangan)</button>
     </div>
 </div>
 
@@ -23,34 +24,52 @@
     <script>
         var signaturePads = {};
 
-        function initSignaturePad(name) {
+        function sizeSignatureCanvas(name) {
             var canvas = document.getElementById('canvas-' + name);
+            var dpr = window.devicePixelRatio || 1;
+            var rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
             var ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            ctx.strokeStyle = '#0B1A12';
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            signaturePads[name] = { canvas: canvas, ctx: ctx };
+        }
+
+        function initSignaturePad(name) {
+            sizeSignatureCanvas(name);
+            var canvas = signaturePads[name].canvas;
             var drawing = false;
             var lastX = 0, lastY = 0;
-
-            ctx.strokeStyle = '#0B1A12';
-            ctx.lineWidth = 2;
-            ctx.lineCap = 'round';
 
             function pos(e) {
                 var rect = canvas.getBoundingClientRect();
                 var clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 var clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                return {
-                    x: (clientX - rect.left) * (canvas.width / rect.width),
-                    y: (clientY - rect.top) * (canvas.height / rect.height),
-                };
+                return { x: clientX - rect.left, y: clientY - rect.top };
+            }
+
+            function dot(p) {
+                var ctx = signaturePads[name].ctx;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, signaturePads[name].ctx.lineWidth / 2, 0, Math.PI * 2);
+                ctx.fillStyle = '#0B1A12';
+                ctx.fill();
             }
 
             function start(e) {
                 drawing = true;
                 var p = pos(e);
                 lastX = p.x; lastY = p.y;
+                dot(p);
+                syncSignature(name);
             }
             function move(e) {
                 if (!drawing) return;
                 e.preventDefault();
+                var ctx = signaturePads[name].ctx;
                 var p = pos(e);
                 ctx.beginPath();
                 ctx.moveTo(lastX, lastY);
@@ -69,7 +88,11 @@
             canvas.addEventListener('touchmove', move);
             canvas.addEventListener('touchend', end);
 
-            signaturePads[name] = { canvas: canvas, ctx: ctx };
+            var resizeTimer;
+            window.addEventListener('resize', function () {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(function () { sizeSignatureCanvas(name); }, 200);
+            });
         }
 
         function syncSignature(name) {

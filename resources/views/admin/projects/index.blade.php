@@ -31,7 +31,7 @@
             <div class="entity-card project-card" style="position: relative;"
                  data-search="{{ strtolower($project->nama_produksi . ' ' . $project->client_ph . ' ' . $project->status) }}">
                 <details style="position: absolute; top: 10px; right: 10px; z-index: 10;">
-                    <summary style="list-style: none; cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card);">
+                    <summary aria-label="Menu proyek" style="list-style: none; cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card);">
                         <i class="ti ti-dots-vertical"></i>
                     </summary>
                     <div style="position: absolute; right: 0; top: 36px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; min-width: 160px; box-shadow: 0 4px 12px rgba(0,0,0,.12); padding: 4px 0; z-index: 20;">

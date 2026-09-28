@@ -74,11 +74,15 @@ class FeeNegotiationController extends Controller
     /**
      * RF-18: Admin menghentikan proses negosiasi.
      */
-    public function tolak(ProjectApplication $application): RedirectResponse
+    public function tolak(Request $request, ProjectApplication $application): RedirectResponse
     {
         $application->pastikanMasihBisaNego();
 
-        $application->tolakNegosiasi('admin');
+        $data = $request->validate([
+            'alasan' => ['required', 'string', 'max:500'],
+        ]);
+
+        $application->tolakNegosiasi('admin', $data['alasan']);
 
         return back()->with('status', 'Negosiasi fee dihentikan.');
     }

@@ -37,7 +37,7 @@
             <option value="90d" {{ $period === '90d' ? 'selected' : '' }}>90 Hari</option>
         </select>
 
-        <button type="submit" class="btn btn-sm btn-brand"><i class="ti ti-search"></i></button>
+        <button type="submit" class="btn btn-sm btn-brand" aria-label="Cari"><i class="ti ti-search"></i></button>
         @if ($search || $entityFilter !== 'all' || $roleFilter !== 'all')
             <a href="{{ route('super-admin.activity-logs', ['period' => $period]) }}" class="btn btn-sm">Reset</a>
         @endif

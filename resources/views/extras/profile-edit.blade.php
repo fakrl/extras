@@ -121,10 +121,9 @@
                     <div id="progress-slot-{{ $slot }}" class="upload-spinner"></div>
                     <span id="err-slot-{{ $slot }}" class="upload-error-msg"></span>
                     @if ($foto)
-                        <form method="POST" action="{{ route('extras.profile.foto-tambahan.hapus', $slot) }}" style="margin-top: 4px;">
-                            @csrf @method('DELETE')
+                        <x-confirm-form action="{{ route('extras.profile.foto-tambahan.hapus', $slot) }}" method="DELETE" style="margin-top: 4px;" message="Hapus foto galeri ini? Foto yang sudah dihapus tidak bisa dikembalikan.">
                             <button type="submit" class="btn btn-sm btn-danger-outline" style="width: 100%;">Hapus</button>
-                        </form>
+                        </x-confirm-form>
                     @endif
                 </div>
             @endforeach
@@ -218,19 +217,32 @@
             <div class="profile-section-title">Tautan Tambahan</div>
             <p class="field-hint" style="margin-top: -4px;">Instagram, TikTok, portofolio, atau tautan lain (opsional, dapat lebih dari satu).</p>
 
-            @php $existingTautan = old('tautan_label') ? [] : ($profile->tautan_tambahan ?? []); @endphp
+            @php
+                if (old('tautan_label')) {
+                    $existingTautan = collect(old('tautan_label'))->map(fn ($label, $i) => [
+                        'label' => $label,
+                        'url' => old('tautan_url')[$i] ?? '',
+                    ])->all();
+                } else {
+                    $existingTautan = $profile->tautan_tambahan ?? [];
+                }
+            @endphp
             <div id="tautan-wrap">
                 @forelse ($existingTautan as $i => $tautan)
                     <div class="tautan-row">
-                        <input type="text" name="tautan_label[]" value="{{ $tautan['label'] }}" placeholder="Nama (contoh: Instagram)" class="input-inline" style="flex: 0 0 130px;">
-                        <input type="url" name="tautan_url[]" value="{{ $tautan['url'] }}" placeholder="https://..." class="input-inline">
-                        <button type="button" class="btn-icon-danger btn-remove-tautan">&times;</button>
+                        <label for="tautan_label_{{ $i }}" class="sr-only">Nama tautan</label>
+                        <input type="text" name="tautan_label[]" id="tautan_label_{{ $i }}" value="{{ $tautan['label'] }}" placeholder="Nama (contoh: Instagram)" class="input-inline" style="flex: 0 0 130px;">
+                        <label for="tautan_url_{{ $i }}" class="sr-only">URL tautan</label>
+                        <input type="url" name="tautan_url[]" id="tautan_url_{{ $i }}" value="{{ $tautan['url'] }}" placeholder="https://..." class="input-inline">
+                        <button type="button" class="btn-icon-danger btn-remove-tautan" aria-label="Hapus tautan ini">&times;</button>
                     </div>
                 @empty
                     <div class="tautan-row">
-                        <input type="text" name="tautan_label[]" placeholder="Nama (contoh: Instagram)" class="input-inline" style="flex: 0 0 130px;">
-                        <input type="url" name="tautan_url[]" placeholder="https://..." class="input-inline">
-                        <button type="button" class="btn-icon-danger btn-remove-tautan" style="display:none">&times;</button>
+                        <label for="tautan_label_0" class="sr-only">Nama tautan</label>
+                        <input type="text" name="tautan_label[]" id="tautan_label_0" placeholder="Nama (contoh: Instagram)" class="input-inline" style="flex: 0 0 130px;">
+                        <label for="tautan_url_0" class="sr-only">URL tautan</label>
+                        <input type="url" name="tautan_url[]" id="tautan_url_0" placeholder="https://..." class="input-inline">
+                        <button type="button" class="btn-icon-danger btn-remove-tautan" aria-label="Hapus tautan ini" style="display:none">&times;</button>
                     </div>
                 @endforelse
             </div>
@@ -342,7 +354,7 @@
         row.innerHTML =
             '<input type="text" name="tautan_label[]" placeholder="Nama (contoh: Instagram)" class="input-inline" style="flex: 0 0 130px;">' +
             '<input type="url" name="tautan_url[]" placeholder="https://..." class="input-inline">' +
-            '<button type="button" class="btn-icon-danger btn-remove-tautan">&times;</button>';
+            '<button type="button" class="btn-icon-danger btn-remove-tautan" aria-label="Hapus tautan ini">&times;</button>';
         wrap.appendChild(row);
         updateRemoveButtons();
     });

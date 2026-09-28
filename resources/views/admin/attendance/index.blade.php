@@ -101,9 +101,9 @@
                     @if ($absen && $absen->status_validasi === 'menunggu')
                         <form method="POST" action="{{ route('admin.absensi.validasi', $absen) }}">
                             @csrf
-                            <button class="btn btn-brand btn-sm" title="Setujui selfie kehadiran extras"><i class="ti ti-check"></i> Setujui Hadir</button>
+                            <button class="btn btn-brand" title="Setujui selfie kehadiran extras"><i class="ti ti-check"></i> Setujui Hadir</button>
                         </form>
-                        <button type="button" class="btn btn-danger-outline btn-sm" onclick="document.getElementById('tolak-dialog-{{ $absen->id }}').showModal()"><i class="ti ti-x"></i> Tolak</button>
+                        <button type="button" class="btn btn-danger-outline" style="margin-left: 12px;" onclick="document.getElementById('tolak-dialog-{{ $absen->id }}').showModal()"><i class="ti ti-x"></i> Tolak</button>
                         <dialog id="tolak-dialog-{{ $absen->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
                             <form method="POST" action="{{ route('admin.absensi.tolak', $absen) }}" style="padding: 18px;">
                                 @csrf
@@ -111,8 +111,8 @@
                                 <label style="font-size: 12.5px;">Alasan penolakan</label>
                                 <textarea name="alasan" rows="3" required placeholder="Tulis alasan penolakan..." style="width: 100%; margin-bottom: 12px;"></textarea>
                                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                                    <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
-                                    <button type="submit" class="btn btn-sm btn-danger-outline">Tolak</button>
+                                    <button type="button" class="btn" onclick="this.closest('dialog').close()">Batal</button>
+                                    <button type="submit" class="btn btn-danger-outline">Tolak</button>
                                 </div>
                             </form>
                         </dialog>
@@ -121,20 +121,19 @@
                             @csrf
                             <input type="hidden" name="event_shooting_date_id" value="{{ $shootingDate->id }}">
                             <input type="hidden" name="status" value="hadir">
-                            <button class="btn btn-brand btn-sm">Hadir</button>
+                            <button class="btn btn-brand">Hadir</button>
                         </form>
-                        <form method="POST" action="{{ route('admin.attendance.store', $app) }}">
-                            @csrf
+                        <x-confirm-form action="{{ route('admin.attendance.store', $app) }}" message="Tandai {{ $app->extras->user->username ?? 'extras ini' }} Tidak Hadir? Ini memengaruhi perhitungan honor." style="margin-left: 12px;">
                             <input type="hidden" name="event_shooting_date_id" value="{{ $shootingDate->id }}">
                             <input type="hidden" name="status" value="tidak_hadir">
-                            <button class="btn btn-danger-outline btn-sm">Tidak Hadir</button>
-                        </form>
+                            <button type="submit" class="btn btn-danger-outline">Tidak Hadir</button>
+                        </x-confirm-form>
                     @endif
 
-                    <button type="button" class="btn btn-sm" onclick="document.getElementById('foto-dialog-{{ $app->id }}').showModal()" title="Foto onsite langsung oleh Korlap">
+                    <button type="button" class="btn" style="margin-left: 12px;" onclick="document.getElementById('foto-dialog-{{ $app->id }}').showModal()" title="Foto onsite langsung oleh Korlap">
                         <i class="ti ti-camera"></i> Foto Korlap
                     </button>
-                    <button type="button" class="btn btn-sm" onclick="document.getElementById('catatan-dialog-{{ $app->id }}').showModal()">Catatan</button>
+                    <button type="button" class="btn" onclick="document.getElementById('catatan-dialog-{{ $app->id }}').showModal()">Catatan</button>
                 </div>
             </div>
         </div>
@@ -150,8 +149,8 @@
                 <input type="file" name="foto" accept="image/*" capture="environment" required style="width: 100%; margin-bottom: 12px;">
                 <textarea name="catatan" rows="2" placeholder="Catatan kehadiran (opsional)..." style="width: 100%; margin-bottom: 12px;"></textarea>
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                    <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
-                    <button type="submit" class="btn btn-sm btn-brand">Simpan & Tandai Hadir</button>
+                    <button type="button" class="btn" onclick="this.closest('dialog').close()">Batal</button>
+                    <button type="submit" class="btn btn-brand">Simpan & Tandai Hadir</button>
                 </div>
             </form>
         </dialog>
@@ -167,8 +166,8 @@
                 </select>
                 <textarea name="isi" rows="3" required placeholder="Isi catatan/sanksi" style="width: 100%; margin-bottom: 12px;"></textarea>
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                    <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
-                    <button type="submit" class="btn btn-sm btn-brand">Simpan</button>
+                    <button type="button" class="btn" onclick="this.closest('dialog').close()">Batal</button>
+                    <button type="submit" class="btn btn-brand">Simpan</button>
                 </div>
             </form>
         </dialog>
