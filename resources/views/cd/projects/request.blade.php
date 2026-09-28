@@ -7,7 +7,7 @@
     <div>
         <div style="font-size: 16px; font-weight: 600;">Ajukan Permintaan Proyek Baru</div>
         <p style="color: var(--text-muted); font-size: 13px; margin: 2px 0 0;">
-            Kirimkan brief kebutuhan talent extras untuk ditinjau dan disetujui oleh Super Admin JBTB.
+            Kirimkan brief kebutuhan talent extras untuk ditinjau dan disetujui oleh tim JBTB.
         </p>
     </div>
 </div>
@@ -76,7 +76,7 @@
                             <td style="padding: 10px 8px;">{{ $req->deadline?->format('d/m/Y') }}</td>
                             <td style="padding: 10px 8px;">
                                 @if ($req->client_request_status === 'disetujui')
-                                    <span class="badge badge-aktif">Disetujui Super Admin</span>
+                                    <span class="badge badge-aktif">Disetujui tim JBTB</span>
                                 @elseif ($req->client_request_status === 'ditolak')
                                     <span class="badge badge-tolak">Ditolak</span>
                                 @else

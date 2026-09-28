@@ -3,5 +3,5 @@
 @php $route = request()->path(); @endphp
 <div class="sidebar-group-label">Lapangan</div>
 <a href="{{ url('/admin/absensi') }}" class="sidebar-link {{ str_starts_with($route, 'admin/absensi') ? 'active' : '' }}">
-    <i class="ti ti-clipboard-check"></i> Absensi
+    <i class="ti ti-clipboard-check"></i> Absensi Lapangan
 </a>

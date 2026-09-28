@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable([
     'admin_id', 'nama_produksi', 'client_ph', 'poster_path', 'cover_path',
     'share_token', 'wa_group_link', 'link_grup', 'deadline', 'kuota',
-    'is_urgent', 'status', 'client_request_status', 'diajukan_oleh_client_id', 'brief_catatan',
+    'is_urgent', 'status', 'client_request_status', 'diajukan_oleh_client_id', 'brief_catatan', 'alasan_tolak',
 ])]
 class CastingProject extends Model
 {

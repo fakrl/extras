@@ -59,7 +59,7 @@
 <div class="card" style="margin-bottom: 20px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
         <div class="card-title" style="margin: 0;"><i class="ti ti-camera"></i> Absensi Lapangan</div>
-        <a href="{{ route('super-admin.attendance.index') }}" class="btn btn-sm btn-brand">Kelola Absensi &rarr;</a>
+        <a href="{{ route('super-admin.attendance.index') }}" class="btn btn-sm btn-brand">Absensi Lapangan &rarr;</a>
     </div>
 
     @forelse ($absensiPerProyek as $namaProyek => $attendances)
@@ -85,7 +85,7 @@
                                 <td><span class="badge {{ $att->status === 'hadir' ? 'badge-aktif' : 'badge-tolak' }}">{{ $att->status === 'hadir' ? 'Hadir' : 'Tidak' }}</span></td>
                                 <td>
                                     @if ($att->status_validasi === 'tervalidasi')
-                                        <span class="badge badge-aktif">Validated</span>
+                                        <span class="badge badge-aktif">Tervalidasi</span>
                                     @else
                                         <span class="badge badge-pending">Menunggu</span>
                                     @endif

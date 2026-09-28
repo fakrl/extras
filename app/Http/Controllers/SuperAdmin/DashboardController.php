@@ -178,15 +178,22 @@ class DashboardController extends Controller
             }
         }
 
+        $this->kabariClient($castingProject, 'Pengajuan Proyek Disetujui', "Pengajuan proyek '{$castingProject->nama_produksi}' disetujui tim JBTB dan sedang disiapkan.");
+
         return back()->with('status', "Permintaan proyek '{$castingProject->nama_produksi}' berhasil disetujui (ACC). Proyek kini masuk antrean Admin.");
     }
 
-    public function rejectProject(CastingProject $castingProject): RedirectResponse
+    public function rejectProject(Request $request, CastingProject $castingProject): RedirectResponse
     {
+        $data = $request->validate(['alasan_tolak' => ['required', 'string', 'max:500']]);
+
         $castingProject->update([
             'client_request_status' => 'ditolak',
             'status' => 'ditutup',
+            'alasan_tolak' => $data['alasan_tolak'],
         ]);
+
+        $this->kabariClient($castingProject, 'Pengajuan Proyek Ditolak', "Pengajuan proyek '{$castingProject->nama_produksi}' ditolak. Alasan: {$data['alasan_tolak']}");
 
         ActivityLog::record(
             'REJECT_PROJECT_REQUEST',
@@ -195,5 +202,13 @@ class DashboardController extends Controller
         );
 
         return back()->with('status', "Permintaan proyek '{$castingProject->nama_produksi}' telah ditolak.");
+    }
+
+    private function kabariClient(CastingProject $castingProject, string $judul, string $pesan): void
+    {
+        try {
+            $castingProject->diajukanOlehClient?->notify(new InAppNotification($judul, $pesan, route('cd.dashboard')));
+        } catch (\Throwable) {
+        }
     }
 }

@@ -143,7 +143,7 @@ class GreenlightKonsolidasiTest extends TestCase
         $this->actingAs($cd)->get(route('cd.reviews.show', $project))->assertForbidden();
     }
 
-    public function test_dashboard_tampilkan_pelunasan_pending_scoped_ke_proyek_cd(): void
+    public function test_dashboard_client_tidak_tampilkan_honor_extras_pending(): void
     {
         $admin = User::factory()->create(['role' => 'admin_default']);
         $cd = $this->buatCd();
@@ -161,14 +161,9 @@ class GreenlightKonsolidasiTest extends TestCase
         Payment::create(['project_application_id' => $appMilikCd->id, 'status' => 'belum_dibayar']);
         Payment::create(['project_application_id' => $appLain->id, 'status' => 'belum_dibayar']);
 
-        $response = $this->actingAs($cd)->get(route('cd.dashboard'));
-        $response->assertOk();
-
-        $viewData = $response->original->getData();
-        $pending = $viewData['pelunasanPending'];
-
-        // Hanya payment dari proyek milik CD ini yang muncul
-        $this->assertSame(1, $pending->count());
-        $this->assertSame(1, $pending->first());
+        $this->actingAs($cd)->get(route('cd.dashboard'))
+            ->assertOk()
+            ->assertDontSee('Pembayaran Pending')
+            ->assertSee('Ajukan Proyek Pertama');
     }
 }

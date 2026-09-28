@@ -1,12 +1,15 @@
 @extends('layouts.app')
 
-@section('title', 'Kelola Proyek Casting')
+@section('title', 'Kelola Proyek')
 
 @section('content')
 <div class="card-header-row">
     <div>
         <div style="font-size: 16px; font-weight: 600;">Kelola Proyek</div>
         <div style="font-size: 12.5px; color: var(--text-secondary);">Semua proyek casting yang sedang & pernah dibuka</div>
+        @if (request()->hasAny(['status', 'peserta', 'urgent']))
+            <div style="font-size: 12.5px; margin-top: 4px;">Filter aktif{{ $peserta ? ': ada kandidat '.(\App\Models\ProjectApplication::LABELS[$peserta] ?? $peserta) : '' }} · <a href="{{ route('admin.projects.index') }}">Hapus filter</a></div>
+        @endif
     </div>
     <a href="{{ route('admin.projects.create') }}" class="btn btn-brand">+ Buka Lowongan Baru</a>
 </div>
@@ -83,7 +86,7 @@
                 </div>
 
                 <div class="entity-card-actions">
-                    <a href="{{ route('admin.projects.applicants', $project) }}" class="btn btn-brand" style="flex: 1; text-align: center;">
+                    <a href="{{ route('admin.projects.applicants', [$project, 'status' => $peserta]) }}" class="btn btn-brand" style="flex: 1; text-align: center;">
                         Lihat Lineup ({{ $project->applications_count }})
                     </a>
                 </div>

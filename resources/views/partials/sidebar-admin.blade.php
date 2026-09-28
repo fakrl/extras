@@ -7,7 +7,7 @@
     <i class="ti ti-layout-dashboard"></i> Dashboard
 </a>
 <a href="{{ url('/admin/projects') }}" class="sidebar-link {{ str_starts_with($route, 'admin/projects') ? 'active' : '' }}">
-    <i class="ti ti-movie"></i> Manajemen Proyek
+    <i class="ti ti-movie"></i> Kelola Proyek
 </a>
 <a href="{{ url('/admin/users') }}" class="sidebar-link {{ str_starts_with($route, 'admin/users') ? 'active' : '' }}">
     <i class="ti ti-users"></i> Kelola Akun
@@ -22,7 +22,7 @@
     <i class="ti ti-history"></i> Riwayat Kerja
 </a>
 
-<div class="sidebar-group-label">Presensi & Jadwal</div>
+<div class="sidebar-group-label">Lapangan</div>
 <a href="{{ url('/admin/absensi') }}" class="sidebar-link {{ str_starts_with($route, 'admin/absensi') || str_starts_with($route, 'admin/attendances') ? 'active' : '' }}">
-    <i class="ti ti-clipboard-check"></i> Presensi Lapangan
+    <i class="ti ti-clipboard-check"></i> Absensi Lapangan
 </a>

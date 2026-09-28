@@ -49,7 +49,7 @@
     </summary>
     <div class="sidebar-submenu">
         <a href="{{ route('admin.projects.index') }}" class="sidebar-link {{ str_starts_with($route, 'admin/projects') ? 'active' : '' }}">
-            <i class="ti ti-movie"></i> Manajemen Proyek
+            <i class="ti ti-movie"></i> Kelola Proyek
         </a>
         <a href="{{ route('admin.recap.index') }}" class="sidebar-link {{ str_starts_with($route, 'admin/recap') && !str_starts_with($route, 'admin/rekap-margin') ? 'active' : '' }}">
             <i class="ti ti-report"></i> Rekap Extras
@@ -58,7 +58,7 @@
             <i class="ti ti-history"></i> Riwayat Kerja
         </a>
         <a href="{{ route('admin.attendance.index') }}" class="sidebar-link {{ str_starts_with($route, 'admin/absensi') || str_starts_with($route, 'admin/attendances') ? 'active' : '' }}">
-            <i class="ti ti-clipboard-check"></i> Presensi & Absensi
+            <i class="ti ti-clipboard-check"></i> Absensi Lapangan
         </a>
     </div>
 </details>

@@ -5,7 +5,7 @@
 @section('content')
 <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 18px;">
     <p style="color: var(--text-secondary); font-size: 13.5px; margin: 0;">
-        Monitoring dan analitik sistem (read-only). Operasional harian dikelola oleh Admin.
+        Monitoring, analitik, dan persetujuan proyek. Operasional harian dikelola oleh Admin.
     </p>
     <form method="GET" action="{{ route('super-admin.dashboard') }}" style="display: flex; gap: 6px;">
         @foreach (['7d' => '7 Hari', '30d' => '30 Hari', '1y' => '1 Tahun'] as $val => $label)
@@ -35,18 +35,32 @@
             <div>
                 <div style="font-weight: 600; font-size: 13.5px;">{{ $req->nama_produksi }}</div>
                 <div style="font-size: 12px; color: var(--text-muted);">{{ $req->client_ph }} &bull; {{ $req->diajukanOlehClient?->name }}</div>
+                <details style="margin-top: 6px; font-size: 13px;">
+                    <summary style="cursor: pointer; color: var(--accent);">Lihat brief, kuota, deadline</summary>
+                    <div style="margin-top: 6px;">Kuota: <strong>{{ $req->kuota }} orang</strong> &bull; Deadline: <strong>{{ $req->deadline?->format('d M Y') ?? '-' }}</strong></div>
+                    <div style="margin-top: 4px; white-space: pre-line;">{{ $req->brief_catatan ?: '-' }}</div>
+                </details>
             </div>
-            <div style="display: flex; gap: 6px; flex-shrink: 0;">
+            <div style="display: flex; gap: 12px; flex-shrink: 0;">
                 <form method="POST" action="{{ route('super-admin.projects.acc', $req) }}" style="display: inline-block;">
                     @csrf @method('PATCH')
                     <button type="submit" class="btn btn-sm btn-brand" onclick="return confirm('Setujui permintaan proyek ini?')">ACC</button>
                 </form>
-                <form method="POST" action="{{ route('super-admin.projects.reject', $req) }}" style="display: inline-block;">
-                    @csrf @method('PATCH')
-                    <button type="submit" class="btn btn-sm btn-secondary" onclick="return confirm('Tolak permintaan proyek ini?')">Tolak</button>
-                </form>
+                <button type="button" class="btn btn-sm btn-danger-outline" onclick="document.getElementById('tolak-req-{{ $req->id }}').showModal()">Tolak</button>
             </div>
         </div>
+        <dialog id="tolak-req-{{ $req->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 380px; width: 90%;">
+            <form method="POST" action="{{ route('super-admin.projects.reject', $req) }}" style="padding: 18px;">
+                @csrf @method('PATCH')
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Tolak pengajuan {{ $req->nama_produksi }}?</div>
+                <label for="alasan-req-{{ $req->id }}">Alasan penolakan (dikirim ke Client)</label>
+                <textarea name="alasan_tolak" id="alasan-req-{{ $req->id }}" rows="3" required maxlength="500" style="width: 100%; margin-bottom: 12px;"></textarea>
+                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
+                    <button type="submit" class="btn btn-sm btn-danger-outline">Tolak Pengajuan</button>
+                </div>
+            </form>
+        </dialog>
     @empty
         @forelse ($ringkasanProyek as $p)
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color); gap: 8px; flex-wrap: wrap;">
@@ -82,13 +96,13 @@ $periodLabel = match($period) { '7d' => '7 hari ini', '1y' => 'tahun ini', defau
     <div class="metric-card" title="Proyek casting yang sedang dalam proses (status dibuka)">
         <div class="metric-label">Proyek Berjalan</div>
         <div class="metric-value">{{ $proyekBerjalan }}</div>
-        <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 4px;">status aktif saat ini</div>
+        <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 4px;">saat ini (tidak ikut filter periode)</div>
     </div>
     <div class="metric-card" title="Jumlah akun Extras dengan status aktif di sistem">
         <div class="metric-label">Extras Aktif</div>
         <div class="metric-value">{{ $extrasAktif }}</div>
         <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 6px;">
-            <span>bergabung {{ $periodLabel }}</span>
+            <span>tren: bergabung {{ $periodLabel }}</span>
             @if ($trendExtrasAktif)
                 <span style="font-size: var(--fs-xs); font-weight: 600; color: {{ $trendExtrasAktif['up'] ? 'var(--accent-strong)' : 'var(--danger)' }};">
                     {{ $trendExtrasAktif['up'] ? '↑' : '↓' }} {{ $trendExtrasAktif['label'] }}
@@ -100,7 +114,7 @@ $periodLabel = match($period) { '7d' => '7 hari ini', '1y' => 'tahun ini', defau
         <div class="metric-label">Total Akun Sistem</div>
         <div class="metric-value">{{ $totalAkun }}</div>
         <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 6px;">
-            <span>daftar {{ $periodLabel }}</span>
+            <span>tren: daftar {{ $periodLabel }}</span>
             @if ($trendTotalAkun)
                 <span style="font-size: var(--fs-xs); font-weight: 600; color: {{ $trendTotalAkun['up'] ? 'var(--accent-strong)' : 'var(--danger)' }};">
                     {{ $trendTotalAkun['up'] ? '↑' : '↓' }} {{ $trendTotalAkun['label'] }}
@@ -111,7 +125,7 @@ $periodLabel = match($period) { '7d' => '7 hari ini', '1y' => 'tahun ini', defau
     <a href="{{ route('super-admin.recap-margin', ['tab' => 'staf']) }}" class="metric-card" style="display: block; text-decoration: none; color: inherit;" title="Total honor staf/admin yang belum dibayar, klik untuk lihat tab Honor Staf">
         <div class="metric-label">Honor Belum Diproses</div>
         <div class="metric-value">Rp {{ number_format($honorBelumDiproses, 0, ',', '.') }}</div>
-        <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 4px;">perlu tindak lanjut</div>
+        <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 4px;">semua waktu · perlu tindak lanjut</div>
     </a>
 </div>
 
@@ -135,7 +149,7 @@ $periodLabel = match($period) { '7d' => '7 hari ini', '1y' => 'tahun ini', defau
 </div>
 
 {{-- AU.5: Charts --}}
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px;">
+<div class="dashboard-grid-2col is-even" style="margin-bottom: 20px;">
     <div class="card">
         <div class="card-title">Margin per Bulan (6 bulan terakhir)</div>
         <div style="height: 200px;"><canvas id="chartMarginBulanan"></canvas></div>
@@ -193,7 +207,10 @@ $periodLabel = match($period) { '7d' => '7 hari ini', '1y' => 'tahun ini', defau
             labels: @json($chartMarginBulanan['labels']),
             datasets: [{ label: 'Margin (Rp)', data: @json($chartMarginBulanan['data']), backgroundColor: saColor }]
         },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        options: {
+            responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+            scales: { y: { ticks: { callback: function (v) { return 'Rp ' + Number(v).toLocaleString('id-ID'); } } } }
+        }
     });
     new Chart(document.getElementById('chartStatusProyek'), {
         type: 'doughnut',

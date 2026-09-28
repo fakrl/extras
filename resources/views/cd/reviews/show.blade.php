@@ -80,7 +80,9 @@
                 $isPending = $app->status_partisipasi === 'diajukan_ke_cd';
                 [$statusLabel, $statusBadge] = match ($app->status_partisipasi) {
                     'diajukan_ke_cd' => ['Menunggu', 'badge-pending'],
-                    'lolos', 'kontrak_ditandatangani', 'selesai_produksi' => ['Approved', 'badge-aktif'],
+                    'lolos' => ['Approved · Kontrak', $app->badgeClass()],
+                    'kontrak_ditandatangani' => ['Approved · Syuting', $app->badgeClass()],
+                    'selesai_produksi' => ['Selesai', $app->badgeClass()],
                     'ditolak' => ['Rejected', 'badge-tolak'],
                     default => [$app->status_partisipasi, ''],
                 };
@@ -180,7 +182,7 @@
         </div>
 
         <div style="text-align: center; margin-bottom: 12px;">
-            <div id="mk-foto-wrap" style="width: 120px; aspect-ratio: 3/4; margin: 0 auto 8px; border-radius: 12px; overflow: hidden; background: var(--bg-nav-active); display: flex; align-items: center; justify-content: center;">
+            <div id="mk-foto-wrap" style="width: min(320px, 100%); aspect-ratio: 3/4; margin: 0 auto 8px; border-radius: 12px; overflow: hidden; background: var(--bg-nav-active); display: flex; align-items: center; justify-content: center;">
                 <img id="mk-foto" src="" alt="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
                 <i id="mk-foto-empty" class="ti ti-user" style="font-size: 32px; color: var(--text-muted);"></i>
             </div>
@@ -203,10 +205,11 @@
         <div style="margin-bottom: 14px; font-size: 13px;">
             <span style="color: var(--text-secondary);">Rekomendasi Admin:</span>
             <strong id="mk-grade-admin"></strong>
+            <div style="color: var(--text-muted); font-size: var(--fs-xs); margin-top: 2px;">Grade A = terbaik/paling sesuai, B = sesuai, C = cukup (cadangan).</div>
         </div>
 
         <div style="margin-bottom: 14px; font-size: 13px; padding: 10px; border-radius: 8px; background: var(--bg-nav-active);">
-            Riwayat dengan Client ini: <span id="mk-riwayat"></span>
+            Riwayat Anda dengan talent ini: <span id="mk-riwayat"></span>
         </div>
 
         <div id="mk-form-area"></div>

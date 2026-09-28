@@ -32,20 +32,26 @@
 </form>
 
 @if (! $castingProject)
-    <div class="card" style="text-align:center; color: var(--text-muted); padding: 30px 0;">Belum ada proyek.</div>
+    <div class="card" style="text-align:center; color: var(--text-muted); padding: 30px 0;">Belum ada proyek dengan jadwal shooting mulai kemarin.</div>
 @elseif (! $shootingDate)
     <div class="card" style="text-align:center; color: var(--text-muted); padding: 30px 0;">Proyek ini belum punya tanggal shooting.</div>
 @else
-    <input type="text" id="search-extras" placeholder="Cari nama extras..."
-        style="width: 100%; max-width: 320px; padding: 7px 12px; border: 1px solid var(--border-color); border-radius: 7px; margin-bottom: 10px; font-size: var(--fs-md); background: var(--bg-card); color: var(--text-primary); display: block;">
+    @php
+        $jmlHadir = $applicants->filter(fn ($a) => $a->absen?->status === 'hadir' && $a->absen->status_validasi === 'tervalidasi')->count();
+        $jmlMenunggu = $applicants->filter(fn ($a) => ! $a->absen || $a->absen->status_validasi === 'menunggu')->count();
+    @endphp
+    <div style="font-size: var(--fs-md); font-weight: 600; margin-bottom: 10px;">{{ $jmlHadir }}/{{ $applicants->count() }} hadir · {{ $jmlMenunggu }} menunggu</div>
+    <label for="search-extras">Cari Extras</label>
+    <input type="search" id="search-extras" placeholder="Nama atau username..."
+        style="width: 100%; max-width: 320px; padding: 7px 12px; border: 1px solid var(--border-color); border-radius: 7px; margin-bottom: 10px; font-size: 16px; background: var(--bg-card); color: var(--text-primary); display: block;">
     @forelse ($applicants as $app)
         @php
-            $absen = $app->attendances->firstWhere('event_shooting_date_id', $shootingDate->id);
+            $absen = $app->absen;
             $karakter = $app->karakter ?: $app->castingProjectClass?->karakter;
             $callingan = $app->jam_callingan ?: $app->castingProjectClass?->jam_callingan;
             $scene = $app->keterangan_scene ?: $app->castingProjectClass?->keterangan_scene;
         @endphp
-        <div class="entity-card extras-row" data-nama="{{ strtolower($app->extras->user->username ?? '') }}" style="margin-bottom: 12px;">
+        <div class="entity-card extras-row" id="app-{{ $app->id }}" data-nama="{{ strtolower(($app->extras->user->name ?? '').' '.($app->extras->user->username ?? '')) }}" style="margin-bottom: 12px; scroll-margin-top: 80px;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap;">
                 <div style="display: flex; gap: 12px; align-items: center;">
                     @if ($app->extras->foto_profil_path)
@@ -140,12 +146,12 @@
 
         {{-- Dialog Foto Korlap Onsite --}}
         <dialog id="foto-dialog-{{ $app->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 380px; width: 90%;">
-            <form method="POST" action="{{ route('admin.attendance.store', $app) }}" enctype="multipart/form-data" style="padding: 18px;">
+            <form method="POST" action="{{ route('admin.attendance.store', $app) }}" enctype="multipart/form-data" style="padding: 18px;" onsubmit="var b = this.querySelector('[type=submit]'); b.disabled = true; b.textContent = 'Mengunggah…';">
                 @csrf
                 <input type="hidden" name="event_shooting_date_id" value="{{ $shootingDate->id }}">
                 <input type="hidden" name="status" value="hadir">
                 <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Ambil Foto On-Site: {{ $app->extras->user->username ?? 'Extras' }}</div>
-                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Foto extras di lokasi syuting sebagai bukti kehadiran untuk Client / PH.</p>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Foto extras di lokasi syuting sebagai bukti kehadiran untuk Client / PH. Maks. 10MB.</p>
                 <input type="file" name="foto" accept="image/*" capture="environment" required style="width: 100%; margin-bottom: 12px;">
                 <textarea name="catatan" rows="2" placeholder="Catatan kehadiran (opsional)..." style="width: 100%; margin-bottom: 12px;"></textarea>
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
@@ -175,6 +181,11 @@
         <div class="card" style="text-align:center; color: var(--text-muted); padding: 30px 0;">Tidak ada Extras aktif di proyek ini.</div>
     @endforelse
 @endif
+
+<div class="card" style="margin-top: 20px;">
+    <div class="card-title">Jadwal Shooting Bulan Ini</div>
+    <x-jadwal-calendar :events="$jadwalBulanIni" compact />
+</div>
 
 @push('scripts')
 <script>

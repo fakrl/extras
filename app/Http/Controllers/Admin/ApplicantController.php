@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\CastingProject;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use Illuminate\Http\RedirectResponse;
@@ -23,22 +24,62 @@ class ApplicantController extends Controller
             'grade' => ['required', 'in:A,B,C'],
         ]);
 
+        $error = $this->terapkanGrade($application, $data['grade']);
+        $redirect = back()->withFragment('app-'.$application->id);
+
+        return $error ? $redirect->with('error', $error) : $redirect->with('status', 'Grade berhasil ditetapkan.');
+    }
+
+    /**
+     * AY.5.6: aksi massal Lineup, memakai logic single per item.
+     */
+    public function bulk(Request $request, CastingProject $castingProject): RedirectResponse
+    {
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+            'aksi' => ['required', 'in:grade,tolak'],
+            'grade' => ['required_if:aksi,grade', 'nullable', 'in:A,B,C'],
+            'alasan_tolak' => ['required_if:aksi,tolak', 'nullable', 'string', 'max:1000'],
+        ]);
+
+        $berhasil = 0;
+        $gagal = 0;
+        foreach ($castingProject->applications()->whereIn('id', $data['ids'])->get() as $application) {
+            if ($data['aksi'] === 'grade') {
+                $this->terapkanGrade($application, $data['grade']) ? $gagal++ : $berhasil++;
+
+                continue;
+            }
+            try {
+                $application->tolakDini($data['alasan_tolak']);
+                $berhasil++;
+            } catch (\LogicException) {
+                $gagal++;
+            }
+        }
+
+        return back()->with('status', "{$berhasil} kandidat diproses".($gagal ? ", {$gagal} dilewati (terkunci/sudah lewat tahap)." : '.'));
+    }
+
+    private function terapkanGrade(ProjectApplication $application, string $grade): ?string
+    {
         /** @var ExtrasProfile $profile */
         $profile = $application->extras;
 
         if ($profile->grade_diberikan_at && now()->lt($profile->grade_diberikan_at->addMonths(2))) {
             $terkunciSampai = $profile->grade_diberikan_at->addMonths(2)->translatedFormat('d F Y');
 
-            return back()->with('error', "Grade masih terkunci sampai {$terkunciSampai}, gak bisa diubah dulu.");
+            return "Grade masih terkunci sampai {$terkunciSampai}, gak bisa diubah dulu.";
         }
 
         $gradeLama = $profile->grade_saat_ini;
         $profile->update([
-            'grade_saat_ini' => $data['grade'],
+            'grade_saat_ini' => $grade,
             'grade_diberikan_at' => now(),
         ]);
 
-        $updateData = ['grade' => $data['grade']];
+        $updateData = ['grade' => $grade];
         if ($application->status_partisipasi === 'diajukan') {
             $updateData['status_partisipasi'] = 'direview_admin';
         }
@@ -46,17 +87,17 @@ class ApplicantController extends Controller
 
         ActivityLog::record(
             'SET_EXTRAS_GRADE',
-            "Admin menetapkan Grade {$data['grade']} pada profil extras {$profile->user->name}",
+            "Admin menetapkan Grade {$grade} pada profil extras {$profile->user->name}",
             $profile,
             [
                 'extras_user_id' => $profile->user_id,
                 'grade_lama' => $gradeLama,
-                'grade_baru' => $data['grade'],
+                'grade_baru' => $grade,
                 'terkunci_sampai' => now()->addMonths(2)->translatedFormat('d F Y'),
             ]
         );
 
-        return back()->with('status', 'Grade berhasil ditetapkan.');
+        return null;
     }
 
     /**
@@ -70,13 +111,14 @@ class ApplicantController extends Controller
             'alasan_tolak' => ['required', 'string', 'max:1000'],
         ]);
 
+        $redirect = back()->withFragment('app-'.$application->id);
         try {
             $application->tolakDini($data['alasan_tolak']);
         } catch (\LogicException $e) {
-            return back()->with('status', $e->getMessage());
+            return $redirect->with('status', $e->getMessage());
         }
 
-        return back()->with('status', 'Kandidat ditolak. Slot ini bisa diisi pendaftar lain.');
+        return $redirect->with('status', 'Kandidat ditolak. Slot ini bisa diisi pendaftar lain.');
     }
 
     /**
@@ -92,7 +134,7 @@ class ApplicantController extends Controller
 
         $application->tambahCatatan($request->user(), $data['jenis'], $data['isi']);
 
-        return back()->with('status', 'Catatan lapangan berhasil disimpan.');
+        return back()->withFragment('app-'.$application->id)->with('status', 'Catatan lapangan berhasil disimpan.');
     }
 
     /**
@@ -120,7 +162,7 @@ class ApplicantController extends Controller
             ? 'Badge Apresiasi berhasil disematkan pada Extras.'
             : 'Badge Apresiasi berhasil dicabut.';
 
-        return back()->with('status', $pesan);
+        return back()->withFragment('app-'.$application->id)->with('status', $pesan);
     }
 
     /**
@@ -161,6 +203,6 @@ class ApplicantController extends Controller
             $application
         );
 
-        return back()->with('status', 'Detail breakdown karakter, scene, dan jam callingan berhasil diperbarui.');
+        return back()->withFragment('app-'.$application->id)->with('status', 'Detail breakdown karakter, scene, dan jam callingan berhasil diperbarui.');
     }
 }
