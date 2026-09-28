@@ -93,6 +93,25 @@ class BaKartuExtrasTest extends TestCase
             ->assertSee('Paling cocok');
     }
 
+    public function test_greenlight_client_tanpa_grade_admin_nama_asli_dan_kontak(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $client = User::factory()->create(['role' => 'client']);
+        $project = CastingProject::factory()->create(['admin_id' => $admin->id]);
+        $project->cdAssignments()->create(['cd_user_id' => $client->id]);
+        $app = $this->lamaran($project, 'rahasia_22', [], 'diajukan_ke_cd');
+        $email = $app->extras->user->email;
+
+        $this->actingAs($client)->get(route('cd.reviews.show', $project))
+            ->assertOk()
+            ->assertSee('@rahasia_22')
+            ->assertDontSee('data-grade-admin')
+            ->assertDontSee('Rekomendasi Admin')
+            ->assertDontSee('Nama Asli rahasia_22')
+            ->assertDontSee('KTP rahasia_22')
+            ->assertDontSee($email);
+    }
+
     public function test_data_extras_admin_pakai_kartu_tanpa_aplikasi(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
