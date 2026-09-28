@@ -22,9 +22,9 @@ class UserManagementController extends Controller
     {
         $castingDirectors = User::where('role', 'client')->get();
         $extras = User::where('role', 'extras')
-            ->with('extrasProfile.user:id,username', 'extrasProfile.categories')
+            ->with(['extrasProfile' => fn ($q) => $q->withProyekSelesai(), 'extrasProfile.user:id,username', 'extrasProfile.categories'])
             ->get();
-        $allCategories = ExtrasCategory::orderBy('nama')->get();
+        $tagGroups = ExtrasCategory::perGrup();
 
         $mangkrakCount = User::where('role', 'extras')
             ->where('created_at', '<=', now()->subDays(30))
@@ -37,7 +37,7 @@ class UserManagementController extends Controller
             })
             ->count();
 
-        return view('admin.users.index', compact('castingDirectors', 'extras', 'allCategories', 'mangkrakCount'));
+        return view('admin.users.index', compact('castingDirectors', 'extras', 'tagGroups', 'mangkrakCount'));
     }
 
     /**

@@ -108,10 +108,12 @@ class ReviewController extends Controller
                 'diajukan_ke_cd', 'lolos', 'kontrak_ditandatangani', 'selesai_produksi', 'ditolak',
             ])
             ->with([
-                'extras:id,user_id,usia,gender,tinggi_badan,ukuran_baju,warna_kulit,pengalaman,bahasa,foto_profil_path,video_profil_path',
+                'extras' => fn ($q) => $q->select('id', 'user_id', 'usia', 'gender', 'tinggi_badan', 'ukuran_baju', 'warna_kulit', 'pengalaman', 'bahasa', 'foto_profil_path', 'video_profil_path')->withProyekSelesai(),
                 'extras.user:id,username',
                 'extras.photos',
+                'extras.categories',
                 'castingProjectClass:id,nama_kelas,kriteria',
+                'castingProjectClass.categories',
                 'cdReviews' => fn ($q) => $q->where('cd_id', $request->user()->id)->latest()->limit(1),
             ]);
 

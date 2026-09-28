@@ -254,23 +254,19 @@ class CastingProjectController extends Controller
 
         $cdStatuses = ['diajukan_ke_cd', 'direview_cd', 'lolos', 'ditolak'];
 
-        if ($tab === 'cd') {
-            $applicants = $castingProject->applications()
-                ->with('extras.user', 'castingProjectClass')
-                ->whereIn('status_partisipasi', $cdStatuses)
-                ->latest()
-                ->paginate(30)
-                ->withQueryString();
-        } else {
-            $applicants = $castingProject->applications()
-                ->with('extras', 'extras.user', 'extras.photos', 'fieldNotes.korlap')
-                ->when($grade === 'belum', fn ($q) => $q->whereNull('grade'))
-                ->when(in_array($grade, ['A', 'B', 'C'], true), fn ($q) => $q->where('grade', $grade))
-                ->when($status, fn ($q) => $q->where('status_partisipasi', $status))
-                ->latest()
-                ->paginate(30)
-                ->withQueryString();
-        }
+        $applicants = $castingProject->applications()
+            ->with([
+                'extras' => fn ($q) => $q->withProyekSelesai(),
+                'extras.user', 'extras.photos', 'extras.categories',
+                'castingProjectClass.categories', 'fieldNotes.korlap', 'contract', 'payment',
+            ])
+            ->when($tab === 'cd', fn ($q) => $q->whereIn('status_partisipasi', $cdStatuses))
+            ->when($tab !== 'cd' && $grade === 'belum', fn ($q) => $q->whereNull('grade'))
+            ->when($tab !== 'cd' && in_array($grade, ['A', 'B', 'C'], true), fn ($q) => $q->where('grade', $grade))
+            ->when($tab !== 'cd' && $status, fn ($q) => $q->where('status_partisipasi', $status))
+            ->latest()
+            ->paginate(30)
+            ->withQueryString();
 
         return view('admin.projects.applicants', compact('castingProject', 'applicants', 'grade', 'tab', 'status'));
     }

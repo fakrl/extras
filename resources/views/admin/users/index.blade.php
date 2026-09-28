@@ -62,87 +62,85 @@
 @endif
 
 <div class="card">
-    <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Extras</div>
+    <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Extras <span style="color: var(--text-muted); font-weight: 400;">· {{ $extras->count() }} akun</span></div>
 
-    <div style="display:flex; gap:8px; margin-bottom:10px; align-items:center; flex-wrap:wrap;">
-        <label style="margin:0; font-size:12.5px; color:var(--text-secondary);">Status:</label>
+    <div style="display:flex; gap:8px; margin-bottom:14px; align-items:center; flex-wrap:wrap;">
+        <label for="filter-ex-status" style="margin:0; font-size:12.5px; color:var(--text-secondary);">Status:</label>
         <select id="filter-ex-status" style="width:auto; min-height:unset; margin-bottom:0; padding:4px 8px; font-size:12.5px;">
             <option value="">Semua</option>
             <option value="aktif">Aktif</option>
             <option value="nonaktif">Nonaktif</option>
         </select>
-        <input id="filter-ex-search" type="search" placeholder="Cari nama / alias / email…"
+        <input id="filter-ex-search" type="search" placeholder="Cari nama / alias / email…" aria-label="Cari Extras"
                style="width:220px; min-height:unset; margin-bottom:0; padding:4px 10px; font-size:var(--fs-md);">
     </div>
 
-    <div class="table-container">
-    <table id="tabel-extras">
-        <thead>
-            <tr><th>Nama</th><th>Alias</th><th>Email</th><th>Status</th><th>Pembatalan Mendadak</th><th>Kategori</th><th></th></tr>
-        </thead>
-        <tbody>
-            @foreach ($extras as $ex)
-                <tr data-status="{{ $ex->status }}"
-                    data-nama="{{ strtolower($ex->name) }}"
-                    data-alias="{{ strtolower($ex->username ?? '') }}"
-                    data-email="{{ strtolower($ex->email) }}">
-                    <td>{{ $ex->name }}</td>
-                    <td>{{ $ex->username ?? '-' }}</td>
-                    <td>{{ $ex->email }}</td>
-                    <td>
-                        <span class="badge {{ $ex->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">
-                            {{ $ex->status }}
-                        </span>
-                    </td>
-                    <td>
-                        {{-- RF-08: cancel_count cuma dari pembatalan mendadak (<H-2), lihat ProjectApplication::batalkan() --}}
-                        @php $cancelCount = $ex->extrasProfile->cancel_count ?? 0; @endphp
-                        <span class="badge {{ $cancelCount >= 3 ? 'badge-tolak' : ($cancelCount > 0 ? 'badge-pending' : 'badge-aktif') }}">
-                            {{ $cancelCount }}x
-                        </span>
-                    </td>
-                    <td>
-                        @foreach ($ex->extrasProfile?->categories ?? [] as $kat)
-                            <span class="badge badge-pending" style="font-size: var(--fs-xs); margin-bottom:2px;">{{ $kat->nama }}</span>
-                        @endforeach
-                        <details style="display:block; margin-top:4px;">
-                            <summary style="font-size: var(--fs-xs); cursor:pointer; color:var(--accent); list-style:none;">Edit Kategori</summary>
-                            <form method="POST" action="{{ route('admin.users.kategori', $ex) }}" style="margin-top:6px; padding:6px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:4px;">
-                                @csrf @method('PATCH')
-                                @foreach ($allCategories as $kat)
-                                    <label style="display:block; font-size: var(--fs-xs); margin-bottom:2px;">
-                                        <input type="checkbox" name="kategori_ids[]" value="{{ $kat->id }}"
-                                            {{ $ex->extrasProfile?->categories->contains('id', $kat->id) ? 'checked' : '' }}>
-                                        {{ $kat->nama }}
-                                    </label>
-                                @endforeach
-                                <button type="submit" class="btn btn-sm" style="margin-top:6px; padding:2px 8px;">Simpan</button>
-                            </form>
-                        </details>
-                    </td>
-                    <td style="white-space:nowrap;">
-                        @if ($ex->extrasProfile)
-                            <a href="{{ route('admin.extras.profil', $ex) }}" class="btn btn-sm" title="Lihat Profil" style="margin-bottom:4px; display:inline-block;">
-                                <i class="ti ti-user"></i> Lihat Profil
-                            </a>
-                        @endif
-                        <x-confirm-form action="{{ route('admin.users.toggle-status', $ex) }}" method="PATCH" style="display:inline;" message="{{ $ex->status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }} akun {{ $ex->name }}?">
-                            <button type="submit" class="btn btn-sm" aria-label="{{ $ex->status === 'aktif' ? 'Nonaktifkan akun' : 'Aktifkan akun' }}"><i class="ti ti-power"></i> {{ $ex->status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }}</button>
-                        </x-confirm-form>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+    <div class="xgrid" id="grid-extras">
+        @forelse ($extras as $ex)
+            @php $cancelCount = $ex->extrasProfile->cancel_count ?? 0; @endphp
+            @include('partials.extras-card', [
+                'profile' => $ex->extrasProfile,
+                'user' => $ex,
+                'badge' => [ucfirst($ex->status), $ex->status === 'aktif' ? 'badge-aktif' : 'badge-tolak'],
+                'sub' => $ex->name,
+                'lihat' => $ex->extrasProfile ? ['href' => route('admin.extras.profil', $ex)] : ['onclick' => "document.getElementById('kelola-{$ex->id}').showModal()"],
+                'aksi' => ['label' => 'Kelola', 'onclick' => "document.getElementById('kelola-{$ex->id}').showModal()"],
+                'peringatan' => $cancelCount ? $cancelCount.'x batal mendadak' : null,
+                'attrs' => [
+                    'data-status' => $ex->status,
+                    'data-nama' => strtolower($ex->name),
+                    'data-alias' => strtolower($ex->username ?? ''),
+                    'data-email' => strtolower($ex->email),
+                ],
+            ])
+        @empty
+            <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 24px 0;">Belum ada akun Extras.</div>
+        @endforelse
     </div>
 </div>
+
+@foreach ($extras as $ex)
+    @php $cancelCount = $ex->extrasProfile->cancel_count ?? 0; @endphp
+    <dialog class="xmodal" id="kelola-{{ $ex->id }}" aria-label="Kelola {{ $ex->username ?? $ex->name }}" onclick="if (event.target === this) this.close()">
+        <div class="xmodal-body">
+            <div class="xmodal-head">
+                <div style="min-width: 0;">
+                    <div class="xmodal-name">{{ $ex->username ? '@'.$ex->username : '(belum isi username)' }}</div>
+                    <div class="xmodal-sub">{{ $ex->name }} · {{ $ex->email }}</div>
+                </div>
+                <button type="button" class="xmodal-x" style="position: static; flex-shrink: 0; background: var(--bg-card-hover); color: var(--text-primary);" aria-label="Tutup" onclick="this.closest('dialog').close()"><i class="ti ti-x"></i></button>
+            </div>
+            <div class="xmodal-badges">
+                <span class="badge {{ $ex->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">{{ ucfirst($ex->status) }}</span>
+                {{-- RF-08: cancel_count cuma dari pembatalan mendadak (<H-2), lihat ProjectApplication::batalkan() --}}
+                <span class="badge {{ $cancelCount >= 3 ? 'badge-tolak' : ($cancelCount > 0 ? 'badge-pending' : 'badge-aktif') }}">Batal mendadak {{ $cancelCount }}x</span>
+            </div>
+
+            @if ($ex->extrasProfile)
+                <div class="xsec">Tag (koreksi Admin)</div>
+                <form method="POST" action="{{ route('admin.users.kategori', $ex) }}">
+                    @csrf @method('PATCH')
+                    @include('partials.tag-chips', ['name' => 'kategori_ids[]', 'selected' => $ex->extrasProfile->categories->modelKeys()])
+                    <button type="submit" class="btn btn-brand" style="margin-top: 14px;">Simpan Tag</button>
+                </form>
+            @else
+                <div class="alert-info" style="margin: 14px 0 0;">Profil Extras belum dibuat, tag belum bisa diisi.</div>
+            @endif
+
+            <div class="xsec">Status akun</div>
+            <x-confirm-form action="{{ route('admin.users.toggle-status', $ex) }}" method="PATCH" message="{{ $ex->status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }} akun {{ $ex->name }}?">
+                <button type="submit" @class(['btn', 'btn-danger-outline' => $ex->status === 'aktif'])><i class="ti ti-power"></i> {{ $ex->status === 'aktif' ? 'Nonaktifkan akun' : 'Aktifkan akun' }}</button>
+            </x-confirm-form>
+        </div>
+    </dialog>
+@endforeach
 @endsection
 
 @push('scripts')
 <script>
 (function () {
-    function filterRows(tableId, statusVal, searchVal) {
-        document.querySelectorAll('#' + tableId + ' tbody tr').forEach(function (tr) {
+    function filterRows(selector, statusVal, searchVal) {
+        document.querySelectorAll(selector).forEach(function (tr) {
             var matchStatus = !statusVal || tr.dataset.status === statusVal;
             var matchSearch = !searchVal || [tr.dataset.nama, tr.dataset.alias, tr.dataset.email]
                 .some(function (v) { return v && v.includes(searchVal); });
@@ -153,7 +151,7 @@
     var cdStatus = document.getElementById('filter-cd-status');
     var cdSearch = document.getElementById('filter-cd-search');
     function applyCdFilter() {
-        filterRows('tabel-cd', cdStatus ? cdStatus.value : '', cdSearch ? cdSearch.value.toLowerCase().trim() : '');
+        filterRows('#tabel-cd tbody tr', cdStatus ? cdStatus.value : '', cdSearch ? cdSearch.value.toLowerCase().trim() : '');
     }
     cdStatus && cdStatus.addEventListener('change', applyCdFilter);
     cdSearch && cdSearch.addEventListener('input', applyCdFilter);
@@ -161,7 +159,7 @@
     var exStatus = document.getElementById('filter-ex-status');
     var exSearch = document.getElementById('filter-ex-search');
     function applyExtrasFilter() {
-        filterRows('tabel-extras', exStatus ? exStatus.value : '', exSearch ? exSearch.value.toLowerCase().trim() : '');
+        filterRows('#grid-extras .xcard', exStatus ? exStatus.value : '', exSearch ? exSearch.value.toLowerCase().trim() : '');
     }
     exStatus && exStatus.addEventListener('change', applyExtrasFilter);
     exSearch && exSearch.addEventListener('input', applyExtrasFilter);
