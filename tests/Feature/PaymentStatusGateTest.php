@@ -154,4 +154,21 @@ class PaymentStatusGateTest extends TestCase
             'nominal' => 50000,
         ])->assertRedirect();
     }
+
+    public function test_sengketa_menyimpan_status_disengketakan(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $extrasUser = User::factory()->create(['role' => 'extras']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
+        $application = $this->buatAplikasi($admin, $extras, 'lolos');
+        $application->payment()->create(['status' => 'ditransfer']);
+
+        $this->actingAs($extrasUser)->post(route('payments.sengketa', $application), [
+            'alasan' => 'Nominal kurang',
+        ])->assertRedirect();
+
+        $payment = $application->payment->fresh();
+        $this->assertSame('disengketakan', $payment->status);
+        $this->assertSame('Nominal kurang', $payment->alasan_sengketa);
+    }
 }
