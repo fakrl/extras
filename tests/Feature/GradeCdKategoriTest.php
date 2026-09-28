@@ -40,8 +40,8 @@ class GradeCdKategoriTest extends TestCase
 
     public function test_approve_dengan_grade_cd_tersimpan(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cd = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cd = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
         $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
         $application = $this->buatApplicationDiajukanKeCd($project);
@@ -62,8 +62,8 @@ class GradeCdKategoriTest extends TestCase
 
     public function test_approve_tanpa_grade_cd_gagal_validasi(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cd = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cd = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
         $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
         $application = $this->buatApplicationDiajukanKeCd($project);
@@ -78,8 +78,8 @@ class GradeCdKategoriTest extends TestCase
 
     public function test_reject_tanpa_grade_cd_berhasil(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cd = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cd = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
         $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
         $application = $this->buatApplicationDiajukanKeCd($project);
@@ -100,7 +100,7 @@ class GradeCdKategoriTest extends TestCase
 
     public function test_assign_kategori_many_to_many_sync(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $kat = ExtrasCategory::create(['nama' => 'Dewasa']);
@@ -115,7 +115,7 @@ class GradeCdKategoriTest extends TestCase
 
     public function test_filter_rekap_by_kategori(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $kat = ExtrasCategory::create(['nama' => 'Remaja']);
 
         $extrasUserA = User::factory()->create(['role' => 'extras']);

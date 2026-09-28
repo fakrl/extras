@@ -44,8 +44,8 @@ class JadwalModulTest extends TestCase
 
     public function test_cd_bisa_simpan_jadwal_proyek_yang_diassign(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cd = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cd = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
         $tanggal = $this->buatTanggalShooting($project);
         $this->assignCd($project, $cd);
@@ -71,8 +71,8 @@ class JadwalModulTest extends TestCase
 
     public function test_cd_tidak_bisa_simpan_jadwal_proyek_yang_bukan_miliknya(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cdLain = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cdLain = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
         $tanggal = $this->buatTanggalShooting($project);
 
@@ -88,7 +88,7 @@ class JadwalModulTest extends TestCase
 
     public function test_extras_bisa_lihat_jadwal_proyek_yang_diikuti(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
@@ -110,7 +110,7 @@ class JadwalModulTest extends TestCase
 
     public function test_extras_tidak_lihat_jadwal_proyek_yang_tidak_diikuti(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
@@ -127,8 +127,8 @@ class JadwalModulTest extends TestCase
 
     public function test_panggilan_tersimpan_sebagai_json_array_dan_bisa_diretrieve(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        $cd = User::factory()->create(['role' => 'casting_director']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cd = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
         $tanggal = $this->buatTanggalShooting($project);
         $this->assignCd($project, $cd);

@@ -21,7 +21,7 @@ class ActivityLogAndEnhancementsTest extends TestCase
     {
         Mail::fake();
 
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
@@ -82,7 +82,7 @@ class ActivityLogAndEnhancementsTest extends TestCase
     public function test_work_history_separates_base_honor_and_reimbursements(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         AdminProfile::create(['user_id' => $admin->id]);
 
         $project = CastingProject::create([
@@ -165,7 +165,7 @@ class ActivityLogAndEnhancementsTest extends TestCase
 
     public function test_extras_grade_activity_log_is_visible_to_extras_in_dashboard(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create([
             'user_id' => $extrasUser->id,

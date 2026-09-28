@@ -29,7 +29,7 @@ class KarakterKriteriaTest extends TestCase
     // L.1 - kriteria tersimpan saat store
     public function test_kriteria_tersimpan_saat_buat_proyek(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
 
         $this->actingAs($admin)->post('/admin/projects', $this->adminPayload([
             'kelas' => [
@@ -44,7 +44,7 @@ class KarakterKriteriaTest extends TestCase
     // L.1 - kriteria nullable
     public function test_kriteria_opsional(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
 
         $this->actingAs($admin)->post('/admin/projects', $this->adminPayload())
             ->assertRedirect(route('admin.projects.index'));
@@ -55,7 +55,7 @@ class KarakterKriteriaTest extends TestCase
     // L.1 - kriteria max 500 karakter
     public function test_kriteria_max_500_karakter(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
 
         $this->actingAs($admin)->post('/admin/projects', $this->adminPayload([
             'kelas' => [
@@ -67,7 +67,7 @@ class KarakterKriteriaTest extends TestCase
     // L.2 - link_grup tersimpan saat store
     public function test_link_grup_tersimpan_saat_buat_proyek(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
 
         $this->actingAs($admin)->post('/admin/projects', $this->adminPayload([
             'link_grup' => 'https://chat.whatsapp.com/koordinasi123',
@@ -79,7 +79,7 @@ class KarakterKriteriaTest extends TestCase
     // L.2 - link_grup tidak wajib
     public function test_link_grup_opsional(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
 
         $this->actingAs($admin)->post('/admin/projects', $this->adminPayload())
             ->assertRedirect(route('admin.projects.index'));
@@ -90,7 +90,7 @@ class KarakterKriteriaTest extends TestCase
     // L.2 - link_grup harus URL valid
     public function test_link_grup_invalid_url_ditolak(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
 
         $this->actingAs($admin)->post('/admin/projects', $this->adminPayload([
             'link_grup' => 'bukan-url',
@@ -100,7 +100,7 @@ class KarakterKriteriaTest extends TestCase
     // L.2 - link_grup TIDAK muncul di model saat null
     public function test_link_grup_null_saat_tidak_diisi(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
 
         $project = CastingProject::factory()->create(['admin_id' => $admin->id]);
         $this->assertNull($project->link_grup);
@@ -109,7 +109,7 @@ class KarakterKriteriaTest extends TestCase
     // L.2 - link_grup tersimpan di model
     public function test_link_grup_tersimpan_di_model(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
 
         $project = CastingProject::factory()->create([
             'admin_id' => $admin->id,

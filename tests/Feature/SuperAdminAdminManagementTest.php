@@ -22,7 +22,7 @@ class SuperAdminAdminManagementTest extends TestCase
     public static function targetRoleProvider(): array
     {
         return [
-            ['admin_default'], ['casting_director'], ['super_admin'],
+            ['admin'], ['client'], ['super_admin'],
         ];
     }
 
@@ -48,7 +48,7 @@ class SuperAdminAdminManagementTest extends TestCase
     public function test_soft_delete_dan_restore_berhasil(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        $target = User::factory()->create(['role' => 'admin_default', 'status' => 'aktif']);
+        $target = User::factory()->create(['role' => 'admin', 'status' => 'aktif']);
 
         $this->actingAs($superAdmin)
             ->from(route('super-admin.admins.index'))
@@ -71,7 +71,7 @@ class SuperAdminAdminManagementTest extends TestCase
     public function test_soft_delete_tetap_berhasil_untuk_akun_berhistori(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        $target = User::factory()->create(['role' => 'admin_default']);
+        $target = User::factory()->create(['role' => 'admin']);
         CastingProject::create([
             'admin_id' => $target->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',
             'deadline' => now()->addDays(7), 'kuota' => 5,
@@ -87,7 +87,7 @@ class SuperAdminAdminManagementTest extends TestCase
     public function test_index_menandai_has_history_untuk_histori_di_luar_casting_projects(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        $target = User::factory()->create(['role' => 'admin_default']);
+        $target = User::factory()->create(['role' => 'admin']);
 
         NotificationLog::create([
             'user_id' => $target->id,
@@ -137,7 +137,7 @@ class SuperAdminAdminManagementTest extends TestCase
     public function test_akun_dinonaktifkan_tidak_bisa_login(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        $target = User::factory()->create(['role' => 'admin_default', 'password' => bcrypt('password')]);
+        $target = User::factory()->create(['role' => 'admin', 'password' => bcrypt('password')]);
 
         $this->actingAs($superAdmin)->patch(route('super-admin.admins.toggle-status', $target));
         $this->post('/logout');
@@ -255,7 +255,7 @@ class SuperAdminAdminManagementTest extends TestCase
     public function test_role_selain_super_admin_ditolak(string $role): void
     {
         $user = User::factory()->create(['role' => $role]);
-        $target = User::factory()->create(['role' => 'admin_default']);
+        $target = User::factory()->create(['role' => 'admin']);
 
         $this->actingAs($user)->patch(route('super-admin.admins.toggle-status', $target))->assertForbidden();
         $this->actingAs($user)->delete(route('super-admin.admins.destroy', $target))->assertForbidden();

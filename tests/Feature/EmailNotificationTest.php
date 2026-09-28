@@ -20,7 +20,7 @@ class EmailNotificationTest extends TestCase
 
     private function buatAplikasi(string $status = 'diajukan'): ProjectApplication
     {
-        $adminUser = User::factory()->create(['role' => 'admin_default']);
+        $adminUser = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'nama_asli' => 'Nama Asli Test']);
 
@@ -60,7 +60,7 @@ class EmailNotificationTest extends TestCase
         Mail::fake();
 
         $application = $this->buatAplikasi('diajukan_ke_cd');
-        $cd = User::factory()->create(['role' => 'casting_director']);
+        $cd = User::factory()->create(['role' => 'client']);
         $application->castingProject->cdAssignments()->create(['cd_user_id' => $cd->id]);
 
         $response = $this->actingAs($cd)->post('/cd/reviews', [

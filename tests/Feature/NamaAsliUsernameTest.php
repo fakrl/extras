@@ -149,7 +149,7 @@ class NamaAsliUsernameTest extends TestCase
 
     public function test_alias_sama_username_beda_tampil_berbeda_di_halaman_admin(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $project = $this->buatProject($admin);
 
         foreach (['rina_a', 'rina_b'] as $username) {
@@ -170,7 +170,7 @@ class NamaAsliUsernameTest extends TestCase
 
     public function test_extras_tanpa_username_tampil_tanpa_kurung_kosong(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $project = $this->buatProject($admin);
         $extras = $this->buatExtras([]);
 
@@ -259,7 +259,7 @@ class NamaAsliUsernameTest extends TestCase
 
     private function buatApplicationLolos(?string $namaAsli = 'Rina Wulandari'): ProjectApplication
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $extras = $this->buatExtras($namaAsli ? ['nama_asli' => $namaAsli] : []);
 
         return ProjectApplication::create([

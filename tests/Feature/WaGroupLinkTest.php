@@ -27,7 +27,7 @@ class WaGroupLinkTest extends TestCase
 
     public function test_wa_group_link_tersimpan_dan_tampil(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
 
         $response = $this->actingAs($admin)->post('/admin/projects', $this->payload([
             'wa_group_link' => 'https://chat.whatsapp.com/abc123',
@@ -49,7 +49,7 @@ class WaGroupLinkTest extends TestCase
 
     public function test_create_proyek_tanpa_link_tetap_jalan(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
 
         $response = $this->actingAs($admin)->post('/admin/projects', $this->payload());
 
@@ -59,7 +59,7 @@ class WaGroupLinkTest extends TestCase
 
     public function test_wa_group_link_invalid_url_ditolak(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
 
         $response = $this->actingAs($admin)->post('/admin/projects', $this->payload([
             'wa_group_link' => 'bukan-url',
