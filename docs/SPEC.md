@@ -812,6 +812,13 @@ Ini minimal diff — nggak nyentuh controller (query udah benar, semua jadwal em
 | D11 Korlap per proyek | Scoping `AttendanceController` ke proyek yang di-assign | _(kosong)_ |
 | D12 Feature freeze | Tanggal freeze; fitur AT–AX mana yang masuk Bab 3 | _(kosong)_ |
 | D13 Repo public/private | Private, atau scrub history + hapus angka riil di `docs/CLAUDE.md` | _(kosong)_ |
+| D16 Syarat "profil lengkap" sebelum daftar | Sekarang ditebak: foto utama + gender + tinggi badan. Tambah/kurangi field (ukuran baju, warna kulit, dll) | _(kosong)_ |
+| D17 Lokasi syuting kelihatan kapan? | Sementara disembunyikan lagi sebelum lolos (lihat AZ.1). Kalau mau ditampilkan: cukup kota (butuh kolom `kota`) atau alamat lengkap | _(kosong)_ |
+| D18 Alasan "Hentikan Negosiasi" | Tampilkan ke Extras di progress/dashboard, atau cuma internal | _(kosong)_ |
+| D19 Nama asli Extras ke Client | Kebuka saat lolos/kontrak, atau tetap username | _(kosong)_ |
+| D20 Grade Admin kelihatan Client? | BA.6 sudah sembunyiin dari HTML; putuskan apakah perlu ditampilkan | _(kosong)_ |
+| D21 Extras anak-anak | Akun atas nama wali + persetujuan (UU PDP data anak) | _(kosong)_ |
+| D22 Tag Look/Etnis di link publik | Rekomendasi: tidak tampil publik, opsional | _(kosong)_ |
 | D15 Palet homepage vs dashboard | Satukan brand (lime vs hijau) atau sahkan sebagai 2 konteks berbeda di UI-GUIDELINES | _(kosong)_ |
 
 ## AY.7: Bersih-bersih role lama (teknis, boleh langsung setelah AY.1)
@@ -836,3 +843,108 @@ Keputusan 5 role sudah final sejak 21 Sept, jadi ini bukan keputusan baru:
 | AY.6 | **BLOCKED** — tunggu keputusan | — |
 
 **Skenario QA** (HP Android murah, tema terang, di luar ruangan, data seluler): (1) daftar Extras dari nol sampai upload video; (2) Korlap validasi 10 orang berturut-turut; (3) Admin kasih grade 20 pelamar + deal 1 fee; (4) Client baru ajukan proyek lalu Greenlight 5 kandidat; (5) Owner ACC proyek, cek Kelola Akun (4 aksi per-akun) dan halaman Keuangan. Catat di mana **bingung**, bukan cuma di mana error.
+
+---
+
+# Bagian AZ: Tindak Lanjut Review Eksekusi AY (28 September 2026)
+
+> Manager-session sudah cek ulang hasil AY ke kode (bukan cuma baca laporan): 13 commit ada di `origin/main`, relasi `KeuanganService`, guard kontrak/transfer, form bersarang (sekarang pakai `form="bulk-form"`), `@{{`, link homepage, `$errors` di layout, `lang/id`, token kontras, Chart.js per halaman, dan sisa role lama di `app/`, `routes/`, `resources/`, `tests/` — **semua terverifikasi ada**. Jumlah test belum bisa diverifikasi independen (PHP nggak ada di sandbox manager). Sisa di bawah ini kecil.
+
+## AZ.1: Balikin lokasi syuting jadi tersembunyi sebelum lolos (regresi privasi dari AY.5.2)
+
+SPEC AY.5.2 minta "kota lokasi", tapi kolom kota nggak ada, jadi yang tampil alamat lokasi lengkap — di `public/event.blade.php:61-62` (link publik, tanpa login) dan `extras/projects/show.blade.php:14`. Sebelumnya lokasi sengaja baru muncul setelah lolos. Ini salah spec manager, bukan salah eksekusi. **Hapus tampilan lokasi di dua view itu** (kriteria tetap tampil). Keputusan akhirnya di D17.
+
+## AZ.2: Stop track `.claude/settings.local.json`
+
+File izin lokal Claude Code ke-track di repo public sejak `9173daf`. `git rm --cached .claude/settings.local.json`, tambah `.claude/settings.local.json` dan `.claude/worktrees/` ke `.gitignore`, commit.
+
+## AZ.3: Bersihin worktree lama
+
+`git worktree prune` (worktree `agent-a2a1a763fe09e29d8` sudah prunable), hapus branch-nya kalau sudah di-merge.
+
+## AZ.4: Test di MySQL (dijalankan Fakrul, bukan Claude Code)
+
+Buat database terpisah `jbtb_test` (JANGAN pakai `jbtb`), lalu:
+`DB_CONNECTION=mysql DB_DATABASE=jbtb_test php artisan test`
+Kalau ada yang merah, tempel output-nya ke manager-session. Tujuannya mastiin enum role & status yang udah disempitin beneran jalan di MySQL, bukan cuma di SQLite.
+
+## Checklist AZ
+
+| Item | Bukti | QA |
+|---|---|---|
+| AZ.1 lokasi disembunyikan | | [ ] |
+| AZ.2 untrack settings.local | | [ ] |
+| AZ.3 worktree prune | | [ ] |
+| AZ.4 test MySQL (Fakrul) | | [ ] |
+
+---
+
+# Bagian BA: Kartu Extras ala Matchu + Kategori Tag (REVISI 28 Sept — versi ringan)
+
+> **SUPERSEDES draf BA sebelumnya** (yang ada lapis akses di server + fetch detail). Arahan Fakrul: jangan nambah banyak logic — **perbarui layout** kartu ikut pola Matchu, dan **perluas kategori** jadi semacam hashtag yang dipilih Extras sendiri, dipakai buat filter dan % cocok.
+>
+> Referensi layout: `docs/ui-prototype/07-kartu-extras.html`. Subagent wajib (>3 file). Commit per sub-bagian. Jangan centang checklist sendiri.
+
+## Yang sudah ada (dicek, jangan dibikin ulang)
+
+- Tabel `extras_categories` (`nama` unik) + pivot `extras_category_extras_profile` + relasi `ExtrasProfile::categories()`. Seeder: Anak-anak, Remaja, Dewasa, Orang Tua, Chinese/Tionghoa. Sekarang **cuma Admin** yang ngisi (`updateKategori`).
+- Greenlight Client sudah kartu + modal (`cd/reviews/show`); Lineup Admin kartu besar 10 tombol; Data Extras Admin masih tabel.
+- `casting_project_classes.kriteria` = teks bebas, belum nyambung ke kategori.
+
+## BA.1: Fix 404 profil (tetap, kecil)
+
+1. Kelola Akun / Monitoring: akun `trashed()` jangan dirender sebagai link profil — badge "Dihapus" + Restore saja.
+2. `AdminManagementController::update`: role diganti jadi `extras` → `ExtrasProfile::firstOrCreate(['user_id' => $user->id])`.
+3. `showProfile`: profil nggak ada → `back()->with('error', ...)`, bukan 404 polos.
+
+## BA.2: Kategori jadi tag (perubahan data minimal)
+
+1. Migration: tambah kolom `grup` (string, nullable) di `extras_categories`. Isi lewat seeder (`firstOrCreate` by `nama`, update `grup`):
+   - **Usia tampilan:** Anak-anak, Remaja, Dewasa muda, Dewasa, Orang Tua, Lansia
+   - **Tampilan/Look:** Chinese/Tionghoa, Timur Tengah, Indonesia Timur, Kaukasia/Bule, Melayu, Jawa, Sunda, dst (list final dari Erlina)
+   - **Tipe:** Mahasiswa, Pekerja kantoran, Atlet, Berhijab, Bertato, Rambut panjang, dst
+   - **Kemampuan:** Naik motor, Nyetir mobil, Berenang, Menari, Bahasa daerah, dst
+   - Gender **bukan** tag — sudah ada field `gender`, jangan diduplikasi.
+2. **Extras pilih sendiri** di `extras/profile-edit`: section "Tentang Kamu" berisi chip per grup (multi-pilih, tap to toggle, 44px), simpan lewat `categories()->sync()` di `ProfileController::update` (validasi `exists:extras_categories,id`). Extras **nggak bisa bikin tag baru** — daftar tag dikelola Admin (biar nggak ada "dewasa" / "Dewasa" / "org dewasa").
+3. Admin tetap bisa koreksi tag (fitur `updateKategori` yang sudah ada).
+4. Migration pivot baru `casting_project_class_extras_category` (`casting_project_class_id`, `extras_category_id`). Di form buat/edit proyek, tiap peran bisa pilih **tag yang dicari** (chip yang sama). `kriteria` teks bebas tetap ada buat catatan tambahan.
+
+## BA.3: % Cocok (satu method, tanpa aturan lain)
+
+`ProjectApplication::persenCocok(): ?int` = jumlah tag peran yang dimiliki Extras ÷ jumlah tag peran × 100, dibulatkan. Kalau peran nggak punya tag → `null` (ring nggak ditampilkan). Eager-load `castingProjectClass.categories` + `extras.categories` biar nggak N+1.
+
+## BA.4: Layout kartu (ikut prototype 07)
+
+Satu partial `partials/extras-card.blade.php`, dipakai di Greenlight, Lineup, dan tab Extras di Data Extras:
+- Foto 3:4 di atas; badge status kiri atas; **ring % cocok** kanan bawah (kalau ada); checkbox bulk kanan atas khusus Admin.
+- `@username`, lalu 3 baris ikon: peran yang dilamar · usia/tinggi/kota · jumlah proyek selesai.
+- **Maksimal 3 tag** tampil sebagai chip kecil (`#Dewasa #Berhijab …`), sisanya "+2".
+- Dua tombol 44px: "Lihat Profil" + satu aksi utama sesuai status (Admin: Mulai nego / Lanjut nego / Ajukan ke Client / Siapkan kontrak; Client: Pilih). Aksi lain (grade, catatan, apresiasi, tolak, breakdown) pindah ke modal detail yang sudah ada.
+- Grid `repeat(auto-fill, minmax(230px, 1fr))`, 1 kolom di < 480px.
+- Modal detail: pakai modal yang sudah ada, tambah section tag per grup + rincian cocok ("✅ #Dewasa · ✅ #Berhijab · ⬜ #Naik motor").
+
+## BA.5: Filter pakai tag
+
+Di Greenlight & Lineup: chip filter tag (dari tag yang dicari peran) + urutkan "Paling cocok" (desc `persenCocok`). Filter client-side boleh (data sudah di halaman), kecuali Lineup yang paginate → pakai query `whereHas('extras.categories', ...)`.
+
+## BA.6: Satu hal yang tetap wajib (bukan logic baru, cuma nggak ngirim data)
+
+Di kartu Greenlight **hapus atribut `data-grade-admin`** dan data kontak/nama asli dari HTML Client — atribut `data-*` kebaca di view-source walau nggak ditampilkan. Cukup nggak dirender, nggak perlu mekanisme baru.
+
+## Keputusan (masuk tabel AY.6)
+
+- **D21 — Extras anak-anak:** siapa yang punya akun (orang tua/wali)? UU PDP mewajibkan persetujuan wali untuk data anak. Sampai diputus: tag "Anak-anak" boleh dipilih, tapi registrasi tetap minimal 17 th (akun atas nama wali).
+- **D22 — Tag Look/Etnis tampil di link share publik?** Rekomendasi: **nggak** — cuma kelihatan Admin & Client proyek terkait, dan pengisiannya opsional.
+
+## Checklist BA
+
+| Item | Bukti | QA |
+|---|---|---|
+| BA.1 fix 404 | | [ ] |
+| BA.2 tag grup + Extras pilih sendiri + tag per peran | | [ ] |
+| BA.3 persenCocok | | [ ] |
+| BA.4 kartu baru di 3 halaman | | [ ] |
+| BA.5 filter + urut paling cocok | | [ ] |
+| BA.6 hapus data-grade-admin dari HTML Client | | [ ] |
+
+**Tes QA:** Extras isi 5 tag dari HP → Admin bikin peran dengan 3 tag → Lineup nampilin ring % yang bener + filter tag jalan → Client lihat kartu yang sama tanpa grade admin di view-source.

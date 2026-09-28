@@ -11,7 +11,7 @@
     <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Tanggal Shooting</div>
     <ul style="margin: 0; padding-left: 18px; font-size: 13.5px;">
         @foreach ($castingProject->shootingDates as $date)
-            <li>{{ $date->tanggal->format('d M Y') }}@if ($date->lokasi) · {{ $date->lokasi }}@endif</li>
+            <li>{{ $date->tanggal->format('d M Y') }}</li>
         @endforeach
     </ul>
 </div>
