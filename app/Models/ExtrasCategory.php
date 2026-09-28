@@ -27,6 +27,12 @@ class ExtrasCategory extends Model
         return $this->belongsToMany(CastingProjectClass::class);
     }
 
+    /** BA.5: tag yang dicari peran-peran di satu proyek, buat chip filter. */
+    public static function dicariDiProyek(int $projectId): Collection
+    {
+        return static::whereHas('castingProjectClasses', fn ($q) => $q->where('casting_project_id', $projectId))->orderBy('nama')->get();
+    }
+
     public static function perGrup(): Collection
     {
         $urutan = collect(self::GRUP)->flatten()->flip();

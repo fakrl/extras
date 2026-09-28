@@ -8,6 +8,7 @@ use App\Models\ActivityLog;
 use App\Models\CastingProject;
 use App\Models\CdProjectAssignment;
 use App\Models\CdReview;
+use App\Models\ExtrasCategory;
 use App\Models\ProjectApplication;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -139,7 +140,9 @@ class ReviewController extends Controller
 
         $applications = $query->latest()->get();
 
-        return response()->view('cd.reviews.show', compact('applications', 'castingProject', 'statusFilter', 'genderFilter', 'usiaMin', 'usiaMax'));
+        $tagDicari = ExtrasCategory::dicariDiProyek($castingProject->id);
+
+        return response()->view('cd.reviews.show', compact('applications', 'castingProject', 'statusFilter', 'genderFilter', 'usiaMin', 'usiaMax', 'tagDicari'));
     }
 
     public function exportRiwayatXlsx(Request $request, CastingProject $castingProject)

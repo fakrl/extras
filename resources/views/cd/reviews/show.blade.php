@@ -21,8 +21,7 @@
     </div>
 </div>
 
-{{-- Filter status --}}
-<div style="display: flex; gap: 8px; margin-bottom: 10px; align-items: center; flex-wrap: wrap;">
+<div class="xfilter" aria-label="Filter status">
     @foreach (['' => 'Semua', 'menunggu' => 'Menunggu', 'approved' => 'Approved', 'rejected' => 'Rejected'] as $val => $label)
         <a href="{{ route('cd.reviews.show', array_filter(['castingProject' => $castingProject->id, 'status' => $val ?: null])) }}"
            class="btn btn-sm {{ ($statusFilter ?? '') === $val ? 'btn-brand' : '' }}">{{ $label }}</a>
@@ -30,31 +29,28 @@
 </div>
 
 {{-- AU.7: Filter demografis (server-side: gender, usia) + Live Search & filter klien (ukuran baju, warna kulit) --}}
-<form method="GET" action="{{ route('cd.reviews.show', $castingProject) }}" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; padding: 10px; background: var(--bg-secondary); border-radius: 8px; align-items: center;">
+<form method="GET" action="{{ route('cd.reviews.show', $castingProject) }}" class="xtoolbar">
     @if($statusFilter) <input type="hidden" name="status" value="{{ $statusFilter }}"> @endif
-    <input type="text" id="filter-candidate-search" placeholder="Cari nama, alias, peran..."
-           style="font-size: var(--fs-md); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 180px; margin-bottom: 0;">
-    <label style="font-size: 12.5px; color: var(--text-muted);">Gender:</label>
-    <select name="gender" id="filter-gender" style="font-size: 12.5px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);">
-        <option value="">Semua</option>
+    <input type="search" id="filter-candidate-search" class="xtoolbar-cari" placeholder="Cari username atau peran…" aria-label="Cari kandidat">
+    <select name="gender" id="filter-gender" aria-label="Gender">
+        <option value="">Semua gender</option>
         <option value="laki-laki" @selected(($genderFilter ?? '') === 'laki-laki')>Laki-laki</option>
         <option value="perempuan" @selected(($genderFilter ?? '') === 'perempuan')>Perempuan</option>
     </select>
-    <label style="font-size: 12.5px; color: var(--text-muted);">Usia:</label>
-    <input type="number" name="usia_min" id="filter-usia-min" placeholder="Min" value="{{ $usiaMin ?? '' }}" style="width: 50px; font-size: 12.5px; padding: 4px 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);">
-    <span style="font-size: 12.5px;">-</span>
-    <input type="number" name="usia_max" id="filter-usia-max" placeholder="Max" value="{{ $usiaMax ?? '' }}" style="width: 50px; font-size: 12.5px; padding: 4px 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);">
+    <label for="filter-usia-min">Usia</label>
+    <input type="number" name="usia_min" id="filter-usia-min" placeholder="Min" value="{{ $usiaMin ?? '' }}" style="width: 70px;">
+    <input type="number" name="usia_max" id="filter-usia-max" placeholder="Max" value="{{ $usiaMax ?? '' }}" style="width: 70px;" aria-label="Usia maksimal">
     <button type="submit" class="btn btn-sm">Terapkan</button>
     @if($genderFilter || $usiaMin || $usiaMax)
         <a href="{{ route('cd.reviews.show', array_filter(['castingProject' => $castingProject->id, 'status' => $statusFilter ?: null])) }}" class="btn btn-sm">Reset</a>
     @endif
-    <select id="filter-ukuran-baju" style="font-size: 12.5px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);">
-        <option value="">Semua Ukuran</option>
+    <select id="filter-ukuran-baju" aria-label="Ukuran baju">
+        <option value="">Semua ukuran</option>
         <option value="S">S</option><option value="M">M</option>
         <option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option>
     </select>
-    <select id="filter-warna-kulit" style="font-size: 12.5px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);">
-        <option value="">Semua Warna Kulit</option>
+    <select id="filter-warna-kulit" aria-label="Warna kulit">
+        <option value="">Semua warna kulit</option>
         <option value="sawo matang">Sawo Matang</option>
         <option value="kuning langsat">Kuning Langsat</option>
         <option value="hitam">Hitam</option>
@@ -62,11 +58,25 @@
     </select>
 </form>
 
-{{-- Select-all pending --}}
-<div style="margin-bottom: 8px; display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary);">
-    <input type="checkbox" id="check-all-outer">
-    <label for="check-all-outer" style="cursor: pointer;">Pilih Semua Pending</label>
+{{-- BA.5: filter tag (client-side, cocok salah satu) + urutkan --}}
+<div class="xfilter">
+    @if ($tagDicari->isNotEmpty())
+        <span class="xfilter-label">Tag dicari</span>
+        @foreach ($tagDicari as $tag)
+            <button type="button" class="btn btn-sm gl-tag" data-tag="{{ $tag->id }}" aria-pressed="false">#{{ $tag->nama }}</button>
+        @endforeach
+    @endif
+    <label for="gl-urut" class="xfilter-label" style="margin: 0 0 0 auto;">Urutkan</label>
+    <select id="gl-urut" style="width: auto; min-height: 36px; margin: 0; padding: 4px 10px; font-size: var(--fs-sm);">
+        <option value="">Terbaru</option>
+        <option value="cocok">Paling cocok</option>
+    </select>
 </div>
+
+<label style="margin: 0 0 10px; display: inline-flex; align-items: center; gap: 8px; min-height: 36px; cursor: pointer;">
+    <input type="checkbox" id="check-all-outer"> Pilih Semua Pending
+</label>
+<div id="gl-kosong" class="card" style="display: none; text-align: center; color: var(--text-muted); padding: 24px; margin-bottom: 14px;">Tidak ada kandidat yang cocok dengan filter.</div>
 
 <form method="POST" action="{{ route('cd.reviews.review') }}" id="form-review">
     @csrf
@@ -106,6 +116,9 @@
                 'attrs' => [
                     'class' => 'kandidat-card',
                     'data-appid' => $app->id,
+                    'data-tags' => implode(' ', $app->extras->categories->modelKeys()),
+                    'data-cocok' => $app->persenCocok() ?? -1,
+                    'data-urut' => $loop->index,
                     'data-alias' => $app->extras->user->username ?? '-',
                     'data-foto' => $app->extras->foto_profil_path ? route('extras.media.foto', $app->extras) : '',
                     'data-video' => $app->extras->video_profil_path ? route('extras.media.video', $app->extras) : '',
@@ -208,7 +221,7 @@
 <script>
 (function () {
     document.getElementById('check-all-outer')?.addEventListener('change', function (e) {
-        document.querySelectorAll('.app-checkbox').forEach(function (cb) { cb.checked = e.target.checked; });
+        document.querySelectorAll('.app-checkbox').forEach(function (cb) { if (cb.offsetParent !== null) cb.checked = e.target.checked; });
     });
 
     document.getElementById('btn-bulk-reject')?.addEventListener('click', function () {
@@ -349,15 +362,36 @@
             var search = (document.getElementById('filter-candidate-search')?.value || '').toLowerCase().trim();
             var ukuran = document.getElementById('filter-ukuran-baju').value.toUpperCase();
             var warna = document.getElementById('filter-warna-kulit').value.toLowerCase();
+            var tags = Array.from(document.querySelectorAll('.gl-tag[aria-pressed="true"]')).map(function (b) { return b.dataset.tag; });
+            var tampil = 0;
             document.querySelectorAll('.kandidat-card').forEach(function (card) {
                 var u = (card.dataset.ukuranBaju || '').toUpperCase();
                 var w = (card.dataset.warnaKulit || '').toLowerCase();
                 var text = (card.textContent || '').toLowerCase();
                 var matchSearch = !search || text.includes(search);
-                var visible = matchSearch && (!ukuran || u === ukuran) && (!warna || w === warna);
+                var punya = (card.dataset.tags || '').split(' ');
+                var matchTag = !tags.length || tags.some(function (t) { return punya.includes(t); });
+                var visible = matchSearch && matchTag && (!ukuran || u === ukuran) && (!warna || w === warna);
                 card.style.display = visible ? '' : 'none';
+                if (visible) tampil++;
             });
+            document.getElementById('gl-kosong').style.display = tampil || !document.querySelector('.kandidat-card') ? 'none' : '';
         }
+        document.querySelectorAll('.gl-tag').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var on = btn.getAttribute('aria-pressed') !== 'true';
+                btn.setAttribute('aria-pressed', on);
+                btn.classList.toggle('btn-brand', on);
+                applyDemoFilter();
+            });
+        });
+        document.getElementById('gl-urut').addEventListener('change', function () {
+            var key = this.value === 'cocok' ? 'cocok' : 'urut';
+            var grid = document.querySelector('.xgrid');
+            Array.from(grid.querySelectorAll('.kandidat-card'))
+                .sort(function (a, b) { return key === 'cocok' ? (b.dataset.cocok - a.dataset.cocok) || (a.dataset.urut - b.dataset.urut) : a.dataset.urut - b.dataset.urut; })
+                .forEach(function (card) { grid.appendChild(card); });
+        });
         ['filter-candidate-search', 'filter-ukuran-baju', 'filter-warna-kulit'].forEach(function (id) {
             var el = document.getElementById(id);
             if (el) { el.addEventListener('change', applyDemoFilter); el.addEventListener('input', applyDemoFilter); }
