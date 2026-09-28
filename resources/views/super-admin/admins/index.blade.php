@@ -107,7 +107,9 @@
                     @endif
                     <div>
                         <div style="font-weight: 600; font-size: 14.5px; color: var(--text-primary); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                            @if ($user->role === 'extras')
+                            @if ($user->trashed())
+                                {{ $user->name }} <span class="badge badge-tolak">Dihapus</span>
+                            @elseif ($user->role === 'extras')
                                 <a href="{{ route('admin.extras.profil', $user) }}" style="color: inherit; text-decoration: none;">{{ $user->name }}</a>
                             @else
                                 <a href="{{ route('super-admin.admins.show', $user) }}" style="color: inherit; text-decoration: none;">{{ $user->name }}</a>
@@ -131,7 +133,11 @@
                         <i class="ti ti-dots-vertical"></i>
                     </summary>
                     <div style="position: absolute; right: 0; top: 36px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; min-width: 170px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); padding: 4px 0; z-index: 40;">
-                        @if ($user->role === 'extras')
+                        @if ($user->trashed())
+                            <button type="button" onclick="document.getElementById('restore-dialog-{{ $user->id }}').showModal()" style="display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 14px; font-size: 13px; text-align: left; background: none; border: none; color: var(--accent-strong); cursor: pointer;">
+                                <i class="ti ti-restore"></i> Restore
+                            </button>
+                        @elseif ($user->role === 'extras')
                             <a href="{{ route('admin.extras.profil', $user) }}" style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; font-size: 13px; color: var(--text-primary); text-decoration: none;">
                                 <i class="ti ti-user"></i> Lihat Profil
                             </a>
@@ -144,7 +150,7 @@
                             </a>
                         @endif
 
-                        @if (! $user->is_protected && $user->id !== auth()->id())
+                        @if (! $user->trashed() && ! $user->is_protected && $user->id !== auth()->id())
                             <button type="button" onclick="document.getElementById('edit-user-dialog-{{ $user->id }}').showModal()" style="display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 14px; font-size: 13px; text-align: left; background: none; border: none; color: var(--text-primary); cursor: pointer;">
                                 <i class="ti ti-edit"></i> Edit Akun
                             </button>

@@ -105,12 +105,14 @@ class UserManagementController extends Controller
     /**
      * AQ.3: Admin/SA melihat profil lengkap Extras (read-only admin view).
      */
-    public function showProfile(User $user): View
+    public function showProfile(User $user): View|RedirectResponse
     {
         abort_unless($user->role === 'extras', 403);
         $user->load('extrasProfile.categories', 'extrasProfile.photos');
         $profile = $user->extrasProfile;
-        abort_if(! $profile, 404);
+        if (! $profile) {
+            return back()->with('error', 'Profil Extras belum dibuat untuk akun ini.');
+        }
 
         $bySlot = $profile->photos->keyBy('urutan');
         $fotoTambahan = [1 => $bySlot->get(1), 2 => $bySlot->get(2), 3 => $bySlot->get(3), 4 => $bySlot->get(4)];
