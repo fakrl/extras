@@ -21,7 +21,7 @@ class RecapControllerTest extends TestCase
 
     public function test_extras_paling_sering_terpilih_terurut_benar(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $project = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',
             'deadline' => now()->addDays(7), 'kuota' => 5,
@@ -48,7 +48,7 @@ class RecapControllerTest extends TestCase
 
     public function test_rekap_sering_batal_hanya_menampilkan_yang_pernah_batal_terurut_desc(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
 
         $seringBatal = ExtrasProfile::factory()->for(
             User::factory()->state(['role' => 'extras', 'username' => 'tukang_batal'])
@@ -69,7 +69,7 @@ class RecapControllerTest extends TestCase
 
     public function test_halaman_recap_tetap_ok_kalau_belum_ada_yang_pernah_batal(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         ExtrasProfile::factory()->create(['cancel_count' => 0]);
 
         $response = $this->actingAs($admin)->get(route('admin.recap.index'));
@@ -86,7 +86,7 @@ class RecapControllerTest extends TestCase
     }
 
     #[DataProvider('bukanAdminDefaultProvider')]
-    public function test_role_selain_admin_default_ditolak(string $role): void
+    public function test_role_selain_admin_ditolak(string $role): void
     {
         $user = User::factory()->create(['role' => $role]);
 

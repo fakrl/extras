@@ -17,7 +17,7 @@ class GreenlightKonsolidasiTest extends TestCase
 
     private function buatCd(): User
     {
-        return User::factory()->create(['role' => 'casting_director']);
+        return User::factory()->create(['role' => 'client']);
     }
 
     private function buatProyek(User $admin): CastingProject
@@ -46,7 +46,7 @@ class GreenlightKonsolidasiTest extends TestCase
 
     public function test_index_tampilkan_breakdown_count_per_proyek(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $cd = $this->buatCd();
         $project = $this->buatProyek($admin);
         $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
@@ -69,7 +69,7 @@ class GreenlightKonsolidasiTest extends TestCase
 
     public function test_show_tampilkan_semua_status_bukan_hanya_pending(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $cd = $this->buatCd();
         $project = $this->buatProyek($admin);
         $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
@@ -91,7 +91,7 @@ class GreenlightKonsolidasiTest extends TestCase
 
     public function test_show_filter_menunggu_hanya_tampilkan_diajukan_ke_cd(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $cd = $this->buatCd();
         $project = $this->buatProyek($admin);
         $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
@@ -111,7 +111,7 @@ class GreenlightKonsolidasiTest extends TestCase
 
     public function test_approve_dengan_grade_cd_tersimpan(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $cd = $this->buatCd();
         $project = $this->buatProyek($admin);
         $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
@@ -134,7 +134,7 @@ class GreenlightKonsolidasiTest extends TestCase
 
     public function test_show_403_jika_cd_tidak_diassign_ke_proyek(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $cd = $this->buatCd();
         $cdLain = $this->buatCd();
         $project = $this->buatProyek($admin);
@@ -145,7 +145,7 @@ class GreenlightKonsolidasiTest extends TestCase
 
     public function test_dashboard_tampilkan_pelunasan_pending_scoped_ke_proyek_cd(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $cd = $this->buatCd();
         $cdLain = $this->buatCd();
 

@@ -20,7 +20,7 @@ class LoginUsernameTest extends TestCase
     public function test_login_pakai_email_tetap_jalan(): void
     {
         $user = User::factory()->create([
-            'role' => 'admin_default',
+            'role' => 'admin',
             'username' => 'admin_satu',
             'password' => bcrypt('password'),
         ]);
@@ -35,7 +35,7 @@ class LoginUsernameTest extends TestCase
     public function test_login_pakai_username_berhasil_sama_seperti_email(): void
     {
         $user = User::factory()->create([
-            'role' => 'admin_default',
+            'role' => 'admin',
             'username' => 'admin_satu',
             'password' => bcrypt('password'),
         ]);
@@ -50,7 +50,7 @@ class LoginUsernameTest extends TestCase
     public function test_username_benar_password_salah_gagal(): void
     {
         User::factory()->create([
-            'role' => 'admin_default',
+            'role' => 'admin',
             'username' => 'admin_satu',
             'password' => bcrypt('password'),
         ]);
@@ -74,7 +74,7 @@ class LoginUsernameTest extends TestCase
     public function test_gate_akun_nonaktif_tetap_blokir_saat_login_via_username(): void
     {
         User::factory()->create([
-            'role' => 'admin_default',
+            'role' => 'admin',
             'status' => 'nonaktif',
             'username' => 'admin_mati',
             'password' => bcrypt('password'),

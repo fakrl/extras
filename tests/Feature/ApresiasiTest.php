@@ -20,7 +20,7 @@ class ApresiasiTest extends TestCase
 
     private function buatAplikasi(): ProjectApplication
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $project = CastingProject::factory()->create(['admin_id' => $admin->id]);
         $extras = ExtrasProfile::factory()->create();
 
@@ -31,10 +31,10 @@ class ApresiasiTest extends TestCase
         ]);
     }
 
-    public function test_admin_default_bisa_memberi_apresiasi_dengan_catatan(): void
+    public function test_admin_bisa_memberi_apresiasi_dengan_catatan(): void
     {
         $application = $this->buatAplikasi();
-        $admin = User::where('role', 'admin_default')->first();
+        $admin = User::where('role', 'admin')->first();
 
         $response = $this->actingAs($admin)->post(route('admin.applications.apresiasi', $application), [
             'apresiasi' => '1',
@@ -51,7 +51,7 @@ class ApresiasiTest extends TestCase
     {
         $application = $this->buatAplikasi();
         $application->extras->update(['apresiasi' => true, 'apresiasi_catatan' => 'Bagus.']);
-        $admin = User::where('role', 'admin_default')->first();
+        $admin = User::where('role', 'admin')->first();
 
         $this->actingAs($admin)->post(route('admin.applications.apresiasi', $application), [
             'apresiasi' => '0',
@@ -70,7 +70,7 @@ class ApresiasiTest extends TestCase
     }
 
     #[DataProvider('bukanAdminDefaultProvider')]
-    public function test_role_selain_admin_default_ditolak(string $role): void
+    public function test_role_selain_admin_ditolak(string $role): void
     {
         $application = $this->buatAplikasi();
         $user = User::factory()->create(['role' => $role]);
@@ -85,7 +85,7 @@ class ApresiasiTest extends TestCase
         $application = $this->buatAplikasi();
         $application->extras->update(['apresiasi' => true, 'apresiasi_catatan' => 'Rahasia internal admin.']);
 
-        $cd = User::factory()->create(['role' => 'casting_director']);
+        $cd = User::factory()->create(['role' => 'client']);
         $application->castingProject->cdAssignments()->create(['cd_user_id' => $cd->id]);
 
         $response = $this->actingAs($cd)->get(route('cd.reviews.index'));

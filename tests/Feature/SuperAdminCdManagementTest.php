@@ -18,11 +18,11 @@ class SuperAdminCdManagementTest extends TestCase
     public function test_cd_muncul_di_listing_admin_dengan_filter_cd(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        $cd = User::factory()->create(['role' => 'casting_director', 'name' => 'CD Satu']);
+        $cd = User::factory()->create(['role' => 'client', 'name' => 'CD Satu']);
 
-        // Bagian AG: CD sekarang muncul di admin listing dengan filter role=casting_director
+        // Bagian AG: CD sekarang muncul di admin listing dengan filter role=client
         $this->actingAs($superAdmin)
-            ->get(route('super-admin.admins.index', ['role' => 'casting_director']))
+            ->get(route('super-admin.admins.index', ['role' => 'client']))
             ->assertOk()
             ->assertSee('CD Satu');
     }
@@ -30,7 +30,7 @@ class SuperAdminCdManagementTest extends TestCase
     public function test_cd_tidak_muncul_di_listing_admin_tanpa_filter(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        $cd = User::factory()->create(['role' => 'casting_director', 'name' => 'CD Satu']);
+        $cd = User::factory()->create(['role' => 'client', 'name' => 'CD Satu']);
         $admin = User::factory()->create(['role' => 'admin', 'name' => 'Admin Satu']);
 
         // Bagian AG: CD tidak muncul di listing default (hanya Admin roles)
@@ -44,7 +44,7 @@ class SuperAdminCdManagementTest extends TestCase
     public function test_toggle_status_cd_lewat_route_generic_tetap_kerja(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        $cd = User::factory()->create(['role' => 'casting_director', 'status' => 'aktif']);
+        $cd = User::factory()->create(['role' => 'client', 'status' => 'aktif']);
 
         $this->actingAs($superAdmin)
             ->patch(route('super-admin.admins.toggle-status', $cd))
@@ -56,7 +56,7 @@ class SuperAdminCdManagementTest extends TestCase
     public function test_soft_delete_cd_redirect_ke_listing_admin(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        $cd = User::factory()->create(['role' => 'casting_director']);
+        $cd = User::factory()->create(['role' => 'client']);
 
         $this->actingAs($superAdmin)
             ->delete(route('super-admin.admins.destroy', $cd))
@@ -69,7 +69,7 @@ class SuperAdminCdManagementTest extends TestCase
     public function test_super_admin_bisa_lihat_detail_akun_cd(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        $cd = User::factory()->create(['role' => 'casting_director', 'name' => 'CD Detail']);
+        $cd = User::factory()->create(['role' => 'client', 'name' => 'CD Detail']);
 
         $this->actingAs($superAdmin)
             ->get(route('super-admin.admins.show', $cd))
@@ -120,7 +120,7 @@ class SuperAdminCdManagementTest extends TestCase
     public function test_email_duplikat_ditolak_saat_bikin_akun_cd(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        User::factory()->create(['role' => 'casting_director', 'email' => 'sudah-ada@example.com']);
+        User::factory()->create(['role' => 'client', 'email' => 'sudah-ada@example.com']);
 
         $response = $this->actingAs($superAdmin)->post(route('super-admin.casting-directors.store'), [
             'name' => 'CD Duplikat',

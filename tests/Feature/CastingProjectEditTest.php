@@ -44,7 +44,7 @@ class CastingProjectEditTest extends TestCase
 
     public function test_edit_update_semua_field(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $project = $this->buatProyek($admin);
         $kelasLama = $project->classes()->create(['nama_kelas' => 'Kelas Lama', 'budget_client' => 100000, 'kuota_kelas' => 2]);
 
@@ -69,7 +69,7 @@ class CastingProjectEditTest extends TestCase
 
     public function test_kelas_berpendaftar_tidak_bisa_dihapus(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $project = $this->buatProyek($admin);
         $kelasA = $project->classes()->create(['nama_kelas' => 'Kelas A', 'budget_client' => 100000, 'kuota_kelas' => 2]);
         $project->classes()->create(['nama_kelas' => 'Kelas B', 'budget_client' => 200000, 'kuota_kelas' => 2]);
@@ -92,7 +92,7 @@ class CastingProjectEditTest extends TestCase
 
     public function test_kelas_diupdate_in_place_saat_ada_pendaftar(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $project = $this->buatProyek($admin);
         $kelasA = $project->classes()->create(['nama_kelas' => 'Kelas A', 'budget_client' => 100000, 'kuota_kelas' => 2]);
 
@@ -119,7 +119,7 @@ class CastingProjectEditTest extends TestCase
 
     public function test_kelas_tanpa_pendaftar_bebas_dihapus(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $project = $this->buatProyek($admin);
         $project->classes()->create(['nama_kelas' => 'Kelas A', 'budget_client' => 100000, 'kuota_kelas' => 2]);
         $project->classes()->create(['nama_kelas' => 'Kelas B', 'budget_client' => 200000, 'kuota_kelas' => 2]);
@@ -135,7 +135,7 @@ class CastingProjectEditTest extends TestCase
 
     public function test_kelas_baru_bisa_ditambah_walau_sudah_ada_pendaftar(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $project = $this->buatProyek($admin);
         $kelasA = $project->classes()->create(['nama_kelas' => 'Kelas A', 'budget_client' => 100000, 'kuota_kelas' => 2]);
 
@@ -159,7 +159,7 @@ class CastingProjectEditTest extends TestCase
 
     public function test_edit_form_bisa_diakses(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $project = $this->buatProyek($admin);
         $project->classes()->create(['nama_kelas' => 'Kelas A', 'budget_client' => 100000, 'kuota_kelas' => 2]);
 

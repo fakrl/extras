@@ -20,7 +20,7 @@ class WhatsAppNotificationTest extends TestCase
 
     private function buatAplikasi(string $status = 'diajukan', ?string $nomorWa = '081234567890'): ProjectApplication
     {
-        $adminUser = User::factory()->create(['role' => 'admin_default']);
+        $adminUser = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras', 'nomor_wa' => $nomorWa]);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id, 'nama_asli' => 'Nama Asli Test']);
 
@@ -64,7 +64,7 @@ class WhatsAppNotificationTest extends TestCase
 
         $extrasUser = User::factory()->create(['role' => 'extras', 'nomor_wa' => '081234567890']);
         ExtrasProfile::create(['user_id' => $extrasUser->id]);
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $project = CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Kado Untuk Ibu',

@@ -21,7 +21,7 @@ class PublicEventLinkTest extends TestCase
 
     private function buatProyek(array $overrides = []): CastingProject
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
 
         return CastingProject::create(array_merge([
             'admin_id' => $admin->id,
@@ -165,7 +165,7 @@ class PublicEventLinkTest extends TestCase
 
         Auth::logout();
 
-        $admin = User::factory()->create(['role' => 'admin_default', 'password' => bcrypt('password')]);
+        $admin = User::factory()->create(['role' => 'admin', 'password' => bcrypt('password')]);
         $this->get('/login');
         $loginResponse = $this->post('/login', ['email' => $admin->email, 'password' => 'password']);
 
@@ -196,7 +196,7 @@ class PublicEventLinkTest extends TestCase
     // K.12: proyek ditutup muncul di section produksi (portfolio), bukan di lowongan.
     public function test_homepage_menampilkan_proyek_lowongan_yang_benar(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
+        $admin = User::factory()->create(['role' => 'admin']);
 
         $terbuka = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Terbuka ABC',
@@ -235,8 +235,8 @@ class PublicEventLinkTest extends TestCase
 
     public function test_homepage_menampilkan_stats_akurat(): void
     {
-        $admin = User::factory()->create(['role' => 'admin_default']);
-        User::factory()->create(['role' => 'admin_korlap']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        User::factory()->create(['role' => 'korlap']);
         User::factory()->create(['role' => 'extras']);
         User::factory()->create(['role' => 'extras']);
         CastingProject::create(['admin_id' => $admin->id, 'nama_produksi' => 'P1', 'client_ph' => 'PH', 'deadline' => now()->addDays(7), 'kuota' => 5]);
