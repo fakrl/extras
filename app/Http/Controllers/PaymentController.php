@@ -93,7 +93,9 @@ class PaymentController extends Controller
         );
         $this->guardStatusLolos($application);
 
-        abort_unless($application->payment->status === 'ditransfer', 422, 'Belum ada bukti transfer untuk dikonfirmasi.');
+        if (! ($application->payment->status === 'ditransfer')) {
+            return back()->with('error', 'Belum ada bukti transfer untuk dikonfirmasi.');
+        }
 
         $application->payment->konfirmasiDiterima();
         $application->update(['status_partisipasi' => 'selesai_produksi']);
@@ -116,7 +118,9 @@ class PaymentController extends Controller
         abort_unless($application->bolehDilihatOleh($request->user()), 403);
         $this->guardStatusLolos($application);
 
-        abort_if($application->payment->status === 'dikonfirmasi_diterima', 422, 'Pembayaran sudah selesai, tidak bisa menambah komponen lagi.');
+        if ($application->payment->status === 'dikonfirmasi_diterima') {
+            return back()->with('error', 'Pembayaran sudah selesai, tidak bisa menambah komponen lagi.');
+        }
 
         $data = $request->validate([
             'label' => ['required', 'string', 'max:255'],
@@ -152,7 +156,9 @@ class PaymentController extends Controller
         abort_unless($isExtrasOwner || $request->user()->isAdmin(), 403);
         $this->guardStatusLolos($application);
 
-        abort_unless($application->payment->status === 'ditransfer', 422, 'Sengketa hanya bisa diajukan untuk pembayaran yang sudah ditransfer.');
+        if (! ($application->payment->status === 'ditransfer')) {
+            return back()->with('error', 'Sengketa hanya bisa diajukan untuk pembayaran yang sudah ditransfer.');
+        }
 
         $request->validate(['alasan' => ['required', 'string', 'max:500']]);
 

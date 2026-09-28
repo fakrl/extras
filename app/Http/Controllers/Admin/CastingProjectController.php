@@ -275,7 +275,9 @@ class CastingProjectController extends Controller
         ]);
 
         $cd = User::findOrFail($data['cd_user_id']);
-        abort_unless($cd->isCastingDirector(), 422, 'Hanya bisa menugaskan akun bertipe Casting Director.');
+        if (! ($cd->isCastingDirector())) {
+            return back()->with('error', 'Hanya bisa menugaskan akun bertipe Casting Director.');
+        }
 
         $castingProject->cdAssignments()->firstOrCreate(['cd_user_id' => $cd->id]);
 

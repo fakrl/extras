@@ -79,7 +79,7 @@ class CdProjectAssignmentTest extends TestCase
 
         $this->actingAs($admin)->post(route('admin.projects.assign-cd', $project), [
             'cd_user_id' => $bukanCd->id,
-        ])->assertStatus(422);
+        ])->assertSessionHas('error');
     }
 
     public function test_assign_cd_duplikat_tidak_bikin_record_ganda(): void

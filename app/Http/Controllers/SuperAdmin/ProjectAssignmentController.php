@@ -26,7 +26,9 @@ class ProjectAssignmentController extends Controller
         ]);
 
         $user = User::findOrFail($data['user_id']);
-        abort_unless($user->isAnyAdmin(), 422, 'Hanya bisa menugaskan akun bertipe Admin.');
+        if (! ($user->isAnyAdmin())) {
+            return back()->with('error', 'Hanya bisa menugaskan akun bertipe Admin.');
+        }
 
         $castingProject->adminAssignments()->firstOrCreate([
             'user_id' => $user->id,
@@ -44,7 +46,9 @@ class ProjectAssignmentController extends Controller
      */
     public function markComplete(AdminProjectAssignment $assignment): RedirectResponse
     {
-        abort_if($assignment->status_log === 'selesai', 422, 'Penugasan ini sudah ditandai selesai sebelumnya.');
+        if ($assignment->status_log === 'selesai') {
+            return back()->with('error', 'Penugasan ini sudah ditandai selesai sebelumnya.');
+        }
 
         $payroll = $assignment->tandaiSelesai();
 

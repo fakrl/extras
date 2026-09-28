@@ -105,7 +105,7 @@ class PaymentAddonTest extends TestCase
             'nominal' => 50000,
         ]);
 
-        $response->assertStatus(422);
+        $response->assertSessionHas('error');
         $this->assertDatabaseMissing('payment_addons', ['addable_id' => $application->payment->id]);
     }
 
@@ -121,7 +121,7 @@ class PaymentAddonTest extends TestCase
             'nominal' => 50000,
         ]);
 
-        $response->assertStatus(422);
+        $response->assertSessionHas('error');
         $this->assertDatabaseMissing('payment_addons', ['addable_id' => $application->payment->id]);
     }
 }

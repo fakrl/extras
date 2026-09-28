@@ -28,8 +28,11 @@
             var canvas = document.getElementById('canvas-' + name);
             var dpr = window.devicePixelRatio || 1;
             var rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width * dpr;
-            canvas.height = rect.height * dpr;
+            // ponytail: resize cuma kalau lebar beneran berubah (address bar HP juga memicu resize); set width selalu mengosongkan kanvas
+            if (signaturePads[name] && canvas.width === Math.round(rect.width * dpr)) return;
+            if (signaturePads[name]) document.getElementById('input-' + name).value = '';
+            canvas.width = Math.round(rect.width * dpr);
+            canvas.height = Math.round(rect.height * dpr);
             var ctx = canvas.getContext('2d');
             ctx.scale(dpr, dpr);
             ctx.strokeStyle = '#0B1A12';
