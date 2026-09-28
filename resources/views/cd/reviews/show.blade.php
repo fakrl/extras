@@ -32,6 +32,9 @@
 <form method="GET" action="{{ route('cd.reviews.show', $castingProject) }}" class="xtoolbar">
     @if($statusFilter) <input type="hidden" name="status" value="{{ $statusFilter }}"> @endif
     <input type="search" id="filter-candidate-search" class="xtoolbar-cari" placeholder="Cari username atau peran…" aria-label="Cari kandidat">
+    <details class="xtoolbar-more" @if($genderFilter || $usiaMin || $usiaMax) open @endif>
+    <summary class="btn btn-sm"><i class="ti ti-adjustments-horizontal"></i> Filter</summary>
+    <div class="xtoolbar-more-isi">
     <select name="gender" id="filter-gender" aria-label="Gender">
         <option value="">Semua gender</option>
         <option value="laki-laki" @selected(($genderFilter ?? '') === 'laki-laki')>Laki-laki</option>
@@ -56,6 +59,8 @@
         <option value="hitam">Hitam</option>
         <option value="putih">Putih</option>
     </select>
+    </div>
+    </details>
 </form>
 
 {{-- BA.5: filter tag (client-side, cocok salah satu) + urutkan --}}

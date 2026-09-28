@@ -279,7 +279,17 @@
         .xtoolbar input, .xtoolbar select { width: auto; min-height: 40px; margin: 0; padding: 6px 10px; font-size: var(--fs-sm); }
         .xtoolbar .xtoolbar-cari { flex: 1 1 220px; font-size: var(--fs-md); }
         .xtoolbar label { margin: 0; font-size: var(--fs-xs); color: var(--text-muted); }
-        @media (max-width: 480px) { .xgrid { grid-template-columns: 1fr; } }
+        .xtoolbar-more > summary { list-style: none; }
+        .xtoolbar-more > summary::-webkit-details-marker { display: none; }
+        .xtoolbar-more[open] { flex-basis: 100%; }
+        .xtoolbar-more-isi { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+        @media (max-width: 480px) {
+            .xgrid { grid-template-columns: 1fr; }
+            .xcard-ph { aspect-ratio: 4/5; }
+            /* chip tag & urutkan jadi 1 baris geser di HP, bukan numpuk 3 baris */
+            .xfilter { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+            .xfilter > * { flex-shrink: 0; }
+        }
 
         .xmodal { border: 0; padding: 0; border-radius: 16px; width: min(560px, 94vw); max-height: 92vh; background: var(--bg-card); color: var(--text-primary); box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
         .xmodal::backdrop { background: rgba(0,0,0,0.55); }
@@ -467,7 +477,7 @@
             .sidebar-link {
                 flex-direction: column; justify-content: center;
                 gap: 2px; padding: 6px 8px; min-height: 52px;
-                font-size: var(--fs-xs); flex: 1 0 64px; min-width: 64px; text-align: center;
+                font-size: var(--fs-xs); flex: 1 0 auto; min-width: 64px; text-align: center;
                 border-radius: 10px; white-space: nowrap;
             }
             .sidebar-link i { font-size: 20px; }
