@@ -60,204 +60,205 @@
     Tidak ada pelamar yang sesuai dengan pencarian.
 </div>
 
-@if (($tab ?? '') === 'cd')
-    @php
-        $cdStatusLabel = [
-            'diajukan_ke_cd' => 'Menunggu Review Client',
-            'direview_cd' => 'Sedang Direview',
-            'lolos' => 'Lolos',
-            'ditolak' => 'Ditolak',
-        ];
-        $cdStatusBadge = [
-            'diajukan_ke_cd' => 'badge-pending',
-            'direview_cd' => 'badge-pending',
-            'lolos' => 'badge-aktif',
-            'ditolak' => 'badge-tolak',
-        ];
-    @endphp
-    @forelse ($applicants as $app)
-        <div class="card applicant-card-item" data-search="{{ strtolower(($app->extras->user->username ?? '') . ' ' . ($app->castingProjectClass->nama_kelas ?? '')) }}" style="margin-bottom: 10px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                <div>
-                    <div style="font-weight: 600; font-size: 14px;">{{ $app->extras->user->username ?? '(belum isi username)' }}</div>
-                    <div style="font-size: 12.5px; color: var(--text-secondary);">Kelas: {{ $app->castingProjectClass->nama_kelas ?? 'Umum' }}</div>
-                </div>
-                <span class="badge {{ $cdStatusBadge[$app->status_partisipasi] ?? 'badge-pending' }}">
-                    {{ $cdStatusLabel[$app->status_partisipasi] ?? $app->status_partisipasi }}
-                </span>
-            </div>
-        </div>
-    @empty
-        <div class="card" style="text-align: center; color: var(--text-muted); padding: 20px;">Belum ada kandidat yang diajukan ke Client.</div>
-    @endforelse
-@else
+@php
+    $cdStatusLabel = [
+        'diajukan_ke_cd' => ['Menunggu Review Client', 'badge-pending'],
+        'direview_cd' => ['Sedang Direview', 'badge-pending'],
+        'lolos' => ['Lolos', 'badge-aktif'],
+        'ditolak' => ['Ditolak', 'badge-tolak'],
+    ];
+    $isAdmin = auth()->user()->isAdmin();
+    $bisaCatatan = $isAdmin || auth()->user()->isKorlap();
+@endphp
 
+<div class="xgrid">
 @forelse ($applicants as $app)
     @php
-        $searchString = strtolower(
-            ($app->extras->user->username ?? '') . ' ' .
-            ($app->extras->user->name ?? '') . ' ' .
-            ($app->karakter ?: ($app->castingProjectClass->karakter ?? '')) . ' ' .
-            ($app->castingProjectClass->nama_kelas ?? '') . ' ' .
-            ($app->status_partisipasi ?? '')
-        );
+        $ex = $app->extras;
+        $alias = $ex->user->username ?? 'kandidat';
+        $aksi = match (true) {
+            in_array($app->status_partisipasi, ['diajukan', 'direview_admin'], true) => ['label' => 'Mulai Nego', 'href' => route('admin.negotiations.show', $app)],
+            $app->status_partisipasi === 'nego_fee' => ['label' => 'Lanjut Nego', 'href' => route('admin.negotiations.show', $app)],
+            $app->status_partisipasi === 'deal' => ['label' => 'Ajukan ke Client', 'post' => route('admin.negotiations.ajukan-ke-cd', $app), 'confirm' => "Ajukan @{$alias} ke Client?"],
+            $app->status_partisipasi === 'lolos' => ['label' => 'Siapkan Kontrak', 'href' => route('contracts.show', $app)],
+            $app->status_partisipasi === 'kontrak_ditandatangani' || (bool) $app->payment => ['label' => 'Pembayaran', 'href' => route('payments.show', $app)],
+            default => null,
+        };
     @endphp
-    <div class="applicant-card applicant-card-item" id="app-{{ $app->id }}" data-search="{{ $searchString }}" style="scroll-margin-top: 80px;">
-        <div class="applicant-card-photo">
-            <label style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;"><input type="checkbox" name="ids[]" value="{{ $app->id }}" form="bulk-form" class="bulk-check"> Pilih</label>
-            @if ($app->extras->foto_profil_path)
-                <img src="{{ route('extras.media.foto', $app->extras) }}" alt="Foto Extras">
+    @include('partials.extras-card', [
+        'profile' => $ex,
+        'aplikasi' => $app,
+        'badge' => ($tab ?? '') === 'cd' ? ($cdStatusLabel[$app->status_partisipasi] ?? null) : null,
+        'check' => ($tab ?? '') !== 'cd' ? ['name' => 'ids[]', 'class' => 'bulk-check', 'form' => 'bulk-form'] : null,
+        'sub' => implode(' · ', array_filter([$ex->user->name ?? null, $app->grade ? 'Grade '.$app->grade : null])),
+        'lihat' => ['onclick' => "document.getElementById('detail-{$app->id}').showModal()"],
+        'aksi' => $aksi,
+        'peringatan' => $app->bentrok_jadwal_flag ? 'Bentrok jadwal' : null,
+        'attrs' => [
+            'id' => 'app-'.$app->id,
+            'class' => 'applicant-card-item',
+            'data-search' => strtolower(($ex->user->username ?? '').' '.($ex->user->name ?? '').' '.$app->karakter.' '.($app->castingProjectClass->nama_kelas ?? '').' '.$app->status_partisipasi),
+        ],
+    ])
+@empty
+    <div class="card" style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 30px 0;">
+        {{ ($tab ?? '') === 'cd' ? 'Belum ada kandidat yang diajukan ke Client.' : 'Belum ada pendaftar.' }}
+    </div>
+@endforelse
+</div>
+
+@foreach ($applicants as $app)
+    @php
+        $ex = $app->extras;
+        $alias = $ex->user->username ?? 'kandidat';
+        $gradeTerkunci = $ex->grade_diberikan_at && now()->lt($ex->grade_diberikan_at->addMonths(2));
+        $kelas = $app->castingProjectClass;
+    @endphp
+    <dialog class="xmodal" id="detail-{{ $app->id }}" aria-label="Detail {{ $alias }}" onclick="if (event.target === this) this.close()">
+        <div class="xmodal-ph" style="--h: {{ crc32((string) ($ex->user->username ?? '')) % 360 }};">
+            @if ($ex->foto_profil_path)
+                <img src="{{ route('extras.media.foto', $ex) }}" alt="Foto {{ $alias }}" loading="lazy">
             @else
-                <div class="thumb-photo-empty"><i class="ti ti-user"></i></div>
+                <span class="xcard-inisial" aria-hidden="true">{{ $ex->user->username ? strtoupper(mb_substr($ex->user->username, 0, 2)) : '?' }}</span>
             @endif
-
-            @if ($app->extras->photos->isNotEmpty())
-                @php
-                $fotosApplicant = $app->extras->photos->map(fn($p) => [
-                    'url' => route('extras.media.foto-tambahan', [$app->extras, $p->urutan]),
-                    'alt' => 'Foto ' . $p->urutan,
-                ])->values()->all();
-                @endphp
-                @include('partials.foto-lightbox', ['fotos' => $fotosApplicant, 'lightboxId' => 'lb-' . $app->id])
-            @endif
-
-            @if ($app->extras->video_profil_path)
-                <a href="{{ route('extras.media.video', $app->extras) }}" target="_blank" class="btn btn-sm" style="width: 100%; margin-top: 8px; text-align: center;">
-                    <i class="ti ti-player-play"></i> Video
-                </a>
-            @endif
+            <button type="button" class="xmodal-x" aria-label="Tutup" onclick="this.closest('dialog').close()"><i class="ti ti-x"></i></button>
         </div>
-
-        <div>
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
-                <div>
-                    <div style="font-size: 15px; font-weight: 600;">{{ $app->extras->user->username ?? '(belum isi username)' }}</div>
-                    <div style="font-size: 12.5px; color: var(--text-secondary); margin-top: 3px;">
-                        Kelas: <strong>{{ $app->castingProjectClass->nama_kelas ?? 'Umum' }}</strong>
-                        @if ($app->karakter || $app->castingProjectClass?->karakter)
-                            · Peran: <span style="color: var(--accent-strong);">{{ $app->karakter ?: $app->castingProjectClass->karakter }}</span>
-                        @endif
-                        @if ($app->jam_callingan || $app->castingProjectClass?->jam_callingan)
-                            · Callingan: <strong>{{ $app->jam_callingan ?: $app->castingProjectClass->jam_callingan }}</strong>
-                            @if ($app->castingProjectClass?->jam_callsheet)
-                                <span style="color: var(--text-muted); font-size: var(--fs-xs);">(Callsheet: {{ $app->castingProjectClass->jam_callsheet }})</span>
-                            @endif
-                        @endif
-                        @if ($app->keterangan_scene || $app->castingProjectClass?->keterangan_scene)
-                            · Scene: <em>{{ $app->keterangan_scene ?: $app->castingProjectClass->keterangan_scene }}</em>
-                        @endif
-                    </div>
-                    <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
-                        <x-status-badge :model="$app" />
-                        @if ($app->bentrok_jadwal_flag)
-                            <span class="badge badge-tolak">Bentrok Jadwal</span>
-                        @endif
-                        @if ($app->grade)
-                            <span class="badge badge-aktif">Rek. Grade (Admin): {{ $app->grade }}</span>
-                        @endif
-                        @if (($app->tipe_continuity ?: $app->castingProjectClass?->tipe_continuity) === 'continuity')
-                            <span class="badge badge-pending">Continuity</span>
-                        @endif
-                        @if ($app->extras->apresiasi)
-                            <span class="badge badge-aktif" title="{{ $app->extras->apresiasi_catatan }}"><i class="ti ti-star-filled"></i> Apresiasi</span>
-                        @endif
-                    </div>
+        <div class="xmodal-body">
+            <div class="xmodal-head">
+                <div style="min-width: 0;">
+                    <div class="xmodal-name">{{ $ex->user->username ? '@'.$ex->user->username : '(belum isi username)' }}</div>
+                    <div class="xmodal-sub">{{ $ex->user->name ?? '' }}</div>
                 </div>
-                <div style="text-align: right;">
-                    <div style="font-size: 12px; color: var(--text-secondary);">Rate Card</div>
-                    <div style="font-size: 14px; font-weight: 600;">Rp {{ number_format($app->extras->rate_card ?? 0, 0, ',', '.') }}</div>
-                </div>
+                <x-status-badge :model="$app" />
+            </div>
+            <div class="xmodal-badges">
+                @if ($app->bentrok_jadwal_flag)
+                    <span class="badge badge-tolak">Bentrok Jadwal</span>
+                @endif
+                @if ($app->grade)
+                    <span class="badge badge-aktif">Rek. Grade (Admin): {{ $app->grade }}</span>
+                @endif
+                @if ($app->tipe_continuity === 'continuity')
+                    <span class="badge badge-pending">Continuity</span>
+                @endif
+                @if ($ex->apresiasi)
+                    <span class="badge badge-aktif" title="{{ $ex->apresiasi_catatan }}"><i class="ti ti-star-filled"></i> Apresiasi</span>
+                @endif
             </div>
 
-            @if (! empty($app->extras->tautan_tambahan))
-                <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);">
-                    @foreach ($app->extras->tautan_tambahan as $i => $tautan)
-                        @if ($i > 0) · @endif
-                        <a href="{{ $tautan['url'] }}" target="_blank" style="color: var(--accent-strong);">{{ $tautan['label'] }}</a>
-                    @endforeach
-                </div>
-            @endif
-
             @if ($app->status_partisipasi === 'ditolak' && $app->alasan_tolak)
-                <div style="margin-top: 10px; font-size: 12.5px; color: var(--danger);">
-                    Alasan ditolak: {{ $app->alasan_tolak }}
-                </div>
+                <div class="alert-danger" style="margin: 12px 0 0;">Alasan ditolak: {{ $app->alasan_tolak }}</div>
             @endif
 
-            <div class="entity-card-actions" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color);">
-                @php
-                    $gradeProfile = $app->extras;
-                    $gradeTerkunci = $gradeProfile->grade_diberikan_at && now()->lt($gradeProfile->grade_diberikan_at->addMonths(2));
-                    $terkunciSampai = $gradeTerkunci ? $gradeProfile->grade_diberikan_at->addMonths(2)->translatedFormat('d F Y') : null;
-                @endphp
-                @if ($gradeTerkunci)
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <select disabled style="width: 70px; min-height: 36px; padding: 4px 8px; margin-bottom: 0; opacity: 0.5;">
-                            <option>{{ $gradeProfile->grade_saat_ini }}</option>
-                        </select>
-                        <span style="font-size: 12px; color: var(--text-muted);">Terkunci s.d. {{ $terkunciSampai }}</span>
+            @include('partials.tag-cocok', ['profile' => $ex, 'aplikasi' => $app])
+
+            <div class="xsec">Peran & breakdown</div>
+            <div class="xkv">
+                <div><span class="xkv-l">Kelas</span><b>{{ $kelas->nama_kelas ?? 'Umum' }}</b></div>
+                <div><span class="xkv-l">Rate card</span><b>Rp {{ number_format($ex->rate_card ?? 0, 0, ',', '.') }}</b></div>
+                <div><span class="xkv-l">Peran</span><b>{{ $app->karakter ?: '-' }}</b></div>
+                <div><span class="xkv-l">Callingan</span><b>{{ $app->jam_callingan ?: '-' }}</b>@if ($kelas?->jam_callsheet)<span class="xkv-l">Callsheet {{ $kelas->jam_callsheet }}</span>@endif</div>
+                @if ($app->keterangan_scene)
+                    <div class="full"><span class="xkv-l">Scene</span><b>{{ $app->keterangan_scene }}</b></div>
+                @endif
+            </div>
+
+            <div class="xsec">Fisik</div>
+            <div class="xkv">
+                <div><span class="xkv-l">Usia</span><b>{{ $ex->usia ? $ex->usia.' th' : '-' }}</b></div>
+                <div><span class="xkv-l">Tinggi</span><b>{{ $ex->tinggi_badan ? $ex->tinggi_badan.' cm' : '-' }}</b></div>
+                <div><span class="xkv-l">Gender</span><b>{{ $ex->gender ? ucfirst($ex->gender) : '-' }}</b></div>
+                <div><span class="xkv-l">Ukuran baju</span><b>{{ $ex->ukuran_baju ?: '-' }}</b></div>
+            </div>
+
+            @if ($ex->photos->isNotEmpty() || $ex->video_profil_path || ! empty($ex->tautan_tambahan))
+                <div class="xsec">Galeri & tautan</div>
+                @if ($ex->photos->isNotEmpty())
+                    @include('partials.foto-lightbox', ['fotos' => $ex->photos->map(fn ($p) => ['url' => route('extras.media.foto-tambahan', [$ex, $p->urutan]), 'alt' => 'Foto '.$p->urutan])->values()->all(), 'lightboxId' => 'lb-'.$app->id])
+                @endif
+                @if ($ex->video_profil_path)
+                    <a href="{{ route('extras.media.video', $ex) }}" target="_blank" class="btn btn-sm" style="margin-top: 8px;"><i class="ti ti-player-play"></i> Video</a>
+                @endif
+                @if (! empty($ex->tautan_tambahan))
+                    <div style="margin-top: 8px; font-size: var(--fs-sm);">
+                        @foreach ($ex->tautan_tambahan as $i => $tautan)
+                            @if ($i > 0) · @endif
+                            <a href="{{ $tautan['url'] }}" target="_blank" style="color: var(--accent-strong);">{{ $tautan['label'] }}</a>
+                        @endforeach
                     </div>
-                @else
-                    <form method="POST" action="{{ route('admin.applications.grade', $app) }}" style="display: flex; gap: 6px;">
-                        @csrf @method('PATCH')
-                        <select name="grade" style="width: 70px; min-height: 36px; padding: 4px 8px; margin-bottom: 0;">
-                            <option value="A" @selected($app->grade === 'A')>A</option>
-                            <option value="B" @selected($app->grade === 'B')>B</option>
-                            <option value="C" @selected($app->grade === 'C')>C</option>
-                        </select>
-                        <button class="btn btn-sm">Set Grade</button>
-                    </form>
                 @endif
-                <button type="button" class="btn btn-sm" onclick="document.getElementById('breakdown-dialog-{{ $app->id }}').showModal()"><i class="ti ti-movie"></i> Breakdown</button>
-                <a href="{{ route('admin.negotiations.show', $app) }}" class="btn btn-sm btn-brand">Nego Fee</a>
-                @if (in_array($app->status_partisipasi, ['diajukan', 'direview_admin'], true))
-                    <button type="button" class="btn btn-sm btn-danger-outline" onclick="document.getElementById('reject-dialog-{{ $app->id }}').showModal()">Tolak</button>
-                @endif
-                @if ($app->status_partisipasi === 'deal')
-                    <button type="button" class="btn btn-sm btn-danger-outline" onclick="document.getElementById('batalkan-dialog-{{ $app->id }}').showModal()">Batalkan</button>
-                @endif
+            @endif
+
+            @if ($app->fieldNotes->isNotEmpty())
+                <div class="xsec">Catatan lapangan</div>
+                @foreach ($app->fieldNotes as $note)
+                    <div class="xrow" style="justify-content: flex-start;">
+                        <span class="badge {{ $note->jenis === 'sanksi' ? 'badge-tolak' : 'badge-pending' }}">{{ $note->jenis }}</span>
+                        <span>{{ $note->isi }} <span class="xrow-muted">({{ $note->korlap->name ?? '-' }}, {{ $note->created_at->format('d M Y H:i') }})</span></span>
+                    </div>
+                @endforeach
+            @endif
+
+            <div class="xsec">Grade</div>
+            @if ($gradeTerkunci)
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <select disabled style="width: 70px; margin-bottom: 0; opacity: 0.5;"><option>{{ $ex->grade_saat_ini }}</option></select>
+                    <span style="font-size: var(--fs-xs); color: var(--text-muted);">Terkunci s.d. {{ $ex->grade_diberikan_at->addMonths(2)->translatedFormat('d F Y') }}</span>
+                </div>
+            @else
+                <form method="POST" action="{{ route('admin.applications.grade', $app) }}" style="display: flex; gap: 8px;">
+                    @csrf @method('PATCH')
+                    <select name="grade" aria-label="Grade" style="width: 80px; margin-bottom: 0;">
+                        <option value="A" @selected($app->grade === 'A')>A</option>
+                        <option value="B" @selected($app->grade === 'B')>B</option>
+                        <option value="C" @selected($app->grade === 'C')>C</option>
+                    </select>
+                    <button class="btn">Set Grade</button>
+                </form>
+            @endif
+
+            <div class="xsec">Aksi lain</div>
+            <div class="xaksi">
+                <a href="{{ route('admin.negotiations.show', $app) }}" class="btn btn-brand">Nego Fee</a>
+                <button type="button" class="btn" onclick="document.getElementById('breakdown-dialog-{{ $app->id }}').showModal()"><i class="ti ti-movie"></i> Breakdown</button>
                 @if ($app->status_partisipasi === 'lolos' || $app->contract)
-                    <a href="{{ route('contracts.show', $app) }}" class="btn btn-sm">Kontrak</a>
+                    <a href="{{ route('contracts.show', $app) }}" class="btn">Kontrak</a>
                 @endif
                 @if ($app->status_partisipasi === 'kontrak_ditandatangani' || $app->payment)
-                    <a href="{{ route('payments.show', $app) }}" class="btn btn-sm">Bayar</a>
+                    <a href="{{ route('payments.show', $app) }}" class="btn">Bayar</a>
                 @endif
-                @if (auth()->user()->isAdmin() || auth()->user()->isKorlap())
-                    <button type="button" class="btn btn-sm" onclick="document.getElementById('catatan-dialog-{{ $app->id }}').showModal()">Catatan Lapangan</button>
+                @if ($bisaCatatan)
+                    <button type="button" class="btn" onclick="document.getElementById('catatan-dialog-{{ $app->id }}').showModal()">Catatan Lapangan</button>
                 @endif
-                @if (auth()->user()->isAdmin())
-                    @if ($app->extras->apresiasi)
+                @if ($isAdmin)
+                    @if ($ex->apresiasi)
                         <form method="POST" action="{{ route('admin.applications.apresiasi', $app) }}">
                             @csrf
                             <input type="hidden" name="apresiasi" value="0">
-                            <button type="submit" class="btn btn-sm btn-danger-outline">Cabut Apresiasi</button>
+                            <button type="submit" class="btn btn-danger-outline">Cabut Apresiasi</button>
                         </form>
                     @else
-                        <button type="button" class="btn btn-sm" onclick="document.getElementById('apresiasi-dialog-{{ $app->id }}').showModal()"><i class="ti ti-star"></i> Apresiasi</button>
+                        <button type="button" class="btn" onclick="document.getElementById('apresiasi-dialog-{{ $app->id }}').showModal()"><i class="ti ti-star"></i> Apresiasi</button>
                     @endif
                 @endif
+                @if ($ex->user)
+                    <a href="{{ route('admin.extras.profil', $ex->user) }}" class="btn"><i class="ti ti-user"></i> Profil lengkap</a>
+                @endif
+                @if (in_array($app->status_partisipasi, ['diajukan', 'direview_admin'], true))
+                    <button type="button" class="btn btn-danger-outline" onclick="document.getElementById('reject-dialog-{{ $app->id }}').showModal()">Tolak</button>
+                @endif
+                @if ($app->status_partisipasi === 'deal')
+                    <button type="button" class="btn btn-danger-outline" onclick="document.getElementById('batalkan-dialog-{{ $app->id }}').showModal()">Batalkan</button>
+                @endif
             </div>
-
-            @if ($app->fieldNotes->isNotEmpty())
-                <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color);">
-                    <div style="font-size: 12.5px; font-weight: 500; margin-bottom: 6px;">Riwayat Catatan Lapangan</div>
-                    @foreach ($app->fieldNotes as $note)
-                        <div style="font-size: 12.5px; margin-bottom: 6px;">
-                            <span class="badge {{ $note->jenis === 'sanksi' ? 'badge-tolak' : 'badge-pending' }}">{{ $note->jenis }}</span>
-                            {{ $note->isi }}
-                            <span style="color: var(--text-muted);">({{ $note->korlap->name ?? '-' }}, {{ $note->created_at->format('d M Y H:i') }}</span>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
         </div>
-    </div>
+    </dialog>
 
     @if (in_array($app->status_partisipasi, ['diajukan', 'direview_admin'], true))
         <dialog id="reject-dialog-{{ $app->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
             <form method="POST" action="{{ route('admin.applications.reject', $app) }}" style="padding: 18px;">
                 @csrf @method('PATCH')
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Tolak {{ $app->extras->user->username ?? 'kandidat' }}?</div>
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Tolak {{ $alias }}?</div>
                 <textarea name="alasan_tolak" rows="3" required placeholder="Contoh: Kriteria tidak sesuai dengan tokoh yang dicari (usia/tinggi/dll)." style="width: 100%; margin-bottom: 12px;"></textarea>
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
                     <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
@@ -267,12 +268,12 @@
         </dialog>
     @endif
 
-    @if (auth()->user()->isAdmin() && ! $app->extras->apresiasi)
+    @if ($isAdmin && ! $ex->apresiasi)
         <dialog id="apresiasi-dialog-{{ $app->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
             <form method="POST" action="{{ route('admin.applications.apresiasi', $app) }}" style="padding: 18px;">
                 @csrf
                 <input type="hidden" name="apresiasi" value="1">
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Beri Apresiasi ke {{ $app->extras->user->username ?? 'kandidat' }}?</div>
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Beri Apresiasi ke {{ $alias }}?</div>
                 <textarea name="apresiasi_catatan" rows="3" maxlength="1000" placeholder="Catatan internal (opsional), mis. alasan diapresiasi." style="width: 100%; margin-bottom: 12px;"></textarea>
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
                     <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
@@ -285,27 +286,27 @@
     <dialog id="breakdown-dialog-{{ $app->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 440px; width: 90%;">
         <form method="POST" action="{{ route('admin.applications.breakdown', $app) }}" style="padding: 18px;">
             @csrf @method('PATCH')
-            <div style="font-size: 15px; font-weight: 600; margin-bottom: 12px;">Breakdown: {{ $app->extras->user->username ?? 'Extras' }}</div>
+            <div style="font-size: 15px; font-weight: 600; margin-bottom: 12px;">Breakdown: {{ $ex->user->username ?? 'Extras' }}</div>
             <div style="margin-bottom: 10px;">
                 <label>Nama Karakter / Peran</label>
-                <input type="text" name="karakter" value="{{ old('karakter', $app->karakter ?: $app->castingProjectClass?->karakter) }}" placeholder="misal: Preman 1 / Teman Kampus" style="width: 100%;">
+                <input type="text" name="karakter" value="{{ old('karakter', $app->karakter) }}" placeholder="misal: Preman 1 / Teman Kampus" style="width: 100%;">
             </div>
             <div class="form-row" style="margin-bottom: 10px;">
                 <div>
                     <label>Jam Callingan Extras</label>
-                    <input type="time" name="jam_callingan" value="{{ old('jam_callingan', $app->jam_callingan ?: $app->castingProjectClass?->jam_callingan) }}" style="width: 100%;">
+                    <input type="time" name="jam_callingan" value="{{ old('jam_callingan', $app->jam_callingan) }}" style="width: 100%;">
                 </div>
                 <div>
                     <label>Tipe Kontinuitas</label>
                     <select name="tipe_continuity" style="width: 100%;">
-                        <option value="free" @selected(($app->tipe_continuity ?: $app->castingProjectClass?->tipe_continuity) === 'free')>Bebas</option>
-                        <option value="continuity" @selected(($app->tipe_continuity ?: $app->castingProjectClass?->tipe_continuity) === 'continuity')>Continuity</option>
+                        <option value="free" @selected($app->tipe_continuity === 'free')>Bebas</option>
+                        <option value="continuity" @selected($app->tipe_continuity === 'continuity')>Continuity</option>
                     </select>
                 </div>
             </div>
             <div style="margin-bottom: 12px;">
                 <label>Keterangan Scene</label>
-                <input type="text" name="keterangan_scene" value="{{ old('keterangan_scene', $app->keterangan_scene ?: $app->castingProjectClass?->keterangan_scene) }}" placeholder="misal: Scene 12-14 warung kopi, baju casual" style="width: 100%;">
+                <input type="text" name="keterangan_scene" value="{{ old('keterangan_scene', $app->keterangan_scene) }}" placeholder="misal: Scene 12-14 warung kopi, baju casual" style="width: 100%;">
             </div>
             <div style="display: flex; gap: 8px; justify-content: flex-end;">
                 <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
@@ -318,7 +319,7 @@
         <dialog id="batalkan-dialog-{{ $app->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
             <form method="POST" action="{{ route('admin.negotiations.batalkan', $app) }}" style="padding: 18px;">
                 @csrf
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Batalkan {{ $app->extras->user->username ?? 'kandidat' }}?</div>
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Batalkan {{ $alias }}?</div>
                 <textarea name="alasan" rows="3" required placeholder="Alasan pembatalan" style="width: 100%; margin-bottom: 12px;"></textarea>
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
                     <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
@@ -328,11 +329,11 @@
         </dialog>
     @endif
 
-    @if (auth()->user()->isAdmin() || auth()->user()->isKorlap())
+    @if ($bisaCatatan)
         <dialog id="catatan-dialog-{{ $app->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
             <form method="POST" action="{{ route('admin.applications.catatan', $app) }}" style="padding: 18px;">
                 @csrf
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Catatan Lapangan: {{ $app->extras->user->username ?? 'kandidat' }}</div>
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Catatan Lapangan: {{ $alias }}</div>
                 <select name="jenis" required style="width: 100%; margin-bottom: 10px;">
                     <option value="catatan">Catatan</option>
                     <option value="sanksi">Sanksi</option>
@@ -345,12 +346,7 @@
             </form>
         </dialog>
     @endif
-@empty
-    <div class="card" style="text-align:center; color: var(--text-muted); padding: 30px 0;">
-        Belum ada pendaftar.
-    </div>
-@endforelse
-@endif
+@endforeach
 
 {{ $applicants->links() }}
 

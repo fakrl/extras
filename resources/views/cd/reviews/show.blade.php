@@ -73,18 +73,18 @@
     <input type="hidden" name="grade_cd" id="hidden-grade-cd">
     <input type="hidden" name="keputusan" id="hidden-keputusan">
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px;">
+    <div class="xgrid">
         @forelse ($applications as $app)
             @php
                 $review = $app->cdReviews->first();
                 $isPending = $app->status_partisipasi === 'diajukan_ke_cd';
-                [$statusLabel, $statusBadge] = match ($app->status_partisipasi) {
+                $badge = match ($app->status_partisipasi) {
                     'diajukan_ke_cd' => ['Menunggu', 'badge-pending'],
                     'lolos' => ['Approved · Kontrak', $app->badgeClass()],
                     'kontrak_ditandatangani' => ['Approved · Syuting', $app->badgeClass()],
                     'selesai_produksi' => ['Selesai', $app->badgeClass()],
                     'ditolak' => ['Rejected', 'badge-tolak'],
-                    default => [$app->status_partisipasi, ''],
+                    default => [$app->label(), $app->badgeClass()],
                 };
                 $riwayatApprove = \App\Models\CdReview::where('cd_id', auth()->id())
                     ->whereHas('projectApplication', fn($q) => $q->where('extras_id', $app->extras->id))
@@ -94,69 +94,43 @@
                     ->whereHas('projectApplication', fn($q) => $q->where('extras_id', $app->extras->id))
                     ->where('keputusan', 'reject')
                     ->count();
-                $fotosArr = $app->extras->photos->map(fn($p) => [
-                    'url' => route('extras.media.foto-tambahan', [$app->extras, $p->urutan]),
-                    'alt' => 'Foto ' . $p->urutan,
-                ])->values()->all();
             @endphp
-
-            <div class="kandidat-card"
-                style="position: relative; border: {{ $isPending ? '2px solid var(--accent-strong)' : '1px solid var(--border-color)' }}; border-radius: 12px; overflow: hidden; background: var(--bg-card);"
-                data-appid="{{ $app->id }}"
-                data-alias="{{ $app->extras->user->username ?? '-' }}"
-                data-foto="{{ $app->extras->foto_profil_path ? route('extras.media.foto', $app->extras) : '' }}"
-                data-video="{{ $app->extras->video_profil_path ? route('extras.media.video', $app->extras) : '' }}"
-                data-usia="{{ $app->extras->usia ?? '' }}"
-                data-gender="{{ $app->extras->gender ?? '' }}"
-                data-tinggi="{{ $app->extras->tinggi_badan ?? '' }}"
-                data-ukuran-baju="{{ $app->extras->ukuran_baju ?? '' }}"
-                data-warna-kulit="{{ $app->extras->warna_kulit ?? '' }}"
-                data-pengalaman="{{ e($app->extras->pengalaman ?? '') }}"
-                data-bahasa="{{ $app->extras->bahasa ?? '' }}"
-                data-karakter="{{ $app->castingProjectClass->nama_kelas ?? '-' }}"
-                data-kriteria="{{ e($app->castingProjectClass->kriteria ?? '') }}"
-                data-grade-admin="{{ $app->grade ?? '' }}"
-                data-is-pending="{{ $isPending ? '1' : '0' }}"
-                data-review-keputusan="{{ $review?->keputusan ?? '' }}"
-                data-review-grade="{{ $review?->grade_cd ?? '' }}"
-                data-review-tgl="{{ $review ? $review->created_at->format('d M Y') : '' }}"
-                data-riwayat-approve="{{ $riwayatApprove }}"
-                data-riwayat-reject="{{ $riwayatReject }}"
-                data-fotos="{{ json_encode(array_column($fotosArr, 'url')) }}"
-            >
-                <button type="button" onclick="bukaModalKandidat({{ $app->id }})"
-                    aria-label="Lihat detail {{ $app->extras->user->username ?? 'kandidat' }}"
-                    style="all: unset; box-sizing: border-box; display: block; width: 100%; cursor: pointer; text-align: left;">
-                    <div style="position: absolute; top: 6px; right: 6px; z-index: 1;">
-                        <span class="badge {{ $statusBadge }}" style="font-size: var(--fs-xs);">{{ $statusLabel }}</span>
-                    </div>
-
-                    <div style="aspect-ratio: 3/4; background: var(--bg-nav-active); overflow: hidden;">
-                        @if ($app->extras->foto_profil_path)
-                            <img src="{{ route('extras.media.foto', $app->extras) }}" alt="{{ $app->extras->user->username ?? '' }}"
-                                 style="width: 100%; height: 100%; object-fit: cover;">
-                        @else
-                            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
-                                <i class="ti ti-user" style="font-size: 36px;"></i>
-                            </div>
-                        @endif
-                    </div>
-
-                    <div style="padding: 6px 8px 2px; font-size: var(--fs-xs); color: var(--text-secondary);">
-                        {{ $app->karakter ?: ($app->castingProjectClass->nama_kelas ?? '-') }}
-                        @if($app->extras->usia) · {{ $app->extras->usia }} th @endif
-                    </div>
-                    <div style="padding: 8px; font-size: 12.5px; font-weight: 600; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                        {{ $app->extras->user->username ?? '-' }}
-                    </div>
-                </button>
-
-                @if ($isPending)
-                    <div style="position: absolute; top: 6px; left: 6px; z-index: 2;">
-                        <input type="checkbox" name="application_ids[]" value="{{ $app->id }}" class="app-checkbox">
-                    </div>
-                @endif
-            </div>
+            @include('partials.extras-card', [
+                'profile' => $app->extras,
+                'aplikasi' => $app,
+                'badge' => $badge,
+                'highlight' => $isPending,
+                'check' => $isPending ? ['name' => 'application_ids[]', 'class' => 'app-checkbox'] : null,
+                'lihat' => ['onclick' => "bukaModalKandidat({$app->id})"],
+                'aksi' => $isPending ? ['label' => 'Pilih', 'onclick' => "bukaModalKandidat({$app->id}, true)"] : null,
+                'attrs' => [
+                    'class' => 'kandidat-card',
+                    'data-appid' => $app->id,
+                    'data-alias' => $app->extras->user->username ?? '-',
+                    'data-foto' => $app->extras->foto_profil_path ? route('extras.media.foto', $app->extras) : '',
+                    'data-video' => $app->extras->video_profil_path ? route('extras.media.video', $app->extras) : '',
+                    'data-usia' => $app->extras->usia ?? '',
+                    'data-gender' => $app->extras->gender ?? '',
+                    'data-tinggi' => $app->extras->tinggi_badan ?? '',
+                    'data-ukuran-baju' => $app->extras->ukuran_baju ?? '',
+                    'data-warna-kulit' => $app->extras->warna_kulit ?? '',
+                    'data-pengalaman' => $app->extras->pengalaman ?? '',
+                    'data-bahasa' => $app->extras->bahasa ?? '',
+                    'data-karakter' => $app->castingProjectClass->nama_kelas ?? '-',
+                    'data-kriteria' => $app->castingProjectClass->kriteria ?? '',
+                    'data-grade-admin' => $app->grade ?? '',
+                    'data-is-pending' => $isPending ? '1' : '0',
+                    'data-status' => $badge[0],
+                    'data-status-class' => $badge[1],
+                    'data-review-keputusan' => $review?->keputusan ?? '',
+                    'data-review-grade' => $review?->grade_cd ?? '',
+                    'data-review-tgl' => $review ? $review->created_at->format('d M Y') : '',
+                    'data-riwayat-approve' => $riwayatApprove,
+                    'data-riwayat-reject' => $riwayatReject,
+                    'data-fotos' => json_encode($app->extras->photos->map(fn ($p) => route('extras.media.foto-tambahan', [$app->extras, $p->urutan]))->values()),
+                ],
+            ])
+            <template id="mk-tags-{{ $app->id }}">@include('partials.tag-cocok', ['profile' => $app->extras, 'aplikasi' => $app])</template>
         @empty
             <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 30px 0;">
                 Tidak ada kandidat.
@@ -174,46 +148,46 @@
 .lightbox-thumbs img { width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:8px; cursor:pointer; }
 </style>
 
-<dialog id="modal-kandidat" style="border: 1px solid var(--border-color); border-radius: 14px; padding: 0; max-width: 500px; width: 95%; max-height: 90vh; overflow-y: auto;">
-    <div style="padding: 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <div id="mk-alias" style="font-size: 16px; font-weight: 700;"></div>
-            <button type="button" onclick="document.getElementById('modal-kandidat').close()" aria-label="Tutup" style="background: none; border: none; cursor: pointer; font-size: 20px; color: var(--text-muted);"><i class="ti ti-x"></i></button>
-        </div>
-
-        <div style="text-align: center; margin-bottom: 12px;">
-            <div id="mk-foto-wrap" style="width: min(320px, 100%); aspect-ratio: 3/4; margin: 0 auto 8px; border-radius: 12px; overflow: hidden; background: var(--bg-nav-active); display: flex; align-items: center; justify-content: center;">
-                <img id="mk-foto" src="" alt="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
-                <i id="mk-foto-empty" class="ti ti-user" style="font-size: 32px; color: var(--text-muted);"></i>
+<dialog id="modal-kandidat" class="xmodal" aria-labelledby="mk-alias">
+    <div class="xmodal-ph" id="mk-foto-wrap">
+        <img id="mk-foto" src="" alt="" style="display: none;">
+        <span id="mk-foto-empty" class="xcard-inisial" aria-hidden="true"></span>
+        <button type="button" class="xmodal-x" onclick="document.getElementById('modal-kandidat').close()" aria-label="Tutup"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="xmodal-body">
+        <div class="xmodal-head">
+            <div style="min-width: 0;">
+                <div id="mk-alias" class="xmodal-name"></div>
+                <div class="xmodal-sub" style="font-style: italic; color: var(--text-muted);">Nama asli & kontak dipegang JBTB</div>
             </div>
+            <span id="mk-status" class="badge"></span>
         </div>
 
-        <div id="mk-lightbox-slot" style="margin-bottom: 12px;"></div>
+        <div id="mk-lightbox-slot" style="margin-top: 14px;"></div>
 
-        <div id="mk-video-wrap" style="margin-bottom: 12px; display: none;">
+        <div id="mk-video-wrap" style="margin-top: 12px; display: none;">
             <video id="mk-video" controls style="width: 100%; border-radius: 10px; background: #000; aspect-ratio: 16/9;"></video>
         </div>
 
-        <div id="mk-atribut" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; font-size: 13px; margin-bottom: 14px;"></div>
+        <div class="xsec">Karakter dilamar</div>
+        <div id="mk-karakter" style="font-size: var(--fs-base); font-weight: 600;"></div>
+        <div id="mk-kriteria" style="color: var(--text-secondary); font-size: var(--fs-sm); margin-top: 4px;"></div>
 
-        <div style="margin-bottom: 12px; font-size: 13px;">
-            <div style="font-weight: 600; margin-bottom: 4px;">Karakter Dilamar</div>
-            <div id="mk-karakter"></div>
-            <div id="mk-kriteria" style="color: var(--text-secondary); font-size: 12px; margin-top: 4px;"></div>
-        </div>
+        <div id="mk-tags-slot"></div>
 
-        <div style="margin-bottom: 14px; font-size: 13px;">
-            <span style="color: var(--text-secondary);">Rekomendasi Admin:</span>
+        <div class="xsec">Fisik & kemampuan</div>
+        <div id="mk-atribut" class="xkv"></div>
+
+        <div class="xsec">Rekomendasi Admin</div>
+        <div style="font-size: var(--fs-sm);">
             <strong id="mk-grade-admin"></strong>
             <div style="color: var(--text-muted); font-size: var(--fs-xs); margin-top: 2px;">Grade A = terbaik/paling sesuai, B = sesuai, C = cukup (cadangan).</div>
         </div>
 
-        <div style="margin-bottom: 14px; font-size: 13px; padding: 10px; border-radius: 8px; background: var(--bg-nav-active);">
-            Riwayat Anda dengan talent ini: <span id="mk-riwayat"></span>
-        </div>
-
-        <div id="mk-form-area"></div>
+        <div class="xsec">Riwayat Anda dengan talent ini</div>
+        <div id="mk-riwayat" style="font-size: var(--fs-sm);"></div>
     </div>
+    <div id="mk-form-area"></div>
 </dialog>
 
 {{-- Shared lightbox (sibling modal-kandidat, BUKAN nested di dalamnya) --}}
@@ -270,17 +244,23 @@
         lbDlg.dataset.current = idx; lbImg.src = fotos[idx]; lbDlg.showModal();
     }
 
-    window.bukaModalKandidat = function (appId) {
+    window.bukaModalKandidat = function (appId, fokusPilih) {
         var kartu = document.querySelector('[data-appid="' + appId + '"]');
         if (!kartu) return;
 
-        document.getElementById('mk-alias').textContent = kartu.dataset.alias || '-';
+        document.getElementById('mk-alias').textContent = kartu.dataset.alias ? '@' + kartu.dataset.alias : '-';
+        var mkStatus = document.getElementById('mk-status');
+        mkStatus.className = 'badge ' + (kartu.dataset.statusClass || '');
+        mkStatus.textContent = kartu.dataset.status || '';
 
         var foto = kartu.dataset.foto;
         var mkFoto = document.getElementById('mk-foto');
         var mkEmpty = document.getElementById('mk-foto-empty');
-        if (foto) { mkFoto.src = foto; mkFoto.style.display = ''; mkEmpty.style.display = 'none'; }
-        else { mkFoto.style.display = 'none'; mkEmpty.style.display = ''; }
+        var ph = kartu.querySelector('.xcard-ph');
+        document.getElementById('mk-foto-wrap').style.setProperty('--h', ph ? ph.style.getPropertyValue('--h') : '140');
+        mkEmpty.textContent = (kartu.querySelector('.xcard-inisial') || {}).textContent || '';
+        if (foto) { mkFoto.src = foto; mkFoto.alt = 'Foto ' + (kartu.dataset.alias || ''); mkFoto.style.display = ''; mkEmpty.style.display = 'none'; }
+        else { mkFoto.removeAttribute('src'); mkFoto.style.display = 'none'; mkEmpty.style.display = ''; }
 
         var slot = document.getElementById('mk-lightbox-slot');
         slot.innerHTML = '';
@@ -300,11 +280,6 @@
             slot.appendChild(thumbGrid);
             document.getElementById('mk-lb-prev').style.display = fotosData.length > 1 ? '' : 'none';
             document.getElementById('mk-lb-next').style.display = fotosData.length > 1 ? '' : 'none';
-        } else {
-            var p = document.createElement('p');
-            p.style.cssText = 'color:var(--text-muted);font-size:12px;margin:0;';
-            p.textContent = 'Gallery masih kosong.';
-            slot.appendChild(p);
         }
 
         var video = kartu.dataset.video;
@@ -313,23 +288,26 @@
         if (video) { vEl.src = video; vWrap.style.display = ''; } else { vEl.src = ''; vWrap.style.display = 'none'; }
 
         var attrs = [
-            ['Alias', kartu.dataset.alias],
             ['Usia', kartu.dataset.usia ? kartu.dataset.usia + ' tahun' : ''],
             ['Gender', kartu.dataset.gender],
             ['Tinggi', kartu.dataset.tinggi ? kartu.dataset.tinggi + ' cm' : ''],
             ['Ukuran Baju', kartu.dataset.ukuranBaju],
             ['Warna Kulit', kartu.dataset.warnaKulit],
-            ['Pengalaman', kartu.dataset.pengalaman],
             ['Bahasa', kartu.dataset.bahasa],
+            ['Pengalaman', kartu.dataset.pengalaman, true],
         ];
         var atEl = document.getElementById('mk-atribut');
         atEl.innerHTML = '';
         attrs.forEach(function (pair) {
-            var lbl = document.createElement('div'); lbl.style.color = 'var(--text-secondary)'; lbl.textContent = pair[0];
-            var val = document.createElement('div'); val.textContent = pair[1] || '-';
-            atEl.appendChild(lbl); atEl.appendChild(val);
+            var box = document.createElement('div');
+            if (pair[2]) box.className = 'full';
+            var lbl = document.createElement('span'); lbl.className = 'xkv-l'; lbl.textContent = pair[0];
+            var val = document.createElement('b'); val.textContent = pair[1] || '-';
+            box.appendChild(lbl); box.appendChild(val); atEl.appendChild(box);
         });
 
+        var tpl = document.getElementById('mk-tags-' + appId);
+        document.getElementById('mk-tags-slot').innerHTML = tpl ? tpl.innerHTML : '';
         document.getElementById('mk-karakter').textContent = kartu.dataset.karakter || '-';
         document.getElementById('mk-kriteria').textContent = kartu.dataset.kriteria || '';
         document.getElementById('mk-grade-admin').textContent = kartu.dataset.gradeAdmin || '-';
@@ -338,30 +316,32 @@
 
         var formArea = document.getElementById('mk-form-area');
         formArea.innerHTML = '';
+        formArea.className = '';
         if (kartu.dataset.isPending === '1') {
+            formArea.className = 'xmodal-foot';
             formArea.innerHTML =
-                '<div style="border-top: 1px solid var(--border-color); padding-top: 12px; display: flex; flex-direction: column; gap: 8px;">' +
-                '<label style="font-size: 13px; font-weight: 600;">Grade Client (wajib untuk Approve)</label>' +
-                '<select id="mk-grade-select" style="width: 100%; min-height: 36px; padding: 4px 8px; margin-bottom: 0;">' +
+                '<label for="mk-grade-select" style="flex-basis: 100%; margin: 0; font-weight: 600;">Grade Client (wajib untuk Approve)</label>' +
+                '<select id="mk-grade-select" style="flex-basis: 100%; margin-bottom: 0;">' +
                 '<option value="">Pilih Grade</option>' +
                 '<option value="A">A</option>' +
                 '<option value="B">B</option>' +
                 '<option value="C">C</option>' +
                 '</select>' +
-                '<div style="display: flex; gap: 8px;">' +
-                '<button type="button" class="btn btn-brand" style="flex: 1;" onclick="submitSingle(' + appId + ', \'approve\')">Approve</button>' +
-                '<button type="button" class="btn btn-danger-outline" style="flex: 1;" onclick="submitSingle(' + appId + ', \'reject\')">Reject</button>' +
-                '</div></div>';
+                '<button type="button" class="btn btn-danger-outline" onclick="submitSingle(' + appId + ', \'reject\')">Reject</button>' +
+                '<button type="button" class="btn btn-brand" onclick="submitSingle(' + appId + ', \'approve\')">Approve</button>';
         } else if (kartu.dataset.reviewKeputusan) {
             var kep = kartu.dataset.reviewKeputusan;
             var grCd = kartu.dataset.reviewGrade ? ' (Grade ' + kartu.dataset.reviewGrade + ')' : '';
+            formArea.className = 'xmodal-foot';
             formArea.innerHTML =
-                '<div style="border-top: 1px solid var(--border-color); padding-top: 12px; font-size: 13px; color: var(--text-secondary);">' +
+                '<div style="font-size: 13px; color: var(--text-secondary);">' +
                 'Keputusan: <strong>' + kep.charAt(0).toUpperCase() + kep.slice(1) + grCd + '</strong><br>' +
                 '<span style="font-size: var(--fs-xs);">' + (kartu.dataset.reviewTgl || '') + '</span></div>';
         }
 
         dlg.showModal();
+        dlg.scrollTop = 0;
+        if (fokusPilih) document.getElementById('mk-grade-select')?.focus();
     };
 
     (function () {

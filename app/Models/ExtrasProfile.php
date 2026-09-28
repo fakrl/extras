@@ -120,6 +120,12 @@ class ExtrasProfile extends Model
         return $this->hasMany(ProjectApplication::class, 'extras_id');
     }
 
+    /** BA.4: `proyek_selesai_count` buat baris riwayat di kartu Extras. */
+    public function scopeWithProyekSelesai($query)
+    {
+        return $query->withCount(['applications as proyek_selesai_count' => fn ($q) => $q->where('status_partisipasi', 'selesai_produksi')]);
+    }
+
     /**
      * RF-06 (perluasan): sampai 4 foto tambahan (foto model/visual sisi lain),
      * di luar foto profil utama. Diurutkan berdasarkan slot (1-4).

@@ -243,25 +243,67 @@
         .entity-card-row-value { font-weight: 500; text-align: right; }
         .entity-card-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
 
-        /* Card kandidat di halaman Pendaftar: foto besar kiri, info+aksi kanan.
-           Di mobile stack jadi 1 kolom (foto di atas). */
-        .applicant-card {
-            display: grid; grid-template-columns: 120px 1fr; gap: 14px;
-            border: 1px solid var(--border-color); border-radius: 12px;
-            background: var(--bg-card); padding: 14px; margin-bottom: 14px;
-        }
-        .applicant-card-photo img, .applicant-card-photo .thumb-photo-empty {
-            width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 10px; display: block;
-        }
-        .applicant-card-photo .thumb-photo-empty {
-            display: flex; align-items: center; justify-content: center;
-            background: var(--bg-nav-active); color: var(--text-muted); font-size: 24px;
-        }
-        .applicant-card-extra-photos { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
-        @media (max-width: 640px) {
-            .applicant-card { grid-template-columns: 1fr; }
-            .applicant-card-photo { max-width: 160px; }
-        }
+        /* BA.4: kartu Extras (partials/extras-card) + modal detail, ikut prototype 07 */
+        .xgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; margin-bottom: var(--space-4); }
+        .xcard { position: relative; display: flex; flex-direction: column; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; scroll-margin-top: 80px; transition: box-shadow .15s ease; }
+        .xcard:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+        .xcard.is-highlight { border: 2px solid var(--accent); }
+        .xcard-ph { position: relative; aspect-ratio: 3/4; background: linear-gradient(160deg, hsl(var(--h) 24% 72%), hsl(var(--h) 20% 40%)); }
+        .xcard-ph-btn { display: block; width: 100%; height: 100%; padding: 0; margin: 0; border: 0; background: none; cursor: pointer; color: inherit; }
+        .xcard-ph-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+        .xcard-ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .xcard-inisial { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 48px; font-weight: 700; letter-spacing: 1px; color: rgba(255,255,255,0.92); text-shadow: 0 1px 8px rgba(0,0,0,0.18); }
+        .xcard .xcard-st { position: absolute; top: 10px; left: 10px; background: var(--bg-card); font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,0.15); pointer-events: none; }
+        .xcard-ck { position: absolute; top: 2px; right: 2px; width: 44px; height: 44px; margin: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .xcard-ck input[type="checkbox"] { width: 22px; height: 22px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.35); }
+        .xcard-ring { position: absolute; right: 10px; bottom: -24px; width: 56px; height: 56px; border-radius: 50%; background: conic-gradient(var(--accent) var(--p), var(--bg-nav-active) 0); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px var(--bg-card), 0 3px 10px rgba(0,0,0,0.18); pointer-events: none; }
+        .xcard-ring span { width: 44px; height: 44px; border-radius: 50%; background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: var(--fs-sm); color: var(--accent-strong); }
+        .xcard-body { padding: 14px 14px 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+        .xcard-name { font-size: var(--fs-md); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .xcard-sub { font-size: var(--fs-xs); color: var(--text-muted); margin-top: -4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .xcard.has-ring .xcard-name, .xcard.has-ring .xcard-sub { padding-right: 58px; }
+        .xcard-line { display: flex; gap: 8px; align-items: flex-start; font-size: var(--fs-sm); color: var(--text-secondary); line-height: 1.35; }
+        .xcard-line i { font-size: 16px; color: var(--text-muted); flex-shrink: 0; }
+        .xcard-line.is-warn, .xcard-line.is-warn i { color: var(--warning); }
+        .xcard-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+        .xtag { font-size: var(--fs-xs); padding: 3px 7px; border-radius: var(--radius-sm); background: var(--bg-page); border: 1px solid var(--border-color); color: var(--text-secondary); line-height: 1.3; }
+        .xtag.is-hit { color: var(--accent-strong); border-color: rgba(34,197,94,0.45); background: rgba(34,197,94,0.08); }
+        .xtag-grup { font-size: var(--fs-xs); color: var(--text-muted); font-weight: 600; margin: 8px 0 4px; }
+        .xcard-btns { display: flex; gap: 8px; margin-top: auto; padding-top: 8px; }
+        .xcard-btns > *, .xcard-btns form .btn { flex: 1; min-width: 0; width: 100%; }
+        .xcard-btns .btn { padding: 0 8px; font-weight: 600; font-size: var(--fs-sm); line-height: 1.2; text-align: center; }
+        .btn-outline-brand { border-color: var(--accent); color: var(--accent-strong); }
+        .xfilter { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: var(--space-3); }
+        .xfilter-label { font-size: var(--fs-xs); color: var(--text-muted); font-weight: 600; margin-right: 2px; }
+        .xfilter .btn.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-on); }
+        @media (max-width: 480px) { .xgrid { grid-template-columns: 1fr; } }
+
+        .xmodal { border: 0; padding: 0; border-radius: 16px; width: min(560px, 94vw); max-height: 92vh; background: var(--bg-card); color: var(--text-primary); box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .xmodal::backdrop { background: rgba(0,0,0,0.55); }
+        .xmodal-ph { position: relative; height: 280px; background: linear-gradient(160deg, hsl(var(--h, 140) 24% 72%), hsl(var(--h, 140) 20% 40%)); }
+        .xmodal-ph img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+        .xmodal-ph .xcard-inisial { font-size: 64px; }
+        .xmodal-x { position: absolute; top: 10px; right: 10px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255,255,255,0.92); color: #0c1a10; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 6px rgba(0,0,0,0.2); }
+        .xmodal-body { padding: 18px; }
+        .xmodal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+        .xmodal-name { font-size: var(--fs-xl); font-weight: 700; word-break: break-word; }
+        .xmodal-sub { font-size: var(--fs-sm); color: var(--text-secondary); margin-top: 2px; }
+        .xmodal-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .xsec { font-size: var(--fs-xs); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); margin: 18px 0 8px; }
+        .xkv { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .xkv > div { background: var(--bg-page); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 8px 10px; min-width: 0; }
+        .xkv-l { display: block; font-size: var(--fs-xs); color: var(--text-muted); margin-bottom: 2px; }
+        .xkv b { font-size: var(--fs-base); font-weight: 600; word-break: break-word; }
+        .xkv .full { grid-column: 1 / -1; }
+        .xrow { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--border-color); font-size: var(--fs-sm); }
+        .xsec + .xrow { border-top: 0; }
+        .xrow i { font-size: 17px; vertical-align: -3px; }
+        .xrow-ok { color: var(--accent-strong); }
+        .xrow-no, .xrow-muted { color: var(--text-muted); }
+        .xaksi { display: flex; flex-wrap: wrap; gap: 8px; }
+        .xaksi > form { margin: 0; }
+        .xmodal-foot { position: sticky; bottom: 0; background: var(--bg-card); border-top: 1px solid var(--border-color); padding: 12px 18px; display: flex; gap: 8px; flex-wrap: wrap; }
+        .xmodal-foot > * { flex: 1; }
 
         /* Grid dashboard 2 kolom (Super Admin, dll), collapse ke 1 kolom di
            mobile supaya chart tidak diperas jadi sempit & tinggi tidak proporsional. */
