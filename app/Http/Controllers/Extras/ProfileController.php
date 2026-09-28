@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Extras;
 use App\Exceptions\NikDuplikatException;
 use App\Http\Controllers\Controller;
 use App\Models\CastingProject;
+use App\Models\ExtrasCategory;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -68,6 +69,7 @@ class ProfileController extends Controller
         return view('extras.profile-edit', [
             'profile' => $profile,
             'fotoTambahan' => $this->fotoTambahanPerSlot($profile),
+            'tagGroups' => ExtrasCategory::perGrup(),
         ]);
     }
 
@@ -116,6 +118,8 @@ class ProfileController extends Controller
             'tautan_url.*' => ['nullable', 'url', 'max:500'],
             'rate_card' => ['nullable', 'numeric', 'min:0'],
             'nomor_wa' => ['nullable', 'string'],
+            'categories' => ['nullable', 'array'],
+            'categories.*' => ['integer', 'exists:extras_categories,id'],
         ]);
 
         $tautanTambahan = [];
@@ -126,14 +130,17 @@ class ProfileController extends Controller
             }
         }
 
-        $dataDisimpan = collect($data)->except(['tautan_label', 'tautan_url', 'nomor_wa', 'username', 'alias'])->toArray();
+        $dataDisimpan = collect($data)->except(['tautan_label', 'tautan_url', 'nomor_wa', 'username', 'alias', 'categories'])->toArray();
         $dataDisimpan['tautan_tambahan'] = $tautanTambahan;
 
         // SENGAJA tidak menerima 'status', 'cancel_count', 'foto_profil_path',
         // atau 'video_profil_path' dari request ini, kolom-kolom itu tidak
         // ada di $fillable ExtrasProfile, jadi mass-update() di bawah otomatis
         // aman (lihat catatan di model).
-        $request->user()->extrasProfile()->updateOrCreate([], $dataDisimpan);
+        $profile = $request->user()->extrasProfile()->updateOrCreate([], $dataDisimpan);
+        if ($request->boolean('categories_present')) {
+            $profile->categories()->sync($data['categories'] ?? []);
+        }
 
         // nomor_wa & username ada di tabel users (reusable lintas role),
         // BUKAN extras_profiles, simpan terpisah dari update() di atas.

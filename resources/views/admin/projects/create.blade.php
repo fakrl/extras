@@ -119,6 +119,10 @@
                     <label>Kriteria yang dibutuhkan <span style="color: var(--text-muted); font-weight: 400;">(opsional)</span></label>
                     <textarea name="kelas[0][kriteria]" rows="2" placeholder="Contoh: wanita 25-35 th, ekspresi natural, look sederhana" maxlength="500"></textarea>
                 </div>
+                <div style="margin-top: 8px;">
+                    <label>Tag yang dicari <span style="color: var(--text-muted); font-weight: 400;">(opsional, dipakai untuk % cocok)</span></label>
+                    @include('partials.tag-chips', ['name' => 'kelas[0][categories][]', 'selected' => []])
+                </div>
             </div>
         </div>
         <button type="button" id="btn-add-kelas" class="btn btn-sm" style="margin-bottom: 24px;">+ Tambah Karakter</button>
@@ -129,6 +133,7 @@
 @endsection
 
 @push('scripts')
+<template id="tag-chips-tpl">@include('partials.tag-chips', ['name' => 'kelas[__i__][categories][]', 'selected' => []])</template>
 <script>
     (function () {
         var tanggalWrap = document.getElementById('tanggal-wrap');
@@ -170,7 +175,8 @@
                 '</div>' +
                 '<div style="margin-top:8px;"><label>Keterangan Scene</label><input type="text" name="kelas[' + kelasIndex + '][keterangan_scene]" placeholder="Scene 12-14 di warung kopi..."></div>' +
                 '<div style="margin-top:8px;"><label>Kriteria yang dibutuhkan <span style="color:var(--text-muted);font-weight:400;">(opsional)</span></label>' +
-                '<textarea name="kelas[' + kelasIndex + '][kriteria]" rows="2" placeholder="Contoh: wanita 25-35 th, ekspresi natural" maxlength="500"></textarea></div>';
+                '<textarea name="kelas[' + kelasIndex + '][kriteria]" rows="2" placeholder="Contoh: wanita 25-35 th, ekspresi natural" maxlength="500"></textarea></div>' +
+                '<div style="margin-top:8px;"><label>Tag yang dicari <span style="color: var(--text-muted); font-weight: 400;">(opsional, dipakai untuk % cocok)</span></label>' + document.getElementById('tag-chips-tpl').innerHTML.replaceAll('__i__', kelasIndex) + '</div>';
             kelasWrap.appendChild(row);
             kelasIndex++;
             updateRemoveButtons(kelasWrap, '.btn-remove-kelas');

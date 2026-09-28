@@ -137,6 +137,11 @@
         .btn-brand:hover { filter: brightness(1.08); color: var(--accent-on); }
         .btn-danger-outline { color: var(--danger); border-color: var(--danger); background: transparent; }
 
+        .tag-grup { font-size: var(--fs-xs); color: var(--text-secondary); font-weight: 600; margin: 10px 0 6px; }
+        .tag-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+        .tag-chip { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; margin: 0; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-card-hover); color: var(--text-primary); font-size: var(--fs-sm); font-weight: 500; cursor: pointer; user-select: none; }
+        .tag-chip:has(:checked) { background: var(--accent); border-color: var(--accent); color: var(--accent-on); }
+        .tag-chip:has(:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
         .badge { display: inline-flex; padding: 3px 10px; border-radius: var(--radius-sm); border: 1px solid transparent; font-size: var(--fs-xs); font-weight: 500; }
         .badge-aktif { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.35); color: var(--accent-strong); }
         .badge-pending { background: rgba(234,179,8,0.15); border-color: rgba(234,179,8,0.35); color: var(--warning); }
