@@ -131,7 +131,6 @@
                     'data-bahasa' => $app->extras->bahasa ?? '',
                     'data-karakter' => $app->castingProjectClass->nama_kelas ?? '-',
                     'data-kriteria' => $app->castingProjectClass->kriteria ?? '',
-                    'data-grade-admin' => $app->grade ?? '',
                     'data-is-pending' => $isPending ? '1' : '0',
                     'data-status' => $badge[0],
                     'data-status-class' => $badge[1],
@@ -190,12 +189,6 @@
 
         <div class="xsec">Fisik & kemampuan</div>
         <div id="mk-atribut" class="xkv"></div>
-
-        <div class="xsec">Rekomendasi Admin</div>
-        <div style="font-size: var(--fs-sm);">
-            <strong id="mk-grade-admin"></strong>
-            <div style="color: var(--text-muted); font-size: var(--fs-xs); margin-top: 2px;">Grade A = terbaik/paling sesuai, B = sesuai, C = cukup (cadangan).</div>
-        </div>
 
         <div class="xsec">Riwayat Anda dengan talent ini</div>
         <div id="mk-riwayat" style="font-size: var(--fs-sm);"></div>
@@ -323,7 +316,6 @@
         document.getElementById('mk-tags-slot').innerHTML = tpl ? tpl.innerHTML : '';
         document.getElementById('mk-karakter').textContent = kartu.dataset.karakter || '-';
         document.getElementById('mk-kriteria').textContent = kartu.dataset.kriteria || '';
-        document.getElementById('mk-grade-admin').textContent = kartu.dataset.gradeAdmin || '-';
         document.getElementById('mk-riwayat').textContent =
             'Approve: ' + (kartu.dataset.riwayatApprove || '0') + ', Reject: ' + (kartu.dataset.riwayatReject || '0');
 
@@ -340,6 +332,7 @@
                 '<option value="B">B</option>' +
                 '<option value="C">C</option>' +
                 '</select>' +
+                '<div style="flex-basis: 100%; font-size: var(--fs-xs); color: var(--text-muted);">A = terbaik/paling sesuai, B = sesuai, C = cukup (cadangan).</div>' +
                 '<button type="button" class="btn btn-danger-outline" onclick="submitSingle(' + appId + ', \'reject\')">Reject</button>' +
                 '<button type="button" class="btn btn-brand" onclick="submitSingle(' + appId + ', \'approve\')">Approve</button>';
         } else if (kartu.dataset.reviewKeputusan) {
