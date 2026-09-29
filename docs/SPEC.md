@@ -1118,11 +1118,11 @@ Dashboard · Manajemen Akun · Proyek & Keuangan · Log Aktivitas · Monitoring 
 | BD.1 akun Client oleh SA + wajib ganti password | `d120ccf`, `f7c0077` (merge `3f75d25`) + integrasi form proyek `352bf94` — `--filter ClientAkunTest`; Manual: SA Kelola Akun ▸ + Client → dialog kredensial (Salin/WA) → login Client dipaksa ganti password; `/register/casting-director` → login | [ ] |
 | BD.2 Proyek & Keuangan (data, form, daftar, detail, cashflow) | `cb349a4`, `c314260` — `--filter ProyekKeuanganTest` (cashflow 1,1 jt / 45%, periode, tandai lunas idempotent, hapus biaya 403); Manual: SA buat proyek pilih PIC+Client → langsung dibuka; detail `?tab=cashflow` | [ ] |
 | BD.3 dashboard ringkasan | `a45b2d8` (merge) — `--filter "SuperAdminDashboardTest|SuperAdminHonorRecapTest"`; Manual: `/super-admin/dashboard?periode=3bulan`, `?dari=..&sampai=..`, klik tanggal kalender → panel + Buka proyek / Lihat absensi | [ ] |
-| BD.4 Manajemen Akun gabungan | | [ ] |
+| BD.4 Manajemen Akun gabungan | `f79234a` (merge `a13487f`) — `--filter ManajemenAkunTest` (search/filter/redirect/N+1 < 25 query); Manual: `/super-admin/akun`, filter di ikon, role=Extras → kartu | [ ] |
 | BD.5 Log Aktivitas search-first | `ac1b2fc` (merge) — `--filter ActivityLogAndEnhancementsTest`; Manual: cari deskripsi/aktor/nama proyek, filter di ikon, tanpa chart | [ ] |
-| BD.6 Monitoring per role (aksi Admin/Korlap, read-only Client/Extras) | | [ ] |
+| BD.6 Monitoring per role (aksi Admin/Korlap, read-only Client/Extras) | `49c2697`, `156d2f7`, `ec815b7` + fix `a45b1e6` (GET kontrak nggak generate/kirim WA saat view-as) — `--filter BdMonitoringModeTest` (11 test); Manual: skenario QA (4) & (5) | [ ] |
 | BD.7 sisa kuota + tag di lowongan | `2639cc2` (merge) — `--filter BdLowonganExtrasTest`; Manual HP: `/extras/lowongan/{id}` "Sisa X dari Y" + tag milik sendiri bercentang | [ ] |
-| BD.8 sidebar final + redirect route lama | | [ ] |
+| BD.8 sidebar final + redirect route lama | `d39729c` — `--filter BdSidebarFinalTest`; Manual HP: bottom bar → Monitoring → popup 4 role | [ ] |
 | BD.9 lampiran proyek | `3765798` (merge `8462b07`) — `--filter ProjectAttachmentTest` (Client lain/Extras/Korlap 403, hapus non-pengunggah 403); Manual: `/admin/projects/{id}?tab=lampiran`, Client di `/cd/jadwal/{id}` | [ ] |
 
 **Tes QA:** (1) SA bikin akun Client → login Client dipaksa ganti password. (2) SA bikin proyek pilih Admin & Client → langsung dibuka, muncul di dashboard Client. (3) Admin tambah biaya lain-lain → saldo proyek & dashboard SA berubah sama persis. (4) SA Monitoring ▸ Client ▸ @client_andini → lihat Greenlight, klik Pilih → ditolak "Mode lihat saja". (5) SA Monitoring ▸ Korlap → validasi absensi → di Log tertulis "(sebagai Korlap)".
