@@ -141,6 +141,7 @@ class ProfileController extends Controller
         if ($request->boolean('categories_present')) {
             $profile->categories()->sync($data['categories'] ?? []);
         }
+        $profile->siapkanKontrakLolos();
 
         // nomor_wa & username ada di tabel users (reusable lintas role),
         // BUKAN extras_profiles, simpan terpisah dari update() di atas.
@@ -185,7 +186,7 @@ class ProfileController extends Controller
 
     /**
      * RF-04: form KTP+rekening, cuma muncul setelah Extras dinyatakan lolos
-     * (ContractController::show() redirect ke sini kalau data belum lengkap).
+     * (halaman kontrak menautkan ke sini kalau NIK belum ada).
      * SENGAJA terpisah dari profile-edit biasa (data minimization UU PDP).
      */
     public function lengkapiKtp(Request $request, ProjectApplication $application)
@@ -211,6 +212,8 @@ class ProfileController extends Controller
         } catch (UniqueConstraintViolationException) {
             return back()->withInput()->with('error', 'NIK ini sudah terdaftar di akun lain, hubungi Admin kalau ini kesalahan.');
         }
+
+        $application->extras->siapkanKontrakLolos();
 
         return redirect()->route('contracts.show', $application)->with('status', 'NIK & rekening berhasil disimpan.');
     }

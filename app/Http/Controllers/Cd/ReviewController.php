@@ -77,6 +77,7 @@ class ReviewController extends Controller
             ]);
 
             $application->kirimNotifikasiHasil();
+            $application->siapkanKontrakDanPembayaran();
 
             ActivityLog::record(
                 $data['keputusan'] === 'approve' ? 'REVIEW_CANDIDATE_LOCK' : 'REVIEW_CANDIDATE_REJECT',

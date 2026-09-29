@@ -30,10 +30,6 @@ class PaymentController extends Controller
         abort_unless($application->bolehDilihatOleh($request->user()), 403);
         $this->guardStatusLolos($application);
 
-        if (! $application->payment) {
-            $application->payment()->create(['status' => 'belum_dibayar']);
-        }
-
         $application->load('payment.addons', 'extras', 'castingProject');
 
         return view('payments.show', compact('application'));

@@ -246,7 +246,7 @@ class BdMonitoringModeTest extends TestCase
         $application->extras->forceFill(['nik' => '3201010101010001'])->save();
 
         $this->sebagai($application->extras->user)->get(route('contracts.show', $application))
-            ->assertRedirect()->assertSessionHas('info');
+            ->assertOk()->assertSee('Kontrak belum tersedia');
 
         $this->assertNull($application->fresh()->contract);
         Mail::assertNothingQueued();

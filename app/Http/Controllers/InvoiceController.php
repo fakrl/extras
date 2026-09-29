@@ -39,7 +39,7 @@ class InvoiceController extends Controller
     {
         $this->pastikanBolehLihat($request, $castingProject);
 
-        $invoice = $castingProject->invoices()->firstOrCreate([]);
+        $invoice = $castingProject->invoices()->first();
 
         $castingProject->load('classes', 'applications.extras');
 

@@ -195,7 +195,8 @@ class NamaAsliUsernameTest extends TestCase
         $response = $this->actingAs($application->extras->user)
             ->get(route('contracts.show', $application));
 
-        $response->assertRedirect(route('extras.profile.edit'));
+        $response->assertOk()->assertSee('melengkapi Nama Asli')
+            ->assertSee(route('extras.profile.edit'), false);
         $this->assertSame(0, Contract::count());
     }
 
@@ -206,8 +207,8 @@ class NamaAsliUsernameTest extends TestCase
 
         $response = $this->actingAs($admin)->get(route('contracts.show', $application));
 
-        $response->assertRedirect(route('admin.projects.applicants', $application->castingProject))
-            ->assertSessionHas('error');
+        $response->assertOk()->assertSee('melengkapi Nama Asli')
+            ->assertDontSee('Lengkapi Sekarang');
         $this->assertSame(0, Contract::count());
     }
 
@@ -217,7 +218,8 @@ class NamaAsliUsernameTest extends TestCase
 
         $this->actingAs($application->extras->user)
             ->get(route('contracts.show', $application))
-            ->assertRedirect(route('extras.kontrak.lengkapi-ktp', $application));
+            ->assertOk()->assertSee('melengkapi NIK')
+            ->assertSee(route('extras.kontrak.lengkapi-ktp', $application), false);
 
         $this->assertSame(0, Contract::count());
     }
@@ -228,11 +230,10 @@ class NamaAsliUsernameTest extends TestCase
         Storage::fake('local');
 
         $application = $this->buatApplicationLolos();
-        $application->extras->lengkapiKtp('3201234567890011', 'BCA 111');
 
         $this->actingAs($application->extras->user)
-            ->get(route('contracts.show', $application))
-            ->assertOk();
+            ->post(route('extras.kontrak.simpan-ktp', $application), ['nik' => '3201234567890011'])
+            ->assertRedirect();
 
         $this->assertDatabaseCount('contracts', 1);
 

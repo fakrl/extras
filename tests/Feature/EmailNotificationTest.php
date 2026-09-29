@@ -132,12 +132,11 @@ class EmailNotificationTest extends TestCase
         Storage::fake('local');
 
         $application = $this->buatAplikasi('lolos');
-        $application->extras->lengkapiKtp('3201234567890099', 'BCA 000');
         $extras = $application->extras->user;
 
-        $response = $this->actingAs($extras)->get("/kontrak/{$application->id}");
+        $this->actingAs($extras)->post(route('extras.kontrak.simpan-ktp', $application), ['nik' => '3201234567890099'])
+            ->assertRedirect(route('contracts.show', $application));
 
-        $response->assertOk();
         Mail::assertQueued(KontrakSiapTtdMail::class, 2);
 
         $this->assertDatabaseHas('notifications_log', [

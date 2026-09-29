@@ -8,6 +8,12 @@
     Fee: Rp {{ number_format($application->fee_final, 0, ',', '.') }}
 </p>
 
+@if (! $application->payment)
+    <div class="card">
+        <div style="font-size: 14px; font-weight: 500; margin-bottom: 6px;">Data pembayaran belum tersedia</div>
+        <p style="margin: 0; font-size: 13.5px; color: var(--text-secondary);">Data pembayaran dibuat otomatis saat Extras dinyatakan Lolos. Hubungi Admin kalau belum muncul.</p>
+    </div>
+@else
 <div class="card" style="margin-bottom: 16px;">
     <p style="margin: 0 0 8px;">Status: <x-status-badge :model="$application->payment" /></p>
 
@@ -84,5 +90,6 @@
 
 @if ($application->payment->status === 'dikonfirmasi_diterima')
     <div class="alert-success">Pembayaran sudah dikonfirmasi diterima. Proyek ini selesai.</div>
+@endif
 @endif
 @endsection
