@@ -1235,8 +1235,8 @@ Tambah field Client (select bisa dicari + "+ Client baru") dan Admin PIC di form
 
 | Item | Bukti | QA |
 |---|---|---|
-| BG.1 cabut akses Client lama | | [ ] |
-| BG.2 label Keluar | | [ ] |
-| BG.3 teks invoice | | [ ] |
-| BG.5 fix pagination (commit) | | [ ] |
-| BG.6 pilihan jumlah per halaman | | [ ] |
+| BG.1 cabut akses Client lama | `57d7583` — `--filter BgGantiClientTest` (Client lama 403 di Greenlight/jadwal/invoice/lampiran, review tetap ada). Invoice & foto absensi tadinya masih izinkan `diajukan_oleh_client_id` → ditutup | [ ] |
+| BG.2 label Keluar | `56d792a` — `--filter BgLabelKeluarTest` (dibayar + belum = total; dashboard = keluar_dibayar) | [ ] |
+| BG.3 teks invoice | `7821bd6` — assert di `BeGetMurniBacaTest` | [ ] |
+| BG.5 fix pagination (commit) | `becbb3d` — screenshot 5 halaman desktop + HP (tombol 40px teks ‹ ›, wrap di HP) | [ ] |
+| BG.6 pilihan jumlah per halaman | `b48d2a1` + `8741a93` — `--filter PerHalamanTest` (per=50 → 50; 999 → default; per ikut ke halaman 2; kartu 12/24/48/96). SQLite & MySQL 455 passed | [ ] |
