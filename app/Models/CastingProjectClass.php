@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -19,6 +20,17 @@ class CastingProjectClass extends Model
         return [
             'kriteria' => 'string',
         ];
+    }
+
+    // MySQL balikin kolom TIME sebagai HH:MM:SS, SQLite apa adanya; UI cukup HH:MM.
+    protected function jamCallsheet(): Attribute
+    {
+        return Attribute::get(fn (?string $v) => $v ? substr($v, 0, 5) : null);
+    }
+
+    protected function jamCallingan(): Attribute
+    {
+        return Attribute::get(fn (?string $v) => $v ? substr($v, 0, 5) : null);
     }
 
     public function castingProject(): BelongsTo
