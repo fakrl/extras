@@ -30,8 +30,11 @@
         </div>
         <p style="margin: 8px 0 4px; font-size: 13.5px;">Client: {{ $project->client_ph }}</p>
         <p style="margin: 0 0 12px; font-size: 12.5px; color: var(--text-muted);">
-            {{ $project->classes->count() }} kelas · Kuota terisi: {{ $project->terisi }}/{{ $project->kuota }}
+            {{ $project->classes->count() }} peran · Kuota terisi: {{ $project->terisi }}/{{ $project->kuota }}
         </p>
+        @if ($project->classes->isNotEmpty())
+            <div style="margin-bottom: 14px;">@include('partials.peran-lowongan', ['classes' => $project->classes])</div>
+        @endif
         <a href="{{ route('extras.projects.show', $project) }}" class="btn btn-brand btn-sm">Lihat Detail & Daftar</a>
     </div>
 @empty

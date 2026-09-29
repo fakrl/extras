@@ -14,14 +14,15 @@ class CastingProjectController extends Controller
      * RF-11: Extras melihat semua proyek casting.
      * Aktif dulu (urut deadline terdekat), selesai/ditutup paling bawah.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $peran = fn ($q) => $q->withTerisi()->with('categories:id,nama');
         $aktifStatuses = ['dibuka'];
         $selesaiStatuses = ['ditutup'];
 
         $aktif = CastingProject::whereIn('status', $aktifStatuses)
             ->withCount(['applications as terisi' => fn ($q) => $q->whereIn('status_partisipasi', ['lolos', 'kontrak_ditandatangani', 'selesai_produksi'])])
-            ->with('classes', 'shootingDates')
+            ->with(['classes' => $peran, 'shootingDates'])
             ->orderBy('deadline')
             ->get()
             ->filter(fn ($p) => $p->menerimaPendaftaran())
@@ -29,18 +30,26 @@ class CastingProjectController extends Controller
 
         $selesai = CastingProject::whereIn('status', $selesaiStatuses)
             ->withCount(['applications as terisi' => fn ($q) => $q->whereIn('status_partisipasi', ['lolos', 'kontrak_ditandatangani', 'selesai_produksi'])])
-            ->with('classes', 'shootingDates')
+            ->with(['classes' => $peran, 'shootingDates'])
             ->orderByDesc('deadline')
             ->get();
 
-        return view('extras.projects.index', compact('aktif', 'selesai'));
+        $tagSaya = $this->tagSaya($request);
+
+        return view('extras.projects.index', compact('aktif', 'selesai', 'tagSaya'));
     }
 
-    public function show(CastingProject $castingProject)
+    public function show(Request $request, CastingProject $castingProject)
     {
-        $castingProject->load('classes', 'shootingDates');
+        $castingProject->load(['classes' => fn ($q) => $q->withTerisi()->with('categories:id,nama'), 'shootingDates']);
+        $tagSaya = $this->tagSaya($request);
 
-        return view('extras.projects.show', compact('castingProject'));
+        return view('extras.projects.show', compact('castingProject', 'tagSaya'));
+    }
+
+    private function tagSaya(Request $request): array
+    {
+        return $request->user()->extrasProfile?->categories->modelKeys() ?? [];
     }
 
     /**

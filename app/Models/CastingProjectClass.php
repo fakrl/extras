@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -46,5 +47,16 @@ class CastingProjectClass extends Model
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(ExtrasCategory::class);
+    }
+
+    /** BD.7: terisi = aplikasi kelas yang tidak ditolak/dibatalkan (sama dgn CastingProject::kuotaPenuh). */
+    public function scopeWithTerisi(Builder $query): void
+    {
+        $query->withCount(['applications as terisi' => fn ($q) => $q->whereNotIn('status_partisipasi', ['ditolak', 'dibatalkan'])]);
+    }
+
+    public function sisaKuota(): int
+    {
+        return max(0, (int) $this->kuota_kelas - (int) ($this->terisi ?? 0));
     }
 }
