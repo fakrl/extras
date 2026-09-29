@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\CastingProject;
-use App\Models\User;
+use App\Models\ExtrasCategory;
+use App\Models\ExtrasProfile;
 
 class HomeController extends Controller
 {
@@ -19,19 +20,22 @@ class HomeController extends Controller
         $proyekTerbuka = $allTerbuka->take(6)->values();
         $adaLebih = $allTerbuka->count() > 6;
 
-        $proyekSelesai = CastingProject::where('status', 'ditutup')
-            ->select(['id', 'nama_produksi', 'poster_path'])
-            ->latest()
-            ->take(8)
+        $portofolio = CastingProject::where('tampil_portofolio', true)
+            ->select(['id', 'nama_produksi', 'client_ph', 'poster_path', 'cover_path', 'portofolio_judul', 'portofolio_jenis', 'portofolio_tahun', 'tampilkan_nama_client'])
+            ->orderByDesc('portofolio_tahun')
+            ->latest('updated_at')
+            ->take(12)
             ->get();
 
-        $castExtras = User::where('role', 'extras')
-            ->whereHas('extrasProfile', fn ($q) => $q->whereNotNull('share_token')->whereNotNull('foto_profil_path'))
-            ->with(['extrasProfile:id,user_id,foto_profil_path,share_token'])
-            ->inRandomOrder()
-            ->limit(12)
-            ->get(['id', 'name', 'username']);
+        $castExtras = ExtrasProfile::tampilDiBeranda()
+            ->with(['user:id,username', 'categories' => fn ($q) => $q->whereIn('nama', ExtrasCategory::GRUP['Usia tampilan'])])
+            ->latest('tampil_di_beranda_at')
+            ->limit(16)
+            ->get(['id', 'user_id', 'share_token', 'tampil_di_beranda_at']);
+        if ($castExtras->count() < 4) {
+            $castExtras = collect();
+        }
 
-        return view('welcome', compact('proyekTerbuka', 'adaLebih', 'proyekSelesai', 'castExtras'));
+        return view('welcome', compact('proyekTerbuka', 'adaLebih', 'portofolio', 'castExtras'));
     }
 }

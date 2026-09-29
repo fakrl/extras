@@ -136,36 +136,44 @@
             .hero-inner { padding: 64px 20px 56px; }
         }
 
-        /* ── Cast Marquee (AK.5) ── */
-        .cast-section { padding-block: 7rem; border-top: 1px solid var(--hp-line); overflow: hidden; }
-        .cast-section-header { max-width: 1100px; margin: 0 auto 2.5rem; padding: 0 32px; }
-        .cast-section-title { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(1.6rem, 3.5vw, 2.4rem); font-weight: 400; letter-spacing: -0.02em; margin: 6px 0 0; color: var(--hp-fg); }
-
-        .cast-track-wrap { position: relative; }
-        .cast-track-wrap::before,
-        .cast-track-wrap::after {
-            content: ''; position: absolute; top: 0; bottom: 0; width: 80px; z-index: 2; pointer-events: none;
-        }
-        .cast-track-wrap::before { left: 0; background: linear-gradient(to right, var(--hp-bg), transparent); }
-        .cast-track-wrap::after  { right: 0; background: linear-gradient(to left,  var(--hp-bg), transparent); }
-
-        .cast-track { display: flex; gap: 16px; width: max-content; }
-        .cast-track-wrap:hover .cast-track { animation-play-state: paused; }
-
+        /* ── Marquee (BH.2/BH.3): track = 2 paruh identik, geser -50% ── */
+        .marquee { position: relative; overflow: hidden; }
+        .marquee::before, .marquee::after { content: ''; position: absolute; top: 0; bottom: 0; width: 80px; z-index: 2; pointer-events: none; }
+        .marquee::before { left: 0; background: linear-gradient(to right, var(--hp-bg), transparent); }
+        .marquee::after { right: 0; background: linear-gradient(to left, var(--hp-bg), transparent); }
+        .marquee-track { display: flex; width: max-content; padding-block: 4px; }
+        .marquee-track > * { margin-right: 20px; }
         @media (prefers-reduced-motion: no-preference) {
             @keyframes marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-            .cast-track { animation: marquee-scroll 32s linear infinite; }
+            .marquee-track { animation: marquee-scroll var(--marquee-durasi, 40s) linear infinite; }
+            .marquee.is-rev .marquee-track { animation-direction: reverse; }
+            .marquee:hover .marquee-track, .marquee:focus-within .marquee-track, .marquee.is-paused .marquee-track { animation-play-state: paused; }
         }
+        @media (prefers-reduced-motion: reduce) {
+            .marquee { overflow-x: auto; scroll-snap-type: x proximity; }
+            .marquee::before, .marquee::after { display: none; }
+            .marquee-track { padding-inline: 32px 12px; }
+            .marquee-track > * { scroll-snap-align: start; }
+            .marquee [data-dup] { display: none; }
+        }
+        .hp-sec-head { max-width: 1100px; margin: 0 auto 2.5rem; padding: 0 32px; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px 24px; flex-wrap: wrap; }
+        .hp-sec-title { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2.2rem, 5.5vw, 3.75rem); font-weight: 400; line-height: 1; letter-spacing: -0.04em; margin: 0; color: var(--hp-fg); }
+        .hp-sec-note { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--hp-muted); }
 
-        .cast-card { flex: 0 0 160px; display: flex; flex-direction: column; gap: 8px; }
-        .cast-photo-wrap { width: 160px; aspect-ratio: 2/3; border-radius: 10px; overflow: hidden; background: var(--hp-card); position: relative; }
-        .cast-photo { width: 100%; height: 100%; object-fit: cover; display: block; filter: grayscale(1); transition: filter .5s ease; }
-        .cast-card:hover .cast-photo { filter: grayscale(0); }
-        @media (prefers-reduced-motion: reduce) { .cast-photo { transition: none; } }
-        .cast-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 700; color: var(--hp-muted); letter-spacing: -1px; }
-        .cast-name { font-size: 12.5px; font-weight: 600; color: var(--hp-fg); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        .cast-fallback { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; gap: 16px; flex-wrap: wrap; }
+        /* ── Cast (BH.2) ── */
+        .cast-section { padding-block: 7rem; border-top: 1px solid var(--hp-line); overflow: hidden; }
+        .cast-card { flex: 0 0 210px; display: block; color: inherit; text-decoration: none; }
+        .cast-card:focus-visible { outline: 2px solid var(--hp-accent); outline-offset: 4px; }
+        .cast-photo-wrap { aspect-ratio: 0.78; overflow: hidden; background: var(--hp-card); position: relative; border-radius: 4px; }
+        .cast-photo { width: 100%; height: 100%; object-fit: cover; display: block; filter: grayscale(1); transition: filter .5s ease, transform .5s ease; }
+        .cast-card:hover .cast-photo, .cast-card:focus-visible .cast-photo { filter: grayscale(0); transform: scale(1.05); }
+        .cast-no { position: absolute; left: 12px; top: 10px; font-size: 12px; color: rgba(255, 255, 255, 0.8); text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6); }
+        .cast-view { position: absolute; right: 12px; bottom: 12px; border-radius: 999px; background: var(--hp-accent); color: var(--hp-accent-on); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; opacity: 0; transition: opacity .3s; }
+        .cast-card:hover .cast-view, .cast-card:focus-visible .cast-view { opacity: 1; }
+        .cast-name { font-family: Georgia, 'Times New Roman', serif; font-size: 1.3rem; letter-spacing: -0.03em; margin-top: 14px; color: var(--hp-fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cast-tag { margin-top: 4px; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hp-muted); }
+        @media (prefers-reduced-motion: reduce) { .cast-photo, .cast-view { transition: none; } .cast-card:hover .cast-photo { transform: none; } }
+        @media (max-width: 767px) { .cast-card { flex-basis: 160px; } }
 
         /* ── About ── */
         .about-section { padding-block: 7rem; border-top: 1px solid var(--hp-line); }
@@ -235,25 +243,17 @@
         .contact-block a { font-size: 14px; color: var(--hp-fg); text-decoration: none; border-bottom: 1px solid var(--hp-line); }
         .contact-block a:hover { color: var(--hp-accent); border-color: var(--hp-accent); }
 
-        /* ── Produksi ── */
-        .produksi-section { padding-block: 7rem; border-top: 1px solid var(--hp-line); }
-        .produksi-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
-        .produksi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; margin-top: 2.5rem; }
-        .produksi-grid-reel { display: flex; gap: 20px; overflow-x: auto; scroll-snap-type: x proximity; padding: 24px 8px 32px; margin-top: 2rem; }
-        .produksi-grid-reel .produksi-card { flex: 0 0 160px; scroll-snap-align: center; }
-        .produksi-card { display: flex; flex-direction: column; gap: 10px; }
-        .produksi-poster { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 10px; display: block; filter: grayscale(100%); transition: filter 0.4s ease; }
-        .produksi-card:hover .produksi-poster,
-        .produksi-card:focus-within .produksi-poster { filter: grayscale(0%); }
-        @media (prefers-reduced-motion: reduce) { .produksi-poster { transition: none; } }
-        @media (prefers-reduced-motion: no-preference) {
-            @supports ((animation-timeline: view()) and (animation-range: entry)) {
-                @keyframes reel-scale { 0% { scale: 0.82; opacity: 0.6; } 50% { scale: 1; opacity: 1; } 100% { scale: 0.82; opacity: 0.6; } }
-                .produksi-grid-reel .produksi-card { animation: reel-scale auto linear both; animation-timeline: view(inline); }
-            }
-        }
-        .produksi-placeholder { width: 100%; aspect-ratio: 2/3; border-radius: 10px; background: var(--hp-card); border: 1px solid var(--hp-line); display: flex; align-items: center; justify-content: center; font-size: 32px; color: var(--hp-muted); }
-        .produksi-name { font-size: 12.5px; color: var(--hp-muted); text-align: center; font-weight: 500; }
+        /* ── Portofolio (BH.3) ── */
+        .porto-section { padding-block: 7rem; border-top: 1px solid var(--hp-line); overflow: hidden; }
+        .porto-card { flex: 0 0 380px; margin: 0; }
+        .porto-img { aspect-ratio: 1.28; overflow: hidden; border-radius: 4px; position: relative; background: linear-gradient(135deg, color-mix(in srgb, var(--hp-accent) 35%, var(--hp-card)), var(--hp-card) 70%); }
+        .porto-img img { width: 100%; height: 100%; object-fit: cover; display: block; filter: grayscale(1); transition: filter .5s ease, transform .5s ease; }
+        .porto-card:hover .porto-img img { filter: grayscale(0); transform: scale(1.05); }
+        .porto-img .ti { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 44px; color: var(--hp-muted); }
+        .porto-title { font-family: Georgia, 'Times New Roman', serif; font-size: 1.5rem; font-weight: 400; letter-spacing: -0.03em; line-height: 1.15; margin: 16px 0 0; color: var(--hp-fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .porto-sub { margin-top: 6px; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hp-muted); }
+        @media (prefers-reduced-motion: reduce) { .porto-img img { transition: none; } .porto-card:hover .porto-img img { transform: none; } }
+        @media (max-width: 767px) { .porto-card { flex-basis: 280px; } }
 
         /* ── Footer CTA (AK.4) ── */
         .footer-cta { padding-block: 8rem; border-top: 1px solid var(--hp-line); }
@@ -296,12 +296,10 @@
             .about-section .about-inner,
             .services-inner,
             .lowongan-inner,
-            .produksi-inner,
             .footer-cta-inner,
-            .cast-section-header,
-            .cast-fallback,
+            .hp-sec-head,
             .footer-inner { padding-left: 20px; padding-right: 20px; }
-            .about-section, .cast-section, .services-section, .lowongan-section, .produksi-section, .footer-cta { padding-block: 5rem; }
+            .about-section, .cast-section, .services-section, .lowongan-section, .porto-section, .footer-cta { padding-block: 5rem; }
             .history-facts-row { grid-template-columns: 1fr; }
             .vm-section { flex-direction: column; gap: 20px; }
             .services-inner { grid-template-columns: 1fr; gap: 28px; }
@@ -373,68 +371,39 @@
         </div>
     </div>
 
-    {{-- Cast Section (AK.5) --}}
-    <div class="cast-section">
-        <div class="cast-section-header">
-            <span class="section-eyebrow">Talenta Kami</span>
-            <div class="cast-section-title">Extras terdaftar &amp; siap produksi</div>
-        </div>
-
-        @if ($castExtras->count() >= 4)
-            {{-- Marquee: duplikat list 2x biar loop mulus --}}
-            <div class="cast-track-wrap">
-                <div class="cast-track">
-                    @foreach ($castExtras as $extras)
-                        <div class="cast-card">
-                            <div class="cast-photo-wrap">
-                                <img src="{{ route('public.extras.foto', $extras->extrasProfile->share_token) }}"
-                                     alt="{{ $extras->username ?? $extras->name }}"
-                                     class="cast-photo"
-                                     loading="lazy">
-                            </div>
-                            <div class="cast-name">{{ $extras->username ?? $extras->name }}</div>
-                        </div>
-                    @endforeach
-                    {{-- duplikat untuk seamless loop --}}
-                    @foreach ($castExtras as $extras)
-                        <div class="cast-card" aria-hidden="true">
-                            <div class="cast-photo-wrap">
-                                <img src="{{ route('public.extras.foto', $extras->extrasProfile->share_token) }}"
-                                     alt=""
-                                     class="cast-photo"
-                                     loading="lazy">
-                            </div>
-                            <div class="cast-name">{{ $extras->username ?? $extras->name }}</div>
-                        </div>
-                    @endforeach
-                </div>
+    {{-- Cast (BH.2): cuma Extras yang izin + disetujui Admin, minimal 4 --}}
+    @if ($castExtras->isNotEmpty())
+    @php $putaran = (int) ceil(8 / $castExtras->count()); @endphp
+    <section class="cast-section" id="cast" aria-labelledby="cast-judul">
+        <div class="hp-sec-head">
+            <div>
+                <span class="section-eyebrow">Cast</span>
+                <h2 class="hp-sec-title" id="cast-judul">Kenalan dengan cast</h2>
             </div>
-        @else
-            {{-- Fallback: kurang dari 4 extras opt-in, tampil static grid --}}
-            <div class="cast-fallback">
-                @foreach ($castExtras as $extras)
-                    <div class="cast-card">
-                        <div class="cast-photo-wrap">
-                            <img src="{{ route('public.extras.foto', $extras->extrasProfile->share_token) }}"
-                                 alt="{{ $extras->username ?? $extras->name }}"
-                                 class="cast-photo">
-                        </div>
-                        <div class="cast-name">{{ $extras->username ?? $extras->name }}</div>
-                    </div>
-                @endforeach
-                @for ($i = $castExtras->count(); $i < 4; $i++)
-                    <div class="cast-card">
-                        <div class="cast-photo-wrap">
-                            <div class="cast-placeholder">?</div>
-                        </div>
-                        <div class="cast-name" style="color: var(--hp-muted);">—</div>
-                    </div>
+            <span class="hp-sec-note">Extras JBTB</span>
+        </div>
+        <div class="marquee" data-marquee style="--marquee-durasi: {{ $castExtras->count() * $putaran * 5 }}s;">
+            <div class="marquee-track">
+                @for ($r = 0; $r < $putaran * 2; $r++)
+                    @foreach ($castExtras as $i => $ex)
+                        <a href="{{ route('public.extras.profile', $ex->share_token) }}" class="cast-card"
+                           @if ($r) data-dup aria-hidden="true" tabindex="-1" @endif>
+                            <div class="cast-photo-wrap">
+                                <img src="{{ route('public.extras.foto', $ex->share_token) }}" alt="{{ $r ? '' : 'Foto @'.$ex->user->username }}" class="cast-photo" loading="lazy">
+                                <span class="cast-no" aria-hidden="true">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</span>
+                                <span class="cast-view" aria-hidden="true">Lihat &#x2197;</span>
+                            </div>
+                            <div class="cast-name">{{ '@'.$ex->user->username }}</div>
+                            <div class="cast-tag">{{ $ex->categories->first()?->nama ?? 'Extras' }}</div>
+                        </a>
+                    @endforeach
                 @endfor
             </div>
-        @endif
-    </div>
+        </div>
+    </section>
 
     <div class="film-strip-divider" aria-hidden="true"></div>
+    @endif
 
     {{-- About --}}
     <div class="about-section" id="tentang">
@@ -587,43 +556,39 @@
         </div>
     </div>
 
-    @if ($proyekSelesai->isNotEmpty())
+    {{-- Portofolio (BH.3): cuma proyek selesai yang dicentang Admin/SA --}}
+    @if ($portofolio->isNotEmpty())
+    @php $putaranP = (int) ceil(4 / $portofolio->count()); @endphp
     <div class="film-strip-divider" aria-hidden="true"></div>
-    <div class="produksi-section">
-        <div class="produksi-inner">
-            <span class="section-eyebrow">Arsip Produksi</span>
-            <div class="section-title">Produksi yang Pernah Kami Tangani</div>
-            @if (count($proyekSelesai) > 3)
-                <div class="film-strip-divider" aria-hidden="true" style="margin-top: 2rem;"></div>
-                <div class="produksi-grid-reel">
-                    @foreach ($proyekSelesai as $p)
-                        <div class="produksi-card">
-                            @if ($p->poster_path)
-                                <img src="{{ Storage::url($p->poster_path) }}" alt="{{ $p->nama_produksi }}" class="produksi-poster">
-                            @else
-                                <div class="produksi-placeholder"><i class="ti ti-clapperboard"></i></div>
-                            @endif
-                            <div class="produksi-name">{{ $p->nama_produksi }}</div>
-                        </div>
-                    @endforeach
-                </div>
-                <div class="film-strip-divider" aria-hidden="true"></div>
-            @else
-                <div class="produksi-grid">
-                    @foreach ($proyekSelesai as $p)
-                        <div class="produksi-card">
-                            @if ($p->poster_path)
-                                <img src="{{ Storage::url($p->poster_path) }}" alt="{{ $p->nama_produksi }}" class="produksi-poster">
-                            @else
-                                <div class="produksi-placeholder"><i class="ti ti-clapperboard"></i></div>
-                            @endif
-                            <div class="produksi-name">{{ $p->nama_produksi }}</div>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
+    <section class="porto-section" id="portofolio" aria-labelledby="porto-judul">
+        <div class="hp-sec-head">
+            <div>
+                <span class="section-eyebrow">Portofolio</span>
+                <h2 class="hp-sec-title" id="porto-judul">Pernah dikerjakan</h2>
+            </div>
+            <span class="hp-sec-note">Produksi yang kami cast</span>
         </div>
-    </div>
+        <div class="marquee is-rev" data-marquee style="--marquee-durasi: {{ $portofolio->count() * $putaranP * 9 }}s;">
+            <div class="marquee-track">
+                @for ($r = 0; $r < $putaranP * 2; $r++)
+                    @foreach ($portofolio as $p)
+                        @php $gambar = $p->poster_path ?: $p->cover_path; @endphp
+                        <article class="porto-card" @if ($r) data-dup aria-hidden="true" @endif>
+                            <div class="porto-img">
+                                @if ($gambar)
+                                    <img src="{{ asset('storage/'.$gambar) }}" alt="" loading="lazy">
+                                @else
+                                    <i class="ti ti-movie" aria-hidden="true"></i>
+                                @endif
+                            </div>
+                            <h3 class="porto-title">{{ $p->portofolio_judul ?: $p->nama_produksi }}</h3>
+                            <div class="porto-sub">{{ implode(' · ', array_filter([$p->portofolio_jenis, $p->portofolio_tahun, $p->tampilkan_nama_client ? $p->client_ph : null])) }}</div>
+                        </article>
+                    @endforeach
+                @endfor
+            </div>
+        </div>
+    </section>
     @endif
 
     {{-- Footer CTA (AK.4) --}}
@@ -745,19 +710,11 @@
         });
     })();
 
-    if (!CSS.supports('(animation-timeline: view()) and (animation-range: entry)')
-        && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        var reelGrid = document.querySelector('.produksi-grid-reel');
-        if (reelGrid) {
-            var io = new IntersectionObserver(function (entries) {
-                entries.forEach(function (entry) {
-                    entry.target.style.scale = 0.82 + entry.intersectionRatio * 0.18;
-                    entry.target.style.opacity = 0.6 + entry.intersectionRatio * 0.4;
-                });
-            }, { threshold: Array.from({ length: 21 }, function (_, i) { return i / 20; }), root: reelGrid });
-            document.querySelectorAll('.produksi-grid-reel .produksi-card').forEach(function (el) { io.observe(el); });
-        }
-    }
+    document.querySelectorAll('[data-marquee]').forEach(function (m) {
+        var t;
+        m.addEventListener('touchstart', function () { clearTimeout(t); m.classList.add('is-paused'); }, { passive: true });
+        m.addEventListener('touchend', function () { t = setTimeout(function () { m.classList.remove('is-paused'); }, 2500); });
+    });
     </script>
     <script>
     (function () {
