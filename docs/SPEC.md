@@ -1181,7 +1181,7 @@ Tambah field Client (select bisa dicari + "+ Client baru") dan Admin PIC di form
 
 | Item | Bukti | QA |
 |---|---|---|
-| BE.1 GET murni baca, data dibuat di transisi status | | [ ] |
+| BE.1 GET murni baca, data dibuat di transisi status | `72fe36a` — `--filter BeGetMurniBacaTest` (GET nggak ubah jumlah baris; approve single/bulk → kontrak+payment, notif 1×; NIK belakangan → kontrak saat NIK disimpan; backfill idempoten). SQLite & MySQL 436 passed. **Perlu `php artisan migrate`** (backfill) | [ ] |
 | BE.2 periode ikut ke daftar | | [ ] |
 | BE.3 piutang & proyeksi | | [ ] |
 | BE.4 kuota antrian: blokir daftar saat penuh, terbuka lagi saat ada yang ditolak | | [ ] |
