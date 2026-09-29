@@ -141,7 +141,7 @@
                 <a href="{{ route('admin.projects.show', [$project, 'tab' => 'cashflow']) }}" class="proyek-uang" title="Buka cashflow proyek">
                     <span><small>Masuk</small>{{ $rp($cf->total_masuk) }}</span>
                     <span><small>Piutang</small>{{ $rp($cf->piutang) }}</span>
-                    <span><small>Keluar</small>{{ $rp($cf->total_keluar) }}</span>
+                    <span title="Dashboard cuma menghitung yang sudah dibayar dalam periode; di proyek dihitung semua kewajiban."><small>Keluar &#9432;</small>{{ $rp($cf->total_keluar) }}<small>Sudah dibayar {{ $rp($cf->keluar_dibayar) }}</small><small>Belum dibayar {{ $rp($cf->keluar_belum) }}</small></span>
                     <span><small>Saldo</small><b style="color: {{ $cf->saldo >= 0 ? 'var(--accent-strong)' : 'var(--danger)' }};">{{ $rp($cf->saldo) }}</b></span>
                     <span><small>Proyeksi</small><b style="color: {{ $cf->proyeksi >= 0 ? 'var(--accent-strong)' : 'var(--danger)' }};">{{ $rp($cf->proyeksi) }}</b></span>
                 </a>
