@@ -16,7 +16,8 @@
 <div class="card-header-row">
     <div>
         <div style="font-size: 16px; font-weight: 600;">Proyek &amp; Keuangan</div>
-        <div style="font-size: var(--fs-sm); color: var(--text-secondary);">Semua proyek casting beserta uang masuk, keluar, dan saldonya</div>
+        <div style="font-size: var(--fs-sm); color: var(--text-secondary);">Semua proyek casting beserta uang masuk, piutang, keluar, saldo, dan proyeksinya</div>
+        <div style="font-size: var(--fs-xs); color: var(--text-muted);">Saldo minus wajar kalau invoice belum dibayar — lihat Proyeksi.</div>
         @if ($filterLain)
             <div style="font-size: var(--fs-sm); margin-top: 4px;">Filter aktif: {{ implode(', ', $filterLain) }} · <a href="{{ route('admin.projects.index') }}">Hapus filter</a></div>
         @endif
@@ -135,8 +136,10 @@
                 </div>
                 <a href="{{ route('admin.projects.show', [$project, 'tab' => 'cashflow']) }}" class="proyek-uang" title="Buka cashflow proyek">
                     <span><small>Masuk</small>{{ $rp($cf->total_masuk) }}</span>
+                    <span><small>Piutang</small>{{ $rp($cf->piutang) }}</span>
                     <span><small>Keluar</small>{{ $rp($cf->total_keluar) }}</span>
                     <span><small>Saldo</small><b style="color: {{ $cf->saldo >= 0 ? 'var(--accent-strong)' : 'var(--danger)' }};">{{ $rp($cf->saldo) }}</b></span>
+                    <span><small>Proyeksi</small><b style="color: {{ $cf->proyeksi >= 0 ? 'var(--accent-strong)' : 'var(--danger)' }};">{{ $rp($cf->proyeksi) }}</b></span>
                 </a>
 
                 <div class="entity-card-actions">

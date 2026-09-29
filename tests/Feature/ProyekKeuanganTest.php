@@ -60,7 +60,7 @@ class ProyekKeuanganTest extends TestCase
         $cf = app(KeuanganService::class)->cashflowProyek($project->fresh());
 
         $this->assertSame(2000000.0, $cf->total_masuk);
-        $this->assertSame(2000000.0, $cf->masuk_lunas);
+        $this->assertSame(0.0, $cf->piutang);
         $this->assertEqualsWithDelta(900000, $cf->total_keluar, 0.01); // 350rb + 200rb + 250rb + 100rb
         $this->assertEqualsWithDelta(1100000, $cf->saldo, 0.01);
         $this->assertSame(45.0, $cf->persen_terpakai);
@@ -78,8 +78,8 @@ class ProyekKeuanganTest extends TestCase
         $project->classes()->create(['nama_kelas' => 'A', 'budget_client' => 150000, 'kuota_kelas' => 4]);
         $project->invoices()->create([]);
         $cf = app(KeuanganService::class)->cashflowProyek($project->fresh());
-        $this->assertSame(600000.0, $cf->total_masuk);
-        $this->assertSame(0.0, $cf->masuk_lunas);
+        $this->assertSame(0.0, $cf->total_masuk);
+        $this->assertSame(600000.0, $cf->piutang);
     }
 
     public function test_ringkasan_periode_abaikan_transaksi_di_luar_periode(): void

@@ -14,11 +14,11 @@
 .sa-filter .btn { min-height: 32px; padding: 0 12px; font-size: 12px; border-radius: 20px; }
 .sa-filter input[type=date] { min-height: 32px; font-size: 12px; padding: 0 6px; width: auto; }
 .sa-stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
-.sa-stat-grid.is-3 .metric-card:last-child { grid-column: span 2; }
+.sa-stat-grid.is-5 .metric-card:last-child { grid-column: span 2; }
 @media (min-width: 861px) {
     .sa-stat-grid { grid-template-columns: repeat(4, 1fr); }
-    .sa-stat-grid.is-3 { grid-template-columns: repeat(3, 1fr); }
-    .sa-stat-grid.is-3 .metric-card:last-child { grid-column: auto; }
+    .sa-stat-grid.is-5 { grid-template-columns: repeat(5, 1fr); }
+    .sa-stat-grid.is-5 .metric-card:last-child { grid-column: auto; }
 }
 a.metric-card { display: block; text-decoration: none; color: inherit; border: 1px solid var(--border-color); }
 a.metric-card:hover { border-color: var(--accent); }
@@ -144,20 +144,22 @@ a.sa-row:hover { color: var(--accent); }
 {{-- BD.3.4 Uang periode --}}
 <div class="card" style="margin-bottom: 16px;">
     <div class="card-title">Uang Periode Ini</div>
-    <div class="sa-stat-grid is-3">
-        <div class="metric-card" style="border: 1px solid var(--border-color);">
-            <div class="metric-label">Masuk</div>
-            <div class="metric-value" style="font-size: var(--fs-lg, 18px);">{{ $rp($uang->total_masuk) }}</div>
-        </div>
-        <div class="metric-card" style="border: 1px solid var(--border-color);">
-            <div class="metric-label">Keluar</div>
-            <div class="metric-value" style="font-size: var(--fs-lg, 18px);">{{ $rp($uang->total_keluar) }}</div>
-        </div>
-        <div class="metric-card" style="border: 1px solid var(--border-color);">
-            <div class="metric-label">Saldo</div>
-            <div class="metric-value" style="font-size: var(--fs-lg, 18px); color: {{ $uang->saldo < 0 ? 'var(--danger)' : 'var(--accent-strong)' }};">{{ $rp($uang->saldo) }}</div>
-        </div>
+    <div class="sa-stat-grid is-5">
+        @foreach ([
+            ['Masuk', $uang->total_masuk, 'invoice lunas'],
+            ['Piutang', $uang->piutang, 'invoice belum lunas'],
+            ['Keluar', $uang->total_keluar, 'honor & biaya'],
+            ['Saldo', $uang->saldo, 'masuk − keluar'],
+            ['Proyeksi', $uang->proyeksi, 'masuk + piutang − keluar'],
+        ] as [$label, $nilai, $ket])
+            <div class="metric-card" style="border: 1px solid var(--border-color);">
+                <div class="metric-label">{{ $label }}</div>
+                <div class="metric-value" style="font-size: var(--fs-lg, 18px);{{ in_array($label, ['Saldo', 'Proyeksi']) ? ' color: '.($nilai < 0 ? 'var(--danger)' : 'var(--accent-strong)').';' : '' }}">{{ $rp($nilai) }}</div>
+                <div class="sa-sub">{{ $ket }}</div>
+            </div>
+        @endforeach
     </div>
+    <p class="sa-sub" style="margin: 0 0 12px;">Saldo minus wajar kalau invoice belum dibayar — lihat Proyeksi. Piutang = invoice belum lunas dari proyek yang shooting-nya dalam periode.</p>
     <div class="chart-box"><canvas id="chartUangBulanan"></canvas></div>
 </div>
 
