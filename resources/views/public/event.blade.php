@@ -34,10 +34,8 @@
         .meta { font-size: 13.5px; color: var(--text-secondary); margin: 0 0 24px; }
         .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 18px; margin-bottom: 24px; }
         .card-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
-        .class-row { padding: 10px 0; border-bottom: 1px solid var(--border-color); font-size: 13.5px; }
-        .class-row:last-child { border-bottom: none; }
-        .class-name { font-weight: 600; margin-bottom: 2px; }
-        .class-detail { color: var(--text-secondary); }
+        .class-detail { color: var(--text-secondary); font-size: 13.5px; }
+        .xtag { font-size: var(--fs-xs); padding: 3px 7px; border-radius: var(--radius-sm); background: var(--bg-page); border: 1px solid var(--border-color); color: var(--text-secondary); line-height: 1.3; }
         .cta-row { display: flex; gap: 12px; flex-wrap: wrap; }
         .btn-brand, .btn-outline {
             display: inline-flex; align-items: center; justify-content: center;
@@ -71,15 +69,11 @@
 
             <div class="card">
                 <div class="card-title">Karakter yang Dibutuhkan</div>
-                @forelse ($project->classes as $class)
-                    <div class="class-row">
-                        <div class="class-name">{{ $class->nama_kelas }}</div>
-                        @if ($class->kriteria) <div class="class-detail">{{ $class->kriteria }}</div> @endif
-                        <div class="class-detail">Kuota: {{ $class->kuota_kelas }} orang</div>
-                    </div>
-                @empty
+                @if ($project->classes->isEmpty())
                     <div class="class-detail">Belum ada rincian kelas.</div>
-                @endforelse
+                @else
+                    @include('partials.peran-lowongan', ['classes' => $project->classes])
+                @endif
             </div>
 
             @if ($sudahLoginExtras)

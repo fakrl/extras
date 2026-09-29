@@ -34,7 +34,11 @@ class PublicEventController extends Controller
             return redirect($user->dashboardUrl());
         }
 
-        $project->load('classes:id,casting_project_id,nama_kelas,kriteria,kuota_kelas', 'shootingDates');
+        $project->load([
+            'classes' => fn ($q) => $q->select('id', 'casting_project_id', 'nama_kelas', 'kriteria', 'kuota_kelas')
+                ->withTerisi()->with('categories:id,nama'),
+            'shootingDates:id,casting_project_id,tanggal',
+        ]);
 
         return view('public.event', [
             'valid' => true,

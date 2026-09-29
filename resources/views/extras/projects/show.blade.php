@@ -18,20 +18,11 @@
 
 <div class="card" style="margin-bottom: 16px;">
     <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Karakter yang Dibutuhkan</div>
-    <div class="table-container">
-    <table>
-        <thead><tr><th>Karakter</th><th>Kriteria</th><th>Kuota</th></tr></thead>
-        <tbody>
-            @foreach ($castingProject->classes as $class)
-                <tr>
-                    <td>{{ $class->nama_kelas }}</td>
-                    <td>{{ $class->kriteria ?: '-' }}</td>
-                    <td>{{ $class->kuota_kelas }}</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-    </div>
+    @if ($castingProject->classes->isEmpty())
+        <p style="margin: 0; font-size: 13.5px; color: var(--text-muted);">Belum ada rincian peran.</p>
+    @else
+        @include('partials.peran-lowongan', ['classes' => $castingProject->classes])
+    @endif
 </div>
 
 @if (! $castingProject->menerimaPendaftaran())
