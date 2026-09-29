@@ -10,6 +10,7 @@ use App\Models\ProjectApplication;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -235,5 +236,20 @@ class BdMonitoringModeTest extends TestCase
 
         $this->sebagai($client)->post(route('logout'))->assertRedirect('/login');
         $this->assertGuest();
+    }
+
+    public function test_get_kontrak_saat_view_as_tidak_generate_kontrak(): void
+    {
+        Mail::fake();
+        Http::fake();
+        $application = $this->aplikasi('lolos');
+        $application->extras->forceFill(['nik' => '3201010101010001'])->save();
+
+        $this->sebagai($application->extras->user)->get(route('contracts.show', $application))
+            ->assertRedirect()->assertSessionHas('info');
+
+        $this->assertNull($application->fresh()->contract);
+        Mail::assertNothingQueued();
+        Http::assertNothingSent();
     }
 }

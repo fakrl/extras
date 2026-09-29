@@ -67,6 +67,11 @@ class ContractController extends Controller
                 return back()->with('error', 'Kontrak hanya dibuat setelah Extras dinyatakan Lolos.');
             }
 
+            // BD.6: mode lihat saja (SA view-as) jangan sampai generate kontrak + kirim WA/email
+            if ($request->session()->has('sa_view_user_id')) {
+                return back()->with('info', 'Kontrak belum dibuat. Mode lihat saja tidak memicu pembuatan kontrak.');
+            }
+
             // RF-25: auto-generate dari data proyek, Extras, dan fee yang disepakati.
             $application->contract()->create([]);
             $this->renderPdf($application);
