@@ -473,7 +473,8 @@
             padding: 10px 14px; border-radius: var(--radius-md); margin-bottom: 16px; font-size: var(--fs-base);
         }
         .sa-mode-banner form { margin: 0; }
-        .sa-lihat-saja form [type="submit"]:disabled, .sa-lihat-saja form button:not([type]):disabled { opacity: .5; cursor: not-allowed; }
+        .sa-lihat-saja form :disabled:not([type="hidden"]), .sa-lihat-saja [aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
+        .sa-lock-note { margin: -8px 0 16px; font-size: var(--fs-sm); color: var(--text-secondary); }
 
         /* ===== Mobile: sidebar berubah jadi bottom navigation bar =====
            Extras (pengguna utama di HP) butuh navigasi yang selalu kelihatan
@@ -637,6 +638,9 @@
                             <button type="submit" class="btn btn-sm"><i class="ti ti-arrow-back-up"></i> Kembali ke Super Admin</button>
                         </form>
                     </div>
+                    @if ($saMonitoring['target'])
+                        <p class="sa-lock-note" data-sa-lock hidden><i class="ti ti-lock"></i> Mode lihat saja — tampilan ini persis yang dilihat {{ $saMonitoring['target']->name }}, tapi nggak bisa diubah.</p>
+                    @endif
                 @endisset
                 @if (session('status'))
                     <div class="alert-success">{{ session('status') }}</div>
@@ -721,14 +725,28 @@
                 document.addEventListener('submit', function (e) {
                     if (blok(e.target)) { e.preventDefault(); alert('Mode lihat saja'); }
                 }, true);
-            })();
-            document.addEventListener('DOMContentLoaded', function () {
-                var sel = 'form[method="post" i]:not([data-sa-allow]) [type="submit"], form[method="post" i]:not([data-sa-allow]) button:not([type])';
-                document.querySelectorAll(sel).forEach(function (b) {
-                    b.disabled = true;
-                    b.title = 'Mode lihat saja';
+                var post = 'form[method="post" i]:not([data-sa-allow]) ';
+                var sel = [post + 'input', post + 'select', post + 'textarea', post + 'button', 'input[type="file"]'].join(',');
+                function kunci() {
+                    var ada = false;
+                    document.querySelectorAll(sel).forEach(function (el) {
+                        ada = ada || el.type !== 'hidden';
+                        if (el.disabled) return;
+                        el.disabled = true;
+                        el.title = 'Mode lihat saja';
+                        if (el.type === 'file' && el.id) document.querySelectorAll('label[for="' + el.id + '"]').forEach(function (l) { l.setAttribute('aria-disabled', 'true'); });
+                    });
+                    var note = document.querySelector('[data-sa-lock]');
+                    if (note) note.hidden = !ada;
+                }
+                document.addEventListener('click', function (e) {
+                    if (e.target.closest('[aria-disabled="true"]')) e.preventDefault();
+                }, true);
+                document.addEventListener('DOMContentLoaded', function () {
+                    kunci();
+                    new MutationObserver(kunci).observe(document.body, { childList: true, subtree: true });
                 });
-            });
+            })();
         </script>
     @endif
     <script>

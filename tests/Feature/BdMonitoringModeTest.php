@@ -169,6 +169,20 @@ class BdMonitoringModeTest extends TestCase
             ->assertDontSee('Kembali ke Super Admin');
     }
 
+    public function test_edit_profil_saat_view_as_extras_input_dikunci(): void
+    {
+        $extrasUser = $this->aplikasi('lolos')->extras->user;
+        $extrasUser->update(['name' => 'Dimas <b>R</b>']);
+        $kalimat = 'Mode lihat saja — tampilan ini persis yang dilihat Dimas <b>R</b>, tapi nggak bisa diubah.';
+
+        $this->sebagai($extrasUser)->get(route('extras.profile.edit'))->assertOk()
+            ->assertSee($kalimat)->assertSee('data-sa-lock', false)->assertDontSee('Dimas <b>R</b>', false)
+            ->assertSee("'input[type=\"file\"]'", false);
+
+        $this->actingAs($extrasUser)->get(route('extras.profile.edit'))->assertOk()
+            ->assertDontSee('Mode lihat saja')->assertDontSee('data-sa-lock', false);
+    }
+
     public function test_view_as_tidak_aktif_kalau_user_sesi_bukan_super_admin(): void
     {
         $client = User::factory()->create(['role' => 'client']);
