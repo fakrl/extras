@@ -33,7 +33,7 @@ class StaffPayroll extends Model
      */
     public function nominalTotal(): float
     {
-        return (float) $this->nominal_pokok + (float) $this->addons()->sum('nominal');
+        return (float) $this->nominal_pokok + (float) $this->addons->sum('nominal');
     }
 
     /**

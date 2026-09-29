@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 // 'share_token' TETAP masuk $fillable, tapi proteksinya bukan dari sini,
 // sama pola dengan ExtrasProfile::foto_profil_path: cuma whitelist teknis,
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable([
     'admin_id', 'nama_produksi', 'client_ph', 'poster_path', 'cover_path',
     'share_token', 'wa_group_link', 'link_grup', 'deadline', 'kuota',
-    'is_urgent', 'status', 'client_request_status', 'diajukan_oleh_client_id', 'brief_catatan', 'alasan_tolak',
+    'is_urgent', 'status', 'client_request_status', 'diajukan_oleh_client_id', 'brief_catatan', 'alasan_tolak', 'client_id',
 ])]
 class CastingProject extends Model
 {
@@ -57,6 +58,16 @@ class CastingProject extends Model
         return $this->belongsTo(User::class, 'admin_id');
     }
 
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'client_id');
+    }
+
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(ProjectExpense::class)->orderBy('tanggal');
+    }
+
     public function classes(): HasMany
     {
         return $this->hasMany(CastingProjectClass::class);
@@ -85,6 +96,16 @@ class CastingProject extends Model
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
+    }
+
+    public function payments(): HasManyThrough
+    {
+        return $this->hasManyThrough(Payment::class, ProjectApplication::class);
+    }
+
+    public function payrolls(): HasManyThrough
+    {
+        return $this->hasManyThrough(StaffPayroll::class, AdminProjectAssignment::class);
     }
 
     /**
@@ -127,6 +148,79 @@ class CastingProject extends Model
             ->pluck('extras_id')
             ->unique()
             ->all();
+    }
+
+    const TAHAP = [
+        'menunggu_acc' => 'Menunggu ACC',
+        'mendatang' => 'Mendatang',
+        'berjalan' => 'Berjalan',
+        'selesai' => 'Selesai',
+    ];
+
+    const TAHAP_BADGES = [
+        'menunggu_acc' => 'badge-pending',
+        'mendatang' => 'badge-info',
+        'berjalan' => 'badge-aktif',
+        'selesai' => 'badge-netral',
+    ];
+
+    /**
+     * BD.2: tahap proyek dari tanggal shooting (bukan status lowongan dibuka/ditutup).
+     * Menunggu ACC = pengajuan Client belum di-ACC. Sisanya hanya proyek disetujui:
+     * Berjalan = shooting pertama <= hari ini <= shooting terakhir;
+     * Mendatang = shooting pertama > hari ini, atau belum ada jadwal & lowongan dibuka;
+     * Selesai = shooting terakhir < hari ini, atau belum ada jadwal & lowongan ditutup.
+     */
+    public function scopeDiTahap($query, string $tahap)
+    {
+        if ($tahap === 'menunggu_acc') {
+            return $query->where('client_request_status', 'menunggu_acc');
+        }
+
+        $query->where('client_request_status', 'disetujui');
+        $sebelum = fn ($q) => $q->whereDate('tanggal', '<=', today());
+        $sesudah = fn ($q) => $q->whereDate('tanggal', '>=', today());
+
+        return match ($tahap) {
+            'berjalan' => $query->whereHas('shootingDates', $sebelum)->whereHas('shootingDates', $sesudah),
+            'mendatang' => $query->whereDoesntHave('shootingDates', $sebelum)
+                ->where(fn ($q) => $q->has('shootingDates')->orWhere('status', 'dibuka')),
+            'selesai' => $query->where(fn ($q) => $q
+                ->where(fn ($w) => $w->has('shootingDates')->whereDoesntHave('shootingDates', $sesudah))
+                ->orWhere(fn ($w) => $w->doesntHave('shootingDates')->where('status', 'ditutup'))),
+            default => $query,
+        };
+    }
+
+    public function tahap(): ?string
+    {
+        if ($this->client_request_status === 'menunggu_acc') {
+            return 'menunggu_acc';
+        }
+        if ($this->client_request_status !== 'disetujui') {
+            return null;
+        }
+        $awal = $this->shootingDates->min('tanggal');
+        $akhir = $this->shootingDates->max('tanggal');
+
+        return match (true) {
+            ! $awal => $this->status === 'dibuka' ? 'mendatang' : 'selesai',
+            $awal->isAfter(today()) => 'mendatang',
+            $akhir->isBefore(today()) => 'selesai',
+            default => 'berjalan',
+        };
+    }
+
+    public function rentangShooting(): string
+    {
+        $awal = $this->shootingDates->min('tanggal');
+        $akhir = $this->shootingDates->max('tanggal');
+
+        return match (true) {
+            ! $awal => '-',
+            $awal->isSameDay($akhir) => $awal->translatedFormat('d M Y'),
+            default => $awal->translatedFormat('d M').' – '.$akhir->translatedFormat('d M Y'),
+        };
     }
 
     public function diajukanOlehClient(): BelongsTo
