@@ -7,16 +7,13 @@
     <i class="ti ti-layout-dashboard"></i> Dashboard
 </a>
 <a href="{{ url('/admin/projects') }}" class="sidebar-link {{ str_starts_with($route, 'admin/projects') ? 'active' : '' }}">
-    <i class="ti ti-movie"></i> Kelola Proyek
+    <i class="ti ti-movie"></i> Proyek &amp; Keuangan
 </a>
 <a href="{{ url('/admin/users') }}" class="sidebar-link {{ str_starts_with($route, 'admin/users') ? 'active' : '' }}">
     <i class="ti ti-users"></i> Kelola Akun
 </a>
 <a href="{{ url('/admin/recap') }}" class="sidebar-link {{ str_starts_with($route, 'admin/recap') ? 'active' : '' }}">
     <i class="ti ti-report"></i> Rekap Extras
-</a>
-<a href="{{ route('admin.recap-margin') }}" class="sidebar-link {{ str_starts_with($route, 'admin/rekap-margin') ? 'active' : '' }}">
-    <i class="ti ti-wallet"></i> Keuangan
 </a>
 <a href="{{ url('/admin/riwayat-kerja') }}" class="sidebar-link {{ str_starts_with($route, 'admin/riwayat-kerja') ? 'active' : '' }}">
     <i class="ti ti-history"></i> Riwayat Kerja

@@ -3,35 +3,82 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\CastingProject;
 use App\Models\ExtrasCategory;
 use App\Models\ProjectApplication;
 use App\Models\User;
+use App\Services\KeuanganService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Exists;
 
 class CastingProjectController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, KeuanganService $keuangan)
     {
         $peserta = $request->query('peserta');
+        $tahap = array_key_exists((string) $request->query('tahap'), CastingProject::TAHAP) ? $request->query('tahap') : null;
+        $bayar = in_array($request->query('bayar'), ['staf', 'extras'], true) ? $request->query('bayar') : null;
+        $cari = trim((string) $request->query('q'));
+
         $projects = CastingProject::withCount('applications')
+            ->with(['client', 'admin', 'shootingDates', ...KeuanganService::RELASI_CASHFLOW])
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($peserta, fn ($q) => $q->whereHas('applications', fn ($a) => $a->where('status_partisipasi', $peserta)))
+            ->when($tahap, fn ($q) => $q->diTahap($tahap))
+            ->when($bayar === 'staf', fn ($q) => $q->whereHas('payrolls', fn ($p) => $p->where('status_bayar', '!=', 'sudah')))
+            ->when($bayar === 'extras', fn ($q) => $q->whereHas('payments', fn ($p) => $p->whereNull('ditransfer_at')))
+            ->when($cari !== '', fn ($q) => $q->where(fn ($w) => $w->where('nama_produksi', 'like', "%{$cari}%")
+                ->orWhere('client_ph', 'like', "%{$cari}%")
+                ->orWhereHas('client', fn ($c) => $c->where('name', 'like', "%{$cari}%"))))
+            ->when($request->boolean('urgent'), fn ($q) => $q->where(fn ($w) => $w->where('is_urgent', true)
+                ->orWhereHas('shootingDates', fn ($d) => $d->whereDate('tanggal', '>=', today())->whereDate('tanggal', '<=', today()->addDays(3)))))
             ->orderByDesc('is_urgent')
             ->latest()
-            ->get()
-            ->when($request->boolean('urgent'), fn ($c) => $c->filter(fn ($p) => $p->isUrgent())->values());
+            ->paginate(20)
+            ->withQueryString();
 
-        return view('admin.projects.index', compact('projects', 'peserta'));
+        if ($request->boolean('urgent')) {
+            $projects->setCollection($projects->getCollection()->filter(fn ($p) => $p->isUrgent())->values());
+        }
+
+        $cashflow = $projects->getCollection()->mapWithKeys(fn ($p) => [$p->id => $keuangan->cashflowProyek($p)]);
+
+        return view('admin.projects.index', compact('projects', 'peserta', 'tahap', 'bayar', 'cari', 'cashflow'));
+    }
+
+    /**
+     * BD.2.4: detail proyek, tab info | pendaftar | cashflow.
+     */
+    public function show(Request $request, CastingProject $castingProject, KeuanganService $keuangan)
+    {
+        $tab = in_array($request->query('tab'), ['pendaftar', 'cashflow'], true) ? $request->query('tab') : 'info';
+
+        $castingProject->load(['client', 'admin', 'shootingDates', 'classes.categories', 'adminAssignments.user', 'cdAssignments.cdUser']);
+
+        $pendaftar = $tab === 'pendaftar'
+            ? $castingProject->applications()
+                ->with(['extras' => fn ($q) => $q->withProyekSelesai(), 'extras.user', 'extras.categories', 'castingProjectClass.categories'])
+                ->latest()->get()->groupBy('status_partisipasi')
+            : collect();
+
+        $cashflow = $tab === 'cashflow' ? $keuangan->cashflowProyek($castingProject) : null;
+
+        return view('admin.projects.show', compact('castingProject', 'tab', 'pendaftar', 'cashflow'));
     }
 
     public function create()
     {
-        return view('admin.projects.create', ['tagGroups' => ExtrasCategory::perGrup()]);
+        return view('admin.projects.create', [
+            'tagGroups' => ExtrasCategory::perGrup(),
+            'admins' => User::where('role', User::ROLE_ADMIN)->where('status', 'aktif')->orderBy('name')->get(),
+            'clients' => User::where('role', User::ROLE_CLIENT)->where('status', 'aktif')->orderBy('name')->get(),
+        ]);
     }
 
     /**
@@ -41,9 +88,12 @@ class CastingProjectController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $user = $request->user();
         $data = $request->validate([
             'nama_produksi' => ['required', 'string', 'max:255'],
-            'client_ph' => ['required', 'string', 'max:255'],
+            'admin_id' => [$user->isSuperAdmin() ? 'required' : 'nullable', 'integer', $this->akunAktif(User::ROLE_ADMIN)],
+            'client_id' => ['nullable', 'integer', $this->akunAktif(User::ROLE_CLIENT)],
+            'client_ph' => ['nullable', 'required_without:client_id', 'string', 'max:255'],
             'poster_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'cover_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
             'wa_group_link' => ['nullable', 'url'],
@@ -75,9 +125,13 @@ class CastingProjectController extends Controller
             ? $request->file('cover_path')->store('covers', 'public')
             : null;
 
-        $project = $request->user()->castingProjects()->create([
+        $client = isset($data['client_id']) ? User::find($data['client_id']) : null;
+
+        $project = CastingProject::create([
+            'admin_id' => $data['admin_id'] ?? $user->id,
+            'client_id' => $client?->id,
             'nama_produksi' => $data['nama_produksi'],
-            'client_ph' => $data['client_ph'],
+            'client_ph' => ($data['client_ph'] ?? null) ?: ($client->nama_perusahaan ?? null) ?: $client?->name,
             'poster_path' => $posterPath,
             'cover_path' => $coverPath,
             'share_token' => Str::random(32),
@@ -100,6 +154,12 @@ class CastingProjectController extends Controller
             }
             $this->simpanKelas($project, $kelas);
         }
+
+        if ($client) {
+            $project->cdAssignments()->firstOrCreate(['cd_user_id' => $client->id]);
+        }
+
+        ActivityLog::record('CREATE_PROJECT', "Proyek '{$project->nama_produksi}' dibuat oleh {$user->name} ({$user->label()})", $project);
 
         return redirect()->route('admin.projects.index')->with('status', 'Proyek casting berhasil dibuat.');
     }
@@ -214,6 +274,11 @@ class CastingProjectController extends Controller
         }
 
         return redirect()->route('admin.projects.index')->with('status', 'Proyek casting berhasil diperbarui.');
+    }
+
+    private function akunAktif(string $role): Exists
+    {
+        return Rule::exists('users', 'id')->where('role', $role)->where('status', 'aktif')->whereNull('deleted_at');
     }
 
     private function simpanKelas(CastingProject $project, array $kelas): void

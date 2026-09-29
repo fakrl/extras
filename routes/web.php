@@ -5,7 +5,7 @@ use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\CastingProjectController as AdminCastingProjectController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\FeeNegotiationController as AdminFeeNegotiationController;
-use App\Http\Controllers\Admin\MarginRecapController;
+use App\Http\Controllers\Admin\KeuanganProyekController;
 use App\Http\Controllers\Admin\RecapController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\WorkHistoryController;
@@ -162,6 +162,7 @@ Route::middleware(['auth', 'role:admin,korlap,super_admin'])
             Route::get('/projects', [AdminCastingProjectController::class, 'index'])->name('admin.projects.index');
             Route::get('/projects/create', [AdminCastingProjectController::class, 'create'])->name('admin.projects.create');
             Route::post('/projects', [AdminCastingProjectController::class, 'store'])->name('admin.projects.store');
+            Route::get('/projects/{castingProject}', [AdminCastingProjectController::class, 'show'])->name('admin.projects.show');
             Route::get('/projects/{castingProject}/edit', [AdminCastingProjectController::class, 'edit'])->name('admin.projects.edit');
             Route::patch('/projects/{castingProject}', [AdminCastingProjectController::class, 'update'])->name('admin.projects.update');
             Route::patch('/projects/{castingProject}/toggle-status', [AdminCastingProjectController::class, 'toggleStatus'])
@@ -224,16 +225,22 @@ Route::middleware(['auth', 'role:admin,korlap,super_admin'])
         });
     });
 
-// RF-30 & SPEC AV: Keuangan & Penggajian - Admin & Super Admin.
+// RF-30 & SPEC AV/BD.2: Keuangan proyek - Admin & Super Admin. rekap-margin lama = redirect.
 Route::middleware(['auth', 'role:admin,super_admin'])->prefix('admin')->group(function () {
-    Route::get('/rekap-margin', [MarginRecapController::class, 'index'])->name('admin.recap-margin');
-    Route::patch('/payrolls/{staffPayroll}/tandai-dibayar', [MarginRecapController::class, 'tandaiDibayar'])
+    Route::get('/rekap-margin', [KeuanganProyekController::class, 'rekapMargin'])->name('admin.recap-margin');
+    Route::patch('/payrolls/{staffPayroll}/tandai-dibayar', [KeuanganProyekController::class, 'tandaiDibayar'])
         ->name('admin.payrolls.tandai-dibayar');
+    Route::patch('/projects/{castingProject}/invoice-lunas', [KeuanganProyekController::class, 'tandaiLunas'])
+        ->name('admin.projects.invoice-lunas');
+    Route::post('/projects/{castingProject}/biaya', [KeuanganProyekController::class, 'storeExpense'])
+        ->name('admin.projects.expenses.store');
+    Route::delete('/biaya/{projectExpense}', [KeuanganProyekController::class, 'destroyExpense'])
+        ->name('admin.expenses.destroy');
 });
 
 Route::middleware(['auth', 'role:admin,super_admin'])->prefix('super-admin')->group(function () {
-    Route::get('/rekap-margin', [MarginRecapController::class, 'index'])->name('super-admin.recap-margin');
-    Route::patch('/payrolls/{staffPayroll}/tandai-dibayar', [MarginRecapController::class, 'tandaiDibayar'])
+    Route::get('/rekap-margin', [KeuanganProyekController::class, 'rekapMargin'])->name('super-admin.recap-margin');
+    Route::patch('/payrolls/{staffPayroll}/tandai-dibayar', [KeuanganProyekController::class, 'tandaiDibayar'])
         ->name('super-admin.payrolls.tandai-dibayar');
 });
 

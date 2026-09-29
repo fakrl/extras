@@ -36,7 +36,7 @@ class AyP0GuardsTest extends TestCase
         ], $extra));
     }
 
-    public function test_get_rekap_margin_dengan_data_payroll_dan_payment_200(): void
+    public function test_proyek_keuangan_dengan_data_payroll_dan_payment_200(): void
     {
         // Item 1: relasi salah di KeuanganService bikin halaman ini crash
         // (assignment.project & application.* tidak ada). Regresi eager-load.
@@ -65,9 +65,9 @@ class AyP0GuardsTest extends TestCase
             'nominal_pokok' => 300000,
         ]);
 
-        $response = $this->actingAs($admin)->get(route('admin.recap-margin'));
-
-        $response->assertOk();
+        $this->actingAs($admin)->get(route('admin.projects.index'))->assertOk();
+        $this->actingAs($admin)->get(route('admin.projects.show', [$korlapProject, 'tab' => 'cashflow']))->assertOk();
+        $this->actingAs($admin)->get(route('admin.projects.show', [$application->casting_project_id, 'tab' => 'cashflow']))->assertOk();
     }
 
     public function test_sign_setelah_batalkan_status_tetap_dibatalkan(): void
