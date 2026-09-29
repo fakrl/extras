@@ -454,6 +454,13 @@
             padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 16px; font-size: var(--fs-base);
         }
         .table-container { overflow-x: auto; }
+        .sa-mode-banner {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap;
+            background: rgba(234,179,8,0.14); border: 1px solid rgba(234,179,8,0.45); color: var(--text-primary);
+            padding: 10px 14px; border-radius: var(--radius-md); margin-bottom: 16px; font-size: var(--fs-base);
+        }
+        .sa-mode-banner form { margin: 0; }
+        .sa-lihat-saja form [type="submit"]:disabled, .sa-lihat-saja form button:not([type]):disabled { opacity: .5; cursor: not-allowed; }
 
         /* ===== Mobile: sidebar berubah jadi bottom navigation bar =====
            Extras (pengguna utama di HP) butuh navigasi yang selalu kelihatan
@@ -518,7 +525,7 @@
                 <div class="logo">J</div>
                 <span>JBTB Casting</span>
             </div>
-            @include('partials.sidebar-' . (auth()->user()->role ?? 'guest'))
+            @include('partials.sidebar-' . (auth()->user()?->modeSa() ?? auth()->user()->role ?? 'guest'))
         </aside>
 
         <div class="main-area">
@@ -576,7 +583,7 @@
                                     <a href="{{ route('extras.profile.edit') }}"><i class="ti ti-user"></i> Profil Saya</a>
                                 @endif
                                 <a href="{{ route('ubah-password') }}"><i class="ti ti-lock"></i> Ubah Kata Sandi</a>
-                                <form method="POST" action="{{ route('logout') }}">
+                                <form method="POST" action="{{ route('logout') }}" data-sa-allow>
                                     @csrf
                                     <button type="submit"><i class="ti ti-logout"></i> Keluar</button>
                                 </form>
@@ -587,6 +594,20 @@
             </div>
 
             <main class="content">
+                @isset($saMonitoring)
+                    <div class="sa-mode-banner" role="status">
+                        <span>
+                            <i class="ti ti-eye"></i> <strong>Super Admin</strong> · sebagai {{ \App\Models\User::LABELS[$saMonitoring['mode']] }}
+                            @if ($saMonitoring['target'])
+                                ({{ $saMonitoring['target']->name }}) · <strong>Mode lihat saja</strong>
+                            @endif
+                        </span>
+                        <form method="POST" action="{{ route('super-admin.mode.keluar') }}" data-sa-allow>
+                            @csrf
+                            <button type="submit" class="btn btn-sm"><i class="ti ti-arrow-back-up"></i> Kembali ke Super Admin</button>
+                        </form>
+                    </div>
+                @endisset
                 @if (session('status'))
                     <div class="alert-success">{{ session('status') }}</div>
                 @endif
@@ -659,6 +680,26 @@
     @endauth
     @if (session('kredensial'))
         @include('partials.kredensial-dialog')
+    @endif
+    @if (isset($saMonitoring) && $saMonitoring['target'])
+        <script>
+            document.documentElement.classList.add('sa-lihat-saja');
+            (function () {
+                var blok = function (f) { return f.method === 'post' && !f.hasAttribute('data-sa-allow'); };
+                var asli = HTMLFormElement.prototype.submit;
+                HTMLFormElement.prototype.submit = function () { blok(this) ? alert('Mode lihat saja') : asli.call(this); };
+                document.addEventListener('submit', function (e) {
+                    if (blok(e.target)) { e.preventDefault(); alert('Mode lihat saja'); }
+                }, true);
+            })();
+            document.addEventListener('DOMContentLoaded', function () {
+                var sel = 'form[method="post" i]:not([data-sa-allow]) [type="submit"], form[method="post" i]:not([data-sa-allow]) button:not([type])';
+                document.querySelectorAll(sel).forEach(function (b) {
+                    b.disabled = true;
+                    b.title = 'Mode lihat saja';
+                });
+            });
+        </script>
     @endif
     @stack('scripts')
 </body>
