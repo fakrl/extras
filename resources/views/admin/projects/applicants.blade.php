@@ -64,15 +64,25 @@
     <a href="{{ request()->fullUrlWithQuery(['urut' => 'cocok', 'page' => null]) }}" class="btn btn-sm {{ $urut ? 'btn-brand' : '' }}">Paling cocok</a>
 </div>
 
-<div style="position: relative; margin-bottom: 16px;">
-    <input type="text" id="search-applicants" placeholder="Cari nama pelamar, alias/username, peran, kelas..."
-           style="width: 100%; max-width: 400px; padding: 8px 14px 8px 36px; border: 1px solid var(--border-color); border-radius: 8px; font-size: var(--fs-md); background: var(--bg-card); color: var(--text-primary); margin-bottom: 0;">
+{{-- live search server-side (lintas halaman paginasi); filter aktif ikut sebagai hidden input --}}
+<form method="GET" action="{{ route('admin.projects.applicants', $castingProject) }}" data-live role="search" style="position: relative; margin-bottom: 16px; max-width: 400px;">
+    @foreach (request()->except(['q', 'page']) as $k => $v)
+        @foreach ((array) $v as $vv)
+            <input type="hidden" name="{{ is_array($v) ? $k.'[]' : $k }}" value="{{ $vv }}">
+        @endforeach
+    @endforeach
+    <label for="search-applicants" class="sr-only">Cari pelamar</label>
+    <input type="search" name="q" id="search-applicants" value="{{ $cari }}" placeholder="Cari nama pelamar, alias/username, peran, kelas..."
+           style="width: 100%; padding: 8px 14px 8px 36px; border: 1px solid var(--border-color); border-radius: 8px; font-size: var(--fs-md); background: var(--bg-card); color: var(--text-primary); margin-bottom: 0;">
     <i class="ti ti-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 15px;"></i>
-</div>
+</form>
 
-<div id="no-applicants-match" class="card" style="display: none; text-align: center; color: var(--text-muted); padding: 24px;">
-    Tidak ada pelamar yang sesuai dengan pencarian.
-</div>
+<div data-live-target>
+@if ($applicants->isEmpty())
+    <div class="card" style="text-align: center; color: var(--text-muted); padding: 24px;">
+        {{ $cari !== '' ? 'Tidak ada pelamar yang sesuai dengan pencarian.' : 'Belum ada pelamar di filter ini.' }}
+    </div>
+@endif
 
 @php
     $cdStatusLabel = [
@@ -363,29 +373,6 @@
 @endforeach
 
 {{ $applicants->links() }}
+</div>
 
-@push('scripts')
-<script>
-(function () {
-    var searchInput = document.getElementById('search-applicants');
-    var cards = document.querySelectorAll('.applicant-card-item');
-    var noMatch = document.getElementById('no-applicants-match');
-    if (!searchInput) return;
-
-    searchInput.addEventListener('input', function () {
-        var q = this.value.toLowerCase().trim();
-        var visibleCount = 0;
-        cards.forEach(function (card) {
-            var text = card.dataset.search || card.textContent.toLowerCase();
-            var match = !q || text.includes(q);
-            card.style.display = match ? '' : 'none';
-            if (match) visibleCount++;
-        });
-        if (noMatch) {
-            noMatch.style.display = (visibleCount === 0 && q.length > 0) ? 'block' : 'none';
-        }
-    });
-})();
-</script>
-@endpush
 @endsection
