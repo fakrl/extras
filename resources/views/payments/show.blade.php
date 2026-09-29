@@ -23,7 +23,7 @@
 
 @php $totalHonor = $application->fee_final + $application->payment->addons->sum('nominal'); @endphp
 
-@if (auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
+@if (auth()->user()->bisaSebagaiAdmin())
     <div class="card" style="margin-bottom: 14px;">
         <div style="font-size: 14px; font-weight: 500; margin-bottom: 8px;">Rekening Tujuan Transfer</div>
         <p style="margin: 0 0 4px;">{{ $application->extras->rekening ?: 'Extras belum mengisi nomor rekening.' }}</p>
@@ -31,7 +31,7 @@
     </div>
 @endif
 
-@if (auth()->user()->isAdmin() && $application->payment->status === 'belum_dibayar')
+@if (auth()->user()->bisaSebagaiAdmin() && $application->payment->status === 'belum_dibayar')
     <div class="card" style="margin-bottom: 14px;">
         <x-confirm-form action="{{ route('payments.transfer', $application) }}" enctype="multipart/form-data" message="Tandai Rp {{ number_format($totalHonor, 0, ',', '.') }} sudah ditransfer ke {{ $application->extras->user->name }}? Aksi ini cuma bisa sekali.">
             <label>Unggah Bukti Transfer</label>
@@ -48,7 +48,7 @@
     </div>
 @endif
 
-@if ((auth()->user()->isAdmin() || auth()->user()->isExtras()) && $application->payment->status !== 'dikonfirmasi_diterima')
+@if ((auth()->user()->bisaSebagaiAdmin() || auth()->user()->isExtras()) && $application->payment->status !== 'dikonfirmasi_diterima')
     <form method="POST" action="{{ route('payments.addon', $application) }}" style="display: flex; gap: 8px; margin-bottom: 14px;">
         @csrf
         <input type="text" name="label" class="input-inline" placeholder="Label (misal: Reimburse transport)" required>

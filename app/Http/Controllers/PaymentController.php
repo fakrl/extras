@@ -45,7 +45,7 @@ class PaymentController extends Controller
      */
     public function tandaiTransfer(Request $request, ProjectApplication $application): RedirectResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
+        abort_unless($request->user()->bisaSebagaiAdmin(), 403);
         $this->guardStatusLolos($application);
 
         if (! $application->payment) {
@@ -66,7 +66,7 @@ class PaymentController extends Controller
 
         ActivityLog::record(
             'UPLOAD_PAYOUT_TRANSFER',
-            "Admin {$request->user()->name} mengunggah bukti transfer honor untuk {$application->extras->user->name}",
+            "{$request->user()->label()} {$request->user()->name} mengunggah bukti transfer honor untuk {$application->extras->user->name}",
             $application
         );
 
@@ -140,7 +140,7 @@ class PaymentController extends Controller
     {
         $user = $request->user();
         $isOwnerExtras = $user->role === 'extras' && $application->extras_id === $user->extrasProfile?->id;
-        abort_unless($user->isAdmin() || $user->isSuperAdmin() || $isOwnerExtras, 403);
+        abort_unless($user->bisaSebagaiAdmin() || $isOwnerExtras, 403);
 
         $path = $application->payment?->bukti_transfer_path;
         abort_unless($path && Storage::disk('local')->exists($path), 404);
@@ -151,9 +151,9 @@ class PaymentController extends Controller
     public function sengketa(Request $request, ProjectApplication $application): RedirectResponse
     {
         $isExtrasOwner = $request->user()->role === 'extras'
-            && $application->extras_id === $request->user()->extrasProfile->id;
+            && $application->extras_id === $request->user()->extrasProfile?->id;
 
-        abort_unless($isExtrasOwner || $request->user()->isAdmin(), 403);
+        abort_unless($isExtrasOwner || $request->user()->bisaSebagaiAdmin(), 403);
         $this->guardStatusLolos($application);
 
         if (! ($application->payment->status === 'ditransfer')) {
@@ -164,7 +164,7 @@ class PaymentController extends Controller
 
         $application->payment->tandaiDisengketakan($request->alasan);
 
-        $aktor = $request->user()->isAdmin() ? "Admin {$request->user()->name}" : "Extras {$request->user()->name}";
+        $aktor = "{$request->user()->label()} {$request->user()->name}";
         ActivityLog::record(
             'DISPUTE_PAYMENT',
             "{$aktor} menandai pembayaran sebagai sengketa untuk proyek '{$application->castingProject->nama_produksi}'",

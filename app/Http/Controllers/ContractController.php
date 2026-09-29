@@ -115,7 +115,7 @@ class ContractController extends Controller
 
         ActivityLog::record(
             'SIGN_CONTRACT',
-            ucfirst($role)." {$request->user()->name} menandatangani kontrak kerja digital untuk proyek '{$application->castingProject->nama_produksi}'",
+            "{$request->user()->label()} {$request->user()->name} menandatangani kontrak kerja digital untuk proyek '{$application->castingProject->nama_produksi}'",
             $contract
         );
 
