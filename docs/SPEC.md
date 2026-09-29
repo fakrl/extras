@@ -1331,7 +1331,7 @@ Terapkan komponen yang sama di **Log Aktivitas** dan **Proyek & Keuangan** (isi 
 
 | Item | Bukti | QA |
 |---|---|---|
-| BI.1 popup profil (+ halaman penuh tetap jalan) | | [ ] |
-| BI.2 panel filter + chip filter aktif, tanpa tombol Terapkan (3 halaman) | | [ ] |
+| BI.1 popup profil (+ halaman penuh tetap jalan) | `7d60b37` — `--filter BiProfilModalTest` (XHR → partial tanpa layout; Client cuma kandidat Greenlight proyeknya, tanpa tarif/grade/nama asli; lain → 403). Back nutup popup tanpa reload live search | [ ] |
+| BI.2 panel filter + chip filter aktif, tanpa tombol Terapkan (3 halaman) | `566ffcc` — `--filter BiFilterPanelTest` (badge, chip hapus per param, Hapus semua pertahankan q & per). SQLite & MySQL 476 passed | [ ] |
 
 **Tes QA:** Manajemen Akun → klik Lihat Profil → popup, Esc nutup, Back nutup popup (nggak keluar halaman). Ctrl+klik → tab baru. Filter: pilih Role Extras + 1 tag → daftar langsung berubah, muncul 2 chip, hapus 1 chip → daftar ikut. Cek di HP: panel jadi bottom sheet.
