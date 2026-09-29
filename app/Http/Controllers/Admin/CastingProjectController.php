@@ -9,6 +9,7 @@ use App\Models\ExtrasCategory;
 use App\Models\ProjectApplication;
 use App\Models\User;
 use App\Services\KeuanganService;
+use App\Support\PerHalaman;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -45,7 +46,7 @@ class CastingProjectController extends Controller
                 ->orWhereHas('shootingDates', fn ($d) => $d->whereDate('tanggal', '>=', today())->whereDate('tanggal', '<=', today()->addDays(3)))))
             ->orderByDesc('is_urgent')
             ->latest()
-            ->paginate(20)
+            ->paginate(PerHalaman::dari($request, 24, PerHalaman::KARTU))
             ->withQueryString();
 
         if ($request->boolean('urgent')) {
@@ -384,7 +385,7 @@ class CastingProjectController extends Controller
             }))
             ->when($urut, fn ($q) => $q->urutPalingCocok())
             ->latest()
-            ->paginate(30)
+            ->paginate(PerHalaman::dari($request, 24, PerHalaman::KARTU))
             ->withQueryString();
 
         $tagDicari = ExtrasCategory::dicariDiProyek($castingProject->id);

@@ -8,6 +8,7 @@ use App\Models\CastingProject;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use App\Models\User;
+use App\Support\PerHalaman;
 use Illuminate\Http\Request;
 
 class ActivityLogController extends Controller
@@ -43,7 +44,7 @@ class ActivityLogController extends Controller
             ->when($f['dari'] ?? null, fn ($query, $d) => $query->where('created_at', '>=', $d))
             ->when($f['sampai'] ?? null, fn ($query, $d) => $query->where('created_at', '<', date('Y-m-d', strtotime($d.' +1 day'))))
             ->latest('created_at')
-            ->paginate(25)
+            ->paginate(PerHalaman::dari($request, 25, PerHalaman::TABEL))
             ->withQueryString();
 
         $aksiList = ActivityLog::distinct()->orderBy('action')->pluck('action');

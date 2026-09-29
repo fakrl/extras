@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Middleware\ViewAs;
 use App\Models\ActivityLog;
 use App\Models\User;
+use App\Support\PerHalaman;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -24,7 +25,7 @@ class ModeRoleController extends Controller
                     ->orWhere('username', 'like', "%{$q}%")
                     ->orWhere('email', 'like', "%{$q}%")
                     ->orWhere('nama_perusahaan', 'like', "%{$q}%")))
-                ->orderBy('name')->paginate(20)->withQueryString()
+                ->orderBy('name')->paginate(PerHalaman::dari($request, 25, PerHalaman::TABEL))->withQueryString()
             : null;
 
         return view('super-admin.mode-role', compact('mode', 'akun', 'q'));
