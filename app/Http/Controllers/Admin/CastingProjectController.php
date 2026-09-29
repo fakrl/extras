@@ -57,7 +57,7 @@ class CastingProjectController extends Controller
      */
     public function show(Request $request, CastingProject $castingProject, KeuanganService $keuangan)
     {
-        $tab = in_array($request->query('tab'), ['pendaftar', 'cashflow'], true) ? $request->query('tab') : 'info';
+        $tab = in_array($request->query('tab'), ['pendaftar', 'cashflow', 'lampiran'], true) ? $request->query('tab') : 'info';
 
         $castingProject->load(['client', 'admin', 'shootingDates', 'classes.categories', 'adminAssignments.user', 'cdAssignments.cdUser']);
 
