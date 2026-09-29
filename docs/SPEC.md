@@ -1291,8 +1291,47 @@ Sekarang `$proyekSelesai` = 8 proyek `ditutup` terakhir otomatis.
 
 | Item | Bukti | QA |
 |---|---|---|
-| BH.1 layout profil editorial (3 tampilan, lapis akses tetap) | | [ ] |
-| BH.2 cast beranda: izin Extras + persetujuan Admin, carousel | | [ ] |
-| BH.3 portofolio proyek terkurasi, carousel | | [ ] |
+| BH.1 layout profil editorial (3 tampilan, lapis akses tetap) | `9081491` — `--filter BhProfilEditorialTest` (publik: tanpa tarif/grade/kontak/nama asli/Look, usia rentang, video terkunci; pemilik & admin lengkap). Tombol "Ajak casting" sementara ke IG JBTB (nomor WA JBTB masih TODO) | [ ] |
+| BH.2 cast beranda: izin Extras + persetujuan Admin, carousel | `7677e2c` — `--filter BhBerandaCastTest` (izin false → toggle ditolak; izin dicabut → hilang & perlu approve ulang; <4 → section hilang) | [ ] |
+| BH.3 portofolio proyek terkurasi, carousel | `5f82d55` — `--filter BhPortofolioTest` (cuma proyek selesai; nama client cuma kalau dicentang). SQLite & MySQL 469 passed; `migrate` jbtb sudah | [ ] |
 
 **Tes QA:** Extras belum centang izin → Admin nggak bisa nyalain "Tampilkan di beranda". Centang izin + Admin nyalain → muncul di beranda; Extras matikan izin → hilang. Profil publik: nggak ada tarif, grade, kontak. Portofolio: nama client nggak muncul kecuali dicentang.
+
+---
+
+# Bagian BI: Manajemen Akun — "Lihat Profil" jadi popup + filter dirapikan (30 September 2026)
+
+> Dari screenshot Fakrul (`/super-admin/akun`): (1) "Lihat Profil" di kartu Extras pindah halaman ke `/admin/extras/{id}/profil` — maunya popup. (2) Filter kebuka **inline** sebagai 3 select selebar layar + checkbox + "Tag Extras" + tombol "Terapkan" → dorong daftar ke bawah, kerasa berantakan. Kerjakan **setelah BH.1** (popup pakai partial profil editorial dari BH.1). Satu file komponen dipakai ulang, jangan copy-paste per halaman.
+
+## BI.1: Popup profil (dipakai di mana pun ada "Lihat Profil")
+
+1. Route `GET /admin/extras/{user}/profil` tetap ada (link langsung/tab baru tetap jalan). Tambah respons **partial**: kalau request `X-Requested-With: XMLHttpRequest` (atau `?partial=1`) → render cuma partial profil BH.1 tanpa layout.
+2. Komponen `<x-profil-modal />` (sekali di layout app): `<dialog>` lebar ±760px (HP: full-screen sheet dari bawah), header sticky: `@username`, badge status, tombol **"Buka halaman penuh ↗"** dan tutup (44px, `aria-label`). Isi di-scroll di dalam dialog.
+3. Semua tombol/link "Lihat Profil" Extras (Manajemen Akun kartu & baris, kartu Lineup, Greenlight, Monitoring) pakai atribut `data-profil-modal` → JS delegasi: klik biasa = fetch partial → isi dialog → `showModal()`; Ctrl/Cmd+klik atau klik tengah = buka tab baru seperti biasa. Loading: skeleton sederhana. Gagal fetch → fallback pindah halaman.
+4. Aturan lapis tetap dari server (partial dirender sesuai viewer) — Client di Greenlight lihat versi Client, Admin/SA versi lengkap.
+5. Tombol aksi di footer dialog sesuai konteks halaman asal (Manajemen Akun: Kelola ▾; Lineup: aksi status; Greenlight: Pilih/Tolak) — ambil dari atribut `data-aksi-url` di tombol pemicu, bukan hardcode di komponen.
+6. Esc / klik backdrop menutup; fokus balik ke tombol pemicu. Back browser menutup dialog kalau sempat dibuka (pakai `history.pushState` `#profil-{id}`), bukan keluar halaman.
+
+## BI.2: Filter jadi panel popover rapi (komponen `<x-filter-panel>`)
+
+Baris atas satu garis: **[Cari …………] [Tampilkan 25 ▾] [⚙ Filter (2)]**. Tombol "Terapkan" dihapus — semua pilihan **langsung diterapkan** lewat live search yang sudah ada (debounce).
+
+Klik **Filter** → panel melayang di bawah tombol (desktop, lebar ±360px, rata kanan) / **bottom sheet** (HP). Isi panel, urut & ringkas:
+- **Role** — chip satu baris (Semua · Admin · Korlap · Client · Extras · Super Admin), bukan dropdown.
+- **Status** — chip (Semua · Aktif · Nonaktif · Dihapus).
+- **Sedang aktif di proyek** — toggle switch.
+- **Khusus Extras** (muncul cuma kalau role = Extras atau Semua): Grade chip (Semua · A · B · C · Belum), lalu **Tag** per grup dalam accordion kecil (Usia tampilan / Look / Tipe / Kemampuan), chip multi-pilih + teks logika BE.6.
+- Footer panel: "Reset" (kiri) · "Tutup" (kanan).
+
+Di bawah baris cari, tampilkan **chip filter aktif** yang bisa dihapus satu-satu: `Role: Extras ✕` `Tag: #Berhijab ✕` … + "Hapus semua". Badge angka di tombol Filter = jumlah filter aktif. Panel tutup dengan klik di luar / Esc.
+
+Terapkan komponen yang sama di **Log Aktivitas** dan **Proyek & Keuangan** (isi grup filter beda, bentuk sama) biar konsisten.
+
+## Checklist BI
+
+| Item | Bukti | QA |
+|---|---|---|
+| BI.1 popup profil (+ halaman penuh tetap jalan) | | [ ] |
+| BI.2 panel filter + chip filter aktif, tanpa tombol Terapkan (3 halaman) | | [ ] |
+
+**Tes QA:** Manajemen Akun → klik Lihat Profil → popup, Esc nutup, Back nutup popup (nggak keluar halaman). Ctrl+klik → tab baru. Filter: pilih Role Extras + 1 tag → daftar langsung berubah, muncul 2 chip, hapus 1 chip → daftar ikut. Cek di HP: panel jadi bottom sheet.
