@@ -120,6 +120,13 @@ class ExtrasProfile extends Model
         return $this->hasMany(ProjectApplication::class, 'extras_id');
     }
 
+    /** BE.1: kontrak yang tertahan karena nama_asli/NIK kosong dibuat begitu Extras melengkapi. */
+    public function siapkanKontrakLolos(): void
+    {
+        $this->applications()->where('status_partisipasi', 'lolos')->doesntHave('contract')
+            ->with('castingProject')->get()->each->siapkanKontrakDanPembayaran();
+    }
+
     /** BA.4: `proyek_selesai_count` buat baris riwayat di kartu Extras. */
     public function scopeWithProyekSelesai($query)
     {

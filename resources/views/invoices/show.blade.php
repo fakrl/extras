@@ -4,7 +4,7 @@
 
 @php
     $isClient = auth()->user()->isClient();
-    $sudahTtd = $isClient ? $invoice->ttd_cd_signature_path : $invoice->ttd_admin_signature_path;
+    $sudahTtd = $isClient ? $invoice?->ttd_cd_signature_path : $invoice?->ttd_admin_signature_path;
 @endphp
 
 @section('content')
@@ -13,6 +13,12 @@
     Client / PH: <strong>{{ $castingProject->client_ph }}</strong>
 </p>
 
+@if (! $invoice)
+    <div class="card">
+        <div style="font-size: 14px; font-weight: 500; margin-bottom: 6px;">Invoice belum tersedia</div>
+        <p style="margin: 0; font-size: 13.5px; color: var(--text-secondary);">Invoice dibuat otomatis begitu ada Extras yang dinyatakan Lolos oleh Client di proyek ini.</p>
+    </div>
+@else
 {{-- Model 1: Format Resmi JBTB --}}
 <div class="card" style="margin-bottom: 16px;">
     <div style="font-size: 14.5px; font-weight: 600; margin-bottom: 10px;">
@@ -129,5 +135,6 @@
     </div>
 @else
     <div class="alert-success">Kamu sudah menandatangani invoice ini.</div>
+@endif
 @endif
 @endsection

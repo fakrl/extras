@@ -113,12 +113,11 @@ class WhatsAppNotificationTest extends TestCase
         Http::fake(['*/send' => Http::response(['sukses' => true], 200)]);
 
         $application = $this->buatAplikasi('lolos');
-        $application->extras->lengkapiKtp('3201234567890099', 'BCA 000');
         $extras = $application->extras->user;
 
-        $response = $this->actingAs($extras)->get("/kontrak/{$application->id}");
+        $this->actingAs($extras)->post(route('extras.kontrak.simpan-ktp', $application), ['nik' => '3201234567890099'])
+            ->assertRedirect();
 
-        $response->assertOk();
         $this->assertDatabaseHas('notifications_log', [
             'user_id' => $extras->id,
             'jenis' => 'kontrak_siap_ttd',

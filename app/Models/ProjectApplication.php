@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Mail\HasilSeleksiMail;
 use App\Mail\KonfirmasiFeeMail;
+use App\Mail\KontrakSiapTtdMail;
 use App\Notifications\InAppNotification;
 use App\Services\PdfGeneratorService;
 use App\Services\WhatsAppService;
@@ -455,6 +456,81 @@ class ProjectApplication extends Model
         $pesan = "Halo {$user->name}, pendaftaranmu untuk proyek {$this->castingProject->nama_produksi} berhasil diterima. Admin akan segera mereview.";
 
         app(WhatsAppService::class)->kirimNotifikasi($user, 'konfirmasi_apply', $pesan);
+    }
+
+    /**
+     * BE.1: record kontrak/pembayaran/invoice dibuat di transisi status, bukan saat halaman dibuka.
+     * Idempoten. Kontrak butuh nama_asli + NIK Extras; kalau belum ada, dibuat saat Extras melengkapi.
+     */
+    public function siapkanKontrakDanPembayaran(bool $kirimNotifikasi = true): void
+    {
+        if (! in_array($this->status_partisipasi, self::STATUS_LOLOS_KE_ATAS, true)) {
+            return;
+        }
+
+        $this->payment()->firstOrCreate([], ['status' => 'belum_dibayar']);
+        $this->castingProject->invoices()->firstOrCreate([]);
+
+        if (! $this->extras->nama_asli || ! $this->extras->nik) {
+            return;
+        }
+
+        $contract = $this->contract()->firstOrCreate([]);
+        if (! $contract->wasRecentlyCreated) {
+            return;
+        }
+
+        try {
+            $this->renderKontrakPdf();
+        } catch (\Throwable $e) {
+            Log::warning('Gagal render PDF kontrak, dirender ulang saat diunduh', [
+                'project_application_id' => $this->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        if ($kirimNotifikasi) {
+            $this->kirimNotifikasiKontrak();
+        }
+    }
+
+    public function renderKontrakPdf(): void
+    {
+        $this->load('contract', 'extras', 'castingProject');
+
+        $path = "contracts/pdf/{$this->id}.pdf";
+        app(PdfGeneratorService::class)->generate('contracts.pdf-template', ['application' => $this], $path);
+
+        $this->contract->update(['pdf_path' => $path]);
+    }
+
+    /**
+     * RF-36: notif ke kedua pihak begitu kontrak ter-generate. Efek samping, kontrak sudah tersimpan.
+     */
+    private function kirimNotifikasiKontrak(): void
+    {
+        $this->loadMissing('extras.user', 'castingProject.admin');
+
+        foreach ([$this->extras->user, $this->castingProject->admin] as $penerima) {
+            try {
+                Mail::to($penerima)->queue(new KontrakSiapTtdMail($this));
+                NotificationLog::catat($penerima->id, 'kontrak_siap_ttd', true);
+            } catch (\Throwable $e) {
+                NotificationLog::catat($penerima->id, 'kontrak_siap_ttd', false);
+            }
+
+            $pesan = "Halo {$penerima->name}, kontrak untuk proyek {$this->castingProject->nama_produksi} sudah siap ditandatangani. Silakan cek sistem.";
+            app(WhatsAppService::class)->kirimNotifikasi($penerima, 'kontrak_siap_ttd', $pesan);
+
+            try {
+                $penerima->notify(new InAppNotification(
+                    'Kontrak Siap Ditandatangani',
+                    "Kontrak proyek {$this->castingProject->nama_produksi} sudah siap. Silakan tanda tangani.",
+                    route('contracts.show', $this)
+                ));
+            } catch (\Throwable) {
+            }
+        }
     }
 
     public function pastikanMasihBisaNego(): void

@@ -410,9 +410,8 @@ class ProjectApplicationTest extends TestCase
             'fee_final' => 200000,
         ]);
 
-        // Access contracts.show to auto-generate contract and pdf
-        $response = $this->actingAs($extrasUser)->get(route('contracts.show', $application));
-        $response->assertOk();
+        $application->siapkanKontrakDanPembayaran();
+        $this->actingAs($extrasUser)->get(route('contracts.show', $application))->assertOk();
 
         $contract = $application->contract;
         $this->assertNotNull($contract);
@@ -458,6 +457,7 @@ class ProjectApplicationTest extends TestCase
             'fee_final' => 200000,
         ]);
 
+        $application->siapkanKontrakDanPembayaran();
         $this->actingAs($extrasUser)->get(route('contracts.show', $application))->assertOk();
 
         // Regenerasi PDF adalah efek samping arsip, bukan syarat sukses
@@ -518,8 +518,7 @@ class ProjectApplicationTest extends TestCase
             'fee_final' => 200000,
         ]);
 
-        // Access contracts.show to auto-generate contract and pdf
-        $this->actingAs($extrasUser)->get(route('contracts.show', $application))->assertOk();
+        $application->siapkanKontrakDanPembayaran();
 
         // Cancel
         $application->batalkan('admin', 'Cancel');

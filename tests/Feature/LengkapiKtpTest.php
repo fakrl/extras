@@ -156,7 +156,8 @@ class LengkapiKtpTest extends TestCase
 
         $response = $this->actingAs($extrasUser)->get(route('contracts.show', $application));
 
-        $response->assertRedirect(route('extras.kontrak.lengkapi-ktp', $application));
+        $response->assertOk()->assertSee('Kontrak belum tersedia')
+            ->assertSee(route('extras.kontrak.lengkapi-ktp', $application), false);
         $this->assertSame($countSebelum, Contract::count());
     }
 
@@ -167,11 +168,12 @@ class LengkapiKtpTest extends TestCase
 
         $application = $this->buatApplicationLolos();
         $application->extras->lengkapiKtp('3201234567890003', 'BCA 333');
+        $application->siapkanKontrakDanPembayaran();
         $extrasUser = $application->extras->user;
 
         $response = $this->actingAs($extrasUser)->get(route('contracts.show', $application));
 
-        $response->assertOk();
+        $response->assertOk()->assertSee('Status tanda tangan');
         $this->assertDatabaseCount('contracts', 1);
     }
 

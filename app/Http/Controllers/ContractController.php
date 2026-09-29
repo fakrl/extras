@@ -2,16 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\KontrakSiapTtdMail;
 use App\Models\ActivityLog;
-use App\Models\NotificationLog;
 use App\Models\ProjectApplication;
-use App\Notifications\InAppNotification;
-use App\Services\PdfGeneratorService;
-use App\Services\WhatsAppService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -23,60 +17,9 @@ use Illuminate\Support\Str;
  */
 class ContractController extends Controller
 {
-    public function __construct(
-        private PdfGeneratorService $pdfGenerator,
-        private WhatsAppService $whatsapp,
-    ) {}
-
     public function show(Request $request, ProjectApplication $application)
     {
         abort_unless($application->bolehDilihatOleh($request->user()), 403);
-
-        if (! $application->contract) {
-            // Gate sebelum auto-generate, kontrak PDF tidak boleh dibuat
-            // sampai data yang muncul di dokumen lengkap: nama_asli (nama
-            // penandatangan, diisi bareng alias di halaman profil) lalu NIK
-            // (RF-04, sengaja di form terpisah demi data minimization;
-            // rekening ikut ditawarkan di form itu tapi tidak diwajibkan).
-            $kurang = match (true) {
-                ! $application->extras->nama_asli => [
-                    redirect()->route('extras.profile.edit'),
-                    'Lengkapi Nama Asli (sesuai KTP) di profil dulu ya, itu yang dipakai di dokumen kontrak.',
-                    'Extras belum melengkapi Nama Asli, kontrak belum bisa dibuat.',
-                ],
-                ! $application->extras->nik => [
-                    redirect()->route('extras.kontrak.lengkapi-ktp', $application),
-                    'Lengkapi NIK dulu ya, kontrak otomatis dibuat setelah itu.',
-                    'Extras belum melengkapi NIK, kontrak belum bisa dibuat.',
-                ],
-                default => null,
-            };
-
-            if ($kurang) {
-                [$tujuanExtras, $pesanExtras, $pesanAdmin] = $kurang;
-
-                if ($request->user()->role === 'extras') {
-                    return $tujuanExtras->with('info', $pesanExtras);
-                }
-
-                return redirect()->route('admin.projects.applicants', $application->castingProject)
-                    ->with('error', $pesanAdmin);
-            }
-
-            if ($application->status_partisipasi !== 'lolos') {
-                return back()->with('error', 'Kontrak hanya dibuat setelah Extras dinyatakan Lolos.');
-            }
-
-            // BD.6: mode lihat saja (SA view-as) jangan sampai generate kontrak + kirim WA/email
-            if ($request->session()->has('sa_view_user_id')) {
-                return back()->with('info', 'Kontrak belum dibuat. Mode lihat saja tidak memicu pembuatan kontrak.');
-            }
-
-            // RF-25: auto-generate dari data proyek, Extras, dan fee yang disepakati.
-            $application->contract()->create([]);
-            $this->renderPdf($application);
-            $this->kirimNotifikasiKontrak($application);
-        }
 
         $application->load('contract', 'extras', 'castingProject');
 
@@ -115,7 +58,7 @@ class ContractController extends Controller
         if ($contract->isFullySigned()) {
             $contract->update(['signed_at' => now()]);
             $application->update(['status_partisipasi' => 'kontrak_ditandatangani']);
-            $this->renderPdf($application);
+            $application->renderKontrakPdf();
         }
 
         ActivityLog::record(
@@ -131,54 +74,15 @@ class ContractController extends Controller
     {
         abort_unless($application->bolehDilihatOleh($request->user()), 403);
         abort_unless($application->contract, 404, 'Kontrak belum dibuat.');
-        abort_unless($application->contract->pdf_path && Storage::disk('local')->exists($application->contract->pdf_path), 404, 'PDF kontrak belum tersedia.');
 
-        $application->load('castingProject');
+        // Record sudah ada, file PDF cuma cache: render ulang kalau belum ada/hilang.
+        if (! $application->contract->pdf_path || ! Storage::disk('local')->exists($application->contract->pdf_path)) {
+            $application->renderKontrakPdf();
+        }
 
         return Storage::disk('local')->download(
             $application->contract->pdf_path,
             'Kontrak-JBTB-'.Str::slug($application->castingProject->nama_produksi).'.pdf'
         );
-    }
-
-    private function renderPdf(ProjectApplication $application): void
-    {
-        $application->load('contract', 'extras', 'castingProject');
-
-        $path = "contracts/pdf/{$application->id}.pdf";
-
-        $this->pdfGenerator->generate('contracts.pdf-template', [
-            'application' => $application,
-        ], $path);
-
-        $application->contract->update(['pdf_path' => $path]);
-    }
-
-    /**
-     * RF-36: notif ke kedua pihak yang belum TTD begitu kontrak ter-generate.
-     * Email adalah efek samping, kontrak sudah tersimpan sebelum ini dipanggil.
-     */
-    private function kirimNotifikasiKontrak(ProjectApplication $application): void
-    {
-        $application->loadMissing('extras.user', 'castingProject.admin');
-
-        foreach ([$application->extras->user, $application->castingProject->admin] as $penerima) {
-            try {
-                Mail::to($penerima)->queue(new KontrakSiapTtdMail($application));
-                NotificationLog::catat($penerima->id, 'kontrak_siap_ttd', true);
-            } catch (\Throwable $e) {
-                NotificationLog::catat($penerima->id, 'kontrak_siap_ttd', false);
-            }
-
-            $pesan = "Halo {$penerima->name}, kontrak untuk proyek {$application->castingProject->nama_produksi} sudah siap ditandatangani. Silakan cek sistem.";
-            $this->whatsapp->kirimNotifikasi($penerima, 'kontrak_siap_ttd', $pesan);
-
-            $judulKontrak = 'Kontrak Siap Ditandatangani';
-            $pesanKontrak = "Kontrak proyek {$application->castingProject->nama_produksi} sudah siap. Silakan tanda tangani.";
-            try {
-                $penerima->notify(new InAppNotification($judulKontrak, $pesanKontrak, route('contracts.show', $application)));
-            } catch (\Throwable) {
-            }
-        }
     }
 }

@@ -47,6 +47,10 @@ class DemoLengkapSeeder extends Seeder
             $this->proyek($pdf, $keuangan);
             $this->notifikasiUmum();
         });
+
+        // BE.1: lengkapi payment/invoice yang nggak diisi manual, sama seperti migration backfill.
+        ProjectApplication::whereIn('status_partisipasi', ProjectApplication::STATUS_LOLOS_KE_ATAS)->get()
+            ->each->siapkanKontrakDanPembayaran(kirimNotifikasi: false);
     }
 
     private function staf(): void
