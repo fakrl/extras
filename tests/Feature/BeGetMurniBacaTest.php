@@ -80,7 +80,8 @@ class BeGetMurniBacaTest extends TestCase
             $this->actingAs($user)->get(route('payments.show', $application))->assertOk()->assertSee('belum tersedia');
         }
         $this->actingAs($this->admin)->get(route('invoices.show', $this->project))->assertOk()->assertSee('Invoice belum tersedia');
-        $this->actingAs($this->client)->get(route('invoices.show', $this->project))->assertOk()->assertSee('Invoice belum tersedia');
+        $this->actingAs($this->client)->get(route('invoices.show', $this->project))->assertOk()->assertSee('Invoice belum tersedia')
+            ->assertSee('Invoice dibuat otomatis setelah ada kandidat yang dipilih Client.');
 
         $this->assertSame($sebelum, $this->hitung());
         Mail::assertNothingQueued();
