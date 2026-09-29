@@ -36,3 +36,6 @@ docs/ARCHITECTURE-REVIEW-*.md
 .claude/settings.local.json
 .claude/worktrees/
 .claude/_backup-*.patch
+
+# Daftar akun & password demo
+docs/AKUN-DEMO.md
