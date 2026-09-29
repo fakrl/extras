@@ -59,7 +59,7 @@ class BePeriodeKartuTest extends TestCase
         $this->assertGreaterThan(2, $angka->sum());
 
         foreach (CastingProject::TAHAP as $tahap => $label) {
-            $this->assertSame(1, preg_match('/href="([^"]*tahap='.$tahap.'[^"]*)" class="metric-card"/', $r->getContent(), $m), $tahap);
+            $this->assertSame(1, preg_match('/href="([^"]*tahap='.$tahap.'[^"]*)" class="sa-lihat-semua"/', $r->getContent(), $m), $tahap);
             $url = html_entity_decode($m[1]);
             $this->assertSame($tahap !== 'menunggu_acc', str_contains($url, 'dari='), $tahap);
 

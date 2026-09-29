@@ -29,6 +29,13 @@ a.sa-row:hover { color: var(--accent); }
 .sa-sub { font-size: 12px; color: var(--text-muted); }
 @media (min-width: 861px) { .sa-cal-grid { grid-template-columns: minmax(0, 400px) 1fr; } }
 .sa-role-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; }
+.sa-akun { display: grid; gap: 10px; align-items: center; }
+@media (min-width: 861px) { .sa-akun { grid-template-columns: 2fr 1fr; gap: 16px; } }
+.sa-tab { width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; border: 1px solid var(--border-color); }
+.sa-tab:hover { border-color: var(--accent); }
+.sa-tab[aria-selected=true] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.sa-tab:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+.sa-lihat-semua { color: var(--accent); font-weight: 600; }
 </style>
 @endpush
 
@@ -151,14 +158,36 @@ a.sa-row:hover { color: var(--accent); }
 </div>
 </div>
 
-{{-- BD.3.3 Status proyek --}}
-<div class="card-title">Status Proyek <span class="sa-sub" style="font-weight: 400;">(shooting dalam periode; Menunggu ACC semua)</span></div>
-<div class="sa-stat-grid">
-    @foreach (\App\Models\CastingProject::TAHAP as $tahap => $label)
-        <a href="{{ route('admin.projects.index', ['tahap' => $tahap] + ($tahap === 'menunggu_acc' ? [] : ['dari' => $dari->format('Y-m-d'), 'sampai' => $sampai->format('Y-m-d')])) }}" class="metric-card">
-            <div class="metric-label">{{ $label }}</div>
-            <div class="metric-value">{{ $statusProyek[$tahap] }}</div>
-        </a>
+{{-- BD.3.3 + BG.8 Status proyek --}}
+<div class="card" style="margin-bottom: 16px;">
+    <div class="card-title">Status Proyek <span class="sa-sub" style="font-weight: 400;">(shooting dalam periode; Menunggu ACC semua)</span></div>
+    <div class="sa-stat-grid" role="tablist" aria-label="Tahap proyek">
+        @foreach (\App\Models\CastingProject::TAHAP as $tahap => $label)
+            <button type="button" class="metric-card sa-tab" role="tab" id="tab-{{ $tahap }}" aria-controls="panel-{{ $tahap }}" aria-selected="{{ $tahap === $tabAwal ? 'true' : 'false' }}" tabindex="{{ $tahap === $tabAwal ? 0 : -1 }}">
+                <div class="metric-label">{{ $label }}</div>
+                <div class="metric-value">{{ $statusProyek[$tahap] }}</div>
+            </button>
+        @endforeach
+    </div>
+    @foreach ($proyekPerTahap as $tahap => $daftar)
+        @php $label = \App\Models\CastingProject::TAHAP[$tahap]; @endphp
+        <div role="tabpanel" id="panel-{{ $tahap }}" aria-labelledby="tab-{{ $tahap }}" @if ($tahap !== $tabAwal) hidden @endif>
+            @forelse ($daftar as $p)
+                <a href="{{ route('admin.projects.show', $p) }}" class="sa-row">
+                    <div>
+                        <strong>{{ $p->nama_produksi }}</strong>
+                        <div class="sa-sub">{{ $p->client?->name ?? $p->client_ph ?? '-' }} &bull; {{ $p->rentangShooting() }}</div>
+                    </div>
+                    <span class="sa-sub">{{ $p->tanggal_acuan ? \Carbon\Carbon::parse($p->tanggal_acuan)->translatedFormat('d M') : '' }}</span>
+                </a>
+            @empty
+                <p class="sa-sub" style="margin: 0;">Tidak ada proyek {{ strtolower($label) }}{{ $tahap === 'menunggu_acc' ? '' : ' dalam periode ini' }}.</p>
+            @endforelse
+            <div style="margin-top: 10px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12.5px;">
+                <a href="{{ route('admin.projects.index', ['tahap' => $tahap] + ($tahap === 'menunggu_acc' ? [] : ['dari' => $dari->format('Y-m-d'), 'sampai' => $sampai->format('Y-m-d')])) }}" class="sa-lihat-semua">Lihat semua {{ $label }} &rarr;</a>
+                <a href="{{ route('admin.projects.index') }}" style="color: var(--accent);">Proyek &amp; Keuangan &rarr;</a>
+            </div>
+        </div>
     @endforeach
 </div>
 
@@ -184,10 +213,10 @@ a.sa-row:hover { color: var(--accent); }
     <div class="chart-box"><canvas id="chartUangBulanan"></canvas></div>
 </div>
 
-<div class="dashboard-grid-2col is-even">
-    {{-- BD.3.6 Akun --}}
-    <div class="card">
-        <div class="card-title">Akun</div>
+{{-- BD.3.6 Akun --}}
+<div class="card">
+    <div class="card-title">Akun</div>
+    <div class="sa-akun">
         <div class="sa-role-grid">
             @foreach ($namaRole as $role => $label)
                 <a href="{{ route('super-admin.admins.index', ['role' => $role]) }}" class="metric-card">
@@ -197,39 +226,43 @@ a.sa-row:hover { color: var(--accent); }
             @endforeach
         </div>
         @if ($clientBelumGantiPassword)
-            <a href="{{ route('super-admin.admins.index', ['role' => 'client']) }}" class="sa-row" style="margin-top: 8px;">
+            <a href="{{ route('super-admin.admins.index', ['role' => 'client']) }}" class="sa-row">
                 <div><span class="badge badge-pending">Perlu tindakan</span> {{ $clientBelumGantiPassword }} akun Client baru belum ganti password</div>
                 <span class="sa-sub">Buka &rarr;</span>
             </a>
         @else
-            <p class="sa-sub" style="margin: 10px 0 0;">Semua akun Client sudah ganti password.</p>
+            <p class="sa-sub" style="margin: 0;">Semua akun Client sudah ganti password.</p>
         @endif
-    </div>
-
-    {{-- BD.3.7 5 proyek berjalan teratas --}}
-    <div class="card">
-        <div class="card-title">5 Proyek Berjalan Teratas</div>
-        @forelse ($proyekBerjalan as $p)
-            <a href="{{ route('admin.projects.show', $p) }}" class="sa-row">
-                <div>
-                    <strong>{{ $p->nama_produksi }}</strong>
-                    <div class="sa-sub">{{ $p->client?->name ?? $p->client_ph }} &bull; {{ $p->rentangShooting() }}</div>
-                </div>
-                <span class="sa-sub">{{ $p->shooting_terdekat ? \Carbon\Carbon::parse($p->shooting_terdekat)->translatedFormat('d M') : '' }}</span>
-            </a>
-        @empty
-            <p class="sa-sub" style="margin: 0;">Tidak ada proyek berjalan.</p>
-        @endforelse
-        <div style="margin-top: 10px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12.5px;">
-            <a href="{{ route('admin.projects.index', ['tahap' => 'berjalan']) }}" style="color: var(--accent);">Semua proyek berjalan &rarr;</a>
-            <a href="{{ route('admin.projects.index') }}" style="color: var(--accent);">Proyek &amp; Keuangan &rarr;</a>
-        </div>
     </div>
 </div>
 @endsection
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    var tabs = [].slice.call(document.querySelectorAll('.sa-tab'));
+    var pilih = function (t) {
+        tabs.forEach(function (x) {
+            var aktif = x === t;
+            x.setAttribute('aria-selected', aktif);
+            x.tabIndex = aktif ? 0 : -1;
+            document.getElementById(x.getAttribute('aria-controls')).hidden = !aktif;
+        });
+    };
+    tabs.forEach(function (t, i) {
+        t.addEventListener('click', function () { pilih(t); });
+        t.addEventListener('keydown', function (e) {
+            var n = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+            if (n === undefined) return;
+            e.preventDefault();
+            var t2 = tabs[(n + tabs.length) % tabs.length];
+            pilih(t2);
+            t2.focus();
+        });
+    });
+}());
+</script>
 <script>
 (function () {
     var css = getComputedStyle(document.documentElement);
