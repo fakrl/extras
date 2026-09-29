@@ -149,7 +149,10 @@
             Alias: {{ $user->extrasProfile->user->username ?? '-' }} &bull;
             Grade: {{ $user->extrasProfile->grade_saat_ini ?? 'Belum dinilai' }}
         </div>
-        <a href="{{ route('admin.extras.profil', $user) }}" class="btn btn-sm btn-brand">Lihat Profil Lengkap</a>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+            <a href="{{ route('admin.extras.profil', $user) }}" class="btn btn-sm btn-brand">Lihat Profil Lengkap</a>
+            @include('partials.toggle-beranda', ['profile' => $user->extrasProfile])
+        </div>
         <div style="font-weight: 600; margin: 16px 0 8px;">Riwayat Proyek</div>
         @forelse ($user->extrasProfile->applications->sortByDesc('id') as $app)
             <div style="display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-top: 1px solid var(--border-color); font-size: 13px;">

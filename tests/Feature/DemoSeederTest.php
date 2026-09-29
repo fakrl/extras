@@ -57,6 +57,7 @@ class DemoSeederTest extends TestCase
 
         $this->assertSame('menunggu_acc', $p('Video Klip')->client_request_status);
         $this->assertSame(['ghost01'], User::mangkrak()->pluck('username')->all());
+        $this->get('/')->assertOk()->assertSee('@dimas_rk')->assertDontSee('@arga_p');
 
         $dimas = ProjectApplication::with('castingProjectClass.categories', 'extras.categories')
             ->where('casting_project_id', $p('Iklan "Minuman')->id)

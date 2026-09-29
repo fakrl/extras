@@ -176,6 +176,8 @@
                 @endif
             </div>
 
+            <div style="margin-top: 10px;">@include('partials.toggle-beranda', ['profile' => $ex])</div>
+
             @if ($app->status_partisipasi === 'ditolak' && $app->alasan_tolak)
                 <div class="alert-danger" style="margin: 12px 0 0;">Alasan ditolak: {{ $app->alasan_tolak }}</div>
             @endif

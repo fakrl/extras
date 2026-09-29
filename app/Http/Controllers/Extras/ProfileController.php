@@ -132,6 +132,9 @@ class ProfileController extends Controller
 
         $dataDisimpan = collect($data)->except(['tautan_label', 'tautan_url', 'nomor_wa', 'username', 'alias', 'categories'])->toArray();
         $dataDisimpan['tautan_tambahan'] = $tautanTambahan;
+        if ($request->boolean('izin_present')) {
+            $dataDisimpan['izin_tampil_publik'] = $request->boolean('izin_tampil_publik');
+        }
 
         // SENGAJA tidak menerima 'status', 'cancel_count', 'foto_profil_path',
         // atau 'video_profil_path' dari request ini, kolom-kolom itu tidak
@@ -140,6 +143,9 @@ class ProfileController extends Controller
         $profile = $request->user()->extrasProfile()->updateOrCreate([], $dataDisimpan);
         if ($request->boolean('categories_present')) {
             $profile->categories()->sync($data['categories'] ?? []);
+        }
+        if (! $profile->izin_tampil_publik && $profile->tampil_di_beranda) {
+            $profile->forceFill(['tampil_di_beranda' => false, 'tampil_di_beranda_at' => null])->save();
         }
         $profile->siapkanKontrakLolos();
 
