@@ -267,6 +267,17 @@
             <p class="field-hint">Tarif harapan awal. Nominal akhir akan didiskusikan bersama Admin.</p>
         </div>
 
+        <div class="profile-section">
+            <div class="profile-section-title">Tampil di Website</div>
+            <input type="hidden" name="izin_present" value="1">
+            <label style="display: flex; gap: 10px; align-items: flex-start; font-weight: 500;">
+                <input type="checkbox" name="izin_tampil_publik" value="1" style="width: auto; min-height: auto; margin: 3px 0 0;"
+                       @checked(old('izin_present') ? old('izin_tampil_publik') : $profile->izin_tampil_publik)>
+                <span>Izinkan foto &amp; profil saya ditampilkan di website JBTB</span>
+            </label>
+            <p class="field-hint">Yang tampil hanya foto utama, username, dan tag usia. Nama asli, usia pasti, dan kontak tidak pernah ditampilkan. Admin JBTB yang memilih siapa yang tampil. Hapus centang kapan saja untuk langsung disembunyikan.</p>
+        </div>
+
         <button type="submit" class="btn btn-brand" style="width: 100%; margin-top: 8px;">Simpan Profil</button>
     </form>
 </div>

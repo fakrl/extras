@@ -51,6 +51,7 @@ use Illuminate\Support\Str;
     'apresiasi_catatan',
     'grade_saat_ini',
     'grade_diberikan_at',
+    'izin_tampil_publik',
 ])]
 class ExtrasProfile extends Model
 {
@@ -65,10 +66,21 @@ class ExtrasProfile extends Model
             'rekening' => 'encrypted',
             'apresiasi' => 'boolean',
             'grade_diberikan_at' => 'datetime',
+            'izin_tampil_publik' => 'boolean',
+            'tampil_di_beranda' => 'boolean',
+            'tampil_di_beranda_at' => 'datetime',
             // Array of {label, url}, RF-14 & CLAUDE.md §5: cuma dilihat
             // Extras & Admin, tidak pernah dikirim ke view Casting Director.
             'tautan_tambahan' => 'array',
         ];
+    }
+
+    /** BH.2: tampil di beranda = izin Extras + persetujuan Admin + foto utama + akun aktif. */
+    public function scopeTampilDiBeranda($query)
+    {
+        return $query->where('izin_tampil_publik', true)->where('tampil_di_beranda', true)
+            ->whereNotNull('foto_profil_path')->whereNotNull('share_token')
+            ->whereHas('user', fn ($u) => $u->where('status', 'aktif')->whereNotNull('username'));
     }
 
     public function profilLengkap(): bool

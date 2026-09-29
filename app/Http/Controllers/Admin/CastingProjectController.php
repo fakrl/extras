@@ -342,6 +342,34 @@ class CastingProjectController extends Controller
     /**
      * RF-10: Admin Default menutup/membuka proyek casting.
      */
+    /** BH.3: kurasi portofolio beranda, cuma proyek selesai. */
+    public function updatePortofolio(Request $request, CastingProject $castingProject): RedirectResponse
+    {
+        abort_unless($request->user()->bisaSebagaiAdmin(), 403);
+        if (! $castingProject->bisaPortofolio()) {
+            return back()->with('error', 'Portofolio cuma bisa diatur untuk proyek yang sudah selesai.');
+        }
+
+        $data = $request->validate([
+            'portofolio_judul' => ['nullable', 'string', 'max:150'],
+            'portofolio_jenis' => ['nullable', 'string', 'max:80'],
+            'portofolio_tahun' => ['nullable', 'integer', 'min:2000', 'max:'.(now()->year + 1)],
+        ]);
+        $castingProject->update($data + [
+            'tampil_portofolio' => $request->boolean('tampil_portofolio'),
+            'tampilkan_nama_client' => $request->boolean('tampilkan_nama_client'),
+        ]);
+
+        ActivityLog::record(
+            'UPDATE_PORTOFOLIO',
+            "{$request->user()->label()} {$request->user()->name} ".($castingProject->tampil_portofolio ? 'menampilkan' : 'menyembunyikan')." proyek '{$castingProject->nama_produksi}' di portofolio beranda",
+            $castingProject,
+            $castingProject->only(['tampil_portofolio', 'portofolio_judul', 'portofolio_jenis', 'portofolio_tahun', 'tampilkan_nama_client'])
+        );
+
+        return back()->with('status', 'Portofolio beranda diperbarui.');
+    }
+
     public function toggleStatus(CastingProject $castingProject): RedirectResponse
     {
         $castingProject->update([

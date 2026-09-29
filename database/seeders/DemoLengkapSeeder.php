@@ -132,6 +132,18 @@ class DemoLengkapSeeder extends Seeder
         $this->u['putri_a']->update(['status' => 'nonaktif']);
         $this->u['lama_dihapus']->delete();
 
+        // BH.2: 8 Extras izin + tampil di beranda (foto placeholder SVG), arga_p izin tapi belum di-ACC Admin.
+        foreach (['dimas_rk', 'sari_mei', 'bagas22', 'citra_ay', 'pak_harto', 'kevin_t', 'yohanes_m', 'clara_b', 'arga_p'] as $i => $un) {
+            $profile = $this->u[$un]->extrasProfile;
+            $profile->forceFill([
+                'foto_profil_path' => $this->fotoDemo($un, $i),
+                'izin_tampil_publik' => true,
+                'tampil_di_beranda' => $un !== 'arga_p',
+                'tampil_di_beranda_at' => $un !== 'arga_p' ? now()->subDays($i) : null,
+            ])->save();
+            $profile->generateShareToken();
+        }
+
         $ghost = $this->akun('extras', 'ghost01', 'ghost01', 'ghost01@extras.test', now()->subDays(40));
         $ghost->extrasProfile()->create(['created_at' => now()->subDays(40)]);
 
@@ -296,6 +308,16 @@ class DemoLengkapSeeder extends Seeder
         $this->jadwal($p6, [10], 'SCBD, Jakarta Selatan');
         $this->kelas($p6, 'Nasabah muda', 10, 450000, ['Dewasa', 'Pekerja kantoran']);
         $p6->adminAssignments()->create(['user_id' => $yoga->id, 'assigned_by' => $fakrul->id]);
+
+        // BH.3: portofolio beranda, P1 + 2 arsip lama (satu izinkan nama client)
+        $p1->update(['tampil_portofolio' => true, 'portofolio_jenis' => 'Film layar lebar', 'portofolio_tahun' => today()->subDays(30)->year]);
+        foreach ([['Iklan TV "Kopi Pagi Nusantara"', 'PT Kopi Pagi Nusantara', 'Iklan TV', -200, true], ['FTV "Cinta di Pasar Minggu"', 'Sinar Rumah Produksi', 'FTV', -320, false]] as [$nama, $ph, $jenis, $hari, $client]) {
+            $arsip = $this->project($nama, $ph, $rina, $hari - 20, [
+                'status' => 'ditutup', 'deadline' => today()->addDays($hari - 5), 'kuota' => 10, 'tampil_portofolio' => true,
+                'portofolio_jenis' => $jenis, 'portofolio_tahun' => today()->addDays($hari)->year, 'tampilkan_nama_client' => $client,
+            ]);
+            $this->jadwal($arsip, [$hari], 'Jakarta');
+        }
 
         $this->notifikasiEvent($p1, $p2, $p3, $p4, $p5, $p6);
     }
@@ -510,6 +532,19 @@ class DemoLengkapSeeder extends Seeder
             'data' => (new InAppNotification($judul, $pesan, $url))->toDatabase($user),
             'read_at' => $dibaca ? now() : null, 'created_at' => $at ?? now(),
         ]);
+    }
+
+    private function fotoDemo(string $username, int $i): string
+    {
+        $h = ($i * 47) % 360;
+        $path = "demo/foto/{$username}.svg";
+        Storage::disk('local')->put($path, '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520">'
+            ."<defs><linearGradient id=\"g\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"hsl({$h},40%,66%)\"/><stop offset=\"1\" stop-color=\"hsl({$h},35%,30%)\"/></linearGradient></defs>"
+            .'<rect width="400" height="520" fill="url(#g)"/>'
+            ."<circle cx=\"200\" cy=\"205\" r=\"80\" fill=\"hsl({$h},25%,18%)\" fill-opacity=\".6\"/>"
+            ."<path d=\"M50 520c12-125 72-178 150-178s138 53 150 178z\" fill=\"hsl({$h},25%,18%)\" fill-opacity=\".6\"/></svg>");
+
+        return $path;
     }
 
     private function png(string $path, string $teks = 'TTD Demo'): string

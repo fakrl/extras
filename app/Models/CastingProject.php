@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
     'admin_id', 'nama_produksi', 'client_ph', 'poster_path', 'cover_path',
     'share_token', 'wa_group_link', 'link_grup', 'deadline', 'kuota',
     'is_urgent', 'status', 'client_request_status', 'diajukan_oleh_client_id', 'brief_catatan', 'alasan_tolak', 'client_id',
+    'tampil_portofolio', 'portofolio_judul', 'portofolio_jenis', 'portofolio_tahun', 'tampilkan_nama_client',
 ])]
 class CastingProject extends Model
 {
@@ -50,6 +51,9 @@ class CastingProject extends Model
         return [
             'deadline' => 'date',
             'is_urgent' => 'boolean',
+            'tampil_portofolio' => 'boolean',
+            'portofolio_tahun' => 'integer',
+            'tampilkan_nama_client' => 'boolean',
         ];
     }
 
@@ -226,6 +230,12 @@ class CastingProject extends Model
             $akhir->isBefore(today()) => 'selesai',
             default => 'berjalan',
         };
+    }
+
+    /** BH.3: portofolio beranda cuma untuk proyek yang tahapnya selesai. */
+    public function bisaPortofolio(): bool
+    {
+        return $this->tahap() === 'selesai';
     }
 
     public function rentangShooting(): string

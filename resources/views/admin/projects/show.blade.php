@@ -86,6 +86,43 @@
         </div>
     </div>
 
+    @if ($p->bisaPortofolio() && auth()->user()->bisaSebagaiAdmin())
+        <div class="card" style="margin-top: 14px;">
+            <div class="card-title">Portofolio di beranda</div>
+            <form method="POST" action="{{ route('admin.projects.portofolio', $p) }}">
+                @csrf @method('PATCH')
+                <label style="display: flex; gap: 8px; align-items: center; font-weight: 600;">
+                    <input type="checkbox" name="tampil_portofolio" value="1" style="width: auto; min-height: auto; margin: 0;" @checked($p->tampil_portofolio)>
+                    Tampilkan proyek ini di "Pernah dikerjakan" beranda
+                </label>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0 12px; margin-top: 10px;">
+                    <div>
+                        <label for="portofolio_judul">Judul tampil</label>
+                        <input type="text" id="portofolio_judul" name="portofolio_judul" maxlength="150" value="{{ old('portofolio_judul', $p->portofolio_judul) }}" placeholder="{{ $p->nama_produksi }}">
+                    </div>
+                    <div>
+                        <label for="portofolio_jenis">Jenis</label>
+                        <input type="text" id="portofolio_jenis" name="portofolio_jenis" maxlength="80" list="jenis-produksi" value="{{ old('portofolio_jenis', $p->portofolio_jenis) }}" placeholder="Film layar lebar">
+                        <datalist id="jenis-produksi"><option value="Film layar lebar"><option value="Series"><option value="Iklan TV"><option value="FTV"><option value="Video klip"></datalist>
+                    </div>
+                    <div>
+                        <label for="portofolio_tahun">Tahun</label>
+                        <input type="number" id="portofolio_tahun" name="portofolio_tahun" min="2000" max="{{ now()->year + 1 }}" inputmode="numeric" value="{{ old('portofolio_tahun', $p->portofolio_tahun ?? $p->shootingDates->max('tanggal')?->year) }}">
+                    </div>
+                </div>
+                @foreach (['portofolio_judul', 'portofolio_jenis', 'portofolio_tahun'] as $f)
+                    @error($f)<span class="field-error">{{ $message }}</span>@enderror
+                @endforeach
+                <label style="display: flex; gap: 8px; align-items: center;">
+                    <input type="checkbox" name="tampilkan_nama_client" value="1" style="width: auto; min-height: auto; margin: 0;" @checked($p->tampilkan_nama_client)>
+                    Tampilkan nama client ({{ $p->client_ph }})
+                </label>
+                <p style="font-size: var(--fs-xs); color: var(--text-muted); margin: 4px 0 10px;">Nama client default disembunyikan. Centang hanya kalau client sudah setuju.</p>
+                <button type="submit" class="btn btn-sm btn-brand">Simpan portofolio</button>
+            </form>
+        </div>
+    @endif
+
     <div class="card" style="margin-top: 14px;">
         <div class="card-title">Peran</div>
         <div class="table-container">
