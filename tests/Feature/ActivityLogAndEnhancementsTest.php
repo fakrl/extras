@@ -154,13 +154,49 @@ class ActivityLogAndEnhancementsTest extends TestCase
         // Filter by role=client
         $clientFilterResponse = $this->actingAs($superAdmin)->get(route('super-admin.activity-logs', ['role' => 'client']));
         $clientFilterResponse->assertOk();
-        $clientFilterResponse->assertSee('SUBMIT_PROJECT_REQUEST');
-        $clientFilterResponse->assertDontSee('APPLY_PROJECT');
+        $clientFilterResponse->assertSee('Iklan Kopi');
+        $clientFilterResponse->assertDontSee('Extras mendaftar ke lowongan casting');
 
         // Non-super-admin gets 403
         $this->actingAs($clientUser)
             ->get(route('super-admin.activity-logs'))
             ->assertForbidden();
+    }
+
+    public function test_activity_log_search_filter_date_and_no_chart(): void
+    {
+        $superAdmin = User::factory()->create(['role' => 'super_admin']);
+        $admin = User::factory()->create(['role' => 'admin', 'name' => 'Budi Admin']);
+        $project = CastingProject::create([
+            'admin_id' => $admin->id,
+            'nama_produksi' => 'Film Senja Merah', 'client_ph' => 'PH Senja', 'kuota' => 5,
+            'deadline' => now()->addWeek(),
+            'status' => 'dibuka',
+        ]);
+
+        ActivityLog::record('UPDATE_USER', 'Mengubah akun lama', user: $admin);
+        ActivityLog::record('APPROVE_PROJECT_REQUEST', 'ACC proyek baru', $project, user: $superAdmin);
+        ActivityLog::create(['role' => 'admin', 'action' => 'UPDATE_USER', 'description' => 'Log jadul sekali', 'created_at' => now()->subDays(40)]);
+
+        $url = fn (array $p = []) => route('super-admin.activity-logs', $p);
+
+        $this->actingAs($superAdmin)->get($url(['q' => 'akun lama']))
+            ->assertOk()->assertSee('Mengubah akun lama')->assertDontSee('ACC proyek baru');
+
+        $this->get($url(['q' => 'Senja Merah']))
+            ->assertSee('ACC proyek baru')->assertDontSee('Mengubah akun lama')
+            ->assertSee(route('admin.projects.applicants', $project), false);
+
+        $this->get($url(['q' => 'Budi Admin']))->assertSee('Mengubah akun lama')->assertDontSee('ACC proyek baru');
+
+        $this->get($url(['role' => 'super_admin']))->assertSee('ACC proyek baru')->assertDontSee('Mengubah akun lama');
+
+        $this->get($url(['aksi' => 'UPDATE_USER']))->assertSee('Mengubah akun lama')->assertDontSee('ACC proyek baru');
+
+        $this->get($url(['dari' => now()->subDays(45)->toDateString(), 'sampai' => now()->subDays(35)->toDateString()]))
+            ->assertSee('Log jadul sekali')->assertDontSee('Mengubah akun lama');
+
+        $this->get($url())->assertSee('Log jadul sekali')->assertDontSee('new Chart', false);
     }
 
     public function test_extras_grade_activity_log_is_visible_to_extras_in_dashboard(): void
