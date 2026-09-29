@@ -9,6 +9,7 @@ use App\Models\CastingProject;
 use App\Models\ExtrasCategory;
 use App\Models\ExtrasProfile;
 use App\Models\User;
+use App\Support\PerHalaman;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -64,7 +65,7 @@ class AdminManagementController extends Controller
                 ->whereHas('extrasProfile', fn ($p) => $p->where('grade_saat_ini', $f['grade'])))
             ->with(['extrasProfile.categories', 'aktivitasTerakhir'])
             ->latest()
-            ->paginate(30)
+            ->paginate($f['role'] === User::ROLE_EXTRAS ? PerHalaman::dari($request, 24, PerHalaman::KARTU) : PerHalaman::dari($request, 25, PerHalaman::TABEL))
             ->withQueryString();
 
         $filterAktif = collect($f)->except('q')->filter()->count();
