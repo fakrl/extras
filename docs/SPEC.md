@@ -798,7 +798,7 @@ Ini minimal diff — nggak nyentuh controller (query udah benar, semua jadwal em
 
 | Keputusan | Yang berubah di kode kalau sudah diputus | Keputusan |
 |---|---|---|
-| D1 PIC proyek | Field PIC wajib saat ACC; notifikasi nego/ACC ke PIC; scoping aksi Admin per proyek (atau tetap global) | _(kosong)_ |
+| D1 PIC proyek | Field PIC wajib saat ACC; notifikasi nego/ACC ke PIC; scoping aksi Admin per proyek (atau tetap global) | **Diputus 29 Sept:** wajib 1 Admin PIC + 1 Client akun (BD.2). Scoping aksi Admin tetap global. |
 | D2 Siapa boleh jadi Client | `/register/casting-director`: undangan/token atau status `pending` + ACC | _(kosong)_ |
 | D3 Client lihat talent siapa | `ProfileController::pastikanBolehLihatMedia` dibatasi ke kandidat di proyek yang di-assign ke Client itu | _(kosong)_ |
 | D4 Aturan deal fee | `Admin/FeeNegotiationController::terima` & `Extras/FeeNegotiationController::terima`: hanya terima tawaran terakhir pihak lawan | _(kosong)_ |
@@ -808,7 +808,7 @@ Ini minimal diff — nggak nyentuh controller (query udah benar, semua jadwal em
 | D7 Add-on Extras | Extras ajukan, Admin approve; kunci setelah ditransfer | _(kosong)_ |
 | D8 Kapan "Selesai" | Pisah `selesai_produksi` dari konfirmasi bayar | _(kosong)_ |
 | D9 Siapa tandai honor staf dibayar | Route `tandai-dibayar` super_admin only, bukan penerima honor; idempotent | _(kosong)_ |
-| D10 Super Admin godmode/monitoring | `User::isAdmin()` / helper otorisasi di Payment/Contract/Invoice controller | _(kosong)_ |
+| D10 Super Admin godmode/monitoring | `User::isAdmin()` / helper otorisasi di Payment/Contract/Invoice controller | **Diputus 29 Sept:** godmode aksi di Admin & Korlap, read-only di Client & Extras (BD.6). |
 | D11 Korlap per proyek | Scoping `AttendanceController` ke proyek yang di-assign | _(kosong)_ |
 | D12 Feature freeze | Tanggal freeze; fitur AT–AX mana yang masuk Bab 3 | _(kosong)_ |
 | D13 Repo public/private | Private, atau scrub history + hapus angka riil di `docs/CLAUDE.md` | _(kosong)_ |
@@ -1017,3 +1017,112 @@ Di kartu Greenlight **hapus atribut `data-grade-admin`** dan data kontak/nama as
 | BC.3 verifikasi | `2745647` + fix MySQL `aafaec4` — `migrate:fresh --seed` sukses di SQLite **dan** MySQL `jbtb_test`; full suite SQLite 375 & MySQL 375 passed; smoke login 5 role 200 | [ ] |
 
 **Cara Fakrul jalanin (menghapus SEMUA data lama):** `php artisan migrate:fresh --seed` → `php artisan storage:link` (kalau belum) → `php artisan view:clear`.
+
+---
+
+# Bagian BD: Rombak Super Admin — Dashboard, Manajemen Akun, Proyek & Keuangan, Log, Monitoring per Role (29 September 2026)
+
+> HLD dari Fakrul (29 Sept), sudah didiskusikan & dikonfirmasi. **WAJIB subagent** (auth, keuangan, >3 file). Commit per sub-bagian, urutan pengerjaan: **BD.2 → BD.1 → BD.9 → BD.3 → BD.4 → BD.5 → BD.6 → BD.7 → BD.8**. Jangan centang checklist sendiri.
+>
+> Prinsip: **Dashboard = ringkasan**, menu lain = "perbesaran"-nya. Angka uang di mana pun **hanya** dari `KeuanganService` (satu sumber). `/ponytail`: pakai ulang view/komponen yang ada, jangan bikin versi kedua.
+
+## Keputusan yang sudah diambil (update tabel AY.6)
+
+- **D1 PIC proyek:** tiap proyek WAJIB punya 1 Admin PIC (`admin_id`) + 1 Client (akun). Dipilih dari akun yang ada.
+- **D10 Super Admin:** godmode untuk **Admin & Korlap** (boleh aksi penuh, tercatat atas nama Super Admin). Untuk **Client & Extras**: read-only.
+- **D2 (sebagian):** akun Client dibuat Super Admin, login tetap wajib.
+- Proyek yang dibuat Super Admin langsung dibuka, tanpa ACC. Proyek hasil pengajuan Client tetap di-ACC Super Admin.
+- Biaya lain-lain proyek: label + nominal, boleh ditambah Admin & Super Admin selama proyek berjalan.
+- Nama menu: **Monitoring** dengan submenu per role.
+
+## BD.1: Akun Client dibuat Super Admin
+
+1. Manajemen Akun → "+ Client": nama, nama perusahaan/PH, email, username, nomor WA. Kalau belum ada kolom perusahaan buat user, tambah `users.nama_perusahaan` (nullable).
+2. **Password nggak diketik Super Admin** — begitu form disimpan, sistem otomatis bikin password sementara (acak 10 karakter, tanpa karakter mirip seperti 0/O/l/1), lalu muncul **dialog sekali tampil** berisi username + password + URL login, tombol "Salin semua" dan "Kirim via WA" (link `wa.me/{nomor WA client}` dengan teks siap kirim). Kalau dialog ketutup sebelum sempat dikirim → pakai "Reset password" (BD.1.7) buat bikin yang baru.
+3. Kolom baru `users.wajib_ganti_password` (bool). Login pertama Client → dipaksa ke `/ubah-password` sampai diganti (middleware kecil). Tujuannya: Super Admin nggak tau password permanen Client.
+4. Pakai juga buat "+ Client baru" di form proyek (BD.2.2) — modal yang sama.
+5. **DIKONFIRMASI Fakrul (29 Sept): tutup registrasi publik Client.** `/register/casting-director` (GET & POST) → redirect ke `/login` dengan pesan "Akun Client dibuatkan oleh tim JBTB. Hubungi kami untuk mendapatkan akses." Hapus link/teks yang mengarah ke sana. Login Client lewat halaman `/login` yang sama (email **atau** username — sudah didukung).
+6. **Email Client opsional.** Migration: `users.email` jadi nullable (unique tetap). Validasi di form "+ Client": email `nullable|email|unique`. Username wajib.
+7. **Lupa password Client tanpa email:** Super Admin pakai aksi "Reset password" yang sudah ada (`AdminManagementController::resetPassword` — password acak tampil sekali). Tambah: set `wajib_ganti_password = true` saat reset, dan tampilkan password baru di dialog dengan tombol Salin/Kirim WA (bukan cuma di flash message). Halaman `/forgot-password`: kalau identitas yang diisi nggak punya email → pesan "Akun ini belum punya email. Hubungi Super Admin JBTB untuk reset password."
+8. **Profil Client (opsional, diisi sendiri):** halaman `cd/profil` — nama, nama perusahaan, email, nomor WA, ganti password. Di dashboard Client: kartu kecil "Lengkapi profil (email buat notifikasi & lupa password)" selama email kosong, bisa ditutup. Nggak ada field wajib selain yang sudah diisi Super Admin.
+
+## BD.2: Menu "Proyek & Keuangan" (SA & Admin)
+
+1. **Data (migration):**
+   - `casting_projects.client_id` (FK users, nullable buat data lama) — backfill dari `diajukan_oleh_client_id` / `CdProjectAssignment` pertama. `client_ph` tetap sebagai teks tampilan, otomatis diisi dari `nama_perusahaan` Client.
+   - Tabel `project_expenses`: `casting_project_id`, `label`, `nominal`, `tanggal`, `created_by`, timestamps. Hapus hanya oleh pembuat atau Super Admin. Semua tambah/hapus masuk `ActivityLog`.
+   - `invoices`: tambah `nominal` (decimal), `status_bayar` (`belum`/`lunas`), `dibayar_at`. Nilai `nominal` dihitung `KeuanganService::nilaiInvoice()` pakai rumus PDF invoice yang sekarang (`budget_client × kuota_kelas`) — kalau D5 nanti mengubah rumus, cukup ubah di method itu. Super Admin & Admin bisa "Tandai Lunas" (konfirmasi + log).
+2. **Buat proyek (SA & Admin):** satu form (pakai ulang form create Admin). Field Admin PIC & Client = **select yang bisa dicari**, isinya akun `admin` aktif / `client` aktif dari DB, validasi `exists` + role. Opsi "+ Client baru" (BD.1). Dibuat SA → `status=dibuka`, `client_request_status=disetujui`; dibuat Admin → sama seperti sekarang. Client terpilih otomatis dapat `CdProjectAssignment`. Log: "Proyek X dibuat oleh {nama} ({role})".
+3. **Daftar proyek:** search + chip status (Menunggu ACC / Mendatang / Berjalan / Selesai), per baris: nama, Client, PIC, tanggal shooting, pendaftar/kuota, **uang masuk · keluar · saldo**.
+4. **Detail proyek** — tab:
+   - **Info:** semua field proyek, Client, PIC, Korlap, peran (kuota, tag dicari), jadwal.
+   - **Pendaftar:** kartu Extras (partial BA) per status.
+   - **Cashflow:** **Masuk** = invoice (nominal, status lunas, link PDF/kontrak). **Keluar** = honor Extras per orang (`Payment::nominalTotal()` + status), honor staf (`StaffPayroll::nominalTotal()` + status), biaya lain-lain (bisa tambah di sini). **Saldo** = masuk − keluar, dan **Terpakai %** = keluar ÷ masuk.
+5. `KeuanganService::cashflowProyek(CastingProject)` + `ringkasanPeriode(from, to)` = satu-satunya sumber angka buat halaman ini **dan** dashboard. Halaman `rekap-margin` lama jadi redirect ke menu ini (tab staf/extras/invoice jadi filter di sini).
+
+## BD.3: Dashboard Super Admin (ringkasan)
+
+1. **Filter periode** di atas: preset (Bulan ini / 3 bulan / Tahun ini) + custom `dari`–`sampai`, tampilkan "N hari". Proyek difilter pakai **tanggal shooting**, uang pakai **tanggal transaksi** (`dibayar_at`/`ditransfer_at`/`tanggal` biaya). Tulis aturan ini kecil di bawah filter.
+2. **Perlu tindakan** (paling atas, tiap item link): pengajuan proyek menunggu ACC, pembayaran disengketakan, honor staf belum dibayar, invoice belum lunas.
+3. **Status proyek:** 4 kartu angka (Menunggu ACC · Mendatang · Berjalan · Selesai), klik → daftar proyek terfilter.
+4. **Uang periode:** masuk · keluar · saldo + chart bulanan dari `ringkasanPeriode()`.
+5. **Kalender** (full, bukan compact): tanggal bertanda → klik → panel daftar kegiatan hari itu (proyek, lokasi, jam, jumlah Extras, status absensi) + tombol aksi (Buka proyek, Lihat absensi).
+6. **Akun:** angka per role + "perlu tindakan" (mis. akun Client baru belum ganti password). Tanpa daftar akun — itu di Manajemen Akun.
+7. Tabel anggaran per proyek **tidak** di dashboard — cukup "5 proyek berjalan teratas" + link ke Proyek & Keuangan.
+
+## BD.4: Manajemen Akun (gabungan Monitoring Akun + Kelola Akun)
+
+1. Satu halaman `super-admin/akun`: **search bar di atas** (nama, username, email, WA), lalu daftar semua akun (paginate 30).
+2. Filter di **satu ikon** (popover): role, status (aktif/nonaktif/dihapus), "sedang aktif di proyek" (punya aplikasi status aktif / assignment berjalan), tag Extras (multi), grade.
+3. Per baris: nama, role, status + "aktif sejak …", aktivitas terakhir (1 baris dari ActivityLog), kebab aksi yang sudah ada (Edit, Reset password, Nonaktifkan/Aktifkan, Hapus/Restore, Lihat detail). Extras tampil pakai kartu BA kalau filter role = Extras.
+4. Detail akun: profil (per role), riwayat proyek, **Aktivitas akun ini** (AU.6.7), aksi.
+5. **Hapus** jadwal/kalender & absensi dari halaman ini (sudah di dashboard / Monitoring Korlap). Route lama `super-admin.monitoring` & `super-admin.admins.index` redirect ke sini.
+
+## BD.5: Log Aktivitas
+
+Search bar langsung (deskripsi, nama aktor, nama subjek). Filter di satu ikon (popover): aktor, role, jenis aksi, rentang tanggal. Hasil berupa daftar (deskripsi manusiawi, aktor + role label, waktu relatif, link ke subjek). Chart tren dihapus dari halaman ini (kalau mau, pindah ke dashboard).
+
+## BD.6: Menu "Monitoring" — Super Admin sebagai tiap role
+
+Submenu: **Admin · Korlap · Client · Extras**. Mode disimpan di session (`sa_mode`, dan `sa_view_user_id` untuk Client/Extras). Selama mode aktif: sidebar & dashboard berganti ke milik role itu + **banner** di atas: "Super Admin · sebagai Korlap · Kembali ke Super Admin".
+
+1. **Admin & Korlap — bisa aksi (turun tangan).** Super Admin tetap login sebagai dirinya; yang berubah cuma tampilan menu. Semua aksi Admin/Korlap boleh.
+   - Perbaiki semua cek otorisasi di controller yang nolak Super Admin (`isAdmin()`, `isKorlap()`, `isAnyAdmin()` dll — lihat review arsitektur: Payment/Contract/Invoice/Attendance) supaya Super Admin lolos.
+   - `ActivityLog::record()`: kalau aktor Super Admin dan `sa_mode` aktif → `role` tetap `super_admin`, tambah `properties.sebagai = admin|korlap`, deskripsi berakhiran "(sebagai Korlap)". Contoh: "Super Admin Fakhrul memvalidasi absensi @dimas.rk (sebagai Korlap)".
+2. **Client — read-only, pilih akun.** Submenu Client → pilih akun Client (search) → Super Admin melihat halaman Client **dengan data akun itu** (dashboard, Greenlight, jadwal, tagihan). Mekanisme: middleware `ViewAs` men-set user yang dirender = akun target **hanya untuk request GET**, sambil menyimpan ID Super Admin asli di session.
+3. **Extras — read-only, pilih akun.** Sama seperti Client: lihat dashboard, profil, lowongan yang dibuka, status pendaftaran akun Extras itu. **Tidak bisa** edit profil, daftar lowongan, nego, TTD, konfirmasi bayar. (Kalau perlu benerin data Extras → Manajemen Akun → Edit, tercatat atas nama Super Admin.)
+4. **Aturan keras mode read-only (Client/Extras):** semua request non-GET selama `sa_view_user_id` aktif → ditolak di middleware (redirect back + pesan "Mode lihat saja"), kecuali route keluar mode. Tombol aksi di view boleh tampil tapi disabled + tooltip. Tidak bisa lihat sebagai `super_admin` atau akun `is_protected`. Mulai/keluar mode → ActivityLog.
+5. Test: POST apa pun saat view-as Client/Extras → ditolak & DB nggak berubah; SA mode Korlap validasi absensi → sukses, log aktor SA + `sebagai=korlap`; view-as nggak bisa ke akun protected.
+
+## BD.7: Lowongan di sisi Extras lebih jelas
+
+`extras/projects/index` & `show` (+ `public/event`): per peran tampilkan **sisa kuota** (`kuota_kelas − terisi`, "Sisa 3 dari 5"), **tag dicari** (chip `#Dewasa muda #Naik motor`), kriteria teks. Tag yang dimiliki Extras yang login diwarnai hijau.
+
+## BD.9: Lampiran Proyek (upload dokumen)
+
+1. Tabel `project_attachments`: `casting_project_id`, `uploaded_by`, `nama_asli` (nama file asli), `path`, `mime`, `ukuran`, `keterangan` (nullable), timestamps. File di **disk private** (`local`), bukan public.
+2. **Siapa boleh upload & lihat:** Super Admin, Admin, dan Client yang ter-assign ke proyek itu. **Extras tidak bisa lihat.** Download lewat controller yang cek akses (stream), bukan URL storage langsung.
+3. **Hapus:** hanya pengunggah atau Super Admin (dengan konfirmasi). Upload & hapus masuk ActivityLog.
+4. Validasi: `pdf, doc, docx, xls, xlsx, jpg, jpeg, png`, maks **10 MB** per file, boleh multi-file sekali upload.
+5. Tampil sebagai tab **"Lampiran"** di detail proyek (BD.2.4) dan di halaman proyek sisi Client (daftar file: nama, pengunggah, tanggal, ukuran, tombol Unduh/Hapus). Form pengajuan proyek Client juga boleh lampirkan file (opsional).
+6. Mode Monitoring read-only (BD.6) otomatis memblokir upload/hapus (non-GET). Test: Client proyek lain → 403 saat unduh; Extras → 403.
+
+## BD.8: Sidebar Super Admin final
+
+Dashboard · Manajemen Akun · Proyek & Keuangan · Log Aktivitas · Monitoring ▸ (Admin, Korlap, Client, Extras). Hapus menu lama yang sudah digabung (Monitoring Akun, Kelola Akun, Rekap Margin/Keuangan lama, Presensi, dll). Semua route lama → redirect, bukan 404.
+
+## Checklist BD
+
+| Item | Bukti | QA |
+|---|---|---|
+| BD.1 akun Client oleh SA + wajib ganti password | | [ ] |
+| BD.2 Proyek & Keuangan (data, form, daftar, detail, cashflow) | | [ ] |
+| BD.3 dashboard ringkasan | | [ ] |
+| BD.4 Manajemen Akun gabungan | | [ ] |
+| BD.5 Log Aktivitas search-first | | [ ] |
+| BD.6 Monitoring per role (aksi Admin/Korlap, read-only Client/Extras) | | [ ] |
+| BD.7 sisa kuota + tag di lowongan | | [ ] |
+| BD.8 sidebar final + redirect route lama | | [ ] |
+| BD.9 lampiran proyek | | [ ] |
+
+**Tes QA:** (1) SA bikin akun Client → login Client dipaksa ganti password. (2) SA bikin proyek pilih Admin & Client → langsung dibuka, muncul di dashboard Client. (3) Admin tambah biaya lain-lain → saldo proyek & dashboard SA berubah sama persis. (4) SA Monitoring ▸ Client ▸ @client_andini → lihat Greenlight, klik Pilih → ditolak "Mode lihat saja". (5) SA Monitoring ▸ Korlap → validasi absensi → di Log tertulis "(sebagai Korlap)".

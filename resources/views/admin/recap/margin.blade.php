@@ -242,7 +242,7 @@
                     <tr>
                         <td style="font-weight: 600;">{{ $exUser?->username ?? $exUser?->name ?? '-' }}</td>
                         <td>{{ $proj?->nama_produksi ?? '-' }}</td>
-                        <td>Rp {{ number_format($pay->nominal_pokok, 0, ',', '.') }}</td>
+                        <td>Rp {{ number_format($pay->nominalPokok(), 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($pay->addons->sum('nominal'), 0, ',', '.') }}</td>
                         <td style="font-weight: 700;">Rp {{ number_format($pay->nominalTotal(), 0, ',', '.') }}</td>
                         <td><x-status-badge :model="$pay" /></td>
