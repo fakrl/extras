@@ -77,6 +77,9 @@
         <option value="cocok">Paling cocok</option>
     </select>
 </div>
+@if ($tagDicari->isNotEmpty())
+    <p class="xfilter-note">Menampilkan yang punya <strong>salah satu</strong> tag<span id="gl-urut-note" hidden>, diurutkan paling cocok</span></p>
+@endif
 
 <label style="margin: 0 0 10px; display: inline-flex; align-items: center; gap: 8px; min-height: 36px; cursor: pointer;">
     <input type="checkbox" id="check-all-outer"> Pilih Semua Pending
@@ -385,6 +388,8 @@
         });
         document.getElementById('gl-urut').addEventListener('change', function () {
             var key = this.value === 'cocok' ? 'cocok' : 'urut';
+            var note = document.getElementById('gl-urut-note');
+            if (note) note.hidden = key !== 'cocok';
             var grid = document.querySelector('.xgrid');
             Array.from(grid.querySelectorAll('.kandidat-card'))
                 .sort(function (a, b) { return key === 'cocok' ? (b.dataset.cocok - a.dataset.cocok) || (a.dataset.urut - b.dataset.urut) : a.dataset.urut - b.dataset.urut; })
