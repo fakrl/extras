@@ -1,0 +1,59 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-border: var(--border);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+}
+
+:root {
+  color-scheme: light;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --border: oklch(0.922 0 0);
+  --radius: 0.625rem;
+}
+
+@layer base {
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground; }
+}
+
+.site-shell {
+  --shell-bg: #111311;
+  --shell-fg: #f2f1eb;
+  --shell-muted: rgba(242, 241, 235, 0.55);
+  --shell-line: rgba(255, 255, 255, 0.15);
+  background: var(--shell-bg);
+  color: var(--shell-fg);
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
+.site-shell.light-mode {
+  --shell-bg: #f1f0e9;
+  --shell-fg: #171a16;
+  --shell-muted: rgba(23, 26, 22, 0.58);
+  --shell-line: rgba(23, 26, 22, 0.16);
+}
+
+.site-shell.light-mode .bg-\[\#111311\] { background-color: var(--shell-bg); }
+.site-shell.light-mode .bg-\[\#252a23\] { background-color: #d8dad0; }
+.site-shell.light-mode .text-white\/70, .site-shell.light-mode .text-white\/65, .site-shell.light-mode .text-white\/60, .site-shell.light-mode .text-white\/55, .site-shell.light-mode .text-white\/45, .site-shell.light-mode .text-white\/40, .site-shell.light-mode .text-white\/35 { color: var(--shell-muted); }
+.site-shell.light-mode .text-\[\#b7ff3c\] { color: #76a51b; }
+.site-shell.light-mode .bg-\[\#b7ff3c\] { background-color: #9bcf24; }
+.site-shell.light-mode .border-\[\#b7ff3c\] { border-color: #76a51b; }
+.site-shell.light-mode .border-white\/15 { border-color: var(--shell-line); }
+.site-shell.light-mode .border-white\/25 { border-color: rgba(23, 26, 22, 0.25); }
+.site-shell.light-mode .text-white { color: var(--shell-fg); }
+.site-shell.light-mode .bg-\[\#111311\]\/95 { background-color: rgba(241, 240, 233, 0.95); }
+
+.hero-backdrop { min-height: 560px; }
+.site-shell.light-mode .hero-backdrop { background-image: linear-gradient(90deg, rgba(241, 240, 233, 0.97) 0%, rgba(241, 240, 233, 0.82) 52%, rgba(241, 240, 233, 0.52) 100%), url('/sideroom-cinematic-bg.png') !important; }
+@media (max-width: 767px) { .hero-backdrop { min-height: 540px; background-position: 68% center; } }

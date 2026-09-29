@@ -1248,3 +1248,51 @@ Tambah field Client (select bisa dicari + "+ Client baru") dan Admin PIC di form
 **BG.8 (30 Sept, permintaan Fakrul): Dashboard SA — card "5 Proyek Berjalan Teratas" digabung ke section "Status Proyek".** Jadi satu card "Status Proyek": baris atas tetap 4 kotak angka (Menunggu ACC · Mendatang · Berjalan · Selesai). Kotak bisa diklik sebagai **tab** (bukan pindah halaman): di bawahnya tampil **maks. 5 proyek** dari tahap yang dipilih (nama, Client, rentang shooting, tanggal terdekat — format baris `.sa-row` yang sudah ada), default tab **Berjalan** (kalau kosong → Mendatang). Di bawah daftar: link "Lihat semua {tahap} →" ke `admin.projects.index` dengan `tahap` + periode (aturan BE.2 tetap). Controller cukup ambil 5 proyek per tahap sekali jalan (data dirender semua, ganti tab pakai JS tanpa fetch). Hapus card "5 Proyek Berjalan Teratas" lama; card "Akun" yang tadinya sebelahan jadi full-width atau disejajarkan dengan card lain yang pas. Angka di kotak tetap = jumlah di halaman "Lihat semua".
 
 **BG.8 (30 Sept, permintaan Fakrul): Dashboard SA — "5 Proyek Berjalan Teratas" digabung ke "Status Proyek".** Sekarang `super-admin/dashboard.blade.php` punya judul "Status Proyek" yang melayang tanpa `.card` (±baris 154) + kartu terpisah "5 Proyek Berjalan Teratas" (±baris 209). Jadikan **satu kartu** "Status Proyek": 4 angka tahap di atas (Menunggu ACC · Mendatang · Berjalan · Selesai) berfungsi sebagai **tab** — klik → daftar di bawahnya ganti ke maks 5 proyek tahap itu (ganti di browser, data 5 teratas per tahap sudah dikirim controller, tanpa reload); tab aktif ditandai; default tab **Berjalan** (kalau kosong → Mendatang). Tiap baris: nama proyek, Client, rentang shooting, tanggal terdekat, link ke detail. Di bawah daftar: link "Lihat semua {tahap} →" ke `admin.projects.index` dengan `tahap` + periode (aturan BE.2 tetap). Kartu "Akun" yang tadinya berdampingan jadi full-width satu baris (angka per role + info "perlu tindakan"). Controller: ganti `$proyekBerjalan` jadi `$proyekPerTahap[tahap] = 5 teratas` pakai scope `diTahap()` yang sama dengan angka, supaya angka & daftar konsisten.
+
+---
+
+# Bagian BH: Profil Extras gaya editorial + Beranda: Cast & Portofolio terkurasi (30 September 2026)
+
+> Referensi desain dari Fakrul: `docs/ui-prototype/moodboard-sideroom/profile-page.tsx` (layout profil) & `landing-page.tsx` (roster + portfolio). Itu **Next.js + Tailwind** — JANGAN pasang Tailwind/React. Terjemahkan ke Blade + CSS biasa pakai token yang sudah ada (`--hp-*` di homepage/profil publik, token app di halaman dalam). Homepage kita sudah pakai bahasa desain yang sama (Sideroom editorial), jadi ini soal menyamakan profil & merapikan dua section beranda.
+> Subagent wajib (lintas >3 file + data publik). Commit per sub-bagian.
+
+## BH.1: Layout profil Extras ala moodboard
+
+Berlaku untuk **3 tampilan yang sama datanya**: Profil Saya (`extras/profile-show`), lihat profil oleh Admin/SA (`isAdminView`), dan profil publik share link (`public/extras-profile`). Satu partial dipakai bareng, section tampil/terkunci sesuai aturan lapis BA/BD (publik ≠ pemilik ≠ admin).
+
+Struktur (urut seperti moodboard):
+1. **Header profil:** label kecil "Profil Talent / #ID", kanan: Bagikan + Edit profil (**hanya pemilik**).
+2. **Hero 2 kolom:** kiri foto utama rasio ±0.82, **grayscale, berwarna saat hover**; badge status di pojok (Aktif / Sedang di proyek / Tidak aktif — dari data asli, bukan "Available" statis). Kanan: kategori kecil ("Extras" + tag Usia tampilan), **username besar serif** dengan akhiran accent, chip (kota/domisili kalau ada, bahasa), baris grade ("Grade A" / "Grade belum dinilai" — grade **cuma** pemilik & admin).
+3. **01 / Data diri & ciri fisik:** grid 2 kolom label kecil + nilai serif (usia, gender, tinggi, ukuran baju, warna kulit). Publik: usia **rentang**.
+4. **02 / Pengalaman & kemampuan:** pengalaman, bahasa, tag Tipe & Kemampuan (chip), tautan tambahan (pemilik & admin saja).
+5. **03 / Showreel (video)** — publik: kotak terkunci "Tersedia untuk Client & Admin".
+6. **04 / Tarif** — **hanya pemilik & admin**. Tombol di bawahnya BUKAN "Contact talent" ke Extras: untuk publik/Client jadi **"Ajak casting lewat JBTB"** → WA/kontak JBTB (kontak Extras nggak pernah tampil, aturan BA).
+7. **05 / Gallery:** 4 foto tambahan grid, klik → lightbox yang sudah ada. Kosong → kotak putus-putus "Belum ada foto".
+8. Border garis tipis antar section (hairline), angka section "01 / …" warna accent.
+
+Penyesuaian wajib dari moodboard: label **minimal 12px** (moodboard pakai 9–10px — melanggar AY.3.2), kontras ikut token, tombol ≥44px, dark/light ikut toggle yang sudah ada.
+
+## BH.2: Beranda — "Cast" hanya Extras yang disetujui (bukan acak)
+
+Sekarang `HomeController` ambil **12 Extras acak** yang punya `share_token` + foto → foto orang bisa nongol di beranda tanpa izin.
+1. Migration `extras_profiles`: `izin_tampil_publik` (bool, default false, **diisi Extras sendiri** di edit profil: "Izinkan foto & profil saya ditampilkan di website JBTB") + `tampil_di_beranda` (bool, default false, **diatur Admin/SA**) + `tampil_di_beranda_at`.
+2. Tampil di beranda hanya kalau **dua-duanya true** + punya foto utama + akun aktif. Admin/SA atur lewat toggle di detail akun Extras / kartu Lineup ("Tampilkan di beranda"), disabled + tooltip kalau Extras belum kasih izin.
+3. Section beranda: **carousel auto-geser** (pakai marquee CSS yang sudah ada, pause saat hover/sentuh, hormati `prefers-reduced-motion` → jadi baris statis bisa di-scroll). Kartu: foto grayscale→warna saat hover, `@username`, 1 tag Usia tampilan. **Tanpa** nama asli/usia pasti/kontak. Klik → profil publik (BH.1). Kalau yang disetujui < 4 → section disembunyikan.
+4. Mematikan izin oleh Extras → langsung hilang dari beranda (cek di query, bukan cache).
+
+## BH.3: Beranda — Portofolio proyek JBTB terkurasi
+
+Sekarang `$proyekSelesai` = 8 proyek `ditutup` terakhir otomatis.
+1. Migration `casting_projects`: `tampil_portofolio` (bool, default false), `portofolio_judul` (nullable, default pakai `nama_produksi`), `portofolio_jenis` (mis. "Film layar lebar", "Iklan TV", "Series"), `portofolio_tahun`, `tampilkan_nama_client` (bool, default **false** — `client_ph` rahasia di permukaan publik sesuai keputusan lama).
+2. Diatur di detail proyek (tab Info) oleh Admin/SA, hanya untuk proyek berstatus selesai. Gambar pakai `poster_path`/`cover_path` yang sudah ada.
+3. Section beranda "Portofolio / Pernah dikerjakan": carousel auto-geser juga (arah berlawanan dari Cast biar hidup), kartu lebar: gambar, judul serif, "jenis · tahun" (+ nama client kalau diizinkan). Nggak ada link ke detail proyek internal. Kosong → section disembunyikan.
+
+## Checklist BH
+
+| Item | Bukti | QA |
+|---|---|---|
+| BH.1 layout profil editorial (3 tampilan, lapis akses tetap) | | [ ] |
+| BH.2 cast beranda: izin Extras + persetujuan Admin, carousel | | [ ] |
+| BH.3 portofolio proyek terkurasi, carousel | | [ ] |
+
+**Tes QA:** Extras belum centang izin → Admin nggak bisa nyalain "Tampilkan di beranda". Centang izin + Admin nyalain → muncul di beranda; Extras matikan izin → hilang. Profil publik: nggak ada tarif, grade, kontak. Portofolio: nama client nggak muncul kecuali dicentang.
