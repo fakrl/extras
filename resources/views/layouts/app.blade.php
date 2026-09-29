@@ -196,7 +196,7 @@
         }
         .step-bar-label {
             font-size: var(--fs-xs); color: var(--text-muted); text-align: center; margin-top: 6px;
-            line-height: 1.25; padding: 0 2px;
+            line-height: 1.25; padding: 0 2px; max-width: 100%; overflow-wrap: anywhere;
         }
         .step-bar-item.is-done .step-bar-circle { background: var(--accent); border-color: var(--accent); color: var(--accent-on); }
         .step-bar-item.is-done .step-bar-label { color: var(--text-secondary); }
