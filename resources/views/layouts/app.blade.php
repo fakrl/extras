@@ -758,9 +758,15 @@
                     if (!baru) { location.href = url; return; }
                     target.replaceWith(baru);
                     // klik link/back: form (hidden input filter) ikut diganti biar sinkron; saat ngetik jangan (fokus hilang)
-                    var formBaru = push !== undefined && document.querySelector('form[data-live]') && dok.querySelector('form[data-live]');
-                    if (formBaru) document.querySelector('form[data-live]').replaceWith(formBaru);
-                    if (push !== 'pop') history[push ? 'pushState' : 'replaceState'](null, '', url);
+                    // ganti filter (change): form juga diganti (opsi yang tergantung filter, mis. pilihan per halaman), popover yang kebuka dibuka lagi
+                    var formLama = document.querySelector('form[data-live]');
+                    var formBaru = push !== undefined && formLama && dok.querySelector('form[data-live]');
+                    if (formBaru) {
+                        var terbuka = Array.prototype.map.call(formLama.querySelectorAll('details'), function (d) { return d.open; });
+                        formLama.replaceWith(formBaru);
+                        formBaru.querySelectorAll('details').forEach(function (d, i) { if (terbuka[i]) d.open = true; });
+                    }
+                    if (push !== 'pop') history[push === true ? 'pushState' : 'replaceState'](null, '', url);
                 })
                 .catch(function (e) {
                     if (e && e.name === 'AbortError') return;
@@ -779,7 +785,7 @@
             var form = e.target.form;
             if (!form || !form.matches('form[data-live]') || e.target.matches(teks)) return;
             Array.prototype.forEach.call(form.elements, function (el) { if (el !== e.target && el.tagName === 'SELECT' && el.name === e.target.name) el.value = e.target.value; });
-            muat(urlDari(form));
+            muat(urlDari(form), 'change');
         });
         document.addEventListener('submit', function (e) {
             var form = e.target.closest('form[data-live]');
