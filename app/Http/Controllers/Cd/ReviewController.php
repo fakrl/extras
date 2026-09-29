@@ -10,6 +10,7 @@ use App\Models\CdProjectAssignment;
 use App\Models\CdReview;
 use App\Models\ExtrasCategory;
 use App\Models\ProjectApplication;
+use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,6 +20,8 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ReviewController extends Controller
 {
+    private const STATUS_TERLIHAT = ['diajukan_ke_cd', 'lolos', 'kontrak_ditandatangani', 'selesai_produksi', 'ditolak'];
+
     public function index(Request $request)
     {
         $cdId = $request->user()->id;
@@ -27,9 +30,7 @@ class ReviewController extends Controller
 
         $proyek = CastingProject::whereIn('id', $proyekIds)
             ->with(['applications' => function ($q) {
-                $q->whereIn('status_partisipasi', [
-                    'diajukan_ke_cd', 'lolos', 'kontrak_ditandatangani', 'selesai_produksi', 'ditolak',
-                ]);
+                $q->whereIn('status_partisipasi', self::STATUS_TERLIHAT);
             }])
             ->get()
             ->map(function ($p) {
@@ -106,9 +107,7 @@ class ReviewController extends Controller
         $usiaMax = $request->query('usia_max');
 
         $query = ProjectApplication::where('casting_project_id', $castingProject->id)
-            ->whereIn('status_partisipasi', [
-                'diajukan_ke_cd', 'lolos', 'kontrak_ditandatangani', 'selesai_produksi', 'ditolak',
-            ])
+            ->whereIn('status_partisipasi', self::STATUS_TERLIHAT)
             ->with([
                 'extras' => fn ($q) => $q->select('id', 'user_id', 'usia', 'gender', 'tinggi_badan', 'ukuran_baju', 'warna_kulit', 'pengalaman', 'bahasa', 'foto_profil_path', 'video_profil_path')->withProyekSelesai(),
                 'extras.user:id,username',
@@ -144,6 +143,19 @@ class ReviewController extends Controller
         $tagDicari = ExtrasCategory::dicariDiProyek($castingProject->id);
 
         return response()->view('cd.reviews.show', compact('applications', 'castingProject', 'statusFilter', 'genderFilter', 'usiaMin', 'usiaMax', 'tagDicari'));
+    }
+
+    /** BI.1: profil Extras versi Client, cuma kandidat yang sudah diajukan di proyek Client ini (D3 sementara). */
+    public function profil(Request $request, User $user)
+    {
+        $profile = $user->extrasProfile;
+        abort_unless($profile && $profile->applications()
+            ->whereIn('status_partisipasi', self::STATUS_TERLIHAT)
+            ->whereHas('castingProject.cdAssignments', fn ($q) => $q->where('cd_user_id', $request->user()->id))
+            ->exists(), 403);
+        $profile->load('user', 'categories', 'photos');
+
+        return view($request->ajax() || $request->boolean('partial') ? 'partials.profil-extras-app' : 'extras.profile-show', ['profile' => $profile, 'mode' => 'client']);
     }
 
     public function exportRiwayatXlsx(Request $request, CastingProject $castingProject)

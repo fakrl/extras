@@ -168,8 +168,8 @@
                     'profile' => $app->extras,
                     'aplikasi' => $app,
                     'sub' => $app->extras->user->name ?? null,
-                    'lihat' => ['href' => route('admin.extras.profil', $app->extras->user_id)],
-                    'aksi' => ['label' => 'Di Lineup', 'href' => route('admin.projects.applicants', [$p, 'status' => $status]).'#app-'.$app->id],
+                    'lihat' => ['href' => route('admin.extras.profil', $app->extras->user_id), 'data-profil-modal' => true, 'data-aksi-url' => $diLineup = route('admin.projects.applicants', [$p, 'status' => $status]).'#app-'.$app->id, 'data-aksi-label' => 'Di Lineup'],
+                    'aksi' => ['label' => 'Di Lineup', 'href' => $diLineup],
                 ])
             @endforeach
         </div>

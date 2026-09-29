@@ -1,7 +1,9 @@
-{{-- BH.1: satu layout profil Extras. Param: $mode (pemilik|admin|publik), $profile, $fotoUrl, $videoUrl, $fotos (list url/alt).
-     Publik: tanpa grade, tarif, tautan tambahan, tag Look, kontak; usia rentang; video terkunci. --}}
+{{-- BH.1: satu layout profil Extras. Param: $mode (pemilik|admin|client|publik), $profile, $fotoUrl, $videoUrl, $fotos (list url/alt).
+     Publik: tanpa grade, tarif, tautan tambahan, tag Look, kontak; usia rentang; video terkunci.
+     Client (BI.1): seperti publik tapi video, usia & tag Look tampil (CLAUDE.md §5, BA.6). --}}
 @php
     $publik = $mode === 'publik';
+    $terbatas = $publik || $mode === 'client';
     $username = $profile->user->username ?? '';
     preg_match('/^(.*?)([._-][^._-]*|.{1,2})$/u', $username, $um);
     $tagGrup = $profile->categories->groupBy(fn ($c) => $c->grup ?: 'Lainnya');
@@ -13,6 +15,7 @@
     $gender = ['pria' => 'Laki-laki', 'wanita' => 'Perempuan'][strtolower((string) $profile->gender)] ?? '-';
     $bahasa = collect(preg_split('/\s*[,;\/]\s*/', (string) $profile->bahasa))->filter();
     $status = $profile->statusTampil();
+    $statusClass = ['Aktif' => 'badge-aktif', 'Sedang di proyek' => 'badge-pending'][$status] ?? 'badge-tolak';
     $lbId = $publik ? 'pub-lb' : 'profil-lb';
     $data = [
         'Usia' => $usia,
@@ -23,7 +26,7 @@
     ];
 @endphp
 <style>
-.pe { --pe-serif: Georgia, 'Times New Roman', serif; color: var(--pe-fg); background: var(--pe-bg); }
+.pe { --pe-serif: Georgia, 'Times New Roman', serif; color: var(--pe-fg); background: var(--pe-bg); container-type: inline-size; }
 .pe-app { --pe-bg: var(--bg-card); --pe-fg: var(--text-primary); --pe-muted: var(--text-secondary); --pe-accent: var(--accent-strong); --pe-accent-bg: var(--accent); --pe-accent-on: var(--accent-on); --pe-line: var(--border-color); --pe-soft: var(--bg-card-hover); border: 1px solid var(--pe-line); border-radius: var(--radius-lg); overflow: hidden; }
 .pe-publik { --pe-bg: var(--hp-bg); --pe-fg: var(--hp-fg); --pe-muted: var(--hp-muted); --pe-accent: var(--hp-accent); --pe-accent-bg: var(--hp-accent); --pe-accent-on: var(--hp-accent-on); --pe-line: var(--hp-line); --pe-soft: var(--hp-card); }
 .pe-sec { border-bottom: 1px solid var(--pe-line); }
@@ -44,7 +47,7 @@
 .pe-foto > i { font-size: 40px; color: var(--pe-muted); }
 .pe-badge { position: absolute; left: 14px; bottom: 14px; padding: 8px 12px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; background: var(--pe-accent-bg); color: var(--pe-accent-on); }
 .pe-badge.is-off { background: var(--pe-soft); color: var(--pe-muted); }
-.pe-name { font-size: clamp(3rem, 9vw, 7.5rem); line-height: .85; letter-spacing: -.06em; margin: 0; word-break: break-word; }
+.pe-name { font-size: clamp(3rem, 9cqi, 7.5rem); line-height: .85; letter-spacing: -.06em; margin: 0; word-break: break-word; }
 .pe-name span { color: var(--pe-accent); }
 .pe-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
 .pe-chip { border: 1px solid var(--pe-line); padding: 7px 12px; font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--pe-muted); }
@@ -65,19 +68,19 @@
 .pe-box i { font-size: 26px; color: var(--pe-muted); }
 .pe-box .pe-label { margin: 0; }
 .pe-video { width: 100%; aspect-ratio: 16/9; background: #000; display: block; }
-.pe-rate { font-size: clamp(2.2rem, 5vw, 3.2rem); letter-spacing: -.04em; margin: 0; }
+.pe-rate { font-size: clamp(2.2rem, 5cqi, 3.2rem); letter-spacing: -.04em; margin: 0; }
 .pe-cta { display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 20px; margin-top: 28px; background: var(--pe-accent-bg); color: var(--pe-accent-on); font-size: 14px; font-weight: 700; text-decoration: none; border-radius: 8px; }
 .pe-gal-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-bottom: 20px; }
 .pe-gal-head .pe-num { margin-bottom: 8px; }
-.pe-gal-title { font-size: clamp(2rem, 5vw, 3rem); margin: 0; }
+.pe-gal-title { font-size: clamp(2rem, 5cqi, 3rem); margin: 0; }
 .pe-gal { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .pe-gal button { padding: 0; border: none; background: var(--pe-soft); cursor: pointer; aspect-ratio: .82; overflow: hidden; min-height: 44px; }
 .pe-gal img { width: 100%; height: 100%; object-fit: cover; display: block; filter: grayscale(1); transition: filter .4s; }
 .pe-gal button:hover img, .pe-gal button:focus-visible img { filter: none; }
 .pe-empty { min-height: 180px; border: 1px dashed var(--pe-line); background: var(--pe-soft); display: flex; align-items: center; justify-content: center; font-size: 12px; text-transform: uppercase; letter-spacing: .14em; color: var(--pe-muted); }
-@media (min-width: 900px) {
+@container (min-width: 700px) {
     .pe-pad { padding: 40px; }
-    .pe-hero { grid-template-columns: minmax(260px, 400px) 1fr; gap: 56px; align-items: end; }
+    .pe-hero { grid-template-columns: minmax(220px, min(400px, 45%)) 1fr; gap: 56px; align-items: end; }
     .pe-grid2 { grid-template-columns: 1fr 1fr; }
     .pe-grid2 > * + * { border-top: none; border-left: 1px solid var(--pe-line); }
     .pe-gal { grid-template-columns: repeat(4, 1fr); }
@@ -85,7 +88,7 @@
 }
 </style>
 
-<div class="pe {{ $publik ? 'pe-publik' : 'pe-app' }}">
+<div class="pe {{ $publik ? 'pe-publik' : 'pe-app' }}" data-username="{{ $username }}" data-status="{{ $status }}" data-status-class="{{ $statusClass }}">
     <section class="pe-sec pe-pad">
         <div class="pe-head">
             <p class="pe-num">Profil Talent / #{{ str_pad($profile->id, 3, '0', STR_PAD_LEFT) }}</p>
@@ -118,7 +121,7 @@
                         @endforeach
                     </div>
                 @endif
-                @unless ($publik)
+                @unless ($terbatas)
                     <div class="pe-grade">@if ($profile->grade_saat_ini)<strong>Grade {{ $profile->grade_saat_ini }}</strong>@else Grade belum dinilai @endif</div>
                 @endunless
             </div>
@@ -157,7 +160,7 @@
                     </div>
                 </div>
             @endforeach
-            @unless ($publik)
+            @unless ($terbatas)
                 <div>
                     <p class="pe-label">Tautan tambahan</p>
                     @forelse ($profile->tautan_tambahan ?? [] as $tautan)
@@ -182,11 +185,13 @@
             @endif
         </div>
         <div class="pe-pad">
-            @if ($publik)
+            @if ($terbatas)
                 <p class="pe-num">04 / Casting</p>
-                <p class="pe-val pe-serif">Tertarik dengan talent ini?</p>
+                <p class="pe-val pe-serif">{{ $publik ? 'Tertarik dengan talent ini?' : 'Nama asli & kontak dipegang JBTB' }}</p>
                 <p class="pe-sub">Jadwal, tarif, dan kontrak diatur lewat tim JBTB Casting.</p>
+                @if ($publik)
                 <a class="pe-cta" href="https://instagram.com/jbtb.casting" target="_blank" rel="noopener">Ajak casting lewat JBTB <i class="ti ti-arrow-up-right"></i></a>
+                @endif
             @else
                 <p class="pe-num">04 / Tarif</p>
                 <p class="pe-label">Tarif harapan</p>

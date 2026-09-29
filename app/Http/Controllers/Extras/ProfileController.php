@@ -38,10 +38,7 @@ class ProfileController extends Controller
 
         $profile->generateShareToken();
 
-        return view('extras.profile-show', [
-            'profile' => $profile,
-            'fotoTambahan' => $this->fotoTambahanPerSlot($profile),
-        ]);
+        return view('extras.profile-show', ['profile' => $profile]);
     }
 
     /**

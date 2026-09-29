@@ -737,6 +737,7 @@
         @if(auth()->user()?->role === 'super_admin')
             <x-command-palette />
         @endif
+        <x-profil-modal />
     @endauth
     @if (session('kredensial'))
         @include('partials.kredensial-dialog')

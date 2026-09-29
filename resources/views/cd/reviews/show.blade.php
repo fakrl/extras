@@ -119,7 +119,7 @@
                 'badge' => $badge,
                 'highlight' => $isPending,
                 'check' => $isPending ? ['name' => 'application_ids[]', 'class' => 'app-checkbox'] : null,
-                'lihat' => ['onclick' => "bukaModalKandidat({$app->id})"],
+                'lihat' => ['href' => route('cd.extras.profil', $app->extras->user_id), 'data-profil-modal' => true, 'data-aksi-fungsi' => 'bukaModalKandidat', 'data-aksi-arg' => $app->id, 'data-aksi-label' => $isPending ? 'Pilih / Tolak' : 'Detail review'],
                 'aksi' => $isPending ? ['label' => 'Pilih', 'onclick' => "bukaModalKandidat({$app->id}, true)"] : null,
                 'attrs' => [
                     'class' => 'kandidat-card',

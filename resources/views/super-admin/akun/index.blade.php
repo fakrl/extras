@@ -136,7 +136,7 @@
                 'user' => $u,
                 'badge' => $statusBadge($u),
                 'sub' => $u->name.' · '.$sejak($u),
-                'lihat' => $bisaProfil ? ['href' => route('admin.extras.profil', $u)] : ['onclick' => "document.getElementById('kelola-{$u->id}').showModal()"],
+                'lihat' => $bisaProfil ? ['href' => route('admin.extras.profil', $u), 'data-profil-modal' => true, 'data-aksi-dialog' => 'kelola-'.$u->id, 'data-aksi-label' => 'Kelola'] : ['onclick' => "document.getElementById('kelola-{$u->id}').showModal()"],
                 'aksi' => ['label' => 'Kelola', 'onclick' => "document.getElementById('kelola-{$u->id}').showModal()"],
             ])
         @empty

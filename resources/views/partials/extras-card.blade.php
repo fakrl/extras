@@ -1,4 +1,4 @@
-{{-- BA.4: kartu Extras. Param: profile, user?, aplikasi?, badge? [label, class], highlight?, check? [name, class, form], lihat [href|onclick], aksi? [label, href|onclick|post (+method, confirm)], sub?, peringatan?, attrs? --}}
+{{-- BA.4: kartu Extras. Param: profile, user?, aplikasi?, badge? [label, class], highlight?, check? [name, class, form], lihat [href (+ data-profil-modal, data-aksi-*)|onclick], aksi? [label, href|onclick|post (+method, confirm)], sub?, peringatan?, attrs? --}}
 @php
     $aplikasi ??= null;
     $user ??= $profile?->user;
@@ -16,7 +16,7 @@
     ]);
     $selesai = $profile?->proyek_selesai_count;
     $lihatTag = isset($lihat['href']) ? 'a' : 'button';
-    $lihatAttr = isset($lihat['href']) ? ['href' => $lihat['href']] : ['type' => 'button', 'onclick' => $lihat['onclick'] ?? ''];
+    $lihatAttr = isset($lihat['href']) ? $lihat : ['type' => 'button'] + $lihat;
 @endphp
 <article {{ (new \Illuminate\View\ComponentAttributeBag($attrs ?? []))->class(['xcard', 'is-highlight' => $highlight ?? false, 'has-ring' => $persen !== null]) }}>
     <div class="xcard-ph" style="--h: {{ crc32((string) $nama) % 360 }};">
