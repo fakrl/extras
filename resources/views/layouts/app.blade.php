@@ -490,6 +490,23 @@
             }
             .sidebar-link i { font-size: 20px; }
             .sidebar-link.active { background: var(--bg-nav-active); }
+            /* dropdown (Monitoring SA) di bottom bar: 1 item, submenu jadi popup di atas bar */
+            .sidebar-dropdown { flex: 1 0 auto; min-width: 64px; margin: 0; }
+            .sidebar-dropdown-summary {
+                flex-direction: column; justify-content: center; gap: 2px;
+                padding: 6px 8px; min-height: 52px; font-size: var(--fs-xs); font-weight: 400;
+                border-radius: 10px; white-space: nowrap;
+            }
+            .sidebar-dropdown-summary > span { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+            .sidebar-dropdown-summary > span i { font-size: 20px; margin: 0 !important; }
+            .sidebar-dropdown-summary .chevron-icon { display: none; }
+            .sidebar-dropdown[open] .sidebar-dropdown-summary { background: var(--bg-nav-active); }
+            .sidebar-dropdown .sidebar-submenu {
+                position: fixed; bottom: 70px; right: 8px; z-index: 60;
+                background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg);
+                box-shadow: 0 8px 24px rgba(0,0,0,0.18); padding: 6px; margin: 0; min-width: 180px;
+            }
+            .sidebar-dropdown .sidebar-submenu .sidebar-link { flex-direction: row; justify-content: flex-start; min-height: 44px; font-size: var(--fs-sm); }
 
             .main-area { padding-bottom: 64px; }
             .content { padding: 16px; }
