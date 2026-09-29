@@ -95,6 +95,8 @@
 @empty
     <div class="card" style="color: var(--text-muted);">Belum ada tanggal shooting untuk proyek ini.</div>
 @endforelse
+
+@include('partials.project-attachments')
 @endsection
 
 @push('scripts')

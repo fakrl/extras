@@ -32,7 +32,7 @@
 </div>
 
 <div class="xfilter" role="tablist" aria-label="Bagian detail proyek">
-    @foreach (['info' => 'Info', 'pendaftar' => 'Pendaftar', 'cashflow' => 'Cashflow'] as $key => $label)
+    @foreach (['info' => 'Info', 'pendaftar' => 'Pendaftar', 'cashflow' => 'Cashflow', 'lampiran' => 'Lampiran'] as $key => $label)
         <a href="{{ route('admin.projects.show', [$p, 'tab' => $key === 'info' ? null : $key]) }}" role="tab"
            class="btn btn-sm {{ $tab === $key ? 'btn-brand' : '' }}" @if ($tab === $key) aria-selected="true" @endif>{{ $label }}</a>
     @endforeach
@@ -140,6 +140,9 @@
     @if ($pendaftar->isEmpty())
         <div class="card" style="text-align: center; color: var(--text-muted); padding: 30px 0;">Belum ada pendaftar.</div>
     @endif
+
+@elseif ($tab === 'lampiran')
+    @include('partials.project-attachments', ['project' => $p])
 
 @else
     @php $cf = $cashflow; @endphp

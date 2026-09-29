@@ -46,6 +46,10 @@
             </div>
         </div>
 
+        <label for="req-files">Lampiran Dokumen (Opsional, bisa pilih beberapa)</label>
+        <input type="file" id="req-files" name="files[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+        <div style="font-size: var(--fs-xs); color: var(--text-muted);">PDF, Word, Excel, JPG, PNG · maks 10 MB per file</div>
+
         <div style="margin-top: 16px; display: flex; justify-content: flex-end;">
             <button type="submit" class="btn btn-brand">Ajukan Permintaan Proyek</button>
         </div>
