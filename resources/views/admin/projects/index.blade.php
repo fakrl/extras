@@ -11,6 +11,7 @@
         $bayar === 'extras' ? 'honor Extras belum ditransfer' : null,
         request('status') ? 'lowongan '.request('status') : null,
         request()->boolean('urgent') ? 'urgent' : null,
+        request()->boolean('tanpa_client') ? 'Client belum diisi' : null,
     ]);
 @endphp
 <div class="card-header-row">
@@ -27,7 +28,7 @@
 
 <form method="GET" action="{{ route('admin.projects.index') }}" class="xtoolbar" role="search" data-live>
     <input type="search" name="q" value="{{ $cari }}" class="xtoolbar-cari" placeholder="Cari nama produksi atau client..." aria-label="Cari proyek">
-    @foreach (array_filter(['tahap' => $tahap, 'bayar' => $bayar, 'peserta' => $peserta, 'status' => request('status'), 'dari' => $periode ? $periode[0]->format('Y-m-d') : null, 'sampai' => $periode ? $periode[1]->format('Y-m-d') : null]) as $k => $v)
+    @foreach (array_filter(['tahap' => $tahap, 'bayar' => $bayar, 'peserta' => $peserta, 'status' => request('status'), 'tanpa_client' => request('tanpa_client'), 'dari' => $periode ? $periode[0]->format('Y-m-d') : null, 'sampai' => $periode ? $periode[1]->format('Y-m-d') : null]) as $k => $v)
         <input type="hidden" name="{{ $k }}" value="{{ $v }}">
     @endforeach
     <button type="submit" class="btn btn-sm"><i class="ti ti-search"></i> Cari</button>
@@ -87,6 +88,9 @@
                     <a href="{{ route('admin.projects.show', $project) }}" style="color: inherit; text-decoration: none;">{{ $project->nama_produksi }}</a>
                     @if ($project->isUrgent())
                         <span class="badge badge-tolak">Urgent</span>
+                    @endif
+                    @if (! $project->client_id)
+                        <span class="badge badge-pending">Client belum diisi</span>
                     @endif
                 </div>
                 <div class="entity-card-sub">

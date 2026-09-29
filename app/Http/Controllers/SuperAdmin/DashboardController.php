@@ -59,6 +59,7 @@ class DashboardController extends Controller
             'jumlah' => StaffPayroll::where('status_bayar', '!=', 'sudah')->count(),
             'total' => $this->keuanganService->totalHonorStafBelumDiproses(),
         ];
+        $tanpaClient = CastingProject::whereNull('client_id')->count();
         $invoiceBelumLunas = Invoice::where('status_bayar', '!=', 'lunas')
             ->with('castingProject.classes')->latest()->get()
             ->each(fn (Invoice $i) => $i->nilai = (float) ($i->nominal ?? $this->keuanganService->nilaiInvoice($i->castingProject)));
@@ -94,7 +95,7 @@ class DashboardController extends Controller
 
         return view('super-admin.dashboard', compact(
             'dari', 'sampai', 'preset', 'jumlahHari',
-            'pendingRequests', 'sengketa', 'honorStaf', 'invoiceBelumLunas',
+            'pendingRequests', 'sengketa', 'honorStaf', 'invoiceBelumLunas', 'tanpaClient',
             'statusProyek', 'uang', 'bulan', 'jadwal',
             'akunPerRole', 'clientBelumGantiPassword', 'proyekBerjalan'
         ));

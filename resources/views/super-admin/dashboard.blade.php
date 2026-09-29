@@ -4,7 +4,7 @@
 
 @php
     $rp = fn ($v) => 'Rp '.number_format((float) $v, 0, ',', '.');
-    $jumlahTindakan = $pendingRequests->count() + $sengketa->count() + ($honorStaf->jumlah ? 1 : 0) + $invoiceBelumLunas->count();
+    $jumlahTindakan = $pendingRequests->count() + $sengketa->count() + ($honorStaf->jumlah ? 1 : 0) + ($tanpaClient ? 1 : 0) + $invoiceBelumLunas->count();
     $namaRole = ['super_admin' => 'Super Admin', 'admin' => 'Admin', 'korlap' => 'Korlap', 'client' => 'Client', 'extras' => 'Extras'];
 @endphp
 
@@ -109,6 +109,17 @@ a.sa-row:hover { color: var(--accent); }
                 <span class="badge badge-pending">Honor staf belum dibayar</span>
                 <strong>{{ $honorStaf->jumlah }} honor</strong>
                 <div class="sa-sub">Total {{ $rp($honorStaf->total) }}</div>
+            </div>
+            <span class="sa-sub">Buka &rarr;</span>
+        </a>
+    @endif
+
+    @if ($tanpaClient)
+        <a href="{{ route('admin.projects.index', ['tanpa_client' => 1]) }}" class="sa-row">
+            <div>
+                <span class="badge badge-pending">Client belum diisi</span>
+                <strong>{{ $tanpaClient }} proyek</strong>
+                <div class="sa-sub">Pilih akun Client di form edit proyek</div>
             </div>
             <span class="sa-sub">Buka &rarr;</span>
         </a>

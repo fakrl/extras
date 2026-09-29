@@ -36,10 +36,15 @@
                 <input type="text" name="nama_produksi" value="{{ old('nama_produksi', $castingProject->nama_produksi) }}" required>
             </div>
             <div>
-                <label>Client / Production House</label>
-                <input type="text" name="client_ph" value="{{ old('client_ph', $castingProject->client_ph) }}" required>
+                <label>Nama Client / PH di dokumen <span style="color: var(--text-muted); font-weight: 400;">(kosongkan = otomatis dari akun Client)</span></label>
+                <input type="text" name="client_ph" value="{{ old('client_ph', $castingProject->client_ph) }}">
             </div>
         </div>
+
+        @if (! $castingProject->client_id)
+            <div class="alert-info">Proyek ini belum punya akun Client. Pilih Client di bawah supaya bisa disimpan.</div>
+        @endif
+        @include('partials.proyek-pic-client', ['adminId' => $castingProject->admin_id, 'clientId' => $castingProject->client_id, 'adminKosong' => auth()->user()->isSuperAdmin() ? '- Pilih Admin -' : '- Tetap seperti sekarang -', 'adminWajib' => auth()->user()->isSuperAdmin()])
 
         <div class="form-row">
             <div>
@@ -167,6 +172,9 @@
 
         <button type="submit" class="btn btn-brand" style="width: 100%;">Simpan Perubahan</button>
     </form>
+    @if (auth()->user()->isSuperAdmin())
+        @include('partials.client-baru-modal')
+    @endif
 </div>
 
 <div class="card">

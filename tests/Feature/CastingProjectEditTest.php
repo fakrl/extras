@@ -34,6 +34,7 @@ class CastingProjectEditTest extends TestCase
         return array_merge([
             'nama_produksi' => 'Proyek Baru',
             'client_ph' => 'PH Baru',
+            'client_id' => User::factory()->create(['role' => 'client'])->id,
             'deadline' => now()->addDays(14)->toDateString(),
             'kuota' => 10,
             'is_urgent' => '1',

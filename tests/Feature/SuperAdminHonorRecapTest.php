@@ -22,6 +22,7 @@ class SuperAdminHonorRecapTest extends TestCase
         $project = CastingProject::create([
             'admin_id' => $korlap->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',
             'deadline' => now()->addDays(7), 'kuota' => 5,
+            'client_id' => User::factory()->create(['role' => 'client'])->id,
         ]);
         $assignment = AdminProjectAssignment::create([
             'casting_project_id' => $project->id, 'user_id' => $korlap->id,
