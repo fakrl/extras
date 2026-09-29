@@ -462,6 +462,11 @@
         .pagination a.page-link:hover { background: var(--bg-card-hover); }
         .pagination .active .page-link { background: var(--accent); border-color: var(--accent); color: var(--accent-on); font-weight: 600; }
         .pagination .disabled .page-link { opacity: .45; }
+        .pagebar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 16px; }
+        .pagebar-info { font-size: var(--fs-xs); color: var(--text-muted); }
+        .pagebar .per-halaman { margin-left: auto; }
+        .per-halaman { display: inline-flex; align-items: center; gap: 6px; margin: 0; font-size: var(--fs-xs); color: var(--text-muted); white-space: nowrap; }
+        .per-halaman select { width: auto; min-height: 40px; margin: 0; padding: 4px 8px; font-size: var(--fs-sm); }
         .sa-mode-banner {
             display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap;
             background: rgba(234,179,8,0.14); border: 1px solid rgba(234,179,8,0.45); color: var(--text-primary);
@@ -734,7 +739,7 @@
         var ctrl, timer;
         function urlDari(form) {
             var p = new URLSearchParams();
-            new FormData(form).forEach(function (v, k) { if (v !== '') p.append(k, v); });
+            new FormData(form).forEach(function (v, k) { if (v !== '' && p.getAll(k).indexOf(v) < 0) p.append(k, v); });
             var q = p.toString();
             return form.action.split('?')[0] + (q ? '?' + q : '');
         }
@@ -770,8 +775,11 @@
             timer = setTimeout(function () { muat(urlDari(form)); }, 350);
         });
         document.addEventListener('change', function (e) {
-            var form = e.target.closest('form[data-live]');
-            if (form && !e.target.matches(teks)) muat(urlDari(form));
+            // e.target.form: ikut elemen di luar form yang pakai atribut form= (mis. select per di bawah paginasi)
+            var form = e.target.form;
+            if (!form || !form.matches('form[data-live]') || e.target.matches(teks)) return;
+            Array.prototype.forEach.call(form.elements, function (el) { if (el !== e.target && el.tagName === 'SELECT' && el.name === e.target.name) el.value = e.target.value; });
+            muat(urlDari(form));
         });
         document.addEventListener('submit', function (e) {
             var form = e.target.closest('form[data-live]');

@@ -26,12 +26,13 @@
     <a href="{{ route('admin.projects.create') }}" class="btn btn-brand">+ Buat Proyek</a>
 </div>
 
-<form method="GET" action="{{ route('admin.projects.index') }}" class="xtoolbar" role="search" data-live>
+<form method="GET" action="{{ route('admin.projects.index') }}" class="xtoolbar" role="search" id="live-form" data-live>
     <input type="search" name="q" value="{{ $cari }}" class="xtoolbar-cari" placeholder="Cari nama produksi atau client..." aria-label="Cari proyek">
     @foreach (array_filter(['tahap' => $tahap, 'bayar' => $bayar, 'peserta' => $peserta, 'status' => request('status'), 'tanpa_client' => request('tanpa_client'), 'dari' => $periode ? $periode[0]->format('Y-m-d') : null, 'sampai' => $periode ? $periode[1]->format('Y-m-d') : null]) as $k => $v)
         <input type="hidden" name="{{ $k }}" value="{{ $v }}">
     @endforeach
     <button type="submit" class="btn btn-sm"><i class="ti ti-search"></i> Cari</button>
+    <x-per-halaman :pilihan="\App\Support\PerHalaman::KARTU" :nilai="$projects->perPage()" />
 </form>
 
 <div data-live-target>
@@ -155,8 +156,8 @@
             </div>
         @endforeach
     </div>
-    {{ $projects->links() }}
 @endif
+<x-pagination-bar :paginator="$projects" :pilihan="\App\Support\PerHalaman::KARTU" />
 </div>
 
 <style>

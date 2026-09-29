@@ -43,6 +43,7 @@
 @section('content')
 @php
     $modeExtras = $f['role'] === 'extras';
+    $perPilihan = $modeExtras ? \App\Support\PerHalaman::KARTU : \App\Support\PerHalaman::TABEL;
     $statusBadge = fn ($u) => $u->trashed() ? ['Dihapus', 'badge-tolak'] : [ucfirst($u->status), $u->status === 'aktif' ? 'badge-aktif' : 'badge-tolak'];
     $sejak = fn ($u) => $u->trashed() ? 'dihapus '.$u->deleted_at->translatedFormat('d M Y') : ($u->status === 'aktif' ? 'aktif sejak ' : 'terdaftar sejak ').$u->created_at->translatedFormat('d M Y');
 @endphp
@@ -56,9 +57,10 @@
 </div>
 @include('partials.client-baru-modal')
 
-<form method="GET" action="{{ route('super-admin.akun.index') }}" class="xtoolbar" data-live>
+<form method="GET" action="{{ route('super-admin.akun.index') }}" class="xtoolbar" id="live-form" data-live>
     <input type="search" name="q" value="{{ $f['q'] }}" class="xtoolbar-cari" placeholder="Cari nama, username, email, WA…" aria-label="Cari akun">
     <button type="submit" class="btn btn-sm btn-brand" aria-label="Cari"><i class="ti ti-search"></i></button>
+    <x-per-halaman :pilihan="$perPilihan" :nilai="$users->perPage()" />
     <details class="xtoolbar-more" @if($filterAktif > ($f['role'] ? 1 : 0)) open @endif>
         <summary class="btn btn-sm" aria-label="Filter"><i class="ti ti-adjustments-horizontal"></i> Filter @if($filterAktif)<span class="badge badge-netral">{{ $filterAktif }}</span>@endif</summary>
         <div class="xtoolbar-more-isi">
@@ -211,7 +213,7 @@
     </div>
 @endif
 
-<div style="margin-top: 16px;">{{ $users->links() }}</div>
+<x-pagination-bar :paginator="$users" :pilihan="$perPilihan" />
 </div>
 
 <dialog id="add-admin-dialog" class="akun-dialog">
