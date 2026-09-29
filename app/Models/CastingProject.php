@@ -113,13 +113,17 @@ class CastingProject extends Model
         return $this->hasManyThrough(StaffPayroll::class, AdminProjectAssignment::class);
     }
 
-    /**
-     * RF-56: definisi "kuota penuh" dipakai konsisten di seluruh fitur link
-     * publik (gerbang B4/B5), total pendaftar vs kuota level-proyek, BUKAN
-     * kuota_kelas per kelas (konsep berbeda, breakdown internal CD/Admin).
-     */
+    /** BE.4: punya peran → penuh kalau SEMUA peran penuh; tanpa peran → kuota level-proyek (RF-56). */
     public function kuotaPenuh(): bool
     {
+        $classes = $this->relationLoaded('classes') && $this->classes->every(fn ($c) => array_key_exists('terisi', $c->getAttributes()))
+            ? $this->classes
+            : $this->classes()->withTerisi()->get();
+
+        if ($classes->isNotEmpty()) {
+            return $classes->every(fn ($c) => $c->sisaKuota() === 0);
+        }
+
         return $this->applications()->whereNotIn('status_partisipasi', ['ditolak', 'dibatalkan'])->count() >= $this->kuota;
     }
 

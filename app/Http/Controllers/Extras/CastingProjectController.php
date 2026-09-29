@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Extras;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\CastingProject;
+use App\Models\CastingProjectClass;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CastingProjectController extends Controller
 {
@@ -87,12 +89,27 @@ class CastingProjectController extends Controller
         $tanggalBentrok = $profile->activeShootingDates()->intersect($tanggalProyekIni);
         $adaBentrok = $tanggalBentrok->isNotEmpty();
 
-        $application = $castingProject->applications()->create([
-            'extras_id' => $profile->id,
-            'casting_project_class_id' => $kelasId,
-            'status_partisipasi' => 'diajukan',
-            'bentrok_jadwal_flag' => $adaBentrok,
-        ]);
+        // BE.4: kunci baris peran lalu hitung ulang terisi, biar slot terakhir nggak diisi dua orang.
+        $application = DB::transaction(function () use ($castingProject, $profile, $kelasId, $adaBentrok) {
+            if ($kelasId) {
+                CastingProjectClass::whereKey($kelasId)->lockForUpdate()->first();
+
+                if (CastingProjectClass::withTerisi()->find($kelasId)->sisaKuota() === 0) {
+                    return null;
+                }
+            }
+
+            return $castingProject->applications()->create([
+                'extras_id' => $profile->id,
+                'casting_project_class_id' => $kelasId,
+                'status_partisipasi' => 'diajukan',
+                'bentrok_jadwal_flag' => $adaBentrok,
+            ]);
+        });
+
+        if (! $application) {
+            return back()->with('error', 'Kuota peran ini sedang penuh. Cek lagi nanti — slot bisa terbuka kalau ada pendaftar yang mundur.');
+        }
 
         $application->kirimKonfirmasiApply();
 
