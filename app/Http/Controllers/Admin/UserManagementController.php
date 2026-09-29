@@ -26,16 +26,7 @@ class UserManagementController extends Controller
             ->get();
         $tagGroups = ExtrasCategory::perGrup();
 
-        $mangkrakCount = User::where('role', 'extras')
-            ->where('created_at', '<=', now()->subDays(30))
-            ->whereDoesntHave('extrasProfile.applications')
-            ->where(function ($q) {
-                $q->whereDoesntHave('extrasProfile')
-                    ->orWhereHas('extrasProfile', function ($ep) {
-                        $ep->whereNull('foto_profil_path')->orWhereNull('nik');
-                    });
-            })
-            ->count();
+        $mangkrakCount = User::mangkrak()->count();
 
         return view('admin.users.index', compact('castingDirectors', 'extras', 'tagGroups', 'mangkrakCount'));
     }
@@ -45,16 +36,7 @@ class UserManagementController extends Controller
      */
     public function pruneAbandoned(Request $request): RedirectResponse
     {
-        $abandonedUsers = User::where('role', 'extras')
-            ->where('created_at', '<=', now()->subDays(30))
-            ->whereDoesntHave('extrasProfile.applications')
-            ->where(function ($q) {
-                $q->whereDoesntHave('extrasProfile')
-                    ->orWhereHas('extrasProfile', function ($ep) {
-                        $ep->whereNull('foto_profil_path')->orWhereNull('nik');
-                    });
-            })
-            ->get();
+        $abandonedUsers = User::mangkrak()->get();
 
         $count = $abandonedUsers->count();
         foreach ($abandonedUsers as $u) {
