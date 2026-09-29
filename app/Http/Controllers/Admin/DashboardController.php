@@ -24,19 +24,8 @@ class DashboardController extends Controller
             ->groupBy('status_partisipasi')
             ->pluck('total', 'status_partisipasi');
 
-        $partisipasiLabels = [
-            'diajukan' => 'Diajukan',
-            'direview_admin' => 'Direview Admin',
-            'nego_fee' => 'Nego Fee',
-            'deal' => 'Deal',
-            'diajukan_ke_cd' => 'Diajukan ke CD',
-            'direview_cd' => 'Direview CD',
-            'lolos' => 'Lolos',
-            'ditolak' => 'Ditolak',
-            'kontrak_ditandatangani' => 'Kontrak TTD',
-            'selesai_produksi' => 'Selesai Produksi',
-            'dibatalkan' => 'Dibatalkan',
-        ];
+        // satu sumber label (AY.3.4), jangan map lokal
+        $partisipasiLabels = ProjectApplication::LABELS;
 
         $chartStatusPartisipasi = [
             'labels' => array_values($partisipasiLabels),
