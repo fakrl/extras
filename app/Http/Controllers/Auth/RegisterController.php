@@ -56,37 +56,4 @@ class RegisterController extends Controller
 
         return redirect('/extras/profil/lengkapi');
     }
-
-    /**
-     * RF-02: registrasi khusus Casting Director. URL ini TIDAK ditautkan
-     * dari halaman publik mana pun, dibagikan manual oleh Admin ke pihak
-     * client/PH yang relevan. Siapa pun yang mendaftar lewat sini otomatis
-     * dapat role client, tanpa approval tambahan (sesuai RF-02).
-     */
-    public function showCastingDirector()
-    {
-        return view('auth.register-cd');
-    }
-
-    public function registerCastingDirector(Request $request): RedirectResponse
-    {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:users,email'],
-            'password' => ['required', 'confirmed', 'min:8'],
-            'setuju_privasi' => ['accepted'],
-        ]);
-
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role' => 'client',
-            'status' => 'aktif',
-        ]);
-
-        Auth::login($user);
-
-        return redirect('/cd/dashboard');
-    }
 }

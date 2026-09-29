@@ -82,13 +82,13 @@ class SuperAdminCdManagementTest extends TestCase
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
 
-        $response = $this->actingAs($superAdmin)->post(route('super-admin.casting-directors.store'), [
+        $response = $this->actingAs($superAdmin)->from(route('super-admin.admins.index'))->post(route('super-admin.casting-directors.store'), [
             'name' => 'CD Baru',
             'email' => 'cd-baru@example.com',
-            'password' => 'password123',
+            'username' => 'cd_baru',
         ]);
 
-        $response->assertRedirect(route('super-admin.admins.index', ['role' => 'client']));
+        $response->assertRedirect(route('super-admin.admins.index'));
 
         $newCd = User::where('email', 'cd-baru@example.com')->first();
         $this->assertNotNull($newCd);
@@ -110,7 +110,7 @@ class SuperAdminCdManagementTest extends TestCase
         $response = $this->actingAs($user)->post(route('super-admin.casting-directors.store'), [
             'name' => 'CD Ilegal',
             'email' => 'cd-ilegal@example.com',
-            'password' => 'password123',
+            'username' => 'cd_ilegal',
         ]);
 
         $response->assertForbidden();
@@ -125,7 +125,7 @@ class SuperAdminCdManagementTest extends TestCase
         $response = $this->actingAs($superAdmin)->post(route('super-admin.casting-directors.store'), [
             'name' => 'CD Duplikat',
             'email' => 'sudah-ada@example.com',
-            'password' => 'password123',
+            'username' => 'cd_duplikat',
         ]);
 
         $response->assertSessionHasErrors('email');

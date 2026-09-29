@@ -14,6 +14,7 @@ use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Cd\DashboardController as CdDashboardController;
 use App\Http\Controllers\Cd\JadwalController as CdJadwalController;
+use App\Http\Controllers\Cd\ProfilController as CdProfilController;
 use App\Http\Controllers\Cd\ReviewController;
 use App\Http\Controllers\Client\ProjectRequestController;
 use App\Http\Controllers\ContractController;
@@ -70,12 +71,9 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'showExtras'])->name('register');
     Route::post('/register', [RegisterController::class, 'registerExtras'])->middleware('throttle:5,1');
 
-    // RF-02: registrasi Casting Director - URL ini TIDAK ditautkan dari
-    // halaman publik mana pun, dibagikan manual oleh Admin ke pihak client/PH.
-    Route::get('/register/casting-director', [RegisterController::class, 'showCastingDirector'])
-        ->name('register.cd');
-    Route::post('/register/casting-director', [RegisterController::class, 'registerCastingDirector'])
-        ->middleware('throttle:5,1');
+    // BD.1.5: registrasi publik Client ditutup, akun dibuat Super Admin.
+    Route::match(['get', 'post'], '/register/casting-director', fn () => redirect()->route('login')
+        ->with('status', 'Akun Client dibuatkan oleh tim JBTB. Hubungi kami untuk mendapatkan akses.'));
 
     Route::get('/forgot-password', [PasswordResetController::class, 'showForgotForm'])
         ->name('password.request');
@@ -294,6 +292,8 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
 
 Route::middleware(['auth', 'role:client'])->prefix('cd')->group(function () {
     Route::get('/dashboard', [CdDashboardController::class, 'index'])->name('cd.dashboard');
+    Route::get('/profil', [CdProfilController::class, 'edit'])->name('cd.profil');
+    Route::put('/profil', [CdProfilController::class, 'update'])->name('cd.profil.update');
 
     // Modul 2: Pengajuan brief permintaan proyek oleh Client (Pintu 1)
     Route::get('/projects/request', [ProjectRequestController::class, 'create'])->name('cd.projects.request');

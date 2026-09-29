@@ -7,6 +7,17 @@
     Halo, {{ auth()->user()->name }}.
 </p>
 
+@unless (auth()->user()->email)
+    <div class="card" id="kartu-lengkapi-profil" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <span>Lengkapi profil (email buat notifikasi &amp; lupa password).</span>
+        <span style="display: flex; gap: 8px;">
+            <a href="{{ route('cd.profil') }}" class="btn btn-brand">Lengkapi</a>
+            <button type="button" class="btn" onclick="try { localStorage.setItem('tutup_lengkapi_profil', '1'); } catch (e) {} this.closest('.card').remove();">Tutup</button>
+        </span>
+    </div>
+    <script>try { if (localStorage.getItem('tutup_lengkapi_profil')) document.getElementById('kartu-lengkapi-profil').remove(); } catch (e) {}</script>
+@endunless
+
 <div class="card" style="margin-bottom: 20px;">
     <div class="card-title">Pengajuan Anda</div>
     @php $statusPengajuan = ['draft' => ['Draft', 'badge-netral'], 'menunggu_acc' => ['Menunggu ACC tim JBTB', 'badge-pending'], 'disetujui' => ['Disetujui', 'badge-aktif'], 'ditolak' => ['Ditolak', 'badge-tolak']]; @endphp

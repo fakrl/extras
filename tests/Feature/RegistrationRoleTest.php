@@ -26,19 +26,18 @@ class RegistrationRoleTest extends TestCase
         $this->assertSame('extras', $user->role);
     }
 
-    public function test_casting_director_registration_gets_client_role_not_legacy_enum_value(): void
+    public function test_registrasi_publik_client_ditutup(): void
     {
+        $this->get('/register/casting-director')->assertRedirect(route('login'));
+
         $this->post('/register/casting-director', [
             'name' => 'Test CD',
             'email' => 'cd@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
             'setuju_privasi' => '1',
-        ]);
+        ])->assertRedirect(route('login'))->assertSessionHas('status');
 
-        $user = User::where('email', 'cd@example.com')->first();
-
-        $this->assertNotNull($user);
-        $this->assertSame('client', $user->role);
+        $this->assertDatabaseMissing('users', ['email' => 'cd@example.com']);
     }
 }
