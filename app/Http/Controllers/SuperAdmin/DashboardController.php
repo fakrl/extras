@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\CastingProject;
 use App\Models\EventShootingDate;
+use App\Models\Invoice;
+use App\Models\Payment;
+use App\Models\ProjectApplication;
+use App\Models\StaffPayroll;
 use App\Models\User;
 use App\Notifications\InAppNotification;
 use App\Services\KeuanganService;
@@ -15,142 +19,85 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
+    const PRESET = ['bulan' => 'Bulan ini', '3bulan' => '3 bulan', 'tahun' => 'Tahun ini'];
+
     public function __construct(
         protected KeuanganService $keuanganService
     ) {}
 
-    private function periodDates(string $period): array
+    /**
+     * BD.3.1: preset atau custom dari–sampai (custom menang kalau dua-duanya valid).
+     */
+    private function periode(Request $request): array
     {
-        $now = Carbon::now();
-        $end = $now->copy()->endOfDay();
+        $tgl = fn (string $k) => rescue(fn () => Carbon::createFromFormat('!Y-m-d', (string) $request->query($k)), null, false) ?: null;
+        [$dari, $sampai] = [$tgl('dari'), $tgl('sampai')];
 
-        $start = match ($period) {
-            '7d' => $now->copy()->subDays(6)->startOfDay(),
-            '1y' => $now->copy()->subYear()->startOfDay(),
-            default => $now->copy()->subDays(29)->startOfDay(), // 30d
+        if ($dari && $sampai) {
+            return $dari->gt($sampai) ? [$sampai, $dari, null] : [$dari, $sampai, null];
+        }
+
+        $preset = array_key_exists((string) $request->query('periode'), self::PRESET) ? $request->query('periode') : 'bulan';
+
+        return match ($preset) {
+            '3bulan' => [now()->subMonths(2)->startOfMonth(), now()->endOfMonth(), $preset],
+            'tahun' => [now()->startOfYear(), now()->endOfYear(), $preset],
+            default => [now()->startOfMonth(), now()->endOfMonth(), $preset],
         };
-
-        $length = $start->diffInDays($end) + 1;
-        $prevEnd = $start->copy()->subDay()->endOfDay();
-        $prevStart = $prevEnd->copy()->subDays($length - 1)->startOfDay();
-
-        return compact('start', 'end', 'prevStart', 'prevEnd');
-    }
-
-    private function trendBadge(int|float $current, int|float $previous): ?array
-    {
-        if ($current === 0 && $previous === 0) {
-            return null;
-        }
-        if ($previous === 0 && $current > 0) {
-            return ['label' => '+baru', 'up' => true];
-        }
-        $pct = ($current - $previous) / $previous * 100;
-
-        return ['label' => ($pct >= 0 ? '+' : '').round($pct, 1).'%', 'up' => $pct >= 0];
     }
 
     public function index(Request $request)
     {
-        $period = in_array($request->query('period'), ['7d', '30d', '1y']) ? $request->query('period') : '30d';
-        ['start' => $start, 'end' => $end, 'prevStart' => $prevStart, 'prevEnd' => $prevEnd] = $this->periodDates($period);
-
-        // Metric: Proyek Berjalan (proyek dibuka, created_at dalam period)
-        $proyekBerjalan = CastingProject::where('status', 'dibuka')->count();
-        // ponytail: skip trend proyekBerjalan — "dibuka" adalah status realtime, bukan time-series; period filter tidak relevan
-
-        // Metric: Extras Aktif (semua waktu, tapi trend dihitung dari created_at periode)
-        $extrasAktif = User::where('role', 'extras')->where('status', 'aktif')->count();
-        $extrasAktifPrev = User::where('role', 'extras')->where('status', 'aktif')
-            ->whereBetween('created_at', [$prevStart, $prevEnd])->count();
-        $extrasAktifCurr = User::where('role', 'extras')->where('status', 'aktif')
-            ->whereBetween('created_at', [$start, $end])->count();
-        $trendExtrasAktif = $this->trendBadge($extrasAktifCurr, $extrasAktifPrev);
-
-        // Metric: Total Akun
-        $totalAkun = User::count();
-        $totalAkunCurr = User::whereBetween('created_at', [$start, $end])->count();
-        $totalAkunPrev = User::whereBetween('created_at', [$prevStart, $prevEnd])->count();
-        $trendTotalAkun = $this->trendBadge($totalAkunCurr, $totalAkunPrev);
-
-        // Metric: Honor Belum Diproses (SPEC AY.1.15 — single source of truth KeuanganService)
-        $honorBelumDiproses = $this->keuanganService->totalHonorStafBelumDiproses();
-        // ponytail: skip trend honorBelumDiproses — StaffPayroll tidak punya kolom waktu yang cocok untuk period filter ini
-
-        // AT.2 & AV.6: Margin bulan ini (Single Source of Truth)
-        $marginBulanIni = $this->keuanganService->marginBulanIni();
-
-        $roleDisplayNames = [
-            'super_admin' => 'Super Admin',
-            'admin' => 'Admin',
-            'korlap' => 'Koordinator Lapangan',
-            'client' => 'Client',
-            'extras' => 'Extras',
-        ];
-
-        $rekapHonorAdmin = User::whereIn('role', ['admin', 'korlap'])
-            ->with('adminProjectAssignments.payroll')
-            ->get()
-            ->map(function (User $admin) use ($roleDisplayNames) {
-                $selesai = $admin->adminProjectAssignments->where('status_log', 'selesai');
-
-                return (object) [
-                    'nama' => $admin->name,
-                    'role' => $roleDisplayNames[$admin->role] ?? ucwords(str_replace('_', ' ', $admin->role)),
-                    'total_honor' => $selesai->sum(fn ($a) => $a->payroll?->nominalTotal() ?? 0),
-                    'proyek_selesai' => $selesai->count(),
-                    'proyek_berjalan' => $admin->adminProjectAssignments->count() - $selesai->count(),
-                ];
-            })
-            ->sortByDesc('total_honor')
-            ->take(5)
-            ->values();
+        [$dari, $sampai, $preset] = $this->periode($request);
+        $jumlahHari = (int) $dari->copy()->startOfDay()->diffInDays($sampai->copy()->startOfDay()) + 1;
 
         $pendingRequests = CastingProject::where('client_request_status', 'menunggu_acc')
-            ->with('diajukanOlehClient')
-            ->latest()
-            ->get();
-
-        $ringkasanProyek = CastingProject::where('status', 'dibuka')
-            ->with(['shootingDates' => fn ($q) => $q->orderBy('tanggal')])
-            ->get()
-            ->sortByDesc(fn ($p) => $p->isUrgent())
-            ->take(5)
-            ->values();
-
-        $rekapMarginUrl = route('super-admin.recap-margin');
-
-        $jadwalBulanIni = EventShootingDate::whereBetween('tanggal', [
-            Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth(),
-        ])->with('castingProject:id,nama_produksi')->get()
-            ->map(fn ($e) => tap($e, fn ($e) => $e->nama_produksi = $e->castingProject?->nama_produksi));
-
-        $chartStatusProyek = [
-            'labels' => ['Dibuka', 'Ditutup'],
-            'data' => [
-                CastingProject::where('status', 'dibuka')->count(),
-                CastingProject::where('status', 'ditutup')->count(),
-            ],
+            ->with('diajukanOlehClient')->latest()->get();
+        $sengketa = Payment::where('status', 'disengketakan')
+            ->with('projectApplication.extras.user', 'projectApplication.castingProject:id,nama_produksi')->latest()->get();
+        $honorStaf = (object) [
+            'jumlah' => StaffPayroll::where('status_bayar', '!=', 'sudah')->count(),
+            'total' => $this->keuanganService->totalHonorStafBelumDiproses(),
         ];
+        $invoiceBelumLunas = Invoice::where('status_bayar', '!=', 'lunas')
+            ->with('castingProject.classes')->latest()->get()
+            ->each(fn (Invoice $i) => $i->nilai = (float) ($i->nominal ?? $this->keuanganService->nilaiInvoice($i->castingProject)));
 
-        $chartMarginBulanan = $this->keuanganService->trendMarginBulanan();
+        $dalamPeriode = fn ($q) => $q->whereDate('tanggal', '>=', $dari)->whereDate('tanggal', '<=', $sampai);
+        $statusProyek = collect(CastingProject::TAHAP)->map(fn ($label, $tahap) => CastingProject::diTahap($tahap)
+            ->when($tahap !== 'menunggu_acc', fn ($q) => $q->whereHas('shootingDates', $dalamPeriode))
+            ->count());
+
+        $uang = $this->keuanganService->ringkasanPeriode($dari, $sampai);
+
+        $bulan = rescue(fn () => Carbon::createFromFormat('!Y-m', (string) $request->query('bulan')), null, false) ?: now();
+        $jadwal = EventShootingDate::whereDate('tanggal', '>=', $bulan->copy()->startOfMonth()->startOfWeek(Carbon::MONDAY))
+            ->whereDate('tanggal', '<=', $bulan->copy()->endOfMonth()->endOfWeek(Carbon::SUNDAY))
+            ->with(['castingProject' => fn ($q) => $q->select('id', 'nama_produksi')->withCount(['applications as extras_count' => fn ($a) => $a
+                ->whereIn('status_partisipasi', [...ProjectApplication::STATUS_AKTIF, 'selesai_produksi'])])])
+            ->withCount(['attendances as hadir_count' => fn ($q) => $q->where('status', 'hadir')])
+            ->get()
+            ->each(function (EventShootingDate $e) {
+                $e->nama_produksi = $e->castingProject?->nama_produksi;
+                $e->jumlah_extras = (int) $e->castingProject?->extras_count;
+                $e->absensi = "{$e->hadir_count}/{$e->jumlah_extras} hadir";
+                $e->url_proyek = route('admin.projects.show', $e->casting_project_id);
+                $e->url_absensi = route('admin.attendance.index', ['project' => $e->casting_project_id, 'tanggal' => $e->id]);
+            });
+
+        $akunPerRole = User::selectRaw('role, count(*) as jumlah')->groupBy('role')->pluck('jumlah', 'role');
+        $clientBelumGantiPassword = User::where('role', 'client')->where('wajib_ganti_password', true)->count();
+
+        $proyekBerjalan = CastingProject::diTahap('berjalan')
+            ->with('client:id,name', 'shootingDates')
+            ->withMin(['shootingDates as shooting_terdekat' => fn ($q) => $q->whereDate('tanggal', '>=', today())], 'tanggal')
+            ->orderBy('shooting_terdekat')->take(5)->get();
 
         return view('super-admin.dashboard', compact(
-            'period',
-            'proyekBerjalan',
-            'extrasAktif',
-            'totalAkun',
-            'honorBelumDiproses',
-            'trendExtrasAktif',
-            'trendTotalAkun',
-            'marginBulanIni',
-            'rekapHonorAdmin',
-            'pendingRequests',
-            'ringkasanProyek',
-            'rekapMarginUrl',
-            'jadwalBulanIni',
-            'chartStatusProyek',
-            'chartMarginBulanan'
+            'dari', 'sampai', 'preset', 'jumlahHari',
+            'pendingRequests', 'sengketa', 'honorStaf', 'invoiceBelumLunas',
+            'statusProyek', 'uang', 'bulan', 'jadwal',
+            'akunPerRole', 'clientBelumGantiPassword', 'proyekBerjalan'
         ));
     }
 

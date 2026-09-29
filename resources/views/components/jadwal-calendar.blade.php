@@ -1,4 +1,4 @@
-@props(['events', 'compact' => false, 'bulan' => null])
+@props(['events', 'compact' => false, 'bulan' => null, 'detail' => false])
 
 @php
     $now = \Carbon\Carbon::now();
@@ -40,6 +40,8 @@
 .cal-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 13px; font-weight: 600; }
 .cal-nav a { color: var(--text-secondary); text-decoration: none; font-size: 18px; line-height: 1; padding: 2px 6px; border-radius: 4px; }
 .cal-nav a:hover { background: var(--bg-nav-active); }
+.cal-aksi { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.cal-aksi .btn { min-height: 32px; padding: 0 10px; font-size: 12px; }
 button.cal-day { border: none; margin: 0; font: inherit; color: inherit; width: 100%; background: transparent; }
 </style>
 @endpush
@@ -53,11 +55,15 @@ function calClick(el, calId) {
     var panel = document.getElementById('cal-detail-' + calId);
     // lokasi/catatan diisi Client, jadi wajib di-escape sebelum masuk innerHTML
     var esc = function(v) { var d = document.createElement('div'); d.textContent = v == null ? '' : v; return d.innerHTML; };
+    var escAttr = function(v) { return esc(v).replace(/"/g, '&quot;'); };
     var html = events.map(function(e) {
         return '<div class="cal-event-item"><strong>' + esc(e.nama || 'Jadwal') + '</strong>' +
                (e.jam_mulai ? '<br>' + esc(e.jam_mulai) + (e.jam_selesai ? '&ndash;' + esc(e.jam_selesai) : '') : '') +
                (e.lokasi ? '<br><span class="cal-meta">' + esc(e.lokasi) + '</span>' : '') +
                (e.catatan ? '<br><em class="cal-meta">' + esc(e.catatan) + '</em>' : '') +
+               (e.extras != null ? '<br><span class="cal-meta">' + esc(e.extras) + ' Extras &middot; ' + esc(e.absensi) + '</span>' : '') +
+               (e.url_proyek ? '<div class="cal-aksi"><a class="btn btn-sm" href="' + escAttr(e.url_proyek) + '">Buka proyek</a>' +
+                   '<a class="btn btn-sm" href="' + escAttr(e.url_absensi) + '">Lihat absensi</a></div>' : '') +
                '</div>';
     }).join('');
     panel.innerHTML = html;
@@ -71,9 +77,9 @@ function calClick(el, calId) {
 <div class="{{ $compact ? 'jadwal-cal-compact' : '' }}" style="{{ $compact ? 'max-width: 420px;' : '' }}">
     @if (!$compact)
         <div class="cal-nav">
-            <a href="?bulan={{ $prevMonth }}">&#8249;</a>
+            <a href="{{ request()->fullUrlWithQuery(['bulan' => $prevMonth]) }}">&#8249;</a>
             <span>{{ $targetBulan->translatedFormat('F Y') }}</span>
-            <a href="?bulan={{ $nextMonth }}">&#8250;</a>
+            <a href="{{ request()->fullUrlWithQuery(['bulan' => $nextMonth]) }}">&#8250;</a>
         </div>
     @else
         <div class="cal-nav">
@@ -102,6 +108,12 @@ function calClick(el, calId) {
                             'jam_mulai' => $e->jam_mulai ? substr($e->jam_mulai, 0, 5) : null,
                             'jam_selesai' => $e->jam_selesai ? substr($e->jam_selesai, 0, 5) : null,
                             'catatan' => $e->catatan,
+                            ...($detail ? [
+                                'extras' => $e->jumlah_extras,
+                                'absensi' => $e->absensi,
+                                'url_proyek' => $e->url_proyek,
+                                'url_absensi' => $e->url_absensi,
+                            ] : []),
                         ])->toArray();
                     @endphp
                     @if ($dayEvents->isNotEmpty())
