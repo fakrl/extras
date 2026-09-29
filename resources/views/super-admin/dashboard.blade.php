@@ -20,13 +20,6 @@
     .sa-stat-grid.is-5 { grid-template-columns: repeat(5, 1fr); }
     .sa-stat-grid.is-5 .metric-card:last-child { grid-column: auto; }
 }
-a.metric-card { display: block; text-decoration: none; color: inherit; border: 1px solid var(--border-color); }
-a.metric-card:hover { border-color: var(--accent); }
-.sa-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 0; border-bottom: 1px solid var(--border-color); font-size: 13.5px; }
-.sa-row:last-child { border-bottom: none; }
-a.sa-row { text-decoration: none; color: inherit; }
-a.sa-row:hover { color: var(--accent); }
-.sa-sub { font-size: 12px; color: var(--text-muted); }
 .sa-role-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; }
 .sa-akun { display: grid; gap: 10px; align-items: center; }
 @media (min-width: 861px) { .sa-akun { grid-template-columns: 2fr 1fr; gap: 16px; } }
@@ -35,30 +28,17 @@ a.sa-row:hover { color: var(--accent); }
 .sa-tab[aria-selected=true] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .sa-tab:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
 .sa-lihat-semua { color: var(--accent); font-weight: 600; }
-.sa-aman { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid var(--accent); border-radius: var(--radius-lg, 12px); background: var(--bg-nav-active); color: var(--accent-strong); font-weight: 600; font-size: var(--fs-sm, 13px); }
 .sa-filterbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
 .sa-filterbar .btn { min-height: 34px; padding: 0 12px; font-size: 12.5px; border-radius: 20px; }
 .sa-filterbar-range { display: flex; gap: 6px; align-items: center; margin: 0; }
 .sa-filterbar-range input[type=date] { min-height: 34px; font-size: 12.5px; padding: 0 6px; width: auto; margin: 0; }
 .sa-filterbar-info { margin-left: auto; cursor: help; white-space: nowrap; }
-.sa-tiga { display: grid; gap: 16px; margin-bottom: 16px; align-items: stretch; }
-.sa-tiga > .card { margin: 0; min-width: 0; }
-@media (min-width: 861px) { .sa-tiga { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (min-width: 1180px) { .sa-tiga { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (max-width: 860px) { .sa-tiga > .sa-perlu { order: -1; } .sa-filterbar-info { margin-left: 0; white-space: normal; } } /* HP: aksi paling atas */
-.sa-tiga .sa-stat-grid { grid-template-columns: repeat(2, 1fr); }
-.sa-perlu { border: 2px solid var(--accent-strong); max-height: 720px; overflow-y: auto; }
-.sa-perlu.is-aman { border-width: 1px; border-color: var(--accent); }
-.sa-perlu.is-aman { display: flex; flex-direction: column; }
-.sa-perlu.is-aman .sa-aman { flex: 1; flex-direction: column; justify-content: center; text-align: center; min-height: 140px; border: none; background: transparent; }
-.sa-perlu.is-aman .sa-aman i { font-size: 40px; }
+@media (max-width: 860px) { .sa-filterbar-info { margin-left: 0; white-space: normal; } }
+.dash-tiga .sa-stat-grid { grid-template-columns: repeat(2, 1fr); }
 .sa-akun-mini { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-color); }
 .sa-mini-title { font-size: var(--fs-sm, 13px); font-weight: 600; margin-bottom: 8px; }
 .sa-akun-mini .sa-akun { grid-template-columns: 1fr !important; gap: 8px; }
 .sa-akun-mini .sa-role-grid { display: flex; flex-wrap: wrap; gap: 6px; }
-.sa-role-pill { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border: 1px solid var(--border-color); border-radius: 999px; font-size: var(--fs-sm, 13px); color: var(--text-secondary); text-decoration: none; background: var(--bg-card); }
-.sa-role-pill strong { font-size: var(--fs-md, 16px); color: var(--text-primary); }
-.sa-role-pill:hover { border-color: var(--accent); }
 </style>
 @endpush
 
@@ -70,25 +50,25 @@ a.sa-row:hover { color: var(--accent); }
     @endforeach
     <form method="GET" action="{{ route('super-admin.dashboard') }}" class="sa-filterbar-range">
         <input type="date" name="dari" value="{{ $dari->format('Y-m-d') }}" aria-label="Dari tanggal" required>
-        <span class="sa-sub">&ndash;</span>
+        <span class="dash-sub">&ndash;</span>
         <input type="date" name="sampai" value="{{ $sampai->format('Y-m-d') }}" aria-label="Sampai tanggal" required>
         <button type="submit" class="btn {{ $preset ? '' : 'btn-brand' }}">Terapkan</button>
     </form>
-    <span class="sa-sub sa-filterbar-info" title="Proyek difilter pakai tanggal shooting, uang pakai tanggal transaksi (invoice lunas, transfer honor, biaya lain-lain).">
+    <span class="dash-sub sa-filterbar-info" title="Proyek difilter pakai tanggal shooting, uang pakai tanggal transaksi (invoice lunas, transfer honor, biaya lain-lain).">
         <strong>{{ $jumlahHari }} hari</strong> &middot; {{ $dari->translatedFormat('d M Y') }} &ndash; {{ $sampai->translatedFormat('d M Y') }} &#9432;
     </span>
 </div>
 
 {{-- 3 kotak sejajar: Jadwal · Perlu tindakan · Status proyek (+ Akun) --}}
-<div class="sa-tiga">
+<div class="dash-tiga">
 <div class="card">
     <div class="card-title">Jadwal Shooting</div>
     <x-jadwal-calendar :events="$jadwal" :bulan="$bulan->format('Y-m')" :detail="true" />
-    <p class="sa-sub" style="margin: 8px 0 0;">Klik tanggal bertanda untuk lihat kegiatan hari itu.</p>
+    <p class="dash-sub" style="margin: 8px 0 0;">Klik tanggal bertanda untuk lihat kegiatan hari itu.</p>
 </div>
 
-<div class="card sa-perlu {{ $jumlahTindakan ? '' : 'is-aman' }}">
-    <div class="card-title" style="color: var(--accent-strong);">
+<div class="card dash-perlu {{ $jumlahTindakan ? '' : 'is-aman' }}">
+    <div class="card-title">
         <i class="ti ti-clipboard-list"></i> Perlu Tindakan
         @if ($jumlahTindakan)
             <span class="badge badge-pending" style="margin-left: 8px;">{{ $jumlahTindakan }}</span>
@@ -96,11 +76,11 @@ a.sa-row:hover { color: var(--accent); }
     </div>
 
     @foreach ($pendingRequests as $req)
-        <div class="sa-row">
+        <div class="dash-row">
             <div>
                 <span class="badge badge-pending">Menunggu ACC</span>
                 <strong>{{ $req->nama_produksi }}</strong>
-                <div class="sa-sub">{{ $req->client_ph }} &bull; {{ $req->diajukanOlehClient?->name }}</div>
+                <div class="dash-sub">{{ $req->client_ph }} &bull; {{ $req->diajukanOlehClient?->name }}</div>
                 <details style="margin-top: 6px; font-size: 13px;">
                     <summary style="cursor: pointer; color: var(--accent);">Lihat brief, kuota, deadline</summary>
                     <div style="margin-top: 6px;">Kuota: <strong>{{ $req->kuota }} orang</strong> &bull; Deadline: <strong>{{ $req->deadline?->format('d M Y') ?? '-' }}</strong></div>
@@ -130,56 +110,56 @@ a.sa-row:hover { color: var(--accent); }
     @endforeach
 
     @foreach ($sengketa as $p)
-        <a href="{{ route('payments.show', $p->project_application_id) }}" class="sa-row">
+        <a href="{{ route('payments.show', $p->project_application_id) }}" class="dash-row">
             <div>
                 <span class="badge badge-tolak">Pembayaran disengketakan</span>
                 <strong>{{ $p->projectApplication?->extras?->user?->name ?? 'Extras' }}</strong>
-                <div class="sa-sub">{{ $p->projectApplication?->castingProject?->nama_produksi }} &bull; {{ \Illuminate\Support\Str::limit($p->alasan_sengketa, 80) }}</div>
+                <div class="dash-sub">{{ $p->projectApplication?->castingProject?->nama_produksi }} &bull; {{ \Illuminate\Support\Str::limit($p->alasan_sengketa, 80) }}</div>
             </div>
-            <span class="sa-sub">Buka &rarr;</span>
+            <span class="dash-sub">Buka &rarr;</span>
         </a>
     @endforeach
 
     @if ($honorStaf->jumlah)
-        <a href="{{ route('admin.projects.index', ['bayar' => 'staf']) }}" class="sa-row">
+        <a href="{{ route('admin.projects.index', ['bayar' => 'staf']) }}" class="dash-row">
             <div>
                 <span class="badge badge-pending">Honor staf belum dibayar</span>
                 <strong>{{ $honorStaf->jumlah }} honor</strong>
-                <div class="sa-sub">Total {{ $rp($honorStaf->total) }}</div>
+                <div class="dash-sub">Total {{ $rp($honorStaf->total) }}</div>
             </div>
-            <span class="sa-sub">Buka &rarr;</span>
+            <span class="dash-sub">Buka &rarr;</span>
         </a>
     @endif
 
     @if ($tanpaClient)
-        <a href="{{ route('admin.projects.index', ['tanpa_client' => 1]) }}" class="sa-row">
+        <a href="{{ route('admin.projects.index', ['tanpa_client' => 1]) }}" class="dash-row">
             <div>
                 <span class="badge badge-pending">Client belum diisi</span>
                 <strong>{{ $tanpaClient }} proyek</strong>
-                <div class="sa-sub">Pilih akun Client di form edit proyek</div>
+                <div class="dash-sub">Pilih akun Client di form edit proyek</div>
             </div>
-            <span class="sa-sub">Buka &rarr;</span>
+            <span class="dash-sub">Buka &rarr;</span>
         </a>
     @endif
 
     @foreach ($invoiceBelumLunas as $inv)
-        <a href="{{ route('admin.projects.show', [$inv->casting_project_id, 'tab' => 'cashflow']) }}" class="sa-row">
+        <a href="{{ route('admin.projects.show', [$inv->casting_project_id, 'tab' => 'cashflow']) }}" class="dash-row">
             <div>
                 <span class="badge badge-info">Invoice belum lunas</span>
                 <strong>{{ $inv->castingProject?->nama_produksi }}</strong>
-                <div class="sa-sub">{{ $rp($inv->nilai) }}</div>
+                <div class="dash-sub">{{ $rp($inv->nilai) }}</div>
             </div>
-            <span class="sa-sub">Buka &rarr;</span>
+            <span class="dash-sub">Buka &rarr;</span>
         </a>
     @endforeach
 
     @unless ($jumlahTindakan)
-        <div class="sa-aman" role="status"><i class="ti ti-circle-check"></i> Semua aman &mdash; tidak ada yang perlu ditindak.</div>
+        <div class="dash-aman" role="status"><i class="ti ti-circle-check"></i> Semua aman &mdash; tidak ada yang perlu ditindak.</div>
     @endunless
 </div>
 
 <div class="card">
-    <div class="card-title">Status Proyek <span class="sa-sub" style="font-weight: 400; cursor: help;" title="Mendatang/Berjalan/Selesai: shooting dalam periode. Menunggu ACC: semua.">&#9432;</span></div>
+    <div class="card-title">Status Proyek <span class="dash-sub" style="font-weight: 400; cursor: help;" title="Mendatang/Berjalan/Selesai: shooting dalam periode. Menunggu ACC: semua.">&#9432;</span></div>
     <div class="sa-stat-grid" role="tablist" aria-label="Tahap proyek">
         @foreach (\App\Models\CastingProject::TAHAP as $tahap => $label)
             <button type="button" class="metric-card sa-tab" role="tab" id="tab-{{ $tahap }}" aria-controls="panel-{{ $tahap }}" aria-selected="{{ $tahap === $tabAwal ? 'true' : 'false' }}" tabindex="{{ $tahap === $tabAwal ? 0 : -1 }}">
@@ -192,15 +172,15 @@ a.sa-row:hover { color: var(--accent); }
         @php $label = \App\Models\CastingProject::TAHAP[$tahap]; @endphp
         <div role="tabpanel" id="panel-{{ $tahap }}" aria-labelledby="tab-{{ $tahap }}" @if ($tahap !== $tabAwal) hidden @endif>
             @forelse ($daftar as $p)
-                <a href="{{ route('admin.projects.show', $p) }}" class="sa-row">
+                <a href="{{ route('admin.projects.show', $p) }}" class="dash-row">
                     <div>
                         <strong>{{ $p->nama_produksi }}</strong>
-                        <div class="sa-sub">{{ $p->client?->name ?? $p->client_ph ?? '-' }} &bull; {{ $p->rentangShooting() }}</div>
+                        <div class="dash-sub">{{ $p->client?->name ?? $p->client_ph ?? '-' }} &bull; {{ $p->rentangShooting() }}</div>
                     </div>
-                    <span class="sa-sub">{{ $p->tanggal_acuan ? \Carbon\Carbon::parse($p->tanggal_acuan)->translatedFormat('d M') : '' }}</span>
+                    <span class="dash-sub">{{ $p->tanggal_acuan ? \Carbon\Carbon::parse($p->tanggal_acuan)->translatedFormat('d M') : '' }}</span>
                 </a>
             @empty
-                <p class="sa-sub" style="margin: 0;">Tidak ada proyek {{ strtolower($label) }}{{ $tahap === 'menunggu_acc' ? '' : ' dalam periode ini' }}.</p>
+                <p class="dash-sub" style="margin: 0;">Tidak ada proyek {{ strtolower($label) }}{{ $tahap === 'menunggu_acc' ? '' : ' dalam periode ini' }}.</p>
             @endforelse
             <div style="margin-top: 10px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12.5px;">
                 <a href="{{ route('admin.projects.index', ['tahap' => $tahap] + ($tahap === 'menunggu_acc' ? [] : ['dari' => $dari->format('Y-m-d'), 'sampai' => $sampai->format('Y-m-d')])) }}" class="sa-lihat-semua">Lihat semua {{ $label }} &rarr;</a>
@@ -214,16 +194,16 @@ a.sa-row:hover { color: var(--accent); }
     <div class="sa-akun">
         <div class="sa-role-grid">
             @foreach ($namaRole as $role => $label)
-                <a href="{{ route('super-admin.akun.index', ['role' => $role]) }}" class="sa-role-pill">{{ $label }} <strong>{{ $akunPerRole[$role] ?? 0 }}</strong></a>
+                <a href="{{ route('super-admin.akun.index', ['role' => $role]) }}" class="dash-pill">{{ $label }} <strong>{{ $akunPerRole[$role] ?? 0 }}</strong></a>
             @endforeach
         </div>
         @if ($clientBelumGantiPassword)
-            <a href="{{ route('super-admin.admins.index', ['role' => 'client']) }}" class="sa-row">
+            <a href="{{ route('super-admin.admins.index', ['role' => 'client']) }}" class="dash-row">
                 <div><span class="badge badge-pending">Perlu tindakan</span> {{ $clientBelumGantiPassword }} akun Client baru belum ganti password</div>
-                <span class="sa-sub">Buka &rarr;</span>
+                <span class="dash-sub">Buka &rarr;</span>
             </a>
         @else
-            <p class="sa-sub" style="margin: 0;">Semua akun Client sudah ganti password.</p>
+            <p class="dash-sub" style="margin: 0;">Semua akun Client sudah ganti password.</p>
         @endif
     </div>
     </div>
@@ -243,11 +223,11 @@ a.sa-row:hover { color: var(--accent); }
             <div class="metric-card" style="border: 1px solid var(--border-color);">
                 <div class="metric-label">{{ $label }}@if (str_starts_with($label, 'Keluar')) <span title="Dashboard cuma menghitung yang sudah dibayar dalam periode; di proyek dihitung semua kewajiban." style="cursor: help;">&#9432;</span>@endif</div>
                 <div class="metric-value" style="font-size: var(--fs-lg, 18px);{{ in_array($label, ['Saldo', 'Proyeksi']) ? ' color: '.($nilai < 0 ? 'var(--danger)' : 'var(--accent-strong)').';' : '' }}">{{ $rp($nilai) }}</div>
-                <div class="sa-sub">{{ $ket }}</div>
+                <div class="dash-sub">{{ $ket }}</div>
             </div>
         @endforeach
     </div>
-    <p class="sa-sub" style="margin: 0 0 12px;">Saldo minus wajar kalau invoice belum dibayar — lihat Proyeksi. Piutang = invoice belum lunas dari proyek yang shooting-nya dalam periode.</p>
+    <p class="dash-sub" style="margin: 0 0 12px;">Saldo minus wajar kalau invoice belum dibayar — lihat Proyeksi. Piutang = invoice belum lunas dari proyek yang shooting-nya dalam periode.</p>
     <div class="chart-box"><canvas id="chartUangBulanan"></canvas></div>
 </div>
 @endsection

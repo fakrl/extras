@@ -63,7 +63,7 @@ class BgStatusProyekTabTest extends TestCase
 
         foreach (['menunggu_acc' => 'Ajuan', 'mendatang' => 'Datang', 'berjalan' => 'Jalan', 'selesai' => 'Beres'] as $tahap => $awalan) {
             $panel = $this->panel($html, $tahap);
-            $this->assertSame(5, substr_count($panel, 'class="sa-row"'), $tahap);
+            $this->assertSame(5, substr_count($panel, 'class="dash-row"'), $tahap);
             $this->assertSame(5, substr_count($panel, "<strong>$awalan "), $tahap);
             $this->assertStringNotContainsString('Luar Periode', $panel, $tahap);
             $this->assertSame($tahap !== 'berjalan', str_contains(strtok($panel, '>'), 'hidden'), $tahap);
