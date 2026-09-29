@@ -42,6 +42,7 @@ class ActivityLog extends Model
         'SET_EXTRAS_GRADE' => 'Atur grade Extras',
         'UPDATE_EXTRAS_KATEGORI' => 'Ubah kategori Extras',
         'TOGGLE_EXTRAS_BERANDA' => 'Atur Extras di beranda',
+        'UPDATE_PORTOFOLIO' => 'Atur portofolio beranda',
         'UPDATE_LINEUP_BREAKDOWN' => 'Ubah lineup',
         'UPDATE_USER' => 'Ubah akun',
         'TOGGLE_USER_STATUS' => 'Aktif/nonaktifkan akun',

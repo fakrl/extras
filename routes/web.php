@@ -168,6 +168,8 @@ Route::middleware(['auth', 'role:admin,korlap,super_admin'])
             Route::patch('/projects/{castingProject}', [AdminCastingProjectController::class, 'update'])->name('admin.projects.update');
             Route::patch('/projects/{castingProject}/toggle-status', [AdminCastingProjectController::class, 'toggleStatus'])
                 ->name('admin.projects.toggle-status');
+            Route::patch('/projects/{castingProject}/portofolio', [AdminCastingProjectController::class, 'updatePortofolio'])
+                ->name('admin.projects.portofolio');
             Route::get('/projects/{castingProject}/applicants', [AdminCastingProjectController::class, 'showApplicants'])
                 ->name('admin.projects.applicants');
             Route::post('/projects/{castingProject}/applicants/bulk', [ApplicantController::class, 'bulk'])

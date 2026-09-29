@@ -309,6 +309,16 @@ class DemoLengkapSeeder extends Seeder
         $this->kelas($p6, 'Nasabah muda', 10, 450000, ['Dewasa', 'Pekerja kantoran']);
         $p6->adminAssignments()->create(['user_id' => $yoga->id, 'assigned_by' => $fakrul->id]);
 
+        // BH.3: portofolio beranda, P1 + 2 arsip lama (satu izinkan nama client)
+        $p1->update(['tampil_portofolio' => true, 'portofolio_jenis' => 'Film layar lebar', 'portofolio_tahun' => today()->subDays(30)->year]);
+        foreach ([['Iklan TV "Kopi Pagi Nusantara"', 'PT Kopi Pagi Nusantara', 'Iklan TV', -200, true], ['FTV "Cinta di Pasar Minggu"', 'Sinar Rumah Produksi', 'FTV', -320, false]] as [$nama, $ph, $jenis, $hari, $client]) {
+            $arsip = $this->project($nama, $ph, $rina, $hari - 20, [
+                'status' => 'ditutup', 'deadline' => today()->addDays($hari - 5), 'kuota' => 10, 'tampil_portofolio' => true,
+                'portofolio_jenis' => $jenis, 'portofolio_tahun' => today()->addDays($hari)->year, 'tampilkan_nama_client' => $client,
+            ]);
+            $this->jadwal($arsip, [$hari], 'Jakarta');
+        }
+
         $this->notifikasiEvent($p1, $p2, $p3, $p4, $p5, $p6);
     }
 
