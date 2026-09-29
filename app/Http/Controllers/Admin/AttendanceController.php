@@ -212,7 +212,7 @@ class AttendanceController extends Controller
         $user = $request->user();
         $project = $attendance->projectApplication->castingProject;
         $isAssignedCd = $project->cdAssignments()->where('cd_user_id', $user->id)->exists();
-        $isClientOwner = $project->diajukan_oleh_client_id === $user->id;
+        $isClientOwner = (int) $project->client_id === $user->id;
 
         abort_unless(
             $user->bisaSebagaiAdmin() || $user->bisaSebagaiKorlap() || $isAssignedCd || $isClientOwner,

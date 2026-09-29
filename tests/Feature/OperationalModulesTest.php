@@ -25,7 +25,7 @@ class OperationalModulesTest extends TestCase
         $response = $this->actingAs($admin)->post(route('admin.projects.store'), [
             'nama_produksi' => 'Proyek Breakdown Test',
             'client_ph' => 'PH Visual Test',
-            'client_id' => \App\Models\User::factory()->create(['role' => 'client'])->id,
+            'client_id' => User::factory()->create(['role' => 'client'])->id,
             'deadline' => today()->addDays(5)->format('Y-m-d'),
             'kuota' => 10,
             'cover_path' => UploadedFile::fake()->image('cover.jpg'),
@@ -292,6 +292,7 @@ class OperationalModulesTest extends TestCase
             'deadline' => today()->addDays(5),
             'kuota' => 5,
             'diajukan_oleh_client_id' => $client->id,
+            'client_id' => $client->id,
         ]);
 
         // Client upload custom PH invoice document

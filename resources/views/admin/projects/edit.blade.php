@@ -26,7 +26,9 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.projects.update', $castingProject) }}" enctype="multipart/form-data">
+    <form method="POST" action="{{ route('admin.projects.update', $castingProject) }}" enctype="multipart/form-data"
+        data-client-lama="{{ $castingProject->client_id }}" data-client-lama-nama="{{ $castingProject->client?->username ? '@'.$castingProject->client->username : $castingProject->client?->name }}"
+        onsubmit="var d = this.dataset; return !d.clientLama || this.client_id.value === d.clientLama || confirm('Client lama (' + d.clientLamaNama + ') nggak bisa lihat proyek ini lagi. Lanjut?')">
         @csrf
         @method('PATCH')
 

@@ -29,7 +29,7 @@ class InvoiceController extends Controller
         abort_unless($user->isClient(), 403);
 
         $assigned = CastingProject::whereHas('cdAssignments', fn ($q) => $q->where('cd_user_id', $user->id))->get();
-        $owned = CastingProject::where('diajukan_oleh_client_id', $user->id)->get();
+        $owned = CastingProject::where('client_id', $user->id)->get();
         $projects = $assigned->merge($owned)->unique('id')->sortByDesc('id')->values();
 
         return view('invoices.index-client', compact('projects'));
@@ -139,7 +139,7 @@ class InvoiceController extends Controller
 
         if ($user->isClient()) {
             $isAssigned = $castingProject->cdAssignments()->where('cd_user_id', $user->id)->exists();
-            $isOwner = $castingProject->diajukan_oleh_client_id === $user->id;
+            $isOwner = (int) $castingProject->client_id === $user->id;
             abort_unless($isAssigned || $isOwner, 403);
         }
     }
