@@ -9,6 +9,7 @@ use App\Models\ExtrasCategory;
 use App\Models\ProjectApplication;
 use App\Models\User;
 use App\Services\KeuanganService;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -25,12 +26,15 @@ class CastingProjectController extends Controller
         $tahap = array_key_exists((string) $request->query('tahap'), CastingProject::TAHAP) ? $request->query('tahap') : null;
         $bayar = in_array($request->query('bayar'), ['staf', 'extras'], true) ? $request->query('bayar') : null;
         $cari = trim((string) $request->query('q'));
+        $tgl = fn (string $k) => rescue(fn () => Carbon::createFromFormat('!Y-m-d', (string) $request->query($k)), null, false) ?: null;
+        $periode = ($dari = $tgl('dari')) && ($sampai = $tgl('sampai')) ? [min($dari, $sampai), max($dari, $sampai)] : null;
 
         $projects = CastingProject::withCount('applications')
             ->with(['client', 'admin', 'shootingDates', ...KeuanganService::RELASI_CASHFLOW])
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($peserta, fn ($q) => $q->whereHas('applications', fn ($a) => $a->where('status_partisipasi', $peserta)))
             ->when($tahap, fn ($q) => $q->diTahap($tahap))
+            ->when($periode, fn ($q) => $q->shootingDalam(...$periode))
             ->when($bayar === 'staf', fn ($q) => $q->whereHas('payrolls', fn ($p) => $p->where('status_bayar', '!=', 'sudah')))
             ->when($bayar === 'extras', fn ($q) => $q->whereHas('payments', fn ($p) => $p->whereNull('ditransfer_at')))
             ->when($cari !== '', fn ($q) => $q->where(fn ($w) => $w->where('nama_produksi', 'like', "%{$cari}%")
@@ -49,7 +53,7 @@ class CastingProjectController extends Controller
 
         $cashflow = $projects->getCollection()->mapWithKeys(fn ($p) => [$p->id => $keuangan->cashflowProyek($p)]);
 
-        return view('admin.projects.index', compact('projects', 'peserta', 'tahap', 'bayar', 'cari', 'cashflow'));
+        return view('admin.projects.index', compact('projects', 'peserta', 'tahap', 'bayar', 'cari', 'cashflow', 'periode'));
     }
 
     /**
