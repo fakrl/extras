@@ -2,7 +2,7 @@
     $route = request()->path();
     $isKelolaAkunActive = str_starts_with($route, 'super-admin/admins')
         || str_starts_with($route, 'super-admin/casting-directors');
-    $isAdminMenuActive = str_starts_with($route, 'admin/');
+    $isAdminMenuActive = str_starts_with($route, 'admin/') && ! str_starts_with($route, 'admin/projects');
 @endphp
 
 <div class="sidebar-group-label">Aplikasi & Monitoring</div>
@@ -15,8 +15,8 @@
 <a href="{{ route('super-admin.activity-logs') }}" class="sidebar-link {{ str_starts_with($route, 'super-admin/activity-logs') ? 'active' : '' }}">
     <i class="ti ti-activity"></i> Log Aktivitas
 </a>
-<a href="{{ route('super-admin.recap-margin') }}" class="sidebar-link {{ str_starts_with($route, 'super-admin/rekap-margin') ? 'active' : '' }}">
-    <i class="ti ti-wallet"></i> Keuangan
+<a href="{{ route('admin.projects.index') }}" class="sidebar-link {{ str_starts_with($route, 'admin/projects') ? 'active' : '' }}">
+    <i class="ti ti-wallet"></i> Proyek &amp; Keuangan
 </a>
 
 <div class="sidebar-group-label">Manajemen Akun</div>
@@ -48,10 +48,7 @@
         <i class="ti ti-chevron-right chevron-icon"></i>
     </summary>
     <div class="sidebar-submenu">
-        <a href="{{ route('admin.projects.index') }}" class="sidebar-link {{ str_starts_with($route, 'admin/projects') ? 'active' : '' }}">
-            <i class="ti ti-movie"></i> Kelola Proyek
-        </a>
-        <a href="{{ route('admin.recap.index') }}" class="sidebar-link {{ str_starts_with($route, 'admin/recap') && !str_starts_with($route, 'admin/rekap-margin') ? 'active' : '' }}">
+        <a href="{{ route('admin.recap.index') }}" class="sidebar-link {{ str_starts_with($route, 'admin/recap') ? 'active' : '' }}">
             <i class="ti ti-report"></i> Rekap Extras
         </a>
         <a href="{{ route('admin.work-history') }}" class="sidebar-link {{ str_starts_with($route, 'admin/riwayat-kerja') ? 'active' : '' }}">

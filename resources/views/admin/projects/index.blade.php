@@ -1,43 +1,63 @@
 @extends('layouts.app')
 
-@section('title', 'Kelola Proyek')
+@section('title', 'Proyek & Keuangan')
 
 @section('content')
+@php
+    $rp = fn ($n) => 'Rp '.number_format($n, 0, ',', '.');
+    $filterLain = array_filter([
+        $peserta ? 'ada kandidat '.(\App\Models\ProjectApplication::LABELS[$peserta] ?? $peserta) : null,
+        $bayar === 'staf' ? 'honor staf belum dibayar' : null,
+        $bayar === 'extras' ? 'honor Extras belum ditransfer' : null,
+        request('status') ? 'lowongan '.request('status') : null,
+        request()->boolean('urgent') ? 'urgent' : null,
+    ]);
+@endphp
 <div class="card-header-row">
     <div>
-        <div style="font-size: 16px; font-weight: 600;">Kelola Proyek</div>
-        <div style="font-size: 12.5px; color: var(--text-secondary);">Semua proyek casting yang sedang & pernah dibuka</div>
-        @if (request()->hasAny(['status', 'peserta', 'urgent']))
-            <div style="font-size: 12.5px; margin-top: 4px;">Filter aktif{{ $peserta ? ': ada kandidat '.(\App\Models\ProjectApplication::LABELS[$peserta] ?? $peserta) : '' }} · <a href="{{ route('admin.projects.index') }}">Hapus filter</a></div>
+        <div style="font-size: 16px; font-weight: 600;">Proyek &amp; Keuangan</div>
+        <div style="font-size: var(--fs-sm); color: var(--text-secondary);">Semua proyek casting beserta uang masuk, keluar, dan saldonya</div>
+        @if ($filterLain)
+            <div style="font-size: var(--fs-sm); margin-top: 4px;">Filter aktif: {{ implode(', ', $filterLain) }} · <a href="{{ route('admin.projects.index') }}">Hapus filter</a></div>
         @endif
     </div>
-    <a href="{{ route('admin.projects.create') }}" class="btn btn-brand">+ Buka Lowongan Baru</a>
+    <a href="{{ route('admin.projects.create') }}" class="btn btn-brand">+ Buat Proyek</a>
+</div>
+
+<form method="GET" action="{{ route('admin.projects.index') }}" class="xtoolbar" role="search">
+    <input type="search" name="q" value="{{ $cari }}" class="xtoolbar-cari" placeholder="Cari nama produksi atau client..." aria-label="Cari proyek">
+    @foreach (array_filter(['tahap' => $tahap, 'bayar' => $bayar, 'peserta' => $peserta, 'status' => request('status')]) as $k => $v)
+        <input type="hidden" name="{{ $k }}" value="{{ $v }}">
+    @endforeach
+    <button type="submit" class="btn btn-sm"><i class="ti ti-search"></i> Cari</button>
+</form>
+
+<div class="xfilter" aria-label="Filter tahap proyek">
+    @foreach (['' => 'Semua'] + \App\Models\CastingProject::TAHAP as $value => $label)
+        <a href="{{ request()->fullUrlWithQuery(['tahap' => $value ?: null, 'page' => null]) }}"
+           class="btn btn-sm {{ ($tahap ?? '') === $value ? 'btn-brand' : '' }}" @if (($tahap ?? '') === $value) aria-current="true" @endif>{{ $label }}</a>
+    @endforeach
 </div>
 
 @if ($projects->isEmpty())
     <div class="card" style="text-align:center; color: var(--text-muted); padding: 30px 0;">
-        Belum ada proyek casting. Klik "+ Buka Lowongan Baru" untuk membuat yang pertama.
+        {{ $cari !== '' || $tahap || $filterLain ? 'Tidak ada proyek yang sesuai filter.' : 'Belum ada proyek casting. Klik "+ Buat Proyek" untuk membuat yang pertama.' }}
     </div>
 @else
-    <div style="position: relative; margin-bottom: 16px;">
-        <input type="text" id="search-projects" placeholder="Cari nama produksi, client PH, atau status..."
-               style="width: 100%; max-width: 400px; padding: 8px 14px 8px 36px; border: 1px solid var(--border-color); border-radius: 8px; font-size: var(--fs-md); background: var(--bg-card); color: var(--text-primary); margin-bottom: 0;">
-        <i class="ti ti-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 15px;"></i>
-    </div>
-
-    <div id="no-projects-match" class="card" style="display: none; text-align: center; color: var(--text-muted); padding: 24px;">
-        Tidak ada proyek yang sesuai dengan pencarian.
-    </div>
-
     <div class="entity-card-grid" id="projects-grid">
         @foreach ($projects as $project)
-            <div class="entity-card project-card" style="position: relative;"
-                 data-search="{{ strtolower($project->nama_produksi . ' ' . $project->client_ph . ' ' . $project->status) }}">
+            @php
+                $cf = $cashflow[$project->id];
+                $tahapProyek = $project->tahap();
+            @endphp
+            <div class="entity-card project-card" style="position: relative;">
                 <details style="position: absolute; top: 10px; right: 10px; z-index: 10;">
                     <summary aria-label="Menu proyek" style="list-style: none; cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card);">
                         <i class="ti ti-dots-vertical"></i>
                     </summary>
                     <div style="position: absolute; right: 0; top: 36px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; min-width: 160px; box-shadow: 0 4px 12px rgba(0,0,0,.12); padding: 4px 0; z-index: 20;">
+                        <a href="{{ route('admin.projects.show', $project) }}" style="display: block; padding: 8px 14px; font-size: 13px; color: var(--text-primary); text-decoration: none;">Detail Proyek</a>
+                        <a href="{{ route('admin.projects.show', [$project, 'tab' => 'cashflow']) }}" style="display: block; padding: 8px 14px; font-size: 13px; color: var(--text-primary); text-decoration: none;">Cashflow</a>
                         <a href="{{ route('admin.projects.edit', $project) }}" style="display: block; padding: 8px 14px; font-size: 13px; color: var(--text-primary); text-decoration: none;">Edit Proyek</a>
                         @if ($project->status === 'dibuka' && $project->share_token)
                             <button type="button" style="display: block; width: 100%; padding: 8px 14px; font-size: 13px; text-align: left; background: none; border: none; color: var(--text-primary); cursor: pointer;" data-copy-link="{{ url('/event/'.$project->share_token) }}">Copy Link Pendaftaran</button>
@@ -51,13 +71,31 @@
                         <a href="{{ route('invoices.show', $project) }}" style="display: block; padding: 8px 14px; font-size: 13px; color: var(--text-primary); text-decoration: none;">Invoice</a>
                     </div>
                 </details>
-                <div class="entity-card-title">
-                    {{ $project->nama_produksi }}
+                <div class="entity-card-title" style="padding-right: 40px;">
+                    <a href="{{ route('admin.projects.show', $project) }}" style="color: inherit; text-decoration: none;">{{ $project->nama_produksi }}</a>
                     @if ($project->isUrgent())
                         <span class="badge badge-tolak">Urgent</span>
                     @endif
                 </div>
-                <div class="entity-card-sub">{{ $project->client_ph }}</div>
+                <div class="entity-card-sub">
+                    {{ $project->client?->name ?? $project->client_ph }}{{ $project->client && $project->client_ph !== $project->client->name ? ' · '.$project->client_ph : '' }}
+                    · PIC {{ $project->admin?->name ?? '-' }}
+                </div>
+
+                <div class="entity-card-row">
+                    <span class="entity-card-row-label">Tahap</span>
+                    <span class="entity-card-row-value">
+                        @if ($tahapProyek)
+                            <span class="badge {{ \App\Models\CastingProject::TAHAP_BADGES[$tahapProyek] }}">{{ \App\Models\CastingProject::TAHAP[$tahapProyek] }}</span>
+                        @else
+                            <span class="badge badge-tolak">{{ ucfirst($project->client_request_status) }}</span>
+                        @endif
+                    </span>
+                </div>
+                <div class="entity-card-row">
+                    <span class="entity-card-row-label">Shooting</span>
+                    <span class="entity-card-row-value">{{ $project->rentangShooting() }}</span>
+                </div>
 
                 @if ($project->wa_group_link)
                     <div class="entity-card-row">
@@ -73,7 +111,7 @@
                     <span class="entity-card-row-value">{{ $project->deadline->format('d M Y') }}</span>
                 </div>
                 <div class="entity-card-row">
-                    <span class="entity-card-row-label">Status</span>
+                    <span class="entity-card-row-label">Lowongan</span>
                     <span class="entity-card-row-value">
                         <span class="badge {{ $project->status === 'dibuka' ? 'badge-aktif' : 'badge-tolak' }}">
                             {{ $project->status }}
@@ -81,11 +119,17 @@
                     </span>
                 </div>
                 <div class="entity-card-row">
-                    <span class="entity-card-row-label">Pendaftar</span>
-                    <span class="entity-card-row-value">{{ $project->applications_count }} orang</span>
+                    <span class="entity-card-row-label">Pendaftar / kuota</span>
+                    <span class="entity-card-row-value">{{ $project->applications_count }} / {{ $project->kuota }}</span>
                 </div>
+                <a href="{{ route('admin.projects.show', [$project, 'tab' => 'cashflow']) }}" class="proyek-uang" title="Buka cashflow proyek">
+                    <span><small>Masuk</small>{{ $rp($cf->total_masuk) }}</span>
+                    <span><small>Keluar</small>{{ $rp($cf->total_keluar) }}</span>
+                    <span><small>Saldo</small><b style="color: {{ $cf->saldo >= 0 ? 'var(--accent-strong)' : 'var(--danger)' }};">{{ $rp($cf->saldo) }}</b></span>
+                </a>
 
                 <div class="entity-card-actions">
+                    <a href="{{ route('admin.projects.show', $project) }}" class="btn" style="flex: 1; text-align: center;">Detail</a>
                     <a href="{{ route('admin.projects.applicants', [$project, 'status' => $peserta]) }}" class="btn btn-brand" style="flex: 1; text-align: center;">
                         Lihat Lineup ({{ $project->applications_count }})
                     </a>
@@ -93,7 +137,14 @@
             </div>
         @endforeach
     </div>
+    {{ $projects->links() }}
 @endif
+
+<style>
+    .proyek-uang { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; padding: 8px 10px; border-radius: 8px; background: var(--bg-page); color: var(--text-primary); text-decoration: none; font-size: var(--fs-sm); font-weight: 600; }
+    .proyek-uang > span { white-space: nowrap; }
+    .proyek-uang small { display: block; font-size: var(--fs-xs); font-weight: 500; color: var(--text-muted); }
+</style>
 
 <script>
     document.querySelectorAll('[data-copy-link]').forEach(function (btn) {
@@ -105,27 +156,5 @@
             });
         });
     });
-
-    // Real-time instant project search
-    (function () {
-        var searchInput = document.getElementById('search-projects');
-        var cards = document.querySelectorAll('.project-card');
-        var noMatch = document.getElementById('no-projects-match');
-        if (!searchInput) return;
-
-        searchInput.addEventListener('input', function () {
-            var q = this.value.toLowerCase().trim();
-            var visibleCount = 0;
-            cards.forEach(function (card) {
-                var text = card.dataset.search || card.textContent.toLowerCase();
-                var match = !q || text.includes(q);
-                card.style.display = match ? '' : 'none';
-                if (match) visibleCount++;
-            });
-            if (noMatch) {
-                noMatch.style.display = (visibleCount === 0 && q.length > 0) ? 'block' : 'none';
-            }
-        });
-    })();
 </script>
 @endsection

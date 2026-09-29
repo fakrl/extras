@@ -6,79 +6,14 @@ use App\Models\CastingProject;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\ProjectApplication;
+use App\Models\ProjectExpense;
 use App\Models\StaffPayroll;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Support\Collection;
 
 class KeuanganService
 {
-    /**
-     * Hitung detail margin untuk satu proyek.
-     */
-    public function hitungMarginProyek(CastingProject $project): object
-    {
-        $breakdown = collect();
-        $belumTerklasifikasi = null;
-        $totalFeeClient = 0.0;
-        $totalPayout = 0.0;
-
-        $tanpaKelas = $project->applications->whereNull('casting_project_class_id');
-
-        if ($tanpaKelas->isNotEmpty()) {
-            $payout = (float) $tanpaKelas->sum('fee_final');
-            $totalPayout += $payout;
-
-            $belumTerklasifikasi = (object) [
-                'jumlah_aplikasi' => $tanpaKelas->count(),
-                'total_payout' => $payout,
-            ];
-        }
-
-        foreach ($project->applications->whereNotNull('casting_project_class_id')->groupBy('casting_project_class_id') as $aplikasi) {
-            $payout = (float) $aplikasi->sum('fee_final');
-            $totalPayout += $payout;
-
-            $feeClient = (float) ($aplikasi->first()->castingProjectClass->budget_client ?? 0) * $aplikasi->count();
-            $totalFeeClient += $feeClient;
-
-            $nullCount = $aplikasi->whereNull('fee_final')->count();
-
-            $breakdown->push((object) [
-                'kelas' => $aplikasi->first()->castingProjectClass,
-                'jumlah_aplikasi' => $aplikasi->count(),
-                'total_fee_client' => $feeClient,
-                'total_payout' => $payout,
-                'margin' => $feeClient - $payout,
-                'ada_fee_null' => $nullCount > 0,
-                'jumlah_fee_null' => $nullCount,
-                'aplikasi_list' => $aplikasi,
-            ]);
-        }
-
-        $margin = $totalFeeClient - $totalPayout;
-
-        return (object) [
-            'project' => $project,
-            'breakdown' => $breakdown,
-            'belum_terklasifikasi' => $belumTerklasifikasi,
-            'total_fee_client' => $totalFeeClient,
-            'total_payout' => $totalPayout,
-            'margin' => $margin,
-            'margin_persen' => $totalFeeClient > 0 ? ($margin / $totalFeeClient * 100) : 0,
-        ];
-    }
-
-    /**
-     * Dapatkan ringkasan margin untuk seluruh proyek.
-     */
-    public function ringkasanMarginSemuaProyek(): Collection
-    {
-        return CastingProject::with(['applications' => function ($q) {
-            $q->whereIn('status_partisipasi', ProjectApplication::STATUS_LOLOS_KE_ATAS)
-                ->with(['castingProjectClass', 'extras.user']);
-        }])->get()->map(fn (CastingProject $project) => $this->hitungMarginProyek($project));
-    }
-
     /**
      * Hitung total margin bulan ini.
      */
@@ -129,30 +64,6 @@ class KeuanganService
     }
 
     /**
-     * Dapatkan daftar honor staf (StaffPayroll).
-     */
-    public function daftarHonorStaf(): Collection
-    {
-        return StaffPayroll::with([
-            'assignment.castingProject',
-            'assignment.user',
-            'addons',
-        ])->latest()->get();
-    }
-
-    /**
-     * Dapatkan daftar honor extras (Payment).
-     */
-    public function daftarHonorExtras(): Collection
-    {
-        return Payment::with([
-            'projectApplication.extras.user',
-            'projectApplication.castingProject',
-            'addons',
-        ])->latest()->get();
-    }
-
-    /**
      * SPEC AY.1.15: total honor staf yang belum dibayar (pokok + addon),
      * single source of truth dipakai dashboard Super Admin & tab Honor Staf.
      */
@@ -186,12 +97,114 @@ class KeuanganService
     }
 
     /**
-     * Dapatkan daftar invoice client.
+     * BD.2: nilai tagihan invoice = rumus PDF (budget_client x kuota_kelas).
+     * Kalau D5 mengubah rumus, cukup ubah di sini.
      */
-    public function daftarInvoiceClient(): Collection
+    public function nilaiInvoice(CastingProject $project): float
     {
-        return Invoice::with([
-            'castingProject',
-        ])->latest()->get();
+        return (float) $this->rincianInvoice($project)->total;
+    }
+
+    /**
+     * BD.2: relasi yang dibutuhkan cashflowProyek(), eager-load di daftar proyek biar tidak N+1.
+     */
+    public const RELASI_CASHFLOW = [
+        'classes', 'invoices', 'expenses.pembuat',
+        'payments.addons', 'payments.projectApplication.extras.user',
+        'payrolls.addons', 'payrolls.assignment.user',
+    ];
+
+    /**
+     * BD.2: cashflow per proyek (basis tagihan/kewajiban, bukan tanggal transaksi).
+     * Masuk = invoice (nominal tersimpan saat lunas, sebelum itu nilaiInvoice() live).
+     * Keluar = honor Extras + honor staf + biaya lain-lain. Terpakai % = keluar / masuk.
+     */
+    public function cashflowProyek(CastingProject $project): object
+    {
+        $project->loadMissing(self::RELASI_CASHFLOW);
+        $nilai = $this->nilaiInvoice($project);
+
+        $masuk = $project->invoices->isEmpty()
+            ? collect([(object) ['invoice' => null, 'nominal' => $nilai, 'lunas' => false]])
+            : $project->invoices->map(fn (Invoice $i) => (object) [
+                'invoice' => $i,
+                'nominal' => (float) ($i->nominal ?? $nilai),
+                'lunas' => $i->isLunas(),
+            ]);
+
+        $extras = $project->payments->map(fn (Payment $p) => (object) [
+            'payment' => $p,
+            'nominal' => $p->nominalTotal(),
+            'lunas' => $p->ditransfer_at !== null,
+        ]);
+
+        $staf = $project->payrolls->map(fn (StaffPayroll $s) => (object) [
+            'payroll' => $s,
+            'nominal' => $s->nominalTotal(),
+            'lunas' => $s->isDibayar(),
+        ]);
+
+        $totalMasuk = (float) $masuk->sum('nominal');
+        $totalKeluar = $extras->sum('nominal') + $staf->sum('nominal') + (float) $project->expenses->sum('nominal');
+
+        return (object) [
+            'masuk' => $masuk,
+            'extras' => $extras,
+            'staf' => $staf,
+            'biaya' => $project->expenses,
+            'total_masuk' => $totalMasuk,
+            'masuk_lunas' => (float) $masuk->where('lunas', true)->sum('nominal'),
+            'total_keluar' => $totalKeluar,
+            'saldo' => $totalMasuk - $totalKeluar,
+            'persen_terpakai' => $totalMasuk > 0 ? round($totalKeluar / $totalMasuk * 100, 1) : null,
+        ];
+    }
+
+    /**
+     * BD.2/BD.3: uang per periode berdasar tanggal transaksi (invoices.dibayar_at,
+     * payments.ditransfer_at, staff_payrolls.dibayar_at, project_expenses.tanggal).
+     */
+    public function ringkasanPeriode(Carbon $from, Carbon $to): object
+    {
+        $from = $from->copy()->startOfDay();
+        $to = $to->copy()->endOfDay();
+
+        $masuk = Invoice::where('status_bayar', 'lunas')->whereBetween('dibayar_at', [$from, $to])
+            ->with('castingProject.classes')->get()
+            ->map(fn (Invoice $i) => [$i->dibayar_at, (float) ($i->nominal ?? $this->nilaiInvoice($i->castingProject))]);
+
+        $keluar = Payment::whereBetween('ditransfer_at', [$from, $to])->with('projectApplication', 'addons')->get()
+            ->map(fn (Payment $p) => [$p->ditransfer_at, $p->nominalTotal()])
+            ->merge(StaffPayroll::where('status_bayar', 'sudah')->whereBetween('dibayar_at', [$from, $to])->with('addons')->get()
+                ->map(fn (StaffPayroll $s) => [$s->dibayar_at, $s->nominalTotal()]))
+            ->merge(ProjectExpense::whereDate('tanggal', '>=', $from)->whereDate('tanggal', '<=', $to)->get()
+                ->map(fn (ProjectExpense $e) => [$e->tanggal, (float) $e->nominal]));
+
+        $perBulan = fn (Collection $rows) => $rows->groupBy(fn ($r) => $r[0]->format('Y-m'))->map(fn ($g) => $g->sum(1));
+        $masukBulan = $perBulan($masuk);
+        $keluarBulan = $perBulan($keluar);
+
+        $bulan = collect(CarbonPeriod::create($from->copy()->startOfMonth(), '1 month', $to))
+            ->map(function ($m) use ($masukBulan, $keluarBulan) {
+                $k = $m->format('Y-m');
+
+                return (object) [
+                    'bulan' => $k,
+                    'label' => $m->translatedFormat('M Y'),
+                    'masuk' => (float) ($masukBulan[$k] ?? 0),
+                    'keluar' => (float) ($keluarBulan[$k] ?? 0),
+                    'saldo' => (float) (($masukBulan[$k] ?? 0) - ($keluarBulan[$k] ?? 0)),
+                ];
+            })->values();
+
+        $totalMasuk = (float) $masuk->sum(1);
+        $totalKeluar = (float) $keluar->sum(1);
+
+        return (object) [
+            'total_masuk' => $totalMasuk,
+            'total_keluar' => $totalKeluar,
+            'saldo' => $totalMasuk - $totalKeluar,
+            'per_bulan' => $bulan,
+        ];
     }
 }

@@ -15,8 +15,33 @@
                 <input type="text" name="nama_produksi" value="{{ old('nama_produksi') }}" required>
             </div>
             <div>
-                <label>Client / Production House</label>
-                <input type="text" name="client_ph" value="{{ old('client_ph') }}" required>
+                <label>Nama Client / PH di dokumen <span style="color: var(--text-muted); font-weight: 400;">(kosongkan = otomatis dari akun Client)</span></label>
+                <input type="text" name="client_ph" value="{{ old('client_ph') }}">
+            </div>
+        </div>
+
+        @php $isSa = auth()->user()->isSuperAdmin(); @endphp
+        <div class="form-row">
+            <div>
+                <label for="admin_id">Admin PIC</label>
+                <input type="search" placeholder="Cari admin..." data-cari-select="admin_id" style="margin-bottom: 6px;">
+                <select name="admin_id" id="admin_id" @required($isSa)>
+                    <option value="">{{ $isSa ? '- Pilih Admin -' : 'Saya sendiri' }}</option>
+                    @foreach ($admins as $a)
+                        <option value="{{ $a->id }}" @selected((string) old('admin_id', $isSa ? '' : auth()->id()) === (string) $a->id)>{{ $a->name }}{{ $a->username ? ' (@'.$a->username.')' : '' }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label for="client_id">Akun Client</label>
+                <input type="search" placeholder="Cari client..." data-cari-select="client_id" style="margin-bottom: 6px;">
+                <select name="client_id" id="client_id">
+                    <option value="">- Pilih Client -</option>
+                    @foreach ($clients as $c)
+                        <option value="{{ $c->id }}" @selected((string) old('client_id') === (string) $c->id)>{{ $c->name }}{{ $c->username ? ' (@'.$c->username.')' : '' }}</option>
+                    @endforeach
+                </select>
+                {{-- BD.1: tombol + Client baru (modal buat akun Client) --}}
             </div>
         </div>
 
@@ -135,6 +160,20 @@
 @push('scripts')
 <template id="tag-chips-tpl">@include('partials.tag-chips', ['name' => 'kelas[__i__][categories][]', 'selected' => []])</template>
 <script>
+    document.querySelectorAll('[data-cari-select]').forEach(function (input) {
+        var select = document.getElementById(input.dataset.cariSelect);
+        input.addEventListener('input', function () {
+            var q = input.value.toLowerCase().trim();
+            var pertama = null;
+            Array.from(select.options).forEach(function (o) {
+                var cocok = !o.value || !q || o.text.toLowerCase().includes(q);
+                o.hidden = !cocok;
+                if (cocok && o.value && !pertama) pertama = o;
+            });
+            if (q && pertama) select.value = pertama.value;
+        });
+    });
+
     (function () {
         var tanggalWrap = document.getElementById('tanggal-wrap');
         document.getElementById('btn-add-tanggal').addEventListener('click', function () {
