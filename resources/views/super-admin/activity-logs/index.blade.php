@@ -3,40 +3,43 @@
 @section('title', 'Log Aktivitas Sistem (Audit Trail)')
 
 @section('content')
+@php $tgl = fn ($d) => \Illuminate\Support\Carbon::parse($d)->translatedFormat('d M Y'); @endphp
 <form method="GET" action="{{ route('super-admin.activity-logs') }}" class="xtoolbar" id="live-form" data-live>
     <input type="search" name="q" value="{{ $f['q'] ?? '' }}" class="xtoolbar-cari" placeholder="Cari deskripsi, aktor, atau subjek…" aria-label="Cari log">
-    <button type="submit" class="btn btn-sm btn-brand" aria-label="Cari"><i class="ti ti-search"></i></button>
     <x-per-halaman :pilihan="\App\Support\PerHalaman::TABEL" :nilai="$logs->perPage()" />
-    <details class="xtoolbar-more" @if($filterAktif) open @endif>
-        <summary class="btn btn-sm" aria-label="Filter"><i class="ti ti-adjustments-horizontal"></i> Filter @if($filterAktif)<span class="badge badge-netral">{{ $filterAktif }}</span>@endif</summary>
-        <div class="xtoolbar-more-isi">
-            <input type="text" name="aktor" value="{{ $f['aktor'] ?? '' }}" list="log-aktor-list" placeholder="Aktor" aria-label="Aktor" style="flex: 1 1 160px;">
+    <x-filter-panel :filter="[
+        ! empty($f['aktor']) ? ['aktor', 'Aktor: '.$f['aktor']] : null,
+        ! empty($f['role']) ? ['role', 'Role: '.(\App\Models\User::LABELS[$f['role']] ?? $f['role'])] : null,
+        ! empty($f['aksi']) ? ['aksi', 'Aksi: '.\App\Models\ActivityLog::actionLabel($f['aksi'])] : null,
+        ! empty($f['dari']) ? ['dari', 'Dari: '.$tgl($f['dari'])] : null,
+        ! empty($f['sampai']) ? ['sampai', 'Sampai: '.$tgl($f['sampai'])] : null,
+    ]">
+        <div>
+            <label class="fpanel-label" for="log-aktor">Aktor</label>
+            <input type="text" id="log-aktor" name="aktor" value="{{ $f['aktor'] ?? '' }}" list="log-aktor-list" placeholder="Nama atau email">
             <datalist id="log-aktor-list">
                 @foreach ($aktorList as $nama)<option value="{{ $nama }}">@endforeach
             </datalist>
-            <select name="role" aria-label="Role" style="flex: 1 1 140px;">
-                <option value="">Semua role</option>
-                @foreach (\App\Models\User::LABELS as $val => $label)
-                    <option value="{{ $val }}" @selected(($f['role'] ?? '') === $val)>{{ $label }}</option>
-                @endforeach
-            </select>
-            <select name="aksi" aria-label="Jenis aksi" style="flex: 1 1 180px;">
+        </div>
+        <x-filter-panel.grup label="Role" name="role" :opsi="['' => 'Semua'] + \Illuminate\Support\Arr::except(\App\Models\User::LABELS, 'super_admin') + ['super_admin' => 'Super Admin']" :nilai="$f['role'] ?? null" baris />
+        <div>
+            <label class="fpanel-label" for="log-aksi">Jenis aksi</label>
+            <select id="log-aksi" name="aksi">
                 <option value="">Semua aksi</option>
                 @foreach ($aksiList as $kode)
                     <option value="{{ $kode }}" title="{{ $kode }}" @selected(($f['aksi'] ?? '') === $kode)>{{ \App\Models\ActivityLog::actionLabel($kode) }}</option>
                 @endforeach
             </select>
-            <span style="display: flex; gap: 6px; align-items: center; flex: 1 1 100%; flex-wrap: wrap;">
-                <input type="date" name="dari" value="{{ $f['dari'] ?? '' }}" aria-label="Dari tanggal" style="flex: 1 1 130px;">
-                <span style="color: var(--text-muted);">s/d</span>
-                <input type="date" name="sampai" value="{{ $f['sampai'] ?? '' }}" aria-label="Sampai tanggal" style="flex: 1 1 130px;">
-            </span>
-            <button type="submit" class="btn btn-sm">Terapkan</button>
-            @if($filterAktif || !empty($f['q']))
-                <a href="{{ route('super-admin.activity-logs') }}" class="btn btn-sm">Reset</a>
-            @endif
         </div>
-    </details>
+        <div>
+            <div class="fpanel-label">Rentang tanggal</div>
+            <div class="fpanel-dua">
+                <input type="date" name="dari" value="{{ $f['dari'] ?? '' }}" aria-label="Dari tanggal">
+                <span style="color: var(--text-muted);">s/d</span>
+                <input type="date" name="sampai" value="{{ $f['sampai'] ?? '' }}" aria-label="Sampai tanggal">
+            </div>
+        </div>
+    </x-filter-panel>
 </form>
 
 <div class="card" data-live-target>

@@ -285,6 +285,50 @@
         .xtoolbar-more > summary::-webkit-details-marker { display: none; }
         .xtoolbar-more[open] { flex-basis: 100%; }
         .xtoolbar-more-isi { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+        .xtoolbar:has(> .fpanel) .xtoolbar-cari { flex: 1 1 120px; min-width: 0; }
+        .fpanel { position: relative; flex-shrink: 0; }
+        .fpanel > summary { list-style: none; gap: 6px; }
+        .fpanel > summary::-webkit-details-marker { display: none; }
+        .fpanel[open] > summary { border-color: var(--accent); color: var(--accent-strong); }
+        .fpanel-n { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--accent); color: var(--accent-on); font-size: var(--fs-xs); font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+        .fpanel-isi { position: absolute; right: 0; top: calc(100% + 6px); z-index: 60; width: 400px; max-width: calc(100vw - 32px); max-height: min(70vh, 560px); display: flex; flex-direction: column; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: 0 12px 32px rgba(0,0,0,0.18); }
+        .fpanel-body { overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 12px; }
+        .fpanel-foot { display: flex; justify-content: space-between; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--border-color); }
+        .fpanel .fpanel-label { display: block; font-size: var(--fs-xs); font-weight: 600; color: var(--text-muted); margin: 0 0 6px; text-transform: uppercase; letter-spacing: .03em; }
+        .fpanel-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+        .fpanel-chips.is-baris { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -14px; padding: 0 14px; }
+        .fpanel-chips.is-baris { gap: 4px; }
+        .fpanel-chips.is-baris > .tag-chip { flex-shrink: 0; padding: 0 7px; font-size: var(--fs-xs); }
+        .fpanel-sub { border-top: 1px solid var(--border-color); padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .fpanel-sub > .fpanel-judul { font-size: var(--fs-sm); font-weight: 600; color: var(--text-primary); }
+        .fpanel .tag-chip { min-height: 32px; padding: 0 10px; font-size: var(--fs-sm); color: var(--text-primary); }
+        .fpanel .tag-chip:has(:checked) { color: var(--accent-on); }
+        .fpanel input:not([type=radio], [type=checkbox]), .fpanel select { width: 100%; }
+        .fpanel-dua { display: flex; gap: 8px; align-items: center; }
+        .fpanel-dua > input { flex: 1 1 0; min-width: 0; }
+        .fpanel-acc { border-top: 1px solid var(--border-color); padding-top: 6px; }
+        .fpanel-acc > summary { cursor: pointer; font-size: var(--fs-sm); font-weight: 500; color: var(--text-primary); padding: 4px 0; }
+        .fpanel-acc > .fpanel-grup { margin: 4px 0 6px; }
+        .fpanel .xfilter-note { margin: 4px 0 0; }
+        .fpanel .fswitch { display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; font-size: var(--fs-sm); color: var(--text-primary); }
+        .fswitch input[type=checkbox] { appearance: none; -webkit-appearance: none; width: 40px; height: 24px; min-height: 0; padding: 0; margin: 0; border-radius: 12px; background: color-mix(in srgb, var(--text-muted) 40%, transparent); position: relative; cursor: pointer; flex-shrink: 0; border: 0; transition: background .15s; }
+        .fswitch input[type=checkbox]::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: transform .15s; }
+        .fswitch input[type=checkbox]:checked { background: var(--accent); }
+        .fswitch input[type=checkbox]:checked::after { transform: translateX(16px); }
+        .fswitch input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .fchips { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+        .fchips:not(:has(a)) { display: none; }
+        .fchip { display: inline-flex; align-items: center; gap: 4px; min-height: 30px; padding: 0 10px; border-radius: 15px; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.4); color: var(--accent-strong); font-size: var(--fs-xs); font-weight: 500; text-decoration: none; }
+        .fchip:hover { background: rgba(34,197,94,0.18); }
+        .fchips-hapus { font-size: var(--fs-xs); color: var(--text-muted); margin-left: 4px; }
+        @media (max-width: 560px) {
+            .xtoolbar:has(> .fpanel) .per-halaman { font-size: 0; }
+            .xtoolbar:has(> .fpanel) .per-halaman select { font-size: var(--fs-sm); }
+            .fpanel[open]::before { content: ''; position: fixed; inset: 0; z-index: 59; background: rgba(0,0,0,0.45); }
+            .fpanel-isi { position: fixed; left: 0; right: 0; bottom: 0; top: auto; width: auto; max-width: none; max-height: 85vh; border-radius: 16px 16px 0 0; }
+            .fpanel-foot { padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
+            .fpanel-foot .btn { min-height: 44px; flex: 1; }
+        }
         @media (max-width: 480px) {
             .xgrid { grid-template-columns: 1fr; }
             .xcard-ph { aspect-ratio: 4/5; }
@@ -806,10 +850,17 @@
                     // ganti filter (change): form juga diganti (opsi yang tergantung filter, mis. pilihan per halaman), popover yang kebuka dibuka lagi
                     var formLama = document.querySelector('form[data-live]');
                     var formBaru = push !== undefined && formLama && dok.querySelector('form[data-live]');
+                    var kunci = function (d, i) { return d.dataset.k || i; };
                     if (formBaru) {
-                        var terbuka = Array.prototype.map.call(formLama.querySelectorAll('details'), function (d) { return d.open; });
+                        var terbuka = Array.prototype.map.call(formLama.querySelectorAll('details'), function (d, i) { return d.open ? kunci(d, i) : null; });
                         formLama.replaceWith(formBaru);
-                        formBaru.querySelectorAll('details').forEach(function (d, i) { if (terbuka[i]) d.open = true; });
+                        formBaru.querySelectorAll('details').forEach(function (d, i) { if (terbuka.indexOf(kunci(d, i)) > -1) d.open = true; });
+                    } else if (formLama) {
+                        // saat ngetik form tetap; cuma badge, chip filter aktif & Reset yang disinkronkan
+                        formLama.querySelectorAll('[data-live-sync]').forEach(function (el) {
+                            var n = dok.querySelector('[data-live-sync="' + el.dataset.liveSync + '"]');
+                            if (n) el.replaceWith(n);
+                        });
                     }
                     if (push !== 'pop') history[push === true ? 'pushState' : 'replaceState'](null, '', url);
                 })
@@ -837,9 +888,9 @@
             if (!form) return;
             e.preventDefault(); clearTimeout(timer); muat(urlDari(form));
         });
-        // link paginasi & chip filter di dalam area hasil ikut AJAX
+        // link paginasi & chip filter (area hasil, chip aktif & Reset di form) ikut AJAX
         document.addEventListener('click', function (e) {
-            var a = e.target.closest('[data-live-target] a[href]');
+            var a = e.target.closest('[data-live-target] a[href], form[data-live] a[href]');
             if (!a || e.ctrlKey || e.metaKey || e.shiftKey || a.target) return;
             var form = document.querySelector('form[data-live]');
             if (!form || new URL(a.href, location.href).pathname !== new URL(form.action, location.href).pathname) return;
@@ -847,6 +898,16 @@
             muat(a.href, true);
         });
         window.addEventListener('popstate', function () { if (document.querySelector('form[data-live]')) muat(location.href, 'pop'); });
+        // BI.2 panel filter: tutup lewat klik di luar, tombol Tutup, atau Esc
+        document.addEventListener('click', function (e) {
+            document.querySelectorAll('details.fpanel[open]').forEach(function (d) {
+                if (e.target.closest('[data-fpanel-tutup]') || !d.querySelector('.fpanel-isi').contains(e.target) && !d.querySelector('summary').contains(e.target)) d.open = false;
+            });
+        });
+        document.addEventListener('keydown', function (e) {
+            var d = e.key === 'Escape' && !document.querySelector('dialog[open]') && document.querySelector('details.fpanel[open]');
+            if (d) { d.open = false; d.querySelector('summary').focus(); }
+        });
     }());
     </script>
     @stack('scripts')
