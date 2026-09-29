@@ -718,6 +718,70 @@
             });
         </script>
     @endif
+    <script>
+    // Live search: form GET ber-atribut data-live → hasil diganti via fetch tanpa reload.
+    // Area yang diganti = [data-live-target]; listener halaman wajib pakai delegasi (document).
+    // ponytail: ambil HTML halaman penuh lalu ambil potongannya, tanpa endpoint JSON terpisah.
+    (function () {
+        var ctrl, timer;
+        function urlDari(form) {
+            var p = new URLSearchParams();
+            new FormData(form).forEach(function (v, k) { if (v !== '') p.append(k, v); });
+            var q = p.toString();
+            return form.action.split('?')[0] + (q ? '?' + q : '');
+        }
+        function muat(url, push) {
+            var target = document.querySelector('[data-live-target]');
+            if (!target) { location.href = url; return; }
+            if (ctrl) ctrl.abort();
+            ctrl = new AbortController();
+            target.setAttribute('aria-busy', 'true');
+            target.style.opacity = '.55';
+            fetch(url, { signal: ctrl.signal, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function (r) { if (!r.ok) throw r; return r.text(); })
+                .then(function (html) {
+                    var dok = new DOMParser().parseFromString(html, 'text/html');
+                    var baru = dok.querySelector('[data-live-target]');
+                    if (!baru) { location.href = url; return; }
+                    target.replaceWith(baru);
+                    // klik link/back: form (hidden input filter) ikut diganti biar sinkron; saat ngetik jangan (fokus hilang)
+                    var formBaru = push !== undefined && document.querySelector('form[data-live]') && dok.querySelector('form[data-live]');
+                    if (formBaru) document.querySelector('form[data-live]').replaceWith(formBaru);
+                    if (push !== 'pop') history[push ? 'pushState' : 'replaceState'](null, '', url);
+                })
+                .catch(function (e) {
+                    if (e && e.name === 'AbortError') return;
+                    location.href = url;
+                });
+        }
+        var teks = 'input[type=search], input[type=text]';
+        document.addEventListener('input', function (e) {
+            var form = e.target.closest('form[data-live]');
+            if (!form || !e.target.matches(teks)) return;
+            clearTimeout(timer);
+            timer = setTimeout(function () { muat(urlDari(form)); }, 350);
+        });
+        document.addEventListener('change', function (e) {
+            var form = e.target.closest('form[data-live]');
+            if (form && !e.target.matches(teks)) muat(urlDari(form));
+        });
+        document.addEventListener('submit', function (e) {
+            var form = e.target.closest('form[data-live]');
+            if (!form) return;
+            e.preventDefault(); clearTimeout(timer); muat(urlDari(form));
+        });
+        // link paginasi & chip filter di dalam area hasil ikut AJAX
+        document.addEventListener('click', function (e) {
+            var a = e.target.closest('[data-live-target] a[href]');
+            if (!a || e.ctrlKey || e.metaKey || e.shiftKey || a.target) return;
+            var form = document.querySelector('form[data-live]');
+            if (!form || new URL(a.href, location.href).pathname !== new URL(form.action, location.href).pathname) return;
+            e.preventDefault();
+            muat(a.href, true);
+        });
+        window.addEventListener('popstate', function () { if (document.querySelector('form[data-live]')) muat(location.href, 'pop'); });
+    }());
+    </script>
     @stack('scripts')
 </body>
 </html>

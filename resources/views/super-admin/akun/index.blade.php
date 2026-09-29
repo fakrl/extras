@@ -56,7 +56,7 @@
 </div>
 @include('partials.client-baru-modal')
 
-<form method="GET" action="{{ route('super-admin.akun.index') }}" class="xtoolbar">
+<form method="GET" action="{{ route('super-admin.akun.index') }}" class="xtoolbar" data-live>
     <input type="search" name="q" value="{{ $f['q'] }}" class="xtoolbar-cari" placeholder="Cari nama, username, email, WA…" aria-label="Cari akun">
     <button type="submit" class="btn btn-sm btn-brand" aria-label="Cari"><i class="ti ti-search"></i></button>
     <details class="xtoolbar-more" @if($filterAktif > ($f['role'] ? 1 : 0)) open @endif>
@@ -102,6 +102,7 @@
     </details>
 </form>
 
+<div data-live-target>
 {{-- Form bulk berdiri sendiri, checkbox terhubung lewat atribut form (AY.1: tanpa form bersarang). --}}
 <form id="bulk-form" method="POST" action="{{ route('super-admin.admins.bulk-action') }}" style="display: none;">
     @csrf
@@ -210,6 +211,7 @@
 @endif
 
 <div style="margin-top: 16px;">{{ $users->links() }}</div>
+</div>
 
 <dialog id="add-admin-dialog" class="akun-dialog">
     <form method="POST" action="{{ route('super-admin.admins.store') }}">
@@ -241,18 +243,19 @@
 @push('scripts')
 <script>
 (function () {
-    var toolbar = document.getElementById('bulk-toolbar');
-    var selectAll = document.getElementById('select-all-cb');
-    var cbs = document.querySelectorAll('.bulk-cb');
+    // delegasi di document: daftar bisa diganti live search (AJAX) tanpa kehilangan listener
     function sync() {
+        var toolbar = document.getElementById('bulk-toolbar');
+        if (!toolbar) return;
         var n = document.querySelectorAll('.bulk-cb:checked').length;
         toolbar.style.display = n ? 'flex' : 'none';
         document.getElementById('bulk-count').textContent = n + ' akun dipilih';
     }
-    cbs.forEach(function (cb) { cb.addEventListener('change', sync); });
-    if (selectAll) selectAll.addEventListener('change', function () {
-        cbs.forEach(function (cb) { cb.checked = selectAll.checked; });
-        sync();
+    document.addEventListener('change', function (e) {
+        if (e.target.id === 'select-all-cb') {
+            document.querySelectorAll('.bulk-cb').forEach(function (cb) { cb.checked = e.target.checked; });
+        }
+        if (e.target.id === 'select-all-cb' || e.target.classList.contains('bulk-cb')) sync();
     });
     document.addEventListener('click', function (e) {
         document.querySelectorAll('.akun-kebab[open]').forEach(function (d) { if (!d.contains(e.target)) d.removeAttribute('open'); });
