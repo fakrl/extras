@@ -3,9 +3,10 @@
 @section('title', 'Log Aktivitas Sistem (Audit Trail)')
 
 @section('content')
-<form method="GET" action="{{ route('super-admin.activity-logs') }}" class="xtoolbar" data-live>
+<form method="GET" action="{{ route('super-admin.activity-logs') }}" class="xtoolbar" id="live-form" data-live>
     <input type="search" name="q" value="{{ $f['q'] ?? '' }}" class="xtoolbar-cari" placeholder="Cari deskripsi, aktor, atau subjek…" aria-label="Cari log">
     <button type="submit" class="btn btn-sm btn-brand" aria-label="Cari"><i class="ti ti-search"></i></button>
+    <x-per-halaman :pilihan="\App\Support\PerHalaman::TABEL" :nilai="$logs->perPage()" />
     <details class="xtoolbar-more" @if($filterAktif) open @endif>
         <summary class="btn btn-sm" aria-label="Filter"><i class="ti ti-adjustments-horizontal"></i> Filter @if($filterAktif)<span class="badge badge-netral">{{ $filterAktif }}</span>@endif</summary>
         <div class="xtoolbar-more-isi">
@@ -66,6 +67,6 @@
         <p style="text-align: center; color: var(--text-muted); padding: 24px 0;">Belum ada catatan aktivitas yang sesuai filter.</p>
     @endforelse
 
-    <div style="margin-top: 16px;">{{ $logs->links() }}</div>
+    <x-pagination-bar :paginator="$logs" :pilihan="\App\Support\PerHalaman::TABEL" />
 </div>
 @endsection

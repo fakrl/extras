@@ -21,9 +21,10 @@
     <p style="font-size: 13.5px; color: var(--text-secondary); margin: -8px 0 14px;">
         Pilih akun {{ $label }}. Halaman tampil dengan data akun itu, <strong>lihat saja</strong>: semua aksi (simpan, kirim, TTD) ditolak.
     </p>
-    <form method="GET" action="{{ route('super-admin.mode.pilih', $mode) }}" class="xtoolbar" data-live>
+    <form method="GET" action="{{ route('super-admin.mode.pilih', $mode) }}" class="xtoolbar" id="live-form" data-live>
         <input type="search" name="q" value="{{ $q }}" class="xtoolbar-cari" placeholder="Cari nama, username, email…" aria-label="Cari akun">
         <button type="submit" class="btn btn-sm btn-brand" aria-label="Cari"><i class="ti ti-search"></i></button>
+        <x-per-halaman :pilihan="\App\Support\PerHalaman::TABEL" :nilai="$akun->perPage()" />
     </form>
     <div class="card" data-live-target>
         @forelse ($akun as $u)
@@ -44,7 +45,7 @@
         @empty
             <div style="padding: 16px 0; color: var(--text-muted); text-align: center;">Tidak ada akun {{ $label }} aktif yang cocok.</div>
         @endforelse
-        <div style="margin-top: 12px;">{{ $akun->links() }}</div>
+        <x-pagination-bar :paginator="$akun" :pilihan="\App\Support\PerHalaman::TABEL" />
     </div>
 @endif
 @endsection

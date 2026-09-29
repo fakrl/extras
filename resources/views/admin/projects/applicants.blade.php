@@ -64,20 +64,23 @@
     <a href="{{ request()->fullUrlWithQuery(['urut' => 'cocok', 'page' => null]) }}" class="btn btn-sm {{ $urut ? 'btn-brand' : '' }}">Paling cocok</a>
 </div>
 @if ($tagDicari->isNotEmpty())
-    <p class="xfilter-note">Menampilkan yang punya <strong>salah satu</strong> tag@if ($urut), diurutkan paling cocok@endif</p>
+    <p class="xfilter-note">Menampilkan yang punya <strong>salah satu</strong> tag{{ $urut ? ', diurutkan paling cocok' : '' }}</p>
 @endif
 
 {{-- live search server-side (lintas halaman paginasi); filter aktif ikut sebagai hidden input --}}
-<form method="GET" action="{{ route('admin.projects.applicants', $castingProject) }}" data-live role="search" style="position: relative; margin-bottom: 16px; max-width: 400px;">
-    @foreach (request()->except(['q', 'page']) as $k => $v)
+<form method="GET" action="{{ route('admin.projects.applicants', $castingProject) }}" id="live-form" data-live role="search" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 16px;">
+    @foreach (request()->except(['q', 'page', 'per']) as $k => $v)
         @foreach ((array) $v as $vv)
             <input type="hidden" name="{{ is_array($v) ? $k.'[]' : $k }}" value="{{ $vv }}">
         @endforeach
     @endforeach
+    <span style="position: relative; flex: 1 1 260px; max-width: 400px;">
     <label for="search-applicants" class="sr-only">Cari pelamar</label>
     <input type="search" name="q" id="search-applicants" value="{{ $cari }}" placeholder="Cari nama pelamar, alias/username, peran, kelas..."
            style="width: 100%; padding: 8px 14px 8px 36px; border: 1px solid var(--border-color); border-radius: 8px; font-size: var(--fs-md); background: var(--bg-card); color: var(--text-primary); margin-bottom: 0;">
     <i class="ti ti-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 15px;"></i>
+    </span>
+    <x-per-halaman :pilihan="\App\Support\PerHalaman::KARTU" :nilai="$applicants->perPage()" />
 </form>
 
 <div data-live-target>
@@ -375,7 +378,7 @@
     @endif
 @endforeach
 
-{{ $applicants->links() }}
+<x-pagination-bar :paginator="$applicants" :pilihan="\App\Support\PerHalaman::KARTU" />
 </div>
 
 @endsection
