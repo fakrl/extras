@@ -12,8 +12,89 @@
     <a href="{{ route('extras.projects.index') }}" class="btn btn-brand">Lihat Casting Call</a>
 </div>
 
+@php
+    $sudahAbsenHariIni = $riwayatAbsensi->filter(fn ($a) => $a->eventShootingDate?->tanggal->isToday())->pluck('project_application_id');
+    $tindakan = collect();
+    if (! $extrasProfile?->profilLengkap()) {
+        $tindakan->push(['badge-info', 'Profil belum lengkap', 'Lengkapi foto, usia, gender & tinggi badan', route('extras.profile.edit'), 'Lengkapi', null]);
+    }
+    foreach ($pendaftaranSaya as $app) {
+        $nama = $app->castingProject->nama_produksi;
+        if ($app->status_partisipasi === 'nego_fee') {
+            $tindakan->push(['badge-pending', 'Nego fee', $nama, route('extras.negotiations.show', $app), 'Lanjut Nego Fee', null]);
+        } elseif ($app->status_partisipasi === 'lolos' && ! $extrasProfile->nik_hash) {
+            $tindakan->push(['badge-pending', 'Lengkapi KTP', $nama.' · wajib sebelum TTD kontrak', route('extras.kontrak.lengkapi-ktp', $app), 'Lengkapi KTP', null]);
+        } elseif ($app->status_partisipasi === 'lolos') {
+            $tindakan->push(['badge-aktif', 'Kontrak siap TTD', $nama, route('contracts.show', $app), 'Tanda Tangan', null]);
+        }
+        if ($app->payment?->status === 'ditransfer') {
+            $tindakan->push(['badge-info', 'Konfirmasi bayar', $nama.' · honor sudah ditransfer', route('payments.show', $app), 'Konfirmasi', null]);
+        }
+        if (in_array($app->status_partisipasi, \App\Models\ProjectApplication::STATUS_LOLOS_KE_ATAS) && $app->castingProject->shootingDates->contains(fn ($d) => $d->tanggal->isToday()) && ! $sudahAbsenHariIni->contains($app->id)) {
+            $tindakan->push(['badge-tolak', 'Absen hari ini', $nama, null, 'Absen Selfie', 'dialog-absen-'.$app->id]);
+        }
+    }
+@endphp
+
+<div class="dash-tiga">
+    <div class="card">
+        <div class="card-title">Jadwal Shooting Bulan Ini</div>
+        <x-jadwal-calendar :events="$jadwalBulanIni" :compact="true" />
+    </div>
+
+    <div class="card dash-perlu {{ $tindakan->isNotEmpty() ? '' : 'is-aman' }}">
+        <div class="card-title">
+            <i class="ti ti-clipboard-list"></i> Perlu Tindakan
+            @if ($tindakan->isNotEmpty())
+                <span class="badge badge-pending" style="margin-left: 8px;">{{ $tindakan->count() }}</span>
+            @endif
+        </div>
+        @foreach ($tindakan as [$badge, $label, $sub, $url, $tombol, $dialog])
+            <div class="dash-row">
+                <div style="min-width: 0; flex: 1;">
+                    <span class="badge {{ $badge }}">{{ $label }}</span>
+                    <div class="dash-sub" style="margin-top: 4px;">{{ $sub }}</div>
+                </div>
+                @if ($dialog)
+                    <button type="button" class="btn btn-sm btn-brand" onclick="document.getElementById('{{ $dialog }}').showModal()"><i class="ti ti-camera"></i> {{ $tombol }}</button>
+                @else
+                    <a href="{{ $url }}" class="btn btn-sm btn-brand">{{ $tombol }}</a>
+                @endif
+            </div>
+        @endforeach
+        @if ($tindakan->isEmpty())
+            <div class="dash-aman" role="status"><i class="ti ti-circle-check"></i> Semua aman &mdash; tidak ada yang perlu kamu lakukan.</div>
+        @endif
+    </div>
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div style="font-size: 14px; font-weight: 600;"><i class="ti ti-microphone"></i> Casting Call Terbuka</div>
+        <a href="{{ route('extras.projects.index') }}" style="font-size: 12.5px; color: var(--accent);">Lihat Semua &rarr;</a>
+    </div>
+    @forelse ($castingCallTerbuka as $project)
+        <div style="padding: 8px 0; border-bottom: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                <div>
+                    <div style="font-size: 13.5px; font-weight: 600;">
+                        {{ $project->nama_produksi }}
+                        @if ($project->isUrgent()) <span class="badge badge-tolak">Dadakan</span> @endif
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Deadline: {{ $project->deadline->format('d M Y') }} · {{ $project->classes->count() }} kelas</div>
+                </div>
+                <a href="{{ route('extras.projects.show', $project) }}" class="btn">Lihat</a>
+            </div>
+        </div>
+    @empty
+        <div style="font-size: 13px; color: var(--text-muted); text-align: center; padding: 12px 0;">Tidak ada casting call terbuka saat ini.</div>
+    @endforelse
+</div>
+
+</div>
+
+<div class="dashboard-grid-2col {{ $riwayatAbsensi->isNotEmpty() ? 'is-even' : '' }}">
 {{-- Status Akun, Grade, & Linimasa Aktivitas --}}
-<div class="card" style="margin-bottom: 20px;">
+<div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
         <div style="font-size: 14px; font-weight: 600;">
             <i class="ti ti-activity"></i> Status Talenta & Linimasa Aktivitas
@@ -57,36 +138,8 @@
     @endif
 </div>
 
-<div class="card" style="margin-bottom: 20px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <div style="font-size: 14px; font-weight: 600;"><i class="ti ti-microphone"></i> Casting Call Terbuka</div>
-        <a href="{{ route('extras.projects.index') }}" style="font-size: 12.5px; color: var(--accent);">Lihat Semua &rarr;</a>
-    </div>
-    @forelse ($castingCallTerbuka as $project)
-        <div style="padding: 8px 0; border-bottom: 1px solid var(--border-color);">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-                <div>
-                    <div style="font-size: 13.5px; font-weight: 600;">
-                        {{ $project->nama_produksi }}
-                        @if ($project->isUrgent()) <span class="badge badge-tolak">Dadakan</span> @endif
-                    </div>
-                    <div style="font-size: 12px; color: var(--text-muted);">Deadline: {{ $project->deadline->format('d M Y') }} · {{ $project->classes->count() }} kelas</div>
-                </div>
-                <a href="{{ route('extras.projects.show', $project) }}" class="btn">Lihat</a>
-            </div>
-        </div>
-    @empty
-        <div style="font-size: 13px; color: var(--text-muted); text-align: center; padding: 12px 0;">Tidak ada casting call terbuka saat ini.</div>
-    @endforelse
-</div>
-
-<div class="card" style="margin-bottom: 20px;">
-    <div class="card-title">Jadwal Shooting Bulan Ini</div>
-    <x-jadwal-calendar :events="$jadwalBulanIni" :compact="true" />
-</div>
-
 @if ($riwayatAbsensi->isNotEmpty())
-<div class="card" style="margin-bottom: 20px;">
+<div class="card">
     <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;"><i class="ti ti-clipboard-check"></i> Status Absensi Saya</div>
     @foreach ($riwayatAbsensi as $absen)
         @php
@@ -114,6 +167,8 @@
     @endforeach
 </div>
 @endif
+
+</div>
 
 <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Pendaftaran Saya</div>
 
