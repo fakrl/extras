@@ -39,7 +39,7 @@
                             @if ($log->action === 'SET_EXTRAS_GRADE')
                                 <span style="color: var(--accent);"><i class="ti ti-star"></i> Perubahan Grade Talenta</span>
                             @else
-                                <i class="ti ti-point"></i> {{ $log->action }}
+                                <i class="ti ti-point"></i> <span title="{{ $log->action }}">{{ \App\Models\ActivityLog::actionLabel($log->action) }}</span>
                             @endif
                         </div>
                         <div style="font-size: var(--fs-xs); color: var(--text-secondary); margin-top: 2px;">{{ $log->description }}</div>
