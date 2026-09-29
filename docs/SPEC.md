@@ -1182,9 +1182,35 @@ Tambah field Client (select bisa dicari + "+ Client baru") dan Admin PIC di form
 | Item | Bukti | QA |
 |---|---|---|
 | BE.1 GET murni baca, data dibuat di transisi status | `72fe36a` — `--filter BeGetMurniBacaTest` (GET nggak ubah jumlah baris; approve single/bulk → kontrak+payment, notif 1×; NIK belakangan → kontrak saat NIK disimpan; backfill idempoten). SQLite & MySQL 436 passed. **Perlu `php artisan migrate`** (backfill) | [ ] |
-| BE.2 periode ikut ke daftar | | [ ] |
-| BE.3 piutang & proyeksi | | [ ] |
+| BE.2 periode ikut ke daftar | `79fa820` — `--filter BePeriodeKartuTest` (angka kartu == total daftar tujuan, 4 periode, >20 proyek); scope bersama `CastingProject::shootingDalam()`. "Perlu tindakan" sengaja tanpa periode (to-do list) | [ ] |
+| BE.3 piutang & proyeksi | `98d2ddd` — `--filter BePiutangTest` (dashboard = daftar = detail). Piutang periode = invoice belum lunas dari proyek yang shooting-nya dalam periode. SQLite & MySQL 445 passed | [ ] |
 | BE.4 kuota antrian: blokir daftar saat penuh, terbuka lagi saat ada yang ditolak | | [ ] |
 | BE.5 wajib ganti password cuma di route auth | | [ ] |
 | BE.6 teks logika filter tag | | [ ] |
 | BE.7 Client & PIC di form edit proyek | | [ ] |
+
+---
+
+# Bagian BF: Kalender gaya HP (29 September 2026)
+
+> Keluhan Fakrul: kalender terlalu renggang (paling kerasa di Dashboard SA yang full-width — tiap kolom melebar, tinggi sel cuma 32px, jadi kelihatan kosong). Target: rapat & padat kayak kalender bulanan di HP (Google Calendar / iOS). **Cuma ubah `components/jadwal-calendar.blade.php`** (+ penempatan di dashboard SA). Logic event, `calClick`, escape XSS, nav bulan, `navigable`, `detail` — jangan diubah.
+
+1. **Lebar tetap:** grid kalender `max-width: 360px` di semua mode (compact maupun detail). Kartu kalender boleh lebar, tapi grid-nya nggak ikut melebar.
+2. **Sel kotak:** `.cal-day` pakai `aspect-ratio: 1`, angka tanggal di tengah dalam lingkaran 32–36px. Hapus `min-height` lama. Gap antar sel 2px.
+3. **Penanda:**
+   - Hari ini: lingkaran **terisi** warna accent, angka putih.
+   - Tanggal terpilih: **ring** (border 2px accent), bukan background pudar.
+   - Ada event: titik kecil di bawah angka, maksimal 3 titik (1 titik per proyek, warna beda per proyek kalau gampang; kalau nggak, satu warna accent). Lebih dari 3 → titik ke-3 diganti "+".
+   - Tanggal di luar bulan: angka pudar (opacity .35), tetap bisa diklik kalau ada event.
+4. **Header:** label hari 1 huruf (S S R K J S M) 12px; baris judul "September 2026" rata kiri + panah ‹ › di kanan (target sentuh 44px).
+5. **Agenda di bawah (bukan di samping):** panel detail selalu di **bawah** grid, isinya daftar gaya agenda HP — tiap kegiatan 1 baris: garis warna kiri, jam, nama proyek, lokasi, jumlah Extras, tombol aksi kecil. Default kebuka di **hari ini** (atau tanggal event terdekat) tanpa perlu diklik. Klik tanggal lain → ganti isi agenda. Hover tetap boleh buat preview di desktop.
+6. **Dashboard SA:** kartu kalender taruh di grid 2 kolom (`.dashboard-grid-2col`): kiri kalender (360px) + agenda di bawahnya, kanan "Perlu tindakan". Di HP jadi 1 kolom.
+7. Cek di 4 dashboard lain (Admin, Korlap/absensi, Client, Extras) — semuanya pakai komponen yang sama, jadi harus ikut rapi tanpa ubahan di view masing-masing. Cek dark & light.
+
+## Checklist BF
+
+| Item | Bukti | QA |
+|---|---|---|
+| BF.1–5 komponen kalender gaya HP | | [ ] |
+| BF.6 penempatan dashboard SA | | [ ] |
+| BF.7 cek 5 halaman, dark/light, 360px | | [ ] |
