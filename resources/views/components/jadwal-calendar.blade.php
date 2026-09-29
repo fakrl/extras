@@ -43,7 +43,9 @@ button.cal-day { border: none; margin: 0; padding: 0; font: inherit; color: inhe
 .cal-dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--c, var(--accent)); }
 .cal-dots b { font-size: 12px; line-height: 6px; font-weight: 700; color: var(--text-secondary); }
 .cal-empty { text-align: center; color: var(--text-muted); font-size: 12px; margin-top: 10px; }
-.cal-detail-panel { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color); font-size: 13px; }
+.cal-detail-panel { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color); font-size: 13px; max-height: 340px; overflow-y: auto; overscroll-behavior: contain; }
+/* agenda panjang (banyak proyek sehari) scroll di dalam panel, bukan molorin halaman */
+.cal-agenda-date { position: sticky; top: 0; background: var(--bg-card); z-index: 1; }
 .cal-agenda-date { font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; }
 .cal-event-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-left: 3px solid var(--c, var(--accent)); border-radius: 4px; background: color-mix(in srgb, var(--c, var(--accent)) 8%, transparent); }
 .cal-event-item + .cal-event-item { margin-top: 4px; }
