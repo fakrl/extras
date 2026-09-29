@@ -60,7 +60,7 @@ class ActivityLog extends Model
         return match (true) {
             $s instanceof User => route('super-admin.admins.show', $s),
             $s instanceof ExtrasProfile => route('super-admin.admins.show', $s->user_id),
-            $s instanceof CastingProject => route('admin.projects.applicants', $s),
+            $s instanceof CastingProject => route('admin.projects.show', $s),
             $s instanceof ProjectApplication => route('admin.projects.applicants', $s->casting_project_id),
             default => null,
         };
