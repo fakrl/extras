@@ -1184,10 +1184,10 @@ Tambah field Client (select bisa dicari + "+ Client baru") dan Admin PIC di form
 | BE.1 GET murni baca, data dibuat di transisi status | `72fe36a` — `--filter BeGetMurniBacaTest` (GET nggak ubah jumlah baris; approve single/bulk → kontrak+payment, notif 1×; NIK belakangan → kontrak saat NIK disimpan; backfill idempoten). SQLite & MySQL 436 passed. **Perlu `php artisan migrate`** (backfill) | [ ] |
 | BE.2 periode ikut ke daftar | `79fa820` — `--filter BePeriodeKartuTest` (angka kartu == total daftar tujuan, 4 periode, >20 proyek); scope bersama `CastingProject::shootingDalam()`. "Perlu tindakan" sengaja tanpa periode (to-do list) | [ ] |
 | BE.3 piutang & proyeksi | `98d2ddd` — `--filter BePiutangTest` (dashboard = daftar = detail). Piutang periode = invoice belum lunas dari proyek yang shooting-nya dalam periode. SQLite & MySQL 445 passed | [ ] |
-| BE.4 kuota antrian: blokir daftar saat penuh, terbuka lagi saat ada yang ditolak | | [ ] |
-| BE.5 wajib ganti password cuma di route auth | | [ ] |
-| BE.6 teks logika filter tag | | [ ] |
-| BE.7 Client & PIC di form edit proyek | | [ ] |
+| BE.4 kuota antrian: blokir daftar saat penuh, terbuka lagi saat ada yang ditolak | `f4db61d` — `--filter BeKuotaAntrianTest` (kuota 2: orang ke-3 ditolak; 1 ditolak → ke-3 bisa; peran lain tetap bisa; kuotaPenuh = semua peran penuh). Transaksi + `lockForUpdate` | [ ] |
+| BE.5 wajib ganti password cuma di route auth | `9a47084` — `--filter BeWajibGantiPublikTest` (`/`, `/event`, `/p/extras`, privacy 200; dashboard → ubah password) | [ ] |
+| BE.6 teks logika filter tag | `2f75ebb` — assert di `BaKartuExtrasTest` & `ManajemenAkunTest` | [ ] |
+| BE.7 Client & PIC di form edit proyek | `5dc07b8` — `--filter BeEditClientPicTest`; badge "Client belum diisi" + filter `?tanpa_client=1` + item Perlu tindakan. SQLite & MySQL 450 passed | [ ] |
 
 ---
 
@@ -1211,6 +1211,6 @@ Tambah field Client (select bisa dicari + "+ Client baru") dan Admin PIC di form
 
 | Item | Bukti | QA |
 |---|---|---|
-| BF.1–5 komponen kalender gaya HP | | [ ] |
-| BF.6 penempatan dashboard SA | | [ ] |
-| BF.7 cek 5 halaman, dark/light, 360px | | [ ] |
+| BF.1–5 komponen kalender gaya HP | `acd3bcd` (merge) — test kalender lama tetap hijau; screenshot 5 halaman × HP/desktop × light/dark | [ ] |
+| BF.6 penempatan dashboard SA | `acd3bcd` — kalender kiri + Perlu tindakan kanan (≥861px), 1 kolom di HP | [ ] |
+| BF.7 cek 5 halaman, dark/light, 360px | dicek via screenshot Edge headless (SA, Admin, Korlap, Client, Extras). Angka "hari ini" di dark pakai `--accent-on` (gelap), bukan putih — putih di atas hijau terang kontrasnya < 3:1 | [ ] |
