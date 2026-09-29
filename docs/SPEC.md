@@ -1115,14 +1115,14 @@ Dashboard · Manajemen Akun · Proyek & Keuangan · Log Aktivitas · Monitoring 
 
 | Item | Bukti | QA |
 |---|---|---|
-| BD.1 akun Client oleh SA + wajib ganti password | | [ ] |
-| BD.2 Proyek & Keuangan (data, form, daftar, detail, cashflow) | | [ ] |
+| BD.1 akun Client oleh SA + wajib ganti password | `d120ccf`, `f7c0077` (merge `3f75d25`) + integrasi form proyek `352bf94` — `--filter ClientAkunTest`; Manual: SA Kelola Akun ▸ + Client → dialog kredensial (Salin/WA) → login Client dipaksa ganti password; `/register/casting-director` → login | [ ] |
+| BD.2 Proyek & Keuangan (data, form, daftar, detail, cashflow) | `cb349a4`, `c314260` — `--filter ProyekKeuanganTest` (cashflow 1,1 jt / 45%, periode, tandai lunas idempotent, hapus biaya 403); Manual: SA buat proyek pilih PIC+Client → langsung dibuka; detail `?tab=cashflow` | [ ] |
 | BD.3 dashboard ringkasan | | [ ] |
 | BD.4 Manajemen Akun gabungan | | [ ] |
-| BD.5 Log Aktivitas search-first | | [ ] |
+| BD.5 Log Aktivitas search-first | `ac1b2fc` (merge) — `--filter ActivityLogAndEnhancementsTest`; Manual: cari deskripsi/aktor/nama proyek, filter di ikon, tanpa chart | [ ] |
 | BD.6 Monitoring per role (aksi Admin/Korlap, read-only Client/Extras) | | [ ] |
-| BD.7 sisa kuota + tag di lowongan | | [ ] |
+| BD.7 sisa kuota + tag di lowongan | `2639cc2` (merge) — `--filter BdLowonganExtrasTest`; Manual HP: `/extras/lowongan/{id}` "Sisa X dari Y" + tag milik sendiri bercentang | [ ] |
 | BD.8 sidebar final + redirect route lama | | [ ] |
-| BD.9 lampiran proyek | | [ ] |
+| BD.9 lampiran proyek | `3765798` (merge `8462b07`) — `--filter ProjectAttachmentTest` (Client lain/Extras/Korlap 403, hapus non-pengunggah 403); Manual: `/admin/projects/{id}?tab=lampiran`, Client di `/cd/jadwal/{id}` | [ ] |
 
 **Tes QA:** (1) SA bikin akun Client → login Client dipaksa ganti password. (2) SA bikin proyek pilih Admin & Client → langsung dibuka, muncul di dashboard Client. (3) Admin tambah biaya lain-lain → saldo proyek & dashboard SA berubah sama persis. (4) SA Monitoring ▸ Client ▸ @client_andini → lihat Greenlight, klik Pilih → ditolak "Mode lihat saja". (5) SA Monitoring ▸ Korlap → validasi absensi → di Log tertulis "(sebagai Korlap)".
