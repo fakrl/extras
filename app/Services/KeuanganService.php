@@ -173,7 +173,7 @@ class KeuanganService
             ->with('castingProject.classes')->get()
             ->map(fn (Invoice $i) => [$i->dibayar_at, (float) ($i->nominal ?? $this->nilaiInvoice($i->castingProject))]);
 
-        $keluar = Payment::whereBetween('ditransfer_at', [$from, $to])->with('projectApplication', 'addons')->get()
+        $keluar = Payment::whereBetween('ditransfer_at', [$from, $to])->with('projectApplication', 'addons')->get()->toBase()
             ->map(fn (Payment $p) => [$p->ditransfer_at, $p->nominalTotal()])
             ->merge(StaffPayroll::where('status_bayar', 'sudah')->whereBetween('dibayar_at', [$from, $to])->with('addons')->get()
                 ->map(fn (StaffPayroll $s) => [$s->dibayar_at, $s->nominalTotal()]))

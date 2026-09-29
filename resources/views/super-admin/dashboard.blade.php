@@ -2,39 +2,68 @@
 
 @section('title', 'Dashboard Super Admin')
 
+@php
+    $rp = fn ($v) => 'Rp '.number_format((float) $v, 0, ',', '.');
+    $jumlahTindakan = $pendingRequests->count() + $sengketa->count() + ($honorStaf->jumlah ? 1 : 0) + $invoiceBelumLunas->count();
+    $namaRole = ['super_admin' => 'Super Admin', 'admin' => 'Admin', 'korlap' => 'Korlap', 'client' => 'Client', 'extras' => 'Extras'];
+@endphp
+
+@push('styles')
+<style>
+.sa-filter { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.sa-filter .btn { min-height: 32px; padding: 0 12px; font-size: 12px; border-radius: 20px; }
+.sa-filter input[type=date] { min-height: 32px; font-size: 12px; padding: 0 6px; width: auto; }
+.sa-stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+.sa-stat-grid.is-3 .metric-card:last-child { grid-column: span 2; }
+@media (min-width: 861px) {
+    .sa-stat-grid { grid-template-columns: repeat(4, 1fr); }
+    .sa-stat-grid.is-3 { grid-template-columns: repeat(3, 1fr); }
+    .sa-stat-grid.is-3 .metric-card:last-child { grid-column: auto; }
+}
+a.metric-card { display: block; text-decoration: none; color: inherit; border: 1px solid var(--border-color); }
+a.metric-card:hover { border-color: var(--accent); }
+.sa-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 0; border-bottom: 1px solid var(--border-color); font-size: 13.5px; }
+.sa-row:last-child { border-bottom: none; }
+a.sa-row { text-decoration: none; color: inherit; }
+a.sa-row:hover { color: var(--accent); }
+.sa-sub { font-size: 12px; color: var(--text-muted); }
+.sa-role-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; }
+</style>
+@endpush
+
 @section('content')
-<div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 18px;">
-    <p style="color: var(--text-secondary); font-size: 13.5px; margin: 0;">
-        Monitoring, analitik, dan persetujuan proyek. Operasional harian dikelola oleh Admin.
-    </p>
-    <form method="GET" action="{{ route('super-admin.dashboard') }}" style="display: flex; gap: 6px;">
-        @foreach (['7d' => '7 Hari', '30d' => '30 Hari', '1y' => '1 Tahun'] as $val => $label)
-            <button type="submit" name="period" value="{{ $val }}"
-                class="btn btn-sm {{ $period === $val ? 'btn-brand' : '' }}"
-                style="min-height: 30px; padding: 0 12px; font-size: 12px; border-radius: 20px;">
-                {{ $label }}
-            </button>
+{{-- BD.3.1 Filter periode --}}
+<div class="card" style="margin-bottom: 16px;">
+    <div class="sa-filter">
+        @foreach (\App\Http\Controllers\SuperAdmin\DashboardController::PRESET as $val => $label)
+            <a href="{{ route('super-admin.dashboard', ['periode' => $val]) }}" class="btn {{ $preset === $val ? 'btn-brand' : '' }}">{{ $label }}</a>
         @endforeach
-    </form>
+        <form method="GET" action="{{ route('super-admin.dashboard') }}" class="sa-filter">
+            <input type="date" name="dari" value="{{ $dari->format('Y-m-d') }}" aria-label="Dari tanggal" required>
+            <span class="sa-sub">&ndash;</span>
+            <input type="date" name="sampai" value="{{ $sampai->format('Y-m-d') }}" aria-label="Sampai tanggal" required>
+            <button type="submit" class="btn {{ $preset ? '' : 'btn-brand' }}">Terapkan</button>
+        </form>
+        <span class="sa-sub"><strong>{{ $jumlahHari }} hari</strong> &middot; {{ $dari->translatedFormat('d M Y') }} &ndash; {{ $sampai->translatedFormat('d M Y') }}</span>
+    </div>
+    <p class="sa-sub" style="margin: 8px 0 0;">Proyek difilter pakai tanggal shooting, uang pakai tanggal transaksi (invoice lunas, transfer honor, biaya lain-lain).</p>
 </div>
 
-{{-- 1. Proyek Perlu Ditindak --}}
-<div class="card" style="border: 2px solid var(--accent-strong); margin-bottom: 20px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <div class="card-title" style="color: var(--accent-strong); margin: 0;">
-            <i class="ti ti-clipboard-list"></i> Proyek Perlu Ditindak
-            @if ($pendingRequests->isNotEmpty())
-                <span class="badge badge-pending" style="margin-left: 8px;">{{ $pendingRequests->count() }} menunggu ACC</span>
-            @endif
-        </div>
-        <a href="{{ route('admin.projects.index') }}" style="font-size: 12px; color: var(--accent);">Lihat semua proyek &rarr;</a>
+{{-- BD.3.2 Perlu tindakan --}}
+<div class="card" style="border: 2px solid var(--accent-strong); margin-bottom: 16px;">
+    <div class="card-title" style="color: var(--accent-strong);">
+        <i class="ti ti-clipboard-list"></i> Perlu Tindakan
+        @if ($jumlahTindakan)
+            <span class="badge badge-pending" style="margin-left: 8px;">{{ $jumlahTindakan }}</span>
+        @endif
     </div>
 
-    @forelse ($pendingRequests as $req)
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color); gap: 8px; flex-wrap: wrap;">
+    @foreach ($pendingRequests as $req)
+        <div class="sa-row">
             <div>
-                <div style="font-weight: 600; font-size: 13.5px;">{{ $req->nama_produksi }}</div>
-                <div style="font-size: 12px; color: var(--text-muted);">{{ $req->client_ph }} &bull; {{ $req->diajukanOlehClient?->name }}</div>
+                <span class="badge badge-pending">Menunggu ACC</span>
+                <strong>{{ $req->nama_produksi }}</strong>
+                <div class="sa-sub">{{ $req->client_ph }} &bull; {{ $req->diajukanOlehClient?->name }}</div>
                 <details style="margin-top: 6px; font-size: 13px;">
                     <summary style="cursor: pointer; color: var(--accent);">Lihat brief, kuota, deadline</summary>
                     <div style="margin-top: 6px;">Kuota: <strong>{{ $req->kuota }} orang</strong> &bull; Deadline: <strong>{{ $req->deadline?->format('d M Y') ?? '-' }}</strong></div>
@@ -61,137 +90,124 @@
                 </div>
             </form>
         </dialog>
-    @empty
-        @forelse ($ringkasanProyek as $p)
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color); gap: 8px; flex-wrap: wrap;">
-                <div>
-                    <span style="font-weight: 500; font-size: 13.5px;">{{ $p->nama_produksi }}</span>
-                    @if ($p->isUrgent()) <span class="badge badge-tolak" style="font-size: var(--fs-xs); margin-left: 6px;">URGENT</span> @endif
-                    <div style="font-size: 12px; color: var(--text-muted);">Deadline: {{ $p->deadline?->format('d M Y') ?? '-' }}</div>
-                </div>
-            </div>
-        @empty
-            <p style="color: var(--text-muted); font-size: 13px; padding: 8px 0;">Tidak ada proyek yang perlu ditindak saat ini.</p>
-        @endforelse
-    @endempty
+    @endforeach
 
-    @if ($pendingRequests->isNotEmpty() && $ringkasanProyek->isNotEmpty())
-        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color);">
-            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Proyek Berjalan:</div>
-            @foreach ($ringkasanProyek->take(2) as $p)
-                <div style="font-size: 13px; padding: 4px 0;">
-                    {{ $p->nama_produksi }}
-                    @if ($p->isUrgent()) <span class="badge badge-tolak" style="font-size: var(--fs-xs);">URGENT</span> @endif
-                </div>
-            @endforeach
-        </div>
+    @foreach ($sengketa as $p)
+        <a href="{{ route('payments.show', $p->project_application_id) }}" class="sa-row">
+            <div>
+                <span class="badge badge-tolak">Pembayaran disengketakan</span>
+                <strong>{{ $p->projectApplication?->extras?->user?->name ?? 'Extras' }}</strong>
+                <div class="sa-sub">{{ $p->projectApplication?->castingProject?->nama_produksi }} &bull; {{ \Illuminate\Support\Str::limit($p->alasan_sengketa, 80) }}</div>
+            </div>
+            <span class="sa-sub">Buka &rarr;</span>
+        </a>
+    @endforeach
+
+    @if ($honorStaf->jumlah)
+        <a href="{{ route('admin.projects.index', ['bayar' => 'staf']) }}" class="sa-row">
+            <div>
+                <span class="badge badge-pending">Honor staf belum dibayar</span>
+                <strong>{{ $honorStaf->jumlah }} honor</strong>
+                <div class="sa-sub">Total {{ $rp($honorStaf->total) }}</div>
+            </div>
+            <span class="sa-sub">Buka &rarr;</span>
+        </a>
+    @endif
+
+    @foreach ($invoiceBelumLunas as $inv)
+        <a href="{{ route('admin.projects.show', [$inv->casting_project_id, 'tab' => 'cashflow']) }}" class="sa-row">
+            <div>
+                <span class="badge badge-info">Invoice belum lunas</span>
+                <strong>{{ $inv->castingProject?->nama_produksi }}</strong>
+                <div class="sa-sub">{{ $rp($inv->nilai) }}</div>
+            </div>
+            <span class="sa-sub">Buka &rarr;</span>
+        </a>
+    @endforeach
+
+    @if (! $jumlahTindakan)
+        <p class="sa-sub" style="margin: 0;">Tidak ada yang perlu ditindak saat ini.</p>
     @endif
 </div>
 
-{{-- 2. Metric cards --}}
-@php
-$periodLabel = match($period) { '7d' => '7 hari ini', '1y' => 'tahun ini', default => '30 hari ini' };
-@endphp
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px;">
-    <div class="metric-card" title="Proyek casting yang sedang dalam proses (status dibuka)">
-        <div class="metric-label">Proyek Berjalan</div>
-        <div class="metric-value">{{ $proyekBerjalan }}</div>
-        <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 4px;">saat ini (tidak ikut filter periode)</div>
-    </div>
-    <div class="metric-card" title="Jumlah akun Extras dengan status aktif di sistem">
-        <div class="metric-label">Extras Aktif</div>
-        <div class="metric-value">{{ $extrasAktif }}</div>
-        <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 6px;">
-            <span>tren: bergabung {{ $periodLabel }}</span>
-            @if ($trendExtrasAktif)
-                <span style="font-size: var(--fs-xs); font-weight: 600; color: {{ $trendExtrasAktif['up'] ? 'var(--accent-strong)' : 'var(--danger)' }};">
-                    {{ $trendExtrasAktif['up'] ? '↑' : '↓' }} {{ $trendExtrasAktif['label'] }}
-                </span>
-            @endif
-        </div>
-    </div>
-    <div class="metric-card" title="Total seluruh akun terdaftar di sistem (semua role)">
-        <div class="metric-label">Total Akun Sistem</div>
-        <div class="metric-value">{{ $totalAkun }}</div>
-        <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 6px;">
-            <span>tren: daftar {{ $periodLabel }}</span>
-            @if ($trendTotalAkun)
-                <span style="font-size: var(--fs-xs); font-weight: 600; color: {{ $trendTotalAkun['up'] ? 'var(--accent-strong)' : 'var(--danger)' }};">
-                    {{ $trendTotalAkun['up'] ? '↑' : '↓' }} {{ $trendTotalAkun['label'] }}
-                </span>
-            @endif
-        </div>
-    </div>
-    <a href="{{ route('super-admin.recap-margin', ['tab' => 'staf']) }}" class="metric-card" style="display: block; text-decoration: none; color: inherit;" title="Total honor staf/admin yang belum dibayar, klik untuk lihat tab Honor Staf">
-        <div class="metric-label">Honor Belum Diproses</div>
-        <div class="metric-value">Rp {{ number_format($honorBelumDiproses, 0, ',', '.') }}</div>
-        <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 4px;">semua waktu · perlu tindak lanjut</div>
-    </a>
-</div>
-
-{{-- AT.2: Card Margin Bulan Ini --}}
-<div class="card" style="margin-bottom: 20px;">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div>
-            <div class="metric-label">Margin Bulan Ini</div>
-            @if ($marginBulanIni->ada_data)
-                <div class="metric-value" style="font-size: 18px;">
-                    Rp {{ number_format($marginBulanIni->margin, 0, ',', '.') }}
-                </div>
-            @else
-                <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Belum ada data bulan ini</div>
-            @endif
-        </div>
-        <a href="{{ route('super-admin.recap-margin') }}" style="font-size: 12.5px; color: var(--accent); white-space: nowrap;">
-            &rarr; Lihat Detail
+{{-- BD.3.3 Status proyek --}}
+<div class="card-title">Status Proyek <span class="sa-sub" style="font-weight: 400;">(shooting dalam periode; Menunggu ACC semua)</span></div>
+<div class="sa-stat-grid">
+    @foreach (\App\Models\CastingProject::TAHAP as $tahap => $label)
+        <a href="{{ route('admin.projects.index', ['tahap' => $tahap]) }}" class="metric-card">
+            <div class="metric-label">{{ $label }}</div>
+            <div class="metric-value">{{ $statusProyek[$tahap] }}</div>
         </a>
-    </div>
+    @endforeach
 </div>
 
-{{-- AU.5: Charts --}}
-<div class="dashboard-grid-2col is-even" style="margin-bottom: 20px;">
-    <div class="card">
-        <div class="card-title">Margin per Bulan (6 bulan terakhir)</div>
-        <div style="height: 200px;"><canvas id="chartMarginBulanan"></canvas></div>
+{{-- BD.3.4 Uang periode --}}
+<div class="card" style="margin-bottom: 16px;">
+    <div class="card-title">Uang Periode Ini</div>
+    <div class="sa-stat-grid is-3">
+        <div class="metric-card" style="border: 1px solid var(--border-color);">
+            <div class="metric-label">Masuk</div>
+            <div class="metric-value" style="font-size: var(--fs-lg, 18px);">{{ $rp($uang->total_masuk) }}</div>
+        </div>
+        <div class="metric-card" style="border: 1px solid var(--border-color);">
+            <div class="metric-label">Keluar</div>
+            <div class="metric-value" style="font-size: var(--fs-lg, 18px);">{{ $rp($uang->total_keluar) }}</div>
+        </div>
+        <div class="metric-card" style="border: 1px solid var(--border-color);">
+            <div class="metric-label">Saldo</div>
+            <div class="metric-value" style="font-size: var(--fs-lg, 18px); color: {{ $uang->saldo < 0 ? 'var(--danger)' : 'var(--accent-strong)' }};">{{ $rp($uang->saldo) }}</div>
+        </div>
     </div>
-    <div class="card">
-        <div class="card-title">Status Proyek</div>
-        <div style="height: 200px;"><canvas id="chartStatusProyek"></canvas></div>
-    </div>
+    <div class="chart-box"><canvas id="chartUangBulanan"></canvas></div>
 </div>
 
-{{-- AU.10.1: Honor + Kalender dalam 2 kolom --}}
-<div class="dashboard-grid-2col is-wide-narrow">
+{{-- BD.3.5 Kalender --}}
+<div class="card" style="margin-bottom: 16px;">
+    <div class="card-title">Jadwal Shooting</div>
+    <x-jadwal-calendar :events="$jadwal" :bulan="$bulan->format('Y-m')" :detail="true" />
+    <p class="sa-sub" style="margin: 8px 0 0;">Klik tanggal bertanda untuk lihat kegiatan hari itu.</p>
+</div>
+
+<div class="dashboard-grid-2col is-even">
+    {{-- BD.3.6 Akun --}}
     <div class="card">
-        <div class="card-title">Admin & Staff — Honor Berjalan (Top 5)</div>
-        <div class="table-container">
-        <table>
-            <thead>
-                <tr><th>Nama Admin</th><th>Role</th><th>Total Honor</th><th>Proyek Selesai</th><th>Proyek Berjalan</th></tr>
-            </thead>
-            <tbody>
-                @forelse ($rekapHonorAdmin as $admin)
-                    <tr>
-                        <td>{{ $admin->nama }}</td>
-                        <td>{{ $admin->role }}</td>
-                        <td>Rp {{ number_format($admin->total_honor, 0, ',', '.') }}</td>
-                        <td>{{ $admin->proyek_selesai }}</td>
-                        <td>{{ $admin->proyek_berjalan }}</td>
-                    </tr>
-                @empty
-                    <tr><td colspan="5" style="text-align:center; color: var(--text-muted);">Belum ada Admin.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
+        <div class="card-title">Akun</div>
+        <div class="sa-role-grid">
+            @foreach ($namaRole as $role => $label)
+                <a href="{{ route('super-admin.admins.index', ['role' => $role]) }}" class="metric-card">
+                    <div class="metric-label">{{ $label }}</div>
+                    <div class="metric-value">{{ $akunPerRole[$role] ?? 0 }}</div>
+                </a>
+            @endforeach
         </div>
-        <div style="margin-top: 10px; text-align: right; font-size: 12.5px;">
-            <a href="{{ route('super-admin.admins.index') }}" style="color: var(--accent);">Lihat semua &rarr;</a>
-        </div>
+        @if ($clientBelumGantiPassword)
+            <a href="{{ route('super-admin.admins.index', ['role' => 'client']) }}" class="sa-row" style="margin-top: 8px;">
+                <div><span class="badge badge-pending">Perlu tindakan</span> {{ $clientBelumGantiPassword }} akun Client baru belum ganti password</div>
+                <span class="sa-sub">Buka &rarr;</span>
+            </a>
+        @else
+            <p class="sa-sub" style="margin: 10px 0 0;">Semua akun Client sudah ganti password.</p>
+        @endif
     </div>
+
+    {{-- BD.3.7 5 proyek berjalan teratas --}}
     <div class="card">
-        <div class="card-title">Jadwal Shooting Bulan Ini</div>
-        <x-jadwal-calendar :events="$jadwalBulanIni" :compact="true" />
-        <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Klik tanggal bertanda untuk lihat detail acara.</p>
+        <div class="card-title">5 Proyek Berjalan Teratas</div>
+        @forelse ($proyekBerjalan as $p)
+            <a href="{{ route('admin.projects.show', $p) }}" class="sa-row">
+                <div>
+                    <strong>{{ $p->nama_produksi }}</strong>
+                    <div class="sa-sub">{{ $p->client?->name ?? $p->client_ph }} &bull; {{ $p->rentangShooting() }}</div>
+                </div>
+                <span class="sa-sub">{{ $p->shooting_terdekat ? \Carbon\Carbon::parse($p->shooting_terdekat)->translatedFormat('d M') : '' }}</span>
+            </a>
+        @empty
+            <p class="sa-sub" style="margin: 0;">Tidak ada proyek berjalan.</p>
+        @endforelse
+        <div style="margin-top: 10px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12.5px;">
+            <a href="{{ route('admin.projects.index', ['tahap' => 'berjalan']) }}" style="color: var(--accent);">Semua proyek berjalan &rarr;</a>
+            <a href="{{ route('admin.projects.index') }}" style="color: var(--accent);">Proyek &amp; Keuangan &rarr;</a>
+        </div>
     </div>
 </div>
 @endsection
@@ -200,25 +216,23 @@ $periodLabel = match($period) { '7d' => '7 hari ini', '1y' => 'tahun ini', defau
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
 (function () {
-    var saColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-strong').trim() || '#15803D';
-    new Chart(document.getElementById('chartMarginBulanan'), {
+    var css = getComputedStyle(document.documentElement);
+    var warna = function (v, d) { return css.getPropertyValue(v).trim() || d; };
+    var rp = function (v) { return 'Rp ' + Number(v).toLocaleString('id-ID'); };
+    new Chart(document.getElementById('chartUangBulanan'), {
         type: 'bar',
         data: {
-            labels: @json($chartMarginBulanan['labels']),
-            datasets: [{ label: 'Margin (Rp)', data: @json($chartMarginBulanan['data']), backgroundColor: saColor }]
+            labels: @json($uang->per_bulan->pluck('label')),
+            datasets: [
+                { label: 'Masuk', data: @json($uang->per_bulan->pluck('masuk')), backgroundColor: warna('--accent-strong', '#15803D') },
+                { label: 'Keluar', data: @json($uang->per_bulan->pluck('keluar')), backgroundColor: warna('--danger', '#DC2626') }
+            ]
         },
         options: {
-            responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-            scales: { y: { ticks: { callback: function (v) { return 'Rp ' + Number(v).toLocaleString('id-ID'); } } } }
+            responsive: true, maintainAspectRatio: false,
+            plugins: { tooltip: { callbacks: { label: function (c) { return c.dataset.label + ': ' + rp(c.raw); } } } },
+            scales: { y: { beginAtZero: true, ticks: { callback: rp } } }
         }
-    });
-    new Chart(document.getElementById('chartStatusProyek'), {
-        type: 'doughnut',
-        data: {
-            labels: @json($chartStatusProyek['labels']),
-            datasets: [{ data: @json($chartStatusProyek['data']), backgroundColor: [saColor, '#9CA3AF'] }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
     });
 }());
 </script>
