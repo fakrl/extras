@@ -799,7 +799,7 @@ Ini minimal diff — nggak nyentuh controller (query udah benar, semua jadwal em
 | Keputusan | Yang berubah di kode kalau sudah diputus | Keputusan |
 |---|---|---|
 | D1 PIC proyek | Field PIC wajib saat ACC; notifikasi nego/ACC ke PIC; scoping aksi Admin per proyek (atau tetap global) | **Diputus 29 Sept:** wajib 1 Admin PIC + 1 Client akun (BD.2). Scoping aksi Admin tetap global. |
-| D2 Siapa boleh jadi Client | `/register/casting-director`: undangan/token atau status `pending` + ACC | _(kosong)_ |
+| D2 Siapa boleh jadi Client | `/register/casting-director`: undangan/token atau status `pending` + ACC | **Diputus 29 Sept (BD.1):** akun Client dibuat Super Admin, registrasi publik ditutup (redirect ke login). |
 | D3 Client lihat talent siapa | `ProfileController::pastikanBolehLihatMedia` dibatasi ke kandidat di proyek yang di-assign ke Client itu | _(kosong)_ |
 | D4 Aturan deal fee | `Admin/FeeNegotiationController::terima` & `Extras/FeeNegotiationController::terima`: hanya terima tawaran terakhir pihak lawan | _(kosong)_ |
 | D5 Basis invoice | Satu rumus di `KeuanganService`, dipakai PDF invoice, tab Invoice Client, dashboard; kolom invoice kalau perlu | _(kosong)_ |
