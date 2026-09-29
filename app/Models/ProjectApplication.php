@@ -76,7 +76,10 @@ class ProjectApplication extends Model
 
     public function getJamCallinganAttribute(): ?string
     {
-        return $this->jam_callingan_override ?? $this->castingProjectClass?->jam_callingan;
+        // substr: MySQL balikin kolom TIME sebagai HH:MM:SS
+        $jam = $this->jam_callingan_override ?? $this->castingProjectClass?->jam_callingan;
+
+        return $jam ? substr($jam, 0, 5) : null;
     }
 
     public function getTipeContinuityAttribute(): ?string
@@ -96,7 +99,7 @@ class ProjectApplication extends Model
 
     public function getJamCallingan(): string
     {
-        return $this->jam_callingan_override ?? $this->castingProjectClass?->jam_callingan ?? '-';
+        return $this->jam_callingan ?? '-';
     }
 
     protected function casts(): array
