@@ -16,7 +16,7 @@
 @if (! $invoice)
     <div class="card">
         <div style="font-size: 14px; font-weight: 500; margin-bottom: 6px;">Invoice belum tersedia</div>
-        <p style="margin: 0; font-size: 13.5px; color: var(--text-secondary);">Invoice dibuat otomatis begitu ada Extras yang dinyatakan Lolos oleh Client di proyek ini.</p>
+        <p style="margin: 0; font-size: 13.5px; color: var(--text-secondary);">Invoice dibuat otomatis setelah ada kandidat yang dipilih Client.</p>
     </div>
 @else
 {{-- Model 1: Format Resmi JBTB --}}
