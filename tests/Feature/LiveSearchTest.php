@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\CastingProject;
+use App\Models\ExtrasProfile;
+use App\Models\ProjectApplication;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -31,5 +34,21 @@ class LiveSearchTest extends TestCase
         }
 
         $this->actingAs($sa)->get(route('super-admin.akun.index', ['q' => 'Andini']))->assertSee('Andini Cari');
+    }
+
+    public function test_search_lineup_server_side_lintas_halaman(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $project = CastingProject::factory()->create(['admin_id' => $admin->id]);
+        foreach (range(1, 31) as $i) {
+            $e = ExtrasProfile::create(['user_id' => User::factory()->create(['role' => 'extras', 'username' => 'isi_'.$i])->id]);
+            ProjectApplication::create(['casting_project_id' => $project->id, 'extras_id' => $e->id, 'status_partisipasi' => 'diajukan']);
+        }
+        $target = ExtrasProfile::create(['user_id' => User::factory()->create(['role' => 'extras', 'username' => 'dicari_banget'])->id]);
+        ProjectApplication::create(['casting_project_id' => $project->id, 'extras_id' => $target->id, 'status_partisipasi' => 'diajukan']);
+
+        $res = $this->actingAs($admin)->get(route('admin.projects.applicants', [$project, 'q' => 'dicari_banget']))->assertOk();
+        $this->assertSame(1, $res->viewData('applicants')->total());
+        $res->assertSee('data-live-target', false);
     }
 }

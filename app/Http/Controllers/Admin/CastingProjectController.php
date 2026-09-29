@@ -321,6 +321,7 @@ class CastingProjectController extends Controller
         $cdStatuses = ['diajukan_ke_cd', 'direview_cd', 'lolos', 'ditolak'];
         $tagIds = array_map('intval', array_filter((array) $request->query('tag', []), 'is_numeric'));
         $urut = $request->query('urut') === 'cocok' ? 'cocok' : null;
+        $cari = trim((string) $request->query('q', ''));
 
         $applicants = $castingProject->applications()
             ->with([
@@ -333,6 +334,13 @@ class CastingProjectController extends Controller
             ->when($tab !== 'cd' && in_array($grade, ['A', 'B', 'C'], true), fn ($q) => $q->where('grade', $grade))
             ->when($tab !== 'cd' && $status, fn ($q) => $q->where('status_partisipasi', $status))
             ->when($tagIds, fn ($q) => $q->whereHas('extras.categories', fn ($c) => $c->whereIn('extras_categories.id', $tagIds)))
+            ->when($cari !== '', fn ($q) => $q->where(function ($w) use ($cari) {
+                $like = "%{$cari}%";
+                $w->whereHas('extras', fn ($e) => $e->where('nama_asli', 'like', $like)
+                    ->orWhereHas('user', fn ($u) => $u->where('name', 'like', $like)->orWhere('username', 'like', $like)))
+                    ->orWhereHas('castingProjectClass', fn ($c) => $c->where('nama_kelas', 'like', $like))
+                    ->orWhere('karakter_override', 'like', $like);
+            }))
             ->when($urut, fn ($q) => $q->urutPalingCocok())
             ->latest()
             ->paginate(30)
@@ -340,7 +348,7 @@ class CastingProjectController extends Controller
 
         $tagDicari = ExtrasCategory::dicariDiProyek($castingProject->id);
 
-        return view('admin.projects.applicants', compact('castingProject', 'applicants', 'grade', 'tab', 'status', 'tagIds', 'urut', 'tagDicari'));
+        return view('admin.projects.applicants', compact('castingProject', 'applicants', 'grade', 'tab', 'status', 'tagIds', 'urut', 'tagDicari', 'cari'));
     }
 
     /**
