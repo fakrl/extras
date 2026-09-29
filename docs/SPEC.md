@@ -948,3 +948,72 @@ Di kartu Greenlight **hapus atribut `data-grade-admin`** dan data kontak/nama as
 | BA.6 hapus data-grade-admin dari HTML Client | `aebf470` — test `assertDontSee('data-grade-admin')` + nama asli/email; Manual: view-source Greenlight sebagai Client | [ ] |
 
 **Tes QA:** Extras isi 5 tag dari HP → Admin bikin peran dengan 3 tag → Lineup nampilin ring % yang bener + filter tag jalan → Client lihat kartu yang sama tanpa grade admin di view-source.
+
+---
+
+# Bagian BB: SEO & Preview Link Share (kecil, 29 September 2026)
+
+> Konteks: tag/kategori (Bagian BA) itu **pencarian internal** (filter + % cocok), bukan SEO. SEO = gimana halaman **publik** tampil di Google dan pas link di-share ke WA. Kondisi sekarang (dicek): `robots.txt` ngizinin semua, nggak ada `meta description`, nggak ada Open Graph, jadi link lowongan yang di-share ke grup WA muncul tanpa judul/gambar, dan **profil Extras publik `/p/extras/*` bisa ke-index Google** (foto talent muncul di Google Image).
+
+## BB.1: Jangan index halaman pribadi
+
+1. `public/extras-profile.blade.php`: `<meta name="robots" content="noindex, nofollow">`. Link tetap bisa dibuka/di-share, cuma nggak masuk Google.
+2. `layouts/app.blade.php` & `layouts/auth.blade.php` (semua halaman login/dashboard): `noindex`.
+3. `public/robots.txt`: `Disallow: /p/`, `/admin/`, `/super-admin/`, `/cd/`, `/extras/`, `/kontrak/`, `/invoice/`, `/pembayaran/`, `/media/`. (robots.txt bukan pengaman — pengamannya tetap auth — cuma biar crawler sopan nggak nyoba.)
+
+## BB.2: Preview cantik pas di-share ke WA
+
+1. `public/event.blade.php` (link lowongan, paling sering di-share): `og:title` = nama produksi, `og:description` = "Casting {peran} · deadline {tgl} · daftar di JBTB", `og:image` = poster proyek kalau ada (`poster_path`, via URL publik), fallback logo JBTB. `og:type=website`, `og:url`. Kalau pendaftaran ditutup → tetap ada OG tapi judul "Pendaftaran Ditutup". Event page tetap `noindex` (token link, bukan buat Google).
+2. `public/extras-profile.blade.php`: `og:title` = "@username di JBTB", `og:image` = foto utama, **tanpa** tag Look/etnis di description (D22).
+3. `welcome.blade.php` (homepage — satu-satunya halaman yang memang mau masuk Google): `<title>` yang deskriptif ("JBTB Casting — Agensi Extras & Talent Jakarta" atau versi dari Erlina), `meta description`, OG + `og:image` logo/hero, `<link rel="canonical">`.
+
+## Checklist BB
+
+| Item | Bukti | QA |
+|---|---|---|
+| BB.1 noindex + robots.txt | | [ ] |
+| BB.2 OG tags event, profil, homepage | | [ ] |
+
+**Tes QA:** tempel link event & link profil ke chat WA (atau https://www.opengraph.xyz) → muncul judul + gambar. View-source profil publik → ada `noindex`.
+
+---
+
+# Bagian BC: DemoLengkapSeeder — data demo semua alur (29 September 2026)
+
+> **Sumber data: `docs/AKUN-DEMO.md`** (lokal, gitignored). Seeder HARUS sama persis dengan isi file itu (nama, username, email, tahap tiap Extras). Kalau ada yang nggak mungkin dibuat karena enum/constraint, **ubah dua-duanya** dan catat di DEV-NOTES, jangan diam-diam beda.
+>
+> Tujuan: setelah `migrate:fresh --seed`, tiap role bisa login dan langsung lihat datanya di tiap tahap — termasuk download invoice PDF, TTD kontrak, validasi absensi hari ini, ACC proyek, sengketa, prune akun mangkrak.
+> WAJIB subagent. Commit per langkah.
+
+## BC.1: Struktur
+
+1. Seeder baru `database/seeders/DemoLengkapSeeder.php` (boleh dipecah per bagian: `Demo/StafSeeder`, `Demo/ExtrasSeeder`, `Demo/ProyekSeeder` …). `MasterOperationalSeeder` lama **dihapus** (digantikan), bukan dibiarkan dobel.
+2. `DatabaseSeeder` → `ExtrasCategorySeeder` lalu `DemoLengkapSeeder`.
+3. **Guard:** di awal seeder, `if (app()->environment('production')) { throw ... }`.
+4. **Nggak boleh ngirim apa pun keluar** selama seeding: nggak ada WA job, email, atau notif yang di-dispatch lewat channel luar. Buat data langsung lewat model (`create`/`forceFill`), bukan lewat controller/method yang memicu notifikasi. Notifikasi in-app & activity log dibuat eksplisit sesuai AKUN-DEMO §5.
+5. Semua tanggal relatif `now()` sesuai AKUN-DEMO §4.
+6. Super Admin `fahrulmukhlisin13@gmail.com` tetap `is_protected = true`.
+
+## BC.2: File pendukung (tanpa foto/video Extras)
+
+- Tanda tangan kontrak & invoice: generate PNG placeholder sederhana (kotak putih + garis/teks "TTD Demo") ke path yang sama dengan yang dipakai `ContractController`/`InvoiceController`.
+- Bukti transfer: PNG/PDF placeholder di path `payments/bukti-transfer`.
+- Selfie absensi P3: PNG placeholder (bukan foto orang).
+- PDF kontrak & invoice yang statusnya sudah full TTD: **render beneran** pakai logic render yang sudah ada, biar tombol download jalan tanpa klik apa pun dulu.
+
+## BC.3: Verifikasi (Claude Code jalankan sendiri, tulis hasilnya di kolom Bukti)
+
+1. `php artisan migrate:fresh --seed` sukses di SQLite **dan** MySQL `jbtb_test`.
+2. Test feature `DemoSeederTest`: jalankan seeder, lalu assert — jumlah user per role sesuai AKUN-DEMO; P2 punya tepat 1 aplikasi di tiap status yang tercantum; invoice P1 punya PDF yang file-nya ada; P3 punya absensi hari ini `menunggu`; P4 `menunggu_acc`; akun mangkrak terdeteksi sama query prune; `persenCocok()` P2 dimas.rk = 100.
+3. Login smoke test (HTTP test) satu akun per role → dashboard 200.
+4. Full test suite tetap hijau (seeder demo **nggak** dipakai di test lain).
+
+## Checklist BC
+
+| Item | Bukti | QA |
+|---|---|---|
+| BC.1 seeder + guard + tanpa kirim keluar | | [ ] |
+| BC.2 file placeholder + PDF ter-render | | [ ] |
+| BC.3 verifikasi | | [ ] |
+
+**Cara Fakrul jalanin (menghapus SEMUA data lama):** `php artisan migrate:fresh --seed` → `php artisan storage:link` (kalau belum) → `php artisan view:clear`.
