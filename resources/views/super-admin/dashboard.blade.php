@@ -27,6 +27,7 @@ a.metric-card:hover { border-color: var(--accent); }
 a.sa-row { text-decoration: none; color: inherit; }
 a.sa-row:hover { color: var(--accent); }
 .sa-sub { font-size: 12px; color: var(--text-muted); }
+@media (min-width: 861px) { .sa-cal-grid { grid-template-columns: minmax(0, 400px) 1fr; } }
 .sa-role-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; }
 </style>
 @endpush
@@ -47,6 +48,14 @@ a.sa-row:hover { color: var(--accent); }
         <span class="sa-sub"><strong>{{ $jumlahHari }} hari</strong> &middot; {{ $dari->translatedFormat('d M Y') }} &ndash; {{ $sampai->translatedFormat('d M Y') }}</span>
     </div>
     <p class="sa-sub" style="margin: 8px 0 0;">Proyek difilter pakai tanggal shooting, uang pakai tanggal transaksi (invoice lunas, transfer honor, biaya lain-lain).</p>
+</div>
+
+<div class="dashboard-grid-2col sa-cal-grid">
+{{-- BD.3.5 Kalender --}}
+<div class="card">
+    <div class="card-title">Jadwal Shooting</div>
+    <x-jadwal-calendar :events="$jadwal" :bulan="$bulan->format('Y-m')" :detail="true" />
+    <p class="sa-sub" style="margin: 8px 0 0;">Klik tanggal bertanda untuk lihat kegiatan hari itu.</p>
 </div>
 
 {{-- BD.3.2 Perlu tindakan --}}
@@ -140,6 +149,7 @@ a.sa-row:hover { color: var(--accent); }
         <p class="sa-sub" style="margin: 0;">Tidak ada yang perlu ditindak saat ini.</p>
     @endif
 </div>
+</div>
 
 {{-- BD.3.3 Status proyek --}}
 <div class="card-title">Status Proyek <span class="sa-sub" style="font-weight: 400;">(shooting dalam periode; Menunggu ACC semua)</span></div>
@@ -172,13 +182,6 @@ a.sa-row:hover { color: var(--accent); }
     </div>
     <p class="sa-sub" style="margin: 0 0 12px;">Saldo minus wajar kalau invoice belum dibayar — lihat Proyeksi. Piutang = invoice belum lunas dari proyek yang shooting-nya dalam periode.</p>
     <div class="chart-box"><canvas id="chartUangBulanan"></canvas></div>
-</div>
-
-{{-- BD.3.5 Kalender --}}
-<div class="card" style="margin-bottom: 16px;">
-    <div class="card-title">Jadwal Shooting</div>
-    <x-jadwal-calendar :events="$jadwal" :bulan="$bulan->format('Y-m')" :detail="true" />
-    <p class="sa-sub" style="margin: 8px 0 0;">Klik tanggal bertanda untuk lihat kegiatan hari itu.</p>
 </div>
 
 <div class="dashboard-grid-2col is-even">
