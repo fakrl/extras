@@ -170,6 +170,25 @@ class User extends Authenticatable
         ], true);
     }
 
+    // SPEC BD.6 / D10: godmode Super Admin untuk aksi Admin & Korlap. isAdmin()/isKorlap() tetap murni.
+    public function bisaSebagaiAdmin(): bool
+    {
+        return $this->isAdmin() || $this->isSuperAdmin();
+    }
+
+    public function bisaSebagaiKorlap(): bool
+    {
+        return $this->isKorlap() || $this->isSuperAdmin();
+    }
+
+    // Mode Monitoring aktif (admin|korlap) kalau user ini Super Admin; null selain itu.
+    public function modeSa(): ?string
+    {
+        $mode = request()->hasSession() ? request()->session()->get('sa_mode') : null;
+
+        return $this->isSuperAdmin() && in_array($mode, [self::ROLE_ADMIN, self::ROLE_KORLAP], true) ? $mode : null;
+    }
+
     public function isClient(): bool
     {
         return $this->role === self::ROLE_CLIENT;
@@ -189,7 +208,7 @@ class User extends Authenticatable
      */
     public function dashboardUrl(): string
     {
-        return match ($this->role) {
+        return match ($this->modeSa() ?? $this->role) {
             self::ROLE_SUPER_ADMIN => '/super-admin/dashboard',
             self::ROLE_ADMIN => '/admin/dashboard',
             self::ROLE_KORLAP => '/admin/absensi',

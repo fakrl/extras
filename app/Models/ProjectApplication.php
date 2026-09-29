@@ -471,8 +471,8 @@ class ProjectApplication extends Model
 
     public function bolehDilihatOleh(User $user): bool
     {
-        return $user->isAdmin()
-            || ($user->role === 'extras' && $this->extras_id === $user->extrasProfile->id);
+        return $user->bisaSebagaiAdmin()
+            || ($user->role === 'extras' && $this->extras_id === $user->extrasProfile?->id);
     }
 
     private function kirimKonfirmasiFee(FeeNegotiation $negotiation, User $penerima): void

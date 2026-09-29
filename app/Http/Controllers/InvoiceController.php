@@ -75,7 +75,7 @@ class InvoiceController extends Controller
 
         ActivityLog::record(
             'SIGN_INVOICE',
-            ucfirst($role)." {$request->user()->name} menandatangani invoice untuk proyek '{$castingProject->nama_produksi}'",
+            "{$request->user()->label()} {$request->user()->name} menandatangani invoice untuk proyek '{$castingProject->nama_produksi}'",
             $castingProject
         );
 
@@ -135,7 +135,7 @@ class InvoiceController extends Controller
     {
         $user = $request->user();
 
-        abort_unless($user->isAdmin() || $user->isClient(), 403);
+        abort_unless($user->bisaSebagaiAdmin() || $user->isClient(), 403);
 
         if ($user->isClient()) {
             $isAssigned = $castingProject->cdAssignments()->where('cd_user_id', $user->id)->exists();
