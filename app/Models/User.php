@@ -74,6 +74,16 @@ class User extends Authenticatable
         return $this->hasOne(ExtrasProfile::class);
     }
 
+    /** Rule Prune: Extras >30 hari, profil tidak lengkap, 0 pendaftaran. */
+    public function scopeMangkrak($query)
+    {
+        return $query->where('role', self::ROLE_EXTRAS)
+            ->where('created_at', '<=', now()->subDays(30))
+            ->whereDoesntHave('extrasProfile.applications')
+            ->where(fn ($q) => $q->whereDoesntHave('extrasProfile')
+                ->orWhereHas('extrasProfile', fn ($ep) => $ep->whereNull('foto_profil_path')->orWhereNull('nik')));
+    }
+
     public function adminProfile(): HasOne
     {
         return $this->hasOne(AdminProfile::class);
