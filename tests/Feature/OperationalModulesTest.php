@@ -25,6 +25,7 @@ class OperationalModulesTest extends TestCase
         $response = $this->actingAs($admin)->post(route('admin.projects.store'), [
             'nama_produksi' => 'Proyek Breakdown Test',
             'client_ph' => 'PH Visual Test',
+            'client_id' => \App\Models\User::factory()->create(['role' => 'client'])->id,
             'deadline' => today()->addDays(5)->format('Y-m-d'),
             'kuota' => 10,
             'cover_path' => UploadedFile::fake()->image('cover.jpg'),

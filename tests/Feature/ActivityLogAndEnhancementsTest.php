@@ -185,7 +185,7 @@ class ActivityLogAndEnhancementsTest extends TestCase
 
         $this->get($url(['q' => 'Senja Merah']))
             ->assertSee('ACC proyek baru')->assertDontSee('Mengubah akun lama')
-            ->assertSee(route('admin.projects.applicants', $project), false);
+            ->assertSee(route('admin.projects.show', $project), false);
 
         $this->get($url(['q' => 'Budi Admin']))->assertSee('Mengubah akun lama')->assertDontSee('ACC proyek baru');
 

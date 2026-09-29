@@ -92,8 +92,9 @@ class CastingProjectController extends Controller
         $data = $request->validate([
             'nama_produksi' => ['required', 'string', 'max:255'],
             'admin_id' => [$user->isSuperAdmin() ? 'required' : 'nullable', 'integer', $this->akunAktif(User::ROLE_ADMIN)],
-            'client_id' => ['nullable', 'integer', $this->akunAktif(User::ROLE_CLIENT)],
-            'client_ph' => ['nullable', 'required_without:client_id', 'string', 'max:255'],
+            // D1: tiap proyek wajib punya 1 akun Client
+            'client_id' => ['required', 'integer', $this->akunAktif(User::ROLE_CLIENT)],
+            'client_ph' => ['nullable', 'string', 'max:255'],
             'poster_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'cover_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
             'wa_group_link' => ['nullable', 'url'],

@@ -196,7 +196,7 @@ class ProyekKeuanganTest extends TestCase
         $this->actingAs($sa)->post(route('admin.projects.store'), $this->payloadProyek(['admin_id' => $extras->id, 'client_id' => $nonaktif->id]))
             ->assertSessionHasErrors(['admin_id', 'client_id']);
         $this->actingAs($sa)->post(route('admin.projects.store'), $this->payloadProyek(['client_ph' => 'PH']))
-            ->assertSessionHasErrors(['admin_id']);
+            ->assertSessionHasErrors(['admin_id', 'client_id']);
         $this->assertSame(0, CastingProject::count());
     }
 
@@ -204,12 +204,18 @@ class ProyekKeuanganTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin', 'name' => 'Rina']);
 
+        $client = User::factory()->create(['role' => 'client']);
+
+        // D1: Client wajib
         $this->actingAs($admin)->post(route('admin.projects.store'), $this->payloadProyek(['client_ph' => 'PH Manual']))
+            ->assertSessionHasErrors(['client_id']);
+
+        $this->actingAs($admin)->post(route('admin.projects.store'), $this->payloadProyek(['client_ph' => 'PH Manual', 'client_id' => $client->id]))
             ->assertRedirect(route('admin.projects.index'));
 
         $p = CastingProject::firstOrFail();
         $this->assertSame($admin->id, (int) $p->admin_id);
-        $this->assertNull($p->client_id);
+        $this->assertSame($client->id, (int) $p->client_id);
         $this->assertSame('PH Manual', $p->client_ph);
         $this->assertDatabaseHas('activity_logs', ['description' => "Proyek 'Iklan Kopi' dibuat oleh Rina (Admin)"]);
     }
