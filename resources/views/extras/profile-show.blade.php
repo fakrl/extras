@@ -2,153 +2,23 @@
 
 @section('title', ($isAdminView ?? false) ? 'Profil Extras — ' . $user->name : 'Profil Saya')
 
-@push('styles')
-<style>
-.profile-layout { max-width: 560px; margin: 0 auto; }
-@media (min-width: 900px) {
-    body .content { padding: 0; }
-    .profile-layout {
-        max-width: 100%; height: calc(100vh - 69px); overflow: hidden; padding: 0;
-        display: grid; grid-template-columns: 300px 1fr; gap: 0; align-items: stretch;
-        border-radius: 0; border-left: none; border-right: none; border-bottom: none;
-    }
-    .profile-layout-header { grid-column: 1 / -1; padding: 14px 20px; border-bottom: 1px solid var(--border-color); margin: 0; }
-    .profile-media-col { overflow: hidden; padding: 16px; border-right: 1px solid var(--border-color); }
-    .profile-info-col { overflow-y: auto; padding: 16px; }
-    .profile-foto-wrap { width: 100% !important; }
-}
-</style>
-@endpush
-
 @section('content')
-<div class="card profile-layout">
-    <div class="profile-layout-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
-        <div style="font-size: 17px; font-weight: 600;">{{ ($isAdminView ?? false) ? $user->name : 'Profil Saya' }}</div>
-        @unless ($isAdminView ?? false)
-        <div style="display: flex; gap: 8px; align-items: center;">
-            <button type="button" id="btn-share" class="btn btn-sm btn-outline" style="font-size: 12px;">
-                <i class="ti ti-share"></i> Share
-            </button>
-            <a href="{{ route('extras.profile.edit') }}" class="btn btn-sm btn-brand">Edit Profil</a>
-        </div>
-        @endunless
-    </div>
-    @if (session('status'))
-        <div class="alert-success profile-layout-header">{{ session('status') }}</div>
-    @endif
-
-    <div class="profile-media-col">
-        {{-- Header foto dominan --}}
-        <div class="profile-section" style="text-align: center; margin-bottom: 20px;">
-            <div class="profile-foto-wrap" style="width: 180px; aspect-ratio: 3/4; margin: 0 auto 10px; border-radius: 14px; overflow: hidden; background: var(--bg-nav-active); display: flex; align-items: center; justify-content: center;">
-                @if ($profile->foto_profil_path)
-                    <img src="{{ route('extras.media.foto', $profile) }}" alt="Foto profil"
-                         style="width: 100%; height: 100%; object-fit: cover; display: block;">
-                @else
-                    <i class="ti ti-photo-off" style="font-size: 36px; color: var(--text-muted);"></i>
-                @endif
-            </div>
-            <div style="font-size: 18px; font-weight: 700;">{{ $profile->user->username ?? 'Belum diisi' }}</div>
-            <div style="margin-top: 6px;">
-                @if ($profile->grade_saat_ini)
-                    <span class="badge badge-aktif" style="font-size: 12px; padding: 3px 8px; font-weight: 600;">
-                        Grade {{ $profile->grade_saat_ini }}
-                    </span>
-                @else
-                    <span class="badge badge-pending" style="font-size: var(--fs-xs); padding: 2px 6px;">
-                        Grade Belum Dinilai
-                    </span>
-                @endif
-            </div>
-        </div>
-
-        {{-- Video --}}
-        <div class="profile-section">
-            <div class="profile-section-title">Video Profil</div>
-            @if ($profile->video_profil_path)
-                <video src="{{ route('extras.media.video', $profile) }}" controls
-                       style="width: 100%; border-radius: 12px; background: #000; aspect-ratio: 16/9;"></video>
-            @else
-                <div style="width: 100%; aspect-ratio: 16/9; border-radius: 12px; background: var(--bg-nav-active); display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
-                    <i class="ti ti-video-off" style="font-size: 28px;"></i>
-                </div>
-                <p class="field-hint" style="margin-top: 6px;">Belum ada video</p>
-            @endif
-        </div>
-
-    </div>
-
-    <div class="profile-info-col">
-        {{-- Data Diri & Ciri Fisik (grid 2-kolom) --}}
-        <div class="profile-section">
-            <div class="profile-section-title">Data Diri &amp; Ciri Fisik</div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; font-size: 13px;">
-                <div style="color: var(--text-secondary);">Usia</div>
-                <div>{{ $profile->usia ? $profile->usia . ' tahun' : '-' }}</div>
-
-                <div style="color: var(--text-secondary);">Jenis Kelamin</div>
-                <div>{{ $profile->gender === 'pria' ? 'Laki-laki' : ($profile->gender === 'wanita' ? 'Perempuan' : '-') }}</div>
-
-                <div style="color: var(--text-secondary);">Tinggi Badan</div>
-                <div>{{ $profile->tinggi_badan ? $profile->tinggi_badan . ' cm' : '-' }}</div>
-
-                <div style="color: var(--text-secondary);">Ukuran Baju</div>
-                <div>{{ $profile->ukuran_baju ?: '-' }}</div>
-
-                <div style="color: var(--text-secondary);">Warna Kulit</div>
-                <div>{{ $profile->warna_kulit ?: '-' }}</div>
-            </div>
-        </div>
-
-        <div class="profile-section">
-            <div class="profile-section-title">Pengalaman &amp; Kemampuan</div>
-            <div class="profile-view-row" style="flex-direction: column; align-items: flex-start; gap: 4px;">
-                <span class="profile-view-label">Pengalaman Main / Kerja</span>
-                <span class="profile-view-value" style="text-align: left;">{{ $profile->pengalaman ?: 'Belum diisi' }}</span>
-            </div>
-            <div class="profile-view-row">
-                <span class="profile-view-label">Bahasa</span>
-                <span class="profile-view-value">{{ $profile->bahasa ?: '-' }}</span>
-            </div>
-        </div>
-
-        <div class="profile-section">
-            <div class="profile-section-title">Tautan Tambahan</div>
-            @forelse ($profile->tautan_tambahan ?? [] as $tautan)
-                <div class="profile-view-row">
-                    <span class="profile-view-label">{{ $tautan['label'] }}</span>
-                    <span class="profile-view-value"><a href="{{ $tautan['url'] }}" target="_blank">{{ $tautan['url'] }}</a></span>
-                </div>
-            @empty
-                <span class="profile-view-value" style="color: var(--text-muted); font-weight: 400;">-</span>
-            @endforelse
-        </div>
-
-        <div class="profile-section">
-            <div class="profile-section-title">Tarif</div>
-            <div class="profile-view-row">
-                <span class="profile-view-label">Tarif Harapan</span>
-                <span class="profile-view-value">{{ $profile->rate_card ? 'Rp ' . number_format($profile->rate_card, 0, ',', '.') : '-' }}</span>
-            </div>
-        </div>
-
-        {{-- Gallery --}}
-        <div class="profile-section">
-            <div class="profile-section-title">Gallery</div>
-            @php
-                $fotosArr = collect($fotoTambahan)->filter()->map(fn($foto, $slot) => [
-                    'url' => route('extras.media.foto-tambahan', [$profile, $slot]),
-                    'alt' => 'Foto ' . $slot,
-                ])->values()->all();
-            @endphp
-            @include('partials.foto-lightbox', ['fotos' => $fotosArr, 'lightboxId' => 'profil-lb'])
-        </div>
-
-        @unless ($isAdminView ?? false)
-        <a href="{{ route('extras.profile.edit') }}" class="btn btn-brand" style="width: 100%; margin-top: 8px; display: flex;">Edit Profil</a>
-        @endunless
-    </div>
-</div>
+@if (session('status'))
+    <div class="alert-success">{{ session('status') }}</div>
+@endif
+@php
+    $admin = $isAdminView ?? false;
+    $fotosArr = collect($fotoTambahan)->filter()->map(fn ($foto, $slot) => [
+        'url' => route('extras.media.foto-tambahan', [$profile, $slot]),
+        'alt' => 'Foto '.$slot,
+    ])->values()->all();
+@endphp
+@include('partials.profil-extras-editorial', [
+    'mode' => $admin ? 'admin' : 'pemilik',
+    'fotoUrl' => $profile->foto_profil_path ? route('extras.media.foto', $profile) : null,
+    'videoUrl' => $profile->video_profil_path ? route('extras.media.video', $profile) : null,
+    'fotos' => $fotosArr,
+])
 
 @unless ($isAdminView ?? false)
 <dialog id="modal-share" style="border:1px solid var(--border-color); border-radius:16px; padding:0; max-width:360px; width:95%;">

@@ -11,7 +11,7 @@ class PublicExtrasProfileController extends Controller
     public function show(string $token)
     {
         $profile = ExtrasProfile::where('share_token', $token)->firstOrFail();
-        $profile->load(['photos']);
+        $profile->load(['photos', 'categories', 'user']);
 
         $fotosArr = $profile->photos->map(fn ($foto) => [
             'url' => route('public.extras.foto-tambahan', [$token, $foto->urutan]),

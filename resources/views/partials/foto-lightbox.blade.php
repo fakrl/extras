@@ -9,11 +9,13 @@
 
 @php $dlgId = $lightboxId . '-dialog'; $imgId = $lightboxId . '-img'; @endphp
 
+@if ($thumbs ?? true)
 <div class="lightbox-thumbs">
     @foreach ($fotos as $i => $foto)
         <img src="{{ $foto['url'] }}" alt="{{ $foto['alt'] }}" class="{{ $loop->first ? 'is-grid' : '' }}" onclick="_lbOpen('{{ $lightboxId }}', {{ $i }})">
     @endforeach
 </div>
+@endif
 
 <dialog id="{{ $dlgId }}"
     style="border:1px solid var(--border-color); border-radius:12px; padding:0; background:#000; max-width:95vw; position:relative;"
