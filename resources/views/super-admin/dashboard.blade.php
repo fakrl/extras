@@ -36,6 +36,12 @@ a.sa-row:hover { color: var(--accent); }
 .sa-tab[aria-selected=true] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .sa-tab:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
 .sa-lihat-semua { color: var(--accent); font-weight: 600; }
+@media (min-width: 861px) {
+    .sa-top-grid { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+    .sa-cal-grid .sa-stat-grid.is-5 { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 860px) { .sa-top-grid > .card:last-child { order: -1; } } /* HP: aksi (Perlu tindakan) di atas status */
+.sa-aman { display: flex; align-items: center; gap: 8px; padding: 10px 14px; margin-bottom: 12px; border: 1px solid var(--accent); border-radius: var(--radius-lg, 12px); background: var(--bg-nav-active); color: var(--accent-strong); font-weight: 600; font-size: var(--fs-sm, 13px); }
 </style>
 @endpush
 
@@ -57,16 +63,49 @@ a.sa-row:hover { color: var(--accent); }
     <p class="sa-sub" style="margin: 8px 0 0;">Proyek difilter pakai tanggal shooting, uang pakai tanggal transaksi (invoice lunas, transfer honor, biaya lain-lain).</p>
 </div>
 
-<div class="dashboard-grid-2col sa-cal-grid">
-{{-- BD.3.5 Kalender --}}
+{{-- Status proyek + Perlu tindakan sebelahan; kalau nggak ada tindakan, Perlu tindakan menciut jadi strip & Status full-width --}}
+@if ($jumlahTindakan)
+<div class="dashboard-grid-2col sa-top-grid">
+@else
+<div class="sa-aman" role="status"><i class="ti ti-circle-check"></i> Semua aman &mdash; tidak ada yang perlu ditindak.</div>
+<div style="margin-bottom: 16px;">
+@endif
+{{-- BD.3.3 + BG.8 Status proyek --}}
 <div class="card">
-    <div class="card-title">Jadwal Shooting</div>
-    <x-jadwal-calendar :events="$jadwal" :bulan="$bulan->format('Y-m')" :detail="true" />
-    <p class="sa-sub" style="margin: 8px 0 0;">Klik tanggal bertanda untuk lihat kegiatan hari itu.</p>
+    <div class="card-title">Status Proyek <span class="sa-sub" style="font-weight: 400;">(shooting dalam periode; Menunggu ACC semua)</span></div>
+    <div class="sa-stat-grid" role="tablist" aria-label="Tahap proyek">
+        @foreach (\App\Models\CastingProject::TAHAP as $tahap => $label)
+            <button type="button" class="metric-card sa-tab" role="tab" id="tab-{{ $tahap }}" aria-controls="panel-{{ $tahap }}" aria-selected="{{ $tahap === $tabAwal ? 'true' : 'false' }}" tabindex="{{ $tahap === $tabAwal ? 0 : -1 }}">
+                <div class="metric-label">{{ $label }}</div>
+                <div class="metric-value">{{ $statusProyek[$tahap] }}</div>
+            </button>
+        @endforeach
+    </div>
+    @foreach ($proyekPerTahap as $tahap => $daftar)
+        @php $label = \App\Models\CastingProject::TAHAP[$tahap]; @endphp
+        <div role="tabpanel" id="panel-{{ $tahap }}" aria-labelledby="tab-{{ $tahap }}" @if ($tahap !== $tabAwal) hidden @endif>
+            @forelse ($daftar as $p)
+                <a href="{{ route('admin.projects.show', $p) }}" class="sa-row">
+                    <div>
+                        <strong>{{ $p->nama_produksi }}</strong>
+                        <div class="sa-sub">{{ $p->client?->name ?? $p->client_ph ?? '-' }} &bull; {{ $p->rentangShooting() }}</div>
+                    </div>
+                    <span class="sa-sub">{{ $p->tanggal_acuan ? \Carbon\Carbon::parse($p->tanggal_acuan)->translatedFormat('d M') : '' }}</span>
+                </a>
+            @empty
+                <p class="sa-sub" style="margin: 0;">Tidak ada proyek {{ strtolower($label) }}{{ $tahap === 'menunggu_acc' ? '' : ' dalam periode ini' }}.</p>
+            @endforelse
+            <div style="margin-top: 10px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12.5px;">
+                <a href="{{ route('admin.projects.index', ['tahap' => $tahap] + ($tahap === 'menunggu_acc' ? [] : ['dari' => $dari->format('Y-m-d'), 'sampai' => $sampai->format('Y-m-d')])) }}" class="sa-lihat-semua">Lihat semua {{ $label }} &rarr;</a>
+                <a href="{{ route('admin.projects.index') }}" style="color: var(--accent);">Proyek &amp; Keuangan &rarr;</a>
+            </div>
+        </div>
+    @endforeach
 </div>
 
+@if ($jumlahTindakan)
 {{-- BD.3.2 Perlu tindakan --}}
-<div class="card" style="border: 2px solid var(--accent-strong); margin-bottom: 16px;">
+<div class="card" style="border: 2px solid var(--accent-strong);">
     <div class="card-title" style="color: var(--accent-strong);">
         <i class="ti ti-clipboard-list"></i> Perlu Tindakan
         @if ($jumlahTindakan)
@@ -152,47 +191,20 @@ a.sa-row:hover { color: var(--accent); }
         </a>
     @endforeach
 
-    @if (! $jumlahTindakan)
-        <p class="sa-sub" style="margin: 0;">Tidak ada yang perlu ditindak saat ini.</p>
-    @endif
 </div>
+@endif
 </div>
 
-{{-- BD.3.3 + BG.8 Status proyek --}}
-<div class="card" style="margin-bottom: 16px;">
-    <div class="card-title">Status Proyek <span class="sa-sub" style="font-weight: 400;">(shooting dalam periode; Menunggu ACC semua)</span></div>
-    <div class="sa-stat-grid" role="tablist" aria-label="Tahap proyek">
-        @foreach (\App\Models\CastingProject::TAHAP as $tahap => $label)
-            <button type="button" class="metric-card sa-tab" role="tab" id="tab-{{ $tahap }}" aria-controls="panel-{{ $tahap }}" aria-selected="{{ $tahap === $tabAwal ? 'true' : 'false' }}" tabindex="{{ $tahap === $tabAwal ? 0 : -1 }}">
-                <div class="metric-label">{{ $label }}</div>
-                <div class="metric-value">{{ $statusProyek[$tahap] }}</div>
-            </button>
-        @endforeach
-    </div>
-    @foreach ($proyekPerTahap as $tahap => $daftar)
-        @php $label = \App\Models\CastingProject::TAHAP[$tahap]; @endphp
-        <div role="tabpanel" id="panel-{{ $tahap }}" aria-labelledby="tab-{{ $tahap }}" @if ($tahap !== $tabAwal) hidden @endif>
-            @forelse ($daftar as $p)
-                <a href="{{ route('admin.projects.show', $p) }}" class="sa-row">
-                    <div>
-                        <strong>{{ $p->nama_produksi }}</strong>
-                        <div class="sa-sub">{{ $p->client?->name ?? $p->client_ph ?? '-' }} &bull; {{ $p->rentangShooting() }}</div>
-                    </div>
-                    <span class="sa-sub">{{ $p->tanggal_acuan ? \Carbon\Carbon::parse($p->tanggal_acuan)->translatedFormat('d M') : '' }}</span>
-                </a>
-            @empty
-                <p class="sa-sub" style="margin: 0;">Tidak ada proyek {{ strtolower($label) }}{{ $tahap === 'menunggu_acc' ? '' : ' dalam periode ini' }}.</p>
-            @endforelse
-            <div style="margin-top: 10px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12.5px;">
-                <a href="{{ route('admin.projects.index', ['tahap' => $tahap] + ($tahap === 'menunggu_acc' ? [] : ['dari' => $dari->format('Y-m-d'), 'sampai' => $sampai->format('Y-m-d')])) }}" class="sa-lihat-semua">Lihat semua {{ $label }} &rarr;</a>
-                <a href="{{ route('admin.projects.index') }}" style="color: var(--accent);">Proyek &amp; Keuangan &rarr;</a>
-            </div>
-        </div>
-    @endforeach
+<div class="dashboard-grid-2col sa-cal-grid">
+{{-- BD.3.5 Kalender --}}
+<div class="card">
+    <div class="card-title">Jadwal Shooting</div>
+    <x-jadwal-calendar :events="$jadwal" :bulan="$bulan->format('Y-m')" :detail="true" />
+    <p class="sa-sub" style="margin: 8px 0 0;">Klik tanggal bertanda untuk lihat kegiatan hari itu.</p>
 </div>
 
 {{-- BD.3.4 Uang periode --}}
-<div class="card" style="margin-bottom: 16px;">
+<div class="card">
     <div class="card-title">Uang Periode Ini</div>
     <div class="sa-stat-grid is-5">
         @foreach ([
@@ -211,6 +223,7 @@ a.sa-row:hover { color: var(--accent); }
     </div>
     <p class="sa-sub" style="margin: 0 0 12px;">Saldo minus wajar kalau invoice belum dibayar — lihat Proyeksi. Piutang = invoice belum lunas dari proyek yang shooting-nya dalam periode.</p>
     <div class="chart-box"><canvas id="chartUangBulanan"></canvas></div>
+</div>
 </div>
 
 {{-- BD.3.6 Akun --}}
@@ -280,7 +293,7 @@ a.sa-row:hover { color: var(--accent); }
         options: {
             responsive: true, maintainAspectRatio: false,
             plugins: { tooltip: { callbacks: { label: function (c) { return c.dataset.label + ': ' + rp(c.raw); } } } },
-            scales: { y: { beginAtZero: true, ticks: { callback: rp } } }
+            scales: { y: { beginAtZero: true, suggestedMax: 1000000, ticks: { precision: 0, callback: rp } } }
         }
     });
 }());
