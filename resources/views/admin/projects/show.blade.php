@@ -147,12 +147,14 @@
 @else
     @php $cf = $cashflow; @endphp
     <div class="cf-ringkas">
-        <div class="metric-card card"><div class="metric-label">Masuk</div><div class="metric-value">{{ $rp($cf->total_masuk) }}</div>
-            <div style="font-size: var(--fs-xs); color: var(--text-muted);">lunas {{ $rp($cf->masuk_lunas) }}</div></div>
-        <div class="metric-card card"><div class="metric-label">Keluar</div><div class="metric-value">{{ $rp($cf->total_keluar) }}</div></div>
-        <div class="metric-card card"><div class="metric-label">Saldo</div><div class="metric-value" style="color: {{ $cf->saldo >= 0 ? 'var(--accent-strong)' : 'var(--danger)' }};">{{ $rp($cf->saldo) }}</div></div>
-        <div class="metric-card card"><div class="metric-label">Terpakai</div><div class="metric-value">{{ $cf->persen_terpakai === null ? '-' : number_format($cf->persen_terpakai, 1, ',', '.').'%' }}</div></div>
+        <div class="metric-card card"><div class="metric-label">Masuk</div><div class="metric-value">{{ $rp($cf->total_masuk) }}</div><div class="cf-ket">invoice lunas</div></div>
+        <div class="metric-card card"><div class="metric-label">Piutang</div><div class="metric-value">{{ $rp($cf->piutang) }}</div><div class="cf-ket">invoice belum lunas</div></div>
+        <div class="metric-card card"><div class="metric-label">Keluar</div><div class="metric-value">{{ $rp($cf->total_keluar) }}</div><div class="cf-ket">honor &amp; biaya</div></div>
+        <div class="metric-card card"><div class="metric-label">Saldo</div><div class="metric-value" style="color: {{ $cf->saldo >= 0 ? 'var(--accent-strong)' : 'var(--danger)' }};">{{ $rp($cf->saldo) }}</div><div class="cf-ket">masuk − keluar</div></div>
+        <div class="metric-card card"><div class="metric-label">Proyeksi</div><div class="metric-value" style="color: {{ $cf->proyeksi >= 0 ? 'var(--accent-strong)' : 'var(--danger)' }};">{{ $rp($cf->proyeksi) }}</div><div class="cf-ket">masuk + piutang − keluar</div></div>
+        <div class="metric-card card"><div class="metric-label">Terpakai</div><div class="metric-value">{{ $cf->persen_terpakai === null ? '-' : number_format($cf->persen_terpakai, 1, ',', '.').'%' }}</div><div class="cf-ket">keluar ÷ total tagihan</div></div>
     </div>
+    <p class="cf-ket" style="margin: -6px 0 14px;">Saldo minus wajar kalau invoice belum dibayar — lihat Proyeksi.</p>
 
     <div class="card cf-seksi">
         <div class="card-title">Masuk · Invoice Client</div>
@@ -168,7 +170,7 @@
                                     · <a href="{{ route('invoices.download-pdf', $p) }}">PDF</a>
                                 @endif
                                 @if (! $m->invoice)
-                                    <div style="font-size: var(--fs-xs); color: var(--text-muted);">Belum dibuat · nilai dari rincian peran</div>
+                                    <div style="font-size: var(--fs-xs); color: var(--text-muted);">Belum dibuat · perkiraan dari rincian peran, belum dihitung Piutang</div>
                                 @endif
                             </td>
                             <td>{{ $rp($m->nominal) }}</td>
@@ -297,6 +299,7 @@
     .cf-ringkas { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 14px; }
     .cf-seksi { margin-bottom: 14px; }
     .cf-seksi td { white-space: nowrap; }
-    .cf-ringkas .metric-value { white-space: nowrap; font-size: clamp(16px, 4.6vw, var(--fs-xl)); }
+    .cf-ringkas .metric-value { white-space: nowrap; font-size: clamp(16px, 4.6vw, var(--fs-lg)); }
+    .cf-ket { font-size: var(--fs-xs); color: var(--text-muted); }
 </style>
 @endsection

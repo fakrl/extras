@@ -115,9 +115,10 @@ class KeuanganService
     ];
 
     /**
-     * BD.2: cashflow per proyek (basis tagihan/kewajiban, bukan tanggal transaksi).
-     * Masuk = invoice (nominal tersimpan saat lunas, sebelum itu nilaiInvoice() live).
-     * Keluar = honor Extras + honor staf + biaya lain-lain. Terpakai % = keluar / masuk.
+     * BD.2/BE.3: cashflow per proyek (basis tagihan/kewajiban, bukan tanggal transaksi).
+     * Baris invoice: nominal tersimpan, sebelum itu nilaiInvoice() live (juga baris perkiraan kalau invoice belum dibuat).
+     * Masuk = invoice lunas, Piutang = invoice (sudah dibuat) belum lunas, Keluar = honor Extras + honor staf + biaya lain-lain.
+     * Saldo = masuk - keluar, Proyeksi = masuk + piutang - keluar, Terpakai % = keluar / total tagihan.
      */
     public function cashflowProyek(CastingProject $project): object
     {
@@ -144,8 +145,10 @@ class KeuanganService
             'lunas' => $s->isDibayar(),
         ]);
 
-        $totalMasuk = (float) $masuk->sum('nominal');
+        $totalMasuk = (float) $masuk->where('lunas', true)->sum('nominal');
+        $piutang = (float) $masuk->where('lunas', false)->whereNotNull('invoice')->sum('nominal');
         $totalKeluar = $extras->sum('nominal') + $staf->sum('nominal') + (float) $project->expenses->sum('nominal');
+        $tagihan = (float) $masuk->sum('nominal');
 
         return (object) [
             'masuk' => $masuk,
@@ -153,16 +156,19 @@ class KeuanganService
             'staf' => $staf,
             'biaya' => $project->expenses,
             'total_masuk' => $totalMasuk,
-            'masuk_lunas' => (float) $masuk->where('lunas', true)->sum('nominal'),
+            'piutang' => $piutang,
             'total_keluar' => $totalKeluar,
             'saldo' => $totalMasuk - $totalKeluar,
-            'persen_terpakai' => $totalMasuk > 0 ? round($totalKeluar / $totalMasuk * 100, 1) : null,
+            'proyeksi' => $totalMasuk + $piutang - $totalKeluar,
+            'persen_terpakai' => $tagihan > 0 ? round($totalKeluar / $tagihan * 100, 1) : null,
         ];
     }
 
     /**
      * BD.2/BD.3: uang per periode berdasar tanggal transaksi (invoices.dibayar_at,
      * payments.ditransfer_at, staff_payrolls.dibayar_at, project_expenses.tanggal).
+     * BE.3: piutang belum punya tanggal transaksi, jadi = invoice belum lunas dari proyek yang
+     * shooting-nya dalam periode (filter proyek dashboard), nilai sama dengan cashflowProyek().
      */
     public function ringkasanPeriode(Carbon $from, Carbon $to): object
     {
@@ -199,11 +205,17 @@ class KeuanganService
 
         $totalMasuk = (float) $masuk->sum(1);
         $totalKeluar = (float) $keluar->sum(1);
+        $piutang = (float) Invoice::where('status_bayar', '!=', 'lunas')
+            ->whereHas('castingProject', fn ($q) => $q->shootingDalam($from, $to))
+            ->with('castingProject.classes')->get()
+            ->sum(fn (Invoice $i) => (float) ($i->nominal ?? $this->nilaiInvoice($i->castingProject)));
 
         return (object) [
             'total_masuk' => $totalMasuk,
+            'piutang' => $piutang,
             'total_keluar' => $totalKeluar,
             'saldo' => $totalMasuk - $totalKeluar,
+            'proyeksi' => $totalMasuk + $piutang - $totalKeluar,
             'per_bulan' => $bulan,
         ];
     }
