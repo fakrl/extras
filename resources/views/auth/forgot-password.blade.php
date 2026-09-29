@@ -4,7 +4,7 @@
 
 @section('content')
 <h1 class="auth-title">Lupa Password</h1>
-<p class="auth-subtitle">Masukkan email akunmu, kami kirim link untuk atur ulang password.</p>
+<p class="auth-subtitle">Masukkan email atau username akunmu, kami kirim link untuk atur ulang password.</p>
 
 @if (session('status'))
     <div class="alert-success">{{ session('status') }}</div>
@@ -20,8 +20,8 @@
 
 <form method="POST" action="{{ route('password.email') }}">
     @csrf
-    <label>Email</label>
-    <input type="email" name="email" value="{{ old('email') }}" required autofocus>
+    <label>Email atau username</label>
+    <input type="text" name="email" value="{{ old('email') }}" required autofocus>
 
     <button type="submit" class="btn-brand">Kirim Link Reset</button>
 </form>

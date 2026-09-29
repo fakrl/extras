@@ -60,9 +60,9 @@ class DemoLengkapSeeder extends Seeder
             ['korlap', 'Bambang Susilo', 'korlap_bambang', 'bambang@jbtb.test', [], 750000],
             ['korlap', 'Dedi Firmansyah', 'korlap_dedi', 'dedi@jbtb.test', [], 750000],
             ['admin', 'Hendra Wijaya', 'admin_hendra', 'hendra@jbtb.test', ['status' => 'nonaktif'], 1000000],
-            ['client', 'Andini Prameswari', 'client_andini', 'andini@layarsenja.test'],
-            ['client', 'Rudy Hartono', 'client_rudy', 'rudy@kampusbiru.test'],
-            ['client', 'Maya Salsabila', 'client_maya', 'maya@nadaria.test'],
+            ['client', 'Andini Prameswari', 'client_andini', 'andini@layarsenja.test', ['nama_perusahaan' => 'PT Layar Senja Films']],
+            ['client', 'Rudy Hartono', 'client_rudy', 'rudy@kampusbiru.test', ['nama_perusahaan' => 'Kampus Biru Pictures']],
+            ['client', 'Maya Salsabila', 'client_maya', 'maya@nadaria.test', ['nama_perusahaan' => 'Nadaria Music']],
         ] as $s) {
             [$role, $nama, $username, $email] = $s;
             $user = $this->akun($role, $nama, $username, $email, now()->subDays(120), $s[4] ?? []);

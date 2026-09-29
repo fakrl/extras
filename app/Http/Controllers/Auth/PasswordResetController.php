@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -23,12 +24,19 @@ class PasswordResetController extends Controller
 
     public function sendResetLink(Request $request): RedirectResponse
     {
-        $request->validate(['email' => ['required', 'email']]);
+        $identitas = $request->validate(['email' => ['required', 'string', 'max:255']])['email'];
+        $user = User::where(str_contains($identitas, '@') ? 'email' : 'username', $identitas)->first();
 
-        Password::sendResetLink($request->only('email'));
+        if ($user && ! $user->email) {
+            return back()->withInput()->withErrors(['email' => 'Akun ini belum punya email. Hubungi Super Admin JBTB untuk reset password.']);
+        }
+
+        if ($user) {
+            Password::sendResetLink(['email' => $user->email]);
+        }
 
         // Pesan generik, tidak ungkap apakah email terdaftar atau tidak.
-        return back()->with('status', 'Kalau email tersebut terdaftar, link reset password sudah dikirim. Cek inbox (atau folder spam) kamu.');
+        return back()->with('status', 'Kalau email/username tersebut terdaftar, link reset password sudah dikirim. Cek inbox (atau folder spam) kamu.');
     }
 
     /**
@@ -56,6 +64,7 @@ class PasswordResetController extends Controller
             $user->forceFill([
                 'password' => Hash::make($password),
                 'remember_token' => Str::random(60),
+                'wajib_ganti_password' => false,
             ])->save();
         });
 

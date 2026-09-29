@@ -10,8 +10,12 @@
             Manajemen akun seluruh pengguna sistem (Admin, Korlap, Client, Extras, Super Admin).
         </p>
     </div>
-    <button type="button" class="btn btn-brand" onclick="document.getElementById('add-admin-dialog').showModal()">+ Tambah Staf</button>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button type="button" class="btn" onclick="document.getElementById('client-baru-dialog').showModal()">+ Client</button>
+        <button type="button" class="btn btn-brand" onclick="document.getElementById('add-admin-dialog').showModal()">+ Tambah Staf</button>
+    </div>
 </div>
+@include('partials.client-baru-modal')
 
 {{-- AU.6: Search Bar Dominan + 1 Tombol Filter Dropdown --}}
 <div style="display: flex; gap: 8px; margin-bottom: 16px; align-items: stretch; position: relative;">
@@ -119,6 +123,9 @@
                         </div>
                         <div style="color: var(--text-muted); font-size: 12.5px; margin-top: 2px;">
                             {{ $user->email }}
+                            @if ($user->nama_perusahaan)
+                                &bull; {{ $user->nama_perusahaan }}
+                            @endif
                             @if ($user->username)
                                 &bull; <span style="font-family: monospace;">{{ '@'.$user->username }}</span>
                             @endif
@@ -186,7 +193,7 @@
                         <input type="text" name="name" value="{{ old('name', $user->name) }}" required style="width: 100%; margin-bottom: 12px;">
 
                         <label>Email</label>
-                        <input type="email" name="email" value="{{ old('email', $user->email) }}" required style="width: 100%; margin-bottom: 12px;">
+                        <input type="email" name="email" value="{{ old('email', $user->email) }}" @required(! $user->isClient()) style="width: 100%; margin-bottom: 12px;">
 
                         <label>Role</label>
                         <select name="role" required style="width: 100%; margin-bottom: 16px;">
@@ -263,7 +270,6 @@
             <select name="role" required style="width: 100%; margin-bottom: 4px;">
                 <option value="admin" @selected(old('role') === 'admin')>Admin (operasional proyek penuh)</option>
                 <option value="korlap" @selected(old('role') === 'korlap')>Korlap (Koordinator Lapangan)</option>
-                <option value="client" @selected(old('role') === 'client')>Client / Production House</option>
                 @if (auth()->user()->is_protected)
                     <option value="super_admin" @selected(old('role') === 'super_admin')>Super Admin</option>
                 @endif

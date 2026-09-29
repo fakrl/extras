@@ -190,7 +190,7 @@
                             <label>Nama</label>
                             <input type="text" name="name" value="{{ $person->name }}" required style="width:100%;margin-bottom:10px;">
                             <label>Email</label>
-                            <input type="email" name="email" value="{{ $person->email }}" required style="width:100%;margin-bottom:10px;">
+                            <input type="email" name="email" value="{{ $person->email }}" @required(! $person->isClient()) style="width:100%;margin-bottom:10px;">
                             <label>Role</label>
                             <select name="role" required style="width:100%;margin-bottom:14px;">
                                 <option value="admin" @selected($person->role==='admin')>Admin</option>

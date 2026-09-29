@@ -20,3 +20,6 @@
 <a href="{{ route('invoices.index-client') }}" class="sidebar-link {{ str_starts_with($route, 'invoice') ? 'active' : '' }}">
     <i class="ti ti-receipt"></i> Tagihan
 </a>
+<a href="{{ route('cd.profil') }}" class="sidebar-link {{ request()->routeIs('cd.profil*') ? 'active' : '' }}">
+    <i class="ti ti-user"></i> Profil
+</a>
