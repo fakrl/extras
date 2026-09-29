@@ -30,8 +30,10 @@ class UbahPasswordController extends Controller
             return back()->withErrors(['current_password' => 'Kata sandi saat ini tidak sesuai.'])->withInput();
         }
 
-        $request->user()->update(['password' => Hash::make($request->new_password)]);
+        $user = $request->user();
+        $dipaksa = $user->wajib_ganti_password;
+        $user->update(['password' => Hash::make($request->new_password), 'wajib_ganti_password' => false]);
 
-        return back()->with('status', 'Kata sandi berhasil diubah.');
+        return ($dipaksa ? redirect($user->dashboardUrl()) : back())->with('status', 'Kata sandi berhasil diubah.');
     }
 }
