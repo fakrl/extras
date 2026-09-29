@@ -22,21 +22,25 @@ class SuperAdminCdManagementTest extends TestCase
 
         // Bagian AG: CD sekarang muncul di admin listing dengan filter role=client
         $this->actingAs($superAdmin)
-            ->get(route('super-admin.admins.index', ['role' => 'client']))
+            ->get(route('super-admin.akun.index', ['role' => 'client']))
             ->assertOk()
             ->assertSee('CD Satu');
     }
 
-    public function test_cd_tidak_muncul_di_listing_admin_tanpa_filter(): void
+    public function test_listing_default_menampilkan_semua_role_dan_filter_role_menyaring(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        $cd = User::factory()->create(['role' => 'client', 'name' => 'CD Satu']);
-        $admin = User::factory()->create(['role' => 'admin', 'name' => 'Admin Satu']);
+        User::factory()->create(['role' => 'client', 'name' => 'CD Satu']);
+        User::factory()->create(['role' => 'admin', 'name' => 'Admin Satu']);
 
-        // Bagian AG: CD tidak muncul di listing default (hanya Admin roles)
         $this->actingAs($superAdmin)
-            ->get(route('super-admin.admins.index'))
+            ->get(route('super-admin.akun.index'))
             ->assertOk()
+            ->assertSee('Admin Satu')
+            ->assertSee('CD Satu');
+
+        $this->actingAs($superAdmin)
+            ->get(route('super-admin.akun.index', ['role' => 'admin']))
             ->assertSee('Admin Satu')
             ->assertDontSee('CD Satu');
     }
@@ -75,20 +79,20 @@ class SuperAdminCdManagementTest extends TestCase
             ->get(route('super-admin.admins.show', $cd))
             ->assertOk()
             ->assertSee('CD Detail')
-            ->assertSee(route('super-admin.admins.index'));
+            ->assertSee(route('super-admin.akun.index'));
     }
 
     public function test_super_admin_bisa_bikin_akun_cd_baru(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
 
-        $response = $this->actingAs($superAdmin)->from(route('super-admin.admins.index'))->post(route('super-admin.casting-directors.store'), [
+        $response = $this->actingAs($superAdmin)->from(route('super-admin.akun.index'))->post(route('super-admin.casting-directors.store'), [
             'name' => 'CD Baru',
             'email' => 'cd-baru@example.com',
             'username' => 'cd_baru',
         ]);
 
-        $response->assertRedirect(route('super-admin.admins.index'));
+        $response->assertRedirect(route('super-admin.akun.index'));
 
         $newCd = User::where('email', 'cd-baru@example.com')->first();
         $this->assertNotNull($newCd);

@@ -34,7 +34,6 @@ use App\Http\Controllers\SuperAdmin\ActivityLogController;
 use App\Http\Controllers\SuperAdmin\AdminManagementController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\SuperAdmin\GlobalSearchController;
-use App\Http\Controllers\SuperAdmin\MonitoringController;
 use App\Http\Controllers\SuperAdmin\ProjectAssignmentController;
 use App\Http\Controllers\UbahPasswordController;
 use Illuminate\Support\Facades\Route;
@@ -248,12 +247,13 @@ Route::middleware(['auth', 'role:admin,super_admin'])->prefix('super-admin')->gr
 Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(function () {
     Route::get('/dashboard', [SuperAdminDashboardController::class, 'index'])->name('super-admin.dashboard');
 
-    Route::get('/monitoring', [MonitoringController::class, 'index'])->name('super-admin.monitoring');
+    Route::get('/akun', [AdminManagementController::class, 'akun'])->name('super-admin.akun.index');
+    Route::get('/monitoring', [AdminManagementController::class, 'keAkun'])->name('super-admin.monitoring');
 
     Route::get('/attendance', [AttendanceController::class, 'index'])
         ->name('super-admin.attendance.index');
 
-    Route::get('/admins', [AdminManagementController::class, 'index'])->name('super-admin.admins.index');
+    Route::get('/admins', [AdminManagementController::class, 'keAkun'])->name('super-admin.admins.index');
     Route::post('/admins', [AdminManagementController::class, 'store'])->name('super-admin.admins.store');
     Route::post('/admins/bulk-action', [AdminManagementController::class, 'bulkAction'])->name('super-admin.admins.bulk-action');
     Route::post('/admins/{user}/reset-password', [AdminManagementController::class, 'resetPassword'])->name('super-admin.admins.reset-password');
@@ -265,8 +265,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
     Route::patch('/admins/{user}/restore', [AdminManagementController::class, 'restore'])->name('super-admin.admins.restore');
     Route::delete('/admins/{user}', [AdminManagementController::class, 'destroy'])->name('super-admin.admins.destroy');
 
-    // Bagian AG: route lama CD di-redirect ke index admin dengan filter role
-    Route::redirect('/casting-directors', '/super-admin/admins?role=client');
+    Route::redirect('/casting-directors', '/super-admin/akun?role=client');
     Route::post('/casting-directors', [AdminManagementController::class, 'storeCd'])->name('super-admin.casting-directors.store');
 
     Route::post('/projects/{castingProject}/assign', [ProjectAssignmentController::class, 'assign'])
