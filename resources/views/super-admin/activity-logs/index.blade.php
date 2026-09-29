@@ -3,7 +3,7 @@
 @section('title', 'Log Aktivitas Sistem (Audit Trail)')
 
 @section('content')
-<form method="GET" action="{{ route('super-admin.activity-logs') }}" class="xtoolbar">
+<form method="GET" action="{{ route('super-admin.activity-logs') }}" class="xtoolbar" data-live>
     <input type="search" name="q" value="{{ $f['q'] ?? '' }}" class="xtoolbar-cari" placeholder="Cari deskripsi, aktor, atau subjek…" aria-label="Cari log">
     <button type="submit" class="btn btn-sm btn-brand" aria-label="Cari"><i class="ti ti-search"></i></button>
     <details class="xtoolbar-more" @if($filterAktif) open @endif>
@@ -38,7 +38,7 @@
     </details>
 </form>
 
-<div class="card">
+<div class="card" data-live-target>
     <div style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 10px;">
         {{ $logs->total() }} aktivitas
     </div>

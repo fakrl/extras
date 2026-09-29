@@ -21,11 +21,11 @@
     <p style="font-size: 13.5px; color: var(--text-secondary); margin: -8px 0 14px;">
         Pilih akun {{ $label }}. Halaman tampil dengan data akun itu, <strong>lihat saja</strong>: semua aksi (simpan, kirim, TTD) ditolak.
     </p>
-    <form method="GET" action="{{ route('super-admin.mode.pilih', $mode) }}" class="xtoolbar">
+    <form method="GET" action="{{ route('super-admin.mode.pilih', $mode) }}" class="xtoolbar" data-live>
         <input type="search" name="q" value="{{ $q }}" class="xtoolbar-cari" placeholder="Cari nama, username, email…" aria-label="Cari akun">
         <button type="submit" class="btn btn-sm btn-brand" aria-label="Cari"><i class="ti ti-search"></i></button>
     </form>
-    <div class="card">
+    <div class="card" data-live-target>
         @forelse ($akun as $u)
             <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border-color); flex-wrap: wrap;">
                 <div style="min-width: 0;">

@@ -24,13 +24,15 @@
     <a href="{{ route('admin.projects.create') }}" class="btn btn-brand">+ Buat Proyek</a>
 </div>
 
-<form method="GET" action="{{ route('admin.projects.index') }}" class="xtoolbar" role="search">
+<form method="GET" action="{{ route('admin.projects.index') }}" class="xtoolbar" role="search" data-live>
     <input type="search" name="q" value="{{ $cari }}" class="xtoolbar-cari" placeholder="Cari nama produksi atau client..." aria-label="Cari proyek">
     @foreach (array_filter(['tahap' => $tahap, 'bayar' => $bayar, 'peserta' => $peserta, 'status' => request('status')]) as $k => $v)
         <input type="hidden" name="{{ $k }}" value="{{ $v }}">
     @endforeach
     <button type="submit" class="btn btn-sm"><i class="ti ti-search"></i> Cari</button>
 </form>
+
+<div data-live-target>
 
 <div class="xfilter" aria-label="Filter tahap proyek">
     @foreach (['' => 'Semua'] + \App\Models\CastingProject::TAHAP as $value => $label)
@@ -139,6 +141,7 @@
     </div>
     {{ $projects->links() }}
 @endif
+</div>
 
 <style>
     .proyek-uang { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; padding: 8px 10px; border-radius: 8px; background: var(--bg-page); color: var(--text-primary); text-decoration: none; font-size: var(--fs-sm); font-weight: 600; }
@@ -147,13 +150,14 @@
 </style>
 
 <script>
-    document.querySelectorAll('[data-copy-link]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            navigator.clipboard.writeText(btn.dataset.copyLink).then(function () {
-                var original = btn.textContent;
-                btn.textContent = 'Link disalin!';
-                setTimeout(function () { btn.textContent = original; }, 2000);
-            });
+    // delegasi: tombol tetap jalan setelah daftar diganti live search
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-copy-link]');
+        if (!btn) return;
+        navigator.clipboard.writeText(btn.dataset.copyLink).then(function () {
+            var original = btn.textContent;
+            btn.textContent = 'Link disalin!';
+            setTimeout(function () { btn.textContent = original; }, 2000);
         });
     });
 </script>
