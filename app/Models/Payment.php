@@ -53,6 +53,23 @@ class Payment extends Model
     }
 
     /**
+     * Honor pokok Extras = fee_final hasil deal nego (tabel payments sendiri
+     * nggak punya kolom nominal, beda dengan StaffPayroll::nominal_pokok).
+     */
+    public function nominalPokok(): float
+    {
+        return (float) ($this->projectApplication?->fee_final ?? 0);
+    }
+
+    /**
+     * Pokok + semua add-on. Pakai relasi yang sudah di-load kalau ada (hindari N+1).
+     */
+    public function nominalTotal(): float
+    {
+        return $this->nominalPokok() + (float) $this->addons->sum('nominal');
+    }
+
+    /**
      * RF-28: Admin menandai transfer + upload bukti.
      */
     public function tandaiDitransfer(string $buktiPath): void
