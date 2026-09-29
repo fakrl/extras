@@ -172,7 +172,7 @@ class AttendanceController extends Controller
 
         ActivityLog::record(
             'VALIDATE_ATTENDANCE',
-            "Korlap {$request->user()->name} memvalidasi kehadiran extras {$attendance->projectApplication->extras->user->name} di lokasi shooting",
+            "{$request->user()->label()} {$request->user()->name} memvalidasi kehadiran extras {$attendance->projectApplication->extras->user->name} di lokasi shooting",
             $attendance
         );
 
@@ -193,7 +193,7 @@ class AttendanceController extends Controller
 
         ActivityLog::record(
             'REJECT_ATTENDANCE',
-            "Korlap {$request->user()->name} menolak validasi absensi extras {$attendance->projectApplication->extras->user->name}",
+            "{$request->user()->label()} {$request->user()->name} menolak validasi absensi extras {$attendance->projectApplication->extras->user->name}",
             $attendance
         );
 
@@ -215,7 +215,7 @@ class AttendanceController extends Controller
         $isClientOwner = $project->diajukan_oleh_client_id === $user->id;
 
         abort_unless(
-            $user->isAdmin() || $user->isKorlap() || $isAssignedCd || $isClientOwner,
+            $user->bisaSebagaiAdmin() || $user->bisaSebagaiKorlap() || $isAssignedCd || $isClientOwner,
             403
         );
         abort_unless($attendance->foto_path && Storage::disk('local')->exists($attendance->foto_path), 404);

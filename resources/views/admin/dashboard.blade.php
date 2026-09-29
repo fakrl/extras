@@ -3,7 +3,8 @@
 @section('title', 'Dashboard Admin')
 
 @section('content')
-@if (auth()->user()->isAdmin())
+@php $tampilAdmin = auth()->user()->bisaSebagaiAdmin() && auth()->user()->modeSa() !== 'korlap'; @endphp
+@if ($tampilAdmin)
     @if ($urgentProjects->isNotEmpty())
         <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger, #ef4444); border-radius: 10px; padding: 14px 18px; margin-bottom: 20px;">
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
@@ -79,7 +80,7 @@
         <a href="{{ route('admin.recap.index') }}" class="btn">Rekap Extras</a>
         <a href="{{ route('admin.work-history') }}" class="btn">Riwayat Kerja & Status Gaji Saya</a>
     </div>
-@elseif (auth()->user()->isKorlap())
+@elseif (auth()->user()->bisaSebagaiKorlap())
     <div class="alert-info" style="margin-bottom: 16px;">
         Sebagai Koordinator Lapangan (Korlap), tugas utama kamu adalah memvalidasi kehadiran Extras di lokasi syuting dan mencatat evaluasi lapangan.
     </div>
@@ -95,7 +96,7 @@
 @endif
 @endsection
 
-@if (auth()->user()->isAdmin())
+@if (auth()->user()->bisaSebagaiAdmin() && auth()->user()->modeSa() !== 'korlap')
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
