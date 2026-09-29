@@ -19,7 +19,7 @@ use Illuminate\Notifications\Notifiable;
 // tapi karena tidak ada route/controller yang nerima 'role'/'status' mentah
 // dari $request->all(); RegisterController & AdminManagementController
 // selalu set literal/hasil validasi enum, bukan pass-through raw input.
-#[Fillable(['name', 'email', 'username', 'password', 'role', 'status', 'nomor_wa'])]
+#[Fillable(['name', 'nama_perusahaan', 'email', 'username', 'password', 'wajib_ganti_password', 'role', 'status', 'nomor_wa'])]
 // nomor_wa masuk Hidden, bukan super rahasia (bukan NIK/rekening), tapi
 // Kebijakan privasi: kontak Extras tidak ditampilkan untuk
 // Casting Director; defense-in-depth kalau nanti ada endpoint yang serialize
@@ -42,6 +42,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_protected' => 'boolean',
+            'wajib_ganti_password' => 'boolean',
         ];
     }
 

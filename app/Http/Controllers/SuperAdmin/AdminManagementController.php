@@ -12,7 +12,6 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class AdminManagementController extends Controller
 {
@@ -123,7 +122,7 @@ class AdminManagementController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:users,email,'.$user->id],
+            'email' => ['nullable', 'required_unless:role,client', 'email', 'unique:users,email,'.$user->id],
             'role' => ['required', 'in:'.implode(',', $allowedRoles)],
         ]);
 
@@ -143,39 +142,32 @@ class AdminManagementController extends Controller
     }
 
     /**
-     * RF-57: halaman terpisah untuk kelola Casting Director / Client.
-     */
-    public function indexCd()
-    {
-        $cds = User::where('role', 'client')
-            ->where('id', '!=', auth()->id())
-            ->get()
-            ->each(fn (User $cd) => $cd->has_history = $this->hasHistory($cd));
-
-        return view('super-admin.casting-directors.index', compact('cds'));
-    }
-
-    /**
-     * RF-58 lanjutan: Super Admin bikin akun Client langsung, terpisah dari
-     * alur self-register publik (register.cd).
+     * BD.1: Super Admin bikin akun Client. Password sementara digenerate,
+     * tampil sekali lewat flash `kredensial`, Client wajib ganti saat login.
      */
     public function storeCd(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:users,email'],
-            'password' => ['required', 'min:8'],
+            'nama_perusahaan' => ['nullable', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'unique:users,email'],
+            'username' => ['required', 'alpha_dash', 'max:50', 'unique:users,username'],
+            'nomor_wa' => ['nullable', 'string', 'max:20'],
         ]);
 
-        User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role' => 'client',
+        $password = self::passwordSementara();
+        $user = User::create($data + [
+            'password' => $password,
+            'wajib_ganti_password' => true,
+            'role' => User::ROLE_CLIENT,
             'status' => 'aktif',
         ]);
 
-        return redirect()->route('super-admin.admins.index', ['role' => 'client'])->with('status', 'Akun Client berhasil ditambahkan.');
+        ActivityLog::record('CREATE_USER', "Super Admin membuat akun Client {$user->name} (@{$user->username}).", $user);
+
+        return back()->with('status', "Akun Client {$user->name} berhasil dibuat.")
+            ->with('kredensial', $this->kredensial($user, $password))
+            ->with('client_baru_id', $user->id);
     }
 
     /**
@@ -322,13 +314,31 @@ class AdminManagementController extends Controller
     {
         $this->guardTarget($user);
 
-        $newPassword = Str::random(12);
-        $user->password = Hash::make($newPassword);
-        $user->save();
+        $newPassword = self::passwordSementara();
+        $user->update(['password' => $newPassword, 'wajib_ganti_password' => true]);
 
         ActivityLog::record('RESET_USER_PASSWORD', "Super Admin mereset password {$user->name}.", $user);
 
-        return back()->with('status', "Password berhasil direset. Password baru: {$newPassword}");
+        return back()->with('status', "Password {$user->name} berhasil direset.")
+            ->with('kredensial', $this->kredensial($user, $newPassword));
+    }
+
+    public static function passwordSementara(int $panjang = 10): string
+    {
+        $huruf = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+        return collect(range(1, $panjang))->map(fn () => $huruf[random_int(0, strlen($huruf) - 1)])->implode('');
+    }
+
+    private function kredensial(User $user, string $password): array
+    {
+        return [
+            'nama' => $user->name,
+            'username' => $user->username ?: $user->email,
+            'password' => $password,
+            'url' => route('login'),
+            'nomor_wa' => $user->nomor_wa,
+        ];
     }
 
     private function guardTarget(User $user): void

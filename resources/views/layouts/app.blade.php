@@ -657,6 +657,9 @@
             <x-command-palette />
         @endif
     @endauth
+    @if (session('kredensial'))
+        @include('partials.kredensial-dialog')
+    @endif
     @stack('scripts')
 </body>
 </html>
