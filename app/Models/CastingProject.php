@@ -68,6 +68,11 @@ class CastingProject extends Model
         return $this->hasMany(ProjectExpense::class)->orderBy('tanggal');
     }
 
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(ProjectAttachment::class)->latest();
+    }
+
     public function classes(): HasMany
     {
         return $this->hasMany(CastingProjectClass::class);
