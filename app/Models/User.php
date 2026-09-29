@@ -85,6 +85,11 @@ class User extends Authenticatable
                 ->orWhereHas('extrasProfile', fn ($ep) => $ep->whereNull('foto_profil_path')->orWhereNull('nik')));
     }
 
+    public function aktivitasTerakhir(): HasOne
+    {
+        return $this->hasOne(ActivityLog::class)->latestOfMany();
+    }
+
     public function adminProfile(): HasOne
     {
         return $this->hasOne(AdminProfile::class);

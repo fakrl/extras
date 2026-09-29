@@ -16,59 +16,74 @@ use Illuminate\Support\Facades\Hash;
 class AdminManagementController extends Controller
 {
     /**
-     * RF-57: target Admin (4 sub-role) + sesama Super Admin + Casting Director.
-     * Semua ditampilkan dalam 1 list dengan filter/tab role. User yang sedang login
-     * dikecualikan (tidak boleh aksi ke dirinya sendiri).
-     *
-     * Bagian AG: Default listing (role=all) HANYA tampilkan Admin roles, bukan CD.
-     * CD hanya muncul kalau explicit filter role=client.
+     * BD.4: Manajemen Akun, satu daftar semua akun + filter popover.
+     * "Sedang aktif di proyek": Extras punya aplikasi selain ditolak/dibatalkan/selesai_produksi,
+     * Admin/Korlap punya penugasan status_log berjalan, Client ter-assign ke proyek mendatang/berjalan.
      */
-    public function index(Request $request)
+    public function akun(Request $request)
     {
-        $roleFilter = $request->query('role', 'all');
-        $statusFilter = $request->query('status', 'all');
-        $search = $request->query('search') ?: $request->query('q');
+        $f = [
+            'q' => trim((string) $request->query('q')),
+            'role' => array_key_exists($request->query('role'), User::LABELS) ? $request->query('role') : null,
+            'status' => in_array($request->query('status'), ['aktif', 'nonaktif', 'dihapus'], true) ? $request->query('status') : null,
+            'sedang_aktif' => $request->boolean('sedang_aktif'),
+            'tag' => array_filter(array_map('intval', (array) $request->query('tag', []))),
+            'grade' => in_array($request->query('grade'), ['A', 'B', 'C', 'belum'], true) ? $request->query('grade') : null,
+        ];
 
-        $query = User::withTrashed()->where('id', '!=', auth()->id());
-
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('username', 'like', "%{$search}%")
-                    ->orWhere('role', 'like', "%{$search}%");
-            });
-        }
-
-        if ($roleFilter === 'all') {
-            // Default: hanya Admin roles (tidak termasuk CD/Client/Extras)
-            $query->whereIn('role', ['admin', 'korlap', 'super_admin']);
-        } else {
-            $query->where('role', $roleFilter);
-        }
-
-        if ($statusFilter === 'aktif') {
-            $query->whereNull('deleted_at')->where('status', 'aktif');
-        } elseif ($statusFilter === 'nonaktif') {
-            $query->where(function ($q) {
-                $q->whereNotNull('deleted_at')->orWhere('status', 'nonaktif');
-            });
-        }
-
-        $withs = $roleFilter === 'extras'
-            ? []
-            : ['adminProfile', 'adminProjectAssignments.castingProject', 'adminProjectAssignments.payroll', 'cdProjectAssignments.castingProject'];
-
-        $admins = $query->with($withs)
+        $users = User::query()
+            ->where('id', '!=', auth()->id())
+            ->when($f['status'] === 'dihapus', fn ($q) => $q->onlyTrashed())
+            ->when(in_array($f['status'], ['aktif', 'nonaktif'], true), fn ($q) => $q->where('status', $f['status']))
+            ->when($f['role'], fn ($q, $role) => $q->where('role', $role))
+            ->when($f['q'] !== '', function ($q) use ($f) {
+                $like = "%{$f['q']}%";
+                $wa = ltrim(preg_replace('/\D/', '', $f['q']), '0');
+                $q->where(fn ($w) => $w->where('name', 'like', $like)
+                    ->orWhere('username', 'like', $like)
+                    ->orWhere('email', 'like', $like)
+                    ->when(strlen($wa) >= 4, fn ($w) => $w->orWhere('nomor_wa', 'like', "%{$wa}%")));
+            })
+            ->when($f['sedang_aktif'], fn ($q) => $q->where(fn ($w) => $w
+                ->where(fn ($e) => $e->where('role', User::ROLE_EXTRAS)
+                    ->whereHas('extrasProfile.applications', fn ($a) => $a->whereNotIn('status_partisipasi', ['ditolak', 'dibatalkan', 'selesai_produksi'])))
+                ->orWhere(fn ($s) => $s->whereIn('role', [User::ROLE_ADMIN, User::ROLE_KORLAP])
+                    ->whereHas('adminProjectAssignments', fn ($a) => $a->where('status_log', 'berjalan')))
+                ->orWhere(fn ($c) => $c->where('role', User::ROLE_CLIENT)
+                    ->whereHas('cdProjectAssignments.castingProject', fn ($p) => $p
+                        ->where(fn ($t) => $t->diTahap('mendatang'))
+                        ->orWhere(fn ($t) => $t->diTahap('berjalan'))))))
+            ->when($f['tag'], function ($q, $tags) {
+                foreach ($tags as $id) {
+                    $q->whereHas('extrasProfile.categories', fn ($c) => $c->where('extras_categories.id', $id));
+                }
+            })
+            ->when($f['grade'] === 'belum', fn ($q) => $q->where('role', User::ROLE_EXTRAS)
+                ->where(fn ($w) => $w->doesntHave('extrasProfile')->orWhereHas('extrasProfile', fn ($p) => $p->whereNull('grade_saat_ini'))))
+            ->when(in_array($f['grade'], ['A', 'B', 'C'], true), fn ($q) => $q
+                ->whereHas('extrasProfile', fn ($p) => $p->where('grade_saat_ini', $f['grade'])))
+            ->with(['extrasProfile.categories', 'aktivitasTerakhir'])
             ->latest()
-            ->paginate(15)
-            ->appends($request->query());
+            ->paginate(30)
+            ->withQueryString();
 
-        $admins->each(fn (User $admin) => $admin->has_history = $this->hasHistory($admin));
+        $filterAktif = collect($f)->except('q')->filter()->count();
+        $tagGroups = ExtrasCategory::perGrup();
 
-        $projects = CastingProject::orderByDesc('id')->get();
+        return view('super-admin.akun.index', compact('users', 'f', 'filterAktif', 'tagGroups'));
+    }
 
-        return view('super-admin.admins.index', compact('admins', 'projects', 'roleFilter', 'statusFilter', 'search'));
+    /** BD.4: halaman lama (Monitoring Akun, Kelola Akun) diarahkan ke Manajemen Akun. */
+    public function keAkun(Request $request): RedirectResponse
+    {
+        $role = $request->query('role', $request->query('type'));
+        $status = $request->query('status');
+
+        return redirect()->route('super-admin.akun.index', array_filter([
+            'q' => $request->query('search') ?: $request->query('q'),
+            'role' => $role === 'all' ? null : $role,
+            'status' => $status === 'all' ? null : $status,
+        ]));
     }
 
     /**
@@ -90,7 +105,7 @@ class AdminManagementController extends Controller
             $clientProjects = CastingProject::where('diajukan_oleh_client_id', $user->id)
                 ->orderByDesc('id')->get();
         } elseif ($user->role === 'extras') {
-            $user->load('extrasProfile.categories', 'adminProjectAssignments');
+            $user->load('extrasProfile.categories', 'extrasProfile.applications.castingProject');
             $assignments = collect();
             $availableKategori = ExtrasCategory::orderBy('nama')->get();
         } else {
@@ -138,7 +153,7 @@ class AdminManagementController extends Controller
 
         ActivityLog::record('UPDATE_USER', "Super Admin mengubah data akun {$user->name} (Role: {$user->role}).", $user);
 
-        return redirect()->back(fallback: route('super-admin.admins.index'))->with('status', "Data akun {$user->name} berhasil diperbarui.");
+        return redirect()->back(fallback: route('super-admin.akun.index'))->with('status', "Data akun {$user->name} berhasil diperbarui.");
     }
 
     /**
@@ -204,7 +219,7 @@ class AdminManagementController extends Controller
             ]);
         }
 
-        return redirect()->route('super-admin.admins.index')->with('status', 'Akun Admin berhasil ditambahkan.');
+        return redirect()->route('super-admin.akun.index')->with('status', 'Akun Admin berhasil ditambahkan.');
     }
 
     /**
@@ -344,23 +359,5 @@ class AdminManagementController extends Controller
     private function guardTarget(User $user): void
     {
         abort_if($user->is_protected || $user->id === auth()->id(), 403);
-    }
-
-    /**
-     * Flag untuk UI mengecek apakah pengguna memiliki riwayat kerja / penugasan.
-     */
-    private function hasHistory(User $user): bool
-    {
-        if ($user->adminProjectAssignments()->exists()) {
-            return true;
-        }
-        if ($user->cdProjectAssignments()->exists()) {
-            return true;
-        }
-        if ($user->castingProjects()->exists()) {
-            return true;
-        }
-
-        return false;
     }
 }
