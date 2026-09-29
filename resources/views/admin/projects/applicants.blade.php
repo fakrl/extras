@@ -121,7 +121,7 @@
         'badge' => ($tab ?? '') === 'cd' ? ($cdStatusLabel[$app->status_partisipasi] ?? null) : null,
         'check' => ($tab ?? '') !== 'cd' ? ['name' => 'ids[]', 'class' => 'bulk-check', 'form' => 'bulk-form'] : null,
         'sub' => implode(' · ', array_filter([$ex->user->name ?? null, $app->grade ? 'Grade '.$app->grade : null])),
-        'lihat' => ['onclick' => "document.getElementById('detail-{$app->id}').showModal()"],
+        'lihat' => $ex->user ? ['href' => route('admin.extras.profil', $ex->user), 'data-profil-modal' => true, 'data-aksi-dialog' => 'detail-'.$app->id, 'data-aksi-label' => 'Detail & aksi'] : ['onclick' => "document.getElementById('detail-{$app->id}').showModal()"],
         'aksi' => $aksi,
         'peringatan' => $app->bentrok_jadwal_flag ? 'Bentrok jadwal' : null,
         'attrs' => [
@@ -274,7 +274,7 @@
                     @endif
                 @endif
                 @if ($ex->user)
-                    <a href="{{ route('admin.extras.profil', $ex->user) }}" class="btn"><i class="ti ti-user"></i> Profil lengkap</a>
+                    <a href="{{ route('admin.extras.profil', $ex->user) }}" class="btn" data-profil-modal><i class="ti ti-user"></i> Profil lengkap</a>
                 @endif
                 @if (in_array($app->status_partisipasi, ['diajukan', 'direview_admin'], true))
                     <button type="button" class="btn btn-danger-outline" onclick="document.getElementById('reject-dialog-{{ $app->id }}').showModal()">Tolak</button>

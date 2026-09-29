@@ -312,6 +312,7 @@ Route::middleware(['auth', 'role:client'])->prefix('cd')->group(function () {
     Route::get('/reviews', [ReviewController::class, 'index'])->name('cd.reviews.index');
     Route::post('/reviews', [ReviewController::class, 'review'])->name('cd.reviews.review');
     Route::get('/reviews/{castingProject}', [ReviewController::class, 'show'])->name('cd.reviews.show');
+    Route::get('/extras/{user}/profil', [ReviewController::class, 'profil'])->name('cd.extras.profil');
     Route::get('/reviews/{castingProject}/export/xlsx', [ReviewController::class, 'exportRiwayatXlsx'])->name('cd.riwayat.export.xlsx');
     Route::get('/reviews/{castingProject}/export/pdf', [ReviewController::class, 'exportRiwayatPdf'])->name('cd.riwayat.export.pdf');
 

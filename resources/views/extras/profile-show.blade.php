@@ -1,26 +1,15 @@
 @extends('layouts.app')
 
-@section('title', ($isAdminView ?? false) ? 'Profil Extras — ' . $user->name : 'Profil Saya')
+@php $mode ??= 'pemilik'; @endphp
+@section('title', ['admin' => 'Profil Extras — '.$profile->user->name, 'client' => 'Profil @'.$profile->user->username][$mode] ?? 'Profil Saya')
 
 @section('content')
 @if (session('status'))
     <div class="alert-success">{{ session('status') }}</div>
 @endif
-@php
-    $admin = $isAdminView ?? false;
-    $fotosArr = collect($fotoTambahan)->filter()->map(fn ($foto, $slot) => [
-        'url' => route('extras.media.foto-tambahan', [$profile, $slot]),
-        'alt' => 'Foto '.$slot,
-    ])->values()->all();
-@endphp
-@include('partials.profil-extras-editorial', [
-    'mode' => $admin ? 'admin' : 'pemilik',
-    'fotoUrl' => $profile->foto_profil_path ? route('extras.media.foto', $profile) : null,
-    'videoUrl' => $profile->video_profil_path ? route('extras.media.video', $profile) : null,
-    'fotos' => $fotosArr,
-])
+@include('partials.profil-extras-app')
 
-@unless ($isAdminView ?? false)
+@if ($mode === 'pemilik')
 <dialog id="modal-share" style="border:1px solid var(--border-color); border-radius:16px; padding:0; max-width:360px; width:95%;">
     <div style="padding:20px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
@@ -76,5 +65,5 @@
 })();
 </script>
 @endpush
-@endunless
+@endif
 @endsection

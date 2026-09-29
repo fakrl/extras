@@ -83,7 +83,7 @@
                 'user' => $ex,
                 'badge' => [ucfirst($ex->status), $ex->status === 'aktif' ? 'badge-aktif' : 'badge-tolak'],
                 'sub' => $ex->name,
-                'lihat' => $ex->extrasProfile ? ['href' => route('admin.extras.profil', $ex)] : ['onclick' => "document.getElementById('kelola-{$ex->id}').showModal()"],
+                'lihat' => $ex->extrasProfile ? ['href' => route('admin.extras.profil', $ex), 'data-profil-modal' => true, 'data-aksi-dialog' => 'kelola-'.$ex->id, 'data-aksi-label' => 'Kelola'] : ['onclick' => "document.getElementById('kelola-{$ex->id}').showModal()"],
                 'aksi' => ['label' => 'Kelola', 'onclick' => "document.getElementById('kelola-{$ex->id}').showModal()"],
                 'peringatan' => $cancelCount ? $cancelCount.'x batal mendadak' : null,
                 'attrs' => [

@@ -150,7 +150,7 @@
             Grade: {{ $user->extrasProfile->grade_saat_ini ?? 'Belum dinilai' }}
         </div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-            <a href="{{ route('admin.extras.profil', $user) }}" class="btn btn-sm btn-brand">Lihat Profil Lengkap</a>
+            <a href="{{ route('admin.extras.profil', $user) }}" class="btn btn-sm btn-brand" data-profil-modal>Lihat Profil Lengkap</a>
             @include('partials.toggle-beranda', ['profile' => $user->extrasProfile])
         </div>
         <div style="font-weight: 600; margin: 16px 0 8px;">Riwayat Proyek</div>

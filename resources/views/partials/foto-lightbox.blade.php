@@ -20,7 +20,7 @@
 <dialog id="{{ $dlgId }}"
     style="border:1px solid var(--border-color); border-radius:12px; padding:0; background:#000; max-width:95vw; position:relative;"
     data-fotos="{{ json_encode(array_column($fotos, 'url')) }}"
-    data-current="0">
+    data-current="0" onclick="if (event.target === this) this.close()">
     <img id="{{ $imgId }}" src="" alt="" style="max-width:90vw; max-height:90vh; object-fit:contain; display:block;">
     <button type="button" onclick="document.getElementById('{{ $dlgId }}').close()" aria-label="Tutup"
         style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,.6); color:#fff; border:none; border-radius:50%; width:44px; height:44px; cursor:pointer; font-size:16px; line-height:1;">×</button>
@@ -33,34 +33,6 @@
 </dialog>
 
 <script>
-if (!window._lbOpen) {
-    window._lbOpen = function(lightboxId, idx) {
-        var dlg = document.getElementById(lightboxId + '-dialog');
-        var fotos = JSON.parse(dlg.dataset.fotos);
-        dlg.dataset.current = idx;
-        document.getElementById(lightboxId + '-img').src = fotos[idx];
-        dlg.showModal();
-    };
-    window._lbPrev = function(lightboxId) {
-        var dlg = document.getElementById(lightboxId + '-dialog');
-        var fotos = JSON.parse(dlg.dataset.fotos);
-        var idx = (parseInt(dlg.dataset.current) - 1 + fotos.length) % fotos.length;
-        dlg.dataset.current = idx;
-        document.getElementById(lightboxId + '-img').src = fotos[idx];
-    };
-    window._lbNext = function(lightboxId) {
-        var dlg = document.getElementById(lightboxId + '-dialog');
-        var fotos = JSON.parse(dlg.dataset.fotos);
-        var idx = (parseInt(dlg.dataset.current) + 1) % fotos.length;
-        dlg.dataset.current = idx;
-        document.getElementById(lightboxId + '-img').src = fotos[idx];
-    };
-}
-(function() {
-    var dlg = document.getElementById('{{ $dlgId }}');
-    if (dlg) {
-        dlg.addEventListener('click', function(e) { if (e.target === dlg) dlg.close(); });
-    }
-})();
+@include('partials.foto-lightbox-js')
 </script>
 @endif
