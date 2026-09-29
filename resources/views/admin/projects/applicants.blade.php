@@ -63,6 +63,9 @@
     <a href="{{ request()->fullUrlWithQuery(['urut' => null, 'page' => null]) }}" class="btn btn-sm {{ $urut ? '' : 'btn-brand' }}">Terbaru</a>
     <a href="{{ request()->fullUrlWithQuery(['urut' => 'cocok', 'page' => null]) }}" class="btn btn-sm {{ $urut ? 'btn-brand' : '' }}">Paling cocok</a>
 </div>
+@if ($tagDicari->isNotEmpty())
+    <p class="xfilter-note">Menampilkan yang punya <strong>salah satu</strong> tag@if ($urut), diurutkan paling cocok@endif</p>
+@endif
 
 {{-- live search server-side (lintas halaman paginasi); filter aktif ikut sebagai hidden input --}}
 <form method="GET" action="{{ route('admin.projects.applicants', $castingProject) }}" data-live role="search" style="position: relative; margin-bottom: 16px; max-width: 400px;">

@@ -276,6 +276,7 @@
         .btn-outline-brand { border-color: var(--accent); color: var(--accent-strong); }
         .xfilter { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: var(--space-3); }
         .xfilter-label { font-size: var(--fs-xs); color: var(--text-muted); font-weight: 600; margin-right: 2px; }
+        .xfilter-note { margin: calc(-1 * var(--space-2)) 0 var(--space-3); font-size: var(--fs-xs); color: var(--text-muted); }
         .xtoolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 10px 12px; margin-bottom: var(--space-3); }
         .xtoolbar input, .xtoolbar select { width: auto; min-height: 40px; margin: 0; padding: 6px 10px; font-size: var(--fs-sm); }
         .xtoolbar .xtoolbar-cari { flex: 1 1 220px; font-size: var(--fs-md); }

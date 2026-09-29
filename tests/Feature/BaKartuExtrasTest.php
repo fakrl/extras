@@ -73,7 +73,8 @@ class BaKartuExtrasTest extends TestCase
 
         $res = $this->actingAs($admin)->get($url(['tag' => [$t[1]]]));
         $this->assertSame([$a100->id], $ids($res));
-        $res->assertSee('#Mahasiswa')->assertSee('Paling cocok');
+        $res->assertSee('#Mahasiswa')->assertSee('Paling cocok')->assertSee('Menampilkan yang punya <strong>salah satu</strong> tag', false);
+        $this->actingAs($admin)->get($url(['urut' => 'cocok']))->assertSee('diurutkan paling cocok');
     }
 
     public function test_greenlight_chip_tag_dan_data_cocok(): void
@@ -90,7 +91,8 @@ class BaKartuExtrasTest extends TestCase
             ->assertOk()
             ->assertSee('class="btn btn-sm gl-tag" data-tag="'.$t[2].'"', false)
             ->assertSee('data-cocok="67"', false)
-            ->assertSee('Paling cocok');
+            ->assertSee('Paling cocok')
+            ->assertSee('Menampilkan yang punya <strong>salah satu</strong> tag', false);
     }
 
     public function test_greenlight_client_tanpa_grade_admin_nama_asli_dan_kontak(): void

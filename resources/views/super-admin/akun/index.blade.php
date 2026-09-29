@@ -93,6 +93,7 @@
             <details class="akun-filter-tag" @if($f['tag']) open @endif>
                 <summary>Tag Extras @if($f['tag'])({{ count($f['tag']) }} dipilih)@endif</summary>
                 @include('partials.tag-chips', ['name' => 'tag[]', 'selected' => $f['tag']])
+                <p class="xfilter-note" style="margin: 6px 0 0;">Menampilkan yang punya <strong>semua</strong> tag terpilih</p>
             </details>
             <button type="submit" class="btn btn-sm">Terapkan</button>
             @if ($filterAktif || $f['q'] !== '')

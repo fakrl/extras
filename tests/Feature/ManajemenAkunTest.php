@@ -90,7 +90,8 @@ class ManajemenAkunTest extends TestCase
         $this->extras('Extras Tanpa Grade');
 
         $this->akun(['tag' => [$t1->id]])->assertSee('Extras Dua Tag')->assertSee('Extras Satu Tag')->assertDontSee('Extras Tanpa Grade');
-        $this->akun(['tag' => [$t1->id, $t2->id]])->assertSee('Extras Dua Tag')->assertDontSee('Extras Satu Tag');
+        $this->akun(['tag' => [$t1->id, $t2->id]])->assertSee('Extras Dua Tag')->assertDontSee('Extras Satu Tag')
+            ->assertSee('Menampilkan yang punya <strong>semua</strong> tag terpilih', false);
         $this->akun(['grade' => 'B'])->assertSee('Extras Satu Tag')->assertDontSee('Extras Dua Tag');
         $this->akun(['grade' => 'belum'])->assertSee('Extras Tanpa Grade')->assertDontSee('Extras Satu Tag');
     }
