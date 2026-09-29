@@ -34,6 +34,7 @@ class CastingProjectController extends Controller
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($peserta, fn ($q) => $q->whereHas('applications', fn ($a) => $a->where('status_partisipasi', $peserta)))
             ->when($tahap, fn ($q) => $q->diTahap($tahap))
+            ->when($request->boolean('tanpa_client'), fn ($q) => $q->whereNull('client_id'))
             ->when($periode, fn ($q) => $q->shootingDalam(...$periode))
             ->when($bayar === 'staf', fn ($q) => $q->whereHas('payrolls', fn ($p) => $p->where('status_bayar', '!=', 'sudah')))
             ->when($bayar === 'extras', fn ($q) => $q->whereHas('payments', fn ($p) => $p->whereNull('ditransfer_at')))
@@ -179,9 +180,12 @@ class CastingProjectController extends Controller
         $applicantsCount = $castingProject->applications()->count();
         $cdUsers = User::where('role', 'client')->orderBy('name')->get();
 
-        $tagGroups = ExtrasCategory::perGrup();
-
-        return view('admin.projects.edit', compact('castingProject', 'applicantsCount', 'cdUsers', 'tagGroups'));
+        return view('admin.projects.edit', [
+            ...compact('castingProject', 'applicantsCount', 'cdUsers'),
+            'tagGroups' => ExtrasCategory::perGrup(),
+            'admins' => User::where('role', User::ROLE_ADMIN)->where('status', 'aktif')->orderBy('name')->get(),
+            'clients' => $cdUsers->where('status', 'aktif'),
+        ]);
     }
 
     /**
@@ -195,7 +199,9 @@ class CastingProjectController extends Controller
     {
         $data = $request->validate([
             'nama_produksi' => ['required', 'string', 'max:255'],
-            'client_ph' => ['required', 'string', 'max:255'],
+            'admin_id' => [$request->user()->isSuperAdmin() ? 'required' : 'nullable', 'integer', $this->akunAktif(User::ROLE_ADMIN)],
+            'client_id' => ['required', 'integer', $this->akunAktif(User::ROLE_CLIENT)],
+            'client_ph' => ['nullable', 'string', 'max:255'],
             'poster_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'cover_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
             'wa_group_link' => ['nullable', 'url'],
@@ -218,6 +224,9 @@ class CastingProjectController extends Controller
             'kelas.*.tipe_continuity' => ['nullable', 'in:continuity,free'],
             'kelas.*.categories' => ['nullable', 'array'],
             'kelas.*.categories.*' => ['integer', 'exists:extras_categories,id'],
+        ], [
+            'admin_id.required' => 'Pilih Admin PIC proyek ini.',
+            'client_id.required' => 'Pilih akun Client proyek ini dulu (proyek lama belum punya Client).',
         ]);
 
         $hasApplicants = $castingProject->applications()->exists();
@@ -233,9 +242,26 @@ class CastingProjectController extends Controller
             }
         }
 
+        // BE.7: client_ph ikut Client baru kalau kosong atau masih nama otomatis Client lama.
+        $castingProject->loadMissing('admin', 'client');
+        $adminId = (int) ($data['admin_id'] ?? $castingProject->admin_id);
+        $client = User::find($data['client_id']);
+        $otomatis = fn (?User $c) => $c ? ($c->nama_perusahaan ?: $c->name) : null;
+        $clientPh = $data['client_ph'] ?? null;
+        if (blank($clientPh) || $clientPh === $otomatis($castingProject->client)) {
+            $clientPh = $otomatis($client);
+        }
+
+        $perubahan = array_filter([
+            (int) $castingProject->admin_id !== $adminId ? 'Admin PIC '.($castingProject->admin?->name ?? '-').' → '.User::find($adminId)->name : null,
+            (int) $castingProject->client_id !== $client->id ? 'Client '.($castingProject->client?->name ?? '-').' → '.$client->name : null,
+        ]);
+
         $updateData = [
             'nama_produksi' => $data['nama_produksi'],
-            'client_ph' => $data['client_ph'],
+            'admin_id' => $adminId,
+            'client_id' => $client->id,
+            'client_ph' => $clientPh,
             'wa_group_link' => $data['wa_group_link'] ?? null,
             'link_grup' => $data['link_grup'] ?? null,
             'deadline' => $data['deadline'],
@@ -276,6 +302,13 @@ class CastingProjectController extends Controller
         }
         foreach ($data['kelas'] as $kelas) {
             $this->simpanKelas($castingProject, $hasApplicants ? $kelas : Arr::except($kelas, 'id'));
+        }
+
+        // Assignment Client lama dibiarkan: proyek memang boleh multi-Client dan riwayat Greenlight-nya tetap utuh.
+        $castingProject->cdAssignments()->firstOrCreate(['cd_user_id' => $client->id]);
+
+        if ($perubahan) {
+            ActivityLog::record('UPDATE_PROJECT_PIC', "Proyek '{$castingProject->nama_produksi}' diubah oleh {$request->user()->name}: ".implode('; ', $perubahan), $castingProject);
         }
 
         return redirect()->route('admin.projects.index')->with('status', 'Proyek casting berhasil diperbarui.');
