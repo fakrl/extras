@@ -1126,3 +1126,65 @@ Dashboard · Manajemen Akun · Proyek & Keuangan · Log Aktivitas · Monitoring 
 | BD.9 lampiran proyek | `3765798` (merge `8462b07`) — `--filter ProjectAttachmentTest` (Client lain/Extras/Korlap 403, hapus non-pengunggah 403); Manual: `/admin/projects/{id}?tab=lampiran`, Client di `/cd/jadwal/{id}` | [ ] |
 
 **Tes QA:** (1) SA bikin akun Client → login Client dipaksa ganti password. (2) SA bikin proyek pilih Admin & Client → langsung dibuka, muncul di dashboard Client. (3) Admin tambah biaya lain-lain → saldo proyek & dashboard SA berubah sama persis. (4) SA Monitoring ▸ Client ▸ @client_andini → lihat Greenlight, klik Pilih → ditolak "Mode lihat saja". (5) SA Monitoring ▸ Korlap → validasi absensi → di Log tertulis "(sebagai Korlap)".
+
+---
+
+# Bagian BE: Tindak Lanjut Review BD (29 September 2026)
+
+> Manager sudah cek kode BD: middleware `ViewAs` (non-GET ditolak, `Auth::setUser` cuma di GET), `WajibGantiPassword`, `ActivityLog` "(sebagai …)", registrasi Client ditutup, `Payment::nominalTotal` — **terverifikasi ada**. Test 431 belum bisa diverifikasi independen (manager nggak bisa run PHP). **Belum ada tes browser/HP** untuk BD — itu tugas QA sebelum fitur baru apa pun.
+>
+> Rekomendasi manager di bawah jadi **default**. Fakrul boleh coret/ubah sebelum Claude Code mulai. Subagent wajib (keuangan + kontrak). Kerjakan **berurutan**, bukan paralel.
+
+## BE.1: Halaman GET nggak boleh bikin data (bug desain, bukan cuma mode lihat saja)
+
+Sekarang `ContractController::show` bikin kontrak + render PDF + **kirim WA/email** saat halaman dibuka; `PaymentController::show` bikin baris payment; `InvoiceController` `firstOrCreate` di GET. Akibatnya membuka halaman = mengubah data, dan pengecualian `sa_view_user_id` cuma nambal satu kasus.
+
+- Pindahkan pembuatan ke **transisi status**: saat aplikasi jadi `lolos` (di `Cd\ReviewController` approve) → buat `Contract` + render PDF + notifikasi (sekali), dan buat `Payment` `belum_dibayar`. Invoice dibuat saat proyek disimpan/di-ACC (atau saat pertama ada aplikasi `lolos`).
+- `show()` ketiganya jadi **murni baca**: kalau record belum ada → tampilkan state "Belum tersedia" (bukan create).
+- Migration/command sekali jalan: buat record yang hilang untuk aplikasi yang sudah `lolos` ke atas (tanpa kirim notifikasi).
+- Hapus pengecualian `sa_view_user_id` di `ContractController` (nggak perlu lagi).
+- Test: GET kontrak/pembayaran/invoice nggak mengubah jumlah baris; approve Client → kontrak + payment tercipta, notifikasi 1×.
+
+## BE.2: Kartu dashboard & daftar yang dibuka harus pakai periode yang sama
+
+Link di kartu status proyek (BD.3.3) dan "Perlu tindakan" bawa query `dari`/`sampai` yang aktif; halaman tujuan (Proyek & Keuangan) baca filter itu dan menampilkannya sebagai chip yang bisa dihapus. Angka di kartu = jumlah baris di halaman tujuan.
+
+## BE.3: Keuangan — pisahkan "Piutang" supaya saldo nggak menyesatkan
+
+Kartu & cashflow jadi: **Masuk (lunas)** · **Piutang (invoice belum lunas)** · **Keluar** · **Saldo** (= masuk − keluar) · **Proyeksi** (= masuk + piutang − keluar). Saldo minus saat invoice belum dibayar itu wajar; Proyeksi yang menunjukkan untung/rugi proyek. Semua dari `KeuanganService`.
+
+## BE.4: Kuota = antrian pendaftar (DIPUTUS Fakrul 29 Sept)
+
+Logika antrian: kuota peran = jumlah slot pendaftar **aktif** (semua status selain `ditolak`/`dibatalkan`). Kalau slot penuh, pendaftaran peran itu **tertutup**. Begitu ada yang ditolak/batal, slotnya **terbuka lagi** otomatis.
+
+- Definisi `terisi` yang sudah ada di `CastingProjectClass` (BD.7) **sudah benar**, jangan diubah.
+- Yang kurang: **blokir daftar per peran** di `Extras\CastingProjectController::apply()` kalau `sisaKuota() === 0` → balik dengan pesan "Kuota peran ini sedang penuh. Cek lagi nanti — slot bisa terbuka kalau ada pendaftar yang mundur." Cek dilakukan di dalam `DB::transaction` + `lockForUpdate()` pada baris peran, biar 2 orang yang daftar bersamaan di slot terakhir nggak dua-duanya lolos.
+- Tampilan Extras (lowongan & event publik): peran penuh → badge "Penuh", tombol Daftar disabled + teks "Slot bisa terbuka lagi". Peran lain di proyek yang sama tetap bisa didaftar.
+- `CastingProject::kuotaPenuh()` = semua peran penuh.
+- Test: kuota 2, 2 daftar → orang ke-3 ditolak; 1 ditolak Admin → orang ke-3 bisa daftar.
+
+## BE.5: Wajib ganti password jangan blokir halaman publik
+
+`WajibGantiPassword` hanya berlaku di route yang butuh login (grup `auth`), bukan homepage, `/event/*`, `/p/*`, privacy policy.
+
+## BE.6: Filter tag — beda tujuan, beda logika, tulis di UI
+
+- **Lineup / Greenlight** (memilih dari pendaftar): tetap **salah satu (OR)** + urut "Paling cocok".
+- **Manajemen Akun** (mencari orang spesifik): tetap **semua (AND)**.
+- Tambah teks kecil di bawah chip: "Menampilkan yang punya **salah satu** tag, diurutkan paling cocok" / "Menampilkan yang punya **semua** tag terpilih".
+
+## BE.7: Form edit proyek belum punya Client & PIC
+
+Tambah field Client (select bisa dicari + "+ Client baru") dan Admin PIC di form **edit** (sama seperti create BD.2.2). Proyek lama tanpa `client_id` → badge "Client belum diisi" di daftar proyek + masuk "Perlu tindakan" di dashboard SA.
+
+## Checklist BE
+
+| Item | Bukti | QA |
+|---|---|---|
+| BE.1 GET murni baca, data dibuat di transisi status | | [ ] |
+| BE.2 periode ikut ke daftar | | [ ] |
+| BE.3 piutang & proyeksi | | [ ] |
+| BE.4 kuota antrian: blokir daftar saat penuh, terbuka lagi saat ada yang ditolak | | [ ] |
+| BE.5 wajib ganti password cuma di route auth | | [ ] |
+| BE.6 teks logika filter tag | | [ ] |
+| BE.7 Client & PIC di form edit proyek | | [ ] |
