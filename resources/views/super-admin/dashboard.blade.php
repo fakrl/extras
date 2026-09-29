@@ -134,7 +134,7 @@ a.sa-row:hover { color: var(--accent); }
 <div class="card-title">Status Proyek <span class="sa-sub" style="font-weight: 400;">(shooting dalam periode; Menunggu ACC semua)</span></div>
 <div class="sa-stat-grid">
     @foreach (\App\Models\CastingProject::TAHAP as $tahap => $label)
-        <a href="{{ route('admin.projects.index', ['tahap' => $tahap]) }}" class="metric-card">
+        <a href="{{ route('admin.projects.index', ['tahap' => $tahap] + ($tahap === 'menunggu_acc' ? [] : ['dari' => $dari->format('Y-m-d'), 'sampai' => $sampai->format('Y-m-d')])) }}" class="metric-card">
             <div class="metric-label">{{ $label }}</div>
             <div class="metric-value">{{ $statusProyek[$tahap] }}</div>
         </a>

@@ -63,9 +63,8 @@ class DashboardController extends Controller
             ->with('castingProject.classes')->latest()->get()
             ->each(fn (Invoice $i) => $i->nilai = (float) ($i->nominal ?? $this->keuanganService->nilaiInvoice($i->castingProject)));
 
-        $dalamPeriode = fn ($q) => $q->whereDate('tanggal', '>=', $dari)->whereDate('tanggal', '<=', $sampai);
         $statusProyek = collect(CastingProject::TAHAP)->map(fn ($label, $tahap) => CastingProject::diTahap($tahap)
-            ->when($tahap !== 'menunggu_acc', fn ($q) => $q->whereHas('shootingDates', $dalamPeriode))
+            ->when($tahap !== 'menunggu_acc', fn ($q) => $q->shootingDalam($dari, $sampai))
             ->count());
 
         $uang = $this->keuanganService->ringkasanPeriode($dari, $sampai);

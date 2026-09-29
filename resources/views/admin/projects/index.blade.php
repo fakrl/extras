@@ -26,7 +26,7 @@
 
 <form method="GET" action="{{ route('admin.projects.index') }}" class="xtoolbar" role="search" data-live>
     <input type="search" name="q" value="{{ $cari }}" class="xtoolbar-cari" placeholder="Cari nama produksi atau client..." aria-label="Cari proyek">
-    @foreach (array_filter(['tahap' => $tahap, 'bayar' => $bayar, 'peserta' => $peserta, 'status' => request('status')]) as $k => $v)
+    @foreach (array_filter(['tahap' => $tahap, 'bayar' => $bayar, 'peserta' => $peserta, 'status' => request('status'), 'dari' => $periode ? $periode[0]->format('Y-m-d') : null, 'sampai' => $periode ? $periode[1]->format('Y-m-d') : null]) as $k => $v)
         <input type="hidden" name="{{ $k }}" value="{{ $v }}">
     @endforeach
     <button type="submit" class="btn btn-sm"><i class="ti ti-search"></i> Cari</button>
@@ -41,9 +41,18 @@
     @endforeach
 </div>
 
+@if ($periode)
+    <div class="xfilter">
+        <a href="{{ request()->fullUrlWithQuery(['dari' => null, 'sampai' => null, 'page' => null]) }}" class="btn btn-sm btn-brand" aria-label="Hapus filter periode">
+            Periode: {{ $periode[0]->translatedFormat($periode[0]->year === $periode[1]->year ? 'd M' : 'd M Y') }}–{{ $periode[1]->translatedFormat('d M Y') }} ×
+        </a>
+        <span class="xfilter-label">shooting dalam periode</span>
+    </div>
+@endif
+
 @if ($projects->isEmpty())
     <div class="card" style="text-align:center; color: var(--text-muted); padding: 30px 0;">
-        {{ $cari !== '' || $tahap || $filterLain ? 'Tidak ada proyek yang sesuai filter.' : 'Belum ada proyek casting. Klik "+ Buat Proyek" untuk membuat yang pertama.' }}
+        {{ $cari !== '' || $tahap || $periode || $filterLain ? 'Tidak ada proyek yang sesuai filter.' : 'Belum ada proyek casting. Klik "+ Buat Proyek" untuk membuat yang pertama.' }}
     </div>
 @else
     <div class="entity-card-grid" id="projects-grid">

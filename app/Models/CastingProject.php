@@ -197,6 +197,14 @@ class CastingProject extends Model
         };
     }
 
+    /**
+     * BE.2: proyek yang punya tanggal shooting dalam [from, to]. Dipakai dashboard SA & daftar proyek.
+     */
+    public function scopeShootingDalam($query, $from, $to)
+    {
+        return $query->whereHas('shootingDates', fn ($q) => $q->whereDate('tanggal', '>=', $from)->whereDate('tanggal', '<=', $to));
+    }
+
     public function tahap(): ?string
     {
         if ($this->client_request_status === 'menunggu_acc') {
