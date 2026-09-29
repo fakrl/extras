@@ -455,6 +455,13 @@
             padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 16px; font-size: var(--fs-base);
         }
         .table-container { overflow-x: auto; }
+
+        /* Pagination (markup pagination::bootstrap-4, lihat AppServiceProvider) */
+        .pagination { display: flex; flex-wrap: wrap; gap: 4px; list-style: none; padding: 0; margin: 0; }
+        .pagination .page-link { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; min-height: 40px; padding: 0 10px; border: 1px solid var(--border-color); border-radius: var(--radius-md, 8px); background: var(--bg-card); color: var(--text-primary); text-decoration: none; font-size: var(--fs-sm, 13px); }
+        .pagination a.page-link:hover { background: var(--bg-card-hover); }
+        .pagination .active .page-link { background: var(--accent); border-color: var(--accent); color: var(--accent-on); font-weight: 600; }
+        .pagination .disabled .page-link { opacity: .45; }
         .sa-mode-banner {
             display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap;
             background: rgba(234,179,8,0.14); border: 1px solid rgba(234,179,8,0.45); color: var(--text-primary);

@@ -1214,3 +1214,29 @@ Tambah field Client (select bisa dicari + "+ Client baru") dan Admin PIC di form
 | BF.1–5 komponen kalender gaya HP | `acd3bcd` (merge) — test kalender lama tetap hijau; screenshot 5 halaman × HP/desktop × light/dark | [ ] |
 | BF.6 penempatan dashboard SA | `acd3bcd` — kalender kiri + Perlu tindakan kanan (≥861px), 1 kolom di HP | [ ] |
 | BF.7 cek 5 halaman, dark/light, 360px | dicek via screenshot Edge headless (SA, Admin, Korlap, Client, Extras). Angka "hari ini" di dark pakai `--accent-on` (gelap), bukan putih — putih di atas hijau terang kontrasnya < 3:1 | [ ] |
+
+---
+
+# Bagian BG: Sisa dari laporan BE/BF (30 September 2026)
+
+1. **Ganti Client di proyek → akses Client lama dicabut.** Saat `client_id` proyek diubah (form edit BE.7), hapus `CdProjectAssignment` Client lama untuk proyek itu, dengan dialog konfirmasi "Client lama (@x) nggak bisa lihat proyek ini lagi". Review/grade yang sudah dia berikan tetap tersimpan (riwayat). Catat di ActivityLog. Test: Client lama → 403 di Greenlight/jadwal/invoice/lampiran proyek itu.
+2. **Label "Keluar" diperjelas** (bukan ganti rumus): dashboard = **"Keluar (sudah dibayar)"** di periode itu; detail proyek tampilkan dua baris **"Sudah dibayar"** + **"Belum dibayar"**, total = keduanya. Tambah tooltip kecil kenapa angkanya bisa beda.
+3. **Invoice "Belum tersedia"** → teks jadi "Invoice dibuat otomatis setelah ada kandidat yang dipilih Client."
+4. Warna angka "hari ini" di kalender mode gelap: **pakai pilihan Claude Code** (kontras menang dari spec). Nggak perlu diubah.
+
+5. **Pagination: fix ikon raksasa (sudah dikerjakan manager, tinggal commit)** — `AppServiceProvider` pakai `pagination::bootstrap-4` / `simple-bootstrap-4` (markup teks ‹ ›, tanpa SVG Tailwind) + CSS `.pagination` di `layouts/app.blade.php`. Cek visual di 5 halaman yang pakai `->links()`.
+6. **Pilihan jumlah per halaman ("Tampilkan 10 / 25 / 50 / 100")** di 5 halaman yang sama (Manajemen Akun, Log Aktivitas, Daftar Proyek, pemilih akun Monitoring, Lineup):
+   - Satu helper, mis. `App\Support\PerHalaman::dari($request, $default, $pilihan)`: baca `?per=`, cuma terima nilai dari daftar pilihan (selain itu → default). Jangan copy-paste logika di tiap controller.
+   - **Tabel/daftar:** pilihan 10/25/50/100, default 25. **Grid kartu** (Lineup, akun Extras berbentuk kartu): pilihan **12/24/48/96**, default 24 — kelipatan 2/3/4 kolom biar baris terakhir nggak bolong.
+   - Komponen `<x-per-halaman :pilihan="..." />` = `<select name="per">` kecil, ditaruh **di dalam** `form[data-live]` (biar ganti pilihan langsung reload via live search, tanpa tombol) dan di sebelah pagination bawah.
+   - Semua `paginate()` pakai `->withQueryString()` supaya `per`, `q`, filter, dan periode kebawa saat pindah halaman.
+   - Tampilkan teks "Menampilkan 26–50 dari 312" di dekat pagination.
+   - Test: `?per=50` → 50 baris; `?per=999` → default; pindah ke halaman 2 → `per` tetap.
+
+| Item | Bukti | QA |
+|---|---|---|
+| BG.1 cabut akses Client lama | | [ ] |
+| BG.2 label Keluar | | [ ] |
+| BG.3 teks invoice | | [ ] |
+| BG.5 fix pagination (commit) | | [ ] |
+| BG.6 pilihan jumlah per halaman | | [ ] |
