@@ -57,7 +57,7 @@ class SuperAdminHonorRecapTest extends TestCase
         $this->actingAs($superAdmin)->get(route('super-admin.dashboard'))
             ->assertOk()
             ->assertDontSee('Honor staf belum dibayar')
-            ->assertSee('Semua aman')->assertSee('sa-perlu is-aman');
+            ->assertSee('Semua aman')->assertSee('dash-perlu is-aman');
     }
 
     public static function bukanSuperAdminProvider(): array

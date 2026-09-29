@@ -2,6 +2,19 @@
 
 @section('title', 'Absensi Lapangan')
 
+@push('styles')
+<style>
+.absen-layout { display: grid; gap: 16px; align-items: start; grid-template-areas: "perlu" "main" "jadwal"; }
+.absen-layout > * { min-width: 0; }
+.absen-main { grid-area: main; }
+.absen-perlu { grid-area: perlu; max-height: none; }
+.absen-jadwal { grid-area: jadwal; }
+@media (min-width: 1100px) {
+    .absen-layout { grid-template-columns: minmax(0, 1fr) 360px; grid-template-rows: auto auto 1fr; grid-template-areas: "main perlu" "main jadwal" "main ."; }
+}
+</style>
+@endpush
+
 @section('content')
 <div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">Absensi Lapangan</div>
 <p style="color: var(--text-secondary); margin: 0 0 16px; font-size: 13.5px;">
@@ -31,6 +44,8 @@
     @endif
 </form>
 
+<div class="absen-layout">
+<div class="absen-main">
 @if (! $castingProject)
     <div class="card" style="text-align:center; color: var(--text-muted); padding: 30px 0;">Belum ada proyek dengan jadwal shooting mulai kemarin.</div>
 @elseif (! $shootingDate)
@@ -39,8 +54,9 @@
     @php
         $jmlHadir = $applicants->filter(fn ($a) => $a->absen?->status === 'hadir' && $a->absen->status_validasi === 'tervalidasi')->count();
         $jmlMenunggu = $applicants->filter(fn ($a) => ! $a->absen || $a->absen->status_validasi === 'menunggu')->count();
+        $perluValidasi = $applicants->filter(fn ($a) => $a->absen?->status_validasi === 'menunggu');
+        $belumDiabsen = $applicants->filter(fn ($a) => ! $a->absen);
     @endphp
-    <div style="font-size: var(--fs-md); font-weight: 600; margin-bottom: 10px;">{{ $jmlHadir }}/{{ $applicants->count() }} hadir · {{ $jmlMenunggu }} menunggu</div>
     <label for="search-extras">Cari Extras</label>
     <input type="search" id="search-extras" placeholder="Nama atau username..."
         style="width: 100%; max-width: 320px; padding: 7px 12px; border: 1px solid var(--border-color); border-radius: 7px; margin-bottom: 10px; font-size: 16px; background: var(--bg-card); color: var(--text-primary); display: block;">
@@ -181,10 +197,40 @@
         <div class="card" style="text-align:center; color: var(--text-muted); padding: 30px 0;">Tidak ada Extras aktif di proyek ini.</div>
     @endforelse
 @endif
+</div>
 
-<div class="card" style="margin-top: 20px;">
+@isset($jmlMenunggu)
+    <div class="card dash-perlu absen-perlu {{ $jmlMenunggu ? '' : 'is-aman' }}">
+        <div class="card-title">
+            <i class="ti ti-clipboard-list"></i> Perlu Tindakan
+            @if ($jmlMenunggu)
+                <span class="badge badge-pending" style="margin-left: 8px;">{{ $jmlMenunggu }}</span>
+            @endif
+        </div>
+        <div style="font-size: var(--fs-md); font-weight: 600; margin-bottom: 6px;">{{ $jmlHadir }}/{{ $applicants->count() }} hadir · {{ $jmlMenunggu }} menunggu</div>
+        <div class="dash-sub" style="margin-bottom: 4px;">{{ $shootingDate->tanggal->translatedFormat('l, d M Y') }}</div>
+        @if ($perluValidasi->isNotEmpty())
+            <a href="#app-{{ $perluValidasi->first()->id }}" class="dash-row">
+                <div><span class="badge badge-pending">Menunggu validasi</span> <strong>{{ $perluValidasi->count() }} selfie</strong></div>
+                <span class="dash-sub">Cek &rarr;</span>
+            </a>
+        @endif
+        @if ($belumDiabsen->isNotEmpty())
+            <a href="#app-{{ $belumDiabsen->first()->id }}" class="dash-row">
+                <div><span class="badge badge-netral">Belum diabsen</span> <strong>{{ $belumDiabsen->count() }} Extras</strong></div>
+                <span class="dash-sub">Cek &rarr;</span>
+            </a>
+        @endif
+        @unless ($jmlMenunggu)
+            <div class="dash-aman" role="status"><i class="ti ti-circle-check"></i> Semua sudah diabsen &amp; divalidasi.</div>
+        @endunless
+    </div>
+@endisset
+
+<div class="card absen-jadwal">
     <div class="card-title">Jadwal Shooting Bulan Ini</div>
     <x-jadwal-calendar :events="$jadwalBulanIni" compact />
+</div>
 </div>
 
 @push('scripts')
