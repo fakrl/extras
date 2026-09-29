@@ -118,6 +118,7 @@ class KeuanganService
      * BD.2/BE.3: cashflow per proyek (basis tagihan/kewajiban, bukan tanggal transaksi).
      * Baris invoice: nominal tersimpan, sebelum itu nilaiInvoice() live (juga baris perkiraan kalau invoice belum dibuat).
      * Masuk = invoice lunas, Piutang = invoice (sudah dibuat) belum lunas, Keluar = honor Extras + honor staf + biaya lain-lain.
+     * BG.2: keluar_dibayar = payment ditransfer + payroll sudah + biaya lain-lain (sama dengan ringkasanPeriode), keluar_belum = sisanya.
      * Saldo = masuk - keluar, Proyeksi = masuk + piutang - keluar, Terpakai % = keluar / total tagihan.
      */
     public function cashflowProyek(CastingProject $project): object
@@ -148,6 +149,7 @@ class KeuanganService
         $totalMasuk = (float) $masuk->where('lunas', true)->sum('nominal');
         $piutang = (float) $masuk->where('lunas', false)->whereNotNull('invoice')->sum('nominal');
         $totalKeluar = $extras->sum('nominal') + $staf->sum('nominal') + (float) $project->expenses->sum('nominal');
+        $keluarBelum = (float) $extras->where('lunas', false)->sum('nominal') + (float) $staf->where('lunas', false)->sum('nominal');
         $tagihan = (float) $masuk->sum('nominal');
 
         return (object) [
@@ -158,6 +160,8 @@ class KeuanganService
             'total_masuk' => $totalMasuk,
             'piutang' => $piutang,
             'total_keluar' => $totalKeluar,
+            'keluar_dibayar' => $totalKeluar - $keluarBelum,
+            'keluar_belum' => $keluarBelum,
             'saldo' => $totalMasuk - $totalKeluar,
             'proyeksi' => $totalMasuk + $piutang - $totalKeluar,
             'persen_terpakai' => $tagihan > 0 ? round($totalKeluar / $tagihan * 100, 1) : null,

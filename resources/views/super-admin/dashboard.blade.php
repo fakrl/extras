@@ -169,12 +169,12 @@ a.sa-row:hover { color: var(--accent); }
         @foreach ([
             ['Masuk', $uang->total_masuk, 'invoice lunas'],
             ['Piutang', $uang->piutang, 'invoice belum lunas'],
-            ['Keluar', $uang->total_keluar, 'honor & biaya'],
+            ['Keluar (sudah dibayar)', $uang->total_keluar, 'honor & biaya dibayar di periode ini'],
             ['Saldo', $uang->saldo, 'masuk − keluar'],
             ['Proyeksi', $uang->proyeksi, 'masuk + piutang − keluar'],
         ] as [$label, $nilai, $ket])
             <div class="metric-card" style="border: 1px solid var(--border-color);">
-                <div class="metric-label">{{ $label }}</div>
+                <div class="metric-label">{{ $label }}@if (str_starts_with($label, 'Keluar')) <span title="Dashboard cuma menghitung yang sudah dibayar dalam periode; di proyek dihitung semua kewajiban." style="cursor: help;">&#9432;</span>@endif</div>
                 <div class="metric-value" style="font-size: var(--fs-lg, 18px);{{ in_array($label, ['Saldo', 'Proyeksi']) ? ' color: '.($nilai < 0 ? 'var(--danger)' : 'var(--accent-strong)').';' : '' }}">{{ $rp($nilai) }}</div>
                 <div class="sa-sub">{{ $ket }}</div>
             </div>
