@@ -11,11 +11,14 @@ use App\Models\Payment;
 use App\Models\ProjectApplication;
 use App\Models\User;
 use App\Notifications\InAppNotification;
+use App\Services\KeuanganService;
+use App\Services\PdfGeneratorService;
 use Carbon\Carbon;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
@@ -30,7 +33,7 @@ class DemoLengkapSeeder extends Seeder
 
     private string $password;
 
-    public function run(): void
+    public function run(PdfGeneratorService $pdf, KeuanganService $keuangan): void
     {
         if (app()->environment('production')) {
             throw new \RuntimeException('DemoLengkapSeeder tidak boleh dijalankan di production.');
@@ -38,10 +41,10 @@ class DemoLengkapSeeder extends Seeder
 
         $this->password = Hash::make('password');
 
-        Model::unguarded(function () {
+        Model::unguarded(function () use ($pdf, $keuangan) {
             $this->staf();
             $this->extras();
-            $this->proyek();
+            $this->proyek($pdf, $keuangan);
             $this->notifikasiUmum();
         });
     }
@@ -133,7 +136,7 @@ class DemoLengkapSeeder extends Seeder
             ->categories()->sync($tag->only(['Dewasa muda'])->values());
     }
 
-    private function proyek(): void
+    private function proyek(PdfGeneratorService $pdf, KeuanganService $keuangan): void
     {
         [$fakrul, $rina, $yoga, $bambang, $dedi] = [$this->u['fakrul'], $this->u['admin_rina'], $this->u['admin_yoga'], $this->u['korlap_bambang'], $this->u['korlap_dedi']];
         [$andini, $rudy, $maya] = [$this->u['client_andini'], $this->u['client_rudy'], $this->u['client_maya']];
@@ -155,7 +158,7 @@ class DemoLengkapSeeder extends Seeder
 
                 continue;
             }
-            $this->kontrak($a, $rina, true, -33);
+            $this->kontrak($pdf, $a, $rina, true, -33);
             foreach ($tgl1 as $t) {
                 $a->attendances()->create(['event_shooting_date_id' => $t->id, 'status' => 'hadir', 'dicatat_oleh' => $bambang->id, 'status_validasi' => 'tervalidasi', 'divalidasi_oleh' => $bambang->id, 'divalidasi_at' => $t->tanggal->copy()->setTime(7, 30)]);
             }
@@ -179,6 +182,8 @@ class DemoLengkapSeeder extends Seeder
             'ttd_cd_signature_path' => $this->png("invoices/signatures/{$p1->id}-cd-demo.png"),
             'created_at' => now()->subDays(27),
         ]);
+        $p1->load('classes', 'applications.extras');
+        $inv1->update(['pdf_path' => $pdf->generate('invoices.pdf-template', ['castingProject' => $p1, 'invoice' => $inv1, 'rincian' => $keuangan->rincianInvoice($p1)], "invoices/pdf/{$p1->id}.pdf")]);
         $this->log($rina, 'SIGN_INVOICE', "Admin Rina Kartika menandatangani invoice untuk proyek '{$p1->nama_produksi}'", $p1, -27);
         $this->log($andini, 'SIGN_INVOICE', "Cd Andini Prameswari menandatangani invoice untuk proyek '{$p1->nama_produksi}'", $p1, -26);
 
@@ -186,6 +191,8 @@ class DemoLengkapSeeder extends Seeder
             $asg = $p1->adminAssignments()->create(['user_id' => $staf->id, 'assigned_by' => $fakrul->id, 'created_at' => now()->subDays(45)]);
             $payroll = $asg->tandaiSelesai();
             $asg->update(['completed_at' => now()->subDays(27)]);
+            $asg->load('user', 'castingProject');
+            $payroll->tandaiSlipDibuat($pdf->generate('payrolls.pdf-template', ['assignment' => $asg, 'payroll' => $payroll], "payrolls/pdf/{$payroll->id}.pdf"));
         }
         $p1->adminAssignments()->where('user_id', $rina->id)->first()->payroll->update(['status_bayar' => 'sudah', 'dibayar_at' => now()->subDays(20)]);
 
@@ -218,11 +225,11 @@ class DemoLengkapSeeder extends Seeder
         $bagas = $this->daftar($p2, $mhs, 'bagas22', 'lolos', -6);
         $this->deal($bagas, 250000, -5);
         $this->greenlight($bagas, $andini, -4);
-        $this->kontrak($bagas, $rina, false, -1);
+        $this->kontrak($pdf, $bagas, $rina, false, -1);
         $aisyah = $this->daftar($p2, $kantor, 'aisyah_f', 'kontrak_ditandatangani', -6);
         $this->deal($aisyah, 250000, -5);
         $this->greenlight($aisyah, $andini, -4);
-        $this->kontrak($aisyah, $rina, true, -2);
+        $this->kontrak($pdf, $aisyah, $rina, true, -2);
         $this->bayar($aisyah, 'belum_dibayar', -2, $rina);
         $this->daftar($p2, $mhs, 'nadia_pu', 'ditolak', -5)->update(['alasan_tolak' => 'Tinggi tidak sesuai kriteria.']);
         $fajar = $this->daftar($p2, $kantor, 'fajar_n', 'dibatalkan', -6);
@@ -243,7 +250,7 @@ class DemoLengkapSeeder extends Seeder
             $a = $this->daftar($p3, $un === 'pak_harto' ? $dosen : $mhs3, $un, 'kontrak_ditandatangani', -15);
             $this->deal($a, $un === 'pak_harto' ? 300000 : 200000, -12);
             $this->greenlight($a, $rudy, -10);
-            $this->kontrak($a, $yoga, true, -7);
+            $this->kontrak($pdf, $a, $yoga, true, -7);
             $this->bayar($a, $un === 'clara_b' ? 'ditransfer' : 'belum_dibayar', 0, $yoga);
 
             match ($un) {
@@ -418,7 +425,7 @@ class DemoLengkapSeeder extends Seeder
         $this->log($client, 'REVIEW_CANDIDATE_LOCK', "Client {$client->name} melakukan lock kandidat {$a->extras->user->username} untuk proyek '{$a->castingProject->nama_produksi}'", $a, $hari);
     }
 
-    private function kontrak(ProjectApplication $a, User $admin, bool $lengkap, int $hari): void
+    private function kontrak(PdfGeneratorService $pdf, ProjectApplication $a, User $admin, bool $lengkap, int $hari): void
     {
         $contract = $a->contract()->create([
             'ttd_admin_signature_path' => $this->png("contracts/signatures/{$a->id}-admin-demo.png"),
@@ -426,6 +433,8 @@ class DemoLengkapSeeder extends Seeder
             'signed_at' => $lengkap ? now()->addDays($hari) : null,
             'created_at' => now()->addDays($hari),
         ]);
+        $a->load('contract', 'extras', 'castingProject');
+        $contract->update(['pdf_path' => $pdf->generate('contracts.pdf-template', ['application' => $a], "contracts/pdf/{$a->id}.pdf")]);
 
         $this->log($admin, 'SIGN_CONTRACT', "Admin {$admin->name} menandatangani kontrak kerja digital untuk proyek '{$a->castingProject->nama_produksi}'", $contract, $hari);
         if ($lengkap) {
@@ -489,6 +498,20 @@ class DemoLengkapSeeder extends Seeder
 
     private function png(string $path, string $teks = 'TTD Demo'): string
     {
+        if (extension_loaded('gd')) {
+            $img = imagecreatetruecolor(300, 100);
+            imagefill($img, 0, 0, imagecolorallocate($img, 255, 255, 255));
+            $hitam = imagecolorallocate($img, 30, 30, 30);
+            imageline($img, 20, 75, 280, 75, $hitam);
+            imagestring($img, 5, 20, 40, $teks, $hitam);
+            ob_start();
+            imagepng($img);
+            $data = ob_get_clean();
+        } else {
+            $data = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4//8/AAX+Av4N70a4AAAAAElFTkSuQmCC');
+        }
+        Storage::disk('local')->put($path, $data);
+
         return $path;
     }
 }
