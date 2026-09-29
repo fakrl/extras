@@ -20,10 +20,11 @@ class HomeController extends Controller
         $proyekTerbuka = $allTerbuka->take(6)->values();
         $adaLebih = $allTerbuka->count() > 6;
 
-        $proyekSelesai = CastingProject::where('status', 'ditutup')
-            ->select(['id', 'nama_produksi', 'poster_path'])
-            ->latest()
-            ->take(8)
+        $portofolio = CastingProject::where('tampil_portofolio', true)
+            ->select(['id', 'nama_produksi', 'client_ph', 'poster_path', 'cover_path', 'portofolio_judul', 'portofolio_jenis', 'portofolio_tahun', 'tampilkan_nama_client'])
+            ->orderByDesc('portofolio_tahun')
+            ->latest('updated_at')
+            ->take(12)
             ->get();
 
         $castExtras = ExtrasProfile::tampilDiBeranda()
@@ -35,6 +36,6 @@ class HomeController extends Controller
             $castExtras = collect();
         }
 
-        return view('welcome', compact('proyekTerbuka', 'adaLebih', 'proyekSelesai', 'castExtras'));
+        return view('welcome', compact('proyekTerbuka', 'adaLebih', 'portofolio', 'castExtras'));
     }
 }
