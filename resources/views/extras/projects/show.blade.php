@@ -34,9 +34,13 @@
         <div class="card" style="margin-bottom: 16px;">
             <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Pilih Karakter yang Kamu Daftar</div>
             @foreach ($castingProject->classes as $class)
-                <label style="display: block; margin-bottom: 8px;">
-                    <input type="radio" name="casting_project_class_id" value="{{ $class->id }}" required>
+                @php($penuh = $class->sisaKuota() === 0)
+                <label style="display: block; margin-bottom: 8px;{{ $penuh ? ' color: var(--text-muted);' : '' }}">
+                    <input type="radio" name="casting_project_class_id" value="{{ $class->id }}" required @disabled($penuh)>
                     {{ $class->nama_kelas }}
+                    @if ($penuh)
+                        <span style="font-size: var(--fs-xs);">· Penuh, slot bisa terbuka lagi</span>
+                    @endif
                 </label>
             @endforeach
         </div>
