@@ -34,6 +34,7 @@ use App\Http\Controllers\SuperAdmin\ActivityLogController;
 use App\Http\Controllers\SuperAdmin\AdminManagementController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\SuperAdmin\GlobalSearchController;
+use App\Http\Controllers\SuperAdmin\ModeRoleController;
 use App\Http\Controllers\SuperAdmin\MonitoringController;
 use App\Http\Controllers\SuperAdmin\ProjectAssignmentController;
 use App\Http\Controllers\UbahPasswordController;
@@ -287,6 +288,11 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
         ->name('super-admin.activity-logs');
 
     Route::get('/search', [GlobalSearchController::class, 'search'])->name('super-admin.search');
+
+    // SPEC BD.6: Monitoring sebagai role. ViewAs middleware (grup web) yang menegakkan read-only.
+    Route::get('/sebagai/{mode}', [ModeRoleController::class, 'pilih'])->name('super-admin.mode.pilih');
+    Route::post('/sebagai', [ModeRoleController::class, 'mulai'])->name('super-admin.mode.mulai');
+    Route::post('/sebagai/keluar', [ModeRoleController::class, 'keluar'])->name('super-admin.mode.keluar');
 });
 
 // ==================== CLIENT (CASTING DIRECTOR) ====================

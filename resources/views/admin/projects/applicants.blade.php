@@ -81,8 +81,8 @@
         'lolos' => ['Lolos', 'badge-aktif'],
         'ditolak' => ['Ditolak', 'badge-tolak'],
     ];
-    $isAdmin = auth()->user()->isAdmin();
-    $bisaCatatan = $isAdmin || auth()->user()->isKorlap();
+    $isAdmin = auth()->user()->bisaSebagaiAdmin();
+    $bisaCatatan = $isAdmin || auth()->user()->bisaSebagaiKorlap();
 @endphp
 
 <div class="xgrid">

@@ -47,7 +47,7 @@ class UserManagementController extends Controller
 
         ActivityLog::record(
             'PRUNE_ABANDONED_USERS',
-            "Admin {$request->user()->name} membersihkan {$count} akun extras mangkrak (>30 hari tanpa profil & pendaftaran)",
+            "{$request->user()->label()} {$request->user()->name} membersihkan {$count} akun extras mangkrak (>30 hari tanpa profil & pendaftaran)",
             null,
             ['jumlah_akun_dihapus' => $count]
         );
