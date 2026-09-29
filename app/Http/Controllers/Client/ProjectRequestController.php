@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\CastingProject;
+use App\Models\ProjectAttachment;
 use App\Models\User;
 use App\Notifications\InAppNotification;
 use Illuminate\Http\RedirectResponse;
@@ -38,6 +39,8 @@ class ProjectRequestController extends Controller
             'brief_catatan' => ['required', 'string', 'max:2000'],
             'poster_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'cover_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
+            'files' => ['nullable', 'array'],
+            'files.*' => ProjectAttachment::RULE_FILE,
         ]);
 
         $posterPath = $request->hasFile('poster_path')
@@ -72,6 +75,10 @@ class ProjectRequestController extends Controller
             "Client {$request->user()->name} mengajukan brief proyek casting baru: '{$project->nama_produksi}'",
             $project
         );
+
+        if (! empty($data['files'])) {
+            ProjectAttachment::unggah($project, $data['files'], $request->user());
+        }
 
         $client = $request->user();
         User::where('role', 'super_admin')->get()

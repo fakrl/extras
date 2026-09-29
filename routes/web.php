@@ -27,6 +27,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ProjectAttachmentController;
 use App\Http\Controllers\PublicEventController;
 use App\Http\Controllers\PublicExtrasProfileController;
 use App\Http\Controllers\SuperAdmin\ActivityLogController;
@@ -331,6 +332,13 @@ Route::middleware('auth')->prefix('invoice')->group(function () {
     Route::post('/{castingProject}/custom-doc', [InvoiceController::class, 'uploadCustomDoc'])->name('invoices.upload-custom');
     Route::get('/{castingProject}/custom-doc', [InvoiceController::class, 'downloadCustomDoc'])->name('invoices.download-custom');
     Route::get('/{castingProject}/download-pdf', [InvoiceController::class, 'downloadPdf'])->name('invoices.download-pdf');
+});
+
+// SPEC BD.9: lampiran proyek - SA, Admin, Client proyek. Otorisasi di ProjectAttachmentController::bolehAkses().
+Route::middleware('auth')->group(function () {
+    Route::post('/proyek/{castingProject}/lampiran', [ProjectAttachmentController::class, 'store'])->name('project-attachments.store');
+    Route::get('/lampiran/{projectAttachment}', [ProjectAttachmentController::class, 'download'])->name('project-attachments.download');
+    Route::delete('/lampiran/{projectAttachment}', [ProjectAttachmentController::class, 'destroy'])->name('project-attachments.destroy');
 });
 
 // ==================== PEMBAYARAN EXTRAS (lintas role: Admin Default & Extras) ====================
