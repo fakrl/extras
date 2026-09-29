@@ -51,18 +51,18 @@ class SuperAdminAdminManagementTest extends TestCase
         $target = User::factory()->create(['role' => 'admin', 'status' => 'aktif']);
 
         $this->actingAs($superAdmin)
-            ->from(route('super-admin.admins.index'))
+            ->from(route('super-admin.akun.index'))
             ->delete(route('super-admin.admins.destroy', $target))
-            ->assertRedirect(route('super-admin.admins.index'));
+            ->assertRedirect(route('super-admin.akun.index'));
 
         $this->assertNull(User::find($target->id));
         $this->assertNotNull(User::withTrashed()->find($target->id));
         $this->assertSame('nonaktif', $target->fresh()->status);
 
         $this->actingAs($superAdmin)
-            ->from(route('super-admin.admins.index'))
+            ->from(route('super-admin.akun.index'))
             ->patch(route('super-admin.admins.restore', $target->id))
-            ->assertRedirect(route('super-admin.admins.index'));
+            ->assertRedirect(route('super-admin.akun.index'));
 
         $this->assertNotNull(User::find($target->id));
         $this->assertSame('aktif', $target->fresh()->status);
@@ -97,7 +97,7 @@ class SuperAdminAdminManagementTest extends TestCase
             'sent_at' => now(),
         ]);
 
-        $response = $this->actingAs($superAdmin)->get(route('super-admin.admins.index'));
+        $response = $this->actingAs($superAdmin)->get(route('super-admin.akun.index'));
 
         $response->assertOk();
         $this->assertNotNull(User::find($target->id));
@@ -159,7 +159,7 @@ class SuperAdminAdminManagementTest extends TestCase
             'role' => 'super_admin',
         ]);
 
-        $response->assertRedirect(route('super-admin.admins.index'));
+        $response->assertRedirect(route('super-admin.akun.index'));
 
         $newUser = User::where('email', 'sa-baru@example.com')->first();
         $this->assertNotNull($newUser);
@@ -188,7 +188,7 @@ class SuperAdminAdminManagementTest extends TestCase
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
 
-        $response = $this->actingAs($superAdmin)->get(route('super-admin.admins.index'));
+        $response = $this->actingAs($superAdmin)->get(route('super-admin.akun.index'));
 
         $response->assertOk();
         $response->assertSee('add-admin-dialog', false);
@@ -206,7 +206,7 @@ class SuperAdminAdminManagementTest extends TestCase
             'role' => 'korlap',
         ]);
 
-        $response->assertRedirect(route('super-admin.admins.index'));
+        $response->assertRedirect(route('super-admin.akun.index'));
         $target->refresh();
         $this->assertSame('Nama Baru', $target->name);
         $this->assertSame('baru@example.com', $target->email);
@@ -234,12 +234,12 @@ class SuperAdminAdminManagementTest extends TestCase
         $user1 = User::factory()->create(['role' => 'admin', 'name' => 'Budi Santoso', 'email' => 'budi@test.com']);
         $user2 = User::factory()->create(['role' => 'korlap', 'name' => 'Siti Rahma', 'email' => 'siti@test.com']);
 
-        $response = $this->actingAs($superAdmin)->get(route('super-admin.admins.index', ['q' => 'Budi']));
+        $response = $this->actingAs($superAdmin)->get(route('super-admin.akun.index', ['q' => 'Budi']));
         $response->assertOk();
         $response->assertSee('Budi Santoso');
         $response->assertDontSee('Siti Rahma');
 
-        $responseRole = $this->actingAs($superAdmin)->get(route('super-admin.admins.index', ['role' => 'korlap']));
+        $responseRole = $this->actingAs($superAdmin)->get(route('super-admin.akun.index', ['role' => 'korlap']));
         $responseRole->assertOk();
         $responseRole->assertSee('Siti Rahma');
     }

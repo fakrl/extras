@@ -228,7 +228,7 @@ class AyP0GuardsTest extends TestCase
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
         User::factory()->create(['role' => 'admin', 'name' => 'Staf Satu']);
 
-        $response = $this->actingAs($superAdmin)->get(route('super-admin.admins.index'));
+        $response = $this->actingAs($superAdmin)->get(route('super-admin.akun.index'));
         $response->assertOk();
 
         $dom = new \DOMDocument;
@@ -245,6 +245,16 @@ class AyP0GuardsTest extends TestCase
         }
 
         $this->assertStringContainsString('class="bulk-cb" form="bulk-form"', $response->getContent());
+
+        ExtrasProfile::create(['user_id' => User::factory()->create(['role' => 'extras'])->id]);
+        $extrasPage = $this->actingAs($superAdmin)->get(route('super-admin.akun.index', ['role' => 'extras']))->assertOk();
+        $dom = new \DOMDocument;
+        libxml_use_internal_errors(true);
+        $dom->loadHTML($extrasPage->getContent());
+        libxml_use_internal_errors(false);
+        foreach ($dom->getElementsByTagName('form') as $form) {
+            $this->assertSame(0, $form->getElementsByTagName('form')->length, 'Form bersarang di mode kartu Extras.');
+        }
     }
 
     public function test_tolak_pengajuan_yang_sudah_disetujui_ditolak(): void
