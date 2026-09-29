@@ -46,6 +46,8 @@ class ActivityLog extends Model
         'TOGGLE_USER_STATUS' => 'Aktif/nonaktifkan akun',
         'RESET_USER_PASSWORD' => 'Reset password',
         'PRUNE_ABANDONED_USERS' => 'Bersihkan akun mangkrak',
+        'SA_MODE_MULAI' => 'Mulai mode Monitoring',
+        'SA_MODE_KELUAR' => 'Keluar mode Monitoring',
     ];
 
     public static function actionLabel(string $code): string
@@ -87,6 +89,11 @@ class ActivityLog extends Model
         ?User $user = null
     ): self {
         $actor = $user ?? auth()->user();
+
+        if ($sebagai = $actor?->modeSa()) {
+            $properties['sebagai'] = $sebagai;
+            $description .= ' (sebagai '.User::LABELS[$sebagai].')';
+        }
 
         return static::create([
             'user_id' => $actor?->id,

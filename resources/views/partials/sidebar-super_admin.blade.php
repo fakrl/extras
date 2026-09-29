@@ -59,3 +59,18 @@
         </a>
     </div>
 </details>
+
+<div class="sidebar-group-label">Monitoring</div>
+<details class="sidebar-dropdown" {{ str_starts_with($route, 'super-admin/sebagai') ? 'open' : '' }}>
+    <summary class="sidebar-dropdown-summary">
+        <span><i class="ti ti-eye" style="margin-right: 6px;"></i> Monitoring</span>
+        <i class="ti ti-chevron-right chevron-icon"></i>
+    </summary>
+    <div class="sidebar-submenu">
+        @foreach (['admin' => 'ti-shield', 'korlap' => 'ti-map-pin', 'client' => 'ti-building', 'extras' => 'ti-user-star'] as $m => $ikon)
+            <a href="{{ route('super-admin.mode.pilih', $m) }}" class="sidebar-link {{ $route === 'super-admin/sebagai/'.$m ? 'active' : '' }}">
+                <i class="ti {{ $ikon }}"></i> {{ \App\Models\User::LABELS[$m] }}
+            </a>
+        @endforeach
+    </div>
+</details>

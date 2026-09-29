@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\ViewAs;
 use App\Http\Middleware\WajibGantiPassword;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -20,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->append(SecurityHeaders::class);
         $middleware->appendToGroup('web', WajibGantiPassword::class);
+        // BD.6: setelah WajibGantiPassword (cek pakai SA asli), sebelum CheckRole route (role dicek pakai akun target).
+        $middleware->appendToGroup('web', ViewAs::class);
 
         // Percaya semua proxy di depan aplikasi (ngrok, dsb) supaya Laravel
         // baca header X-Forwarded-Proto dengan benar dan tahu request aslinya
