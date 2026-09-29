@@ -42,7 +42,7 @@ class BeEditClientPicTest extends TestCase
 
         $project->refresh();
         $this->assertSame([$adminBaru->id, $baru->id, 'PH Baru'], [$project->admin_id, $project->client_id, $project->client_ph]);
-        $this->assertEqualsCanonicalizing([$lama->id, $baru->id], $project->cdAssignments()->pluck('cd_user_id')->all());
+        $this->assertSame([$baru->id], $project->cdAssignments()->pluck('cd_user_id')->all());
         $log = ActivityLog::where('action', 'UPDATE_PROJECT_PIC')->sole();
         $this->assertStringContainsString('Client Client Lama → Client Baru', $log->description);
         $this->assertStringContainsString('→ Admin Baru', $log->description);

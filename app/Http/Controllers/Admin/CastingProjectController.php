@@ -254,8 +254,9 @@ class CastingProjectController extends Controller
 
         $perubahan = array_filter([
             (int) $castingProject->admin_id !== $adminId ? 'Admin PIC '.($castingProject->admin?->name ?? '-').' → '.User::find($adminId)->name : null,
-            (int) $castingProject->client_id !== $client->id ? 'Client '.($castingProject->client?->name ?? '-').' → '.$client->name : null,
+            (int) $castingProject->client_id !== $client->id ? 'Client '.($castingProject->client?->name ?? '-').' → '.$client->name.($castingProject->client_id ? ', akses Client lama dicabut' : '') : null,
         ]);
+        $clientLamaId = (int) $castingProject->client_id;
 
         $updateData = [
             'nama_produksi' => $data['nama_produksi'],
@@ -304,7 +305,10 @@ class CastingProjectController extends Controller
             $this->simpanKelas($castingProject, $hasApplicants ? $kelas : Arr::except($kelas, 'id'));
         }
 
-        // Assignment Client lama dibiarkan: proyek memang boleh multi-Client dan riwayat Greenlight-nya tetap utuh.
+        // BG.1: Client lama kehilangan akses; review/grade-nya (cd_reviews) tetap tersimpan.
+        if ($clientLamaId && $clientLamaId !== $client->id) {
+            $castingProject->cdAssignments()->where('cd_user_id', $clientLamaId)->delete();
+        }
         $castingProject->cdAssignments()->firstOrCreate(['cd_user_id' => $client->id]);
 
         if ($perubahan) {
