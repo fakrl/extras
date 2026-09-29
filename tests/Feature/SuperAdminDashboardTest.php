@@ -106,7 +106,7 @@ class SuperAdminDashboardTest extends TestCase
         $r->assertSee('Pembayaran disengketakan')->assertSee('Sari Sengketa')->assertSee('Nominal kurang')
             ->assertSee(route('payments.show', $app), false)
             ->assertSee('Invoice belum lunas')->assertSee('Film Senja')->assertSee('Rp 600.000')
-            ->assertDontSee('Semua aman')->assertSee('dashboard-grid-2col sa-top-grid');
+            ->assertDontSee('Semua aman')->assertDontSee('sa-perlu is-aman');
     }
 
     public function test_acc_dan_tolak_dari_dashboard_tetap_jalan(): void
