@@ -5,7 +5,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="dark light">
-    <title>SIM Casting JBTB</title>
+    <title>JBTB Casting — Agensi Extras & Talent Jakarta</title>
+    <link rel="canonical" href="{{ url('/') }}">
+    @include('partials.og-meta', [
+        'noindex' => false,
+        'ogTitle' => 'JBTB Casting — Agensi Extras & Talent Jakarta',
+        'ogDesc' => 'JBTB Casting menyediakan extras & talent untuk film, series, dan iklan. Daftar jadi Extras atau ajukan kebutuhan casting produksi Anda.',
+        'ogImage' => asset('images/hero-clapboard.jpg'),
+    ])
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
     @include('partials.theme-style')

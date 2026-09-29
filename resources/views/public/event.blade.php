@@ -6,6 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="dark light">
     <title>{{ $valid ? $project->nama_produksi : 'Pendaftaran Ditutup' }} | SIM Casting JBTB</title>
+    @if ($valid)
+        @include('partials.og-meta', [
+            'ogTitle' => $project->nama_produksi,
+            'ogDesc' => 'Casting '.($project->classes->pluck('nama_kelas')->implode(', ') ?: 'Extras').' · deadline '.$project->deadline?->translatedFormat('d M Y').' · daftar di JBTB',
+            'ogImage' => $project->poster_path ? asset('storage/'.$project->poster_path) : null,
+        ])
+    @else
+        @include('partials.og-meta', ['ogTitle' => 'Pendaftaran Ditutup', 'ogDesc' => 'Pendaftaran casting ini sudah ditutup. Cek lowongan lain di JBTB Casting.'])
+    @endif
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
     @include('partials.theme-style')
