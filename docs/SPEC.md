@@ -1117,7 +1117,7 @@ Dashboard · Manajemen Akun · Proyek & Keuangan · Log Aktivitas · Monitoring 
 |---|---|---|
 | BD.1 akun Client oleh SA + wajib ganti password | `d120ccf`, `f7c0077` (merge `3f75d25`) + integrasi form proyek `352bf94` — `--filter ClientAkunTest`; Manual: SA Kelola Akun ▸ + Client → dialog kredensial (Salin/WA) → login Client dipaksa ganti password; `/register/casting-director` → login | [ ] |
 | BD.2 Proyek & Keuangan (data, form, daftar, detail, cashflow) | `cb349a4`, `c314260` — `--filter ProyekKeuanganTest` (cashflow 1,1 jt / 45%, periode, tandai lunas idempotent, hapus biaya 403); Manual: SA buat proyek pilih PIC+Client → langsung dibuka; detail `?tab=cashflow` | [ ] |
-| BD.3 dashboard ringkasan | | [ ] |
+| BD.3 dashboard ringkasan | `a45b2d8` (merge) — `--filter "SuperAdminDashboardTest|SuperAdminHonorRecapTest"`; Manual: `/super-admin/dashboard?periode=3bulan`, `?dari=..&sampai=..`, klik tanggal kalender → panel + Buka proyek / Lihat absensi | [ ] |
 | BD.4 Manajemen Akun gabungan | | [ ] |
 | BD.5 Log Aktivitas search-first | `ac1b2fc` (merge) — `--filter ActivityLogAndEnhancementsTest`; Manual: cari deskripsi/aktor/nama proyek, filter di ikon, tanpa chart | [ ] |
 | BD.6 Monitoring per role (aksi Admin/Korlap, read-only Client/Extras) | | [ ] |
