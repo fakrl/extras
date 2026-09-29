@@ -64,9 +64,18 @@ class DashboardController extends Controller
             ->with('castingProject.classes')->latest()->get()
             ->each(fn (Invoice $i) => $i->nilai = (float) ($i->nominal ?? $this->keuanganService->nilaiInvoice($i->castingProject)));
 
-        $statusProyek = collect(CastingProject::TAHAP)->map(fn ($label, $tahap) => CastingProject::diTahap($tahap)
-            ->when($tahap !== 'menunggu_acc', fn ($q) => $q->shootingDalam($dari, $sampai))
-            ->count());
+        $tahapQuery = fn (string $tahap) => CastingProject::diTahap($tahap)
+            ->when($tahap !== 'menunggu_acc', fn ($q) => $q->shootingDalam($dari, $sampai));
+        $statusProyek = collect(CastingProject::TAHAP)->map(fn ($label, $tahap) => $tahapQuery($tahap)->count());
+        $proyekPerTahap = collect(CastingProject::TAHAP)->map(fn ($label, $tahap) => $tahapQuery($tahap)
+            ->with('client:id,name', 'shootingDates')
+            ->when($tahap === 'selesai',
+                fn ($q) => $q->withMax('shootingDates as tanggal_acuan', 'tanggal')->orderByDesc('tanggal_acuan'),
+                fn ($q) => $q->withMin(['shootingDates as tanggal_acuan' => fn ($d) => $d->whereDate('tanggal', '>=', today())], 'tanggal'))
+            ->when(in_array($tahap, ['mendatang', 'berjalan']), fn ($q) => $q->orderByRaw('tanggal_acuan is null')->orderBy('tanggal_acuan'))
+            ->when($tahap === 'menunggu_acc', fn ($q) => $q->latest())
+            ->take(5)->get());
+        $tabAwal = collect(['berjalan', 'mendatang', 'menunggu_acc', 'selesai'])->first(fn ($t) => $statusProyek[$t] > 0, 'berjalan');
 
         $uang = $this->keuanganService->ringkasanPeriode($dari, $sampai);
 
@@ -88,16 +97,11 @@ class DashboardController extends Controller
         $akunPerRole = User::selectRaw('role, count(*) as jumlah')->groupBy('role')->pluck('jumlah', 'role');
         $clientBelumGantiPassword = User::where('role', 'client')->where('wajib_ganti_password', true)->count();
 
-        $proyekBerjalan = CastingProject::diTahap('berjalan')
-            ->with('client:id,name', 'shootingDates')
-            ->withMin(['shootingDates as shooting_terdekat' => fn ($q) => $q->whereDate('tanggal', '>=', today())], 'tanggal')
-            ->orderBy('shooting_terdekat')->take(5)->get();
-
         return view('super-admin.dashboard', compact(
             'dari', 'sampai', 'preset', 'jumlahHari',
             'pendingRequests', 'sengketa', 'honorStaf', 'invoiceBelumLunas', 'tanpaClient',
-            'statusProyek', 'uang', 'bulan', 'jadwal',
-            'akunPerRole', 'clientBelumGantiPassword', 'proyekBerjalan'
+            'statusProyek', 'proyekPerTahap', 'tabAwal', 'uang', 'bulan', 'jadwal',
+            'akunPerRole', 'clientBelumGantiPassword'
         ));
     }
 
