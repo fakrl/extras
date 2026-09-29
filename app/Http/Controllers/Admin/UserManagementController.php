@@ -84,6 +84,31 @@ class UserManagementController extends Controller
         return back()->with('status', 'Kategori extras diperbarui.');
     }
 
+    /** BH.2: Admin/SA nyalakan/matikan tampil di beranda, cuma kalau Extras sudah kasih izin. */
+    public function toggleBeranda(User $user, Request $request): RedirectResponse
+    {
+        abort_unless($request->user()->bisaSebagaiAdmin() && $user->role === 'extras' && $user->extrasProfile, 403);
+        $profile = $user->extrasProfile;
+        $nyala = ! $profile->tampil_di_beranda;
+
+        if ($nyala && ! $profile->izin_tampil_publik) {
+            return back()->with('error', "@{$user->username} belum mengizinkan profilnya tampil di website.");
+        }
+        if ($nyala) {
+            $profile->generateShareToken();
+        }
+        $profile->forceFill(['tampil_di_beranda' => $nyala, 'tampil_di_beranda_at' => $nyala ? now() : null])->save();
+
+        ActivityLog::record(
+            'TOGGLE_EXTRAS_BERANDA',
+            "{$request->user()->label()} {$request->user()->name} ".($nyala ? 'menampilkan' : 'menyembunyikan')." @{$user->username} di beranda",
+            $profile,
+            ['tampil_di_beranda' => $nyala]
+        );
+
+        return back()->with('status', $nyala ? "@{$user->username} tampil di beranda." : "@{$user->username} disembunyikan dari beranda.");
+    }
+
     /**
      * AQ.3: Admin/SA melihat profil lengkap Extras (read-only admin view).
      */
