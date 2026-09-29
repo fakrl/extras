@@ -1240,8 +1240,8 @@ Tambah field Client (select bisa dicari + "+ Client baru") dan Admin PIC di form
 | BG.3 teks invoice | `7821bd6` — assert di `BeGetMurniBacaTest` | [ ] |
 | BG.5 fix pagination (commit) | `becbb3d` — screenshot 5 halaman desktop + HP (tombol 40px teks ‹ ›, wrap di HP) | [ ] |
 | BG.6 pilihan jumlah per halaman | `b48d2a1` + `8741a93` — `--filter PerHalamanTest` (per=50 → 50; 999 → default; per ikut ke halaman 2; kartu 12/24/48/96). SQLite & MySQL 455 passed | [ ] |
-| BG.7 input terkunci di mode lihat saja | | [ ] |
-| BG.8 gabung Status Proyek + daftar proyek di dashboard SA | | [ ] |
+| BG.7 input terkunci di mode lihat saja | `a04f93b` — test di `BdMonitoringModeTest` (teks kunci + nama ter-escape); Edge `--dump-dom`: 6 input file + 23 kontrol form POST `disabled`, form GET/logout/keluar mode tetap aktif, konten live search ikut terkunci (MutationObserver) | [ ] |
+| BG.8 gabung Status Proyek + daftar proyek di dashboard SA | `eb56482` (merge) — `--filter "BgStatusProyekTabTest|BePeriodeKartuTest"` (5 per tahap, default Berjalan→Mendatang, angka = total Lihat semua). SQLite & MySQL 458 passed | [ ] |
 
 **BG.7 (ditambah 30 Sept dari tes manual Fakrul): Mode lihat saja — input juga dikunci, bukan cuma tombol simpan.** Di "lihat sebagai Extras" form profil masih bisa diketik (Simpan & upload memang gagal, server sudah benar), jadi kesannya bisa diedit. Di script `sa-lihat-saja` (`layouts/app.blade.php` ±baris 714): selain tombol submit, set `disabled` ke semua `input`, `select`, `textarea` di `form[method=post]` yang bukan `data-sa-allow`, **plus** semua `input[type=file]` di mana pun (upload foto/video pakai AJAX di luar form) dan tombol pemicu upload/hapus foto. Tambah satu baris di atas form yang terkunci: "Mode lihat saja — tampilan ini persis yang dilihat {nama}, tapi nggak bisa diubah." Form GET (search/filter/per halaman) tetap aktif. Test: halaman edit profil dalam mode lihat saja → semua input `disabled` di HTML.
 
