@@ -68,10 +68,9 @@ class AdminManagementController extends Controller
             ->paginate($f['role'] === User::ROLE_EXTRAS ? PerHalaman::dari($request, 24, PerHalaman::KARTU) : PerHalaman::dari($request, 25, PerHalaman::TABEL))
             ->withQueryString();
 
-        $filterAktif = collect($f)->except('q')->filter()->count();
         $tagGroups = ExtrasCategory::perGrup();
 
-        return view('super-admin.akun.index', compact('users', 'f', 'filterAktif', 'tagGroups'));
+        return view('super-admin.akun.index', compact('users', 'f', 'tagGroups'));
     }
 
     /** BD.4: halaman lama (Monitoring Akun, Kelola Akun) diarahkan ke Manajemen Akun. */

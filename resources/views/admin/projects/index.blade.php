@@ -5,57 +5,50 @@
 @section('content')
 @php
     $rp = fn ($n) => 'Rp '.number_format($n, 0, ',', '.');
-    $filterLain = array_filter([
-        $peserta ? 'ada kandidat '.(\App\Models\ProjectApplication::LABELS[$peserta] ?? $peserta) : null,
-        $bayar === 'staf' ? 'honor staf belum dibayar' : null,
-        $bayar === 'extras' ? 'honor Extras belum ditransfer' : null,
-        request('status') ? 'lowongan '.request('status') : null,
-        request()->boolean('urgent') ? 'urgent' : null,
-        request()->boolean('tanpa_client') ? 'Client belum diisi' : null,
-    ]);
 @endphp
 <div class="card-header-row">
     <div>
         <div style="font-size: 16px; font-weight: 600;">Proyek &amp; Keuangan</div>
         <div style="font-size: var(--fs-sm); color: var(--text-secondary);">Semua proyek casting beserta uang masuk, piutang, keluar, saldo, dan proyeksinya</div>
         <div style="font-size: var(--fs-xs); color: var(--text-muted);">Saldo minus wajar kalau invoice belum dibayar — lihat Proyeksi.</div>
-        @if ($filterLain)
-            <div style="font-size: var(--fs-sm); margin-top: 4px;">Filter aktif: {{ implode(', ', $filterLain) }} · <a href="{{ route('admin.projects.index') }}">Hapus filter</a></div>
-        @endif
     </div>
     <a href="{{ route('admin.projects.create') }}" class="btn btn-brand">+ Buat Proyek</a>
 </div>
 
 <form method="GET" action="{{ route('admin.projects.index') }}" class="xtoolbar" role="search" id="live-form" data-live>
     <input type="search" name="q" value="{{ $cari }}" class="xtoolbar-cari" placeholder="Cari nama produksi atau client..." aria-label="Cari proyek">
-    @foreach (array_filter(['tahap' => $tahap, 'bayar' => $bayar, 'peserta' => $peserta, 'status' => request('status'), 'tanpa_client' => request('tanpa_client'), 'dari' => $periode ? $periode[0]->format('Y-m-d') : null, 'sampai' => $periode ? $periode[1]->format('Y-m-d') : null]) as $k => $v)
-        <input type="hidden" name="{{ $k }}" value="{{ $v }}">
-    @endforeach
-    <button type="submit" class="btn btn-sm"><i class="ti ti-search"></i> Cari</button>
+    @if ($peserta)<input type="hidden" name="peserta" value="{{ $peserta }}">@endif
     <x-per-halaman :pilihan="\App\Support\PerHalaman::KARTU" :nilai="$projects->perPage()" />
+    <x-filter-panel :filter="[
+        $tahap ? ['tahap', 'Tahap: '.\App\Models\CastingProject::TAHAP[$tahap]] : null,
+        $periode ? [['dari', 'sampai'], 'Periode: '.$periode[0]->translatedFormat($periode[0]->year === $periode[1]->year ? 'd M' : 'd M Y').'–'.$periode[1]->translatedFormat('d M Y')] : null,
+        $bayar ? ['bayar', $bayar === 'staf' ? 'Honor staf belum dibayar' : 'Honor Extras belum ditransfer'] : null,
+        request('status') ? ['status', 'Lowongan: '.(\App\Models\CastingProject::LABELS[request('status')] ?? request('status'))] : null,
+        request()->boolean('urgent') ? ['urgent', 'Urgent'] : null,
+        request()->boolean('tanpa_client') ? ['tanpa_client', 'Client belum diisi'] : null,
+        $peserta ? ['peserta', 'Ada kandidat '.(\App\Models\ProjectApplication::LABELS[$peserta] ?? $peserta)] : null,
+    ]">
+        <x-filter-panel.grup label="Tahap" name="tahap" :opsi="['' => 'Semua'] + \App\Models\CastingProject::TAHAP" :nilai="$tahap" baris />
+        <x-filter-panel.grup label="Lowongan" name="status" :opsi="['' => 'Semua'] + \App\Models\CastingProject::LABELS" :nilai="request('status')" />
+        <x-filter-panel.grup label="Honor" name="bayar" :opsi="['' => 'Semua', 'staf' => 'Staf belum dibayar', 'extras' => 'Extras belum ditransfer']" :nilai="$bayar" />
+        <label class="fswitch">Urgent <input type="checkbox" name="urgent" value="1" @checked(request()->boolean('urgent'))></label>
+        <label class="fswitch">Client belum diisi <input type="checkbox" name="tanpa_client" value="1" @checked(request()->boolean('tanpa_client'))></label>
+        <div>
+            <div class="fpanel-label">Periode shooting</div>
+            <div class="fpanel-dua">
+                <input type="date" name="dari" value="{{ $periode ? $periode[0]->format('Y-m-d') : request('dari') }}" aria-label="Dari tanggal">
+                <span style="color: var(--text-muted);">s/d</span>
+                <input type="date" name="sampai" value="{{ $periode ? $periode[1]->format('Y-m-d') : request('sampai') }}" aria-label="Sampai tanggal">
+            </div>
+        </div>
+    </x-filter-panel>
 </form>
 
 <div data-live-target>
 
-<div class="xfilter" aria-label="Filter tahap proyek">
-    @foreach (['' => 'Semua'] + \App\Models\CastingProject::TAHAP as $value => $label)
-        <a href="{{ request()->fullUrlWithQuery(['tahap' => $value ?: null, 'page' => null]) }}"
-           class="btn btn-sm {{ ($tahap ?? '') === $value ? 'btn-brand' : '' }}" @if (($tahap ?? '') === $value) aria-current="true" @endif>{{ $label }}</a>
-    @endforeach
-</div>
-
-@if ($periode)
-    <div class="xfilter">
-        <a href="{{ request()->fullUrlWithQuery(['dari' => null, 'sampai' => null, 'page' => null]) }}" class="btn btn-sm btn-brand" aria-label="Hapus filter periode">
-            Periode: {{ $periode[0]->translatedFormat($periode[0]->year === $periode[1]->year ? 'd M' : 'd M Y') }}–{{ $periode[1]->translatedFormat('d M Y') }} ×
-        </a>
-        <span class="xfilter-label">shooting dalam periode</span>
-    </div>
-@endif
-
 @if ($projects->isEmpty())
     <div class="card" style="text-align:center; color: var(--text-muted); padding: 30px 0;">
-        {{ $cari !== '' || $tahap || $periode || $filterLain ? 'Tidak ada proyek yang sesuai filter.' : 'Belum ada proyek casting. Klik "+ Buat Proyek" untuk membuat yang pertama.' }}
+        {{ array_filter(request()->except(['per', 'page'])) ? 'Tidak ada proyek yang sesuai filter.' : 'Belum ada proyek casting. Klik "+ Buat Proyek" untuk membuat yang pertama.' }}
     </div>
 @else
     <div class="entity-card-grid" id="projects-grid">

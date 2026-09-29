@@ -49,8 +49,7 @@ class ActivityLogController extends Controller
 
         $aksiList = ActivityLog::distinct()->orderBy('action')->pluck('action');
         $aktorList = User::whereIn('id', ActivityLog::select('user_id')->whereNotNull('user_id'))->orderBy('name')->limit(200)->pluck('name');
-        $filterAktif = collect($f)->except('q')->filter()->count();
 
-        return view('super-admin.activity-logs.index', compact('logs', 'f', 'aksiList', 'aktorList', 'filterAktif'));
+        return view('super-admin.activity-logs.index', compact('logs', 'f', 'aksiList', 'aktorList'));
     }
 }

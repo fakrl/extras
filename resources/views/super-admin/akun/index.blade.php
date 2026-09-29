@@ -6,12 +6,6 @@
 <style>
     .akun-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: var(--space-3); }
     .akun-head-btn { display: flex; gap: 8px; flex-wrap: wrap; }
-    .akun-filter-f { display: flex; flex-direction: column; gap: 4px; flex: 1 1 150px; min-width: 0; }
-    .akun-filter-f select { width: 100%; }
-    .akun-filter-tag { flex: 1 1 100%; }
-    .akun-filter-tag > summary { cursor: pointer; font-size: var(--fs-sm); color: var(--accent); }
-    .akun-filter-tag .tag-chip { min-height: 36px; padding: 0 10px; font-size: var(--fs-sm); }
-    .akun-filter-tag .tag-chip:not(:has(:checked)) { color: var(--text-primary); }
     .akun-row { display: flex; gap: 10px; align-items: flex-start; padding: 12px 0; border-top: 1px solid var(--border-color); }
     .akun-row:first-of-type { border-top: 0; }
     .akun-row > input[type=checkbox] { margin-top: 4px; flex-shrink: 0; }
@@ -57,52 +51,38 @@
 </div>
 @include('partials.client-baru-modal')
 
+@php
+    $tagNama = $tagGroups->flatten()->pluck('nama', 'id');
+    $roleOpsi = ['' => 'Semua'] + \Illuminate\Support\Arr::except(\App\Models\User::LABELS, 'super_admin') + ['super_admin' => 'Super Admin'];
+@endphp
 <form method="GET" action="{{ route('super-admin.akun.index') }}" class="xtoolbar" id="live-form" data-live>
     <input type="search" name="q" value="{{ $f['q'] }}" class="xtoolbar-cari" placeholder="Cari nama, username, email, WA…" aria-label="Cari akun">
-    <button type="submit" class="btn btn-sm btn-brand" aria-label="Cari"><i class="ti ti-search"></i></button>
     <x-per-halaman :pilihan="$perPilihan" :nilai="$users->perPage()" />
-    <details class="xtoolbar-more" @if($filterAktif > ($f['role'] ? 1 : 0)) open @endif>
-        <summary class="btn btn-sm" aria-label="Filter"><i class="ti ti-adjustments-horizontal"></i> Filter @if($filterAktif)<span class="badge badge-netral">{{ $filterAktif }}</span>@endif</summary>
-        <div class="xtoolbar-more-isi">
-            <label class="akun-filter-f">Role
-                <select name="role">
-                    <option value="">Semua role</option>
-                    @foreach (\App\Models\User::LABELS as $val => $label)
-                        <option value="{{ $val }}" @selected($f['role'] === $val)>{{ $label }}</option>
-                    @endforeach
-                </select>
-            </label>
-            <label class="akun-filter-f">Status
-                <select name="status">
-                    <option value="">Aktif & nonaktif</option>
-                    <option value="aktif" @selected($f['status'] === 'aktif')>Aktif</option>
-                    <option value="nonaktif" @selected($f['status'] === 'nonaktif')>Nonaktif</option>
-                    <option value="dihapus" @selected($f['status'] === 'dihapus')>Dihapus</option>
-                </select>
-            </label>
-            <label class="akun-filter-f">Grade Extras
-                <select name="grade">
-                    <option value="">Semua grade</option>
-                    @foreach (['A', 'B', 'C'] as $g)
-                        <option value="{{ $g }}" @selected($f['grade'] === $g)>Grade {{ $g }}</option>
-                    @endforeach
-                    <option value="belum" @selected($f['grade'] === 'belum')>Belum dinilai</option>
-                </select>
-            </label>
-            <label style="display: flex; align-items: center; gap: 6px; flex: 1 1 100%; font-size: var(--fs-sm); color: var(--text-primary);">
-                <input type="checkbox" name="sedang_aktif" value="1" @checked($f['sedang_aktif']) style="min-height: 0;"> Sedang aktif di proyek
-            </label>
-            <details class="akun-filter-tag" @if($f['tag']) open @endif>
-                <summary>Tag Extras @if($f['tag'])({{ count($f['tag']) }} dipilih)@endif</summary>
-                @include('partials.tag-chips', ['name' => 'tag[]', 'selected' => $f['tag']])
-                <p class="xfilter-note" style="margin: 6px 0 0;">Menampilkan yang punya <strong>semua</strong> tag terpilih</p>
-            </details>
-            <button type="submit" class="btn btn-sm">Terapkan</button>
-            @if ($filterAktif || $f['q'] !== '')
-                <a href="{{ route('super-admin.akun.index') }}" class="btn btn-sm">Reset</a>
-            @endif
-        </div>
-    </details>
+    <x-filter-panel :filter="[
+        $f['role'] ? ['role', 'Role: '.\App\Models\User::LABELS[$f['role']]] : null,
+        $f['status'] ? ['status', 'Status: '.ucfirst($f['status'])] : null,
+        $f['sedang_aktif'] ? ['sedang_aktif', 'Sedang aktif di proyek'] : null,
+        $f['grade'] ? ['grade', 'Grade: '.($f['grade'] === 'belum' ? 'Belum' : $f['grade'])] : null,
+        ...array_map(fn ($id) => ['tag', 'Tag: #'.($tagNama[$id] ?? $id), $id], $f['tag']),
+    ]">
+        <x-filter-panel.grup label="Role" name="role" :opsi="$roleOpsi" :nilai="$f['role']" baris />
+        <x-filter-panel.grup label="Status" name="status" :opsi="['' => 'Semua', 'aktif' => 'Aktif', 'nonaktif' => 'Nonaktif', 'dihapus' => 'Dihapus']" :nilai="$f['status']" />
+        <label class="fswitch">Sedang aktif di proyek <input type="checkbox" name="sedang_aktif" value="1" @checked($f['sedang_aktif'])></label>
+        @if (in_array($f['role'], [null, 'extras'], true))
+            <div class="fpanel-sub">
+                <div class="fpanel-judul">Khusus Extras</div>
+                <x-filter-panel.grup label="Grade" name="grade" :opsi="['' => 'Semua', 'A' => 'A', 'B' => 'B', 'C' => 'C', 'belum' => 'Belum']" :nilai="$f['grade']" />
+                @foreach ($tagGroups as $grup => $tags)
+                    @php $n = $tags->whereIn('id', $f['tag'])->count(); @endphp
+                    <details class="fpanel-acc" data-k="tag-{{ $grup }}">
+                        <summary>{{ $grup }}@if ($n) ({{ $n }})@endif</summary>
+                        <x-filter-panel.grup label="" name="tag[]" :opsi="$tags->mapWithKeys(fn ($t) => [$t->id => '#'.$t->nama])->all()" :nilai="$f['tag']" multi />
+                    </details>
+                @endforeach
+                <p class="xfilter-note">Menampilkan yang punya <strong>semua</strong> tag terpilih</p>
+            </div>
+        @endif
+    </x-filter-panel>
 </form>
 
 <div data-live-target>
