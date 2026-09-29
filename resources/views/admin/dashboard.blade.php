@@ -5,49 +5,88 @@
 @section('content')
 @php $tampilAdmin = auth()->user()->bisaSebagaiAdmin() && auth()->user()->modeSa() !== 'korlap'; @endphp
 @if ($tampilAdmin)
-    @if ($urgentProjects->isNotEmpty())
-        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger, #ef4444); border-radius: 10px; padding: 14px 18px; margin-bottom: 20px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-                <div>
-                    <div style="font-weight: 700; color: var(--danger, #ef4444); font-size: 14.5px;">
-                        <i class="ti ti-alert-triangle"></i> Perhatian: Ada {{ $urgentProjects->count() }} Proyek Berstatus Urgent / H-3!
-                    </div>
-                    <div style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">
-                        Tanggal shooting sudah sangat dekat namun kuota kandidat belum terpenuhi. Segera bagikan link pendaftaran ke grup WA atau review lineup.
-                    </div>
-                </div>
-                <a href="{{ route('admin.projects.index', ['urgent' => 1]) }}" class="btn btn-sm btn-brand">Lihat Proyek Urgent &rarr;</a>
-            </div>
+    @php $jumlahTindakan = $urgentProjects->count() + ($pembayaranSengketa ? 1 : 0) + ($perluDinego ? 1 : 0); @endphp
+    <div class="dash-tiga">
+        <div class="card">
+            <div class="card-title">Jadwal Shooting Bulan Ini</div>
+            <x-jadwal-calendar :events="$jadwalBulanIni" :compact="true" />
         </div>
-    @endif
 
-    @if ($pembayaranSengketa > 0)
-        <div style="background: rgba(234, 179, 8, 0.1); border: 1px solid var(--warning, #eab308); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-            <div style="font-weight: 600; color: var(--warning, #eab308); font-size: 13.5px;">
-                <i class="ti ti-alert-circle"></i> Pembayaran Bermasalah ({{ $pembayaranSengketa }} kasus)
+        <div class="card dash-perlu {{ $jumlahTindakan ? '' : 'is-aman' }}">
+            <div class="card-title">
+                <i class="ti ti-clipboard-list"></i> Perlu Tindakan
+                @if ($jumlahTindakan)
+                    <span class="badge badge-pending" style="margin-left: 8px;">{{ $jumlahTindakan }}</span>
+                @endif
             </div>
-            <a href="{{ route('admin.projects.index') }}" class="btn btn-sm">Tinjau Pembayaran &rarr;</a>
+
+            @if ($urgentProjects->isNotEmpty())
+                <p class="dash-sub" style="margin: 0 0 4px;">
+                    <strong style="color: var(--danger);"><i class="ti ti-alert-triangle"></i> Ada {{ $urgentProjects->count() }} Proyek Berstatus Urgent / H-3!</strong>
+                    Tanggal shooting sudah sangat dekat namun kuota kandidat belum terpenuhi. Segera bagikan link pendaftaran ke grup WA atau review lineup.
+                </p>
+                @foreach ($urgentProjects as $p)
+                    <a href="{{ route('admin.projects.show', $p) }}" class="dash-row">
+                        <div>
+                            <span class="badge badge-tolak">Urgent</span>
+                            <strong>{{ $p->nama_produksi }}</strong>
+                            <div class="dash-sub">{{ $p->client_ph ?? '-' }} &bull; {{ $p->rentangShooting() }}</div>
+                        </div>
+                        <span class="dash-sub">Buka &rarr;</span>
+                    </a>
+                @endforeach
+                <a href="{{ route('admin.projects.index', ['urgent' => 1]) }}" class="dash-row" style="color: var(--accent); font-weight: 600;">Lihat Proyek Urgent &rarr;</a>
+            @endif
+
+            @if ($pembayaranSengketa > 0)
+                <a href="{{ route('admin.projects.index') }}" class="dash-row">
+                    <div>
+                        <span class="badge badge-pending">Pembayaran Bermasalah</span>
+                        <strong>{{ $pembayaranSengketa }} kasus</strong>
+                        <div class="dash-sub">Extras menyengketakan pembayaran</div>
+                    </div>
+                    <span class="dash-sub">Tinjau Pembayaran &rarr;</span>
+                </a>
+            @endif
+
+            @if ($perluDinego)
+                <a href="{{ route('admin.projects.index', ['peserta' => 'nego_fee']) }}" class="dash-row">
+                    <div>
+                        <span class="badge badge-info">Perlu dinego</span>
+                        <strong>{{ $perluDinego }} kandidat</strong>
+                        <div class="dash-sub">Nego fee belum deal</div>
+                    </div>
+                    <span class="dash-sub">Buka &rarr;</span>
+                </a>
+            @endif
+
+            @unless ($jumlahTindakan)
+                <div class="dash-aman" role="status"><i class="ti ti-circle-check"></i> Semua aman &mdash; tidak ada yang perlu ditindak.</div>
+            @endunless
         </div>
-    @endif
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px;">
-        <a href="{{ route('admin.projects.index', ['status' => 'dibuka']) }}" class="metric-card" style="display: block; color: inherit; text-decoration: none;">
-            <div class="metric-label">Proyek Aktif</div>
-            <div class="metric-value">{{ $proyekAktif }}</div>
-        </a>
-        <a href="{{ route('admin.projects.index') }}" class="metric-card" style="display: block; color: inherit; text-decoration: none;">
-            <div class="metric-label">Total Pendaftar</div>
-            <div class="metric-value">{{ $totalPendaftar }}</div>
-        </a>
-        <a href="{{ route('admin.projects.index', ['peserta' => 'nego_fee']) }}" class="metric-card" style="display: block; color: inherit; text-decoration: none;">
-            <div class="metric-label">Perlu Dinego</div>
-            <div class="metric-value">{{ $perluDinego }}</div>
-        </a>
-    </div>
-
-    <div class="card" style="margin-bottom: 20px;">
-        <div class="card-title">Jadwal Shooting Bulan Ini</div>
-        <x-jadwal-calendar :events="$jadwalBulanIni" :compact="true" />
+        <div class="card">
+            <div class="card-title">Ringkasan</div>
+            <div class="dash-metrik" style="margin-bottom: 14px;">
+                <a href="{{ route('admin.projects.index', ['status' => 'dibuka']) }}" class="metric-card">
+                    <div class="metric-label">Proyek Aktif</div>
+                    <div class="metric-value">{{ $proyekAktif }}</div>
+                </a>
+                <a href="{{ route('admin.projects.index') }}" class="metric-card">
+                    <div class="metric-label">Total Pendaftar</div>
+                    <div class="metric-value">{{ $totalPendaftar }}</div>
+                </a>
+                <a href="{{ route('admin.projects.index', ['peserta' => 'nego_fee']) }}" class="metric-card" style="grid-column: span 2;">
+                    <div class="metric-label">Perlu Dinego</div>
+                    <div class="metric-value">{{ $perluDinego }}</div>
+                </a>
+            </div>
+            <a href="{{ route('admin.projects.index') }}" class="dash-row"><span><i class="ti ti-folder"></i> Kelola Proyek</span><span class="dash-sub">&rarr;</span></a>
+            <a href="{{ route('admin.users.index') }}" class="dash-row"><span><i class="ti ti-users"></i> Kelola Akun Client & Extras</span><span class="dash-sub">&rarr;</span></a>
+            <a href="{{ route('admin.attendance.index') }}" class="dash-row"><span><i class="ti ti-camera"></i> Absensi Lapangan</span><span class="dash-sub">&rarr;</span></a>
+            <a href="{{ route('admin.recap.index') }}" class="dash-row"><span><i class="ti ti-report"></i> Rekap Extras</span><span class="dash-sub">&rarr;</span></a>
+            <a href="{{ route('admin.work-history') }}" class="dash-row"><span><i class="ti ti-wallet"></i> Riwayat Kerja & Status Gaji Saya</span><span class="dash-sub">&rarr;</span></a>
+        </div>
     </div>
 
     <div class="dashboard-grid-2col is-wide-narrow">
@@ -71,14 +110,6 @@
             <div class="card-title">Status Pembayaran Extras</div>
             <div class="chart-box"><canvas id="chartPembayaran"></canvas></div>
         </div>
-    </div>
-
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <a href="{{ route('admin.users.index') }}" class="btn">Kelola Akun Client & Extras</a>
-        <a href="{{ route('admin.projects.index') }}" class="btn btn-brand">Kelola Proyek</a>
-        <a href="{{ route('admin.attendance.index') }}" class="btn">Absensi Lapangan</a>
-        <a href="{{ route('admin.recap.index') }}" class="btn">Rekap Extras</a>
-        <a href="{{ route('admin.work-history') }}" class="btn">Riwayat Kerja & Status Gaji Saya</a>
     </div>
 @elseif (auth()->user()->bisaSebagaiKorlap())
     <div class="alert-info" style="margin-bottom: 16px;">

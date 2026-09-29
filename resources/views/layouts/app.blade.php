@@ -331,6 +331,32 @@
            JS supaya chart selalu proporsional dengan lebar container-nya. */
         .chart-box { position: relative; height: 240px; width: 100%; }
 
+        /* Dashboard semua role: kartu sejajar (Jadwal, Perlu tindakan, ringkasan), acuan dashboard SA */
+        .dash-tiga { display: grid; gap: 16px; margin-bottom: 16px; align-items: stretch; }
+        .dash-tiga > .card { margin: 0; min-width: 0; }
+        @media (min-width: 861px) { .dash-tiga { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (min-width: 1180px) { .dash-tiga { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        @media (max-width: 860px) { .dash-tiga > .dash-perlu { order: -1; } }
+        .dash-perlu { border: 2px solid var(--accent-strong); max-height: 720px; overflow-y: auto; }
+        .dash-perlu > .card-title { color: var(--accent-strong); }
+        .dash-perlu.is-aman { border-width: 1px; border-color: var(--accent); display: flex; flex-direction: column; }
+        .dash-aman { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid var(--accent); border-radius: var(--radius-lg, 12px); background: var(--bg-nav-active); color: var(--accent-strong); font-weight: 600; font-size: var(--fs-sm, 13px); }
+        .dash-aman[hidden] { display: none; }
+        .dash-perlu.is-aman .dash-aman { flex: 1; flex-direction: column; justify-content: center; text-align: center; min-height: 140px; border: none; background: transparent; }
+        .dash-perlu.is-aman .dash-aman i { font-size: 40px; }
+        .dash-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 0; border-bottom: 1px solid var(--border-color); font-size: 13.5px; }
+        .dash-row:last-child { border-bottom: none; }
+        a.dash-row { text-decoration: none; color: inherit; }
+        a.dash-row:hover { color: var(--accent); }
+        .dash-sub { font-size: 12px; color: var(--text-muted); }
+        .dash-pill { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border: 1px solid var(--border-color); border-radius: 999px; font-size: var(--fs-sm, 13px); color: var(--text-secondary); text-decoration: none; background: var(--bg-card); }
+        .dash-pill strong { font-size: var(--fs-md, 16px); color: var(--text-primary); }
+        a.dash-pill:hover { border-color: var(--accent); }
+        .dash-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+        .dash-metrik { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        a.metric-card { display: block; text-decoration: none; color: inherit; border: 1px solid var(--border-color); }
+        a.metric-card:hover { border-color: var(--accent); }
+
         @media (max-width: 860px) {
             .dashboard-grid-2col.is-wide-narrow,
             .dashboard-grid-2col.is-even {
