@@ -875,7 +875,7 @@ Kalau ada yang merah, tempel output-nya ke manager-session. Tujuannya mastiin en
 | AZ.1 lokasi disembunyikan | `898993f` — buka `/event/{slug}` & detail lowongan Extras: tanggal tampil, lokasi nggak | [ ] |
 | AZ.2 untrack settings.local | `898993f` — `git ls-files .claude` kosong; `.gitignore` + `.claude/worktrees/` | [ ] |
 | AZ.3 worktree prune | dilakukan (bukan commit) — `git worktree list` tinggal main. Worktree lama punya 8 file uncommitted → dibackup ke `.claude/_backup-worktree-a2a1a763.patch` (gitignored) sebelum dihapus | [ ] |
-| AZ.4 test MySQL (Fakrul) | | [ ] |
+| AZ.4 test MySQL (Fakrul) | dijalankan Claude Code ke `jbtb_test` (bukan `jbtb`): awalnya 3 merah (kolom `kriteria` json nolak teks → 500 saat buat proyek; jam `HH:MM:SS`), difix `aafaec4` → 375 passed | [ ] |
 
 ---
 
@@ -971,8 +971,8 @@ Di kartu Greenlight **hapus atribut `data-grade-admin`** dan data kontak/nama as
 
 | Item | Bukti | QA |
 |---|---|---|
-| BB.1 noindex + robots.txt | | [ ] |
-| BB.2 OG tags event, profil, homepage | | [ ] |
+| BB.1 noindex + robots.txt | `34c6b0d` — `--filter SeoMetaTest`; view-source `/p/extras/{token}` & dashboard → `noindex`; `/robots.txt` | [ ] |
+| BB.2 OG tags event, profil, homepage | `34c6b0d` — tempel link event/profil ke opengraph.xyz. **`APP_URL` di `.env` harus URL ngrok** biar `og:image` kebaca dari luar | [ ] |
 
 **Tes QA:** tempel link event & link profil ke chat WA (atau https://www.opengraph.xyz) → muncul judul + gambar. View-source profil publik → ada `noindex`.
 
@@ -1012,8 +1012,8 @@ Di kartu Greenlight **hapus atribut `data-grade-admin`** dan data kontak/nama as
 
 | Item | Bukti | QA |
 |---|---|---|
-| BC.1 seeder + guard + tanpa kirim keluar | | [ ] |
-| BC.2 file placeholder + PDF ter-render | | [ ] |
-| BC.3 verifikasi | | [ ] |
+| BC.1 seeder + guard + tanpa kirim keluar | `671e43b` — `--filter DemoSeederTest` (assert Mail/Queue/Http nothing sent + guard production) | [ ] |
+| BC.2 file placeholder + PDF ter-render | `01d256a` — 14 PDF kontrak + invoice P1 + 2 slip honor ter-render; TTD/bukti/selfie placeholder PNG | [ ] |
+| BC.3 verifikasi | `2745647` + fix MySQL `aafaec4` — `migrate:fresh --seed` sukses di SQLite **dan** MySQL `jbtb_test`; full suite SQLite 375 & MySQL 375 passed; smoke login 5 role 200 | [ ] |
 
 **Cara Fakrul jalanin (menghapus SEMUA data lama):** `php artisan migrate:fresh --seed` → `php artisan storage:link` (kalau belum) → `php artisan view:clear`.
