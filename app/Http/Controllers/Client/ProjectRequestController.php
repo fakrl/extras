@@ -58,6 +58,7 @@ class ProjectRequestController extends Controller
             'kuota' => $data['kuota'],
             'brief_catatan' => $data['brief_catatan'],
             'diajukan_oleh_client_id' => $request->user()->id,
+            'client_id' => $request->user()->id,
             'client_request_status' => 'menunggu_acc',
             'status' => 'ditutup',
             'is_urgent' => false,

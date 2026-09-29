@@ -142,7 +142,7 @@ class DemoLengkapSeeder extends Seeder
         [$andini, $rudy, $maya] = [$this->u['client_andini'], $this->u['client_rudy'], $this->u['client_maya']];
 
         // P1: selesai
-        $p1 = $this->project('Film "Rumah di Ujung Senja"', 'PT Layar Senja Films', $rina, -45, ['deadline' => today()->subDays(35), 'kuota' => 7, 'status' => 'ditutup']);
+        $p1 = $this->project('Film "Rumah di Ujung Senja"', 'PT Layar Senja Films', $rina, -45, ['deadline' => today()->subDays(35), 'kuota' => 7, 'status' => 'ditutup', 'client_id' => $andini->id]);
         $tgl1 = $this->jadwal($p1, [-30, -29, -28], 'Desa Cibodas, Lembang');
         $warga = $this->kelas($p1, 'Warga kampung', 4, 300000, ['Orang Tua', 'Jawa']);
         $mhsKos = $this->kelas($p1, 'Mahasiswa kos', 3, 350000, ['Dewasa muda', 'Mahasiswa']);
@@ -184,6 +184,8 @@ class DemoLengkapSeeder extends Seeder
         ]);
         $p1->load('classes', 'applications.extras');
         $inv1->update(['pdf_path' => $pdf->generate('invoices.pdf-template', ['castingProject' => $p1, 'invoice' => $inv1, 'rincian' => $keuangan->rincianInvoice($p1)], "invoices/pdf/{$p1->id}.pdf")]);
+        $inv1->update(['nominal' => $keuangan->nilaiInvoice($p1), 'status_bayar' => 'lunas', 'dibayar_at' => now()->subDays(22)]);
+        $this->biaya($p1, $rina, [['Konsumsi 3 hari shooting', 350000, -29], ['Sewa elf antar-jemput', 250000, -30]]);
         $this->log($rina, 'SIGN_INVOICE', "Admin Rina Kartika menandatangani invoice untuk proyek '{$p1->nama_produksi}'", $p1, -27);
         $this->log($andini, 'SIGN_INVOICE', "Cd Andini Prameswari menandatangani invoice untuk proyek '{$p1->nama_produksi}'", $p1, -26);
 
@@ -198,7 +200,7 @@ class DemoLengkapSeeder extends Seeder
 
         // P2: berjalan, satu Extras di tiap tahap
         $p2 = $this->project('Iklan "Minuman Segar"', 'PT Layar Senja Films', $rina, -7, [
-            'deadline' => today()->addDays(3), 'kuota' => 15, 'diajukan_oleh_client_id' => $andini->id,
+            'deadline' => today()->addDays(3), 'kuota' => 15, 'diajukan_oleh_client_id' => $andini->id, 'client_id' => $andini->id,
             'brief_catatan' => 'Iklan TV 30 detik minuman isotonik, suasana kampus & kantor.', 'wa_group_link' => 'https://chat.whatsapp.com/demo-minuman-segar',
         ]);
         $this->jadwal($p2, [5, 6], 'Kampus UI Depok');
@@ -236,9 +238,10 @@ class DemoLengkapSeeder extends Seeder
         $this->deal($fajar, 200000, -5);
         $fajar->cancellations()->create(['dibatalkan_oleh' => 'extras', 'alasan' => 'Bentrok jadwal kerja.', 'is_mendadak' => false, 'created_at' => now()->subDays(3)]);
         $p2->invoices()->create([]);
+        $this->biaya($p2, $rina, [['DP konsumsi', 300000, -1]]);
 
         // P3: shooting hari ini & besok
-        $p3 = $this->project('Series "Kampus Biru" eps 1-2', 'Kampus Biru Pictures', $yoga, -20, ['deadline' => today()->subDays(5), 'kuota' => 8, 'status' => 'ditutup', 'wa_group_link' => 'https://chat.whatsapp.com/demo-kampus-biru']);
+        $p3 = $this->project('Series "Kampus Biru" eps 1-2', 'Kampus Biru Pictures', $yoga, -20, ['deadline' => today()->subDays(5), 'kuota' => 8, 'status' => 'ditutup', 'wa_group_link' => 'https://chat.whatsapp.com/demo-kampus-biru', 'client_id' => $rudy->id]);
         [$hariIni] = $this->jadwal($p3, [0, 1], 'Kampus Universitas Pamulang');
         $mhs3 = $this->kelas($p3, 'Mahasiswa', 6, 300000, ['Mahasiswa']);
         $dosen = $this->kelas($p3, 'Dosen', 2, 400000, ['Orang Tua']);
@@ -261,11 +264,13 @@ class DemoLengkapSeeder extends Seeder
             };
         }
 
+        $this->biaya($p3, $yoga, [['Transport korlap', 150000, 0]]);
+
         // P4: pengajuan Client, menunggu ACC
         $p4 = CastingProject::create([
             'nama_produksi' => 'Video Klip "Nadaria"', 'client_ph' => 'Nadaria Music', 'share_token' => Str::random(32),
             'deadline' => today()->addDays(14), 'kuota' => 20, 'brief_catatan' => 'Video klip single baru, butuh 20 extras penonton konser umur 18-30.',
-            'diajukan_oleh_client_id' => $maya->id, 'client_request_status' => 'menunggu_acc', 'status' => 'ditutup',
+            'diajukan_oleh_client_id' => $maya->id, 'client_id' => $maya->id, 'client_request_status' => 'menunggu_acc', 'status' => 'ditutup',
             'created_at' => now()->subDay(),
         ]);
         $p4->cdAssignments()->create(['cd_user_id' => $maya->id]);
@@ -275,7 +280,7 @@ class DemoLengkapSeeder extends Seeder
         $p5 = CastingProject::create([
             'nama_produksi' => '"Kampus Biru" season 2', 'client_ph' => 'Kampus Biru Pictures', 'share_token' => Str::random(32),
             'deadline' => today()->addDays(20), 'kuota' => 10, 'brief_catatan' => 'Lanjutan season 1, pemain extras yang sama kalau bisa.',
-            'diajukan_oleh_client_id' => $rudy->id, 'client_request_status' => 'ditolak', 'status' => 'ditutup',
+            'diajukan_oleh_client_id' => $rudy->id, 'client_id' => $rudy->id, 'client_request_status' => 'ditolak', 'status' => 'ditutup',
             'alasan_tolak' => 'Jadwal bentrok produksi lain, ajukan ulang bulan depan.', 'created_at' => now()->subDays(10),
         ]);
         $p5->cdAssignments()->create(['cd_user_id' => $rudy->id]);
@@ -475,6 +480,13 @@ class DemoLengkapSeeder extends Seeder
         $this->log($user, 'SUBMIT_SELFIE_ATTENDANCE', "Extras {$user->name} mengirimkan selfie absensi di lokasi shooting untuk proyek {$a->castingProject->nama_produksi}", $absen, 0);
         if ($korlap) {
             $this->log($korlap, 'VALIDATE_ATTENDANCE', "Korlap {$korlap->name} memvalidasi kehadiran extras {$user->name} di lokasi shooting", $absen, 0);
+        }
+    }
+
+    private function biaya(CastingProject $p, User $oleh, array $rows): void
+    {
+        foreach ($rows as [$label, $nominal, $hari]) {
+            $p->expenses()->create(['label' => $label, 'nominal' => $nominal, 'tanggal' => today()->addDays($hari), 'created_by' => $oleh->id]);
         }
     }
 
