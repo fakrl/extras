@@ -44,7 +44,7 @@ class BaProfilFixTest extends TestCase
         $extras->delete();
 
         $this->actingAs($superAdmin)
-            ->get(route('super-admin.admins.index', ['role' => 'extras']))
+            ->get(route('super-admin.akun.index', ['role' => 'extras', 'status' => 'dihapus']))
             ->assertOk()
             ->assertSee('Dihapus')
             ->assertDontSee(route('admin.extras.profil', $extras));

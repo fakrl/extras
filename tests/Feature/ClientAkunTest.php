@@ -15,14 +15,14 @@ class ClientAkunTest extends TestCase
     {
         $sa = User::factory()->create(['role' => 'super_admin']);
 
-        $this->actingAs($sa)->from(route('super-admin.admins.index'))
+        $this->actingAs($sa)->from(route('super-admin.akun.index'))
             ->post(route('super-admin.casting-directors.store'), [
                 'name' => 'Andini',
                 'nama_perusahaan' => 'PT Layar Senja',
                 'username' => 'andini_ls',
                 'nomor_wa' => '0812 3456 789',
             ])
-            ->assertRedirect(route('super-admin.admins.index'))
+            ->assertRedirect(route('super-admin.akun.index'))
             ->assertSessionHas('kredensial');
 
         $password = session('kredensial')['password'];
@@ -62,7 +62,7 @@ class ClientAkunTest extends TestCase
     {
         $sa = User::factory()->create(['role' => 'super_admin']);
 
-        $this->actingAs($sa)->followingRedirects()->from(route('super-admin.admins.index'))
+        $this->actingAs($sa)->followingRedirects()->from(route('super-admin.akun.index'))
             ->post(route('super-admin.casting-directors.store'), ['name' => 'Rudy', 'username' => 'rudy_kb'])
             ->assertOk()->assertSee('kredensial-dialog')->assertSee('rudy_kb');
     }
