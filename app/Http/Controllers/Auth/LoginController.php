@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\CastingProject;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -36,8 +37,13 @@ class LoginController extends Controller
         $identifier = str_contains($data['email'], '@') ? 'email' : 'username';
 
         if (! Auth::attempt([$identifier => $data['email'], 'password' => $data['password']], $request->boolean('remember'))) {
+            // BQ.3: akun Google tanpa password (BO.2) dikasih arahan, bukan pesan kredensial generik.
+            $google = User::where($identifier, $data['email'])->whereNull('password')->exists();
+
             return back()->withErrors([
-                'email' => 'Email/username atau password salah.',
+                'email' => $google
+                    ? 'Akun ini login pakai Google. Klik "Lanjut dengan Google", atau pakai "Lupa password" untuk membuat password.'
+                    : 'Email/username atau password salah.',
             ])->onlyInput('email');
         }
 
