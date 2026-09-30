@@ -103,7 +103,7 @@ class ClientAkunTest extends TestCase
         $client = User::factory()->create(['role' => 'client', 'email' => null]);
 
         $this->actingAs($client)->put(route('cd.profil.update'), [
-            'name' => 'Nama Baru', 'nama_perusahaan' => 'PH Baru', 'email' => 'baru@ph.test', 'nomor_wa' => '0811',
+            'name' => 'Nama Baru', 'nama_perusahaan' => 'PH Baru', 'email' => 'baru@ph.test', 'nomor_wa' => '0811-2233-4455',
         ])->assertRedirect()->assertSessionHasNoErrors();
 
         $this->assertSame('baru@ph.test', $client->fresh()->email);

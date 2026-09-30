@@ -8,6 +8,7 @@ use App\Models\CastingProject;
 use App\Models\ExtrasCategory;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
+use App\Rules\NomorWa;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -116,7 +117,7 @@ class ProfileController extends Controller
             'tautan_url' => ['nullable', 'array'],
             'tautan_url.*' => ['nullable', 'url', 'max:500'],
             'rate_card' => ['nullable', 'numeric', 'min:0'],
-            'nomor_wa' => ['nullable', 'string'],
+            'nomor_wa' => ['nullable', 'string', 'max:20', new NomorWa],
             'categories' => ['nullable', 'array'],
             'categories.*' => ['integer', 'exists:extras_categories,id'],
             'tag_nama' => ['nullable', 'array'],

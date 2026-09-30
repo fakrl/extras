@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Jobs\SendWhatsAppNotification;
 use App\Models\NotificationLog;
 use App\Models\User;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -19,17 +20,22 @@ class WhatsAppService
     public function kirim(string $nomorWa, string $pesan): bool
     {
         try {
-            $url = rtrim(config('services.whatsapp.url'), '/').'/send';
-
-            return Http::timeout(10)
-                ->withToken(config('services.whatsapp.token'))
-                ->post($url, ['nomor' => $nomorWa, 'pesan' => $pesan])
-                ->successful();
+            return $this->kirimLangsung($nomorWa, $pesan)->successful();
         } catch (\Throwable $e) {
             Log::warning('WhatsAppService::kirim gagal', ['nomor' => $nomorWa, 'error' => $e->getMessage()]);
 
             return false;
         }
+    }
+
+    // BO.1: nomor dinormalisasi ke 62xxx (format whatsapp-web.js). Throw kalau nomor ngaco / Node mati.
+    public function kirimLangsung(string $nomorWa, string $pesan): Response
+    {
+        $nomor = User::normalisasiWa($nomorWa) ?? throw new \InvalidArgumentException("Nomor WA tidak valid: {$nomorWa}");
+
+        return Http::timeout(10)
+            ->withToken((string) config('services.whatsapp.token'))
+            ->post(rtrim(config('services.whatsapp.url'), '/').'/send', ['nomor' => $nomor, 'pesan' => $pesan]);
     }
 
     /**
