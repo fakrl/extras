@@ -99,7 +99,7 @@
             <form method="POST" action="{{ route('super-admin.projects.reject', $req) }}" style="padding: 18px;">
                 @csrf @method('PATCH')
                 <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Tolak pengajuan {{ $req->nama_produksi }}?</div>
-                <label for="alasan-req-{{ $req->id }}">Alasan penolakan (dikirim ke Client)</label>
+                <label for="alasan-req-{{ $req->id }}">Alasan penolakan (dikirim ke Client) <span class="wajib" aria-hidden="true">*</span></label>
                 <textarea name="alasan_tolak" id="alasan-req-{{ $req->id }}" rows="3" required maxlength="500" style="width: 100%; margin-bottom: 12px;"></textarea>
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
                     <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>

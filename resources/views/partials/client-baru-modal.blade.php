@@ -5,16 +5,16 @@
         <form method="POST" action="{{ route('super-admin.clients.store') }}">
             @csrf
             <input type="hidden" name="_form" value="client-baru">
-            <label>Nama</label>
+            <label>Nama <span class="wajib" aria-hidden="true">*</span></label>
             <input type="text" name="name" value="{{ old('_form') === 'client-baru' ? old('name') : '' }}" required maxlength="255">
 
             <label>Nama perusahaan / PH</label>
             <input type="text" name="nama_perusahaan" value="{{ old('_form') === 'client-baru' ? old('nama_perusahaan') : '' }}" maxlength="255">
 
-            <label>Username</label>
+            <label>Username <span class="wajib" aria-hidden="true">*</span></label>
             <input type="text" name="username" value="{{ old('_form') === 'client-baru' ? old('username') : '' }}" required maxlength="50" pattern="[A-Za-z0-9_\-]+" title="Huruf, angka, - atau _ tanpa spasi">
 
-            <label>Email (opsional)</label>
+            <label>Email</label>
             <input type="email" name="email" value="{{ old('_form') === 'client-baru' ? old('email') : '' }}">
 
             <label>Nomor WA</label>

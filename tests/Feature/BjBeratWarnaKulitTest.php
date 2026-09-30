@@ -41,7 +41,7 @@ class BjBeratWarnaKulitTest extends TestCase
         $this->actingAs($p->user)->get(route('extras.profile.edit'))->assertOk()
             ->assertSee('name="berat_badan"', false)
             ->assertDontSee('name="warna_kulit"', false)
-            ->assertSee('Ukuran Baju <span style="color: var(--text-muted); font-weight: 400;">(opsional)</span>', false);
+            ->assertSee('<label for="ukuran_baju">Ukuran Baju</label>', false);
 
         $base = ['nama_asli' => 'Nama', 'username' => 'user_'.$p->user_id];
         $this->actingAs($p->user)->put('/extras/profil', $base + ['berat_badan' => 300])->assertSessionHasErrors('berat_badan');

@@ -10,7 +10,7 @@
         <label>Username</label>
         <input type="text" value="{{ $user->username }}" disabled>
 
-        <label>Nama</label>
+        <label>Nama <span class="wajib" aria-hidden="true">*</span></label>
         <input type="text" name="name" value="{{ old('name', $user->name) }}" required maxlength="255">
 
         <label>Nama perusahaan / PH</label>

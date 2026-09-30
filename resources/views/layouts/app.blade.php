@@ -467,7 +467,6 @@
             margin-bottom: 0;
         }
         label { font-size: 13.5px; color: var(--text-secondary); display: block; margin-bottom: 6px; font-weight: 500; }
-        .required-mark { color: var(--danger); }
 
         /* Override untuk input yang sengaja sejajar tombol dalam satu baris
            (form nego fee, tambah komponen pembayaran, dsb), bukan full-width */

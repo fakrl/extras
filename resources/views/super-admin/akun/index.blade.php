@@ -216,12 +216,12 @@
     <form method="POST" action="{{ route('super-admin.admins.store') }}">
         @csrf
         <div class="akun-dialog-judul">Tambah akun staf</div>
-        <label>Nama</label>
+        <label>Nama <span class="wajib" aria-hidden="true">*</span></label>
         <input type="text" name="name" value="{{ old('name') }}" required>
-        <label>Email</label>
+        <label>Email <span class="wajib" aria-hidden="true">*</span></label>
         <input type="email" name="email" value="{{ old('email') }}" required>
         <x-password-input name="password" label="Password" :minlength="8" />
-        <label>Role</label>
+        <label>Role <span class="wajib" aria-hidden="true">*</span></label>
         <select name="role" required>
             <option value="admin" @selected(old('role') === 'admin')>Admin (operasional proyek penuh)</option>
             <option value="korlap" @selected(old('role') === 'korlap')>Korlap (koordinator lapangan)</option>

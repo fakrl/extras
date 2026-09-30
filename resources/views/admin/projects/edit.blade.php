@@ -30,11 +30,12 @@
         data-client-lama="{{ $castingProject->client_id }}" data-client-lama-nama="{{ $castingProject->client?->username ? '@'.$castingProject->client->username : $castingProject->client?->name }}"
         onsubmit="var d = this.dataset; return !d.clientLama || this.client_id.value === d.clientLama || confirm('Client lama (' + d.clientLamaNama + ') nggak bisa lihat proyek ini lagi. Lanjut?')">
         @csrf
+        <p class="wajib-ket"><span class="wajib">*</span> wajib diisi</p>
         @method('PATCH')
 
         <div class="form-row">
             <div>
-                <label>Nama Produksi</label>
+                <label>Nama Produksi <span class="wajib" aria-hidden="true">*</span></label>
                 <input type="text" name="nama_produksi" value="{{ old('nama_produksi', $castingProject->nama_produksi) }}" required>
             </div>
         </div>
@@ -46,14 +47,14 @@
 
         <div class="form-row">
             <div>
-                <label>Link Grup Koordinasi <span style="color: var(--text-muted); font-weight: 400;">(WA/Telegram, opsional, dapat diisi menyusul)</span></label>
+                <label>Link Grup Koordinasi <span style="color: var(--text-muted); font-weight: 400;">(WA/Telegram, dapat diisi menyusul)</span></label>
                 <input type="url" name="link_grup" value="{{ old('link_grup', $castingProject->link_grup) }}" placeholder="https://chat.whatsapp.com/... atau https://t.me/...">
             </div>
         </div>
 
         <div class="form-row">
             <div>
-                <label>Poster Produksi <span style="color: var(--text-muted); font-weight: 400;">(opsional, maks. 2MB)</span></label>
+                <label>Poster Produksi <span style="color: var(--text-muted); font-weight: 400;">(maks. 2MB)</span></label>
                 @if ($castingProject->poster_path)
                     <div style="margin-bottom: 8px;">
                         <img src="{{ Storage::url($castingProject->poster_path) }}" alt="Poster" style="height: 80px; border-radius: 6px; object-fit: cover;">
@@ -66,11 +67,11 @@
 
         <div class="form-row">
             <div>
-                <label>Deadline Pendaftaran</label>
+                <label>Deadline Pendaftaran <span class="wajib" aria-hidden="true">*</span></label>
                 <input type="date" name="deadline" value="{{ old('deadline', $castingProject->deadline->format('Y-m-d')) }}" required>
             </div>
             <div>
-                <label>Kuota Total</label>
+                <label>Kuota Total <span class="wajib" aria-hidden="true">*</span></label>
                 <input type="number" name="kuota" value="{{ old('kuota', $castingProject->kuota) }}" min="1" required>
             </div>
             <div style="display: flex; align-items: center; padding-top: 22px;">
@@ -83,7 +84,7 @@
 
         <hr>
         <div style="font-size: 14px; font-weight: 500; margin-bottom: 8px;">
-            Tanggal Shooting <span style="color: var(--text-muted); font-weight: 400; font-size: 12.5px;">(bisa lebih dari satu, tidak harus berurutan)</span>
+            Tanggal Shooting <span class="wajib" aria-hidden="true">*</span> <span style="color: var(--text-muted); font-weight: 400; font-size: 12.5px;">(bisa lebih dari satu, tidak harus berurutan)</span>
         </div>
         <div id="tanggal-wrap">
             @foreach ($castingProject->shootingDates as $tanggal)
@@ -105,15 +106,15 @@
                     <input type="hidden" name="kelas[{{ $loop->index }}][id]" value="{{ $kelas->id }}">
                     <div class="form-row" style="align-items: flex-end;">
                         <div>
-                            <label>Nama Karakter</label>
+                            <label>Nama Karakter <span class="wajib" aria-hidden="true">*</span></label>
                             <input type="text" name="kelas[{{ $loop->index }}][nama_kelas]" value="{{ $kelas->nama_kelas }}" placeholder="misal: Ibu-ibu 29-50th" required>
                         </div>
                         <div>
-                            <label>Budget Client (Rp)</label>
+                            <label>Budget Client (Rp) <span class="wajib" aria-hidden="true">*</span></label>
                             <input type="number" name="kelas[{{ $loop->index }}][budget_client]" value="{{ $kelas->budget_client }}" min="0" required>
                         </div>
                         <div>
-                            <label>Kuota Kelas</label>
+                            <label>Kuota Kelas <span class="wajib" aria-hidden="true">*</span></label>
                             <input type="number" name="kelas[{{ $loop->index }}][kuota_kelas]" value="{{ $kelas->kuota_kelas }}" min="1" required>
                         </div>
                         <div style="flex: 0;">
@@ -138,15 +139,15 @@
                         </div>
                     </div>
                     <div style="margin-top: 8px;">
-                        <label>Keterangan Scene <span style="color: var(--text-muted); font-weight: 400;">(opsional, misal: Scene 12-14 warung kopi)</span></label>
+                        <label>Keterangan Scene <span style="color: var(--text-muted); font-weight: 400;">(misal: Scene 12-14 warung kopi)</span></label>
                         <input type="text" name="kelas[{{ $loop->index }}][keterangan_scene]" value="{{ $kelas->keterangan_scene }}" placeholder="Scene 12-14 di warung kopi...">
                     </div>
                     <div style="margin-top: 8px;">
-                        <label>Kriteria yang dibutuhkan <span style="color: var(--text-muted); font-weight: 400;">(opsional)</span></label>
+                        <label>Kriteria yang dibutuhkan</label>
                         <textarea name="kelas[{{ $loop->index }}][kriteria]" rows="2" placeholder="Contoh: wanita 25-35 th, ekspresi natural" maxlength="500">{{ $kelas->kriteria }}</textarea>
                     </div>
                     <div style="margin-top: 8px;">
-                        <label>Tag yang dicari <span style="color: var(--text-muted); font-weight: 400;">(opsional, dipakai untuk % cocok)</span></label>
+                        <label>Tag yang dicari <span style="color: var(--text-muted); font-weight: 400;">(dipakai untuk % cocok)</span></label>
                         @include('partials.tag-input', ['name' => 'kelas['.$loop->index.'][tag_nama]', 'selected' => $kelas->categories])
                     </div>
                 </div>
@@ -220,11 +221,11 @@
             row.style.cssText = 'border:1px solid var(--border-color); border-radius:10px; padding:12px; margin-bottom:10px;';
             row.innerHTML =
                 '<div class="form-row" style="align-items:flex-end;">' +
-                '<div><label>Nama Karakter</label>' +
+                '<div><label>Nama Karakter <span class="wajib" aria-hidden="true">*</span></label>' +
                 '<input type="text" name="kelas[' + kelasIndex + '][nama_kelas]" required></div>' +
-                '<div><label>Budget Client (Rp)</label>' +
+                '<div><label>Budget Client (Rp) <span class="wajib" aria-hidden="true">*</span></label>' +
                 '<input type="number" name="kelas[' + kelasIndex + '][budget_client]" min="0" required></div>' +
-                '<div><label>Kuota Kelas</label>' +
+                '<div><label>Kuota Kelas <span class="wajib" aria-hidden="true">*</span></label>' +
                 '<input type="number" name="kelas[' + kelasIndex + '][kuota_kelas]" min="1" required></div>' +
                 '<div style="flex:0;"><button type="button" class="btn-icon-danger btn-remove-kelas">&times;</button></div>' +
                 '</div>' +
@@ -234,9 +235,9 @@
                 '<div><label>Tipe Kontinuitas</label><select name="kelas[' + kelasIndex + '][tipe_continuity]"><option value="free">Bebas (Single Day)</option><option value="continuity">Continuity (Multi-day)</option></select></div>' +
                 '</div>' +
                 '<div style="margin-top:8px;"><label>Keterangan Scene</label><input type="text" name="kelas[' + kelasIndex + '][keterangan_scene]" placeholder="Scene 12-14 di warung kopi..."></div>' +
-                '<div style="margin-top:8px;"><label>Kriteria yang dibutuhkan <span style="color:var(--text-muted);font-weight:400;">(opsional)</span></label>' +
+                '<div style="margin-top:8px;"><label>Kriteria yang dibutuhkan</label>' +
                 '<textarea name="kelas[' + kelasIndex + '][kriteria]" rows="2" placeholder="Contoh: wanita 25-35 th, ekspresi natural" maxlength="500"></textarea></div>' +
-                '<div style="margin-top:8px;"><label>Tag yang dicari <span style="color: var(--text-muted); font-weight: 400;">(opsional, dipakai untuk % cocok)</span></label>' + document.getElementById('tag-chips-tpl').innerHTML.replaceAll('__i__', kelasIndex) + '</div>';
+                '<div style="margin-top:8px;"><label>Tag yang dicari <span style="color: var(--text-muted); font-weight: 400;">(dipakai untuk % cocok)</span></label>' + document.getElementById('tag-chips-tpl').innerHTML.replaceAll('__i__', kelasIndex) + '</div>';
             kelasWrap.appendChild(row);
             kelasIndex++;
             updateRemoveButtons(kelasWrap, '.btn-remove-kelas');

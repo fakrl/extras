@@ -17,11 +17,11 @@
             <form method="POST" action="{{ route('super-admin.admins.update', $u) }}">
                 @csrf @method('PATCH')
                 <div class="akun-dialog-judul">Edit akun · {{ $u->name }}</div>
-                <label>Nama</label>
+                <label>Nama <span class="wajib" aria-hidden="true">*</span></label>
                 <input type="text" name="name" value="{{ $u->name }}" required>
-                <label>Email</label>
+                <label>Email @unless ($u->isClient())<span class="wajib" aria-hidden="true">*</span>@endunless</label>
                 <input type="email" name="email" value="{{ $u->email }}" @required(! $u->isClient())>
-                <label>Role</label>
+                <label>Role <span class="wajib" aria-hidden="true">*</span></label>
                 <select name="role" required>
                     @foreach (['admin', 'korlap', 'client', 'extras'] as $r)
                         <option value="{{ $r }}" @selected($u->role === $r)>{{ \App\Models\User::LABELS[$r] }}</option>

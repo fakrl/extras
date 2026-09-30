@@ -25,7 +25,7 @@
 
         <div class="form-row">
             <div>
-                <label>NIK (16 digit) <span class="required-mark">*</span></label>
+                <label>NIK (16 digit) <span class="wajib" aria-hidden="true">*</span></label>
                 <input type="text" name="nik" value="{{ old('nik') }}" required
                        inputmode="numeric" pattern="\d{16}" maxlength="16" placeholder="Sesuai KTP">
             </div>
