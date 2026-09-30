@@ -49,6 +49,7 @@ class ActivityLog extends Model
         'TOGGLE_USER_STATUS' => 'Aktif/nonaktifkan akun',
         'RESET_USER_PASSWORD' => 'Reset password',
         'PRUNE_ABANDONED_USERS' => 'Bersihkan akun mangkrak',
+        'AUTO_PRUNE_ABANDONED_USERS' => 'Hapus otomatis akun mangkrak',
         'SA_MODE_MULAI' => 'Mulai mode Monitoring',
         'SA_MODE_KELUAR' => 'Keluar mode Monitoring',
     ];

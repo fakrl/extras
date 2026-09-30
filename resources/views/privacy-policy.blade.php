@@ -66,6 +66,7 @@
 
         <h2>Penggunaan data</h2>
         <p>Data yang kamu berikan digunakan semata-mata untuk proses seleksi casting, negosiasi fee, pembuatan kontrak, dan pembayaran honor, bukan untuk tujuan lain, dan tidak dibagikan ke pihak ketiga di luar proses tersebut.</p>
+        <p>Akun Extras yang profilnya tidak dilengkapi (foto &amp; NIK) dan belum pernah mendaftar proyek dalam {{ \App\Models\User::HARI_MANGKRAK }} hari sejak daftar akan dihapus otomatis beserta datanya, setelah kami kirim pemberitahuan minimal 7 hari sebelumnya.</p>
 
         <h2>Keamanan data</h2>
         <p>NIK, nama asli, dan nomor rekening disimpan dalam bentuk terenkripsi di database. Foto dan video disimpan di penyimpanan privat yang hanya bisa diakses lewat aplikasi (bukan link publik langsung), dengan pengecekan otorisasi setiap kali diakses.</p>

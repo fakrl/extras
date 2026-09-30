@@ -63,6 +63,7 @@
         $f['role'] ? ['role', 'Role: '.\App\Models\User::LABELS[$f['role']]] : null,
         $f['status'] ? ['status', 'Status: '.ucfirst($f['status'])] : null,
         $f['sedang_aktif'] ? ['sedang_aktif', 'Sedang aktif di proyek'] : null,
+        $f['akan_dihapus'] ? ['akan_dihapus', 'Akan dihapus'] : null,
         $f['grade'] ? ['grade', 'Grade: '.($f['grade'] === 'belum' ? 'Belum' : $f['grade'])] : null,
         ...array_map(fn ($id) => ['tag', 'Tag: #'.($tagNama[$id] ?? $id), $id], $f['tag']),
     ]">
@@ -72,6 +73,7 @@
         @if (in_array($f['role'], [null, 'extras'], true))
             <div class="fpanel-sub">
                 <div class="fpanel-judul">Khusus Extras</div>
+                <label class="fswitch">Akan dihapus (sudah diperingatkan) <input type="checkbox" name="akan_dihapus" value="1" @checked($f['akan_dihapus'])></label>
                 <x-filter-panel.grup label="Grade" name="grade" :opsi="['' => 'Semua', 'A' => 'A', 'B' => 'B', 'C' => 'C', 'belum' => 'Belum']" :nilai="$f['grade']" />
                 @foreach ($tagGroups as $grup => $tags)
                     @php $n = $tags->whereIn('id', $f['tag'])->count(); @endphp

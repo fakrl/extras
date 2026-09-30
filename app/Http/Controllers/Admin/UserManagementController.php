@@ -36,14 +36,7 @@ class UserManagementController extends Controller
      */
     public function pruneAbandoned(Request $request): RedirectResponse
     {
-        $abandonedUsers = User::mangkrak()->get();
-
-        $count = $abandonedUsers->count();
-        foreach ($abandonedUsers as $u) {
-            $u->extrasProfile?->categories()->detach();
-            $u->extrasProfile?->forceDelete();
-            $u->forceDelete();
-        }
+        $count = User::hapusMangkrak(User::mangkrak()->with('extrasProfile')->get());
 
         ActivityLog::record(
             'PRUNE_ABANDONED_USERS',

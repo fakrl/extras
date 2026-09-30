@@ -148,6 +148,8 @@ class DemoLengkapSeeder extends Seeder
 
         $ghost = $this->akun('extras', 'ghost01', 'ghost01', 'ghost01@extras.test', now()->subDays(40));
         $ghost->extrasProfile()->create(['created_at' => now()->subDays(40)]);
+        $tglHapus = now()->addDays(4)->translatedFormat('d F Y');
+        $this->notif($ghost, 'Akun Akan Dihapus', "Profilmu belum lengkap. Lengkapi sebelum {$tglHapus} supaya akunmu nggak dihapus otomatis.", route('extras.profile.edit'), false, now()->subDays(3), ['jenis' => 'peringatan_mangkrak', 'kunci' => 'peringatan_mangkrak']);
 
         $rizka = $this->akun('extras', 'Rizka Amelia', 'baru_daftar', 'rizka@extras.test', now()->subDays(2));
         $rizka->extrasProfile()->create(['nama_asli' => 'Rizka Amelia', 'usia' => 21, 'gender' => 'wanita', 'tinggi_badan' => 159])
