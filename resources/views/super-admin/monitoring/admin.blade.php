@@ -16,6 +16,11 @@
     @endforeach
 </div>
 
+<div class="card" style="margin-bottom: 16px;">
+    <div class="card-title">Tahapan Partisipasi Kandidat</div>
+    @include('admin.partials.tahapan', ['monitor' => true])
+</div>
+
 <div class="mon-dua">
     <div class="card">
         <div class="card-title">Per Admin</div>
