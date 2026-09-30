@@ -53,12 +53,7 @@ class ReminderH1ShootingCommandTest extends TestCase
 
         Artisan::call('reminder:h1-shooting');
 
-        $this->assertDatabaseHas('notifications_log', [
-            'user_id' => $deal->extras->user_id,
-            'jenis' => 'reminder_h1',
-            'channel' => 'whatsapp',
-            'status' => 'terkirim',
-        ]);
+        $this->assertNotifikasi($deal->extras->user_id, 'reminder_h1', ['wa' => 'terkirim']);
     }
 
     public function test_tidak_kirim_reminder_untuk_status_nego_atau_ditolak_atau_dibatalkan(): void
@@ -73,10 +68,7 @@ class ReminderH1ShootingCommandTest extends TestCase
         Artisan::call('reminder:h1-shooting');
 
         foreach ([$nego, $ditolak, $dibatalkan] as $application) {
-            $this->assertDatabaseMissing('notifications_log', [
-                'user_id' => $application->extras->user_id,
-                'jenis' => 'reminder_h1',
-            ]);
+            $this->assertSame([], $this->notifikasi($application->extras->user_id, 'reminder_h1'));
         }
     }
 
@@ -97,10 +89,7 @@ class ReminderH1ShootingCommandTest extends TestCase
 
         Artisan::call('reminder:h1-shooting');
 
-        $this->assertDatabaseMissing('notifications_log', [
-            'user_id' => $application->extras->user_id,
-            'jenis' => 'reminder_h1',
-        ]);
+        $this->assertSame([], $this->notifikasi($application->extras->user_id, 'reminder_h1'));
     }
 
     public function test_nomor_wa_null_dicatat_gagal_tanpa_mengganggu_extras_lain(): void
@@ -113,17 +102,7 @@ class ReminderH1ShootingCommandTest extends TestCase
 
         Artisan::call('reminder:h1-shooting');
 
-        $this->assertDatabaseHas('notifications_log', [
-            'user_id' => $tanpaNomor->extras->user_id,
-            'jenis' => 'reminder_h1',
-            'channel' => 'whatsapp',
-            'status' => 'gagal',
-        ]);
-        $this->assertDatabaseHas('notifications_log', [
-            'user_id' => $adaNomor->extras->user_id,
-            'jenis' => 'reminder_h1',
-            'channel' => 'whatsapp',
-            'status' => 'terkirim',
-        ]);
+        $this->assertNotifikasi($tanpaNomor->extras->user_id, 'reminder_h1', ['wa' => 'gagal']);
+        $this->assertNotifikasi($adaNomor->extras->user_id, 'reminder_h1', ['wa' => 'terkirim']);
     }
 }

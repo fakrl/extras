@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\CastingProject;
-use App\Models\CdProjectAssignment;
 use App\Models\EventShootingDate;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
@@ -36,10 +35,7 @@ class JadwalModulTest extends TestCase
 
     private function assignCd(CastingProject $project, User $cd): void
     {
-        CdProjectAssignment::create([
-            'casting_project_id' => $project->id,
-            'cd_user_id' => $cd->id,
-        ]);
+        $project->update(['client_id' => $cd->id]);
     }
 
     public function test_cd_bisa_simpan_jadwal_proyek_yang_diassign(): void

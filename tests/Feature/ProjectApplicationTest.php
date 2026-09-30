@@ -43,7 +43,7 @@ class ProjectApplicationTest extends TestCase
         $tanggalBentrok = now()->addDays(10)->toDateString();
         $projectA = $this->buatProyek($admin, $tanggalBentrok);
         $projectB = $this->buatProyek($admin, $tanggalBentrok);
-        $projectB->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $projectB->update(['client_id' => $cd->id]);
 
         ProjectApplication::create([
             'casting_project_id' => $projectA->id,
@@ -72,7 +72,7 @@ class ProjectApplicationTest extends TestCase
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
         $projectA = $this->buatProyek($admin, now()->addDays(10)->toDateString());
-        $projectA->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $projectA->update(['client_id' => $cd->id]);
 
         $application = ProjectApplication::create([
             'casting_project_id' => $projectA->id,

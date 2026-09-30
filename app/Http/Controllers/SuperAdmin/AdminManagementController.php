@@ -4,7 +4,6 @@ namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
-use App\Models\AdminProfile;
 use App\Models\CastingProject;
 use App\Models\ExtrasCategory;
 use App\Models\ExtrasProfile;
@@ -51,7 +50,7 @@ class AdminManagementController extends Controller
                 ->orWhere(fn ($s) => $s->whereIn('role', [User::ROLE_ADMIN, User::ROLE_KORLAP])
                     ->whereHas('adminProjectAssignments', fn ($a) => $a->where('status_log', 'berjalan')))
                 ->orWhere(fn ($c) => $c->where('role', User::ROLE_CLIENT)
-                    ->whereHas('cdProjectAssignments.castingProject', fn ($p) => $p
+                    ->whereHas('proyekClient', fn ($p) => $p
                         ->where(fn ($t) => $t->diTahap('mendatang'))
                         ->orWhere(fn ($t) => $t->diTahap('berjalan'))))))
             ->when($f['tag'], function ($q, $tags) {
@@ -100,16 +99,14 @@ class AdminManagementController extends Controller
 
         // Load riwayat berdasarkan role
         if ($user->isClient()) {
-            $user->load('cdProjectAssignments.castingProject', 'cdProjectAssignments.cdReviews');
-            $assignments = $user->cdProjectAssignments;
-            $clientProjects = CastingProject::where('diajukan_oleh_client_id', $user->id)
-                ->orderByDesc('id')->get();
+            $assignments = collect();
+            $clientProjects = CastingProject::query()->milikClient($user)->orderByDesc('id')->get();
         } elseif ($user->role === 'extras') {
             $user->load('extrasProfile.categories', 'extrasProfile.applications.castingProject');
             $assignments = collect();
             $availableKategori = ExtrasCategory::perGrup();
         } else {
-            $user->load('adminProjectAssignments.castingProject', 'adminProjectAssignments.payroll.addons', 'adminProfile');
+            $user->load('adminProjectAssignments.castingProject', 'adminProjectAssignments.payroll.addons');
             $assignments = $user->adminProjectAssignments;
         }
 
@@ -120,7 +117,9 @@ class AdminManagementController extends Controller
             ->take(20)
             ->get();
 
-        return view('super-admin.admins.show', compact('user', 'assignments', 'clientProjects', 'availableKategori', 'userActivities'));
+        $notifikasi = $user->notifications()->take(20)->get();
+
+        return view('super-admin.admins.show', compact('user', 'assignments', 'clientProjects', 'availableKategori', 'userActivities', 'notifikasi'));
     }
 
     /**
@@ -203,21 +202,14 @@ class AdminManagementController extends Controller
             'honor_nominal' => ['nullable', 'numeric', 'min:0'],
         ]);
 
-        $user = User::create([
+        User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'role' => $data['role'],
             'status' => 'aktif',
+            'honor_nominal' => $data['role'] === 'super_admin' ? null : ($data['honor_nominal'] ?? null),
         ]);
-
-        if ($data['role'] !== 'super_admin') {
-            AdminProfile::create([
-                'user_id' => $user->id,
-                'honor_nominal' => $data['honor_nominal'] ?? null,
-                'created_by' => $request->user()->id,
-            ]);
-        }
 
         return redirect()->route('super-admin.akun.index')->with('status', 'Akun Admin berhasil ditambahkan.');
     }
@@ -231,9 +223,11 @@ class AdminManagementController extends Controller
             'honor_nominal' => ['required', 'numeric', 'min:0'],
         ]);
 
-        abort_unless($user->adminProfile, 404);
+        abort_unless(in_array($user->role, [User::ROLE_ADMIN, User::ROLE_KORLAP], true), 404);
 
-        $user->adminProfile->updateHonor($data['honor_nominal']);
+        $lama = $user->honor_nominal;
+        $user->update(['honor_nominal' => $data['honor_nominal']]);
+        ActivityLog::record('UPDATE_HONOR', "Honor {$user->name}: Rp ".number_format((float) $lama, 0, ',', '.').' → Rp '.number_format((float) $data['honor_nominal'], 0, ',', '.'), $user, ['lama' => $lama, 'baru' => $data['honor_nominal']]);
 
         return back()->with('status', 'Nominal honor diperbarui.');
     }

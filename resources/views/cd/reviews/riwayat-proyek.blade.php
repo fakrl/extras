@@ -41,8 +41,8 @@
                     $extras = $review->projectApplication->extras;
                     $fotoUrl  = $extras?->foto_profil_path  ? route('extras.media.foto', $extras)  : '';
                     $videoUrl = $extras?->video_profil_path ? route('extras.media.video', $extras) : '';
-                    $photos   = $extras?->photos
-                        ? $extras->photos->map(fn ($p) => route('extras.media.foto-tambahan', [$extras, $p->urutan]))->values()->toJson()
+                    $photos   = $extras
+                        ? $extras->fotoTambahan()->keys()->map(fn ($slot) => route('extras.media.foto-tambahan', [$extras, $slot]))->values()->toJson()
                         : '[]';
                 @endphp
                 <tr data-keputusan="{{ $review->keputusan }}"

@@ -71,7 +71,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Array 4 slot (index 1-4), isi ExtrasPhoto kalau ada atau null kalau
+     * Array 4 slot (index 1-4), isi path foto kalau ada atau null kalau
      * kosong, biar view tinggal loop 1..4 tanpa perlu cek collection manual.
      */
     private function fotoTambahanPerSlot(?ExtrasProfile $profile): array
@@ -80,7 +80,7 @@ class ProfileController extends Controller
             return [1 => null, 2 => null, 3 => null, 4 => null];
         }
 
-        $bySlot = $profile->photos->keyBy('urutan');
+        $bySlot = $profile->fotoTambahan();
 
         return [
             1 => $bySlot->get(1),
@@ -363,10 +363,10 @@ class ProfileController extends Controller
     {
         $this->pastikanBolehLihatMedia($request, $extrasProfile);
 
-        $foto = $extrasProfile->photos()->where('urutan', $slot)->first();
-        abort_unless($foto, 404);
+        $path = $extrasProfile->fotoTambahan()->get($slot);
+        abort_unless($path, 404);
 
-        return Storage::disk('local')->response($foto->path);
+        return Storage::disk('local')->response($path);
     }
 
     /**

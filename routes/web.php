@@ -180,8 +180,6 @@ Route::middleware(['auth', 'role:admin,korlap,super_admin'])
                 ->name('admin.projects.applicants');
             Route::post('/projects/{castingProject}/applicants/bulk', [ApplicantController::class, 'bulk'])
                 ->name('admin.projects.applicants.bulk');
-            Route::post('/projects/{castingProject}/assign-cd', [AdminCastingProjectController::class, 'assignCd'])
-                ->name('admin.projects.assign-cd');
 
             Route::patch('/applications/{application}/grade', [ApplicantController::class, 'setGrade'])
                 ->name('admin.applications.grade');

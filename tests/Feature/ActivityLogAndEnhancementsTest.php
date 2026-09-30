@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\ActivityLog;
-use App\Models\AdminProfile;
 use App\Models\AdminProjectAssignment;
 use App\Models\CastingProject;
 use App\Models\ExtrasProfile;
@@ -83,7 +82,6 @@ class ActivityLogAndEnhancementsTest extends TestCase
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
         $admin = User::factory()->create(['role' => 'admin']);
-        AdminProfile::create(['user_id' => $admin->id]);
 
         $project = CastingProject::create([
             'admin_id' => $admin->id,

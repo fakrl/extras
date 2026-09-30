@@ -31,7 +31,7 @@ class BeEditClientPicTest extends TestCase
         $lama = User::factory()->create(['role' => 'client', 'name' => 'Client Lama', 'nama_perusahaan' => 'PH Lama']);
         $baru = User::factory()->create(['role' => 'client', 'name' => 'Client Baru', 'nama_perusahaan' => 'PH Baru']);
         $project = CastingProject::factory()->create(['client_id' => $lama->id, 'client_ph' => 'PH Lama']);
-        $project->cdAssignments()->create(['cd_user_id' => $lama->id]);
+        $project->update(['client_id' => $lama->id]);
 
         $this->actingAs($sa)->get(route('admin.projects.edit', $project))
             ->assertOk()->assertSee('data-cari-select="client_id"', false)->assertSee('client-baru-dialog');
@@ -42,7 +42,7 @@ class BeEditClientPicTest extends TestCase
 
         $project->refresh();
         $this->assertSame([$adminBaru->id, $baru->id, 'PH Baru'], [$project->admin_id, $project->client_id, $project->client_ph]);
-        $this->assertSame([$baru->id], $project->cdAssignments()->pluck('cd_user_id')->all());
+        $this->assertSame($baru->id, $project->fresh()->client_id);
         $log = ActivityLog::where('action', 'UPDATE_PROJECT_PIC')->sole();
         $this->assertStringContainsString('Client Client Lama → Client Baru', $log->description);
         $this->assertStringContainsString('→ Admin Baru', $log->description);

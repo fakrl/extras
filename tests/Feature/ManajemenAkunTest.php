@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\ActivityLog;
 use App\Models\AdminProjectAssignment;
 use App\Models\CastingProject;
-use App\Models\CdProjectAssignment;
 use App\Models\ExtrasCategory;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
@@ -73,7 +72,7 @@ class ManajemenAkunTest extends TestCase
         AdminProjectAssignment::create(['casting_project_id' => $proyek->id, 'user_id' => $korlapSelesai->id, 'status_log' => 'selesai', 'assigned_by' => $this->sa->id]);
 
         $client = User::factory()->create(['role' => 'client', 'name' => 'Client Mendatang']);
-        CdProjectAssignment::create(['casting_project_id' => $proyek->id, 'cd_user_id' => $client->id]);
+        $proyek->update(['client_id' => $client->id]);
         User::factory()->create(['role' => 'client', 'name' => 'Client Nganggur']);
 
         $this->akun(['sedang_aktif' => 1])

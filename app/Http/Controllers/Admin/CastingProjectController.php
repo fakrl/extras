@@ -65,7 +65,7 @@ class CastingProjectController extends Controller
     {
         $tab = in_array($request->query('tab'), ['pendaftar', 'cashflow', 'lampiran'], true) ? $request->query('tab') : 'info';
 
-        $castingProject->load(['client', 'admin', 'shootingDates', 'classes.categories', 'adminAssignments.user', 'cdAssignments.cdUser']);
+        $castingProject->load(['client', 'admin', 'shootingDates', 'classes.categories', 'adminAssignments.user']);
 
         $pendaftar = $tab === 'pendaftar'
             ? $castingProject->applications()
@@ -166,10 +166,6 @@ class CastingProjectController extends Controller
             $this->simpanKelas($project, $kelas);
         }
 
-        if ($client) {
-            $project->cdAssignments()->firstOrCreate(['cd_user_id' => $client->id]);
-        }
-
         ActivityLog::record('CREATE_PROJECT', "Proyek '{$project->nama_produksi}' dibuat oleh {$user->name} ({$user->label()})", $project);
 
         return redirect()->route('admin.projects.index')->with('status', 'Proyek casting berhasil dibuat.');
@@ -180,16 +176,15 @@ class CastingProjectController extends Controller
      */
     public function edit(CastingProject $castingProject)
     {
-        $castingProject->load('classes.categories', 'shootingDates', 'cdAssignments.cdUser');
+        $castingProject->load('classes.categories', 'shootingDates');
 
         $applicantsCount = $castingProject->applications()->count();
-        $cdUsers = User::where('role', 'client')->orderBy('name')->get();
 
         return view('admin.projects.edit', [
-            ...compact('castingProject', 'applicantsCount', 'cdUsers'),
+            ...compact('castingProject', 'applicantsCount'),
             'tagGroups' => ExtrasCategory::perGrup(),
             'admins' => User::where('role', User::ROLE_ADMIN)->where('status', 'aktif')->orderBy('name')->get(),
-            'clients' => $cdUsers->where('status', 'aktif'),
+            'clients' => User::where('role', User::ROLE_CLIENT)->where('status', 'aktif')->orderBy('name')->get(),
         ]);
     }
 
@@ -264,7 +259,6 @@ class CastingProjectController extends Controller
             (int) $castingProject->admin_id !== $adminId ? 'Admin PIC '.($castingProject->admin?->name ?? '-').' → '.User::find($adminId)->name : null,
             (int) $castingProject->client_id !== $client->id ? 'Client '.($castingProject->client?->name ?? '-').' → '.$client->name.($castingProject->client_id ? ', akses Client lama dicabut' : '') : null,
         ]);
-        $clientLamaId = (int) $castingProject->client_id;
 
         $updateData = [
             'nama_produksi' => $data['nama_produksi'],
@@ -316,12 +310,6 @@ class CastingProjectController extends Controller
         foreach ($data['kelas'] as $kelas) {
             $this->simpanKelas($castingProject, $hasApplicants ? $kelas : Arr::except($kelas, 'id'));
         }
-
-        // BG.1: Client lama kehilangan akses; review/grade-nya (cd_reviews) tetap tersimpan.
-        if ($clientLamaId && $clientLamaId !== $client->id) {
-            $castingProject->cdAssignments()->where('cd_user_id', $clientLamaId)->delete();
-        }
-        $castingProject->cdAssignments()->firstOrCreate(['cd_user_id' => $client->id]);
 
         if ($perubahan) {
             ActivityLog::record('UPDATE_PROJECT_PIC', "Proyek '{$castingProject->nama_produksi}' diubah oleh {$request->user()->name}: ".implode('; ', $perubahan), $castingProject);
@@ -417,7 +405,7 @@ class CastingProjectController extends Controller
         $applicants = $castingProject->applications()
             ->with([
                 'extras' => fn ($q) => $q->withProyekSelesai(),
-                'extras.user', 'extras.photos', 'extras.categories',
+                'extras.user', 'extras.categories',
                 'castingProjectClass.categories', 'fieldNotes.korlap', 'contract', 'payment',
             ])
             ->when($tab === 'cd', fn ($q) => $q->whereIn('status_partisipasi', $cdStatuses))
@@ -441,26 +429,5 @@ class CastingProjectController extends Controller
         $tagGroups = ExtrasCategory::perGrup();
 
         return view('admin.projects.applicants', compact('castingProject', 'applicants', 'grade', 'tab', 'status', 'tagIds', 'urut', 'tagDicari', 'cari', 'tagGroups'));
-    }
-
-    /**
-     * SPEC.md Bagian E: Admin Default menugaskan CD ke proyek, dasar guard
-     * akses CD di InvoiceController & Cd\ReviewController. 1 proyek boleh
-     * punya lebih dari satu CD.
-     */
-    public function assignCd(Request $request, CastingProject $castingProject): RedirectResponse
-    {
-        $data = $request->validate([
-            'cd_user_id' => ['required', 'exists:users,id'],
-        ]);
-
-        $cd = User::findOrFail($data['cd_user_id']);
-        if (! ($cd->isCastingDirector())) {
-            return back()->with('error', 'Hanya bisa menugaskan akun bertipe Casting Director.');
-        }
-
-        $castingProject->cdAssignments()->firstOrCreate(['cd_user_id' => $cd->id]);
-
-        return back()->with('status', "{$cd->name} berhasil ditugaskan sebagai CD proyek ini.");
     }
 }

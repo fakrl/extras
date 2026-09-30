@@ -16,8 +16,7 @@ class ProjectAttachmentController extends Controller
     public static function bolehAkses(User $user, CastingProject $project): bool
     {
         return $user->isSuperAdmin() || $user->isAdmin()
-            || ($user->isClient() && ((int) $project->client_id === $user->id
-                || $project->cdAssignments()->where('cd_user_id', $user->id)->exists()));
+            || $project->milikClient($user);
     }
 
     public function store(Request $request, CastingProject $castingProject): RedirectResponse

@@ -6,7 +6,6 @@ use App\Exports\CdRiwayatExport;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\CastingProject;
-use App\Models\CdProjectAssignment;
 use App\Models\CdReview;
 use App\Models\ExtrasCategory;
 use App\Models\ProjectApplication;
@@ -24,11 +23,7 @@ class ReviewController extends Controller
 
     public function index(Request $request)
     {
-        $cdId = $request->user()->id;
-
-        $proyekIds = CdProjectAssignment::where('cd_user_id', $cdId)->pluck('casting_project_id');
-
-        $proyek = CastingProject::whereIn('id', $proyekIds)
+        $proyek = CastingProject::query()->milikClient($request->user())
             ->with(['applications' => function ($q) {
                 $q->whereIn('status_partisipasi', self::STATUS_TERLIHAT);
             }])
@@ -61,7 +56,7 @@ class ReviewController extends Controller
 
         $applications = ProjectApplication::whereIn('id', $data['application_ids'])
             ->where('status_partisipasi', 'diajukan_ke_cd')
-            ->whereHas('castingProject.cdAssignments', fn ($q) => $q->where('cd_user_id', $request->user()->id))
+            ->whereHas('castingProject', fn ($q) => $q->milikClient($request->user()))
             ->with('extras.user', 'castingProject')
             ->get();
 
@@ -99,10 +94,7 @@ class ReviewController extends Controller
 
     public function show(Request $request, CastingProject $castingProject): Response
     {
-        abort_unless(
-            $castingProject->cdAssignments()->where('cd_user_id', $request->user()->id)->exists(),
-            403
-        );
+        abort_unless($castingProject->milikClient($request->user()), 403);
 
         $statusFilter = $request->query('status');
         $genderFilter = $request->query('gender');
@@ -114,7 +106,6 @@ class ReviewController extends Controller
             ->with([
                 'extras' => fn ($q) => $q->select('id', 'user_id', 'usia', 'gender', 'tinggi_badan', 'berat_badan', 'ukuran_baju', 'warna_kulit', 'riwayat_pengalaman', 'bahasa', 'foto_profil_path', 'video_profil_path')->withProyekSelesai(),
                 'extras.user:id,username',
-                'extras.photos',
                 'extras.categories',
                 'castingProjectClass:id,nama_kelas,kriteria',
                 'castingProjectClass.categories',
@@ -157,15 +148,17 @@ class ReviewController extends Controller
         $profile = $user->extrasProfile;
         abort_unless($profile && $profile->applications()
             ->whereIn('status_partisipasi', self::STATUS_TERLIHAT)
-            ->whereHas('castingProject.cdAssignments', fn ($q) => $q->where('cd_user_id', $request->user()->id))
+            ->whereHas('castingProject', fn ($q) => $q->milikClient($request->user()))
             ->exists(), 403);
-        $profile->load('user', 'categories', 'photos');
+        $profile->load('user', 'categories');
 
         return view($request->ajax() || $request->boolean('partial') ? 'partials.profil-extras-app' : 'extras.profile-show', ['profile' => $profile, 'mode' => 'client']);
     }
 
     public function exportRiwayatXlsx(Request $request, CastingProject $castingProject)
     {
+        abort_unless($castingProject->milikClient($request->user()), 403);
+
         return Excel::download(
             new CdRiwayatExport($request->user()->id, $castingProject->id),
             'riwayat-'.Str::slug($castingProject->nama_produksi).'.xlsx'
@@ -174,6 +167,7 @@ class ReviewController extends Controller
 
     public function exportRiwayatPdf(Request $request, CastingProject $castingProject)
     {
+        abort_unless($castingProject->milikClient($request->user()), 403);
         $cdId = $request->user()->id;
         $reviews = CdReview::where('cd_id', $cdId)
             ->whereHas('projectApplication', fn ($q) => $q->where('casting_project_id', $castingProject->id))

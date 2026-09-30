@@ -18,9 +18,7 @@ class BjFotoSectionTest extends TestCase
     {
         $user = User::factory()->create(['role' => 'extras']);
         $profile = ExtrasProfile::factory()->create(['user_id' => $user->id]);
-        foreach ($slot as $s) {
-            $profile->photos()->create(['urutan' => $s, 'path' => "x/{$s}.jpg"]);
-        }
+        $profile->forceFill(['foto_tambahan' => collect($slot)->mapWithKeys(fn ($s) => [$s => "x/{$s}.jpg"])->all() ?: null])->save();
 
         return $this->actingAs($user)->get(route('extras.profile.edit'))->assertOk();
     }

@@ -114,9 +114,15 @@ class CastingProject extends Model
         return $this->hasMany(AdminProjectAssignment::class);
     }
 
-    public function cdAssignments(): HasMany
+    /** BM.1: 1 proyek = 1 akun Client; satu-satunya cek akses Client ke proyek. */
+    public function milikClient(User $user): bool
     {
-        return $this->hasMany(CdProjectAssignment::class);
+        return $user->isClient() && (int) $this->client_id === $user->id;
+    }
+
+    public function scopeMilikClient($query, User $user)
+    {
+        return $query->where('casting_projects.client_id', $user->id);
     }
 
     public function invoices(): HasMany

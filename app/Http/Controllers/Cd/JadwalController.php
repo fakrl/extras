@@ -12,13 +12,12 @@ class JadwalController extends Controller
 {
     private function guardProject(CastingProject $project): void
     {
-        $assigned = $project->cdAssignments()->where('cd_user_id', Auth::id())->exists();
-        abort_unless($assigned, 403);
+        abort_unless($project->milikClient(Auth::user()), 403);
     }
 
     public function index()
     {
-        $projects = CastingProject::whereHas('cdAssignments', fn ($q) => $q->where('cd_user_id', Auth::id()))
+        $projects = CastingProject::query()->milikClient(Auth::user())
             ->with('shootingDates')
             ->latest()
             ->get();

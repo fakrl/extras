@@ -48,7 +48,6 @@
                 'Admin PIC' => $p->admin?->name ?? '-',
                 'Korlap' => $korlap->map(fn ($a) => $a->user->name)->implode(', ') ?: '-',
                 'Staf lain' => $stafLain->map(fn ($a) => $a->user?->name)->filter()->implode(', ') ?: '-',
-                'Client tambahan' => $p->cdAssignments->map(fn ($a) => $a->cdUser?->name)->filter()->reject(fn ($n) => $n === $p->client?->name)->implode(', ') ?: '-',
                 'Deadline daftar' => $p->deadline?->translatedFormat('d M Y') ?? '-',
                 'Kuota total' => $p->kuota.' orang',
                 'Lowongan' => ucfirst($p->status),

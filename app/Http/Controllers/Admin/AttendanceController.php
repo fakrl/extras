@@ -206,13 +206,8 @@ class AttendanceController extends Controller
     {
         $user = $request->user();
         $project = $attendance->projectApplication->castingProject;
-        $isAssignedCd = $project->cdAssignments()->where('cd_user_id', $user->id)->exists();
-        $isClientOwner = (int) $project->client_id === $user->id;
 
-        abort_unless(
-            $user->bisaSebagaiAdmin() || $user->bisaSebagaiKorlap() || $isAssignedCd || $isClientOwner,
-            403
-        );
+        abort_unless($user->bisaSebagaiAdmin() || $user->bisaSebagaiKorlap() || $project->milikClient($user), 403);
         abort_unless($attendance->foto_path && Storage::disk('local')->exists($attendance->foto_path), 404);
 
         return Storage::disk('local')->response($attendance->foto_path);

@@ -2,9 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\AdminProfile;
 use App\Models\CastingProject;
-use App\Models\NotificationLog;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
@@ -89,13 +87,7 @@ class SuperAdminAdminManagementTest extends TestCase
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
         $target = User::factory()->create(['role' => 'admin']);
 
-        NotificationLog::create([
-            'user_id' => $target->id,
-            'channel' => 'email',
-            'jenis' => 'reminder_h1',
-            'status' => 'terkirim',
-            'sent_at' => now(),
-        ]);
+        $target->kabari('Shooting Besok', 'Pengingat', jenis: 'reminder_h1');
 
         $response = $this->actingAs($superAdmin)->get(route('super-admin.akun.index'));
 
@@ -164,7 +156,7 @@ class SuperAdminAdminManagementTest extends TestCase
         $newUser = User::where('email', 'sa-baru@example.com')->first();
         $this->assertNotNull($newUser);
         $this->assertSame('super_admin', $newUser->role);
-        $this->assertTrue(AdminProfile::where('user_id', $newUser->id)->doesntExist());
+        $this->assertNull($newUser->honor_nominal);
     }
 
     public function test_akun_super_admin_biasa_gagal_bikin_super_admin_baru(): void

@@ -43,7 +43,7 @@ class BiProfilModalTest extends TestCase
     private function client(): User
     {
         $cd = User::factory()->create(['role' => 'client']);
-        $this->project->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $this->project->update(['client_id' => $cd->id]);
 
         return $cd;
     }

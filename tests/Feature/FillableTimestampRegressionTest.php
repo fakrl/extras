@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\AdminProfile;
 use App\Models\AdminProjectAssignment;
 use App\Models\CastingProject;
 use App\Models\ExtrasProfile;
@@ -92,7 +91,7 @@ class FillableTimestampRegressionTest extends TestCase
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
         $admin = User::factory()->create(['role' => 'korlap']);
-        AdminProfile::create(['user_id' => $admin->id, 'honor_nominal' => 500000, 'created_by' => $superAdmin->id]);
+        $admin->update(['honor_nominal' => 500000]);
         $project = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',
             'deadline' => now()->addDays(7), 'kuota' => 5,
@@ -129,15 +128,14 @@ class FillableTimestampRegressionTest extends TestCase
         $this->assertSame('payrolls/slip-test.pdf', $payroll->fresh()->pdf_slip_path);
     }
 
-    public function test_admin_profile_update_honor_tidak_lempar_exception(): void
+    public function test_update_honor_staf_tersimpan_di_users_dan_tercatat_activity_log(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        $admin = User::factory()->create(['role' => 'korlap']);
-        $profile = AdminProfile::create(['user_id' => $admin->id, 'honor_nominal' => 500000, 'created_by' => $superAdmin->id]);
+        $admin = User::factory()->create(['role' => 'korlap', 'honor_nominal' => 500000]);
 
-        $profile->updateHonor(750000);
+        $this->actingAs($superAdmin)->patch(route('super-admin.admins.honor', $admin), ['honor_nominal' => 750000])->assertRedirect();
 
-        $this->assertEquals(750000, $profile->fresh()->honor_nominal);
-        $this->assertNotNull($profile->fresh()->honor_updated_at);
+        $this->assertEquals(750000, $admin->fresh()->honor_nominal);
+        $this->assertDatabaseHas('activity_logs', ['action' => 'UPDATE_HONOR', 'subject_id' => $admin->id]);
     }
 }

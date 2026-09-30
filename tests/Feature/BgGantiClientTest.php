@@ -25,7 +25,7 @@ class BgGantiClientTest extends TestCase
         $lama = User::factory()->create(['role' => 'client', 'name' => 'Client Lama', 'username' => 'lama']);
         $baru = User::factory()->create(['role' => 'client', 'name' => 'Client Baru']);
         $project = CastingProject::factory()->create(['client_id' => $lama->id, 'diajukan_oleh_client_id' => $lama->id, 'nama_produksi' => 'Proyek Pindah']);
-        $project->cdAssignments()->create(['cd_user_id' => $lama->id]);
+        $project->update(['client_id' => $lama->id]);
         $app = ProjectApplication::create(['casting_project_id' => $project->id, 'extras_id' => ExtrasProfile::factory()->create()->id, 'status_partisipasi' => 'lolos']);
         $review = CdReview::create(['project_application_id' => $app->id, 'cd_id' => $lama->id, 'keputusan' => 'approve', 'grade_cd' => 'A']);
         ProjectAttachment::unggah($project, [UploadedFile::fake()->create('brief.pdf', 10, 'application/pdf')], $sa);
@@ -44,7 +44,7 @@ class BgGantiClientTest extends TestCase
             'kelas' => [['nama_kelas' => 'Warga', 'budget_client' => 100000, 'kuota_kelas' => 2]],
         ])->assertRedirect(route('admin.projects.index'));
 
-        $this->assertSame([$baru->id], $project->cdAssignments()->pluck('cd_user_id')->all());
+        $this->assertSame($baru->id, $project->fresh()->client_id);
         $this->assertModelExists($review);
         $this->assertStringContainsString('Client Lama → Client Baru, akses Client lama dicabut', ActivityLog::where('action', 'UPDATE_PROJECT_PIC')->sole()->description);
 

@@ -74,7 +74,7 @@ class BjBeratWarnaKulitTest extends TestCase
         $this->seed(ExtrasCategorySeeder::class);
         $client = User::factory()->create(['role' => 'client']);
         $project = CastingProject::factory()->create();
-        $project->cdAssignments()->create(['cd_user_id' => $client->id]);
+        $project->update(['client_id' => $client->id]);
         $kelas = $project->classes()->create(['nama_kelas' => 'Warga', 'budget_client' => 100000, 'kuota_kelas' => 2]);
         $p = $this->profil();
         $gelap = ExtrasCategory::where('nama', 'Gelap')->firstOrFail();

@@ -71,7 +71,7 @@ class DemoLengkapSeeder extends Seeder
             [$role, $nama, $username, $email] = $s;
             $user = $this->akun($role, $nama, $username, $email, now()->subDays(120), $s[4] ?? []);
             if (isset($s[5])) {
-                $user->adminProfile()->create(['honor_nominal' => $s[5], 'created_by' => $this->u['fakrul']->id]);
+                $user->update(['honor_nominal' => $s[5]]);
             }
         }
     }
@@ -166,7 +166,6 @@ class DemoLengkapSeeder extends Seeder
         $tgl1 = $this->jadwal($p1, [-30, -29, -28], 'Desa Cibodas, Lembang');
         $warga = $this->kelas($p1, 'Warga kampung', 4, 300000, ['Orang Tua', 'Jawa']);
         $mhsKos = $this->kelas($p1, 'Mahasiswa kos', 3, 350000, ['Dewasa muda', 'Mahasiswa']);
-        $p1->cdAssignments()->create(['cd_user_id' => $andini->id]);
 
         foreach ([['pak_harto', $warga, 200000], ['bu_ningsih', $warga, 200000], ['tono_g', $warga, 200000], ['joko_s', $warga, 200000], ['dimas_rk', $mhsKos, 250000], ['bagas22', $mhsKos, 250000], ['sari_mei', $mhsKos, 225000]] as [$un, $kelas, $fee]) {
             $a = $this->daftar($p1, $kelas, $un, 'selesai_produksi', -40);
@@ -226,7 +225,6 @@ class DemoLengkapSeeder extends Seeder
         $this->jadwal($p2, [5, 6], 'Kampus UI Depok');
         $mhs = $this->kelas($p2, 'Mahasiswa kampus', 5, 300000, ['Dewasa muda', 'Mahasiswa', 'Naik motor']);
         $kantor = $this->kelas($p2, 'Pekerja kantoran', 3, 350000, ['Dewasa', 'Pekerja kantoran']);
-        $p2->cdAssignments()->create(['cd_user_id' => $andini->id]);
         foreach ([$rina, $dedi] as $staf) {
             $p2->adminAssignments()->create(['user_id' => $staf->id, 'assigned_by' => $fakrul->id]);
         }
@@ -265,7 +263,6 @@ class DemoLengkapSeeder extends Seeder
         [$hariIni] = $this->jadwal($p3, [0, 1], 'Kampus Universitas Pamulang');
         $mhs3 = $this->kelas($p3, 'Mahasiswa', 6, 300000, ['Mahasiswa']);
         $dosen = $this->kelas($p3, 'Dosen', 2, 400000, ['Orang Tua']);
-        $p3->cdAssignments()->create(['cd_user_id' => $rudy->id]);
         foreach ([$yoga, $bambang] as $staf) {
             $p3->adminAssignments()->create(['user_id' => $staf->id, 'assigned_by' => $fakrul->id, 'created_at' => now()->subDays(20)]);
         }
@@ -293,7 +290,6 @@ class DemoLengkapSeeder extends Seeder
             'diajukan_oleh_client_id' => $maya->id, 'client_id' => $maya->id, 'client_request_status' => 'menunggu_acc', 'status' => 'ditutup',
             'created_at' => now()->subDay(),
         ]);
-        $p4->cdAssignments()->create(['cd_user_id' => $maya->id]);
         $this->log($maya, 'SUBMIT_PROJECT_REQUEST', "Client Maya Salsabila mengajukan proyek '{$p4->nama_produksi}'", $p4, -1);
 
         // P5: pengajuan Client, ditolak
@@ -303,7 +299,6 @@ class DemoLengkapSeeder extends Seeder
             'diajukan_oleh_client_id' => $rudy->id, 'client_id' => $rudy->id, 'client_request_status' => 'ditolak', 'status' => 'ditutup',
             'alasan_tolak' => 'Jadwal bentrok produksi lain, ajukan ulang bulan depan.', 'created_at' => now()->subDays(10),
         ]);
-        $p5->cdAssignments()->create(['cd_user_id' => $rudy->id]);
         $this->log($rudy, 'SUBMIT_PROJECT_REQUEST', "Client Rudy Hartono mengajukan proyek '{$p5->nama_produksi}'", $p5, -10);
         $this->log($fakrul, 'REJECT_PROJECT_REQUEST', "Super Admin menolak permintaan proyek '{$p5->nama_produksi}' dari Client", $p5, -9);
 

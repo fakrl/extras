@@ -91,8 +91,8 @@ class BdMonitoringModeTest extends TestCase
     {
         $andini = User::factory()->create(['role' => 'client', 'name' => 'Client Andini']);
         $lain = User::factory()->create(['role' => 'client']);
-        $this->proyek('Proyek Andini')->cdAssignments()->create(['cd_user_id' => $andini->id]);
-        $this->proyek('Proyek Rahasia Lain')->cdAssignments()->create(['cd_user_id' => $lain->id]);
+        $this->proyek('Proyek Andini')->update(['client_id' => $andini->id]);
+        $this->proyek('Proyek Rahasia Lain')->update(['client_id' => $lain->id]);
 
         $this->actingAs($this->sa)->post(route('super-admin.mode.mulai'), ['mode' => 'client', 'user_id' => $andini->id])
             ->assertRedirect('/cd/dashboard')
@@ -110,7 +110,7 @@ class BdMonitoringModeTest extends TestCase
     {
         $client = User::factory()->create(['role' => 'client', 'name' => 'Nama Lama']);
         $application = $this->aplikasi('diajukan_ke_cd');
-        $application->castingProject->cdAssignments()->create(['cd_user_id' => $client->id]);
+        $application->castingProject->update(['client_id' => $client->id]);
 
         $this->sebagai($client)->from('/cd/reviews')->post(route('cd.reviews.review'), [
             'application_ids' => [$application->id], 'keputusan' => 'approve', 'grade_cd' => 'A',

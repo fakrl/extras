@@ -7,7 +7,6 @@ use App\Mail\KonfirmasiFeeMail;
 use App\Mail\KontrakSiapTtdMail;
 use App\Notifications\InAppNotification;
 use App\Services\PdfGeneratorService;
-use App\Services\WhatsAppService;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,7 +16,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 #[Fillable([
     'casting_project_id', 'extras_id', 'casting_project_class_id', 'status_partisipasi',
@@ -384,8 +382,8 @@ class ProjectApplication extends Model
             throw new \LogicException('Kandidat hanya bisa diajukan ke CD setelah fee Deal.');
         }
 
-        if (! $this->castingProject->cdAssignments()->exists()) {
-            throw new \LogicException('Proyek ini belum ada Casting Director yang ditugaskan. Assign CD dulu lewat halaman proyek sebelum mengajukan kandidat.');
+        if (! $this->castingProject->client_id) {
+            throw new \LogicException('Proyek ini belum punya akun Client. Pilih Client dulu di halaman edit proyek sebelum mengajukan kandidat.');
         }
 
         $adaBentrok = $this->extras->pendaftaranBentrok($this->tanggalShooting(), $this->id)->isNotEmpty();
@@ -491,28 +489,19 @@ class ProjectApplication extends Model
     public function kirimNotifikasiHasil(): void
     {
         $user = $this->extras->user;
+        $lolos = $this->status_partisipasi === 'lolos';
+        $proyek = $this->castingProject->nama_produksi;
 
-        try {
-            Mail::to($user)->queue(new HasilSeleksiMail($this));
-            NotificationLog::catat($user->id, 'hasil_seleksi', true);
-        } catch (\Throwable $e) {
-            NotificationLog::catat($user->id, 'hasil_seleksi', false);
-        }
-
-        $pesan = $this->status_partisipasi === 'lolos'
-            ? "Halo {$user->name}, selamat! Kamu LOLOS seleksi untuk proyek {$this->castingProject->nama_produksi}. Cek sistem untuk info lebih lanjut."
-            : "Halo {$user->name}, mohon maaf, kamu belum lolos seleksi untuk proyek {$this->castingProject->nama_produksi} kali ini.";
-
-        app(WhatsAppService::class)->kirimNotifikasi($user, 'hasil_seleksi', $pesan);
-
-        $judul = $this->status_partisipasi === 'lolos' ? 'Selamat, Kamu Lolos!' : 'Hasil Seleksi';
-        $pesan = $this->status_partisipasi === 'lolos'
-            ? "Kamu lolos seleksi proyek {$this->castingProject->nama_produksi}. Cek sistem untuk info lebih lanjut."
-            : "Mohon maaf, kamu belum lolos seleksi proyek {$this->castingProject->nama_produksi} kali ini.";
-        try {
-            $user->notify(new InAppNotification($judul, $pesan, route('extras.dashboard')));
-        } catch (\Throwable) {
-        }
+        $user->kabari(
+            $lolos ? 'Selamat, Kamu Lolos!' : 'Hasil Seleksi',
+            $lolos ? "Kamu lolos seleksi proyek {$proyek}. Cek sistem untuk info lebih lanjut." : "Mohon maaf, kamu belum lolos seleksi proyek {$proyek} kali ini.",
+            route('extras.dashboard'),
+            jenis: 'hasil_seleksi',
+            email: new HasilSeleksiMail($this),
+            wa: $lolos
+                ? "Halo {$user->name}, selamat! Kamu LOLOS seleksi untuk proyek {$proyek}. Cek sistem untuk info lebih lanjut."
+                : "Halo {$user->name}, mohon maaf, kamu belum lolos seleksi untuk proyek {$proyek} kali ini.",
+        );
     }
 
     /**
@@ -523,9 +512,15 @@ class ProjectApplication extends Model
     public function kirimKonfirmasiApply(): void
     {
         $user = $this->extras->user;
-        $pesan = "Halo {$user->name}, pendaftaranmu untuk proyek {$this->castingProject->nama_produksi} berhasil diterima. Admin akan segera mereview.";
+        $proyek = $this->castingProject->nama_produksi;
 
-        app(WhatsAppService::class)->kirimNotifikasi($user, 'konfirmasi_apply', $pesan);
+        $user->kabari(
+            'Pendaftaran Diterima',
+            "Pendaftaranmu untuk proyek {$proyek} berhasil diterima. Admin akan segera mereview.",
+            route('extras.dashboard').'#pendaftaran-'.$this->id,
+            jenis: 'konfirmasi_apply',
+            wa: "Halo {$user->name}, pendaftaranmu untuk proyek {$proyek} berhasil diterima. Admin akan segera mereview.",
+        );
     }
 
     /**
@@ -581,25 +576,16 @@ class ProjectApplication extends Model
     {
         $this->loadMissing('extras.user', 'castingProject.admin');
 
+        $proyek = $this->castingProject->nama_produksi;
         foreach ([$this->extras->user, $this->castingProject->admin] as $penerima) {
-            try {
-                Mail::to($penerima)->queue(new KontrakSiapTtdMail($this));
-                NotificationLog::catat($penerima->id, 'kontrak_siap_ttd', true);
-            } catch (\Throwable $e) {
-                NotificationLog::catat($penerima->id, 'kontrak_siap_ttd', false);
-            }
-
-            $pesan = "Halo {$penerima->name}, kontrak untuk proyek {$this->castingProject->nama_produksi} sudah siap ditandatangani. Silakan cek sistem.";
-            app(WhatsAppService::class)->kirimNotifikasi($penerima, 'kontrak_siap_ttd', $pesan);
-
-            try {
-                $penerima->notify(new InAppNotification(
-                    'Kontrak Siap Ditandatangani',
-                    "Kontrak proyek {$this->castingProject->nama_produksi} sudah siap. Silakan tanda tangani.",
-                    route('contracts.show', $this)
-                ));
-            } catch (\Throwable) {
-            }
+            $penerima->kabari(
+                'Kontrak Siap Ditandatangani',
+                "Kontrak proyek {$proyek} sudah siap. Silakan tanda tangani.",
+                route('contracts.show', $this),
+                jenis: 'kontrak_siap_ttd',
+                email: new KontrakSiapTtdMail($this),
+                wa: "Halo {$penerima->name}, kontrak untuk proyek {$proyek} sudah siap ditandatangani. Silakan cek sistem.",
+            );
         }
     }
 
@@ -623,11 +609,15 @@ class ProjectApplication extends Model
 
     private function kirimKonfirmasiFee(FeeNegotiation $negotiation, User $penerima): void
     {
-        try {
-            Mail::to($penerima)->queue(new KonfirmasiFeeMail($negotiation));
-            NotificationLog::catat($penerima->id, 'nego_fee', true);
-        } catch (\Throwable $e) {
-            NotificationLog::catat($penerima->id, 'nego_fee', false);
-        }
+        $keExtras = $penerima->id !== $this->castingProject->admin_id;
+        $nominal = 'Rp '.number_format($negotiation->nominal, 0, ',', '.');
+
+        $penerima->kabari(
+            'Penawaran Fee',
+            "Penawaran fee {$nominal} untuk proyek {$this->castingProject->nama_produksi}.",
+            route($keExtras ? 'extras.negotiations.show' : 'admin.negotiations.show', $this),
+            jenis: 'nego_fee',
+            email: new KonfirmasiFeeMail($negotiation),
+        );
     }
 }
