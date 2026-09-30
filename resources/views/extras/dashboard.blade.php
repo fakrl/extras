@@ -31,7 +31,25 @@
     }
 @endphp
 
-<div class="dash-kolom">
+@push('styles')
+<style>
+.exd-kanan { display: contents; }
+@media (min-width: 1100px) {
+    .dash-kolom.exd-grid { max-width: none; display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; align-items: start; }
+    .exd-grid > p, .exd-grid > .dash-perlu { grid-column: 1 / -1; }
+    .exd-grid > section > .card { margin: 0 0 16px !important; }
+    .exd-grid > section > .card:last-child { margin-bottom: 0 !important; }
+    .exd-grid > section > .card-title { line-height: 17px; }
+    .exd-kanan { display: flex; flex-direction: column; gap: 16px; min-width: 0; margin-top: 29px; }
+    .exd-kanan > .card { margin: 0; }
+    .exd-judul { font-weight: 500 !important; }
+    .exd-cara { padding-inline: var(--space-4) !important; }
+    .exd-cara .step-bar-item { width: 76px; }
+}
+</style>
+@endpush
+
+<div class="dash-kolom exd-grid">
 <p style="color: var(--text-secondary); margin: -8px 0 0; font-size: 13.5px;">
     Halo, {{ auth()->user()->name }}! Cek lowongan casting terbaru dan pantau status pendaftaran kamu di sini.
 </p>
@@ -64,7 +82,7 @@
 @endif
 
 <section data-dash="pendaftaran">
-<div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Pendaftaran Saya</div>
+<div class="card-title">Pendaftaran Saya</div>
 
 @forelse ($pendaftaranAktif as $app)
     <div class="card" id="pendaftaran-{{ $app->id }}" style="margin-bottom: 14px; scroll-margin-top: 80px;">
@@ -229,7 +247,7 @@
     </div>
 @empty
     @if ($riwayatPendaftaran->isEmpty())
-    <div class="card" style="padding: 20px 0 24px;">
+    <div class="card exd-cara" style="padding: 20px 0 24px;">
         <div style="font-size: 14px; font-weight: 600; margin-bottom: 16px;">Cara Kerja buat Calon Extras</div>
         <div class="step-bar-wrap">
             <div class="step-bar">
@@ -271,6 +289,7 @@
 @endif
 </section>
 
+<div class="exd-kanan">
 <div class="card" data-dash="casting-call">
     <div class="card-header-row" style="margin-bottom: 4px;">
         <div class="card-title" style="margin: 0;"><i class="ti ti-microphone"></i> Casting Call Terbuka</div>
@@ -309,7 +328,7 @@
 
 <div class="card" data-dash="status-talenta">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-        <div style="font-size: 14px; font-weight: 600;">
+        <div class="exd-judul" style="font-size: 14px; font-weight: 600;">
             <i class="ti ti-activity"></i> Status Talenta & Linimasa Aktivitas
         </div>
         <div>
@@ -353,7 +372,7 @@
 
 @if ($riwayatAbsensi->isNotEmpty())
 <div class="card">
-    <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;"><i class="ti ti-clipboard-check"></i> Status Absensi Saya</div>
+    <div class="exd-judul" style="font-size: 14px; font-weight: 600; margin-bottom: 12px;"><i class="ti ti-clipboard-check"></i> Status Absensi Saya</div>
     @foreach ($riwayatAbsensi as $absen)
         @php
             $namaProyek = $absen->projectApplication->castingProject->nama_produksi ?? '-';
@@ -384,6 +403,7 @@
 <div class="card" data-dash="jadwal">
     <div class="card-title">Jadwal Shooting Bulan Ini</div>
     <x-jadwal-calendar :events="$jadwalBulanIni" :compact="true" />
+</div>
 </div>
 </div>
 @endsection
