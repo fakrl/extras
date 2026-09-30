@@ -1732,8 +1732,8 @@ Keputusan Fakrul: halaman Kelola Tag (`admin/tag`, tombol di Kelola Akun Admin &
 
 | Item | Bukti | QA |
 |---|---|---|
-| BR.1 Kelola Akun ▸ Extras (+ rekap & export), menu Rekap Extras dihapus | | [ ] |
-| BR.2 Kelola Akun ▸ Client read-only (accordion Client → proyek → Extras) + feed keputusan tiap 30 dtk | | [ ] |
+| BR.1 Kelola Akun ▸ Extras (+ rekap & export), menu Rekap Extras dihapus | `f8e07cb` — `admin/akun/extras` (`admin.akun.extras`, export `admin.akun.extras.export`); filter bersama `App\Support\FilterAkun` (dipakai juga Manajemen Akun SA + `ExtrasRecapExport`), urut + Paling sering terpilih/batal mendadak (pengganti tabel Rekap), kartu/daftar `?tampil=daftar` (per KARTU/TABEL). `admin/users`, `admin/recap`, `admin/recap/export` redirect (kategori_id→tag[]). Sidebar Admin `<details>` Kelola Akun ▸ Extras · Client. `--filter BrAkunExtrasTest`. Shot `scratchpad/shots/br125-extras-{kartu,daftar}-*` | [ ] |
+| BR.2 Kelola Akun ▸ Client read-only (accordion Client → proyek → Extras) + feed keputusan tiap 30 dtk | `677944a` + `cc486e5`/`abc06ff` (layout) — `admin/akun/client` read-only, eager-load per halaman (jumlah query tetap), `ProjectApplication::diajukanKeClient()/sisiClient()`. Feed `App\Support\KeputusanClient::terbaru()` di kolom samping (desktop ≥1100px; HP di bawah daftar), dashboard Admin & SA (kartu kecil); refresh 30 dtk via `GET admin/akun/client/keputusan` (pause saat tab tersembunyi). `--filter BrAkunClientTest`. Shot `br125-client-*`, `br125-dashboard-*` | [ ] |
 | BR.3 mobile tanpa overflow (screenshot 360/390 semua halaman) + hamburger drawer non-Extras | | [ ] |
 | BR.4 sidebar desktop buka/tutup | | [ ] |
-| BR.5 Kelola Tag jadi dialog "Rapikan tag" | | [ ] |
+| BR.5 Kelola Tag jadi dialog "Rapikan tag" | `c58519b` — halaman & tombol Kelola Tag dihapus, `admin/tag` redirect ke Kelola Akun ▸ Extras. Link "Rapikan tag (n)" di panel filter Tag (Admin & SA), `ExtrasCategory::perluDirapikan()` (grup null, atau non-bawaan dipakai ≤1 Extras). Dialog: pindah grup / gabung (autocomplete `/tag/cari`) / hapus (`admin.tags.destroy`, log `TAG_HAPUS`), `TagController::update/gabung` sama + respons JSON. Poin 4 skip. `--filter BrRapikanTagTest`. Shot `br125-rapikan-*`. 600 test SQLite & MySQL | [ ] |
