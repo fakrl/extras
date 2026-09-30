@@ -78,9 +78,8 @@
                 </a>
             </div>
             <a href="{{ route('admin.projects.index') }}" class="dash-row"><span><i class="ti ti-folder"></i> Kelola Proyek</span><span class="dash-sub">&rarr;</span></a>
-            <a href="{{ route('admin.users.index') }}" class="dash-row"><span><i class="ti ti-users"></i> Kelola Akun Client & Extras</span><span class="dash-sub">&rarr;</span></a>
+            <a href="{{ route('admin.akun.extras') }}" class="dash-row"><span><i class="ti ti-users"></i> Kelola Akun Extras &amp; Rekap</span><span class="dash-sub">&rarr;</span></a>
             <a href="{{ route('admin.attendance.index') }}" class="dash-row"><span><i class="ti ti-camera"></i> Absensi Lapangan</span><span class="dash-sub">&rarr;</span></a>
-            <a href="{{ route('admin.recap.index') }}" class="dash-row"><span><i class="ti ti-report"></i> Rekap Extras</span><span class="dash-sub">&rarr;</span></a>
             <a href="{{ route('admin.work-history') }}" class="dash-row"><span><i class="ti ti-wallet"></i> Riwayat Kerja & Status Gaji Saya</span><span class="dash-sub">&rarr;</span></a>
         </div>
     </div>

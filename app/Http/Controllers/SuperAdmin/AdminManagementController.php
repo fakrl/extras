@@ -9,6 +9,7 @@ use App\Models\ExtrasCategory;
 use App\Models\ExtrasProfile;
 use App\Models\User;
 use App\Rules\NomorWa;
+use App\Support\FilterAkun;
 use App\Support\PerHalaman;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,54 +24,10 @@ class AdminManagementController extends Controller
      */
     public function akun(Request $request)
     {
-        $f = [
-            'q' => trim((string) $request->query('q')),
-            'role' => array_key_exists($request->query('role'), User::LABELS) ? $request->query('role') : null,
-            'status' => in_array($request->query('status'), ['aktif', 'nonaktif', 'dihapus'], true) ? $request->query('status') : null,
-            'sedang_aktif' => $request->boolean('sedang_aktif'),
-            'akan_dihapus' => $request->boolean('akan_dihapus'),
-            'favorit' => $request->boolean('favorit'),
-            'urut' => $request->query('urut') === 'favorit' ? 'favorit' : null,
-            'tag' => array_filter(array_map('intval', (array) $request->query('tag', []))),
-            'grade' => in_array($request->query('grade'), ['A', 'B', 'C', 'belum'], true) ? $request->query('grade') : null,
-        ];
+        $f = FilterAkun::dari($request);
 
-        $users = User::query()
-            ->where('id', '!=', auth()->id())
-            ->when($f['status'] === 'dihapus', fn ($q) => $q->onlyTrashed())
-            ->when(in_array($f['status'], ['aktif', 'nonaktif'], true), fn ($q) => $q->where('status', $f['status']))
-            ->when($f['role'], fn ($q, $role) => $q->where('role', $role))
-            ->when($f['q'] !== '', function ($q) use ($f) {
-                $like = "%{$f['q']}%";
-                $wa = ltrim(preg_replace('/\D/', '', $f['q']), '0');
-                $q->where(fn ($w) => $w->where('name', 'like', $like)
-                    ->orWhere('username', 'like', $like)
-                    ->orWhere('email', 'like', $like)
-                    ->when(strlen($wa) >= 4, fn ($w) => $w->orWhere('nomor_wa', 'like', "%{$wa}%")));
-            })
-            ->when($f['sedang_aktif'], fn ($q) => $q->where(fn ($w) => $w
-                ->where(fn ($e) => $e->where('role', User::ROLE_EXTRAS)
-                    ->whereHas('extrasProfile.applications', fn ($a) => $a->whereNotIn('status_partisipasi', ['ditolak', 'dibatalkan', 'selesai_produksi'])))
-                ->orWhere(fn ($s) => $s->whereIn('role', [User::ROLE_ADMIN, User::ROLE_KORLAP])
-                    ->whereHas('adminProjectAssignments', fn ($a) => $a->where('status_log', 'berjalan')))
-                ->orWhere(fn ($c) => $c->where('role', User::ROLE_CLIENT)
-                    ->whereHas('proyekClient', fn ($p) => $p
-                        ->where(fn ($t) => $t->diTahap('mendatang'))
-                        ->orWhere(fn ($t) => $t->diTahap('berjalan'))))))
-            ->when($f['akan_dihapus'], fn ($q) => $q->akanDihapus())
-            ->when($f['favorit'], fn ($q) => $q->whereHas('extrasProfile', fn ($p) => $p->where('apresiasi', true)))
-            ->when($f['urut'], fn ($q) => $q->orderByDesc(ExtrasProfile::select('apresiasi')->whereColumn('extras_profiles.user_id', 'users.id')))
-            ->when($f['tag'], function ($q, $tags) {
-                foreach ($tags as $id) {
-                    $q->whereHas('extrasProfile.categories', fn ($c) => $c->where('extras_categories.id', $id));
-                }
-            })
-            ->when($f['grade'] === 'belum', fn ($q) => $q->where('role', User::ROLE_EXTRAS)
-                ->where(fn ($w) => $w->doesntHave('extrasProfile')->orWhereHas('extrasProfile', fn ($p) => $p->whereNull('grade_saat_ini'))))
-            ->when(in_array($f['grade'], ['A', 'B', 'C'], true), fn ($q) => $q
-                ->whereHas('extrasProfile', fn ($p) => $p->where('grade_saat_ini', $f['grade'])))
+        $users = FilterAkun::terapkan(User::query()->where('id', '!=', auth()->id()), $f)
             ->with(['extrasProfile.categories', 'aktivitasTerakhir'])
-            ->latest()
             ->paginate($f['role'] === User::ROLE_EXTRAS ? PerHalaman::dari($request, 24, PerHalaman::KARTU) : PerHalaman::dari($request, 25, PerHalaman::TABEL))
             ->withQueryString();
 

@@ -28,8 +28,8 @@ class BnFavoritTest extends TestCase
 
         foreach (['admin', 'super_admin'] as $role) {
             $aktor = User::factory()->create(['role' => $role]);
-            $this->actingAs($aktor)->from('/admin/users')->patch(route('admin.extras.favorit', $ex->user_id))
-                ->assertRedirect('/admin/users#fav-'.$ex->id);
+            $this->actingAs($aktor)->from('/admin/akun/extras')->patch(route('admin.extras.favorit', $ex->user_id))
+                ->assertRedirect('/admin/akun/extras#fav-'.$ex->id);
             $this->assertTrue($ex->fresh()->apresiasi);
 
             $this->actingAs($aktor)->patch(route('admin.extras.favorit', $ex->user_id));

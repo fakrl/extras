@@ -121,7 +121,7 @@ class BaKartuExtrasTest extends TestCase
         ExtrasProfile::create(['user_id' => $extras->id]);
         User::factory()->create(['role' => 'extras', 'username' => null]);
 
-        $this->actingAs($admin)->get(route('admin.users.index'))
+        $this->actingAs($admin)->get(route('admin.akun.extras'))
             ->assertOk()
             ->assertSee('@sari_mei')
             ->assertSee('Kelola')

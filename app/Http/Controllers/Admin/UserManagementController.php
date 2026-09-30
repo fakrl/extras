@@ -2,33 +2,59 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\ExtrasRecapExport;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\ExtrasCategory;
 use App\Models\User;
+use App\Support\FilterAkun;
+use App\Support\PerHalaman;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class UserManagementController extends Controller
 {
-    /**
-     * RF-05: Admin Default mengelola akun Client dan menonaktifkan akun Extras
-     * yang bermasalah. Cakupan sengaja dibatasi ke dua role ini, Admin
-     * Default TIDAK punya kewenangan menonaktifkan Admin lain (itu hak
-     * Super Admin lewat modul Manajemen Karyawan, RF-40/RF-41, Sprint 5).
-     */
-    public function index()
+    /** BR.1: Kelola Akun ▸ Extras, gabungan Kelola Akun Extras + Rekap Extras (RF-05, RF-51). */
+    public function extras(Request $request): View
     {
-        $clients = User::where('role', 'client')->get();
-        $extras = User::where('role', 'extras')
-            ->with(['extrasProfile' => fn ($q) => $q->withProyekSelesai()->withBatalMendadak(), 'extrasProfile.user:id,username', 'extrasProfile.categories'])
-            ->get();
+        $f = self::filterExtras($request);
+        $daftar = $request->query('tampil') === 'daftar';
+        $perPilihan = $daftar ? PerHalaman::TABEL : PerHalaman::KARTU;
+        $extras = FilterAkun::terapkan(User::query(), $f)
+            ->with(['extrasProfile' => fn ($q) => $q->withProyekSelesai()->withBatalMendadak()->withTerpilih(), 'extrasProfile.user:id,username', 'extrasProfile.categories'])
+            ->paginate(PerHalaman::dari($request, $daftar ? 25 : 24, $perPilihan))
+            ->withQueryString();
         $tagGroups = ExtrasCategory::perGrup();
-
         $mangkrakCount = User::mangkrak()->count();
 
-        return view('admin.users.index', compact('clients', 'extras', 'tagGroups', 'mangkrakCount'));
+        return view('admin.akun.extras', compact('extras', 'f', 'daftar', 'perPilihan', 'tagGroups', 'mangkrakCount'));
+    }
+
+    /** RF-52: ekspor sesuai filter yang aktif di Kelola Akun ▸ Extras. */
+    public function export(Request $request)
+    {
+        return Excel::download(new ExtrasRecapExport(self::filterExtras($request)), 'rekap-extras-'.now()->format('Y-m-d').'.xlsx');
+    }
+
+    /** Admin cuma lihat Extras (tanpa akun terhapus). */
+    private static function filterExtras(Request $request): array
+    {
+        $f = FilterAkun::dari($request);
+
+        return ['role' => User::ROLE_EXTRAS, 'status' => $f['status'] === 'dihapus' ? null : $f['status']] + $f;
+    }
+
+    /** BR.1: halaman lama Kelola Akun & Rekap Extras diarahkan ke Kelola Akun ▸ Extras, query setara. */
+    public function keExtras(Request $request): RedirectResponse
+    {
+        $query = $request->except('kategori_id');
+        if ($request->filled('kategori_id')) {
+            $query['tag'] = [(int) $request->query('kategori_id')];
+        }
+
+        return redirect()->route(str_ends_with($request->path(), 'export') ? 'admin.akun.extras.export' : 'admin.akun.extras', $query);
     }
 
     /**
