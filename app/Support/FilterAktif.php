@@ -35,7 +35,14 @@ class FilterAktif
         return $request->url().($query ? '?'.Arr::query($query) : '');
     }
 
+    /** BQ.2: Reset = kosongkan semua filter + pencarian, balik halaman 1; cuma `per` (preferensi tampilan) yang dipertahankan. */
     public static function reset(Request $request): string
+    {
+        return self::url($request, Arr::only($request->query(), ['per']));
+    }
+
+    /** "Hapus semua" chip = hapus filter yang tampil sebagai chip; pencarian tetap. */
+    public static function hapusSemua(Request $request): string
     {
         return self::url($request, Arr::only($request->query(), ['q', 'per']));
     }
