@@ -10,7 +10,7 @@
     .upload-error-msg { color: var(--danger); font-size: 12px; margin-top: 6px; display: none; }
     .tautan-row .btn-icon-danger { width: 44px; height: 44px; flex-shrink: 0; }
     .pengalaman-row { align-items: flex-start; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color); }
-    .pengalaman-isi { flex: 1; min-width: 0; display: grid; gap: 6px; }
+    .pengalaman-isi { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
     .pengalaman-sub { display: flex; gap: 6px; }
     .pengalaman-tahun { flex: 0 0 92px; }
     .foto-hint { font-size: 12px; color: var(--text-muted); line-height: 1.4; margin: -4px 0 12px; }
