@@ -1661,3 +1661,79 @@ Konvensi baru: field **wajib** diberi tanda bintang merah `*` setelah label (`<s
 | Item | Bukti | QA |
 |---|---|---|
 | BP tahapan kandidat: step-bar tab + daftar siapa & aksi berikutnya | `ffbcf11` (merge) — `--filter BpTahapanKandidatTest`; data dari `AdminRingkasan::tahapan()` (dipakai dashboard Admin & Monitoring Admin). SQLite & MySQL 574 passed | [ ] |
+
+---
+
+# Bagian BQ: Bugfix pasca-freeze (1 Oktober 2026)
+
+> **FEATURE FREEZE berlaku.** Bagian ini cuma perbaikan bug/konsistensi dari laporan BK–BP.
+
+1. **Angka "honor belum ditransfer" disamakan di semua tempat** (kartu dashboard Admin 7 vs tahapan BP "Selesai · perlu kamu" 6). Satu definisi di satu method: **kontrak sudah ditandatangani + payment `belum_dibayar`** = "perlu ditransfer". Payment yang kontraknya belum TTD tampil sebagai "Menunggu kontrak", bukan dihitung perlu transfer. Kartu dashboard Admin, pratinjau Monitoring Admin (BL), tahapan BP, dan dashboard SA pakai method yang sama. Test: angkanya sama untuk data demo.
+2. **Tombol Reset di panel filter** harus mengosongkan semua filter (tag, grade, status, favorit, pencarian) sekaligus dan balik ke halaman 1. Cek di Lineup, Manajemen Akun, Log Aktivitas, Proyek & Keuangan (komponen `x-filter-panel` yang sama).
+3. **Password kosong untuk akun Google (BO.2) — diterima.** Pastikan: login username+password untuk akun tanpa password → pesan "Akun ini login pakai Google" (bukan error), "Lupa password" bisa dipakai buat bikin password pertama, dan "Putuskan Google" ditolak selama password kosong.
+
+| Item | Bukti | QA |
+|---|---|---|
+| BQ.1 satu definisi "perlu ditransfer" | | [ ] |
+| BQ.2 Reset filter mengosongkan semua | | [ ] |
+| BQ.3 akun Google tanpa password | | [ ] |
+
+---
+
+# Bagian BR: Rapikan menu Admin + layout mobile & sidebar semua role (1 Oktober 2026)
+
+> Dari tes manual Fakrul. Ini **penataan ulang & perbaikan layout**, bukan fitur data baru — boleh masuk walau freeze. Subagent wajib (>3 file). Kerjakan setelah BQ. Commit per sub-bagian.
+
+## BR.1: Menu Admin — "Rekap Extras" dilebur ke "Kelola Akun ▸ Extras"
+
+Sidebar Admin baru:
+- Dashboard
+- Proyek & Keuangan
+- **Kelola Akun** ▸ **Extras** · **Client**
+- Riwayat Kerja
+- Absensi Lapangan
+
+**Kelola Akun ▸ Extras** = halaman Kelola Akun Admin sekarang **tanpa bagian Client**, digabung dengan fungsi Rekap Extras:
+- Satu search bar + panel filter (`x-filter-panel`, BI.2): tag/kategori, grade, status, favorit ⭐, "sedang aktif di proyek".
+- Tampilan **kartu** (default) atau **daftar** (toggle ikon), per halaman (BG.6).
+- Tombol **Export Excel** = ekspor daftar sesuai filter yang aktif (pakai logika export `RecapController` yang sudah ada — pindahkan, jangan tulis ulang).
+- Menu & route `admin/recap` dihapus → redirect ke `admin/akun/extras` dengan query filter yang setara.
+
+## BR.2: Kelola Akun ▸ Client (untuk Admin) — riwayat, bukan kelola
+
+Admin **nggak mengelola** akun Client (itu urusan Super Admin, BD.1). Hubungan Admin ke Client cuma: mengajukan Extras → Client memilih → **lock** (Extras terpilih dikunci jadi figuran = status `lolos` ke atas). Halaman ini **read-only** untuk Admin:
+1. Daftar Client (nama, perusahaan, jumlah proyek, proyek terakhir) + search.
+2. Klik Client → **buka ke bawah (accordion)** daftar proyek Client itu: kode proyek, nama, tanggal shooting, tahap, jumlah diajukan / di-lock / ditolak.
+3. Klik proyek → buka lagi daftar Extras yang diajukan ke Client itu: foto kecil, @username, peran, status dari sisi Client (**Menunggu keputusan · Lock · Ditolak** + grade Client kalau ada, waktu keputusan). Klik nama → popup profil (BI.1).
+4. **Section "Keputusan Client terbaru"** di atas halaman (dan kecil di dashboard Admin): feed 10 keputusan terakhir lintas proyek ("*Client Andini* **lock** @dimas.rk — Iklan Minuman · 5 menit lalu"). **"Realtime" = refresh otomatis tiap 30 detik** (fetch partial, pause saat tab nggak aktif) — **tanpa websocket/Reverb** (keputusan lama). Sama datanya dengan yang dilihat Super Admin (satu method).
+5. Tanpa tombol edit/nonaktif/reset di halaman ini.
+
+## BR.3: Layout mobile — lebar meluber & menu kebanyakan
+
+1. **Audit overflow semua halaman semua role di lebar 360px & 390px** (screenshot per halaman sebagai Bukti). Perbaiki sumbernya, bukan `overflow-x: hidden` di body: grid pakai `minmax(0,1fr)`, tabel dibungkus `.table-container`, teks panjang (email, URL, nama proyek) `overflow-wrap: anywhere`, gambar/video `max-width: 100%`, elemen dengan `min-width`/lebar tetap diganti. Tambah 1 test/skrip cek cepat: `document.documentElement.scrollWidth <= innerWidth` di halaman-halaman utama (boleh via screenshot tool yang sudah dipakai).
+2. **Menu HP:**
+   - **Extras**: bottom nav 3 item (BJ.5) **dipertahankan** — sudah pas.
+   - **Admin, Korlap, Client, Super Admin**: bottom nav yang kebanyakan item diganti **tombol hamburger** di topbar kiri → **drawer** dari kiri berisi seluruh menu (sama dengan sidebar desktop, termasuk submenu Kelola Akun/Monitoring), tutup dengan backdrop/Esc/klik item. Menu aktif tersorot.
+3. Topbar HP ringkas: hamburger · judul halaman · notif · avatar. Nggak ada elemen yang wrap jadi 2 baris.
+
+## BR.4: Sidebar desktop bisa dibuka/tutup
+
+Tombol toggle di sidebar (atas/bawah) → mode **ringkas** (lebar ±64px, ikon saja + tooltip nama menu) ↔ mode penuh. Pilihan disimpan di `localStorage` (bungkus try/catch). Konten melebar mengikuti. Submenu di mode ringkas muncul sebagai flyout saat hover/klik ikon. Transisi halus, hormati `prefers-reduced-motion`.
+
+## BR.5: "Kelola Tag" bukan halaman sendiri lagi → dialog "Rapikan tag"
+
+Keputusan Fakrul: halaman Kelola Tag (`admin/tag`, tombol di Kelola Akun Admin & Manajemen Akun SA) berlebihan. Normalisasi otomatis (BJ.1.3) sudah mencegah duplikat beda huruf besar/kecil, jadi yang tersisa jarang: tag baru di grup "Lainnya", sinonim ("hijab" vs "Berhijab"), typo.
+1. Hapus halaman & tombol "Kelola Tag"; route `admin.tags.index` redirect ke Kelola Akun ▸ Extras.
+2. Di panel filter bagian Tag (BI.2), khusus Admin/SA: link kecil **"Rapikan tag (n)"** — `n` = jumlah tag yang perlu dirapikan. Klik → `<dialog>` yang **cuma** menampilkan tag yang butuh perhatian: tag tanpa grup ("Lainnya") dan tag yang dipakai ≤1 Extras (kemungkinan typo). Per baris: nama, jumlah pemakai, aksi **Pindah grup ▾ · Gabung ke… (autocomplete) · Hapus** (konfirmasi). Kosong → link nggak muncul.
+3. Logika `TagController::update` & `gabung` dipakai ulang (nggak ditulis ulang), dibungkus respons JSON/partial untuk dialog. Tetap tercatat di ActivityLog.
+4. Klik kanan / ikon titik tiga di chip tag pada kartu atau popup profil Extras (Admin/SA) boleh juga memunculkan aksi yang sama untuk tag itu — opsional kalau murah.
+
+## Checklist BR
+
+| Item | Bukti | QA |
+|---|---|---|
+| BR.1 Kelola Akun ▸ Extras (+ rekap & export), menu Rekap Extras dihapus | | [ ] |
+| BR.2 Kelola Akun ▸ Client read-only (accordion Client → proyek → Extras) + feed keputusan tiap 30 dtk | | [ ] |
+| BR.3 mobile tanpa overflow (screenshot 360/390 semua halaman) + hamburger drawer non-Extras | | [ ] |
+| BR.4 sidebar desktop buka/tutup | | [ ] |
+| BR.5 Kelola Tag jadi dialog "Rapikan tag" | | [ ] |
