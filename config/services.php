@@ -43,4 +43,11 @@ return [
         'token' => env('WHATSAPP_SERVICE_TOKEN'),
     ],
 
+    // BO.2: login Google (Socialite). client_id kosong = fitur mati (tombol hilang, route 404).
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
+    ],
+
 ];

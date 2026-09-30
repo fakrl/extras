@@ -10,6 +10,7 @@
         <form method="POST" action="{{ route('ubah-password.update') }}">
             @csrf
 
+            @if (auth()->user()->password)
             <div style="margin-bottom:16px;">
                 <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:500;">Kata Sandi Saat Ini</label>
                 <input type="password" name="current_password" id="current-password-field"
@@ -20,6 +21,9 @@
                     <span style="color:var(--danger); font-size:12px; margin-top:4px; display:block;">{{ $message }}</span>
                 @enderror
             </div>
+            @else
+            <p style="font-size:13px; color:var(--text-secondary); margin:0 0 16px;">Akunmu dibuat lewat Google dan belum punya kata sandi. Buat kata sandi supaya bisa masuk tanpa Google juga.</p>
+            @endif
 
             <div style="margin-bottom:16px;">
                 <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:500;">Kata Sandi Baru</label>
@@ -40,13 +44,16 @@
             <button type="submit" class="btn btn-primary" style="width:100%; min-height:40px;">Simpan Kata Sandi</button>
         </form>
     </div>
+    @include('partials.google-akun')
 </div>
 @push('scripts')
 <script>
 (function () {
     var timer;
     var hint = document.getElementById('cp-hint');
-    document.getElementById('current-password-field').addEventListener('input', function () {
+    var field = document.getElementById('current-password-field');
+    if (!field) return;
+    field.addEventListener('input', function () {
         var val = this.value;
         clearTimeout(timer);
         if (!val) { hint.textContent = ''; return; }
