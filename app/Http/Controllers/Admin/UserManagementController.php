@@ -29,7 +29,7 @@ class UserManagementController extends Controller
         $tagGroups = ExtrasCategory::perGrup();
         $mangkrakCount = User::mangkrak()->count();
 
-        return view('admin.akun.extras', compact('extras', 'f', 'daftar', 'perPilihan', 'tagGroups', 'mangkrakCount'));
+        return view('admin.akun.extras', compact('extras', 'f', 'daftar', 'perPilihan', 'tagGroups', 'mangkrakCount') + ['tagRapikan' => ExtrasCategory::perluDirapikan()->withCount('extrasProfiles')->orderBy('nama')->get()]);
     }
 
     /** RF-52: ekspor sesuai filter yang aktif di Kelola Akun ▸ Extras. */

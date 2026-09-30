@@ -9,7 +9,7 @@
     .tampil-toggle a[aria-current] { background: var(--bg-nav-active); color: var(--accent-strong); }
     .akx-info { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; font-size: var(--fs-xs); color: var(--text-muted); }
     .akx-foto { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background: var(--bg-card-hover); display: inline-flex; align-items: center; justify-content: center; font-size: var(--fs-xs); font-weight: 700; color: var(--text-muted); }
-    .akx-nama { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .akx-nama { display: flex; align-items: center; gap: 10px; min-width: 190px; }
     .akx-nama a { font-weight: 600; color: inherit; overflow-wrap: anywhere; }
     .akx-nama small { display: block; color: var(--text-muted); font-size: var(--fs-xs); overflow-wrap: anywhere; }
     .akx-fav { margin: 0; }
@@ -70,10 +70,14 @@
                     <x-filter-panel.grup label="" name="tag[]" :opsi="$tags->mapWithKeys(fn ($t) => [$t->id => '#'.$t->nama])->all()" :nilai="$f['tag']" multi />
                 </details>
             @endforeach
+            @if ($tagRapikan->isNotEmpty())<button type="button" class="fpanel-rapikan" data-rapikan-tag>Rapikan tag ({{ $tagRapikan->count() }})</button>@endif
             <p class="xfilter-note">Menampilkan yang punya <strong>semua</strong> tag terpilih</p>
         </div>
     </x-filter-panel>
 </form>
+@if ($tagRapikan->isNotEmpty())
+    @include('admin.tags.rapikan', ['tags' => $tagRapikan])
+@endif
 
 <div data-live-target>
 <div class="akx-info">

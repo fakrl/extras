@@ -34,6 +34,13 @@ class ExtrasCategory extends Model
         return $this->belongsToMany(CastingProjectClass::class);
     }
 
+    /** BR.5: tag tanpa grup (Lainnya), atau tag non-bawaan yang dipakai ≤1 Extras (kemungkinan typo). */
+    public function scopePerluDirapikan($query)
+    {
+        return $query->where(fn ($q) => $q->whereNull('grup')
+            ->orWhere(fn ($w) => $w->has('extrasProfiles', '<=', 1)->whereNotIn('nama', array_merge(...array_values(self::GRUP)))));
+    }
+
     /** BJ.1: trim, buang # depan, rapikan spasi, maks 30 karakter; kosong → null. */
     public static function normalisasi(string $nama): ?string
     {

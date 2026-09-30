@@ -33,7 +33,7 @@ class AdminManagementController extends Controller
 
         $tagGroups = ExtrasCategory::perGrup();
 
-        return view('super-admin.akun.index', compact('users', 'f', 'tagGroups'));
+        return view('super-admin.akun.index', compact('users', 'f', 'tagGroups') + ['tagRapikan' => ExtrasCategory::perluDirapikan()->withCount('extrasProfiles')->orderBy('nama')->get()]);
     }
 
     /** BD.4: halaman lama (Monitoring Akun, Kelola Akun) diarahkan ke Manajemen Akun. */
