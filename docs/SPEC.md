@@ -1385,10 +1385,10 @@ Urutan bottom nav: **Casting Call (kiri) · Beranda/Dashboard (tengah) · Profil
 
 | Item | Bukti | QA |
 |---|---|---|
-| BJ.1 tag bebas + autocomplete + normalisasi + Kelola Tag | | [ ] |
-| BJ.2 section foto gabungan + tombol "+" | | [ ] |
-| BJ.3 pengalaman daftar "+" + tautan di bawahnya | | [ ] |
-| BJ.4 urutan dashboard Extras | | [ ] |
-| BJ.5 bottom nav Extras | | [ ] |
+| BJ.1 tag bebas + autocomplete + normalisasi + Kelola Tag | `b1522e8` + panel saran on-focus `7076377` — `--filter BjTagBebasTest` ("dewasa muda" nggak dobel, "#Bisa  silat" → Lainnya, >15 ditolak, gabung tag, D22 publik). Kelola Tag di `/admin/tag` | [ ] |
+| BJ.2 section foto gabungan + tombol "+" | `3a8221f` — `--filter BjFotoSectionTest` | [ ] |
+| BJ.3 pengalaman daftar "+" + tautan di bawahnya | `7cb7d1c` — `--filter BjPengalamanTest`. Tambahan Fakrul: bahasa daftar "+" `3c0ef2b`; berat badan + warna kulit jadi tag grup "Warna kulit" `6614432` (`--filter BjBeratWarnaKulitTest`) | [ ] |
+| BJ.4 urutan dashboard Extras | `b9d36dd` — `--filter BjDashboardExtrasTest` (urutan 1–6, Perlu tindakan hilang kalau kosong, maks 5 lowongan). Lowongan yang sudah didaftar disembunyikan dari list dashboard | [ ] |
+| BJ.5 bottom nav Extras | `ccc137f` — `--filter BjBottomNavExtrasTest`. SQLite & MySQL 502 passed; `migrate` + seed tag di jbtb sudah | [ ] |
 
 **Tes QA (HP):** ketik tag "dewasa muda" → otomatis pakai tag "Dewasa muda" yang ada (nggak dobel). Tambah tag baru "Bisa silat" → muncul di "Lainnya", Admin pindahin ke grup Kemampuan. Upload 1 foto utama + 2 galeri lewat tombol "+". Tambah 3 pengalaman. Dashboard tanpa tindakan → section Perlu Tindakan nggak muncul.
