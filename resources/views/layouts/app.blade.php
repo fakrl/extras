@@ -579,6 +579,9 @@
             }
             .sidebar-link i { font-size: 20px; }
             .sidebar-link.active { background: var(--bg-nav-active); }
+            .sidebar-link.is-utama i { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--accent); color: var(--accent-on); font-size: 20px; }
+            .sidebar-link.is-utama { font-weight: 600; color: var(--accent-strong); }
+            .sidebar-link.is-utama.active { background: transparent; }
             /* dropdown (Monitoring SA) di bottom bar: 1 item, submenu jadi popup di atas bar */
             .sidebar-dropdown { flex: 1 0 auto; min-width: 64px; margin: 0; }
             .sidebar-dropdown-summary {
