@@ -8,7 +8,7 @@
     <div class="fpanel-isi" role="group" aria-label="Pilihan filter">
         <div class="fpanel-body">{{ $slot }}</div>
         <div class="fpanel-foot" data-live-sync="fpanel-foot">
-            <a href="{{ $reset }}" class="btn btn-sm">Reset</a>
+            <a href="{{ $reset }}" class="btn btn-sm" target="_self">Reset</a>
             <button type="button" class="btn btn-sm btn-brand" data-fpanel-tutup>Tutup</button>
         </div>
     </div>
@@ -18,6 +18,6 @@
         @foreach ($chips as $c)
             <a href="{{ $c['url'] }}" class="fchip" aria-label="Hapus filter {{ $c['label'] }}">{{ $c['label'] }} <i class="ti ti-x"></i></a>
         @endforeach
-        <a href="{{ $reset }}" class="fchips-hapus">Hapus semua</a>
+        <a href="{{ \App\Support\FilterAktif::hapusSemua(request()) }}" class="fchips-hapus" target="_self">Hapus semua</a>
     @endif
 </div>
