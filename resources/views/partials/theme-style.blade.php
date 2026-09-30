@@ -43,13 +43,16 @@
     }
 
     * { box-sizing: border-box; }
+    img, video { max-width: 100%; }
     body {
         font-family: 'Inter', sans-serif;
         background: var(--bg-page);
         color: var(--text-primary);
         margin: 0;
         min-height: 100vh;
+        overflow-wrap: anywhere;
     }
+    table, .btn, .badge { overflow-wrap: normal; }
 
     /* Password show/hide toggle, dipakai lewat komponen password-input */
     .password-field { position: relative; }
