@@ -1594,3 +1594,46 @@ Pakai definisi mangkrak yang sudah ada (`User::mangkrak` scope + tombol Prune ma
 | BN.1 kode proyek JBTB-YYYY-NNN | | [ ] |
 | BN.2 peringatan + auto-hapus akun mangkrak terjadwal | | [ ] |
 | BN.3 Favorit ⭐ (dari kolom apresiasi) + filter | | [ ] |
+
+---
+
+# Bagian BO: Siap tes WhatsApp beneran + Login Google (siap pakai, aktif lewat config) (30 September 2026)
+
+> Fakrul mau tes notif WA ke nomornya sendiri sekarang, dan login Google disiapkan supaya pas deploy tinggal isi config. Kerjakan setelah BN (masih bagian paket terakhir). Subagent wajib (BO.2 = auth).
+
+## BO.1: Nomor WA dinormalisasi + perintah tes kirim
+
+Temuan manager: `WhatsAppService::kirim()` meneruskan `users.nomor_wa` **apa adanya** ke Node, lalu Node kirim ke `{nomor}@c.us`. Nomor di seeder/DB berformat `+62812…` (dan user bisa ngetik `0812…` / pakai spasi/strip) → **gagal kirim** karena whatsapp-web.js butuh digit murni `62812…`.
+1. Satu helper normalisasi (mis. `User::nomorWaInternasional()` atau di `WhatsAppService`): buang semua non-digit, `0` di depan → `62`, `8` di depan → `628`. Dipakai di `kirim()`.
+2. Validasi input nomor WA di semua form (registrasi Extras, profil, + Client, + Staf): terima format umum Indonesia, simpan hasil normalisasi.
+3. Command `php artisan wa:tes {nomor} {pesan?}` — kirim langsung (tanpa queue) dan tampilkan hasil + pesan error Node (401 token salah / 503 belum scan QR / 500 gagal). Buat tes manual Fakrul.
+4. `whatsapp-service/.env.example` + README: jelaskan `PORT`, `WHATSAPP_SERVICE_TOKEN` harus sama persis dengan `.env` Laravel, dan urutan nyalain (Node → scan QR → `wa:tes` → `queue:work`).
+5. Test: nomor `0812-3456-789`, `+62 812 3456789`, `812345678` → semua jadi `62…`.
+
+## BO.2: Login/daftar dengan Google (khusus Extras), mati otomatis kalau config kosong
+
+1. `laravel/socialite` (paket resmi). Config `services.google` dari `.env`: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`. **Kalau `GOOGLE_CLIENT_ID` kosong → tombol Google disembunyikan dan route 404** — jadi aman di-merge sekarang, aktif begitu diisi.
+2. Tombol **"Lanjut dengan Google"** di halaman login & daftar Extras (desain ikut halaman auth, ikon Google resmi, 44px, di atas form dengan pemisah "atau").
+3. Alur:
+   - Email Google **belum terdaftar** → buat akun **role extras** (nama & email dari Google, `email_verified_at` terisi, password acak), username dibuat dari email (unik, bisa diubah), wajib centang kebijakan privasi di halaman lanjutan singkat, lalu diarahkan ke lengkapi profil seperti registrasi biasa.
+   - Email **sudah terdaftar sebagai Extras** → langsung login (tautkan `google_id`).
+   - **Role lain (Admin/Korlap/Client/Super Admin) — REVISI Fakrul 30 Sept: boleh login pakai Google, tapi lewat "hubungkan" dulu, bukan daftar.** Akun mereka tetap dibuat Super Admin. Setelah login pakai username+password, di halaman profil/ubah password ada tombol **"Hubungkan akun Google"** → OAuth → simpan `google_id` (+ isi `email` kalau masih kosong, asal belum dipakai akun lain). Setelah terhubung, tombol "Lanjut dengan Google" di halaman login langsung masuk ke akun itu. Ada juga **"Putuskan Google"** (hanya kalau akun punya password, biar nggak terkunci).
+   - Login Google dengan akun Google yang **belum terhubung** dan emailnya cocok dengan akun **non-Extras** → **jangan** otomatis tautkan; tampilkan "Akun ini belum dihubungkan ke Google. Login pakai username & password dulu, lalu hubungkan di menu Profil." (Mencegah akun staf/Client diambil alih lewat email yang kebetulan sama.) Pendaftaran baru via Google tetap **khusus Extras**.
+   - Menghubungkan/memutus Google dicatat di ActivityLog. Mode lihat saja (BD.6) nggak bisa menghubungkan Google atas nama akun lain.
+   - Akun nonaktif/dihapus → tolak dengan pesan yang sama seperti login biasa.
+4. Kolom baru `users.google_id` (nullable, unique). Satu-satunya tambahan skema.
+5. Redirect link publik `/event/{token}` (return-to-intent) tetap jalan setelah daftar via Google.
+6. **Bisa dites lokal sekarang:** Google OAuth mengizinkan redirect `http://localhost:9999/auth/google/callback` selama OAuth consent screen mode *Testing* (maks 100 test user — daftarkan email sendiri). README/`info.txt`: langkah bikin OAuth Client di Google Cloud Console + isi `.env`.
+7. Test (Socialite di-mock): user baru → akun extras dibuat; email Client belum terhubung → ditolak dengan pesan hubungkan; Client yang sudah menghubungkan → login sukses; putuskan Google tanpa password → ditolak; config kosong → tombol nggak ada & route 404.
+
+## BO.3: Penanda field wajib (semua form)
+
+Konvensi baru: field **wajib** diberi tanda bintang merah `*` setelah label (`<span class="wajib" aria-hidden="true">*</span>` + atribut `required`); field **tidak wajib nggak diberi keterangan apa pun** — hapus semua teks "(opsional)" / "opsional" di label & placeholder. Satu baris keterangan kecil di atas form panjang: "* wajib diisi". Berlaku di semua form (auth, profil Extras, proyek, akun, pengajuan Client, dll). Tambahkan aturan ini ke `docs/UI-GUIDELINES.md`.
+
+## Checklist BO
+
+| Item | Bukti | QA |
+|---|---|---|
+| BO.1 normalisasi nomor WA + `wa:tes` | | [ ] |
+| BO.2 login Google: daftar khusus Extras, role lain via "Hubungkan Google" (aktif via config) | | [ ] |
+| BO.3 bintang `*` untuk field wajib, hapus teks "opsional" | | [ ] |
