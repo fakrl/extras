@@ -45,7 +45,6 @@
 <div class="akun-head">
     <p style="font-size: var(--fs-sm); color: var(--text-secondary); margin: 0;">Semua akun sistem: Admin, Korlap, Client, Extras, Super Admin.</p>
     <div class="akun-head-btn">
-        <a href="{{ route('admin.tags.index') }}" class="btn btn-sm"><i class="ti ti-tags"></i> Kelola Tag</a>
         <button type="button" class="btn btn-sm" onclick="document.getElementById('client-baru-dialog').showModal()"><i class="ti ti-plus"></i> Client</button>
         <button type="button" class="btn btn-sm btn-brand" onclick="document.getElementById('add-admin-dialog').showModal()"><i class="ti ti-plus"></i> Staf</button>
     </div>
@@ -86,11 +85,15 @@
                         <x-filter-panel.grup label="" name="tag[]" :opsi="$tags->mapWithKeys(fn ($t) => [$t->id => '#'.$t->nama])->all()" :nilai="$f['tag']" multi />
                     </details>
                 @endforeach
+                @if ($tagRapikan->isNotEmpty())<button type="button" class="fpanel-rapikan" data-rapikan-tag>Rapikan tag ({{ $tagRapikan->count() }})</button>@endif
                 <p class="xfilter-note">Menampilkan yang punya <strong>semua</strong> tag terpilih</p>
             </div>
         @endif
     </x-filter-panel>
 </form>
+@if ($tagRapikan->isNotEmpty())
+    @include('admin.tags.rapikan', ['tags' => $tagRapikan])
+@endif
 
 <div data-live-target>
 {{-- Form bulk berdiri sendiri, checkbox terhubung lewat atribut form (AY.1: tanpa form bersarang). --}}

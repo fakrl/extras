@@ -176,7 +176,8 @@ Route::middleware(['auth', 'role:admin,korlap,super_admin'])
                 ->name('admin.users.toggle-status');
             Route::patch('/users/{user}/kategori', [UserManagementController::class, 'updateKategori'])
                 ->name('admin.users.kategori');
-            Route::get('/tag', [TagController::class, 'index'])->name('admin.tags.index');
+            Route::redirect('/tag', '/admin/akun/extras')->name('admin.tags.index');
+            Route::delete('/tag/{extrasCategory}', [TagController::class, 'destroy'])->name('admin.tags.destroy');
             Route::patch('/tag/{extrasCategory}', [TagController::class, 'update'])->name('admin.tags.update');
             Route::post('/tag/{extrasCategory}/gabung', [TagController::class, 'gabung'])->name('admin.tags.gabung');
             Route::patch('/extras/{user}/beranda', [UserManagementController::class, 'toggleBeranda'])

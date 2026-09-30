@@ -123,7 +123,8 @@ class BjTagBebasTest extends TestCase
         $kelas = CastingProject::factory()->create()->classes()->create(['nama_kelas' => 'Warga', 'budget_client' => 100000, 'kuota_kelas' => 2]);
         $kelas->categories()->attach($asal->id);
 
-        $this->actingAs($admin)->get(route('admin.tags.index'))->assertOk()->assertSee('#Bisa silat')->assertSee('Gabung');
+        $this->actingAs($admin)->get(route('admin.tags.index'))->assertRedirect(route('admin.akun.extras'));
+        $this->actingAs($admin)->get(route('admin.akun.extras'))->assertOk()->assertSee('#Bisa silat')->assertSee('Gabung');
         $this->actingAs(User::factory()->create(['role' => 'extras']))->get(route('admin.tags.index'))->assertForbidden();
 
         $this->actingAs($admin)->patch(route('admin.tags.update', $asal), ['grup' => 'Tipe'])->assertRedirect();
