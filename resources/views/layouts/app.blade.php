@@ -393,6 +393,8 @@
         @media (min-width: 861px) { .dash-tiga { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         @media (min-width: 1180px) { .dash-tiga { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
         @media (max-width: 860px) { .dash-tiga > .dash-perlu { order: -1; } }
+        .dash-kolom { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+        .dash-kolom > .card, .dash-kolom > section > .card:last-child { margin: 0; }
         .dash-perlu { border: 2px solid var(--accent-strong); max-height: 720px; overflow-y: auto; }
         .dash-perlu > .card-title { color: var(--accent-strong); }
         .dash-perlu.is-aman { border-width: 1px; border-color: var(--accent); display: flex; flex-direction: column; }

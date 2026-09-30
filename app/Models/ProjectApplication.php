@@ -167,13 +167,7 @@ class ProjectApplication extends Model
      */
     public function persenCocok(): ?int
     {
-        $dicari = $this->castingProjectClass?->categories->modelKeys() ?? [];
-        if (! $dicari) {
-            return null;
-        }
-        $dimiliki = $this->extras?->categories->modelKeys() ?? [];
-
-        return (int) round(count(array_intersect($dicari, $dimiliki)) / count($dicari) * 100);
+        return $this->castingProjectClass?->persenCocok($this->extras?->categories->modelKeys() ?? []);
     }
 
     /**

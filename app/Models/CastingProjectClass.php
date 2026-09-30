@@ -55,6 +55,14 @@ class CastingProjectClass extends Model
         $query->withCount(['applications as terisi' => fn ($q) => $q->whereNotIn('status_partisipasi', ['ditolak', 'dibatalkan'])]);
     }
 
+    /** BA.3: % tag peran yang dimiliki. Null kalau peran tanpa tag. Eager-load `categories`. */
+    public function persenCocok(array $tagDimiliki): ?int
+    {
+        $dicari = $this->categories->modelKeys();
+
+        return $dicari ? (int) round(count(array_intersect($dicari, $tagDimiliki)) / count($dicari) * 100) : null;
+    }
+
     public function sisaKuota(): int
     {
         return max(0, (int) $this->kuota_kelas - (int) ($this->terisi ?? 0));
