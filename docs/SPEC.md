@@ -1477,6 +1477,6 @@ Halaman `super-admin/monitoring/korlap`:
 
 | Item | Bukti | QA |
 |---|---|---|
-| BL.1 pratinjau Admin | | [ ] |
-| BL.2 pratinjau Korlap | | [ ] |
-| BL.3 masuk mode dengan tujuan, keluar balik ke pratinjau | | [ ] |
+| BL.1 pratinjau Admin | `MonitoringController@admin`, angka dari `AdminRingkasan::untuk()` (juga dipakai dashboard Admin) | [ ] |
+| BL.2 pratinjau Korlap | `MonitoringController@korlap`, `KorlapRingkasan` (`peserta()`/`rekap()` juga dipakai `AttendanceController@index`) | [ ] |
+| BL.3 masuk mode dengan tujuan, keluar balik ke pratinjau | `ModeRoleController` `ke` (hanya `/admin/...`) + `sa_kembali` (hanya `/super-admin/monitoring/...`); `tests/Feature/BlMonitoringPratinjauTest.php` | [ ] |
