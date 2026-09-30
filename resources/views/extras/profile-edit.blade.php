@@ -8,6 +8,7 @@
     .input-error { border-color: var(--danger) !important; }
     .upload-progress { display: none; width: 100%; height: 10px; margin-top: 8px; accent-color: var(--accent-strong); }
     .upload-error-msg { color: var(--danger); font-size: 12px; margin-top: 6px; display: none; }
+    .tautan-row .btn-icon-danger { width: 44px; height: 44px; flex-shrink: 0; }
     .pengalaman-row { align-items: flex-start; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color); }
     .pengalaman-isi { flex: 1; min-width: 0; display: grid; gap: 6px; }
     .pengalaman-sub { display: flex; gap: 6px; }
@@ -249,13 +250,32 @@
                 @endforelse
             </div>
             @error('pengalaman_judul')<span class="field-error">{{ $message }}</span>@enderror
-            <button type="button" id="btn-add-pengalaman" class="btn btn-sm" style="margin: 4px 0 16px;">+ Tambah pengalaman</button>
+            <button type="button" id="btn-add-pengalaman" class="btn" style="margin: 4px 0 16px;">+ Tambah pengalaman</button>
 
             <label>Bahasa yang Kamu Kuasai</label>
-            <input type="text" name="bahasa" value="{{ old('bahasa', $profile->bahasa) }}"
-                   placeholder="Contoh: Indonesia, Jawa, Inggris"
-                   @class(['input-error' => $errors->has('bahasa')])>
+            @php
+                $existingBahasa = old('bahasa') !== null
+                    ? array_values((array) old('bahasa'))
+                    : preg_split('/\s*,\s*/', (string) $profile->bahasa, -1, PREG_SPLIT_NO_EMPTY);
+            @endphp
+            <div id="bahasa-wrap" data-max="10">
+                @forelse ($existingBahasa as $i => $bahasa)
+                    <div class="tautan-row">
+                        <label for="bahasa_{{ $i }}" class="sr-only">Bahasa</label>
+                        <input type="text" name="bahasa[]" id="bahasa_{{ $i }}" value="{{ $bahasa }}" placeholder="Contoh: Indonesia" maxlength="40" @class(['input-inline', 'input-error' => $errors->has("bahasa.$i")])>
+                        <button type="button" class="btn-icon-danger btn-remove-row" aria-label="Hapus bahasa ini">&times;</button>
+                    </div>
+                @empty
+                    <div class="tautan-row">
+                        <label for="bahasa_0" class="sr-only">Bahasa</label>
+                        <input type="text" name="bahasa[]" id="bahasa_0" placeholder="Contoh: Indonesia" maxlength="40" class="input-inline">
+                        <button type="button" class="btn-icon-danger btn-remove-row" aria-label="Hapus bahasa ini">&times;</button>
+                    </div>
+                @endforelse
+            </div>
             @error('bahasa')<span class="field-error">{{ $message }}</span>@enderror
+            @error('bahasa.*')<span class="field-error">{{ $message }}</span>@enderror
+            <button type="button" id="btn-add-bahasa" class="btn" style="margin-top: 4px;">+ Tambah bahasa</button>
         </div>
 
         <div class="profile-section">
@@ -291,7 +311,7 @@
                     </div>
                 @endforelse
             </div>
-            <button type="button" id="btn-add-tautan" class="btn btn-sm" style="margin-top: 4px;">+ Tambah Tautan</button>
+            <button type="button" id="btn-add-tautan" class="btn" style="margin-top: 4px;">+ Tambah Tautan</button>
         </div>
 
         <div class="profile-section">
@@ -474,6 +494,7 @@
     }
     daftarPlus('tautan-wrap', 'btn-add-tautan');
     daftarPlus('pengalaman-wrap', 'btn-add-pengalaman');
+    daftarPlus('bahasa-wrap', 'btn-add-bahasa');
 
     // Auto-scroll ke field error pertama
     document.addEventListener('DOMContentLoaded', function () {

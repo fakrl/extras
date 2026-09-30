@@ -105,7 +105,8 @@ class ProfileController extends Controller
             'ukuran_baju' => ['nullable', 'string'],
             'warna_kulit' => ['nullable', 'string'],
             'pengalaman' => ['nullable', 'string'],
-            'bahasa' => ['nullable', 'string'],
+            'bahasa' => is_array($request->input('bahasa')) ? ['nullable', 'array', 'max:10'] : ['nullable', 'string'],
+            'bahasa.*' => ['nullable', 'string', 'max:40'],
             // Tautan tambahan (sosmed/portofolio, jumlah bebas via tombol "+"):
             // CLAUDE.md §5, hanya dilihat Extras & Admin, TIDAK PERNAH
             // dikirim ke view Casting Director.
@@ -128,10 +129,16 @@ class ProfileController extends Controller
         ], [
             'pengalaman_judul.*.required_with' => 'Judul pengalaman wajib diisi.',
             'pengalaman_judul.max' => 'Maksimal 20 pengalaman.',
+            'bahasa.max' => 'Maksimal 10 bahasa.',
         ]);
         $tagIds = $request->boolean('categories_present')
             ? ExtrasCategory::idsDariInput($data['tag_nama'] ?? [], $data['categories'] ?? [], $request->user())
             : null;
+
+        if (is_array($data['bahasa'] ?? null)) {
+            $data['bahasa'] = collect($data['bahasa'])->map(fn ($b) => trim((string) $b))->filter()
+                ->unique(fn ($b) => mb_strtolower($b))->implode(', ') ?: null;
+        }
 
         $tautanTambahan = [];
         foreach ($data['tautan_label'] ?? [] as $i => $label) {
