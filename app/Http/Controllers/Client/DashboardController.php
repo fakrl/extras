@@ -32,7 +32,7 @@ class DashboardController extends Controller
 
         $proyekBerjalan = CastingProject::whereIn('id', $proyekIds)
             ->where('status', 'dibuka')
-            ->get(['id', 'nama_produksi', 'deadline']);
+            ->get(['id', 'nama_produksi', 'deadline', 'created_at']);
 
         $pengajuan = CastingProject::query()->milikClient(Auth::user())->whereNotNull('brief_catatan')
             ->latest()

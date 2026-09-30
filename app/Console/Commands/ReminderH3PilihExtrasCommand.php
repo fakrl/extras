@@ -29,10 +29,10 @@ class ReminderH3PilihExtrasCommand extends Command
 
             $user?->kabari(
                 'Kandidat Belum Direview',
-                "Proyek {$project->nama_produksi} mendekati tanggal shooting dan masih ada {$jumlah} kandidat yang belum kamu review.",
+                "Proyek {$project->namaKode()} mendekati tanggal shooting dan masih ada {$jumlah} kandidat yang belum kamu review.",
                 route('client.reviews.show', $project),
                 jenis: 'reminder_h3_pilih_extras',
-                wa: "Halo {$user->name}, proyek {$project->nama_produksi} mendekati tanggal shooting dan masih ada {$jumlah} kandidat yang belum kamu review. Mohon segera lakukan review di sistem.",
+                wa: "Halo {$user->name}, proyek {$project->namaKode()} mendekati tanggal shooting dan masih ada {$jumlah} kandidat yang belum kamu review. Mohon segera lakukan review di sistem.",
                 kunci: "reminder_h3_pilih_extras:{$project->id}:{$date->tanggal->toDateString()}",
             );
         }

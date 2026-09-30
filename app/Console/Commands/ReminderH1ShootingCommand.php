@@ -32,10 +32,10 @@ class ReminderH1ShootingCommand extends Command
                 $user = $application->extras->user;
                 $user->kabari(
                     'Shooting Besok',
-                    "Pengingat: kamu dijadwalkan shooting besok untuk proyek {$project->nama_produksi}.",
+                    "Pengingat: kamu dijadwalkan shooting besok untuk proyek {$project->namaKode()}.",
                     route('extras.dashboard').'#pendaftaran-'.$application->id,
                     jenis: 'reminder_h1',
-                    wa: "Halo {$user->name}, pengingat: kamu dijadwalkan shooting BESOK untuk proyek {$project->nama_produksi}. Jangan lupa persiapannya ya.",
+                    wa: "Halo {$user->name}, pengingat: kamu dijadwalkan shooting BESOK untuk proyek {$project->namaKode()}. Jangan lupa persiapannya ya.",
                     kunci: "reminder_h1:{$project->id}:{$besok}",
                 );
             }

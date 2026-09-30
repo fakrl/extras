@@ -125,14 +125,14 @@ class DashboardController extends Controller
         $admin = $castingProject->admin;
         if ($admin) {
             $judulAcc = 'Proyek Baru Disetujui';
-            $pesanAcc = "Permintaan proyek '{$castingProject->nama_produksi}' telah disetujui Super Admin. Silakan lengkapi detail proyek.";
+            $pesanAcc = "Permintaan proyek '{$castingProject->namaKode()}' telah disetujui Super Admin. Silakan lengkapi detail proyek.";
             try {
                 $admin->notify(new InAppNotification($judulAcc, $pesanAcc, route('admin.projects.edit', $castingProject)));
             } catch (\Throwable) {
             }
         }
 
-        $this->kabariClient($castingProject, 'Pengajuan Proyek Disetujui', "Pengajuan proyek '{$castingProject->nama_produksi}' disetujui tim JBTB dan sedang disiapkan.");
+        $this->kabariClient($castingProject, 'Pengajuan Proyek Disetujui', "Pengajuan proyek '{$castingProject->namaKode()}' disetujui tim JBTB dan sedang disiapkan.");
 
         return back()->with('status', "Permintaan proyek '{$castingProject->nama_produksi}' berhasil disetujui (ACC). Proyek kini masuk antrean Admin.");
     }
@@ -150,7 +150,7 @@ class DashboardController extends Controller
             'alasan_tolak' => $data['alasan_tolak'],
         ]);
 
-        $this->kabariClient($castingProject, 'Pengajuan Proyek Ditolak', "Pengajuan proyek '{$castingProject->nama_produksi}' ditolak. Alasan: {$data['alasan_tolak']}");
+        $this->kabariClient($castingProject, 'Pengajuan Proyek Ditolak', "Pengajuan proyek '{$castingProject->namaKode()}' ditolak. Alasan: {$data['alasan_tolak']}");
 
         ActivityLog::record(
             'REJECT_PROJECT_REQUEST',

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\CastingProjectFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -73,6 +74,36 @@ class CastingProject extends Model
     public function namaClient(): string
     {
         return $this->client?->nama_perusahaan ?: ($this->client?->name ?? '-');
+    }
+
+    /** BN.1: JBTB-{tahun dibuat}-{id 3 digit}, tanpa kolom. */
+    protected function kodeProyek(): Attribute
+    {
+        return Attribute::get(fn () => sprintf('JBTB-%d-%03d', ($this->created_at ?? now())->year, $this->id));
+    }
+
+    public function namaKode(): string
+    {
+        return "{$this->nama_produksi} ({$this->kode_proyek})";
+    }
+
+    /** BN.1: "JBTB-2026-012" / "2026-012" / "012" -> filter id (+ tahun); null kalau bukan pola kode. */
+    public static function parseKode(string $cari): ?array
+    {
+        if (! preg_match('/^(?:JBTB-?)?(?:(\d{4})-)?(\d{1,6})$/i', trim($cari), $m)) {
+            return null;
+        }
+
+        return ['tahun' => $m[1] ? (int) $m[1] : null, 'id' => (int) $m[2]];
+    }
+
+    public function scopeCariKode($query, string $cari)
+    {
+        $kode = self::parseKode($cari);
+
+        return $kode
+            ? $query->whereKey($kode['id'])->when($kode['tahun'], fn ($q, $t) => $q->whereYear('casting_projects.created_at', $t))
+            : $query->whereRaw('1 = 0');
     }
 
     public function expenses(): HasMany

@@ -80,6 +80,7 @@
                 </details>
                 <div class="entity-card-title" style="padding-right: 40px;">
                     <a href="{{ route('admin.projects.show', $project) }}" style="color: inherit; text-decoration: none;">{{ $project->nama_produksi }}</a>
+                    <span class="kode-proyek">{{ $project->kode_proyek }}</span>
                     @if ($project->isUrgent())
                         <span class="badge badge-tolak">Urgent</span>
                     @endif

@@ -72,7 +72,7 @@ class ProjectRequestController extends Controller
         User::where('role', 'super_admin')->get()
             ->each(function ($sa) use ($project, $client) {
                 $judul5 = 'Ada Permintaan Proyek Baru';
-                $pesan5 = "Client '{$client->name}' mengajukan permintaan proyek baru: '{$project->nama_produksi}'.";
+                $pesan5 = "Client '{$client->name}' mengajukan permintaan proyek baru: '{$project->namaKode()}'.";
                 try {
                     $sa->notify(new InAppNotification($judul5, $pesan5, route('super-admin.dashboard')));
                 } catch (\Throwable) {

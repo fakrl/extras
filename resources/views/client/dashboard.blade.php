@@ -127,7 +127,7 @@
         <div class="card-title">Proyek Berjalan</div>
         @forelse ($proyekBerjalan as $p)
             <div class="dash-row">
-                <span>{{ $p->nama_produksi }}</span>
+                <span>{{ $p->nama_produksi }} <span class="kode-proyek">{{ $p->kode_proyek }}</span></span>
                 <span class="dash-sub">Deadline: {{ \Carbon\Carbon::parse($p->deadline)->format('d M Y') }}</span>
             </div>
         @empty

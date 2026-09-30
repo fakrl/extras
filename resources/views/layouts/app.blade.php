@@ -159,6 +159,7 @@
         .badge-aktif { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.35); color: var(--accent-strong); }
         .badge-pending { background: rgba(234,179,8,0.15); border-color: rgba(234,179,8,0.35); color: var(--warning); }
         .badge-tolak { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.35); color: var(--danger); }
+        .kode-proyek { font-family: ui-monospace, Consolas, monospace; font-size: var(--fs-xs); font-weight: 500; color: var(--text-muted); white-space: nowrap; }
         .badge-netral { background: rgba(148,163,184,0.18); border-color: rgba(148,163,184,0.4); color: var(--text-secondary); }
         .badge-info { background: rgba(29,78,216,0.12); border-color: rgba(29,78,216,0.35); color: var(--info); }
 
@@ -666,7 +667,7 @@
                                     @php($notifUrl = \App\Notifications\InAppNotification::relatif($notif->data['url'] ?? null))
                                     <{{ $notifUrl ? 'a' : 'div' }} @if($notifUrl) href="{{ $notifUrl }}" @endif style="display:block;color:inherit;text-decoration:none;padding:10px 14px;border-bottom:1px solid var(--border-color);{{ $notif->read_at ? '' : 'background:var(--bg-nav-active);' }}">
                                         <div style="font-size:13px;font-weight:{{ $notif->read_at ? '400' : '600' }};margin-bottom:2px;">{{ $notif->data['judul'] ?? '' }}</div>
-                                        <div style="font-size:12px;color:var(--text-secondary);line-height:1.4;">{{ mb_substr($notif->data['pesan'] ?? '', 0, 80) }}</div>
+                                        <div style="font-size:12px;color:var(--text-secondary);line-height:1.4;">{{ mb_substr($notif->data['pesan'] ?? '', 0, 100) }}</div>
                                         <div style="font-size: var(--fs-xs);color:var(--text-muted);margin-top:3px;">{{ $notif->created_at->diffForHumans() }}</div>
                                     </{{ $notifUrl ? 'a' : 'div' }}>
                                 @empty

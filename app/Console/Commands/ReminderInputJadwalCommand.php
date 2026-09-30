@@ -27,10 +27,10 @@ class ReminderInputJadwalCommand extends Command
 
             $user?->kabari(
                 'Jadwal Shooting Belum Lengkap',
-                "Proyek {$project->nama_produksi} shooting {$tgl} (H-3) tapi jadwal detail belum diisi.",
+                "Proyek {$project->namaKode()} shooting {$tgl} (H-3) tapi jadwal detail belum diisi.",
                 route('client.jadwal.show', $project),
                 jenis: 'reminder_input_jadwal',
-                wa: "Halo {$user->name}, proyek {$project->nama_produksi} ada shooting pada {$tgl} (H-3) tapi jadwal detail (lokasi, jam, daftar panggilan) belum diisi. Mohon segera lengkapi di sistem.",
+                wa: "Halo {$user->name}, proyek {$project->namaKode()} ada shooting pada {$tgl} (H-3) tapi jadwal detail (lokasi, jam, daftar panggilan) belum diisi. Mohon segera lengkapi di sistem.",
                 kunci: "reminder_input_jadwal:{$project->id}:{$tanggalH3}",
             );
         }

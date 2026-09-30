@@ -16,6 +16,7 @@
         <div style="font-size: var(--fs-xs); color: var(--text-muted);"><a href="{{ route('admin.projects.index') }}">&larr; Proyek &amp; Keuangan</a></div>
         <div style="font-size: 18px; font-weight: 700;">
             {{ $p->nama_produksi }}
+            <span class="kode-proyek">{{ $p->kode_proyek }}</span>
             @if ($tahap)
                 <span class="badge {{ \App\Models\CastingProject::TAHAP_BADGES[$tahap] }}">{{ \App\Models\CastingProject::TAHAP[$tahap] }}</span>
             @endif

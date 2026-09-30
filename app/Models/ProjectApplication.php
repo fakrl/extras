@@ -111,8 +111,8 @@ class ProjectApplication extends Model
             $this->loadMissing('extras.user', 'castingProject.admin');
             foreach ($lain as $b) {
                 [$pasti, $pilih] = $b->isPasti() ? [$b, $this] : [$this, $b];
-                $namaPasti = $pasti->castingProject->nama_produksi;
-                $namaPilih = $pilih->castingProject->nama_produksi;
+                $namaPasti = $pasti->castingProject->namaKode();
+                $namaPilih = $pilih->castingProject->namaKode();
                 $tgl = $b->tanggalBentrok->map(fn ($t) => Carbon::parse($t)->translatedFormat('d M Y'))->join(', ');
 
                 $kirim = [[$this->extras->user, 'Jadwal Bentrok', "{$namaPasti} sudah pasti dan tanggalnya sama dengan {$namaPilih} ({$tgl}). Pilih salah satu.", route('extras.dashboard').'#pendaftaran-'.$pilih->id]];
@@ -488,7 +488,7 @@ class ProjectApplication extends Model
     {
         $user = $this->extras->user;
         $lolos = $this->status_partisipasi === 'lolos';
-        $proyek = $this->castingProject->nama_produksi;
+        $proyek = $this->castingProject->namaKode();
 
         $user->kabari(
             $lolos ? 'Selamat, Kamu Lolos!' : 'Hasil Seleksi',
@@ -510,7 +510,7 @@ class ProjectApplication extends Model
     public function kirimKonfirmasiApply(): void
     {
         $user = $this->extras->user;
-        $proyek = $this->castingProject->nama_produksi;
+        $proyek = $this->castingProject->namaKode();
 
         $user->kabari(
             'Pendaftaran Diterima',
@@ -574,7 +574,7 @@ class ProjectApplication extends Model
     {
         $this->loadMissing('extras.user', 'castingProject.admin');
 
-        $proyek = $this->castingProject->nama_produksi;
+        $proyek = $this->castingProject->namaKode();
         foreach ([$this->extras->user, $this->castingProject->admin] as $penerima) {
             $penerima->kabari(
                 'Kontrak Siap Ditandatangani',
@@ -612,7 +612,7 @@ class ProjectApplication extends Model
 
         $penerima->kabari(
             'Penawaran Fee',
-            "Penawaran fee {$nominal} untuk proyek {$this->castingProject->nama_produksi}.",
+            "Penawaran fee {$nominal} untuk proyek {$this->castingProject->namaKode()}.",
             route($keExtras ? 'extras.negotiations.show' : 'admin.negotiations.show', $this),
             jenis: 'nego_fee',
             email: new KonfirmasiFeeMail($negotiation),
