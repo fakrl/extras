@@ -315,6 +315,9 @@ class DemoLengkapSeeder extends Seeder
                 'portofolio_jenis' => $jenis, 'portofolio_tahun' => today()->addDays($hari)->year, 'tampilkan_nama_client' => $client,
             ]);
             $this->jadwal($arsip, [$hari], 'Jakarta');
+            // RF-08: 2 batal mendadak lama joko_s (yang ke-3 di P1) -> hitungan dari tabel cancellations.
+            $this->daftar($arsip, $this->kelas($arsip, 'Warga', 10, 300000, ['Dewasa']), 'joko_s', 'dibatalkan', $hari - 10)
+                ->cancellations()->create(['dibatalkan_oleh' => 'extras', 'alasan' => 'Sakit mendadak.', 'is_mendadak' => true, 'created_at' => now()->addDays($hari - 1)]);
             $this->notif($klien, 'Proyek Selesai', "Proyek '{$nama}' selesai. Terima kasih sudah bekerja sama.", null, true, now()->addDays($hari + 1));
         }
 
@@ -352,9 +355,9 @@ class DemoLengkapSeeder extends Seeder
             ['sari_mei', 'Pembayaran Ditransfer', "Honor proyek '{$p1->nama_produksi}' sudah ditransfer.", $bayar($p1, 'sari_mei'), true],
             ['sari_mei', 'Sengketa Dicatat', 'Laporan sengketa kamu sudah diterima Admin.', $bayar($p1, 'sari_mei'), false],
             ['bagas22', 'Pembayaran Ditransfer', "Honor proyek '{$p1->nama_produksi}' sudah ditransfer.", $bayar($p1, 'bagas22'), true],
-            ['bagas22', 'Kontrak Siap Ditandatangani', "Kontrak proyek '{$p2->nama_produksi}' sudah ditandatangani Admin. Giliran kamu.", $kontrak($p2, 'bagas22'), false],
-            ['nadia_pu', 'Hasil Seleksi', "Mohon maaf, kamu belum lolos seleksi proyek '{$p2->nama_produksi}' kali ini.", route('extras.dashboard'), false],
-            ['rehan_x', 'Penawaran Fee', "Admin menawarkan Rp 150.000 untuk proyek '{$p2->nama_produksi}'.", $nego('rehan_x'), true],
+            ['bagas22', 'Kontrak Siap Ditandatangani', "Kontrak proyek '{$p2->nama_produksi}' sudah ditandatangani Admin. Giliran kamu.", $kontrak($p2, 'bagas22'), false, ['jenis' => 'kontrak_siap_ttd', 'email' => 'terkirim', 'wa' => 'terkirim', 'wa_dikirim_at' => now()->toDateTimeString()]],
+            ['nadia_pu', 'Hasil Seleksi', "Mohon maaf, kamu belum lolos seleksi proyek '{$p2->nama_produksi}' kali ini.", route('extras.dashboard'), false, ['jenis' => 'hasil_seleksi', 'email' => 'terkirim', 'wa' => 'gagal', 'wa_dikirim_at' => now()->toDateTimeString()]],
+            ['rehan_x', 'Penawaran Fee', "Admin menawarkan Rp 150.000 untuk proyek '{$p2->nama_produksi}'.", $nego('rehan_x'), true, ['jenis' => 'nego_fee', 'email' => 'terkirim']],
             ['arga_p', 'Penawaran Fee', "Admin menawarkan Rp 175.000 untuk proyek '{$p2->nama_produksi}'. Terima atau ajukan counter.", $nego('arga_p'), false],
             ['citra_ay', 'Fee Deal', "Fee Rp 175.000 untuk proyek '{$p2->nama_produksi}' sudah deal.", $nego('citra_ay'), false],
             ['pak_harto', 'Pembayaran Ditransfer', "Honor proyek '{$p1->nama_produksi}' sudah ditransfer.", $bayar($p1, 'pak_harto'), true],
@@ -365,7 +368,7 @@ class DemoLengkapSeeder extends Seeder
             ['yohanes_m', 'Absensi Tervalidasi', "Kehadiran kamu di '{$p3->nama_produksi}' hari ini sudah divalidasi Korlap.", route('extras.dashboard'), false],
             ['clara_b', 'Pembayaran Ditransfer', "Honor proyek '{$p3->nama_produksi}' sudah ditransfer. Silakan konfirmasi.", $bayar($p3, 'clara_b'), false],
             ['fajar_n', 'Pembatalan Tercatat', "Pembatalan kamu untuk proyek '{$p2->nama_produksi}' sudah tercatat.", route('extras.dashboard'), true],
-            ['wulan_s', 'Pendaftaran Diterima', "Pendaftaran proyek '{$p2->nama_produksi}' berhasil, Admin akan mereview.", route('extras.dashboard'), true],
+            ['wulan_s', 'Pendaftaran Diterima', "Pendaftaran proyek '{$p2->nama_produksi}' berhasil, Admin akan mereview.", route('extras.dashboard'), true, ['jenis' => 'konfirmasi_apply', 'wa' => 'terkirim', 'wa_dikirim_at' => now()->toDateTimeString()]],
             ['wulan_s', 'Shooting Hari Ini', "Shooting '{$p3->nama_produksi}' hari ini. Jangan lupa selfie absensi.", route('extras.dashboard'), false],
             ['tono_g', 'Pembayaran Ditransfer', "Honor proyek '{$p1->nama_produksi}' sudah ditransfer. Silakan konfirmasi.", $bayar($p1, 'tono_g'), false],
             ['melati_k', 'Selfie Terkirim', 'Selfie absensi kamu menunggu validasi Korlap.', route('extras.dashboard'), false],
@@ -374,8 +377,9 @@ class DemoLengkapSeeder extends Seeder
             ['putri_a', 'Akun Dinonaktifkan', 'Akun kamu dinonaktifkan Admin.', null, false],
             ['ghost01', 'Lengkapi Profil', 'Profil kamu masih kosong, lengkapi supaya bisa daftar lowongan.', route('extras.profile.edit'), false],
             ['baru_daftar', 'Lengkapi Profil', 'Upload foto profil supaya bisa daftar lowongan.', route('extras.profile.edit'), false],
-        ] as [$un, $judul, $pesan, $url, $dibaca]) {
-            $this->notif($this->u[$un], $judul, $pesan, $url, $dibaca);
+        ] as $baris) {
+            [$un, $judul, $pesan, $url, $dibaca, $kirim] = $baris + [5 => []];
+            $this->notif($this->u[$un], $judul, $pesan, $url, $dibaca, kirim: $kirim);
         }
 
         foreach ($this->u as $un => $user) {
@@ -451,7 +455,7 @@ class DemoLengkapSeeder extends Seeder
 
     private function greenlight(ProjectApplication $a, User $client, int $hari): void
     {
-        $a->clientReviews()->create(['client_id' => $client->id, 'keputusan' => 'approve', 'created_at' => now()->addDays($hari)]);
+        $a->clientReviews()->create(['client_id' => $client->id, 'keputusan' => 'approve', 'grade_client' => 'A', 'created_at' => now()->addDays($hari)]);
         $this->log($client, 'REVIEW_CANDIDATE_LOCK', "Client {$client->name} melakukan lock kandidat {$a->extras->user->username} untuk proyek '{$a->castingProject->nama_produksi}'", $a, $hari);
     }
 
@@ -524,11 +528,12 @@ class DemoLengkapSeeder extends Seeder
         ]);
     }
 
-    private function notif(User $user, string $judul, string $pesan, ?string $url, bool $dibaca, ?Carbon $at = null): void
+    /** BM.1: $kirim = status email/WA seperti yang ditulis User::kabari(). */
+    private function notif(User $user, string $judul, string $pesan, ?string $url, bool $dibaca, ?Carbon $at = null, array $kirim = []): void
     {
         $user->notifications()->create([
             'id' => Str::uuid()->toString(), 'type' => InAppNotification::class,
-            'data' => (new InAppNotification($judul, $pesan, $url))->toDatabase($user),
+            'data' => (new InAppNotification($judul, $pesan, $url, $kirim))->toDatabase($user),
             'read_at' => $dibaca ? now() : null, 'created_at' => $at ?? now(),
         ]);
     }
