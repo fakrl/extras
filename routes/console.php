@@ -16,3 +16,7 @@ Schedule::command('reminder:h3-pilih-extras')->dailyAt('07:30')->timezone('Asia/
 
 // L.3: reminder ke Client saat H-3 shooting tapi jadwal detail belum diisi.
 Schedule::command('reminder:input-jadwal')->dailyAt('07:45')->timezone('Asia/Jakarta');
+
+// BN.2: peringatan H-7 lalu hapus akun Extras mangkrak.
+Schedule::command('akun:peringatkan-mangkrak')->dailyAt('08:15')->timezone('Asia/Jakarta');
+Schedule::command('akun:hapus-mangkrak')->dailyAt('08:30')->timezone('Asia/Jakarta');

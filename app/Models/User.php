@@ -129,14 +129,43 @@ class User extends Authenticatable
         return $this->hasOne(ExtrasProfile::class);
     }
 
-    /** Rule Prune: Extras >30 hari, profil tidak lengkap, 0 pendaftaran. */
-    public function scopeMangkrak($query)
+    public const HARI_MANGKRAK = 30;
+
+    /** Rule Prune: Extras >30 hari, profil tidak lengkap, 0 pendaftaran. BN.2: $hari lebih kecil = "akan mangkrak". */
+    public function scopeMangkrak($query, int $hari = self::HARI_MANGKRAK)
     {
         return $query->where('role', self::ROLE_EXTRAS)
-            ->where('created_at', '<=', now()->subDays(30))
+            ->where('created_at', '<=', now()->subDays($hari))
             ->whereDoesntHave('extrasProfile.applications')
             ->where(fn ($q) => $q->whereDoesntHave('extrasProfile')
                 ->orWhereHas('extrasProfile', fn ($ep) => $ep->whereNull('foto_profil_path')->orWhereNull('nik')));
+    }
+
+    /** BN.2: sudah dapat notif peringatan_mangkrak (opsional: paling lambat $sebelum). */
+    public function scopeSudahDiperingatkan($query, $sebelum = null)
+    {
+        return $query->whereHas('notifications', fn ($n) => $n->where('data->jenis', 'peringatan_mangkrak')
+            ->when($sebelum, fn ($q) => $q->where('created_at', '<=', $sebelum)));
+    }
+
+    /** BN.2: akan dihapus = masih belum lengkap sejak H-7 mangkrak & sudah diperingatkan. */
+    public function scopeAkanDihapus($query)
+    {
+        return $query->mangkrak(self::HARI_MANGKRAK - 7)->sudahDiperingatkan();
+    }
+
+    /** Cara hapus tombol Prune & command akun:hapus-mangkrak. */
+    public static function hapusMangkrak(iterable $users): int
+    {
+        $n = 0;
+        foreach ($users as $u) {
+            $u->extrasProfile?->categories()->detach();
+            $u->extrasProfile?->forceDelete();
+            $u->forceDelete();
+            $n++;
+        }
+
+        return $n;
     }
 
     public function aktivitasTerakhir(): HasOne

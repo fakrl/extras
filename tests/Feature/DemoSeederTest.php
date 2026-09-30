@@ -58,6 +58,7 @@ class DemoSeederTest extends TestCase
 
         $this->assertSame('menunggu_acc', $p('Video Klip')->client_request_status);
         $this->assertSame(['ghost01'], User::mangkrak()->pluck('username')->all());
+        $this->assertSame(['ghost01'], User::akanDihapus()->pluck('username')->all());
         $this->get('/')->assertOk()->assertSee('@dimas_rk')->assertDontSee('@arga_p')
             ->assertSee('Rumah di Ujung Senja')->assertSee('PT Kopi Pagi Nusantara')->assertDontSee('Sinar Rumah Produksi')->assertDontSee('PT Layar Senja Films');
 
