@@ -1438,10 +1438,10 @@ Kondisi sekarang (dicek): `activeShootingDates()` + `bentrok_jadwal_flag` sudah 
 
 | Item | Bukti | QA |
 |---|---|---|
-| BK.1 notif URL relatif (test + commit) | | [ ] |
-| BK.2 profil desktop rapi, mobile tetap | | [ ] |
-| BK.3 dashboard Extras: tanpa tombol dobel, urutan baru | | [ ] |
-| BK.4 jadwal bentrok (blokir/peringatan/perlu tindakan/TTD/jadwal berubah) | | [ ] |
+| BK.1 notif URL relatif (test + commit) | `98ffe54` — `--filter BkNotifUrlRelatifTest`. Catatan: `APP_URL` localhost saat kerja lokal | [ ] |
+| BK.2 profil desktop rapi, mobile tetap | `6e70d63` (merge) — screenshot 375px sebelum/sesudah identik (hash file, 6 render); popup 760px nggak berubah | [ ] |
+| BK.3 dashboard Extras: tanpa tombol dobel, urutan baru | `3bb7e0f` — `--filter "BkDashboardExtrasTest|BjDashboardExtrasTest"` | [ ] |
+| BK.4 jadwal bentrok (blokir/peringatan/perlu tindakan/TTD/jadwal berubah) | `0ca23a6` — `--filter BkJadwalBentrokTest` (a–e + D23). Tombol batal ada di kartu B (Perlu tindakan cuma teks+link, BK.3). SQLite & MySQL 514 passed | [ ] |
 
 ---
 
@@ -1480,3 +1480,93 @@ Halaman `super-admin/monitoring/korlap`:
 | BL.1 pratinjau Admin | | [ ] |
 | BL.2 pratinjau Korlap | | [ ] |
 | BL.3 masuk mode dengan tujuan, keluar balik ke pratinjau | | [ ] |
+
+---
+
+# Bagian BM: Diet database + rename "cd" → "client" (30 September 2026)
+
+> Arahan Fakrul: database **sesedikit mungkin** — yang nggak kepakai atau nggak penting di-drop, sisa istilah `cd` diganti `client`. Keputusan: **1 proyek = 1 akun Client** (kalau ada lebih dari satu orang di pihak Client, mereka pakai akun yang sama).
+>
+> **WAJIB subagent, BERURUTAN (BM.1 → BM.2 → BM.3), jangan paralel** — ketiganya menyentuh file yang sama. Tiap langkah: full test SQLite + MySQL `jbtb_test` hijau, `migrate:fresh --seed` sukses, baru commit. **Nggak perlu backup `jbtb`** (keputusan Fakrul): setelah BM beres, `jbtb` di-reset pakai `migrate:fresh --seed` (seeder demo diperbarui di BM.4).
+>
+> **Aturan drop:** sebelum menghapus tabel/kolom, `grep` pemakaiannya di `app/`, `resources/`, `routes/`, `database/seeders/`, `tests/`. Kalau ternyata dipakai untuk fitur yang masih hidup → **jangan drop**, catat alasannya. Data lama dipindah dulu (migration data) sebelum kolom/tabel lama dihapus. Hasil akhir wajib dilaporkan sebagai tabel "Dihapus / Dipertahankan + alasan" di kolom Bukti.
+
+## BM.1: Tabel yang dihapus / digabung
+
+| Tabel | Jadi | Catatan wajib |
+|---|---|---|
+| `cd_project_assignments` | **drop**, pakai `casting_projects.client_id` | Semua cek akses Client (Greenlight, jadwal, invoice, foto absensi, lampiran, export riwayat, reminder H-3) diganti satu helper `CastingProject::milikClient(User $u)` / scope `milikClient($u)`. Cabut akses saat ganti Client (BG.1) otomatis beres karena cukup ganti `client_id`. |
+| `extras_photos` | kolom `extras_profiles.foto_tambahan` (json, maks 4 path) | Pindahkan data; route stream per slot (`/foto-tambahan/{slot}`) & upload/hapus tetap jalan dengan kontrak yang sama. |
+| `admin_profiles` | kolom `users.honor_nominal` (nullable, cuma dipakai staf) | `honor_updated_at` & `created_by` dibuang — perubahan honor sudah tercatat di ActivityLog. |
+| `notifications_log` | **drop, digabung ke tabel `notifications`** (satu tabel notifikasi per user untuk semua role) | Dicek manager: tabel ini cuma **ditulis** (`ProjectApplication`, `WhatsAppService`, job WA) dan nggak pernah dibaca. Penggantinya: tiap kejadian yang kirim WA/email juga membuat notifikasi in-app biasa, dan status kirimnya disimpan di `notifications.data` (`wa` / `email`: `terkirim` · `gagal` · `null`, plus `wa_dikirim_at`). Job WA meng-update data notifikasi itu setelah selesai. Tampilkan ikon kecil status WA di halaman detail akun (Aktivitas/Notifikasi) buat Admin/SA, supaya kalau WA gagal bisa dikabari manual. Reminder terjadwal (H-1, H-3) cek di tabel ini supaya nggak kirim dobel ke orang yang sama untuk proyek & tanggal yang sama. |
+
+`cancellations` **dipertahankan** (riwayat batal + alasan dibutuhkan untuk aturan 3× batal mendadak & D23).
+
+## BM.2: Kolom dobel / sisa lama (cek dulu, lalu drop)
+
+- `casting_projects`: `wa_group_link` vs `link_grup` → sisakan **satu** (yang dipakai view), pindahkan datanya. `diajukan_oleh_client_id` → drop (asal-usul proyek sudah terbaca dari `client_request_status`; pengaju = `client_id`). `client_ph` → drop, tampilan pakai `client->nama_perusahaan` (backfill `nama_perusahaan` dari `client_ph` dulu; proyek lama tanpa Client → buat/tautkan akun Client dulu atau biarkan `client_ph` **hanya** kalau memang ada proyek yang tak bisa ditautkan — laporkan). `kuota` level proyek → drop kalau bisa dihitung dari jumlah `kuota_kelas`. `cover_path` vs `poster_path` → sisakan satu kalau dua-duanya dipakai untuk hal yang sama.
+- `extras_profiles`: `pengalaman` (teks lama, sudah dipindah ke `riwayat_pengalaman` di BJ.3) → drop. `cancel_count` → drop, hitung dari `cancellations` (`is_mendadak`). `berat_badan` / `warna_kulit` → drop kalau sekarang sudah jadi tag (commit BJ "berat badan + warna kulit jadi tag"). `share_token` → drop kalau link profil publik sudah pakai username; kalau masih token, pertahankan.
+- `project_applications`: 4 kolom `*_override` (karakter/scene/jam callingan/continuity) → drop kalau nggak ada UI yang mengisinya.
+- `casting_project_classes`: `karakter` vs `nama_kelas` → sisakan satu kalau isinya sama fungsinya.
+- `cd_reviews.bulk_batch_id` → drop kalau nggak dipakai.
+- Status `direview_cd` (nggak pernah di-set) → dihapus dari konstanta, filter, dan enum.
+
+## BM.3: Rename "cd" / "casting director" → "client" di seluruh kode
+
+- Tabel `cd_reviews` → `client_reviews`; model `CdReview` → `ClientReview`; kolom `cd_id` → `client_id`, `grade_cd` → `grade_client`.
+- `invoices.ttd_cd_signature_path` → `ttd_client_signature_path`.
+- Status `diajukan_ke_cd` → `diajukan_ke_client` (migration data + enum MySQL; hati-hati urutan: tambah nilai baru → update data → hapus nilai lama).
+- Route prefix `/cd/...` → `/client/...`, nama `cd.*` → `client.*`. **Redirect permanen dari URL lama** (`/cd/{any}` → `/client/{any}`) supaya bookmark & link notifikasi lama tetap jalan.
+- Namespace `App\Http\Controllers\Cd\*` digabung ke `App\Http\Controllers\Client\*`; view `resources/views/cd/*` → `resources/views/client/*`.
+- Hapus `User::isCastingDirector()` (pakai `isClient()`), sisa alias `casting_director` di middleware/route/test, dan teks UI "CD"/"Casting Director" yang tersisa.
+- Grep akhir `\bcd\b|cd_|_cd\b|CastingDirector|casting_director` di `app/ resources/ routes/ database/ tests/` → harus kosong (kecuali migration lama yang memang sejarah).
+
+## BM.4: Setelah beres
+
+Update `DemoLengkapSeeder` + `DemoSeederTest`, isi Bukti, tulis DEV-NOTES. **Manager akan menulis ulang `docs/DATABASE-SCHEMA.md`** dari hasil akhir — laporkan daftar tabel final + jumlah kolom per tabel.
+
+## Checklist BM
+
+| Item | Bukti | QA |
+|---|---|---|
+| BM.1 drop/gabung tabel | | [ ] |
+| BM.2 drop kolom dobel/sisa | | [ ] |
+| BM.3 rename cd → client + redirect URL lama | | [ ] |
+| BM.4 seeder, test, laporan tabel final | | [ ] |
+
+---
+
+# Bagian BN: Paket terakhir sebelum FREEZE — ID proyek, auto-hapus akun mangkrak, Favorit (30 September 2026)
+
+> Keputusan Fakrul 30 Sept: ini **fitur terakhir**. Setelah BN (dan BK, BL, BM) beres → **feature freeze**; yang boleh masuk cuma perbaikan bug.
+> **Dicoret dari scope** (masuk Bab 3 sebagai "pengembangan lanjutan"): cek kelayakan registrasi (bimbingan D.1), rating sikap 1–5 oleh Korlap, scoring otomatis (bimbingan F.3), fitur "panggil lagi"/re-book, login Google, email perusahaan (Lark). Catatan lapangan Korlap yang sudah ada dianggap cukup sebagai penilaian kualitatif.
+> Kerjakan setelah BM (supaya pakai skema yang sudah diet). Commit per item.
+
+## BN.1: ID proyek tampil (bimbingan E.2)
+
+Format tampilan **`JBTB-{tahun}-{id 3 digit}`** (mis. `JBTB-2026-012`), dihitung dari `id` + tahun dibuat — **tanpa kolom baru** (accessor `kodeProyek`). Tampil di: daftar & detail proyek, kartu proyek, invoice (PDF & halaman), kontrak PDF, notifikasi terkait proyek, pemilih proyek di absensi. Bisa dicari di live search Proyek & Keuangan.
+
+## BN.2: Auto-hapus akun mangkrak terjadwal + pemberitahuan (bimbingan D.2–D.3)
+
+Pakai definisi mangkrak yang sudah ada (`User::mangkrak` scope + tombol Prune manual).
+1. Command `akun:peringatkan-mangkrak` harian: akun yang **akan** jadi mangkrak dalam 7 hari → kirim notifikasi (in-app + WA/email kalau ada): "Profilmu belum lengkap. Lengkapi sebelum {tanggal} supaya akunmu nggak dihapus otomatis." Cegah kirim dobel dengan cek tabel `notifications` (jenis `peringatan_mangkrak`) — tanpa kolom baru.
+2. Command `akun:hapus-mangkrak` harian: hapus akun yang sudah mangkrak **dan** sudah pernah diperingatkan ≥7 hari lalu. Pakai cara hapus yang sama dengan tombol Prune sekarang. Catat di ActivityLog (aktor: sistem).
+3. Daftarkan keduanya di `routes/console.php` (jadwal pagi, `Asia/Jakarta`). Butuh `schedule:work` jalan — sudah ada di `info.txt`.
+4. Halaman Manajemen Akun: filter/chip "Akan dihapus" (sudah diperingatkan) supaya SA bisa lihat & selamatkan manual.
+5. Kebijakan privasi: tambah 1 kalimat tentang penghapusan otomatis akun yang tidak dilengkapi.
+
+## BN.3: Favorit ⭐ (pakai kolom `apresiasi` yang sudah ada — tanpa kolom baru)
+
+`extras_profiles.apresiasi` (+ `apresiasi_catatan`) sudah ada, sifatnya sama: penanda internal Admin/SA. Ubah jadi **Favorit**:
+1. Label di UI: "⭐ Favorit" (bukan "Apresiasi"); catatan jadi "Kenapa favorit?" (opsional, mis. "cocok peran bapak-bapak kantoran, on time").
+2. Tombol bintang toggle di kartu Extras (Lineup, Manajemen Akun) & modal profil — satu klik, tanpa pindah halaman. Hanya Admin/SA.
+3. Filter **"Favorit"** di Lineup & Manajemen Akun (chip di panel filter BI.2), dan urutan "Favorit dulu" sebagai opsi sort.
+4. Aturan lama tetap: **nggak pernah tampil ke Client maupun Extras** (test `assertDontSee` yang sudah ada dipertahankan).
+
+## Checklist BN
+
+| Item | Bukti | QA |
+|---|---|---|
+| BN.1 kode proyek JBTB-YYYY-NNN | | [ ] |
+| BN.2 peringatan + auto-hapus akun mangkrak terjadwal | | [ ] |
+| BN.3 Favorit ⭐ (dari kolom apresiasi) + filter | | [ ] |
