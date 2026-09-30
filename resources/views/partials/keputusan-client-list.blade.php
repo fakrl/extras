@@ -11,3 +11,11 @@
         @endforeach
     </ul>
 @endif
+@if ($keputusan instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator && $keputusan->total())
+    <form id="kp-form" method="GET" action="{{ route('admin.akun.client') }}" data-kp-form>
+        @foreach (request()->except(['kp', 'kper']) as $k => $v)
+            @if (is_string($v))<input type="hidden" name="{{ $k }}" value="{{ $v }}">@endif
+        @endforeach
+    </form>
+    <x-pagination-bar :paginator="$keputusan" :pilihan="\App\Support\PerHalaman::TABEL" form="kp-form" nama="kper" />
+@endif

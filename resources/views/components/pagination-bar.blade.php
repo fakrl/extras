@@ -1,6 +1,6 @@
-@props(['paginator', 'pilihan', 'form' => 'live-form'])
+@props(['paginator', 'pilihan', 'form' => 'live-form', 'nama' => 'per'])
 <div class="pagebar">
     <span class="pagebar-info">{{ $paginator->total() ? 'Menampilkan '.$paginator->firstItem().'–'.$paginator->lastItem().' dari '.$paginator->total() : '0 hasil' }}</span>
     {{ $paginator->links() }}
-    <x-per-halaman :pilihan="$pilihan" :nilai="$paginator->perPage()" :form="$form" />
+    <x-per-halaman :pilihan="$pilihan" :nilai="$paginator->perPage()" :form="$form" :nama="$nama" />
 </div>

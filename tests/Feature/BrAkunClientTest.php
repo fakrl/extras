@@ -121,6 +121,41 @@ class BrAkunClientTest extends TestCase
         $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()->assertSee('Keputusan Client terbaru')->assertSee(route('admin.akun.client.keputusan', ['kecil' => 1]), false);
     }
 
+    public function test_feed_paginasi_kp_kper_terpisah_dari_daftar_client(): void
+    {
+        $client = User::factory()->create(['role' => 'client', 'name' => 'Client Andini']);
+        $p = CastingProject::factory()->create(['client_id' => $client->id]);
+        foreach (range(1, 25) as $i) {
+            $this->app($p, "kp_{$i}", 'lolos', 'approve', null, $i);
+        }
+        User::factory()->count(11)->create(['role' => 'client']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $nama = fn ($f) => $f->getCollection()->map(fn ($r) => $r->projectApplication->extras->user->username)->all();
+
+        $res = $this->actingAs($admin)->get(route('admin.akun.client', ['per' => 10]))->assertOk()
+            ->assertSee('Menampilkan 1–10 dari 25')->assertSee('name="kper"', false)->assertSee('kp=2', false)
+            ->assertViewHas('keputusan', fn ($f) => $nama($f) === array_map(fn ($i) => "kp_{$i}", range(1, 10)))
+            ->assertViewHas('clients', fn ($c) => $c->currentPage() === 1 && $c->count() === 10);
+
+        $this->actingAs($admin)->get(route('admin.akun.client', ['per' => 10, 'kp' => 2]))->assertOk()
+            ->assertSee('Menampilkan 11–20 dari 25')
+            ->assertSee(e(route('admin.akun.client.keputusan', ['per' => 10, 'kp' => 2])), false)
+            ->assertViewHas('keputusan', fn ($f) => $nama($f)[0] === 'kp_11')
+            ->assertViewHas('clients', fn ($c) => $c->currentPage() === 1);
+
+        $this->actingAs($admin)->get(route('admin.akun.client', ['per' => 10, 'page' => 2, 'kper' => 25]))->assertOk()
+            ->assertViewHas('keputusan', fn ($f) => $f->count() === 25 && $f->currentPage() === 1)
+            ->assertViewHas('clients', fn ($c) => $c->currentPage() === 2 && $c->count() === 2);
+
+        $res = $this->actingAs($admin)->get(route('admin.akun.client.keputusan', ['kp' => 3]))->assertOk()
+            ->assertSee('Menampilkan 21–25 dari 25')->assertSee('@kp_21')->assertDontSee('@kp_20<', false)->assertDontSee('<html', false);
+        $this->assertSame(5, substr_count($res->getContent(), '<li>'));
+        $res = $this->actingAs($admin)->get(route('admin.akun.client.keputusan', ['kper' => 25]))->assertOk();
+        $this->assertSame(25, substr_count($res->getContent(), '<li>'));
+        $this->assertMatchesRegularExpression('#name="kper".*<option value="25" selected#s', $res->getContent());
+        $this->assertSame(10, substr_count($this->actingAs($admin)->get(route('admin.akun.client.keputusan', ['kecil' => 1, 'kper' => 25]))->getContent(), '<li>'));
+    }
+
     public static function bukanAdminProvider(): array
     {
         return [['korlap'], ['client'], ['extras']];
