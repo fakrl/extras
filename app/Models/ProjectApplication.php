@@ -215,6 +215,27 @@ class ProjectApplication extends Model
         return $this->hasMany(ClientReview::class);
     }
 
+    public function reviewClientTerakhir(): HasOne
+    {
+        return $this->hasOne(ClientReview::class)->latestOfMany();
+    }
+
+    /** BR.2: yang sampai ke Client: sedang menunggu, sudah di-lock, atau pernah diputus Client. */
+    public function scopeDiajukanKeClient($query)
+    {
+        return $query->where(fn ($q) => $q->whereIn('status_partisipasi', ['diajukan_ke_client', ...self::STATUS_LOLOS_KE_ATAS])->orWhereHas('clientReviews'));
+    }
+
+    /** BR.2: status dari sisi Client (menunggu|lock|ditolak); butuh reviewClientTerakhir ter-load. */
+    public function sisiClient(): string
+    {
+        return match (true) {
+            $this->status_partisipasi === 'diajukan_ke_client' => 'menunggu',
+            $this->reviewClientTerakhir !== null => $this->reviewClientTerakhir->keputusan === 'approve' ? 'lock' : 'ditolak',
+            default => 'lock',
+        };
+    }
+
     public function cancellations(): HasMany
     {
         return $this->hasMany(Cancellation::class);
