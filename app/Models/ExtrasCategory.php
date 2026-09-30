@@ -6,8 +6,9 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Validation\ValidationException;
 
-#[Fillable(['nama', 'grup'])]
+#[Fillable(['nama', 'grup', 'dibuat_oleh'])]
 class ExtrasCategory extends Model
 {
     public const GRUP = [
@@ -17,6 +18,8 @@ class ExtrasCategory extends Model
         'Kemampuan' => ['Naik motor', 'Nyetir mobil', 'Berenang', 'Menari', 'Bahasa daerah'],
     ];
 
+    public const MAKS = 15;
+
     public function extrasProfiles(): BelongsToMany
     {
         return $this->belongsToMany(ExtrasProfile::class);
@@ -25,6 +28,45 @@ class ExtrasCategory extends Model
     public function castingProjectClasses(): BelongsToMany
     {
         return $this->belongsToMany(CastingProjectClass::class);
+    }
+
+    /** BJ.1: trim, buang # depan, rapikan spasi, maks 30 karakter; kosong → null. */
+    public static function normalisasi(string $nama): ?string
+    {
+        $nama = trim(mb_substr(trim(preg_replace('/\s+/u', ' ', ltrim(trim($nama), '#'))), 0, 30));
+
+        return $nama === '' ? null : $nama;
+    }
+
+    /** BJ.1: cocok tanpa beda huruf besar/kecil; belum ada → tag baru grup null (Lainnya). */
+    public static function cariAtauBuat(string $nama, ?User $pembuat = null): self
+    {
+        $ada = static::whereRaw('LOWER(nama) = ?', [mb_strtolower($nama)])->first();
+        if ($ada) {
+            return $ada;
+        }
+
+        $tag = static::create(['nama' => $nama, 'grup' => null, 'dibuat_oleh' => $pembuat?->id]);
+        ActivityLog::record('TAG_DIBUAT', ($pembuat ? "{$pembuat->label()} {$pembuat->name}" : 'Sistem')." membuat tag baru #{$nama}", $tag, [], $pembuat);
+
+        return $tag;
+    }
+
+    /**
+     * BJ.1: gabung input nama tag bebas + id lama jadi daftar id (tag baru dibuat), maks 15.
+     *
+     * @return list<int>
+     */
+    public static function idsDariInput(array $nama, array $ids = [], ?User $pembuat = null, string $field = 'tag_nama'): array
+    {
+        $nama = collect($nama)->map(fn ($n) => is_string($n) ? static::normalisasi($n) : null)
+            ->filter()->unique(fn ($n) => mb_strtolower($n));
+        $ids = collect($ids)->map(fn ($i) => (int) $i)->unique();
+        if ($nama->count() + $ids->count() > self::MAKS) {
+            throw ValidationException::withMessages([$field => 'Maksimal '.self::MAKS.' tag.']);
+        }
+
+        return $ids->merge($nama->map(fn ($n) => static::cariAtauBuat($n, $pembuat)->id))->unique()->values()->all();
     }
 
     /** BA.5: tag yang dicari peran-peran di satu proyek, buat chip filter. */

@@ -45,6 +45,7 @@
 <div class="akun-head">
     <p style="font-size: var(--fs-sm); color: var(--text-secondary); margin: 0;">Semua akun sistem: Admin, Korlap, Client, Extras, Super Admin.</p>
     <div class="akun-head-btn">
+        <a href="{{ route('admin.tags.index') }}" class="btn btn-sm"><i class="ti ti-tags"></i> Kelola Tag</a>
         <button type="button" class="btn btn-sm" onclick="document.getElementById('client-baru-dialog').showModal()"><i class="ti ti-plus"></i> Client</button>
         <button type="button" class="btn btn-sm btn-brand" onclick="document.getElementById('add-admin-dialog').showModal()"><i class="ti ti-plus"></i> Staf</button>
     </div>
@@ -137,6 +138,14 @@
                     <span class="badge {{ $statusBadge($u)[1] }}">{{ $statusBadge($u)[0] }}</span>
                     <span class="badge badge-netral">{{ ($g = $u->extrasProfile?->grade_saat_ini) ? 'Grade '.$g : 'Belum dinilai' }}</span>
                 </div>
+                @if ($u->extrasProfile && ! $u->trashed())
+                    <div class="xsec">Tag</div>
+                    <form method="POST" action="{{ route('admin.users.kategori', $u) }}">
+                        @csrf @method('PATCH')
+                        @include('partials.tag-input', ['name' => 'tag_nama', 'selected' => $u->extrasProfile->categories])
+                        <button type="submit" class="btn btn-sm btn-brand" style="margin-top: 12px;">Simpan Tag</button>
+                    </form>
+                @endif
                 <div class="xsec">Aktivitas terakhir</div>
                 <div class="akun-log" style="white-space: normal;">{{ $u->aktivitasTerakhir?->description ?? 'Belum ada aktivitas.' }}</div>
                 <div class="xsec">Aksi</div>

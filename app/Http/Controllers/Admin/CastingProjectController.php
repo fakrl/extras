@@ -122,7 +122,11 @@ class CastingProjectController extends Controller
             'kelas.*.tipe_continuity' => ['nullable', 'in:continuity,free'],
             'kelas.*.categories' => ['nullable', 'array'],
             'kelas.*.categories.*' => ['integer', 'exists:extras_categories,id'],
+            'kelas.*.tag_nama' => ['nullable', 'array'],
+            'kelas.*.tag_nama.*' => ['nullable', 'string', 'max:100'],
         ]);
+
+        $data['kelas'] = $this->tagKelas($data['kelas'], $user);
 
         $posterPath = $request->hasFile('poster_path')
             ? $request->file('poster_path')->store('posters', 'public')
@@ -225,10 +229,13 @@ class CastingProjectController extends Controller
             'kelas.*.tipe_continuity' => ['nullable', 'in:continuity,free'],
             'kelas.*.categories' => ['nullable', 'array'],
             'kelas.*.categories.*' => ['integer', 'exists:extras_categories,id'],
+            'kelas.*.tag_nama' => ['nullable', 'array'],
+            'kelas.*.tag_nama.*' => ['nullable', 'string', 'max:100'],
         ], [
             'admin_id.required' => 'Pilih Admin PIC proyek ini.',
             'client_id.required' => 'Pilih akun Client proyek ini dulu (proyek lama belum punya Client).',
         ]);
+        $data['kelas'] = $this->tagKelas($data['kelas'], $request->user());
 
         $hasApplicants = $castingProject->applications()->exists();
 
@@ -324,9 +331,19 @@ class CastingProjectController extends Controller
         return Rule::exists('users', 'id')->where('role', $role)->where('status', 'aktif')->whereNull('deleted_at');
     }
 
+    /** BJ.1: tag peran dari input bebas (nama) + id lama → daftar id di 'categories'. */
+    private function tagKelas(array $kelas, User $user): array
+    {
+        foreach ($kelas as $i => $k) {
+            $kelas[$i]['categories'] = ExtrasCategory::idsDariInput($k['tag_nama'] ?? [], $k['categories'] ?? [], $user, "kelas.{$i}.tag_nama");
+        }
+
+        return $kelas;
+    }
+
     private function simpanKelas(CastingProject $project, array $kelas): void
     {
-        $data = Arr::except($kelas, ['id', 'categories']);
+        $data = Arr::except($kelas, ['id', 'categories', 'tag_nama']);
 
         if (empty($kelas['id'])) {
             $class = $project->classes()->create($data);
@@ -417,8 +434,9 @@ class CastingProjectController extends Controller
             ->withQueryString();
 
         $tagDicari = ExtrasCategory::dicariDiProyek($castingProject->id);
+        $tagGroups = ExtrasCategory::perGrup();
 
-        return view('admin.projects.applicants', compact('castingProject', 'applicants', 'grade', 'tab', 'status', 'tagIds', 'urut', 'tagDicari', 'cari'));
+        return view('admin.projects.applicants', compact('castingProject', 'applicants', 'grade', 'tab', 'status', 'tagIds', 'urut', 'tagDicari', 'cari', 'tagGroups'));
     }
 
     /**

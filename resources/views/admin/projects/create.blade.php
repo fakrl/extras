@@ -124,7 +124,7 @@
                 </div>
                 <div style="margin-top: 8px;">
                     <label>Tag yang dicari <span style="color: var(--text-muted); font-weight: 400;">(opsional, dipakai untuk % cocok)</span></label>
-                    @include('partials.tag-chips', ['name' => 'kelas[0][categories][]', 'selected' => []])
+                    @include('partials.tag-input', ['name' => 'kelas[0][tag_nama]', 'selected' => []])
                 </div>
             </div>
         </div>
@@ -139,7 +139,7 @@
 @endsection
 
 @push('scripts')
-<template id="tag-chips-tpl">@include('partials.tag-chips', ['name' => 'kelas[__i__][categories][]', 'selected' => []])</template>
+<template id="tag-chips-tpl">@include('partials.tag-input', ['name' => 'kelas[__i__][tag_nama]', 'selected' => []])</template>
 <script>
     (function () {
         var tanggalWrap = document.getElementById('tanggal-wrap');

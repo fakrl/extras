@@ -3,6 +3,9 @@
 @section('title', 'Kelola Akun Client & Extras')
 
 @section('content')
+<div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
+    <a href="{{ route('admin.tags.index') }}" class="btn btn-sm"><i class="ti ti-tags"></i> Kelola Tag</a>
+</div>
 <div class="card" style="margin-bottom: 20px;">
     <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Client</div>
 
@@ -120,7 +123,7 @@
                 <div class="xsec">Tag (koreksi Admin)</div>
                 <form method="POST" action="{{ route('admin.users.kategori', $ex) }}">
                     @csrf @method('PATCH')
-                    @include('partials.tag-chips', ['name' => 'kategori_ids[]', 'selected' => $ex->extrasProfile->categories->modelKeys()])
+                    @include('partials.tag-input', ['name' => 'tag_nama', 'selected' => $ex->extrasProfile->categories])
                     <button type="submit" class="btn btn-brand" style="margin-top: 14px;">Simpan Tag</button>
                 </form>
             @else

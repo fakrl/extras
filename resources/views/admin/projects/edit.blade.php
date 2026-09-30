@@ -165,7 +165,7 @@
                     </div>
                     <div style="margin-top: 8px;">
                         <label>Tag yang dicari <span style="color: var(--text-muted); font-weight: 400;">(opsional, dipakai untuk % cocok)</span></label>
-                        @include('partials.tag-chips', ['name' => 'kelas['.$loop->index.'][categories][]', 'selected' => $kelas->categories->pluck('id')->all()])
+                        @include('partials.tag-input', ['name' => 'kelas['.$loop->index.'][tag_nama]', 'selected' => $kelas->categories])
                     </div>
                 </div>
             @endforeach
@@ -235,7 +235,7 @@
 @endsection
 
 @push('scripts')
-<template id="tag-chips-tpl">@include('partials.tag-chips', ['name' => 'kelas[__i__][categories][]', 'selected' => []])</template>
+<template id="tag-chips-tpl">@include('partials.tag-input', ['name' => 'kelas[__i__][tag_nama]', 'selected' => []])</template>
 <script>
     (function () {
         var hasApplicants = @json($applicantsCount > 0);

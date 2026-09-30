@@ -107,7 +107,7 @@ class AdminManagementController extends Controller
         } elseif ($user->role === 'extras') {
             $user->load('extrasProfile.categories', 'extrasProfile.applications.castingProject');
             $assignments = collect();
-            $availableKategori = ExtrasCategory::orderBy('nama')->get();
+            $availableKategori = ExtrasCategory::perGrup();
         } else {
             $user->load('adminProjectAssignments.castingProject', 'adminProjectAssignments.payroll.addons', 'adminProfile');
             $assignments = $user->adminProjectAssignments;
@@ -251,24 +251,6 @@ class AdminManagementController extends Controller
         ActivityLog::record('TOGGLE_USER_STATUS', "Super Admin mengubah status {$user->name} ke {$user->status}.", $user);
 
         return back()->with('status', "Status akun {$user->name} diperbarui.");
-    }
-
-    /**
-     * AR.2: Super Admin memperbarui kategori akun Extras.
-     */
-    public function updateKategori(User $user, Request $request): RedirectResponse
-    {
-        abort_unless($user->role === 'extras', 403);
-
-        $data = $request->validate([
-            'kategori_ids' => ['nullable', 'array'],
-            'kategori_ids.*' => ['exists:extras_categories,id'],
-        ]);
-
-        $user->extrasProfile?->categories()->sync($data['kategori_ids'] ?? []);
-        ActivityLog::record('UPDATE_EXTRAS_KATEGORI', "Super Admin memperbarui kategori {$user->name}.", $user);
-
-        return back()->with('status', 'Kategori extras diperbarui.');
     }
 
     /**

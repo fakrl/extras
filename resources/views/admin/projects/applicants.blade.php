@@ -183,6 +183,16 @@
             @endif
 
             @include('partials.tag-cocok', ['profile' => $ex, 'aplikasi' => $app])
+            @if ($isAdmin && $ex->user)
+                <details style="margin-top: 10px;">
+                    <summary class="btn btn-sm" style="list-style: none;"><i class="ti ti-tags"></i> Ubah tag</summary>
+                    <form method="POST" action="{{ route('admin.users.kategori', $ex->user) }}" style="margin-top: 10px;">
+                        @csrf @method('PATCH')
+                        @include('partials.tag-input', ['name' => 'tag_nama', 'selected' => $ex->categories])
+                        <button type="submit" class="btn btn-sm btn-brand" style="margin-top: 10px;">Simpan Tag</button>
+                    </form>
+                </details>
+            @endif
 
             <div class="xsec">Peran & breakdown</div>
             <div class="xkv">

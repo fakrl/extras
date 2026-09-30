@@ -1,5 +1,5 @@
 {{-- BH.1: satu layout profil Extras. Param: $mode (pemilik|admin|client|publik), $profile, $fotoUrl, $videoUrl, $fotos (list url/alt).
-     Publik: tanpa grade, tarif, tautan tambahan, tag Look, kontak; usia rentang; video terkunci.
+     Publik: tanpa grade, tarif, tautan tambahan, tag Look & Lainnya (D22, BJ.1), kontak; usia rentang; video terkunci.
      Client (BI.1): seperti publik tapi video, usia & tag Look tampil (CLAUDE.md §5, BA.6). --}}
 @php
     $publik = $mode === 'publik';
@@ -9,7 +9,7 @@
     $tagGrup = $profile->categories->groupBy(fn ($c) => $c->grup ?: 'Lainnya');
     $usiaTag = $tagGrup->pull('Usia tampilan', collect())->pluck('nama');
     if ($publik) {
-        $tagGrup->forget('Tampilan/Look');
+        $tagGrup->forget(['Tampilan/Look', 'Lainnya']);
     }
     $usia = $profile->usia ? ($publik ? (intdiv($profile->usia, 5) * 5).'–'.(intdiv($profile->usia, 5) * 5 + 4).' tahun' : $profile->usia.' tahun') : '-';
     $gender = ['pria' => 'Laki-laki', 'wanita' => 'Perempuan'][strtolower((string) $profile->gender)] ?? '-';
