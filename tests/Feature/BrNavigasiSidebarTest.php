@@ -28,9 +28,10 @@ class BrNavigasiSidebarTest extends TestCase
         $html = $this->actingAs(User::factory()->create(['role' => $role]))->get(route($dashboard))->assertOk()->getContent();
 
         $this->assertStringContainsString('class="app-shell nav-laci"', $html);
-        $this->assertMatchesRegularExpression('#<aside class="sidebar" id="app-sidebar"[^>]*>.*href="[^"]*'.preg_quote($menu, '#').'"#s', $html);
+        $this->assertMatchesRegularExpression('#<aside class="sidebar" id="app-sidebar"[^>]*>(?:(?!</aside>).)*href="[^"]*'.preg_quote($menu, '#').'"#s', $html);
         $this->assertStringContainsString('id="nav-burger" aria-controls="app-sidebar" aria-expanded="false"', $html);
         $this->assertStringContainsString('data-nav-tutup', $html);
+        $this->assertStringContainsString('id="sidebar-toggle" aria-controls="app-sidebar" aria-pressed="false"', $html);
     }
 
     public function test_extras_tetap_bottom_nav_tanpa_hamburger(): void
@@ -41,7 +42,15 @@ class BrNavigasiSidebarTest extends TestCase
         $this->actingAs($u)->get(route('extras.dashboard'))->assertOk()
             ->assertSee('class="app-shell nav-bawah"', false)
             ->assertSee('sidebar-link is-utama active', false)
+            ->assertSee('id="sidebar-toggle"', false)
             ->assertDontSee('id="nav-burger"', false);
+    }
+
+    public function test_status_ringkas_dipasang_di_head_sebelum_render(): void
+    {
+        $html = $this->actingAs(User::factory()->create(['role' => 'admin']))->get(route('admin.dashboard'))->getContent();
+
+        $this->assertLessThan(strpos($html, '</head>'), strpos($html, "localStorage.getItem('jbtb-sidebar')"));
     }
 
     public function test_sa_mode_korlap_drawer_berisi_menu_korlap(): void
