@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Support\KeputusanClient;
 use App\Support\PerHalaman;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
@@ -34,12 +35,21 @@ class AkunClientController extends Controller
             ->paginate(PerHalaman::dari($request, 25, PerHalaman::TABEL))
             ->withQueryString();
 
-        return view('admin.akun.client', ['clients' => $clients, 'q' => $q, 'keputusan' => KeputusanClient::terbaru()]);
+        return view('admin.akun.client', ['clients' => $clients, 'q' => $q, 'keputusan' => self::feed($request)]);
     }
 
-    /** Partial feed buat refresh otomatis tiap 30 detik. */
+    /** Partial feed: refresh otomatis 30 detik & ganti halaman feed (kp/kper). kecil = kartu dashboard. */
     public function keputusan(Request $request): View
     {
-        return view('partials.keputusan-client-list', ['keputusan' => KeputusanClient::terbaru(), 'kecil' => $request->boolean('kecil')]);
+        $kecil = $request->boolean('kecil');
+
+        return view('partials.keputusan-client-list', ['keputusan' => $kecil ? KeputusanClient::terbaru() : self::feed($request), 'kecil' => $kecil]);
+    }
+
+    private static function feed(Request $request): LengthAwarePaginator
+    {
+        return KeputusanClient::halaman(PerHalaman::dari($request, 10, PerHalaman::TABEL, 'kper'))
+            ->withPath(route('admin.akun.client'))
+            ->withQueryString();
     }
 }

@@ -1,8 +1,8 @@
-{{-- BR.2: feed keputusan Client, refresh otomatis 30 detik (fetch partial, jeda saat tab tidak aktif). Param: keputusan?, kecil? --}}
+{{-- BR.2: feed keputusan Client, refresh otomatis 30 detik (fetch partial, jeda saat tab tidak aktif). Param: keputusan? (paginator = ada paginasi kp/kper), kecil? --}}
 @php $kecil ??= false; @endphp
 <div class="card kc {{ $kecil ? 'is-kecil' : '' }}">
     <div class="card-title"><i class="ti ti-gavel"></i> Keputusan Client terbaru</div>
-    <div data-feed-keputusan="{{ route('admin.akun.client.keputusan', $kecil ? ['kecil' => 1] : []) }}" aria-live="polite">
+    <div data-feed-keputusan="{{ route('admin.akun.client.keputusan', $kecil ? ['kecil' => 1] : request()->query()) }}" aria-live="polite">
         @include('partials.keputusan-client-list', ['keputusan' => $keputusan ?? \App\Support\KeputusanClient::terbaru()])
     </div>
 </div>
@@ -24,17 +24,32 @@
 @push('scripts')
 <script>
 (function () {
+    function muat(el, search) {
+        if (search !== undefined) {
+            var u = new URL(el.dataset.feedKeputusan, location.href);
+            u.search = search;
+            el.dataset.feedKeputusan = u.pathname + u.search;
+        }
+        fetch(el.dataset.feedKeputusan, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (r) { return r.ok ? r.text() : Promise.reject(); })
+            .then(function (html) { el.innerHTML = html; })
+            .catch(function () {});
+    }
     function segarkan() {
-        if (document.hidden) return;
-        document.querySelectorAll('[data-feed-keputusan]').forEach(function (el) {
-            fetch(el.dataset.feedKeputusan, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                .then(function (r) { return r.ok ? r.text() : Promise.reject(); })
-                .then(function (html) { el.innerHTML = html; })
-                .catch(function () {});
-        });
+        if (!document.hidden) document.querySelectorAll('[data-feed-keputusan]').forEach(function (el) { muat(el); });
     }
     setInterval(segarkan, 30000);
     document.addEventListener('visibilitychange', segarkan);
+    document.addEventListener('click', function (e) {
+        var a = e.target.closest('[data-feed-keputusan] .pagination a[href]');
+        if (!a || e.ctrlKey || e.metaKey || e.shiftKey) return;
+        e.preventDefault();
+        muat(a.closest('[data-feed-keputusan]'), new URL(a.href, location.href).search);
+    });
+    document.addEventListener('change', function (e) {
+        var f = e.target.form;
+        if (f && f.matches('[data-kp-form]')) muat(f.closest('[data-feed-keputusan]'), '?' + new URLSearchParams(new FormData(f)));
+    });
 }());
 </script>
 @endpush
