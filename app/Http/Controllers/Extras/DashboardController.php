@@ -49,13 +49,16 @@ class DashboardController extends Controller
             ->get()
             ->map(fn ($e) => tap($e, fn ($e) => $e->nama_produksi = $e->castingProject?->nama_produksi));
 
-        $castingCallTerbuka = CastingProject::where('status', 'dibuka')
-            ->select(['id', 'nama_produksi', 'deadline', 'kuota', 'is_urgent', 'status'])
-            ->orderBy('deadline')
-            ->with(['classes:id,casting_project_id,nama_kelas,kuota_kelas', 'shootingDates:id,casting_project_id,tanggal'])
-            ->get()
-            ->filter(fn ($p) => $p->menerimaPendaftaran())
-            ->take(3)
+        // BJ.4: lowongan yang belum didaftar; peran paling cocok yang masih ada slot, urut % cocok desc lalu deadline terdekat.
+        $tagSaya = $extrasProfile?->categories->modelKeys() ?? [];
+        $castingCallTerbuka = CastingProject::lowonganTerbuka()
+            ->whereNotIn('id', $pendaftaranSaya->pluck('casting_project_id'))
+            ->each(function ($p) use ($tagSaya) {
+                $p->setRelation('peranCocok', $p->classes->sortByDesc(fn ($c) => [$c->sisaKuota() > 0, $c->persenCocok($tagSaya) ?? -1])->first());
+                $p->persenCocok = $p->peranCocok?->persenCocok($tagSaya);
+            })
+            ->sortBy([fn ($a, $b) => ($b->persenCocok ?? -1) <=> ($a->persenCocok ?? -1), fn ($a, $b) => $a->deadline <=> $b->deadline])
+            ->take(5)
             ->values();
 
         $riwayatAbsensi = $extrasProfile

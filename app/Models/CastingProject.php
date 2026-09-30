@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\CastingProjectFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -136,6 +137,18 @@ class CastingProject extends Model
      * PublicEventController, dan return-to-intent di ProfileController/
      * LoginController, supaya definisinya konsisten di mana pun dicek.
      */
+    /** RF-11: lowongan yang masih menerima pendaftaran, deadline terdekat dulu. */
+    public static function lowonganTerbuka(): Collection
+    {
+        return static::where('status', 'dibuka')
+            ->withCount(['applications as terisi' => fn ($q) => $q->whereIn('status_partisipasi', ['lolos', 'kontrak_ditandatangani', 'selesai_produksi'])])
+            ->with(['classes' => fn ($q) => $q->withTerisi()->with('categories:id,nama'), 'shootingDates'])
+            ->orderBy('deadline')
+            ->get()
+            ->filter(fn ($p) => $p->menerimaPendaftaran())
+            ->values();
+    }
+
     public function menerimaPendaftaran(): bool
     {
         return $this->status === 'dibuka'

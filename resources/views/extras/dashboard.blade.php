@@ -3,15 +3,6 @@
 @section('title', 'Dashboard Extras')
 
 @section('content')
-<p style="color: var(--text-secondary); margin: -8px 0 20px; font-size: 13.5px;">
-    Halo, {{ auth()->user()->name }}! Cek lowongan casting terbaru dan pantau status pendaftaran kamu di sini.
-</p>
-
-<div style="display: flex; gap: 8px; margin-bottom: 20px;">
-    <a href="{{ route('extras.profile.show') }}" class="btn">Lihat Profil Saya</a>
-    <a href="{{ route('extras.projects.index') }}" class="btn btn-brand">Lihat Casting Call</a>
-</div>
-
 @php
     $sudahAbsenHariIni = $riwayatAbsensi->filter(fn ($a) => $a->eventShootingDate?->tanggal->isToday())->pluck('project_application_id');
     $tindakan = collect();
@@ -36,18 +27,17 @@
     }
 @endphp
 
-<div class="dash-tiga">
-    <div class="card">
-        <div class="card-title">Jadwal Shooting Bulan Ini</div>
-        <x-jadwal-calendar :events="$jadwalBulanIni" :compact="true" />
-    </div>
+<div class="dash-kolom">
+<p style="color: var(--text-secondary); margin: -8px 0 0; font-size: 13.5px;">
+    Halo, {{ auth()->user()->name }}! Cek lowongan casting terbaru dan pantau status pendaftaran kamu di sini.
+</p>
 
-    <div class="card dash-perlu {{ $tindakan->isNotEmpty() ? '' : 'is-aman' }}">
+
+@if ($tindakan->isNotEmpty())
+    <div class="card dash-perlu" data-dash="perlu-tindakan">
         <div class="card-title">
             <i class="ti ti-clipboard-list"></i> Perlu Tindakan
-            @if ($tindakan->isNotEmpty())
-                <span class="badge badge-pending" style="margin-left: 8px;">{{ $tindakan->count() }}</span>
-            @endif
+            <span class="badge badge-pending" style="margin-left: 8px;">{{ $tindakan->count() }}</span>
         </div>
         @foreach ($tindakan as [$badge, $label, $sub, $url, $tombol, $dialog])
             <div class="dash-row">
@@ -62,114 +52,46 @@
                 @endif
             </div>
         @endforeach
-        @if ($tindakan->isEmpty())
-            <div class="dash-aman" role="status"><i class="ti ti-circle-check"></i> Semua aman &mdash; tidak ada yang perlu kamu lakukan.</div>
-        @endif
     </div>
+@endif
 
-<div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <div style="font-size: 14px; font-weight: 600;"><i class="ti ti-microphone"></i> Casting Call Terbuka</div>
-        <a href="{{ route('extras.projects.index') }}" style="font-size: 12.5px; color: var(--accent);">Lihat Semua &rarr;</a>
+<div class="card" data-dash="casting-call">
+    <div class="card-header-row" style="margin-bottom: 4px;">
+        <div class="card-title" style="margin: 0;"><i class="ti ti-microphone"></i> Casting Call Terbuka</div>
+        <a href="{{ route('extras.projects.index') }}" style="font-size: 12.5px; color: var(--accent);">Lihat semua &rarr;</a>
     </div>
     @forelse ($castingCallTerbuka as $project)
-        <div style="padding: 8px 0; border-bottom: 1px solid var(--border-color);">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-                <div>
-                    <div style="font-size: 13.5px; font-weight: 600;">
-                        {{ $project->nama_produksi }}
-                        @if ($project->isUrgent()) <span class="badge badge-tolak">Dadakan</span> @endif
-                    </div>
-                    <div style="font-size: 12px; color: var(--text-muted);">Deadline: {{ $project->deadline->format('d M Y') }} · {{ $project->classes->count() }} kelas</div>
+        @php $peran = $project->peranCocok; @endphp
+        <div class="dash-row">
+            <div style="min-width: 0; flex: 1;">
+                <div style="font-weight: 600;">
+                    {{ $project->nama_produksi }}
+                    @if ($project->isUrgent()) <span class="badge badge-tolak">Dadakan</span> @endif
                 </div>
-                <a href="{{ route('extras.projects.show', $project) }}" class="btn">Lihat</a>
+                @if ($peran)
+                    <div style="margin-top: 4px; font-size: 13px;">
+                        {{ $peran->nama_kelas }}
+                        @if ($project->persenCocok !== null) <span class="badge {{ $project->persenCocok >= 50 ? 'badge-aktif' : 'badge-netral' }}">{{ $project->persenCocok }}% cocok</span> @endif
+                        @if ($project->classes->count() > 1) <span class="dash-sub">+{{ $project->classes->count() - 1 }} peran lain</span> @endif
+                    </div>
+                @endif
+                <div class="dash-sub" style="margin-top: 2px;">
+                    @if ($peran)
+                        {{ $peran->sisaKuota() === 0 ? 'Penuh' : 'Sisa '.$peran->sisaKuota().' dari '.$peran->kuota_kelas }}
+                    @else
+                        Kuota {{ $project->kuota }}
+                    @endif
+                    · Deadline {{ $project->deadline->translatedFormat('d M Y') }}
+                </div>
             </div>
+            <a href="{{ route('extras.projects.show', $project) }}" class="btn btn-sm btn-brand">Daftar</a>
         </div>
     @empty
-        <div style="font-size: 13px; color: var(--text-muted); text-align: center; padding: 12px 0;">Tidak ada casting call terbuka saat ini.</div>
+        <div class="dash-sub" style="text-align: center; padding: 12px 0;">Belum ada lowongan terbuka. Nanti kami kabari kalau ada yang baru.</div>
     @endforelse
 </div>
 
-</div>
-
-<div class="dashboard-grid-2col {{ $riwayatAbsensi->isNotEmpty() ? 'is-even' : '' }}">
-{{-- Status Akun, Grade, & Linimasa Aktivitas --}}
-<div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-        <div style="font-size: 14px; font-weight: 600;">
-            <i class="ti ti-activity"></i> Status Talenta & Linimasa Aktivitas
-        </div>
-        <div>
-            @if ($extrasProfile?->grade_saat_ini)
-                <span class="badge badge-aktif" style="font-weight: 600; font-size: 12px;">Grade {{ $extrasProfile->grade_saat_ini }}</span>
-            @else
-                <span class="badge badge-pending" style="font-size: var(--fs-xs);">Grade: Belum Dinilai</span>
-            @endif
-        </div>
-    </div>
-    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4;">
-        Klasifikasi Grade (A/B/C) ditentukan oleh Admin Casting berdasarkan penampilan/look fisik talenta dan divalidasi oleh Client. Riwayat aktivitas dan perubahan status akun Anda tercatat secara transparan di bawah ini.
-    </p>
-
-    @if ($aktivitasSaya->isNotEmpty())
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-            @foreach ($aktivitasSaya as $log)
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 10px; background: var(--bg-secondary, rgba(0,0,0,.03)); border-radius: 6px; font-size: 12.5px; gap: 10px;">
-                    <div>
-                        <div style="font-weight: 500;">
-                            @if ($log->action === 'SET_EXTRAS_GRADE')
-                                <span style="color: var(--accent);"><i class="ti ti-star"></i> Perubahan Grade Talenta</span>
-                            @else
-                                <i class="ti ti-point"></i> <span title="{{ $log->action }}">{{ \App\Models\ActivityLog::actionLabel($log->action) }}</span>
-                            @endif
-                        </div>
-                        <div style="font-size: var(--fs-xs); color: var(--text-secondary); margin-top: 2px;">{{ $log->description }}</div>
-                    </div>
-                    <div style="font-size: var(--fs-xs); color: var(--text-muted); white-space: nowrap;">
-                        {{ $log->created_at?->diffForHumans() }}
-                    </div>
-                </div>
-            @endforeach
-        </div>
-    @else
-        <div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 12px 0;">
-            Belum ada catatan aktivitas akun.
-        </div>
-    @endif
-</div>
-
-@if ($riwayatAbsensi->isNotEmpty())
-<div class="card">
-    <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;"><i class="ti ti-clipboard-check"></i> Status Absensi Saya</div>
-    @foreach ($riwayatAbsensi as $absen)
-        @php
-            $namaProyek = $absen->projectApplication->castingProject->nama_produksi ?? '-';
-            $tanggal = $absen->eventShootingDate->tanggal->format('d M Y') ?? '-';
-        @endphp
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--border-color); font-size: 12.5px; gap: 8px;">
-            <div>
-                <div style="font-weight: 500;">{{ $namaProyek }}</div>
-                <div style="color: var(--text-muted);">{{ $tanggal }}</div>
-                @if ($absen->catatan && $absen->status_validasi === 'tervalidasi' && $absen->status === 'tidak_hadir')
-                    <div style="color: var(--danger, #d9534f); margin-top: 2px;">Alasan: {{ $absen->catatan }}</div>
-                @endif
-            </div>
-            <div style="white-space: nowrap;">
-                @if ($absen->status_validasi === 'tervalidasi' && $absen->status === 'hadir')
-                    <span class="badge badge-aktif">Hadir Tervalidasi</span>
-                @elseif ($absen->status_validasi === 'tervalidasi' && $absen->status === 'tidak_hadir')
-                    <span class="badge badge-tolak">Tidak Hadir</span>
-                @else
-                    <span class="badge badge-pending">Menunggu Validasi</span>
-                @endif
-            </div>
-        </div>
-    @endforeach
-</div>
-@endif
-
-</div>
-
+<section data-dash="pendaftaran">
 <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Pendaftaran Saya</div>
 
 @forelse ($pendaftaranSaya as $app)
@@ -323,4 +245,85 @@
         </p>
     </div>
 @endforelse
+</section>
+
+<div class="card" data-dash="status-talenta">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+        <div style="font-size: 14px; font-weight: 600;">
+            <i class="ti ti-activity"></i> Status Talenta & Linimasa Aktivitas
+        </div>
+        <div>
+            @if ($extrasProfile?->grade_saat_ini)
+                <span class="badge badge-aktif" style="font-weight: 600; font-size: 12px;">Grade {{ $extrasProfile->grade_saat_ini }}</span>
+            @else
+                <span class="badge badge-pending" style="font-size: var(--fs-xs);">Grade: Belum Dinilai</span>
+            @endif
+        </div>
+    </div>
+    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4;">
+        Klasifikasi Grade (A/B/C) ditentukan oleh Admin Casting berdasarkan penampilan/look fisik talenta dan divalidasi oleh Client. Riwayat aktivitas dan perubahan status akun Anda tercatat secara transparan di bawah ini.
+    </p>
+
+    @if ($aktivitasSaya->isNotEmpty())
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            @foreach ($aktivitasSaya as $log)
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 10px; background: var(--bg-secondary, rgba(0,0,0,.03)); border-radius: 6px; font-size: 12.5px; gap: 10px;">
+                    <div>
+                        <div style="font-weight: 500;">
+                            @if ($log->action === 'SET_EXTRAS_GRADE')
+                                <span style="color: var(--accent);"><i class="ti ti-star"></i> Perubahan Grade Talenta</span>
+                            @else
+                                <i class="ti ti-point"></i> <span title="{{ $log->action }}">{{ \App\Models\ActivityLog::actionLabel($log->action) }}</span>
+                            @endif
+                        </div>
+                        <div style="font-size: var(--fs-xs); color: var(--text-secondary); margin-top: 2px;">{{ $log->description }}</div>
+                    </div>
+                    <div style="font-size: var(--fs-xs); color: var(--text-muted); white-space: nowrap;">
+                        {{ $log->created_at?->diffForHumans() }}
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @else
+        <div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 12px 0;">
+            Belum ada catatan aktivitas akun.
+        </div>
+    @endif
+</div>
+
+@if ($riwayatAbsensi->isNotEmpty())
+<div class="card">
+    <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;"><i class="ti ti-clipboard-check"></i> Status Absensi Saya</div>
+    @foreach ($riwayatAbsensi as $absen)
+        @php
+            $namaProyek = $absen->projectApplication->castingProject->nama_produksi ?? '-';
+            $tanggal = $absen->eventShootingDate->tanggal->format('d M Y') ?? '-';
+        @endphp
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--border-color); font-size: 12.5px; gap: 8px;">
+            <div>
+                <div style="font-weight: 500;">{{ $namaProyek }}</div>
+                <div style="color: var(--text-muted);">{{ $tanggal }}</div>
+                @if ($absen->catatan && $absen->status_validasi === 'tervalidasi' && $absen->status === 'tidak_hadir')
+                    <div style="color: var(--danger, #d9534f); margin-top: 2px;">Alasan: {{ $absen->catatan }}</div>
+                @endif
+            </div>
+            <div style="white-space: nowrap;">
+                @if ($absen->status_validasi === 'tervalidasi' && $absen->status === 'hadir')
+                    <span class="badge badge-aktif">Hadir Tervalidasi</span>
+                @elseif ($absen->status_validasi === 'tervalidasi' && $absen->status === 'tidak_hadir')
+                    <span class="badge badge-tolak">Tidak Hadir</span>
+                @else
+                    <span class="badge badge-pending">Menunggu Validasi</span>
+                @endif
+            </div>
+        </div>
+    @endforeach
+</div>
+@endif
+
+<div class="card" data-dash="jadwal">
+    <div class="card-title">Jadwal Shooting Bulan Ini</div>
+    <x-jadwal-calendar :events="$jadwalBulanIni" :compact="true" />
+</div>
+</div>
 @endsection

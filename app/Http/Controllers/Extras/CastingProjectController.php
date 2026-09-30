@@ -19,18 +19,9 @@ class CastingProjectController extends Controller
     public function index(Request $request)
     {
         $peran = fn ($q) => $q->withTerisi()->with('categories:id,nama');
-        $aktifStatuses = ['dibuka'];
-        $selesaiStatuses = ['ditutup'];
+        $aktif = CastingProject::lowonganTerbuka();
 
-        $aktif = CastingProject::whereIn('status', $aktifStatuses)
-            ->withCount(['applications as terisi' => fn ($q) => $q->whereIn('status_partisipasi', ['lolos', 'kontrak_ditandatangani', 'selesai_produksi'])])
-            ->with(['classes' => $peran, 'shootingDates'])
-            ->orderBy('deadline')
-            ->get()
-            ->filter(fn ($p) => $p->menerimaPendaftaran())
-            ->values();
-
-        $selesai = CastingProject::whereIn('status', $selesaiStatuses)
+        $selesai = CastingProject::where('status', 'ditutup')
             ->withCount(['applications as terisi' => fn ($q) => $q->whereIn('status_partisipasi', ['lolos', 'kontrak_ditandatangani', 'selesai_produksi'])])
             ->with(['classes' => $peran, 'shootingDates'])
             ->orderByDesc('deadline')
