@@ -96,6 +96,15 @@
     .pe-gal { grid-template-columns: repeat(4, 1fr); }
     .pe-num { margin-bottom: 40px; }
 }
+@media (min-width: 860px) {
+    @container (min-width: 900px) {
+        .pe-sec { --pe-side: max(0px, calc((100% - 1100px) / 2)); padding-inline: var(--pe-side); }
+        .pe-sec.pe-pad { padding-inline: calc(var(--pe-side) + 40px); }
+        .pe-hero { grid-template-columns: clamp(360px, 40%, 420px) 1fr; gap: 64px; }
+        .pe-grid2 > .pe-pad { padding-block: 48px; }
+        .pe-gal { gap: 12px; }
+    }
+}
 </style>
 
 <div class="pe {{ $publik ? 'pe-publik' : 'pe-app' }}" data-username="{{ $username }}" data-status="{{ $status }}" data-status-class="{{ $statusClass }}">
