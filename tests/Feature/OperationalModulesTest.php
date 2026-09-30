@@ -126,7 +126,7 @@ class OperationalModulesTest extends TestCase
         $notif = $client->notifications()->first();
         $this->assertNotNull($notif);
         $this->assertStringContainsString('Budget belum sesuai.', $notif->data['pesan']);
-        $this->assertSame(route('cd.dashboard'), $notif->data['url']);
+        $this->assertSame(\App\Notifications\InAppNotification::relatif(route('cd.dashboard')), $notif->data['url']);
 
         $this->actingAs($client)->get(route('cd.dashboard'))
             ->assertOk()
