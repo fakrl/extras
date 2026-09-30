@@ -6,6 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="color-scheme" content="dark light">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script>try { if (localStorage.getItem('jbtb-sidebar') === 'ringkas') document.documentElement.classList.add('sb-ringkas'); } catch (e) {}</script>
     <title>@yield('title', 'SIM Casting JBTB')</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
@@ -25,6 +26,7 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
+            transition: width .2s ease, padding .2s ease;
         }
         [data-theme="dark"] .sidebar {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cpath d='M0 10L10 0L20 10L10 20Z' stroke='rgba(16%2C185%2C129%2C0.05)' stroke-width='1' fill='none'/%3E%3C/svg%3E");
@@ -39,7 +41,24 @@
             display: flex; align-items: center; justify-content: center;
             font-weight: 700; font-size: 15px;
         }
-        .sidebar-brand span { font-weight: 600; font-size: 15px; }
+        .sidebar-brand span { font-weight: 600; font-size: 15px; white-space: nowrap; }
+        .sidebar-toggle { margin-left: auto; width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: 10px; background: none; color: var(--text-secondary); font-size: 20px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+        .sidebar-toggle:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+        @media (min-width: 861px) {
+            .sb-ringkas .sidebar { width: 64px; padding: 20px 10px; }
+            .sb-ringkas .sidebar-brand { flex-direction: column; gap: 8px; padding: 0 0 12px; }
+            .sb-ringkas .sidebar-brand span, .sb-ringkas .sidebar-group-label, .sb-ringkas .sidebar .chevron-icon { display: none; }
+            .sb-ringkas .sidebar-toggle { margin: 0; }
+            .sb-ringkas .sidebar-toggle i { transform: scaleX(-1); }
+            .sb-ringkas .sidebar-link, .sb-ringkas .sidebar-dropdown-summary { justify-content: center; gap: 0; padding: 10px 0; min-height: 44px; font-size: 0; }
+            .sb-ringkas .sidebar i { font-size: 19px; margin: 0 !important; }
+            .sb-ringkas .sidebar-dropdown { position: relative; }
+            .sb-ringkas .sidebar-dropdown:has(.active) > summary { background: var(--bg-nav-active); color: var(--accent-strong); }
+            .sb-ringkas .sidebar-submenu { position: absolute; left: calc(100% + 12px); top: 0; z-index: 100; min-width: 200px; margin: 0; padding: 6px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: 0 8px 24px rgba(0,0,0,0.18); }
+            .sb-ringkas .sidebar-submenu::before { content: ''; position: absolute; right: 100%; top: 0; bottom: 0; width: 14px; }
+            .sb-ringkas .sidebar-submenu .sidebar-link { justify-content: flex-start; gap: 10px; padding: 10px; font-size: 13.5px; }
+            .sb-ringkas .sidebar-submenu i { font-size: 17px; }
+        }
         .sidebar-group-label {
             font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.5px;
             color: var(--text-muted); padding: 14px 10px 4px;
@@ -590,7 +609,7 @@
                 z-index: 50;
                 gap: 0;
             }
-            .nav-bawah .sidebar-brand, .nav-bawah .sidebar-group-label { display: none; }
+            .nav-bawah .sidebar-brand, .nav-bawah .sidebar-group-label, .sidebar-toggle { display: none; }
             .nav-bawah .sidebar-link {
                 flex-direction: column; justify-content: center;
                 gap: 2px; padding: 6px 8px; min-height: 52px;
@@ -623,7 +642,7 @@
             .topbar-actions { gap: 8px; }
         }
         @media (prefers-reduced-motion: reduce) {
-            .sidebar, .nav-laci .sidebar, .nav-buka .nav-laci .sidebar { transition: none; }
+            .sidebar, .nav-laci .sidebar, .nav-buka .nav-laci .sidebar, .sidebar-toggle i { transition: none; }
         }
 
         @media (max-width: 480px) {
@@ -656,6 +675,7 @@
             <div class="sidebar-brand">
                 <div class="logo">J</div>
                 <span>JBTB Casting</span>
+                <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-controls="app-sidebar" aria-pressed="false" aria-label="Ringkas sidebar" title="Ringkas sidebar"><i class="ti ti-layout-sidebar-left-collapse"></i></button>
             </div>
             @include('partials.sidebar-' . $navRole)
             @if ($laci)
@@ -794,6 +814,42 @@
             });
         })();
 
+        // BR.4 sidebar desktop ringkas: label disembunyikan visual, tooltip + aria-label dari teks menu, submenu jadi flyout
+        (function () {
+            var html = document.documentElement, btn = document.getElementById('sidebar-toggle'), sb = document.getElementById('app-sidebar');
+            if (!btn) return;
+            var desk = matchMedia('(min-width: 861px)');
+            var ringkas = function () { return html.classList.contains('sb-ringkas') && desk.matches; };
+            var tutupFlyout = function (kecuali) { sb.querySelectorAll('.sidebar-dropdown[open]').forEach(function (d) { if (d !== kecuali) d.open = false; }); };
+            function segarkan() {
+                var r = html.classList.contains('sb-ringkas');
+                btn.setAttribute('aria-pressed', r);
+                sb.querySelectorAll('.sidebar-link, .sidebar-dropdown-summary').forEach(function (el) {
+                    if (el.closest('.sidebar-submenu') || el === btn) return;
+                    var teks = el.textContent.trim();
+                    if (r) { el.title = teks; if (!el.hasAttribute('aria-label')) { el.setAttribute('aria-label', teks); el.dataset.sbLabel = ''; } }
+                    else { el.removeAttribute('title'); if (el.hasAttribute('data-sb-label')) { el.removeAttribute('aria-label'); el.removeAttribute('data-sb-label'); } }
+                });
+                if (ringkas()) tutupFlyout();
+            }
+            btn.addEventListener('click', function () {
+                html.classList.toggle('sb-ringkas');
+                try { localStorage.setItem('jbtb-sidebar', html.classList.contains('sb-ringkas') ? 'ringkas' : 'penuh'); } catch (e) {}
+                segarkan();
+            });
+            sb.querySelectorAll('.sidebar-dropdown').forEach(function (d) {
+                d.addEventListener('mouseenter', function () { if (ringkas()) { tutupFlyout(d); d.open = true; } });
+                d.addEventListener('mouseleave', function () { if (ringkas()) d.open = false; });
+                d.querySelector('summary').addEventListener('click', function (e) { if (ringkas() && e.detail > 0) { e.preventDefault(); d.open = true; } });
+            });
+            document.addEventListener('click', function (e) { if (ringkas() && !e.target.closest('.sidebar-dropdown')) tutupFlyout(); });
+            document.addEventListener('keydown', function (e) {
+                var d = e.key === 'Escape' && ringkas() && sb.querySelector('.sidebar-dropdown[open]');
+                if (d) { d.open = false; d.querySelector('summary').focus(); }
+            });
+            segarkan();
+        })();
+
         // BR.3 drawer menu HP (role non-Extras): main-area di-inert saat terbuka supaya fokus terkunci di drawer
         (function () {
             var btn = document.getElementById('nav-burger'), laci = document.getElementById('app-sidebar'), main = document.querySelector('.main-area');
@@ -803,7 +859,7 @@
                 document.documentElement.classList.toggle('nav-buka', buka);
                 btn.setAttribute('aria-expanded', buka);
                 main.inert = buka;
-                if (buka) laci.querySelector('a, summary, button').focus();
+                if (buka) laci.querySelector('a, summary').focus();
                 else if (hp.matches) btn.focus();
             }
             btn.addEventListener('click', function () { atur(true); });
