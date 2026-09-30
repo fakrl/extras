@@ -86,7 +86,7 @@ class BoLoginGoogleTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $project = CastingProject::create([
-            'admin_id' => $admin->id, 'nama_produksi' => 'Event', 'client_ph' => 'PH', 'share_token' => Str::random(32),
+            'admin_id' => $admin->id, 'nama_produksi' => 'Event', 'share_token' => Str::random(32),
             'deadline' => now()->addDays(7), 'kuota' => 5, 'status' => 'dibuka',
         ]);
         $this->mockGoogle();
