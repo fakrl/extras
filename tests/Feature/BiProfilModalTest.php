@@ -35,17 +35,17 @@ class BiProfilModalTest extends TestCase
         $this->project = CastingProject::create(['admin_id' => User::factory()->create(['role' => 'admin'])->id, 'nama_produksi' => 'Proyek BI', 'deadline' => now()->addWeek(), 'kuota' => 5]);
     }
 
-    private function ajukan(string $status = 'diajukan_ke_cd'): ProjectApplication
+    private function ajukan(string $status = 'diajukan_ke_client'): ProjectApplication
     {
         return ProjectApplication::create(['casting_project_id' => $this->project->id, 'extras_id' => $this->profile->id, 'status_partisipasi' => $status]);
     }
 
     private function client(): User
     {
-        $cd = User::factory()->create(['role' => 'client']);
-        $this->project->update(['client_id' => $cd->id]);
+        $klien = User::factory()->create(['role' => 'client']);
+        $this->project->update(['client_id' => $klien->id]);
 
-        return $cd;
+        return $klien;
     }
 
     public function test_admin_xhr_dapat_partial_tanpa_layout(): void
@@ -64,10 +64,10 @@ class BiProfilModalTest extends TestCase
     public function test_client_lihat_kandidat_proyeknya_tanpa_data_internal(): void
     {
         $this->ajukan();
-        $cd = $this->client();
-        $url = route('cd.extras.profil', $this->profile->user);
+        $klien = $this->client();
+        $url = route('client.extras.profil', $this->profile->user);
 
-        $this->actingAs($cd)->get($url, ['X-Requested-With' => 'XMLHttpRequest'])->assertOk()
+        $this->actingAs($klien)->get($url, ['X-Requested-With' => 'XMLHttpRequest'])->assertOk()
             ->assertDontSee('<html', false)
             ->assertSee('#Jawa')
             ->assertSee('27 tahun')
@@ -81,13 +81,13 @@ class BiProfilModalTest extends TestCase
             ->assertDontSee('instagram.com/dimasrahasia')
             ->assertDontSee('Ajak casting lewat JBTB');
 
-        $this->actingAs($cd)->get($url)->assertOk()->assertSee('<html', false)
+        $this->actingAs($klien)->get($url)->assertOk()->assertSee('<html', false)
             ->assertDontSee('350.000')->assertDontSee('Dimas Rahasia Kusuma')->assertDontSee('Akun Dimas');
     }
 
     public function test_client_ditolak_untuk_extras_di_luar_proyeknya(): void
     {
-        $url = route('cd.extras.profil', $this->profile->user);
+        $url = route('client.extras.profil', $this->profile->user);
 
         $this->ajukan();
         $this->actingAs(User::factory()->create(['role' => 'client']))->get($url)->assertForbidden();
@@ -103,12 +103,12 @@ class BiProfilModalTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => 'super_admin']))->get(route('super-admin.akun.index', ['role' => 'extras']))
             ->assertOk()->assertSee('data-profil-modal', false)->assertSee('data-aksi-dialog="kelola-'.$this->profile->user_id.'"', false);
 
-        $this->actingAs(User::factory()->create(['role' => 'admin']))->get(route('admin.projects.applicants', [$this->project, 'tab' => 'cd']))
+        $this->actingAs(User::factory()->create(['role' => 'admin']))->get(route('admin.projects.applicants', [$this->project, 'tab' => 'client']))
             ->assertOk()->assertSee('data-profil-modal', false)->assertSee('data-aksi-dialog="detail-'.$app->id.'"', false);
 
-        $this->actingAs($this->client())->get(route('cd.reviews.show', $this->project))
+        $this->actingAs($this->client())->get(route('client.reviews.show', $this->project))
             ->assertOk()->assertSee('data-profil-modal', false)
-            ->assertSee('href="'.route('cd.extras.profil', $this->profile->user_id).'"', false)
+            ->assertSee('href="'.route('client.extras.profil', $this->profile->user_id).'"', false)
             ->assertSee('data-aksi-fungsi="bukaModalKandidat"', false);
     }
 }

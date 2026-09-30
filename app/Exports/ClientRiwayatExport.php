@@ -2,18 +2,18 @@
 
 namespace App\Exports;
 
-use App\Models\CdReview;
+use App\Models\ClientReview;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class CdRiwayatExport implements FromCollection, WithHeadings
+class ClientRiwayatExport implements FromCollection, WithHeadings
 {
-    public function __construct(private int $cdId, private int $castingProjectId) {}
+    public function __construct(private int $klienId, private int $castingProjectId) {}
 
     public function collection(): Collection
     {
-        return CdReview::where('cd_id', $this->cdId)
+        return ClientReview::where('client_id', $this->klienId)
             ->whereHas('projectApplication', fn ($q) => $q->where('casting_project_id', $this->castingProjectId))
             ->with(['projectApplication.extras:id,user_id', 'projectApplication.extras.user:id,username'])
             ->latest()

@@ -72,7 +72,7 @@ class ExtrasProfile extends Model
             'tampil_di_beranda' => 'boolean',
             'tampil_di_beranda_at' => 'datetime',
             // Array of {label, url}, RF-14 & CLAUDE.md §5: cuma dilihat
-            // Extras & Admin, tidak pernah dikirim ke view Casting Director.
+            // Extras & Admin, tidak pernah dikirim ke view Client.
             'tautan_tambahan' => 'array',
             'riwayat_pengalaman' => 'array',
             'foto_tambahan' => 'array',

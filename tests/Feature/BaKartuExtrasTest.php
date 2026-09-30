@@ -84,10 +84,10 @@ class BaKartuExtrasTest extends TestCase
         $project = CastingProject::factory()->create(['admin_id' => $admin->id]);
         $project->update(['client_id' => $client->id]);
         $t = $this->tags();
-        $app = $this->lamaran($project, 'bagas_22', [$t[0], $t[1]], 'diajukan_ke_cd');
+        $app = $this->lamaran($project, 'bagas_22', [$t[0], $t[1]], 'diajukan_ke_client');
         $app->castingProjectClass->categories()->sync($t);
 
-        $this->actingAs($client)->get(route('cd.reviews.show', $project))
+        $this->actingAs($client)->get(route('client.reviews.show', $project))
             ->assertOk()
             ->assertSee('class="btn btn-sm gl-tag" data-tag="'.$t[2].'"', false)
             ->assertSee('data-cocok="67"', false)
@@ -101,10 +101,10 @@ class BaKartuExtrasTest extends TestCase
         $client = User::factory()->create(['role' => 'client']);
         $project = CastingProject::factory()->create(['admin_id' => $admin->id]);
         $project->update(['client_id' => $client->id]);
-        $app = $this->lamaran($project, 'rahasia_22', [], 'diajukan_ke_cd');
+        $app = $this->lamaran($project, 'rahasia_22', [], 'diajukan_ke_client');
         $email = $app->extras->user->email;
 
-        $this->actingAs($client)->get(route('cd.reviews.show', $project))
+        $this->actingAs($client)->get(route('client.reviews.show', $project))
             ->assertOk()
             ->assertSee('@rahasia_22')
             ->assertDontSee('data-grade-admin')

@@ -15,7 +15,7 @@ use Tests\TestCase;
 /**
  * Bagian D1 & D2: nama_asli dikumpulkan bareng alias di halaman profil,
  * dipakai sebagai nama penandatangan di PDF kontrak, plus username unik
- * yang tampil sebagai "Alias (@username)" ke Admin/CD.
+ * yang tampil sebagai "Alias (@username)" ke Admin/Client.
  */
 class NamaAsliUsernameTest extends TestCase
 {

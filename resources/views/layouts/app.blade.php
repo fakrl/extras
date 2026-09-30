@@ -236,7 +236,7 @@
 
         /* Card grid untuk daftar Proyek Casting & Pendaftar, desktop/iPad-first
            (Admin pakai perangkat itu), tapi tetap collapse rapi ke 1 kolom di
-           mobile karena CD kadang buka dari HP juga. */
+           mobile karena Client kadang buka dari HP juga. */
         .entity-card-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 14px; align-items: start;
@@ -509,7 +509,7 @@
             font-size: var(--fs-xs); text-align: center; padding: 6px 4px;
         }
 
-        /* Thumbnail kecil di tabel pendaftar (Admin & CD) */
+        /* Thumbnail kecil di tabel pendaftar (Admin & Client) */
         .thumb-photo {
             width: 44px; height: 56px; object-fit: cover;
             border-radius: 8px; display: block;

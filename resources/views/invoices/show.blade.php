@@ -4,7 +4,7 @@
 
 @php
     $isClient = auth()->user()->isClient();
-    $sudahTtd = $isClient ? $invoice?->ttd_cd_signature_path : $invoice?->ttd_admin_signature_path;
+    $sudahTtd = $isClient ? $invoice?->ttd_client_signature_path : $invoice?->ttd_admin_signature_path;
 @endphp
 
 @section('content')
@@ -42,7 +42,7 @@
         <div style="flex: 1; min-width: 180px; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px;">
             <div style="font-size: 12px; color: var(--text-secondary);">Tanda Tangan Client / PH</div>
             <div style="font-weight: 600; margin-top: 4px;">
-                @if ($invoice->ttd_cd_signature_path)
+                @if ($invoice->ttd_client_signature_path)
                     <span class="badge badge-aktif">Sudah Ditandatangani</span>
                 @else
                     <span class="badge badge-pending">Menunggu TTD Client</span>

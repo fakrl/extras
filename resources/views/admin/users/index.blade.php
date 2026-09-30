@@ -11,35 +11,35 @@
 
     <div style="display:flex; gap:8px; margin-bottom:10px; align-items:center; flex-wrap:wrap;">
         <label style="margin:0; font-size:12.5px; color:var(--text-secondary);">Status:</label>
-        <select id="filter-cd-status" style="width:auto; min-height:unset; margin-bottom:0; padding:4px 8px; font-size:12.5px;">
+        <select id="filter-client-status" style="width:auto; min-height:unset; margin-bottom:0; padding:4px 8px; font-size:12.5px;">
             <option value="">Semua</option>
             <option value="aktif">Aktif</option>
             <option value="nonaktif">Nonaktif</option>
         </select>
-        <input id="filter-cd-search" type="search" placeholder="Cari nama / email Client…"
+        <input id="filter-client-search" type="search" placeholder="Cari nama / email Client…"
                style="width:220px; min-height:unset; margin-bottom:0; padding:4px 10px; font-size:var(--fs-md);">
     </div>
 
     <div class="table-container">
-    <table id="tabel-cd">
+    <table id="tabel-client">
         <thead>
             <tr><th>Nama</th><th>Email</th><th>Status</th><th></th></tr>
         </thead>
         <tbody>
-            @foreach ($castingDirectors as $cd)
-                <tr data-status="{{ $cd->status }}"
-                    data-nama="{{ strtolower($cd->name) }}"
-                    data-email="{{ strtolower($cd->email) }}">
-                    <td>{{ $cd->name }}</td>
-                    <td>{{ $cd->email }}</td>
+            @foreach ($clients as $klien)
+                <tr data-status="{{ $klien->status }}"
+                    data-nama="{{ strtolower($klien->name) }}"
+                    data-email="{{ strtolower($klien->email) }}">
+                    <td>{{ $klien->name }}</td>
+                    <td>{{ $klien->email }}</td>
                     <td>
-                        <span class="badge {{ $cd->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">
-                            {{ $cd->status }}
+                        <span class="badge {{ $klien->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">
+                            {{ $klien->status }}
                         </span>
                     </td>
                     <td>
-                        <x-confirm-form action="{{ route('admin.users.toggle-status', $cd) }}" method="PATCH" message="{{ $cd->status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }} akun {{ $cd->name }}?">
-                            <button type="submit" class="btn btn-sm" aria-label="{{ $cd->status === 'aktif' ? 'Nonaktifkan akun' : 'Aktifkan akun' }}"><i class="ti ti-power"></i> {{ $cd->status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }}</button>
+                        <x-confirm-form action="{{ route('admin.users.toggle-status', $klien) }}" method="PATCH" message="{{ $klien->status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }} akun {{ $klien->name }}?">
+                            <button type="submit" class="btn btn-sm" aria-label="{{ $klien->status === 'aktif' ? 'Nonaktifkan akun' : 'Aktifkan akun' }}"><i class="ti ti-power"></i> {{ $klien->status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }}</button>
                         </x-confirm-form>
                     </td>
                 </tr>
@@ -151,13 +151,13 @@
         });
     }
 
-    var cdStatus = document.getElementById('filter-cd-status');
-    var cdSearch = document.getElementById('filter-cd-search');
-    function applyCdFilter() {
-        filterRows('#tabel-cd tbody tr', cdStatus ? cdStatus.value : '', cdSearch ? cdSearch.value.toLowerCase().trim() : '');
+    var clientStatus = document.getElementById('filter-client-status');
+    var clientSearch = document.getElementById('filter-client-search');
+    function applyClientFilter() {
+        filterRows('#tabel-client tbody tr', clientStatus ? clientStatus.value : '', clientSearch ? clientSearch.value.toLowerCase().trim() : '');
     }
-    cdStatus && cdStatus.addEventListener('change', applyCdFilter);
-    cdSearch && cdSearch.addEventListener('input', applyCdFilter);
+    clientStatus && clientStatus.addEventListener('change', applyClientFilter);
+    clientSearch && clientSearch.addEventListener('input', applyClientFilter);
 
     var exStatus = document.getElementById('filter-ex-status');
     var exSearch = document.getElementById('filter-ex-search');

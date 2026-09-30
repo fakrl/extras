@@ -4,7 +4,7 @@
 
 @section('content')
 <div style="margin-bottom: 12px;">
-    <a href="{{ route('cd.reviews.index') }}" style="font-size: 13px; color: var(--text-secondary); text-decoration: none;">&larr; Kembali ke Greenlight</a>
+    <a href="{{ route('client.reviews.index') }}" style="font-size: 13px; color: var(--text-secondary); text-decoration: none;">&larr; Kembali ke Greenlight</a>
 </div>
 
 <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
@@ -16,20 +16,20 @@
         @endif
     </div>
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <a href="{{ route('cd.riwayat.export.xlsx', $castingProject) }}" class="btn btn-sm">Ekspor Excel</a>
-        <a href="{{ route('cd.riwayat.export.pdf', $castingProject) }}" class="btn btn-sm">Ekspor PDF</a>
+        <a href="{{ route('client.riwayat.export.xlsx', $castingProject) }}" class="btn btn-sm">Ekspor Excel</a>
+        <a href="{{ route('client.riwayat.export.pdf', $castingProject) }}" class="btn btn-sm">Ekspor PDF</a>
     </div>
 </div>
 
 <div class="xfilter" aria-label="Filter status">
     @foreach (['' => 'Semua', 'menunggu' => 'Menunggu', 'approved' => 'Approved', 'rejected' => 'Rejected'] as $val => $label)
-        <a href="{{ route('cd.reviews.show', array_filter(['castingProject' => $castingProject->id, 'status' => $val ?: null])) }}"
+        <a href="{{ route('client.reviews.show', array_filter(['castingProject' => $castingProject->id, 'status' => $val ?: null])) }}"
            class="btn btn-sm {{ ($statusFilter ?? '') === $val ? 'btn-brand' : '' }}">{{ $label }}</a>
     @endforeach
 </div>
 
 {{-- AU.7: Filter demografis (server-side: gender, usia) + Live Search & filter klien (ukuran baju, warna kulit) --}}
-<form method="GET" action="{{ route('cd.reviews.show', $castingProject) }}" class="xtoolbar">
+<form method="GET" action="{{ route('client.reviews.show', $castingProject) }}" class="xtoolbar">
     @if($statusFilter) <input type="hidden" name="status" value="{{ $statusFilter }}"> @endif
     <input type="search" id="filter-candidate-search" class="xtoolbar-cari" placeholder="Cari username atau peran…" aria-label="Cari kandidat">
     <details class="xtoolbar-more" @if($genderFilter || $usiaMin || $usiaMax) open @endif>
@@ -45,7 +45,7 @@
     <input type="number" name="usia_max" id="filter-usia-max" placeholder="Max" value="{{ $usiaMax ?? '' }}" style="width: 70px;" aria-label="Usia maksimal">
     <button type="submit" class="btn btn-sm">Terapkan</button>
     @if($genderFilter || $usiaMin || $usiaMax)
-        <a href="{{ route('cd.reviews.show', array_filter(['castingProject' => $castingProject->id, 'status' => $statusFilter ?: null])) }}" class="btn btn-sm">Reset</a>
+        <a href="{{ route('client.reviews.show', array_filter(['castingProject' => $castingProject->id, 'status' => $statusFilter ?: null])) }}" class="btn btn-sm">Reset</a>
     @endif
     <select id="filter-ukuran-baju" aria-label="Ukuran baju">
         <option value="">Semua ukuran</option>
@@ -79,29 +79,29 @@
 </label>
 <div id="gl-kosong" class="card" style="display: none; text-align: center; color: var(--text-muted); padding: 24px; margin-bottom: 14px;">Tidak ada kandidat yang cocok dengan filter.</div>
 
-<form method="POST" action="{{ route('cd.reviews.review') }}" id="form-review">
+<form method="POST" action="{{ route('client.reviews.review') }}" id="form-review">
     @csrf
-    <input type="hidden" name="grade_cd" id="hidden-grade-cd">
+    <input type="hidden" name="grade_client" id="hidden-grade-client">
     <input type="hidden" name="keputusan" id="hidden-keputusan">
 
     <div class="xgrid">
         @forelse ($applications as $app)
             @php
-                $review = $app->cdReviews->first();
-                $isPending = $app->status_partisipasi === 'diajukan_ke_cd';
+                $review = $app->clientReviews->first();
+                $isPending = $app->status_partisipasi === 'diajukan_ke_client';
                 $badge = match ($app->status_partisipasi) {
-                    'diajukan_ke_cd' => ['Menunggu', 'badge-pending'],
+                    'diajukan_ke_client' => ['Menunggu', 'badge-pending'],
                     'lolos' => ['Approved · Kontrak', $app->badgeClass()],
                     'kontrak_ditandatangani' => ['Approved · Syuting', $app->badgeClass()],
                     'selesai_produksi' => ['Selesai', $app->badgeClass()],
                     'ditolak' => ['Rejected', 'badge-tolak'],
                     default => [$app->label(), $app->badgeClass()],
                 };
-                $riwayatApprove = \App\Models\CdReview::where('cd_id', auth()->id())
+                $riwayatApprove = \App\Models\ClientReview::where('client_id', auth()->id())
                     ->whereHas('projectApplication', fn($q) => $q->where('extras_id', $app->extras->id))
                     ->where('keputusan', 'approve')
                     ->count();
-                $riwayatReject = \App\Models\CdReview::where('cd_id', auth()->id())
+                $riwayatReject = \App\Models\ClientReview::where('client_id', auth()->id())
                     ->whereHas('projectApplication', fn($q) => $q->where('extras_id', $app->extras->id))
                     ->where('keputusan', 'reject')
                     ->count();
@@ -112,7 +112,7 @@
                 'badge' => $badge,
                 'highlight' => $isPending,
                 'check' => $isPending ? ['name' => 'application_ids[]', 'class' => 'app-checkbox'] : null,
-                'lihat' => ['href' => route('cd.extras.profil', $app->extras->user_id), 'data-profil-modal' => true, 'data-aksi-fungsi' => 'bukaModalKandidat', 'data-aksi-arg' => $app->id, 'data-aksi-label' => $isPending ? 'Pilih / Tolak' : 'Detail review'],
+                'lihat' => ['href' => route('client.extras.profil', $app->extras->user_id), 'data-profil-modal' => true, 'data-aksi-fungsi' => 'bukaModalKandidat', 'data-aksi-arg' => $app->id, 'data-aksi-label' => $isPending ? 'Pilih / Tolak' : 'Detail review'],
                 'aksi' => $isPending ? ['label' => 'Pilih', 'onclick' => "bukaModalKandidat({$app->id}, true)"] : null,
                 'attrs' => [
                     'class' => 'kandidat-card',
@@ -136,7 +136,7 @@
                     'data-status' => $badge[0],
                     'data-status-class' => $badge[1],
                     'data-review-keputusan' => $review?->keputusan ?? '',
-                    'data-review-grade' => $review?->grade_cd ?? '',
+                    'data-review-grade' => $review?->grade_client ?? '',
                     'data-review-tgl' => $review ? $review->created_at->format('d M Y') : '',
                     'data-riwayat-approve' => $riwayatApprove,
                     'data-riwayat-reject' => $riwayatReject,
@@ -224,7 +224,7 @@
         if (!confirm('Reject ' + jumlah + ' kandidat terpilih? Kandidat yang direject tidak bisa diajukan ulang ke proyek ini.')) return;
         this.disabled = true;
         this.textContent = 'Memproses…';
-        document.getElementById('hidden-grade-cd').value = '';
+        document.getElementById('hidden-grade-client').value = '';
         document.getElementById('hidden-keputusan').value = 'reject';
         document.getElementById('form-review').submit();
     });
@@ -338,11 +338,11 @@
                 '<button type="button" class="btn btn-brand" onclick="submitSingle(' + appId + ', \'approve\')">Approve</button>';
         } else if (kartu.dataset.reviewKeputusan) {
             var kep = kartu.dataset.reviewKeputusan;
-            var grCd = kartu.dataset.reviewGrade ? ' (Grade ' + kartu.dataset.reviewGrade + ')' : '';
+            var grClient = kartu.dataset.reviewGrade ? ' (Grade ' + kartu.dataset.reviewGrade + ')' : '';
             formArea.className = 'xmodal-foot';
             formArea.innerHTML =
                 '<div style="font-size: 13px; color: var(--text-secondary);">' +
-                'Keputusan: <strong>' + kep.charAt(0).toUpperCase() + kep.slice(1) + grCd + '</strong><br>' +
+                'Keputusan: <strong>' + kep.charAt(0).toUpperCase() + kep.slice(1) + grClient + '</strong><br>' +
                 '<span style="font-size: var(--fs-xs);">' + (kartu.dataset.reviewTgl || '') + '</span></div>';
         }
 
@@ -396,9 +396,9 @@
         if (keputusan === 'approve') {
             var grade = document.getElementById('mk-grade-select')?.value;
             if (!grade) { alert('Pilih Grade Client dulu sebelum Approve.'); return; }
-            document.getElementById('hidden-grade-cd').value = grade;
+            document.getElementById('hidden-grade-client').value = grade;
         } else {
-            document.getElementById('hidden-grade-cd').value = '';
+            document.getElementById('hidden-grade-client').value = '';
         }
         document.querySelectorAll('.app-checkbox').forEach(function (cb) { cb.checked = false; });
         var cb = document.querySelector('input[type="checkbox"][value="' + appId + '"]');

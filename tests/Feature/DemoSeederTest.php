@@ -42,14 +42,14 @@ class DemoSeederTest extends TestCase
         $p = fn (string $awalan) => CastingProject::where('nama_produksi', 'like', $awalan.'%')->firstOrFail();
 
         $this->assertEquals(
-            ['deal' => 1, 'dibatalkan' => 1, 'diajukan' => 1, 'diajukan_ke_cd' => 2, 'direview_admin' => 1, 'ditolak' => 1, 'kontrak_ditandatangani' => 1, 'lolos' => 1, 'nego_fee' => 2],
+            ['deal' => 1, 'dibatalkan' => 1, 'diajukan' => 1, 'diajukan_ke_client' => 2, 'direview_admin' => 1, 'ditolak' => 1, 'kontrak_ditandatangani' => 1, 'lolos' => 1, 'nego_fee' => 2],
             ProjectApplication::where('casting_project_id', $p('Iklan "Minuman')->id)
                 ->selectRaw('status_partisipasi, count(*) c')->groupBy('status_partisipasi')->orderBy('status_partisipasi')->pluck('c', 'status_partisipasi')->all()
         );
 
         $invoice = $p('Film "Rumah')->invoices()->sole();
         $this->assertNotNull($invoice->pdf_path);
-        Storage::disk('local')->assertExists([$invoice->pdf_path, $invoice->ttd_admin_signature_path, $invoice->ttd_cd_signature_path]);
+        Storage::disk('local')->assertExists([$invoice->pdf_path, $invoice->ttd_admin_signature_path, $invoice->ttd_client_signature_path]);
 
         $p3 = $p('Series "Kampus Biru"');
         $this->assertEquals(2, $p3->applications()->whereHas('attendances', fn ($q) => $q->where('status_validasi', 'menunggu')

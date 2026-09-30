@@ -13,12 +13,12 @@
 </div>
 
 <div class="card" style="margin-bottom: 24px; max-width: 720px;">
-    <form method="POST" action="{{ route('cd.projects.request.store') }}" enctype="multipart/form-data">
+    <form method="POST" action="{{ route('client.projects.request.store') }}" enctype="multipart/form-data">
         @csrf
         <label>Nama Produksi / Judul Film / Iklan <span style="color: red;">*</span></label>
         <input type="text" name="nama_produksi" value="{{ old('nama_produksi') }}" placeholder="Contoh: Kado Untuk Ibu / Iklan Bank Mandiri" required>
 
-        <p class="field-hint">Rumah Produksi: <strong>{{ auth()->user()->nama_perusahaan ?: auth()->user()->name }}</strong> (ubah di <a href="{{ route('cd.profil') }}">Profil</a>).</p>
+        <p class="field-hint">Rumah Produksi: <strong>{{ auth()->user()->nama_perusahaan ?: auth()->user()->name }}</strong> (ubah di <a href="{{ route('client.profil') }}">Profil</a>).</p>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
             <div>

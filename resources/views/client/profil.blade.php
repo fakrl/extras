@@ -5,7 +5,7 @@
 @section('content')
 <div class="card" style="max-width: 520px;">
     <div class="card-title">Profil Client</div>
-    <form method="POST" action="{{ route('cd.profil.update') }}">
+    <form method="POST" action="{{ route('client.profil.update') }}">
         @csrf @method('PUT')
         <label>Username</label>
         <input type="text" value="{{ $user->username }}" disabled>

@@ -50,18 +50,18 @@ class EmailNotificationTest extends TestCase
         $this->assertNotifikasi($application->extras->user_id, 'hasil_seleksi', ['email' => 'terkirim']);
     }
 
-    public function test_cd_approve_mengirim_hasil_seleksi_mail(): void
+    public function test_client_approve_mengirim_hasil_seleksi_mail(): void
     {
         Mail::fake();
 
-        $application = $this->buatAplikasi('diajukan_ke_cd');
-        $cd = User::factory()->create(['role' => 'client']);
-        $application->castingProject->update(['client_id' => $cd->id]);
+        $application = $this->buatAplikasi('diajukan_ke_client');
+        $klien = User::factory()->create(['role' => 'client']);
+        $application->castingProject->update(['client_id' => $klien->id]);
 
-        $response = $this->actingAs($cd)->post('/cd/reviews', [
+        $response = $this->actingAs($klien)->post('/client/reviews', [
             'application_ids' => [$application->id],
             'keputusan' => 'approve',
-            'grade_cd' => 'A',
+            'grade_client' => 'A',
         ]);
 
         $response->assertRedirect();

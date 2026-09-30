@@ -23,7 +23,7 @@ class ProjectRequestController extends Controller
             ->latest()
             ->get();
 
-        return view('cd.projects.request', compact('myRequests'));
+        return view('client.projects.request', compact('myRequests'));
     }
 
     /**
@@ -79,6 +79,6 @@ class ProjectRequestController extends Controller
                 }
             });
 
-        return redirect()->route('cd.dashboard')->with('status', 'Brief permintaan proyek berhasil diajukan! Menunggu peninjauan & persetujuan tim JBTB.');
+        return redirect()->route('client.dashboard')->with('status', 'Brief permintaan proyek berhasil diajukan! Menunggu peninjauan & persetujuan tim JBTB.');
     }
 }

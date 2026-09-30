@@ -366,7 +366,7 @@ class CastingProjectController extends Controller
         $tab = $request->query('tab');
         $status = array_key_exists($request->query('status', ''), ProjectApplication::LABELS) ? $request->query('status') : null;
 
-        $cdStatuses = ['diajukan_ke_cd', 'lolos', 'ditolak'];
+        $klienStatuses = ['diajukan_ke_client', 'lolos', 'ditolak'];
         $tagIds = array_map('intval', array_filter((array) $request->query('tag', []), 'is_numeric'));
         $urut = $request->query('urut') === 'cocok' ? 'cocok' : null;
         $cari = trim((string) $request->query('q', ''));
@@ -377,10 +377,10 @@ class CastingProjectController extends Controller
                 'extras.user', 'extras.categories',
                 'castingProjectClass.categories', 'fieldNotes.korlap', 'contract', 'payment',
             ])
-            ->when($tab === 'cd', fn ($q) => $q->whereIn('status_partisipasi', $cdStatuses))
-            ->when($tab !== 'cd' && $grade === 'belum', fn ($q) => $q->whereNull('grade'))
-            ->when($tab !== 'cd' && in_array($grade, ['A', 'B', 'C'], true), fn ($q) => $q->where('grade', $grade))
-            ->when($tab !== 'cd' && $status, fn ($q) => $q->where('status_partisipasi', $status))
+            ->when($tab === 'client', fn ($q) => $q->whereIn('status_partisipasi', $klienStatuses))
+            ->when($tab !== 'client' && $grade === 'belum', fn ($q) => $q->whereNull('grade'))
+            ->when($tab !== 'client' && in_array($grade, ['A', 'B', 'C'], true), fn ($q) => $q->where('grade', $grade))
+            ->when($tab !== 'client' && $status, fn ($q) => $q->where('status_partisipasi', $status))
             ->when($tagIds, fn ($q) => $q->whereHas('extras.categories', fn ($c) => $c->whereIn('extras_categories.id', $tagIds)))
             ->when($cari !== '', fn ($q) => $q->where(function ($w) use ($cari) {
                 $like = "%{$cari}%";

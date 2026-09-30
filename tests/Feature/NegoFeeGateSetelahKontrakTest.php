@@ -115,7 +115,7 @@ class NegoFeeGateSetelahKontrakTest extends TestCase
     public static function statusLamaYangSudahDiblokir(): array
     {
         return [
-            ['deal'], ['ditolak'], ['diajukan_ke_cd'], ['lolos'],
+            ['deal'], ['ditolak'], ['diajukan_ke_client'], ['lolos'],
         ];
     }
 

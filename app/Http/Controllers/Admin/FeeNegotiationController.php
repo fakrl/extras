@@ -88,14 +88,14 @@ class FeeNegotiationController extends Controller
     }
 
     /**
-     * RF-21: hanya kandidat yang fee-nya sudah Deal yang boleh diajukan ke CD.
-     * Method ajukanKeCd() di model sendiri sudah menjaga urutan ini,
+     * RF-21: hanya kandidat yang fee-nya sudah Deal yang boleh diajukan ke Client.
+     * Method ajukanKeClient() di model sendiri sudah menjaga urutan ini,
      * di sini cukup tangkap exception-nya jadi pesan yang manusiawi.
      */
-    public function ajukanKeCd(ProjectApplication $application): RedirectResponse
+    public function ajukanKeClient(ProjectApplication $application): RedirectResponse
     {
         try {
-            $adaBentrok = $application->ajukanKeCd();
+            $adaBentrok = $application->ajukanKeClient();
         } catch (\LogicException $e) {
             return back()->with('status', $e->getMessage());
         }

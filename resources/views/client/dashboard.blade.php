@@ -29,7 +29,7 @@
         <div class="dash-aman" role="status" @if ($jumlahTindakan) hidden @endif><i class="ti ti-circle-check"></i> Semua aman &mdash; tidak ada yang perlu ditindak.</div>
 
         @if ($perluDireview)
-            <a href="{{ route('cd.reviews.index') }}" class="dash-row">
+            <a href="{{ route('client.reviews.index') }}" class="dash-row">
                 <div>
                     <span class="badge badge-pending">Menunggu Greenlight</span>
                     <strong>{{ $perluDireview }} kandidat</strong>
@@ -52,7 +52,7 @@
                     @endif
                 </div>
                 @if ($req->client_request_status === 'ditolak')
-                    <a href="{{ route('cd.projects.request') }}" class="btn btn-sm">Ajukan Ulang</a>
+                    <a href="{{ route('client.projects.request') }}" class="btn btn-sm">Ajukan Ulang</a>
                 @endif
             </div>
         @endforeach
@@ -65,7 +65,7 @@
                     <div class="dash-sub">Email buat notifikasi &amp; lupa password.</div>
                 </div>
                 <span style="display: flex; gap: 8px;">
-                    <a href="{{ route('cd.profil') }}" class="btn btn-sm btn-brand">Lengkapi</a>
+                    <a href="{{ route('client.profil') }}" class="btn btn-sm btn-brand">Lengkapi</a>
                     <button type="button" class="btn btn-sm" onclick="try { localStorage.setItem('tutup_lengkapi_profil', '1'); } catch (e) {} tutupLengkapiProfil();">Tutup</button>
                 </span>
             </div>
@@ -90,13 +90,13 @@
     <div class="card">
         <div class="card-title">Keputusan Greenlight Saya</div>
         <div class="dash-metrik" style="margin-bottom: 12px;">
-            <a href="{{ route('cd.reviews.index') }}" class="metric-card" style="grid-column: span 2;">
+            <a href="{{ route('client.reviews.index') }}" class="metric-card" style="grid-column: span 2;">
                 <div class="metric-label">Perlu Direview</div>
                 <div class="metric-value">{{ $perluDireview }}</div>
             </a>
         </div>
         <div class="chart-box"><canvas id="chartKeputusan"></canvas></div>
-        <a href="{{ route('cd.reviews.index') }}" class="btn btn-brand" style="width: 100%; margin-top: 12px;">Buka Greenlight</a>
+        <a href="{{ route('client.reviews.index') }}" class="btn btn-brand" style="width: 100%; margin-top: 12px;">Buka Greenlight</a>
     </div>
 </div>
 
@@ -116,10 +116,10 @@
             </div>
         @empty
             <p style="color: var(--text-muted); font-size: 13px;">Anda belum pernah mengajukan proyek.</p>
-            <a href="{{ route('cd.projects.request') }}" class="btn btn-brand">Ajukan Proyek Pertama</a>
+            <a href="{{ route('client.projects.request') }}" class="btn btn-brand">Ajukan Proyek Pertama</a>
         @endforelse
         @if ($pengajuan->isNotEmpty())
-            <a href="{{ route('cd.projects.request') }}" class="btn" style="margin-top: 10px;">Ajukan Proyek Baru</a>
+            <a href="{{ route('client.projects.request') }}" class="btn" style="margin-top: 10px;">Ajukan Proyek Baru</a>
         @endif
     </div>
 

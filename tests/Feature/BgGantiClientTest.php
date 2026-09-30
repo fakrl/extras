@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\ActivityLog;
 use App\Models\CastingProject;
-use App\Models\CdReview;
+use App\Models\ClientReview;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use App\Models\ProjectAttachment;
@@ -27,7 +27,7 @@ class BgGantiClientTest extends TestCase
         $project = CastingProject::factory()->create(['client_id' => $lama->id, 'nama_produksi' => 'Proyek Pindah']);
         $project->update(['client_id' => $lama->id]);
         $app = ProjectApplication::create(['casting_project_id' => $project->id, 'extras_id' => ExtrasProfile::factory()->create()->id, 'status_partisipasi' => 'lolos']);
-        $review = CdReview::create(['project_application_id' => $app->id, 'cd_id' => $lama->id, 'keputusan' => 'approve', 'grade_cd' => 'A']);
+        $review = ClientReview::create(['project_application_id' => $app->id, 'client_id' => $lama->id, 'keputusan' => 'approve', 'grade_client' => 'A']);
         ProjectAttachment::unggah($project, [UploadedFile::fake()->create('brief.pdf', 10, 'application/pdf')], $sa);
         $file = $project->attachments()->first();
 
@@ -49,8 +49,8 @@ class BgGantiClientTest extends TestCase
         $this->assertStringContainsString('Client Lama → Client Baru, akses Client lama dicabut', ActivityLog::where('action', 'UPDATE_PROJECT_PIC')->sole()->description);
 
         $jalur = [
-            route('cd.reviews.show', $project),
-            route('cd.jadwal.show', $project),
+            route('client.reviews.show', $project),
+            route('client.jadwal.show', $project),
             route('invoices.show', $project),
             route('project-attachments.download', $file),
         ];
@@ -59,6 +59,6 @@ class BgGantiClientTest extends TestCase
             $this->actingAs($baru)->get($url)->assertOk();
         }
         $this->actingAs($lama)->get(route('invoices.index-client'))->assertOk()->assertDontSee('Proyek Pindah');
-        $this->actingAs($lama)->get(route('cd.reviews.index'))->assertOk()->assertDontSee('Proyek Pindah');
+        $this->actingAs($lama)->get(route('client.reviews.index'))->assertOk()->assertDontSee('Proyek Pindah');
     }
 }

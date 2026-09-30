@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Exports\CdRiwayatExport;
+use App\Exports\ClientRiwayatExport;
 use App\Models\CastingProject;
-use App\Models\CdReview;
+use App\Models\ClientReview;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use App\Models\User;
@@ -20,7 +20,7 @@ use Tests\TestCase;
  * nggak bisa dibantah") - sebelumnya cuma dites dari sisi "email terkirim"
  * (EmailNotificationTest), belum pernah dites logic negosiasinya sendiri
  * (round bertambah benar, Deal mengunci fee, tolak/deal memblokir aksi
- * lanjutan, ajukanKeCd() menjaga urutan). Model FeeNegotiation sendiri
+ * lanjutan, ajukanKeClient() menjaga urutan). Model FeeNegotiation sendiri
  * py catatan: bug MassAssignmentException di 4 method ini pernah lolos
  * lama karena "belum ada testing end-to-end" - file ini nutup gap itu.
  */
@@ -166,32 +166,32 @@ class FeeNegotiationFlowTest extends TestCase
             ->assertStatus(422);
     }
 
-    public function test_ajukan_ke_cd_gagal_kalau_belum_deal(): void
+    public function test_ajukan_ke_client_gagal_kalau_belum_deal(): void
     {
         Mail::fake();
         $application = $this->buatAplikasi('direview_admin');
         $admin = $application->castingProject->admin;
 
         $this->actingAs($admin)->post(route('admin.negotiations.ajukan', $application), ['nominal' => 200000]);
-        $this->actingAs($admin)->post(route('admin.negotiations.ajukan-ke-cd', $application))->assertRedirect();
+        $this->actingAs($admin)->post(route('admin.negotiations.ajukan-ke-client', $application))->assertRedirect();
 
         $this->assertSame('nego_fee', $application->fresh()->status_partisipasi);
     }
 
-    public function test_ajukan_ke_cd_berhasil_setelah_deal(): void
+    public function test_ajukan_ke_client_berhasil_setelah_deal(): void
     {
         Mail::fake();
         $application = $this->buatAplikasi('direview_admin');
         $admin = $application->castingProject->admin;
         $extras = $application->extras->user;
-        $cd = User::factory()->create(['role' => 'client']);
-        $application->castingProject->update(['client_id' => $cd->id]);
+        $klien = User::factory()->create(['role' => 'client']);
+        $application->castingProject->update(['client_id' => $klien->id]);
 
         $this->actingAs($admin)->post(route('admin.negotiations.ajukan', $application), ['nominal' => 200000]);
         $this->actingAs($extras)->post(route('extras.negotiations.terima', $application), ['nominal' => 200000]);
-        $this->actingAs($admin)->post(route('admin.negotiations.ajukan-ke-cd', $application))->assertRedirect();
+        $this->actingAs($admin)->post(route('admin.negotiations.ajukan-ke-client', $application))->assertRedirect();
 
-        $this->assertSame('diajukan_ke_cd', $application->fresh()->status_partisipasi);
+        $this->assertSame('diajukan_ke_client', $application->fresh()->status_partisipasi);
     }
 
     public function test_extras_lain_tidak_bisa_akses_negosiasi_milik_extras_lain(): void
@@ -228,13 +228,13 @@ class FeeNegotiationFlowTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_export_riwayat_scoped_per_cd(): void
+    public function test_export_riwayat_scoped_per_client(): void
     {
         Excel::fake();
 
         $admin = User::factory()->create(['role' => 'admin']);
-        $cdA = User::factory()->create(['role' => 'client']);
-        $cdB = User::factory()->create(['role' => 'client']);
+        $klienA = User::factory()->create(['role' => 'client']);
+        $klienB = User::factory()->create(['role' => 'client']);
 
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
@@ -251,16 +251,16 @@ class FeeNegotiationFlowTest extends TestCase
             'fee_final' => 200000,
         ]);
 
-        CdReview::create(['cd_id' => $cdA->id, 'project_application_id' => $app->id, 'keputusan' => 'approve']);
-        CdReview::create(['cd_id' => $cdB->id, 'project_application_id' => $app->id, 'keputusan' => 'reject']);
+        ClientReview::create(['client_id' => $klienA->id, 'project_application_id' => $app->id, 'keputusan' => 'approve']);
+        ClientReview::create(['client_id' => $klienB->id, 'project_application_id' => $app->id, 'keputusan' => 'reject']);
 
-        $this->actingAs($cdA)->get(route('cd.riwayat.export.xlsx', $project))->assertForbidden();
-        $project->update(['client_id' => $cdA->id]);
-        $this->actingAs($cdA)->get(route('cd.riwayat.export.xlsx', $project))->assertOk();
+        $this->actingAs($klienA)->get(route('client.riwayat.export.xlsx', $project))->assertForbidden();
+        $project->update(['client_id' => $klienA->id]);
+        $this->actingAs($klienA)->get(route('client.riwayat.export.xlsx', $project))->assertOk();
         Excel::assertDownloaded('riwayat-proyek-export.xlsx');
 
-        $exportA = new CdRiwayatExport($cdA->id, $project->id);
-        $exportB = new CdRiwayatExport($cdB->id, $project->id);
+        $exportA = new ClientRiwayatExport($klienA->id, $project->id);
+        $exportB = new ClientRiwayatExport($klienB->id, $project->id);
 
         $this->assertCount(1, $exportA->collection());
         $this->assertCount(1, $exportB->collection());
@@ -268,10 +268,10 @@ class FeeNegotiationFlowTest extends TestCase
         $this->assertSame('Reject', $exportB->collection()->first()['keputusan']);
     }
 
-    public function test_riwayat_level1_hanya_proyek_milik_cd(): void
+    public function test_riwayat_level1_hanya_proyek_milik_client(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $cd = User::factory()->create(['role' => 'client']);
+        $klien = User::factory()->create(['role' => 'client']);
 
         $projectA = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Ada Review',
@@ -282,11 +282,11 @@ class FeeNegotiationFlowTest extends TestCase
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
 
-        // Level 1 sekarang berbasis CD assignment, bukan CdReview.
-        // CD hanya di-assign ke projectA - projectB tidak muncul.
-        $projectA->update(['client_id' => $cd->id]);
+        // Level 1 sekarang berbasis Client assignment, bukan ClientReview.
+        // Client hanya di-assign ke projectA - projectB tidak muncul.
+        $projectA->update(['client_id' => $klien->id]);
 
-        $response = $this->actingAs($cd)->get(route('cd.reviews.index'));
+        $response = $this->actingAs($klien)->get(route('client.reviews.index'));
         $response->assertOk()
             ->assertSee('Proyek Ada Review')
             ->assertDontSee('Proyek Tanpa Review');
@@ -295,15 +295,15 @@ class FeeNegotiationFlowTest extends TestCase
     public function test_riwayat_level2_tidak_expose_data_terlarang(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $cd = User::factory()->create(['role' => 'client']);
+        $klien = User::factory()->create(['role' => 'client']);
 
         $project = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Level2',
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
 
-        // show() sekarang cek CD assignment
-        $project->update(['client_id' => $cd->id]);
+        // show() sekarang cek Client assignment
+        $project->update(['client_id' => $klien->id]);
 
         $extrasUser = User::factory()->create(['role' => 'extras', 'username' => 'panggilan_user']);
         $extras = ExtrasProfile::create([
@@ -317,7 +317,7 @@ class FeeNegotiationFlowTest extends TestCase
             'fee_final' => 100000,
         ]);
 
-        $response = $this->actingAs($cd)->get(route('cd.reviews.show', $project));
+        $response = $this->actingAs($klien)->get(route('client.reviews.show', $project));
         $response->assertOk()
             ->assertDontSee('Nama Asli Rahasia')
             ->assertDontSee('rate_card')
@@ -327,7 +327,7 @@ class FeeNegotiationFlowTest extends TestCase
     public function test_export_pdf_riwayat(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $cd = User::factory()->create(['role' => 'client']);
+        $klien = User::factory()->create(['role' => 'client']);
 
         $project = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'Proyek PDF',
@@ -343,11 +343,11 @@ class FeeNegotiationFlowTest extends TestCase
             'fee_final' => 100000,
         ]);
 
-        CdReview::create(['cd_id' => $cd->id, 'project_application_id' => $app->id, 'keputusan' => 'approve']);
+        ClientReview::create(['client_id' => $klien->id, 'project_application_id' => $app->id, 'keputusan' => 'approve']);
 
-        $this->actingAs($cd)->get(route('cd.riwayat.export.pdf', $project))->assertForbidden();
-        $project->update(['client_id' => $cd->id]);
-        $response = $this->actingAs($cd)->get(route('cd.riwayat.export.pdf', $project));
+        $this->actingAs($klien)->get(route('client.riwayat.export.pdf', $project))->assertForbidden();
+        $project->update(['client_id' => $klien->id]);
+        $response = $this->actingAs($klien)->get(route('client.riwayat.export.pdf', $project));
         $response->assertOk();
         $this->assertStringContainsString('application/pdf', $response->headers->get('Content-Type'));
     }

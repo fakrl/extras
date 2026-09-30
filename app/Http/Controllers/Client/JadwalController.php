@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Cd;
+namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use App\Models\CastingProject;
@@ -22,7 +22,7 @@ class JadwalController extends Controller
             ->latest()
             ->get();
 
-        return view('cd.jadwal.index', compact('projects'));
+        return view('client.jadwal.index', compact('projects'));
     }
 
     public function show(CastingProject $project)
@@ -31,7 +31,7 @@ class JadwalController extends Controller
 
         $project->load(['shootingDates', 'shootingDates.attendances']);
 
-        return view('cd.jadwal.show', compact('project'));
+        return view('client.jadwal.show', compact('project'));
     }
 
     public function store(Request $request, CastingProject $project)
@@ -69,6 +69,6 @@ class JadwalController extends Controller
             $project->kabariBentrokJadwal([$data['tanggal']]);
         }
 
-        return redirect()->route('cd.jadwal.show', $project)->with('success', 'Jadwal disimpan.');
+        return redirect()->route('client.jadwal.show', $project)->with('success', 'Jadwal disimpan.');
     }
 }

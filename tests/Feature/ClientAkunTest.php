@@ -16,7 +16,7 @@ class ClientAkunTest extends TestCase
         $sa = User::factory()->create(['role' => 'super_admin']);
 
         $this->actingAs($sa)->from(route('super-admin.akun.index'))
-            ->post(route('super-admin.casting-directors.store'), [
+            ->post(route('super-admin.clients.store'), [
                 'name' => 'Andini',
                 'nama_perusahaan' => 'PT Layar Senja',
                 'username' => 'andini_ls',
@@ -43,19 +43,19 @@ class ClientAkunTest extends TestCase
         $this->assertSame(10, strlen($password));
         $this->assertDoesNotMatchRegularExpression('/[0Ool1I]/', $password);
 
-        $this->post('/login', ['email' => 'andini_ls', 'password' => $password])->assertRedirect('/cd/dashboard');
-        $this->get('/cd/dashboard')->assertRedirect(route('ubah-password'));
+        $this->post('/login', ['email' => 'andini_ls', 'password' => $password])->assertRedirect('/client/dashboard');
+        $this->get('/client/dashboard')->assertRedirect(route('ubah-password'));
         $this->get(route('ubah-password'))->assertOk();
 
         $this->post(route('ubah-password.update'), [
             'current_password' => $password,
             'new_password' => 'passwordbaru123',
             'new_password_confirmation' => 'passwordbaru123',
-        ])->assertRedirect('/cd/dashboard');
+        ])->assertRedirect('/client/dashboard');
 
         $this->assertFalse($client->fresh()->wajib_ganti_password);
-        $this->get('/cd/dashboard')->assertOk()->assertSee('Lengkapi profil');
-        $this->get(route('cd.profil'))->assertOk()->assertSee('PT Layar Senja');
+        $this->get('/client/dashboard')->assertOk()->assertSee('Lengkapi profil');
+        $this->get(route('client.profil'))->assertOk()->assertSee('PT Layar Senja');
     }
 
     public function test_dialog_kredensial_tampil_setelah_bikin_client(): void
@@ -63,7 +63,7 @@ class ClientAkunTest extends TestCase
         $sa = User::factory()->create(['role' => 'super_admin']);
 
         $this->actingAs($sa)->followingRedirects()->from(route('super-admin.akun.index'))
-            ->post(route('super-admin.casting-directors.store'), ['name' => 'Rudy', 'username' => 'rudy_kb'])
+            ->post(route('super-admin.clients.store'), ['name' => 'Rudy', 'username' => 'rudy_kb'])
             ->assertOk()->assertSee('kredensial-dialog')->assertSee('rudy_kb');
     }
 
@@ -71,7 +71,7 @@ class ClientAkunTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin']);
 
-        $this->actingAs($admin)->post(route('super-admin.casting-directors.store'), ['name' => 'X', 'username' => 'x_ilegal'])
+        $this->actingAs($admin)->post(route('super-admin.clients.store'), ['name' => 'X', 'username' => 'x_ilegal'])
             ->assertForbidden();
         $this->assertDatabaseMissing('users', ['username' => 'x_ilegal']);
     }
@@ -102,7 +102,7 @@ class ClientAkunTest extends TestCase
     {
         $client = User::factory()->create(['role' => 'client', 'email' => null]);
 
-        $this->actingAs($client)->put(route('cd.profil.update'), [
+        $this->actingAs($client)->put(route('client.profil.update'), [
             'name' => 'Nama Baru', 'nama_perusahaan' => 'PH Baru', 'email' => 'baru@ph.test', 'nomor_wa' => '0811',
         ])->assertRedirect()->assertSessionHasNoErrors();
 

@@ -2,7 +2,7 @@
     <div style="padding: 18px;">
         <div style="font-size: var(--fs-md); font-weight: 600; margin-bottom: 4px;">Tambah Akun Client</div>
         <p style="font-size: var(--fs-sm); color: var(--text-muted); margin: 0 0 14px;">Password sementara dibuat otomatis dan tampil sekali setelah disimpan.</p>
-        <form method="POST" action="{{ route('super-admin.casting-directors.store') }}">
+        <form method="POST" action="{{ route('super-admin.clients.store') }}">
             @csrf
             <input type="hidden" name="_form" value="client-baru">
             <label>Nama</label>

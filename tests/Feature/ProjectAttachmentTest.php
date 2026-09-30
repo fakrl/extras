@@ -73,7 +73,7 @@ class ProjectAttachmentTest extends TestCase
 
         $this->actingAs($client)->get(route('project-attachments.download', $file))
             ->assertOk()->assertDownload('brief.pdf');
-        $this->actingAs($client)->get(route('cd.jadwal.show', $project))
+        $this->actingAs($client)->get(route('client.jadwal.show', $project))
             ->assertOk()->assertSee('brief.pdf');
     }
 
@@ -140,13 +140,13 @@ class ProjectAttachmentTest extends TestCase
     {
         $client = User::factory()->create(['role' => 'client']);
 
-        $this->actingAs($client)->post(route('cd.projects.request.store'), [
+        $this->actingAs($client)->post(route('client.projects.request.store'), [
             'nama_produksi' => 'Iklan Lampiran',
             'deadline' => today()->addWeek()->toDateString(),
             'kuota' => 5,
             'brief_catatan' => 'Brief',
             'files' => [UploadedFile::fake()->create('moodboard.pdf', 100, 'application/pdf')],
-        ])->assertRedirect(route('cd.dashboard'));
+        ])->assertRedirect(route('client.dashboard'));
 
         $project = CastingProject::where('nama_produksi', 'Iklan Lampiran')->firstOrFail();
         $file = $project->attachments()->firstOrFail();

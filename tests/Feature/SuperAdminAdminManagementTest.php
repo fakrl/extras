@@ -10,7 +10,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
- * RF-57: Super Admin kelola akun Admin/CD/sesama Super Admin
+ * RF-57: Super Admin kelola akun Admin/Client/sesama Super Admin
  * (nonaktifkan/aktifkan + hapus permanen).
  */
 class SuperAdminAdminManagementTest extends TestCase

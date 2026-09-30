@@ -196,7 +196,7 @@ class DemoLengkapSeeder extends Seeder
 
         $inv1 = $p1->invoices()->create([
             'ttd_admin_signature_path' => $this->png("invoices/signatures/{$p1->id}-admin-demo.png"),
-            'ttd_cd_signature_path' => $this->png("invoices/signatures/{$p1->id}-cd-demo.png"),
+            'ttd_client_signature_path' => $this->png("invoices/signatures/{$p1->id}-client-demo.png"),
             'created_at' => now()->subDays(27),
         ]);
         $p1->load('classes', 'applications.extras');
@@ -204,7 +204,7 @@ class DemoLengkapSeeder extends Seeder
         $inv1->update(['nominal' => $keuangan->nilaiInvoice($p1), 'status_bayar' => 'lunas', 'dibayar_at' => now()->subDays(22)]);
         $this->biaya($p1, $rina, [['Konsumsi 3 hari shooting', 350000, -29], ['Sewa elf antar-jemput', 250000, -30]]);
         $this->log($rina, 'SIGN_INVOICE', "Admin Rina Kartika menandatangani invoice untuk proyek '{$p1->nama_produksi}'", $p1, -27);
-        $this->log($andini, 'SIGN_INVOICE', "Cd Andini Prameswari menandatangani invoice untuk proyek '{$p1->nama_produksi}'", $p1, -26);
+        $this->log($andini, 'SIGN_INVOICE', "Client Andini Prameswari menandatangani invoice untuk proyek '{$p1->nama_produksi}'", $p1, -26);
 
         foreach ([$rina, $bambang] as $staf) {
             $asg = $p1->adminAssignments()->create(['user_id' => $staf->id, 'assigned_by' => $fakrul->id, 'created_at' => now()->subDays(45)]);
@@ -238,8 +238,8 @@ class DemoLengkapSeeder extends Seeder
         $arga->feeNegotiations()->create(['round' => 1, 'diajukan_oleh' => 'admin', 'nominal' => 175000, 'aksi' => 'tawar', 'created_at' => now()->subDay()]);
         $this->deal($this->daftar($p2, $mhs, 'citra_ay', 'deal', -4), 175000, -2);
         $this->log($this->u['citra_ay'], 'DEAL_FEE', "Extras Citra Ayu menyetujui fee Rp 175.000 untuk proyek '{$p2->nama_produksi}'", $this->app($p2, 'citra_ay'), -2);
-        $this->deal($this->daftar($p2, $mhs, 'dimas_rk', 'diajukan_ke_cd', -5), 250000, -3);
-        $this->deal($this->daftar($p2, $kantor, 'kevin_t', 'diajukan_ke_cd', -5), 250000, -3);
+        $this->deal($this->daftar($p2, $mhs, 'dimas_rk', 'diajukan_ke_client', -5), 250000, -3);
+        $this->deal($this->daftar($p2, $kantor, 'kevin_t', 'diajukan_ke_client', -5), 250000, -3);
         $bagas = $this->daftar($p2, $mhs, 'bagas22', 'lolos', -6);
         $this->deal($bagas, 250000, -5);
         $this->greenlight($bagas, $andini, -4);
@@ -341,12 +341,12 @@ class DemoLengkapSeeder extends Seeder
             ['korlap_bambang', 'Selfie Menunggu Validasi', "melati_k & intan_r mengirim selfie absensi '{$p3->nama_produksi}'.", route('admin.attendance.index', ['project' => $p3->id]), false],
             ['korlap_bambang', 'Honor Tercatat', "Slip honor proyek '{$p1->nama_produksi}' sudah dibuat, menunggu pembayaran.", null, true],
             ['korlap_dedi', 'Penugasan Proyek', "Kamu ditugaskan sebagai Korlap di proyek '{$p2->nama_produksi}'.", null, false],
-            ['client_andini', 'Kandidat Menunggu Greenlight', "2 kandidat proyek '{$p2->nama_produksi}' menunggu keputusan kamu.", route('cd.reviews.show', $p2), false],
+            ['client_andini', 'Kandidat Menunggu Greenlight', "2 kandidat proyek '{$p2->nama_produksi}' menunggu keputusan kamu.", route('client.reviews.show', $p2), false],
             ['client_andini', 'Invoice Siap Diunduh', "Invoice proyek '{$p1->nama_produksi}' sudah ditandatangani kedua pihak.", route('invoices.show', $p1), true],
-            ['client_andini', 'Pengajuan Proyek Disetujui', "Pengajuan proyek '{$p2->nama_produksi}' disetujui tim JBTB.", route('cd.dashboard'), true],
-            ['client_rudy', 'Pengajuan Proyek Ditolak', "Pengajuan proyek '{$p5->nama_produksi}' ditolak. Alasan: {$p5->alasan_tolak}", route('cd.dashboard'), false],
-            ['client_rudy', 'Shooting Hari Ini', "Shooting '{$p3->nama_produksi}' berlangsung hari ini, pantau foto kehadiran.", route('cd.jadwal.show', $p3), false],
-            ['client_maya', 'Pengajuan Terkirim', "Pengajuan proyek '{$p4->nama_produksi}' terkirim, menunggu ACC Super Admin.", route('cd.dashboard'), true],
+            ['client_andini', 'Pengajuan Proyek Disetujui', "Pengajuan proyek '{$p2->nama_produksi}' disetujui tim JBTB.", route('client.dashboard'), true],
+            ['client_rudy', 'Pengajuan Proyek Ditolak', "Pengajuan proyek '{$p5->nama_produksi}' ditolak. Alasan: {$p5->alasan_tolak}", route('client.dashboard'), false],
+            ['client_rudy', 'Shooting Hari Ini', "Shooting '{$p3->nama_produksi}' berlangsung hari ini, pantau foto kehadiran.", route('client.jadwal.show', $p3), false],
+            ['client_maya', 'Pengajuan Terkirim', "Pengajuan proyek '{$p4->nama_produksi}' terkirim, menunggu ACC Super Admin.", route('client.dashboard'), true],
             ['dimas_rk', 'Pembayaran Ditransfer', "Honor proyek '{$p1->nama_produksi}' sudah ditransfer.", $bayar($p1, 'dimas_rk'), true],
             ['dimas_rk', 'Diajukan ke Client', "Kamu diajukan ke Client untuk proyek '{$p2->nama_produksi}'.", route('extras.dashboard'), false],
             ['sari_mei', 'Pembayaran Ditransfer', "Honor proyek '{$p1->nama_produksi}' sudah ditransfer.", $bayar($p1, 'sari_mei'), true],
@@ -451,7 +451,7 @@ class DemoLengkapSeeder extends Seeder
 
     private function greenlight(ProjectApplication $a, User $client, int $hari): void
     {
-        $a->cdReviews()->create(['cd_id' => $client->id, 'keputusan' => 'approve', 'created_at' => now()->addDays($hari)]);
+        $a->clientReviews()->create(['client_id' => $client->id, 'keputusan' => 'approve', 'created_at' => now()->addDays($hari)]);
         $this->log($client, 'REVIEW_CANDIDATE_LOCK', "Client {$client->name} melakukan lock kandidat {$a->extras->user->username} untuk proyek '{$a->castingProject->nama_produksi}'", $a, $hari);
     }
 

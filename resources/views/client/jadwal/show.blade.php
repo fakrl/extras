@@ -4,7 +4,7 @@
 
 @section('content')
 <div style="margin-bottom: 16px;">
-    <a href="{{ route('cd.jadwal.index') }}" style="font-size: 13px; color: var(--text-muted);">&larr; Kembali</a>
+    <a href="{{ route('client.jadwal.index') }}" style="font-size: 13px; color: var(--text-muted);">&larr; Kembali</a>
 </div>
 
 <div style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">{{ $project->nama_produksi }}</div>
@@ -20,7 +20,7 @@
             {{ $date->tanggal->translatedFormat('l, d F Y') }}
         </div>
 
-        <form method="POST" action="{{ route('cd.jadwal.store', $project) }}">
+        <form method="POST" action="{{ route('client.jadwal.store', $project) }}">
             @csrf
             <input type="hidden" name="tanggal" value="{{ $date->tanggal->format('Y-m-d') }}">
 
@@ -72,8 +72,8 @@
                     @foreach ($date->attendances as $absen)
                         @if ($absen->foto_path)
                             <div style="text-align: center;">
-                                <a href="{{ route('cd.absensi.foto', $absen) }}" target="_blank">
-                                    <img src="{{ route('cd.absensi.foto', $absen) }}" alt="Foto absensi"
+                                <a href="{{ route('client.absensi.foto', $absen) }}" target="_blank">
+                                    <img src="{{ route('client.absensi.foto', $absen) }}" alt="Foto absensi"
                                          style="width: 72px; height: 72px; object-fit: cover; border-radius: 6px; border: 2px solid {{ $absen->status_validasi === 'tervalidasi' ? 'var(--accent)' : 'var(--border-color)' }};">
                                 </a>
                                 <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 2px;">

@@ -13,11 +13,11 @@ use App\Http\Controllers\Admin\WorkHistoryController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\Cd\DashboardController as CdDashboardController;
-use App\Http\Controllers\Cd\JadwalController as CdJadwalController;
-use App\Http\Controllers\Cd\ProfilController as CdProfilController;
-use App\Http\Controllers\Cd\ReviewController;
+use App\Http\Controllers\Client\DashboardController as ClientDashboardController;
+use App\Http\Controllers\Client\JadwalController as ClientJadwalController;
+use App\Http\Controllers\Client\ProfilController as ClientProfilController;
 use App\Http\Controllers\Client\ProjectRequestController;
+use App\Http\Controllers\Client\ReviewController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\Extras\AttendanceSelfieController;
 use App\Http\Controllers\Extras\CastingProjectController as ExtrasCastingProjectController;
@@ -39,6 +39,7 @@ use App\Http\Controllers\SuperAdmin\ModeRoleController;
 use App\Http\Controllers\SuperAdmin\MonitoringController;
 use App\Http\Controllers\SuperAdmin\ProjectAssignmentController;
 use App\Http\Controllers\UbahPasswordController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // RF-55: homepage compro publik. Bukan auth gate: tetap tampil apa pun
@@ -47,7 +48,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // RF-56: link publik pendaftaran per event, dibagikan Admin lewat WA.
 // Sengaja di luar grup middleware auth/guest - guest maupun user login
-// (extras/admin/CD) manapun boleh buka, otorisasi granular di controller.
+// (extras/admin/Client) manapun boleh buka, otorisasi granular di controller.
 Route::get('/event/{token}', [PublicEventController::class, 'show'])->name('public.event.show');
 
 // Bagian S: halaman profil publik Extras via share link. Tidak perlu auth.
@@ -203,8 +204,8 @@ Route::middleware(['auth', 'role:admin,korlap,super_admin'])
                 ->name('admin.negotiations.terima');
             Route::post('/applications/{application}/nego/tolak', [AdminFeeNegotiationController::class, 'tolak'])
                 ->name('admin.negotiations.tolak');
-            Route::post('/applications/{application}/ajukan-ke-cd', [AdminFeeNegotiationController::class, 'ajukanKeCd'])
-                ->name('admin.negotiations.ajukan-ke-cd');
+            Route::post('/applications/{application}/ajukan-ke-client', [AdminFeeNegotiationController::class, 'ajukanKeClient'])
+                ->name('admin.negotiations.ajukan-ke-client');
             Route::post('/applications/{application}/batalkan', [AdminFeeNegotiationController::class, 'batalkan'])
                 ->name('admin.negotiations.batalkan');
 
@@ -277,7 +278,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
     Route::delete('/admins/{user}', [AdminManagementController::class, 'destroy'])->name('super-admin.admins.destroy');
 
     Route::redirect('/casting-directors', '/super-admin/akun?role=client');
-    Route::post('/casting-directors', [AdminManagementController::class, 'storeCd'])->name('super-admin.casting-directors.store');
+    Route::post('/casting-directors', [AdminManagementController::class, 'storeClient'])->name('super-admin.clients.store');
 
     Route::post('/projects/{castingProject}/assign', [ProjectAssignmentController::class, 'assign'])
         ->name('super-admin.assignments.assign');
@@ -304,29 +305,34 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
     Route::post('/sebagai/keluar', [ModeRoleController::class, 'keluar'])->name('super-admin.mode.keluar');
 });
 
-// ==================== CLIENT (CASTING DIRECTOR) ====================
+// ==================== CLIENT ====================
 
-Route::middleware(['auth', 'role:client'])->prefix('cd')->group(function () {
-    Route::get('/dashboard', [CdDashboardController::class, 'index'])->name('cd.dashboard');
-    Route::get('/profil', [CdProfilController::class, 'edit'])->name('cd.profil');
-    Route::put('/profil', [CdProfilController::class, 'update'])->name('cd.profil.update');
+// BM.3: URL lama /cd/... (bookmark & link notifikasi lama) dialihkan permanen ke /client/...
+Route::get('/cd/{any?}', fn (Request $request, ?string $any = null) => redirect()->to(
+    '/client/'.$any.($request->getQueryString() ? '?'.$request->getQueryString() : ''), 301
+))->where('any', '.*');
+
+Route::middleware(['auth', 'role:client'])->prefix('client')->group(function () {
+    Route::get('/dashboard', [ClientDashboardController::class, 'index'])->name('client.dashboard');
+    Route::get('/profil', [ClientProfilController::class, 'edit'])->name('client.profil');
+    Route::put('/profil', [ClientProfilController::class, 'update'])->name('client.profil.update');
 
     // Modul 2: Pengajuan brief permintaan proyek oleh Client (Pintu 1)
-    Route::get('/projects/request', [ProjectRequestController::class, 'create'])->name('cd.projects.request');
-    Route::post('/projects/request', [ProjectRequestController::class, 'store'])->name('cd.projects.request.store');
+    Route::get('/projects/request', [ProjectRequestController::class, 'create'])->name('client.projects.request');
+    Route::post('/projects/request', [ProjectRequestController::class, 'store'])->name('client.projects.request.store');
 
-    Route::get('/reviews', [ReviewController::class, 'index'])->name('cd.reviews.index');
-    Route::post('/reviews', [ReviewController::class, 'review'])->name('cd.reviews.review');
-    Route::get('/reviews/{castingProject}', [ReviewController::class, 'show'])->name('cd.reviews.show');
-    Route::get('/extras/{user}/profil', [ReviewController::class, 'profil'])->name('cd.extras.profil');
-    Route::get('/reviews/{castingProject}/export/xlsx', [ReviewController::class, 'exportRiwayatXlsx'])->name('cd.riwayat.export.xlsx');
-    Route::get('/reviews/{castingProject}/export/pdf', [ReviewController::class, 'exportRiwayatPdf'])->name('cd.riwayat.export.pdf');
+    Route::get('/reviews', [ReviewController::class, 'index'])->name('client.reviews.index');
+    Route::post('/reviews', [ReviewController::class, 'review'])->name('client.reviews.review');
+    Route::get('/reviews/{castingProject}', [ReviewController::class, 'show'])->name('client.reviews.show');
+    Route::get('/extras/{user}/profil', [ReviewController::class, 'profil'])->name('client.extras.profil');
+    Route::get('/reviews/{castingProject}/export/xlsx', [ReviewController::class, 'exportRiwayatXlsx'])->name('client.riwayat.export.xlsx');
+    Route::get('/reviews/{castingProject}/export/pdf', [ReviewController::class, 'exportRiwayatPdf'])->name('client.riwayat.export.pdf');
 
-    Route::get('/jadwal', [CdJadwalController::class, 'index'])->name('cd.jadwal.index');
-    Route::get('/jadwal/{project}', [CdJadwalController::class, 'show'])->name('cd.jadwal.show');
-    Route::post('/jadwal/{project}', [CdJadwalController::class, 'store'])->name('cd.jadwal.store');
+    Route::get('/jadwal', [ClientJadwalController::class, 'index'])->name('client.jadwal.index');
+    Route::get('/jadwal/{project}', [ClientJadwalController::class, 'show'])->name('client.jadwal.show');
+    Route::post('/jadwal/{project}', [ClientJadwalController::class, 'store'])->name('client.jadwal.store');
 
-    Route::get('/absensi/{attendance}/foto', [AttendanceController::class, 'cdFotoStream'])->name('cd.absensi.foto');
+    Route::get('/absensi/{attendance}/foto', [AttendanceController::class, 'clientFotoStream'])->name('client.absensi.foto');
 });
 
 // ==================== KONTRAK (lintas role: Admin Default & Extras) ====================
@@ -339,7 +345,7 @@ Route::middleware('auth')->prefix('kontrak')->group(function () {
     Route::get('/{application}/pdf', [ContractController::class, 'downloadPdf'])->name('contracts.download-pdf');
 });
 
-// ==================== INVOICE (lintas role: Admin Default & CD) ====================
+// ==================== INVOICE (lintas role: Admin Default & Client) ====================
 
 Route::middleware('auth')->prefix('invoice')->group(function () {
     Route::get('/', [InvoiceController::class, 'indexClient'])->name('invoices.index-client');
@@ -368,8 +374,8 @@ Route::middleware('auth')->prefix('pembayaran')->group(function () {
     Route::get('/{application}/bukti', [PaymentController::class, 'buktiStream'])->name('payments.bukti');
 });
 
-// ==================== MEDIA PROFIL EXTRAS (lintas role: pemilik, Admin, CD) ====================
-// RF-14 & CLAUDE.md §5: foto/video boleh dilihat pemilik, Admin, maupun CD -
+// ==================== MEDIA PROFIL EXTRAS (lintas role: pemilik, Admin, Client) ====================
+// RF-14 & CLAUDE.md §5: foto/video boleh dilihat pemilik, Admin, maupun Client -
 // otorisasi granular ditegakkan di ProfileController::pastikanBolehLihatMedia(),
 // bukan lewat role middleware, karena resource yang sama diakses 3 pihak berbeda.
 

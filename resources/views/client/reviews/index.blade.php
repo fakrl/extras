@@ -30,7 +30,7 @@
                     <td><span class="badge badge-tolak">{{ $item['rejected'] }}</span></td>
                     <td>{{ $item['total'] }}</td>
                     <td>
-                        <a href="{{ route('cd.reviews.show', $item['proyek']) }}" class="btn btn-sm">Lihat Kandidat</a>
+                        <a href="{{ route('client.reviews.show', $item['proyek']) }}" class="btn btn-sm">Lihat Kandidat</a>
                     </td>
                 </tr>
             @empty

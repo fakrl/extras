@@ -31,13 +31,13 @@ class RegistrationRoleTest extends TestCase
         $this->get('/register/casting-director')->assertRedirect(route('login'));
 
         $this->post('/register/casting-director', [
-            'name' => 'Test CD',
-            'email' => 'cd@example.com',
+            'name' => 'Test Client',
+            'email' => 'client@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
             'setuju_privasi' => '1',
         ])->assertRedirect(route('login'))->assertSessionHas('status');
 
-        $this->assertDatabaseMissing('users', ['email' => 'cd@example.com']);
+        $this->assertDatabaseMissing('users', ['email' => 'client@example.com']);
     }
 }

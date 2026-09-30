@@ -27,8 +27,8 @@ use Illuminate\Support\Str;
 #[Fillable(['name', 'nama_perusahaan', 'email', 'username', 'password', 'wajib_ganti_password', 'role', 'status', 'nomor_wa', 'honor_nominal'])]
 // nomor_wa masuk Hidden, bukan super rahasia (bukan NIK/rekening), tapi
 // Kebijakan privasi: kontak Extras tidak ditampilkan untuk
-// Casting Director; defense-in-depth kalau nanti ada endpoint yang serialize
-// User lewat relasi extras.user tanpa sengaja (Cd\ReviewController sudah
+// Client; defense-in-depth kalau nanti ada endpoint yang serialize
+// User lewat relasi extras.user tanpa sengaja (Client\ReviewController sudah
 // eager-load extras.user untuk kirim WA hasil seleksi).
 #[Hidden(['password', 'remember_token', 'nomor_wa'])]
 class User extends Authenticatable
@@ -238,11 +238,6 @@ class User extends Authenticatable
         return $this->role === self::ROLE_CLIENT;
     }
 
-    public function isCastingDirector(): bool
-    {
-        return $this->isClient();
-    }
-
     /**
      * RF-03: satu-satunya sumber kebenaran untuk "role ini dashboard-nya
      * di mana", dipakai LoginController (setelah login), AppServiceProvider
@@ -256,7 +251,7 @@ class User extends Authenticatable
             self::ROLE_SUPER_ADMIN => '/super-admin/dashboard',
             self::ROLE_ADMIN => '/admin/dashboard',
             self::ROLE_KORLAP => '/admin/absensi',
-            self::ROLE_CLIENT => '/cd/dashboard',
+            self::ROLE_CLIENT => '/client/dashboard',
             self::ROLE_EXTRAS => '/extras/dashboard',
             default => '/login',
         };

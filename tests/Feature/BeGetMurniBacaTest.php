@@ -42,7 +42,7 @@ class BeGetMurniBacaTest extends TestCase
         $this->project->update(['client_id' => $this->client->id]);
     }
 
-    private function aplikasi(string $status = 'diajukan_ke_cd', ?string $nik = '3201010101010001'): ProjectApplication
+    private function aplikasi(string $status = 'diajukan_ke_client', ?string $nik = '3201010101010001'): ProjectApplication
     {
         $user = User::factory()->create(['role' => 'extras', 'nomor_wa' => '081200000002']);
         $extras = ExtrasProfile::create(['user_id' => $user->id, 'nama_asli' => 'Nama KTP']);
@@ -64,8 +64,8 @@ class BeGetMurniBacaTest extends TestCase
 
     private function approve(array $ids): void
     {
-        $this->actingAs($this->client)->post(route('cd.reviews.review'), [
-            'application_ids' => $ids, 'keputusan' => 'approve', 'grade_cd' => 'A',
+        $this->actingAs($this->client)->post(route('client.reviews.review'), [
+            'application_ids' => $ids, 'keputusan' => 'approve', 'grade_client' => 'A',
         ])->assertRedirect();
     }
 
@@ -149,7 +149,7 @@ class BeGetMurniBacaTest extends TestCase
         $lengkap = $this->aplikasi('lolos');
         $tanpaNik = $this->aplikasi('kontrak_ditandatangani', null);
         $this->aplikasi('selesai_produksi', '3201010101010003');
-        $this->aplikasi('diajukan_ke_cd', '3201010101010004');
+        $this->aplikasi('diajukan_ke_client', '3201010101010004');
 
         $migration = require database_path('migrations/2026_09_29_400001_backfill_kontrak_pembayaran_invoice.php');
         $migration->up();

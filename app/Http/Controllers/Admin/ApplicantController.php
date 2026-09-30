@@ -139,7 +139,7 @@ class ApplicantController extends Controller
 
     /**
      * RF-54: Admin Default memberi / mencabut badge Apresiasi pada profil Extras.
-     * Murni catatan internal Admin, tidak terlihat oleh Extras maupun CD.
+     * Murni catatan internal Admin, tidak terlihat oleh Extras maupun Client.
      */
     public function toggleApresiasi(Request $request, ProjectApplication $application): RedirectResponse
     {

@@ -83,7 +83,7 @@ class BdMonitoringModeTest extends TestCase
             ->assertSessionHasErrors('mode');
 
         $this->actingAs($this->sa)->withSession(['sa_mode' => 'client', 'sa_view_user_id' => $protected->id])
-            ->get(route('cd.dashboard'))->assertForbidden();
+            ->get(route('client.dashboard'))->assertForbidden();
     }
 
     public function test_mulai_view_as_client_menampilkan_data_client_target(): void
@@ -94,13 +94,13 @@ class BdMonitoringModeTest extends TestCase
         $this->proyek('Proyek Rahasia Lain')->update(['client_id' => $lain->id]);
 
         $this->actingAs($this->sa)->post(route('super-admin.mode.mulai'), ['mode' => 'client', 'user_id' => $andini->id])
-            ->assertRedirect('/cd/dashboard')
+            ->assertRedirect('/client/dashboard')
             ->assertSessionHas('sa_view_user_id', $andini->id);
 
-        $this->get(route('cd.dashboard'))->assertOk()
+        $this->get(route('client.dashboard'))->assertOk()
             ->assertSee('Proyek Andini')->assertDontSee('Proyek Rahasia Lain')
             ->assertSee('Mode lihat saja')->assertSee('Kembali ke Super Admin')
-            ->assertSee(route('cd.reviews.index'), false);
+            ->assertSee(route('client.reviews.index'), false);
 
         $this->assertDatabaseHas('activity_logs', ['action' => 'SA_MODE_MULAI', 'user_id' => $this->sa->id, 'subject_id' => $andini->id]);
     }
@@ -108,23 +108,23 @@ class BdMonitoringModeTest extends TestCase
     public function test_post_saat_view_as_client_ditolak_dan_db_tidak_berubah(): void
     {
         $client = User::factory()->create(['role' => 'client', 'name' => 'Nama Lama']);
-        $application = $this->aplikasi('diajukan_ke_cd');
+        $application = $this->aplikasi('diajukan_ke_client');
         $application->castingProject->update(['client_id' => $client->id]);
 
-        $this->sebagai($client)->from('/cd/reviews')->post(route('cd.reviews.review'), [
-            'application_ids' => [$application->id], 'keputusan' => 'approve', 'grade_cd' => 'A',
-        ])->assertRedirect('/cd/reviews')->assertSessionHas('error');
+        $this->sebagai($client)->from('/client/reviews')->post(route('client.reviews.review'), [
+            'application_ids' => [$application->id], 'keputusan' => 'approve', 'grade_client' => 'A',
+        ])->assertRedirect('/client/reviews')->assertSessionHas('error');
 
-        $this->sebagai($client)->put(route('cd.profil.update'), ['name' => 'Nama Baru', 'nomor_wa' => '0811'])
+        $this->sebagai($client)->put(route('client.profil.update'), ['name' => 'Nama Baru', 'nomor_wa' => '0811'])
             ->assertRedirect()->assertSessionHas('error');
 
         $this->sebagai($client)->post(route('project-attachments.store', $application->castingProject), [
             'files' => [UploadedFile::fake()->create('a.pdf', 10, 'application/pdf')],
         ])->assertRedirect()->assertSessionHas('error');
 
-        $this->assertSame('diajukan_ke_cd', $application->fresh()->status_partisipasi);
+        $this->assertSame('diajukan_ke_client', $application->fresh()->status_partisipasi);
         $this->assertSame('Nama Lama', $client->fresh()->name);
-        $this->assertDatabaseCount('cd_reviews', 0);
+        $this->assertDatabaseCount('client_reviews', 0);
         $this->assertDatabaseCount('project_attachments', 0);
     }
 
@@ -187,7 +187,7 @@ class BdMonitoringModeTest extends TestCase
         $client = User::factory()->create(['role' => 'client']);
 
         $this->actingAs($this->admin)->withSession(['sa_mode' => 'client', 'sa_view_user_id' => $client->id])
-            ->get(route('cd.dashboard'))->assertForbidden()->assertSessionMissing('sa_mode');
+            ->get(route('client.dashboard'))->assertForbidden()->assertSessionMissing('sa_mode');
     }
 
     public function test_sa_mode_korlap_validasi_absensi_tercatat_sebagai_korlap(): void

@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Cd;
+namespace App\Http\Controllers\Client;
 
-use App\Exports\CdRiwayatExport;
+use App\Exports\ClientRiwayatExport;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\CastingProject;
-use App\Models\CdReview;
+use App\Models\ClientReview;
 use App\Models\ExtrasCategory;
 use App\Models\ProjectApplication;
 use App\Models\User;
@@ -19,7 +19,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ReviewController extends Controller
 {
-    private const STATUS_TERLIHAT = ['diajukan_ke_cd', 'lolos', 'kontrak_ditandatangani', 'selesai_produksi', 'ditolak'];
+    private const STATUS_TERLIHAT = ['diajukan_ke_client', 'lolos', 'kontrak_ditandatangani', 'selesai_produksi', 'ditolak'];
 
     public function index(Request $request)
     {
@@ -33,14 +33,14 @@ class ReviewController extends Controller
 
                 return [
                     'proyek' => $p,
-                    'menunggu' => $apps->where('status_partisipasi', 'diajukan_ke_cd')->count(),
+                    'menunggu' => $apps->where('status_partisipasi', 'diajukan_ke_client')->count(),
                     'approved' => $apps->whereIn('status_partisipasi', ['lolos', 'kontrak_ditandatangani', 'selesai_produksi'])->count(),
                     'rejected' => $apps->where('status_partisipasi', 'ditolak')->count(),
                     'total' => $apps->count(),
                 ];
             });
 
-        return view('cd.reviews.index', compact('proyek'));
+        return view('client.reviews.index', compact('proyek'));
     }
 
     public function review(Request $request): RedirectResponse
@@ -49,20 +49,20 @@ class ReviewController extends Controller
             'application_ids' => ['required', 'array', 'min:1'],
             'application_ids.*' => ['exists:project_applications,id'],
             'keputusan' => ['required', 'in:approve,reject'],
-            'grade_cd' => ['nullable', 'required_if:keputusan,approve', 'in:A,B,C'],
+            'grade_client' => ['nullable', 'required_if:keputusan,approve', 'in:A,B,C'],
         ]);
 
         $applications = ProjectApplication::whereIn('id', $data['application_ids'])
-            ->where('status_partisipasi', 'diajukan_ke_cd')
+            ->where('status_partisipasi', 'diajukan_ke_client')
             ->whereHas('castingProject', fn ($q) => $q->milikClient($request->user()))
             ->with('extras.user', 'castingProject')
             ->get();
 
         foreach ($applications as $application) {
-            $application->cdReviews()->create([
-                'cd_id' => $request->user()->id,
+            $application->clientReviews()->create([
+                'client_id' => $request->user()->id,
                 'keputusan' => $data['keputusan'],
-                'grade_cd' => $data['grade_cd'] ?? null,
+                'grade_client' => $data['grade_client'] ?? null,
             ]);
 
             $application->update([
@@ -79,7 +79,7 @@ class ReviewController extends Controller
                 $data['keputusan'] === 'approve' ? 'REVIEW_CANDIDATE_LOCK' : 'REVIEW_CANDIDATE_REJECT',
                 "Client {$request->user()->name} me-{$data['keputusan']} kandidat extras {$application->extras->user->name} untuk proyek {$application->castingProject->nama_produksi}",
                 $application,
-                ['grade_cd' => $data['grade_cd'] ?? null]
+                ['grade_client' => $data['grade_client'] ?? null]
             );
         }
 
@@ -106,11 +106,11 @@ class ReviewController extends Controller
                 'extras.categories',
                 'castingProjectClass:id,nama_kelas,kriteria',
                 'castingProjectClass.categories',
-                'cdReviews' => fn ($q) => $q->where('cd_id', $request->user()->id)->latest()->limit(1),
+                'clientReviews' => fn ($q) => $q->where('client_id', $request->user()->id)->latest()->limit(1),
             ]);
 
         if ($statusFilter === 'menunggu') {
-            $query->where('status_partisipasi', 'diajukan_ke_cd');
+            $query->where('status_partisipasi', 'diajukan_ke_client');
         } elseif ($statusFilter === 'approved') {
             $query->whereIn('status_partisipasi', ['lolos', 'kontrak_ditandatangani', 'selesai_produksi']);
         } elseif ($statusFilter === 'rejected') {
@@ -136,7 +136,7 @@ class ReviewController extends Controller
             ->merge($applications->flatMap(fn ($a) => $a->extras->categories->where('grup', 'Warna kulit')))
             ->unique('id')->values();
 
-        return response()->view('cd.reviews.show', compact('applications', 'castingProject', 'statusFilter', 'genderFilter', 'usiaMin', 'usiaMax', 'tagDicari'));
+        return response()->view('client.reviews.show', compact('applications', 'castingProject', 'statusFilter', 'genderFilter', 'usiaMin', 'usiaMax', 'tagDicari'));
     }
 
     /** BI.1: profil Extras versi Client, cuma kandidat yang sudah diajukan di proyek Client ini (D3 sementara). */
@@ -157,7 +157,7 @@ class ReviewController extends Controller
         abort_unless($castingProject->milikClient($request->user()), 403);
 
         return Excel::download(
-            new CdRiwayatExport($request->user()->id, $castingProject->id),
+            new ClientRiwayatExport($request->user()->id, $castingProject->id),
             'riwayat-'.Str::slug($castingProject->nama_produksi).'.xlsx'
         );
     }
@@ -165,14 +165,14 @@ class ReviewController extends Controller
     public function exportRiwayatPdf(Request $request, CastingProject $castingProject)
     {
         abort_unless($castingProject->milikClient($request->user()), 403);
-        $cdId = $request->user()->id;
-        $reviews = CdReview::where('cd_id', $cdId)
+        $klienId = $request->user()->id;
+        $reviews = ClientReview::where('client_id', $klienId)
             ->whereHas('projectApplication', fn ($q) => $q->where('casting_project_id', $castingProject->id))
             ->with(['projectApplication.extras:id,user_id', 'projectApplication.extras.user:id,username'])
             ->latest()
             ->get();
 
-        return Pdf::loadView('cd.reviews.riwayat-pdf', compact('reviews', 'castingProject'))
+        return Pdf::loadView('client.reviews.riwayat-pdf', compact('reviews', 'castingProject'))
             ->download('riwayat-'.Str::slug($castingProject->nama_produksi).'.pdf');
     }
 }

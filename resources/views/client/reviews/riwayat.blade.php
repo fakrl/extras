@@ -34,7 +34,7 @@
                         {{ \Carbon\Carbon::parse($item['tanggal_terakhir'])->format('d M Y') }}
                     </td>
                     <td>
-                        <a href="{{ route('cd.riwayat.show', $item['proyek']) }}" class="btn btn-sm">Lihat Kandidat</a>
+                        <a href="{{ route('client.riwayat.show', $item['proyek']) }}" class="btn btn-sm">Lihat Kandidat</a>
                     </td>
                 </tr>
             @empty
