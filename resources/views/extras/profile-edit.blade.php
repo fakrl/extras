@@ -171,23 +171,29 @@
             </select>
             @error('gender')<span class="field-error">{{ $message }}</span>@enderror
 
-            <label>Tinggi Badan (cm)</label>
-            <input type="number" name="tinggi_badan" value="{{ old('tinggi_badan', $profile->tinggi_badan) }}"
-                   placeholder="Contoh: 165" inputmode="numeric"
-                   @class(['input-error' => $errors->has('tinggi_badan')])>
-            @error('tinggi_badan')<span class="field-error">{{ $message }}</span>@enderror
+            <div class="form-row">
+                <div style="min-width: 130px;">
+                    <label for="tinggi_badan">Tinggi Badan (cm)</label>
+                    <input type="number" name="tinggi_badan" id="tinggi_badan" value="{{ old('tinggi_badan', $profile->tinggi_badan) }}"
+                           placeholder="Contoh: 165" inputmode="numeric"
+                           @class(['input-error' => $errors->has('tinggi_badan')])>
+                    @error('tinggi_badan')<span class="field-error">{{ $message }}</span>@enderror
+                </div>
+                <div style="min-width: 130px;">
+                    <label for="berat_badan">Berat Badan (kg)</label>
+                    <input type="number" name="berat_badan" id="berat_badan" value="{{ old('berat_badan', $profile->berat_badan) }}"
+                           placeholder="Opsional, cth: 55" inputmode="numeric" min="20" max="250"
+                           @class(['input-error' => $errors->has('berat_badan')])>
+                    @error('berat_badan')<span class="field-error">{{ $message }}</span>@enderror
+                </div>
+            </div>
 
-            <label>Ukuran Baju</label>
-            <input type="text" name="ukuran_baju" value="{{ old('ukuran_baju', $profile->ukuran_baju) }}"
+            <label for="ukuran_baju">Ukuran Baju <span style="color: var(--text-muted); font-weight: 400;">(opsional)</span></label>
+            <input type="text" name="ukuran_baju" id="ukuran_baju" value="{{ old('ukuran_baju', $profile->ukuran_baju) }}"
                    placeholder="Contoh: M, L, XL"
                    @class(['input-error' => $errors->has('ukuran_baju')])>
             @error('ukuran_baju')<span class="field-error">{{ $message }}</span>@enderror
-
-            <label>Warna Kulit</label>
-            <input type="text" name="warna_kulit" value="{{ old('warna_kulit', $profile->warna_kulit) }}"
-                   placeholder="Contoh: Sawo matang, Kuning langsat"
-                   @class(['input-error' => $errors->has('warna_kulit')])>
-            @error('warna_kulit')<span class="field-error">{{ $message }}</span>@enderror
+            <p class="field-hint">Warna kulit pilih lewat tag di bagian "Tentang Kamu".</p>
         </div>
 
         <div class="profile-section">

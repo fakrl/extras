@@ -109,7 +109,7 @@ class ReviewController extends Controller
         $query = ProjectApplication::where('casting_project_id', $castingProject->id)
             ->whereIn('status_partisipasi', self::STATUS_TERLIHAT)
             ->with([
-                'extras' => fn ($q) => $q->select('id', 'user_id', 'usia', 'gender', 'tinggi_badan', 'ukuran_baju', 'warna_kulit', 'riwayat_pengalaman', 'bahasa', 'foto_profil_path', 'video_profil_path')->withProyekSelesai(),
+                'extras' => fn ($q) => $q->select('id', 'user_id', 'usia', 'gender', 'tinggi_badan', 'berat_badan', 'ukuran_baju', 'warna_kulit', 'riwayat_pengalaman', 'bahasa', 'foto_profil_path', 'video_profil_path')->withProyekSelesai(),
                 'extras.user:id,username',
                 'extras.photos',
                 'extras.categories',
@@ -140,7 +140,10 @@ class ReviewController extends Controller
 
         $applications = $query->latest()->get();
 
-        $tagDicari = ExtrasCategory::dicariDiProyek($castingProject->id);
+        // Tag warna kulit kandidat ikut jadi chip filter (ganti select warna kulit lama).
+        $tagDicari = ExtrasCategory::dicariDiProyek($castingProject->id)
+            ->merge($applications->flatMap(fn ($a) => $a->extras->categories->where('grup', 'Warna kulit')))
+            ->unique('id')->values();
 
         return response()->view('cd.reviews.show', compact('applications', 'castingProject', 'statusFilter', 'genderFilter', 'usiaMin', 'usiaMax', 'tagDicari'));
     }

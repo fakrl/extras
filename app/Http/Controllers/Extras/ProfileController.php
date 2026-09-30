@@ -102,6 +102,7 @@ class ProfileController extends Controller
             'usia' => ['nullable', 'integer', 'min:1', 'max:120'],
             'gender' => ['nullable', 'string'],
             'tinggi_badan' => ['nullable', 'integer'],
+            'berat_badan' => ['nullable', 'integer', 'min:20', 'max:250'],
             'ukuran_baju' => ['nullable', 'string'],
             'warna_kulit' => ['nullable', 'string'],
             'pengalaman' => ['nullable', 'string'],

@@ -38,6 +38,7 @@ use Illuminate\Support\Str;
     'usia',
     'gender',
     'tinggi_badan',
+    'berat_badan',
     'ukuran_baju',
     'warna_kulit',
     'pengalaman',
@@ -75,6 +76,12 @@ class ExtrasProfile extends Model
             'tautan_tambahan' => 'array',
             'riwayat_pengalaman' => 'array',
         ];
+    }
+
+    /** Warna kulit dari tag grup "Warna kulit", fallback kolom lama. */
+    public function warnaKulit(): ?string
+    {
+        return $this->categories->firstWhere('grup', 'Warna kulit')?->nama ?? ($this->warna_kulit ?: null);
     }
 
     /** BJ.3: riwayat pengalaman {judul, keterangan, tahun}, tahun terbaru di atas, tanpa tahun di bawah. */
