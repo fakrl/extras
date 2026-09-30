@@ -18,6 +18,9 @@
         <a href="{{ route('admin.akun.extras') }}" class="sidebar-link {{ str_starts_with($route, 'admin/akun/extras') ? 'active' : '' }}">
             <i class="ti ti-user-star"></i> Extras
         </a>
+        <a href="{{ route('admin.akun.client') }}" class="sidebar-link {{ str_starts_with($route, 'admin/akun/client') ? 'active' : '' }}">
+            <i class="ti ti-building"></i> Client
+        </a>
     </div>
 </details>
 <a href="{{ url('/admin/riwayat-kerja') }}" class="sidebar-link {{ str_starts_with($route, 'admin/riwayat-kerja') ? 'active' : '' }}">

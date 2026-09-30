@@ -210,6 +210,8 @@
 </div>
 </div>
 
+@include('partials.keputusan-client', ['kecil' => true])
+
 <div class="card">
     <div class="card-title">Uang Periode Ini</div>
     <div class="sa-stat-grid is-5">
