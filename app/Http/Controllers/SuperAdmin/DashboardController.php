@@ -164,7 +164,7 @@ class DashboardController extends Controller
     private function kabariClient(CastingProject $castingProject, string $judul, string $pesan): void
     {
         try {
-            $castingProject->client?->notify(new InAppNotification($judul, $pesan, route('cd.dashboard')));
+            $castingProject->client?->notify(new InAppNotification($judul, $pesan, route('client.dashboard')));
         } catch (\Throwable) {
         }
     }

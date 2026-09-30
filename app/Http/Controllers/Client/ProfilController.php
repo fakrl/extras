@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Cd;
+namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -11,7 +11,7 @@ class ProfilController extends Controller
 {
     public function edit(Request $request)
     {
-        return view('cd.profil', ['user' => $request->user()]);
+        return view('client.profil', ['user' => $request->user()]);
     }
 
     public function update(Request $request): RedirectResponse

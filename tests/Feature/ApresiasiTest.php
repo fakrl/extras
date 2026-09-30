@@ -12,7 +12,7 @@ use Tests\TestCase;
 
 /**
  * RF-54: badge Apresiasi Extras, murni catatan internal Admin Default -
- * tidak pernah boleh terlihat oleh CD maupun Extras sendiri.
+ * tidak pernah boleh terlihat oleh Client maupun Extras sendiri.
  */
 class ApresiasiTest extends TestCase
 {
@@ -27,7 +27,7 @@ class ApresiasiTest extends TestCase
         return ProjectApplication::create([
             'casting_project_id' => $project->id,
             'extras_id' => $extras->id,
-            'status_partisipasi' => 'diajukan_ke_cd',
+            'status_partisipasi' => 'diajukan_ke_client',
         ]);
     }
 
@@ -80,15 +80,15 @@ class ApresiasiTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_apresiasi_tidak_muncul_di_halaman_review_cd(): void
+    public function test_apresiasi_tidak_muncul_di_halaman_review_client(): void
     {
         $application = $this->buatAplikasi();
         $application->extras->update(['apresiasi' => true, 'apresiasi_catatan' => 'Rahasia internal admin.']);
 
-        $cd = User::factory()->create(['role' => 'client']);
-        $application->castingProject->update(['client_id' => $cd->id]);
+        $klien = User::factory()->create(['role' => 'client']);
+        $application->castingProject->update(['client_id' => $klien->id]);
 
-        $response = $this->actingAs($cd)->get(route('cd.reviews.index'));
+        $response = $this->actingAs($klien)->get(route('client.reviews.index'));
 
         $response->assertOk();
         $response->assertDontSee('Apresiasi');

@@ -108,7 +108,7 @@ class ProfileController extends Controller
             'bahasa.*' => ['nullable', 'string', 'max:40'],
             // Tautan tambahan (sosmed/portofolio, jumlah bebas via tombol "+"):
             // CLAUDE.md §5, hanya dilihat Extras & Admin, TIDAK PERNAH
-            // dikirim ke view Casting Director.
+            // dikirim ke view Client.
             'tautan_label' => ['nullable', 'array'],
             'tautan_label.*' => ['nullable', 'string', 'max:100'],
             'tautan_url' => ['nullable', 'array'],
@@ -200,7 +200,7 @@ class ProfileController extends Controller
             return redirect('/extras/profil')->with('status', 'Profil berhasil disimpan. Sayangnya proyek dari link yang kamu buka sudah tidak menerima pendaftaran.');
         }
 
-        return redirect('/extras/profil')->with('status', 'Profil berhasil disimpan. Begini tampilannya buat Admin & Casting Director:');
+        return redirect('/extras/profil')->with('status', 'Profil berhasil disimpan. Begini tampilannya buat Admin & Client:');
     }
 
     public function generateShareLink(Request $request): JsonResponse
@@ -355,7 +355,7 @@ class ProfileController extends Controller
 
     /**
      * Serve foto tambahan (slot 1-4) dari private disk. Otorisasi sama
-     * seperti foto profil utama (pemilik/Admin/CD).
+     * seperti foto profil utama (pemilik/Admin/Client).
      */
     public function fotoTambahanStream(Request $request, ExtrasProfile $extrasProfile, int $slot): StreamedResponse
     {
@@ -370,8 +370,8 @@ class ProfileController extends Controller
     /**
      * Serve foto profil dari private disk. Otorisasi manual (bukan cuma role
      * middleware) karena resource yang sama diakses beberapa pihak berbeda:
-     * pemilik sendiri, Admin (semua), atau Casting Director (RF-14 & CLAUDE.md
-     * §5, foto/video boleh dilihat CD, beda dari sosmed/portofolio yang tidak).
+     * pemilik sendiri, Admin (semua), atau Client (RF-14 & CLAUDE.md
+     * §5, foto/video boleh dilihat Client, beda dari sosmed/portofolio yang tidak).
      */
     public function fotoStream(Request $request, ExtrasProfile $extrasProfile): StreamedResponse
     {
@@ -400,7 +400,7 @@ class ProfileController extends Controller
 
         $bolehLihat = $user->id === $extrasProfile->user_id
             || $user->isAnyAdmin()
-            || $user->isCastingDirector();
+            || $user->isClient();
 
         abort_unless($bolehLihat, 403, 'Anda tidak memiliki akses ke media ini.');
     }

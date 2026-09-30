@@ -10,7 +10,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class GradeCdKategoriTest extends TestCase
+class GradeClientKategoriTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -24,7 +24,7 @@ class GradeCdKategoriTest extends TestCase
         ]);
     }
 
-    private function buatApplicationDiajukanKeCd(CastingProject $project): ProjectApplication
+    private function buatApplicationDiajukanKeClient(CastingProject $project): ProjectApplication
     {
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
@@ -32,68 +32,68 @@ class GradeCdKategoriTest extends TestCase
         return ProjectApplication::create([
             'casting_project_id' => $project->id,
             'extras_id' => $extras->id,
-            'status_partisipasi' => 'diajukan_ke_cd',
+            'status_partisipasi' => 'diajukan_ke_client',
             'fee_final' => 200000,
         ]);
     }
 
-    public function test_approve_dengan_grade_cd_tersimpan(): void
+    public function test_approve_dengan_grade_client_tersimpan(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $cd = User::factory()->create(['role' => 'client']);
+        $klien = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
-        $project->update(['client_id' => $cd->id]);
-        $application = $this->buatApplicationDiajukanKeCd($project);
+        $project->update(['client_id' => $klien->id]);
+        $application = $this->buatApplicationDiajukanKeClient($project);
 
-        $response = $this->actingAs($cd)->post(route('cd.reviews.review'), [
+        $response = $this->actingAs($klien)->post(route('client.reviews.review'), [
             'application_ids' => [$application->id],
             'keputusan' => 'approve',
-            'grade_cd' => 'A',
+            'grade_client' => 'A',
         ]);
 
         $response->assertRedirect();
-        $this->assertDatabaseHas('cd_reviews', [
+        $this->assertDatabaseHas('client_reviews', [
             'project_application_id' => $application->id,
             'keputusan' => 'approve',
-            'grade_cd' => 'A',
+            'grade_client' => 'A',
         ]);
     }
 
-    public function test_approve_tanpa_grade_cd_gagal_validasi(): void
+    public function test_approve_tanpa_grade_client_gagal_validasi(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $cd = User::factory()->create(['role' => 'client']);
+        $klien = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
-        $project->update(['client_id' => $cd->id]);
-        $application = $this->buatApplicationDiajukanKeCd($project);
+        $project->update(['client_id' => $klien->id]);
+        $application = $this->buatApplicationDiajukanKeClient($project);
 
-        $response = $this->actingAs($cd)->post(route('cd.reviews.review'), [
+        $response = $this->actingAs($klien)->post(route('client.reviews.review'), [
             'application_ids' => [$application->id],
             'keputusan' => 'approve',
         ]);
 
-        $response->assertSessionHasErrors('grade_cd');
+        $response->assertSessionHasErrors('grade_client');
     }
 
-    public function test_reject_tanpa_grade_cd_berhasil(): void
+    public function test_reject_tanpa_grade_client_berhasil(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $cd = User::factory()->create(['role' => 'client']);
+        $klien = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
-        $project->update(['client_id' => $cd->id]);
-        $application = $this->buatApplicationDiajukanKeCd($project);
+        $project->update(['client_id' => $klien->id]);
+        $application = $this->buatApplicationDiajukanKeClient($project);
 
-        $response = $this->actingAs($cd)->post(route('cd.reviews.review'), [
+        $response = $this->actingAs($klien)->post(route('client.reviews.review'), [
             'application_ids' => [$application->id],
             'keputusan' => 'reject',
         ]);
 
         $response->assertRedirect();
         $response->assertSessionHasNoErrors();
-        $this->assertDatabaseHas('cd_reviews', [
+        $this->assertDatabaseHas('client_reviews', [
             'project_application_id' => $application->id,
             'keputusan' => 'reject',
-            'grade_cd' => null,
+            'grade_client' => null,
         ]);
     }
 

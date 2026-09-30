@@ -13,14 +13,14 @@ use Illuminate\Http\Request;
 class UserManagementController extends Controller
 {
     /**
-     * RF-05: Admin Default mengelola akun CD dan menonaktifkan akun Extras
+     * RF-05: Admin Default mengelola akun Client dan menonaktifkan akun Extras
      * yang bermasalah. Cakupan sengaja dibatasi ke dua role ini, Admin
      * Default TIDAK punya kewenangan menonaktifkan Admin lain (itu hak
      * Super Admin lewat modul Manajemen Karyawan, RF-40/RF-41, Sprint 5).
      */
     public function index()
     {
-        $castingDirectors = User::where('role', 'client')->get();
+        $clients = User::where('role', 'client')->get();
         $extras = User::where('role', 'extras')
             ->with(['extrasProfile' => fn ($q) => $q->withProyekSelesai()->withBatalMendadak(), 'extrasProfile.user:id,username', 'extrasProfile.categories'])
             ->get();
@@ -28,7 +28,7 @@ class UserManagementController extends Controller
 
         $mangkrakCount = User::mangkrak()->count();
 
-        return view('admin.users.index', compact('castingDirectors', 'extras', 'tagGroups', 'mangkrakCount'));
+        return view('admin.users.index', compact('clients', 'extras', 'tagGroups', 'mangkrakCount'));
     }
 
     /**

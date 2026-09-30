@@ -203,7 +203,7 @@ class AttendanceController extends Controller
         return Storage::disk('local')->response($attendance->foto_path);
     }
 
-    public function cdFotoStream(Request $request, Attendance $attendance): StreamedResponse
+    public function clientFotoStream(Request $request, Attendance $attendance): StreamedResponse
     {
         $user = $request->user();
         $project = $attendance->projectApplication->castingProject;

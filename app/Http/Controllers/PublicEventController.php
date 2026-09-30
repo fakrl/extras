@@ -27,7 +27,7 @@ class PublicEventController extends Controller
 
         $user = $request->user();
 
-        // Login tapi bukan Extras (mis. Admin/CD buka link ini), tidak
+        // Login tapi bukan Extras (mis. Admin/Client buka link ini), tidak
         // punya alur apply, lempar ke dashboard masing-masing daripada
         // menampilkan CTA yang tidak bisa mereka pakai.
         if ($user && ! $user->isExtras()) {

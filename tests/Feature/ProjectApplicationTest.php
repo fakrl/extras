@@ -32,17 +32,17 @@ class ProjectApplicationTest extends TestCase
         return $project;
     }
 
-    public function test_ajukan_ke_cd_dengan_bentrok_jadwal_tetap_lanjut_tapi_flag_true(): void
+    public function test_ajukan_ke_client_dengan_bentrok_jadwal_tetap_lanjut_tapi_flag_true(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $cd = User::factory()->create(['role' => 'client']);
+        $klien = User::factory()->create(['role' => 'client']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
         $tanggalBentrok = now()->addDays(10)->toDateString();
         $projectA = $this->buatProyek($admin, $tanggalBentrok);
         $projectB = $this->buatProyek($admin, $tanggalBentrok);
-        $projectB->update(['client_id' => $cd->id]);
+        $projectB->update(['client_id' => $klien->id]);
 
         ProjectApplication::create([
             'casting_project_id' => $projectA->id,
@@ -56,22 +56,22 @@ class ProjectApplicationTest extends TestCase
             'status_partisipasi' => 'deal',
         ]);
 
-        $adaBentrok = $applicationB->ajukanKeCd();
+        $adaBentrok = $applicationB->ajukanKeClient();
 
         $this->assertTrue($adaBentrok);
-        $this->assertSame('diajukan_ke_cd', $applicationB->fresh()->status_partisipasi);
+        $this->assertSame('diajukan_ke_client', $applicationB->fresh()->status_partisipasi);
         $this->assertTrue($applicationB->fresh()->bentrok_jadwal_flag);
     }
 
-    public function test_ajukan_ke_cd_tanpa_bentrok_flag_tetap_false(): void
+    public function test_ajukan_ke_client_tanpa_bentrok_flag_tetap_false(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $cd = User::factory()->create(['role' => 'client']);
+        $klien = User::factory()->create(['role' => 'client']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
         $projectA = $this->buatProyek($admin, now()->addDays(10)->toDateString());
-        $projectA->update(['client_id' => $cd->id]);
+        $projectA->update(['client_id' => $klien->id]);
 
         $application = ProjectApplication::create([
             'casting_project_id' => $projectA->id,
@@ -79,14 +79,14 @@ class ProjectApplicationTest extends TestCase
             'status_partisipasi' => 'deal',
         ]);
 
-        $adaBentrok = $application->ajukanKeCd();
+        $adaBentrok = $application->ajukanKeClient();
 
         $this->assertFalse($adaBentrok);
-        $this->assertSame('diajukan_ke_cd', $application->fresh()->status_partisipasi);
+        $this->assertSame('diajukan_ke_client', $application->fresh()->status_partisipasi);
         $this->assertFalse($application->fresh()->bentrok_jadwal_flag);
     }
 
-    public function test_ajukan_ke_cd_selain_status_deal_ditolak(): void
+    public function test_ajukan_ke_client_selain_status_deal_ditolak(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
@@ -101,7 +101,7 @@ class ProjectApplicationTest extends TestCase
 
         $this->expectException(\LogicException::class);
 
-        $application->ajukanKeCd();
+        $application->ajukanKeClient();
     }
 
     public function test_batalkan_status_deal_mencatat_cancellation_dan_ubah_status(): void
@@ -225,7 +225,7 @@ class ProjectApplicationTest extends TestCase
     public static function statusPraLolosProvider(): array
     {
         return [
-            'diajukan_ke_cd' => ['diajukan_ke_cd'],
+            'diajukan_ke_client' => ['diajukan_ke_client'],
         ];
     }
 

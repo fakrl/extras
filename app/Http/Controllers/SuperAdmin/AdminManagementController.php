@@ -86,7 +86,7 @@ class AdminManagementController extends Controller
     }
 
     /**
-     * Bagian AG/AR.2/AU.6.7: halaman detail per-akun Admin/CD/Extras dengan riwayat kerja lengkap & aktivitas.
+     * Bagian AG/AR.2/AU.6.7: halaman detail per-akun Admin/Client/Extras dengan riwayat kerja lengkap & aktivitas.
      */
     public function show(User $user)
     {
@@ -159,7 +159,7 @@ class AdminManagementController extends Controller
      * BD.1: Super Admin bikin akun Client. Password sementara digenerate,
      * tampil sekali lewat flash `kredensial`, Client wajib ganti saat login.
      */
-    public function storeCd(Request $request): RedirectResponse
+    public function storeClient(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -233,7 +233,7 @@ class AdminManagementController extends Controller
     }
 
     /**
-     * RF-57: nonaktifkan/aktifkan akun Admin/CD/Super Admin lain.
+     * RF-57: nonaktifkan/aktifkan akun Admin/Client/Super Admin lain.
      */
     public function toggleStatus(User $user): RedirectResponse
     {

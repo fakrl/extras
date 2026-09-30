@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
     'casting_project_id', 'pdf_path', 'voucher_template_path',
-    'catatan_invoice', 'ttd_admin_signature_path', 'ttd_cd_signature_path',
+    'catatan_invoice', 'ttd_admin_signature_path', 'ttd_client_signature_path',
     'template_type', 'custom_doc_path', 'nominal', 'status_bayar', 'dibayar_at',
 ])]
 class Invoice extends Model

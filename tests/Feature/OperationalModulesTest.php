@@ -62,7 +62,7 @@ class OperationalModulesTest extends TestCase
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
 
         // Client ajukan proyek
-        $response = $this->actingAs($client)->post(route('cd.projects.request.store'), [
+        $response = $this->actingAs($client)->post(route('client.projects.request.store'), [
             'nama_produksi' => 'Proyek Request Client',
             'deadline' => today()->addDays(10)->format('Y-m-d'),
             'kuota' => 8,
@@ -77,7 +77,7 @@ class OperationalModulesTest extends TestCase
             ],
         ]);
 
-        $response->assertRedirect(route('cd.dashboard'));
+        $response->assertRedirect(route('client.dashboard'));
 
         $project = CastingProject::where('nama_produksi', 'Proyek Request Client')->first();
         $this->assertNotNull($project);
@@ -125,9 +125,9 @@ class OperationalModulesTest extends TestCase
         $notif = $client->notifications()->first();
         $this->assertNotNull($notif);
         $this->assertStringContainsString('Budget belum sesuai.', $notif->data['pesan']);
-        $this->assertSame(InAppNotification::relatif(route('cd.dashboard')), $notif->data['url']);
+        $this->assertSame(InAppNotification::relatif(route('client.dashboard')), $notif->data['url']);
 
-        $this->actingAs($client)->get(route('cd.dashboard'))
+        $this->actingAs($client)->get(route('client.dashboard'))
             ->assertOk()
             ->assertSee('Proyek Ditolak')
             ->assertSee('Budget belum sesuai.');

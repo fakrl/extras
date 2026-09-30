@@ -13,7 +13,7 @@ class StatusLabelsTest extends TestCase
     public function test_project_application_semua_status_partisipasi_punya_label_dan_badge(): void
     {
         $statuses = [
-            'diajukan', 'direview_admin', 'nego_fee', 'deal', 'diajukan_ke_cd',
+            'diajukan', 'direview_admin', 'nego_fee', 'deal', 'diajukan_ke_client',
             'lolos', 'ditolak', 'kontrak_ditandatangani',
             'selesai_produksi', 'dibatalkan',
         ];

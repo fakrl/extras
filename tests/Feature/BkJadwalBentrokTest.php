@@ -89,10 +89,10 @@ class BkJadwalBentrokTest extends TestCase
         $client = User::factory()->create(['role' => 'client']);
         $pa = $this->proyek('Film A', [5]);
         $pa->update(['client_id' => $client->id]);
-        $a = $this->daftar($pa, 'diajukan_ke_cd');
+        $a = $this->daftar($pa, 'diajukan_ke_client');
         $b = $this->daftar($pb = $this->proyek('Iklan B', [5]), 'nego_fee');
 
-        $this->actingAs($client)->post(route('cd.reviews.review'), ['application_ids' => [$a->id], 'keputusan' => 'approve', 'grade_cd' => 'A'])->assertRedirect();
+        $this->actingAs($client)->post(route('client.reviews.review'), ['application_ids' => [$a->id], 'keputusan' => 'approve', 'grade_client' => 'A'])->assertRedirect();
 
         $this->assertSame('lolos', $a->fresh()->status_partisipasi);
         $this->assertTrue($a->fresh()->bentrok_jadwal_flag);
@@ -187,10 +187,10 @@ class BkJadwalBentrokTest extends TestCase
         $this->daftar($pa, 'lolos');
         $b = $this->daftar($this->proyek('Iklan B', [3, 7]), 'nego_fee');
 
-        $this->actingAs($client)->post(route('cd.jadwal.store', $pa), ['tanggal' => now()->addDays(3)->toDateString(), 'lokasi' => 'Studio'])->assertRedirect();
+        $this->actingAs($client)->post(route('client.jadwal.store', $pa), ['tanggal' => now()->addDays(3)->toDateString(), 'lokasi' => 'Studio'])->assertRedirect();
         $this->assertSame(0, $this->extras->notifications()->count());
 
-        $this->actingAs($client)->post(route('cd.jadwal.store', $pa), ['tanggal' => now()->addDays(7)->toDateString()])->assertRedirect();
+        $this->actingAs($client)->post(route('client.jadwal.store', $pa), ['tanggal' => now()->addDays(7)->toDateString()])->assertRedirect();
         $this->assertTrue($b->fresh()->bentrok_jadwal_flag);
         $this->assertSame(1, $this->extras->notifications()->count());
     }

@@ -17,7 +17,7 @@ class ReminderH3PilihExtrasCommand extends Command
 
         $dates = EventShootingDate::where(fn ($q) => $q->whereDate('tanggal', $tanggal[0])->orWhereDate('tanggal', $tanggal[1]))
             ->whereHas('castingProject', fn ($q) => $q->whereNotNull('client_id')
-                ->whereHas('applications', fn ($a) => $a->where('status_partisipasi', 'diajukan_ke_cd')))
+                ->whereHas('applications', fn ($a) => $a->where('status_partisipasi', 'diajukan_ke_client')))
             ->with('castingProject.client')
             ->get()
             ->unique('casting_project_id');
@@ -25,12 +25,12 @@ class ReminderH3PilihExtrasCommand extends Command
         foreach ($dates as $date) {
             $project = $date->castingProject;
             $user = $project->client;
-            $jumlah = $project->applications()->where('status_partisipasi', 'diajukan_ke_cd')->count();
+            $jumlah = $project->applications()->where('status_partisipasi', 'diajukan_ke_client')->count();
 
             $user?->kabari(
                 'Kandidat Belum Direview',
                 "Proyek {$project->nama_produksi} mendekati tanggal shooting dan masih ada {$jumlah} kandidat yang belum kamu review.",
-                route('cd.reviews.show', $project),
+                route('client.reviews.show', $project),
                 jenis: 'reminder_h3_pilih_extras',
                 wa: "Halo {$user->name}, proyek {$project->nama_produksi} mendekati tanggal shooting dan masih ada {$jumlah} kandidat yang belum kamu review. Mohon segera lakukan review di sistem.",
                 kunci: "reminder_h3_pilih_extras:{$project->id}:{$date->tanggal->toDateString()}",

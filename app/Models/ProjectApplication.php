@@ -24,21 +24,21 @@ use Illuminate\Support\Facades\Log;
 ])]
 class ProjectApplication extends Model
 {
-    const STATUS_AKTIF = ['deal', 'diajukan_ke_cd', 'lolos', 'kontrak_ditandatangani'];
+    const STATUS_AKTIF = ['deal', 'diajukan_ke_client', 'lolos', 'kontrak_ditandatangani'];
 
     const STATUS_LOLOS_KE_ATAS = ['lolos', 'kontrak_ditandatangani', 'selesai_produksi'];
 
     /** BK.4: bentrok dengan pendaftaran `pasti` memblokir; dengan `proses` cuma peringatan. */
     const STATUS_PASTI = ['lolos', 'kontrak_ditandatangani'];
 
-    const STATUS_PROSES = ['diajukan', 'direview_admin', 'nego_fee', 'deal', 'diajukan_ke_cd'];
+    const STATUS_PROSES = ['diajukan', 'direview_admin', 'nego_fee', 'deal', 'diajukan_ke_client'];
 
     const LABELS = [
         'diajukan' => 'Diajukan',
         'direview_admin' => 'Direview Admin',
         'nego_fee' => 'Nego Fee',
         'deal' => 'Deal',
-        'diajukan_ke_cd' => 'Diajukan ke Client',
+        'diajukan_ke_client' => 'Diajukan ke Client',
         'lolos' => 'Lolos',
         'ditolak' => 'Ditolak',
         'kontrak_ditandatangani' => 'Kontrak Ditandatangani',
@@ -51,7 +51,7 @@ class ProjectApplication extends Model
         'direview_admin' => 'badge-info',
         'nego_fee' => 'badge-pending',
         'deal' => 'badge-aktif',
-        'diajukan_ke_cd' => 'badge-info',
+        'diajukan_ke_client' => 'badge-info',
         'lolos' => 'badge-aktif',
         'ditolak' => 'badge-tolak',
         'kontrak_ditandatangani' => 'badge-aktif',
@@ -210,9 +210,9 @@ class ProjectApplication extends Model
         return $this->hasOne(Payment::class);
     }
 
-    public function cdReviews(): HasMany
+    public function clientReviews(): HasMany
     {
-        return $this->hasMany(CdReview::class);
+        return $this->hasMany(ClientReview::class);
     }
 
     public function cancellations(): HasMany
@@ -346,9 +346,9 @@ class ProjectApplication extends Model
      * RF-15 (perluasan): Admin bisa reject kandidat lebih dini, sebelum masuk
      * fase nego fee, kalau jelas tidak sesuai spesifikasi/kriteria tokoh yang
      * dicari. Beda dari tolakNegosiasi() (yang khusus fase nego) dan dari
-     * keputusan CD (RF-23, fase review talent). Cuma boleh dipanggil selagi
+     * keputusan Client (RF-23, fase review talent). Cuma boleh dipanggil selagi
      * status masih di fase awal, biar tidak bisa "menyalip" kandidat yang
-     * sudah masuk nego/diajukan ke CD.
+     * sudah masuk nego/diajukan ke Client.
      */
     public function tolakDini(string $alasan): void
     {
@@ -365,8 +365,8 @@ class ProjectApplication extends Model
     }
 
     /**
-     * RF-21: hanya kandidat yang fee-nya sudah Deal yang boleh diajukan ke CD.
-     * Ini penjaga urutan supaya alur "nego dulu, baru present ke CD" tidak
+     * RF-21: hanya kandidat yang fee-nya sudah Deal yang boleh diajukan ke Client.
+     * Ini penjaga urutan supaya alur "nego dulu, baru present ke Client" tidak
      * bisa dilewati dari controller mana pun.
      *
      * RF-22: re-cek bentrok jadwal di titik ini juga (bisa saja proyek lain
@@ -374,10 +374,10 @@ class ProjectApplication extends Model
      * RF-13 di apply(), cuma re-set bentrok_jadwal_flag, tetap lanjut.
      * Return true kalau bentrok, supaya controller bisa kasih warning.
      */
-    public function ajukanKeCd(): bool
+    public function ajukanKeClient(): bool
     {
         if ($this->status_partisipasi !== 'deal') {
-            throw new \LogicException('Kandidat hanya bisa diajukan ke CD setelah fee Deal.');
+            throw new \LogicException('Kandidat hanya bisa diajukan ke Client setelah fee Deal.');
         }
 
         if (! $this->castingProject->client_id) {
@@ -387,7 +387,7 @@ class ProjectApplication extends Model
         $adaBentrok = $this->extras->pendaftaranBentrok($this->tanggalShooting(), $this->id)->isNotEmpty();
 
         $this->update([
-            'status_partisipasi' => 'diajukan_ke_cd',
+            'status_partisipasi' => 'diajukan_ke_client',
             'bentrok_jadwal_flag' => $adaBentrok,
         ]);
 
@@ -481,7 +481,7 @@ class ProjectApplication extends Model
 
     /**
      * RF-36: notif hasil seleksi (lolos/ditolak) ke Extras, dipicu dari
-     * tolakDini() di sini, dan dari Cd\ReviewController setelah approve/reject.
+     * tolakDini() di sini, dan dari Client\ReviewController setelah approve/reject.
      * Email adalah efek samping, bukan syarat sukses aksi utama.
      */
     public function kirimNotifikasiHasil(): void
@@ -591,7 +591,7 @@ class ProjectApplication extends Model
     {
         abort_if(
             in_array($this->status_partisipasi, [
-                'deal', 'ditolak', 'diajukan_ke_cd', 'lolos',
+                'deal', 'ditolak', 'diajukan_ke_client', 'lolos',
                 'kontrak_ditandatangani', 'selesai_produksi', 'dibatalkan',
             ], true),
             422,

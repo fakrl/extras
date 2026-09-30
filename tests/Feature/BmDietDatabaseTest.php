@@ -21,7 +21,7 @@ class BmDietDatabaseTest extends TestCase
 
     public function test_tabel_lama_sudah_tidak_ada(): void
     {
-        foreach (['cd_project_assignments', 'extras_photos', 'admin_profiles', 'notifications_log'] as $tabel) {
+        foreach (['extras_photos', 'admin_profiles', 'notifications_log'] as $tabel) {
             $this->assertFalse(Schema::hasTable($tabel), $tabel);
         }
         $this->assertTrue(Schema::hasColumn('extras_profiles', 'foto_tambahan'));
@@ -34,7 +34,7 @@ class BmDietDatabaseTest extends TestCase
             'casting_projects' => ['wa_group_link', 'diajukan_oleh_client_id', 'client_ph', 'cover_path'],
             'extras_profiles' => ['pengalaman', 'cancel_count', 'warna_kulit'],
             'casting_project_classes' => ['karakter'],
-            'cd_reviews' => ['bulk_batch_id'],
+            'client_reviews' => ['bulk_batch_id'],
         ] as $tabel => $kolom) {
             $this->assertFalse(Schema::hasColumns($tabel, $kolom), $tabel);
         }
@@ -53,6 +53,18 @@ class BmDietDatabaseTest extends TestCase
 
         $this->assertSame(2, $extras->fresh()->cancel_count);
         $this->assertSame(2, ExtrasProfile::withBatalMendadak()->find($extras->id)->cancel_count);
+    }
+
+    public function test_bm3_url_lama_dialihkan_permanen_ke_client(): void
+    {
+        $this->get('/cd/reviews/5?status=menunggu')->assertStatus(301)->assertRedirect('/client/reviews/5?status=menunggu');
+        $this->get('/cd')->assertStatus(301)->assertRedirect('/client/');
+
+        $client = User::factory()->create(['role' => 'client']);
+        $this->actingAs($client)->get('/cd/dashboard')->assertRedirect('/client/dashboard');
+        $this->actingAs($client)->get('/client/dashboard')->assertOk();
+        $this->assertTrue(Schema::hasColumns('client_reviews', ['client_id', 'grade_client']));
+        $this->assertTrue(Schema::hasColumn('invoices', 'ttd_client_signature_path'));
     }
 
     public function test_foto_tambahan_upload_ganti_stream_hapus_per_slot(): void
@@ -102,7 +114,7 @@ class BmDietDatabaseTest extends TestCase
         $client = User::factory()->create(['role' => 'client', 'nomor_wa' => '0812000000']);
         $project = CastingProject::factory()->create(['client_id' => $client->id]);
         $project->shootingDates()->create(['tanggal' => now()->addDays(3)]);
-        ProjectApplication::create(['casting_project_id' => $project->id, 'extras_id' => ExtrasProfile::factory()->create()->id, 'status_partisipasi' => 'diajukan_ke_cd']);
+        ProjectApplication::create(['casting_project_id' => $project->id, 'extras_id' => ExtrasProfile::factory()->create()->id, 'status_partisipasi' => 'diajukan_ke_client']);
 
         Artisan::call('reminder:h3-pilih-extras');
         Artisan::call('reminder:input-jadwal');

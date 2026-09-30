@@ -22,7 +22,7 @@
                     @endif
                 </div>
             @endif
-            <a href="{{ route('cd.jadwal.show', $project) }}" class="btn btn-brand" style="min-height:32px; padding:0 14px; font-size:12.5px;">Lengkapi Jadwal</a>
+            <a href="{{ route('client.jadwal.show', $project) }}" class="btn btn-brand" style="min-height:32px; padding:0 14px; font-size:12.5px;">Lengkapi Jadwal</a>
             <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 6px;">Tanggal diisi JBTB, Anda lengkapi lokasi &amp; jam.</div>
         </div>
     @endforeach

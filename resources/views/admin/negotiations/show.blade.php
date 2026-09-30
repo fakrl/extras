@@ -36,7 +36,7 @@
 <div style="position: sticky; bottom: 0; background: var(--bg-card); padding: 12px; border-top: 1px solid var(--border-color); z-index: 10;">
     @if ($application->status_partisipasi === 'deal')
         <div class="alert-success" style="margin-bottom: 8px;">Fee sudah Deal di Rp {{ number_format($application->fee_final, 0, ',', '.') }}.</div>
-        <form method="POST" action="{{ route('admin.negotiations.ajukan-ke-cd', $application) }}">
+        <form method="POST" action="{{ route('admin.negotiations.ajukan-ke-client', $application) }}">
             @csrf
             <button class="btn btn-brand">Ajukan ke Client</button>
         </form>

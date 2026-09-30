@@ -4,7 +4,7 @@
 
 @section('content')
 <div style="margin-bottom:12px;">
-    <a href="{{ route('cd.riwayat') }}" style="font-size:13px; color:var(--text-secondary); text-decoration:none;">
+    <a href="{{ route('client.riwayat') }}" style="font-size:13px; color:var(--text-secondary); text-decoration:none;">
         &larr; Kembali ke Riwayat
     </a>
 </div>
@@ -15,8 +15,8 @@
         <p style="color:var(--text-secondary); margin:0; font-size:13.5px;">Kandidat yang kamu review di proyek ini.</p>
     </div>
     <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <a href="{{ route('cd.riwayat.export.xlsx', $castingProject) }}" class="btn btn-sm">Ekspor ke Excel</a>
-        <a href="{{ route('cd.riwayat.export.pdf', $castingProject) }}" class="btn btn-sm">Ekspor ke PDF</a>
+        <a href="{{ route('client.riwayat.export.xlsx', $castingProject) }}" class="btn btn-sm">Ekspor ke Excel</a>
+        <a href="{{ route('client.riwayat.export.pdf', $castingProject) }}" class="btn btn-sm">Ekspor ke PDF</a>
     </div>
 </div>
 

@@ -32,20 +32,20 @@ class JadwalModulTest extends TestCase
         ]);
     }
 
-    private function assignCd(CastingProject $project, User $cd): void
+    private function assignClient(CastingProject $project, User $klien): void
     {
-        $project->update(['client_id' => $cd->id]);
+        $project->update(['client_id' => $klien->id]);
     }
 
-    public function test_cd_bisa_simpan_jadwal_proyek_yang_diassign(): void
+    public function test_client_bisa_simpan_jadwal_proyek_yang_diassign(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $cd = User::factory()->create(['role' => 'client']);
+        $klien = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
         $tanggal = $this->buatTanggalShooting($project);
-        $this->assignCd($project, $cd);
+        $this->assignClient($project, $klien);
 
-        $response = $this->actingAs($cd)->post(route('cd.jadwal.store', $project), [
+        $response = $this->actingAs($klien)->post(route('client.jadwal.store', $project), [
             'tanggal' => $tanggal->tanggal->format('Y-m-d'),
             'lokasi' => 'Studio Merdeka',
             'jam_mulai' => '07:00',
@@ -57,22 +57,22 @@ class JadwalModulTest extends TestCase
             ],
         ]);
 
-        $response->assertRedirect(route('cd.jadwal.show', $project));
+        $response->assertRedirect(route('client.jadwal.show', $project));
         $this->assertDatabaseHas('event_shooting_dates', [
             'casting_project_id' => $project->id,
             'lokasi' => 'Studio Merdeka',
         ]);
     }
 
-    public function test_cd_tidak_bisa_simpan_jadwal_proyek_yang_bukan_miliknya(): void
+    public function test_client_tidak_bisa_simpan_jadwal_proyek_yang_bukan_miliknya(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $cdLain = User::factory()->create(['role' => 'client']);
+        $klienLain = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
         $tanggal = $this->buatTanggalShooting($project);
 
-        // cdLain TIDAK di-assign ke project ini
-        $response = $this->actingAs($cdLain)->post(route('cd.jadwal.store', $project), [
+        // klienLain TIDAK di-assign ke project ini
+        $response = $this->actingAs($klienLain)->post(route('client.jadwal.store', $project), [
             'tanggal' => $tanggal->tanggal->format('Y-m-d'),
             'lokasi' => 'Studio Curian',
         ]);
@@ -123,12 +123,12 @@ class JadwalModulTest extends TestCase
     public function test_panggilan_tersimpan_sebagai_json_array_dan_bisa_diretrieve(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $cd = User::factory()->create(['role' => 'client']);
+        $klien = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
         $tanggal = $this->buatTanggalShooting($project);
-        $this->assignCd($project, $cd);
+        $this->assignClient($project, $klien);
 
-        $this->actingAs($cd)->post(route('cd.jadwal.store', $project), [
+        $this->actingAs($klien)->post(route('client.jadwal.store', $project), [
             'tanggal' => $tanggal->tanggal->format('Y-m-d'),
             'panggilan' => [
                 ['nama' => 'Ara (Faris)', 'jam' => '06:30'],

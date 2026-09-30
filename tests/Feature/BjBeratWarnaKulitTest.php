@@ -71,9 +71,9 @@ class BjBeratWarnaKulitTest extends TestCase
         $p = $this->profil();
         $gelap = ExtrasCategory::where('nama', 'Gelap')->firstOrFail();
         $p->categories()->attach($gelap->id);
-        ProjectApplication::create(['casting_project_id' => $project->id, 'casting_project_class_id' => $kelas->id, 'extras_id' => $p->id, 'status_partisipasi' => 'diajukan_ke_cd']);
+        ProjectApplication::create(['casting_project_id' => $project->id, 'casting_project_class_id' => $kelas->id, 'extras_id' => $p->id, 'status_partisipasi' => 'diajukan_ke_client']);
 
-        $this->actingAs($client)->get(route('cd.reviews.show', $project))->assertOk()
+        $this->actingAs($client)->get(route('client.reviews.show', $project))->assertOk()
             ->assertDontSee('filter-warna-kulit')
             ->assertSee('data-tag="'.$gelap->id.'"', false)
             ->assertSee('data-warna-kulit="Gelap"', false);

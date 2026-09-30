@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
- * RF-31: invoice ke client, ditandatangani Admin Default & CD. Diakses
+ * RF-31: invoice ke client, ditandatangani Admin Default & Client. Diakses
  * lintas role sama seperti ContractController, otorisasi granular di
  * dalam method, bukan lewat role middleware group.
  */
@@ -52,7 +52,7 @@ class InvoiceController extends Controller
 
         $data = $request->validate(['signature' => ['required', 'string']]);
 
-        $role = $request->user()->isClient() ? 'cd' : 'admin';
+        $role = $request->user()->isClient() ? 'client' : 'admin';
         $filename = "invoices/signatures/{$castingProject->id}-{$role}-".Str::random(8).'.png';
 
         $base64 = preg_replace('#^data:image/\w+;base64,#', '', $data['signature']);
@@ -60,10 +60,10 @@ class InvoiceController extends Controller
 
         $invoice = $castingProject->invoices()->firstOrCreate([]);
         $invoice->update([
-            $role === 'cd' ? 'ttd_cd_signature_path' : 'ttd_admin_signature_path' => $filename,
+            $role === 'client' ? 'ttd_client_signature_path' : 'ttd_admin_signature_path' => $filename,
         ]);
 
-        if ($invoice->ttd_admin_signature_path && $invoice->ttd_cd_signature_path) {
+        if ($invoice->ttd_admin_signature_path && $invoice->ttd_client_signature_path) {
             $castingProject->load('classes', 'applications.extras');
             $rincian = $this->keuangan->rincianInvoice($castingProject);
             $path = "invoices/pdf/{$castingProject->id}.pdf";

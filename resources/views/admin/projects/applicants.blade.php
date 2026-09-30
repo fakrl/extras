@@ -15,13 +15,13 @@
     @php $tabs = ['' => 'Semua', 'A' => 'Grade A', 'B' => 'Grade B', 'C' => 'Grade C', 'belum' => 'Belum Dinilai']; @endphp
     @foreach ($tabs as $value => $label)
         <a href="{{ route('admin.projects.applicants', [$castingProject, 'grade' => $value ?: null]) }}"
-           class="btn btn-sm {{ ($tab ?? '') !== 'cd' && ($grade ?? '') === $value ? 'btn-brand' : '' }}">{{ $label }}</a>
+           class="btn btn-sm {{ ($tab ?? '') !== 'client' && ($grade ?? '') === $value ? 'btn-brand' : '' }}">{{ $label }}</a>
     @endforeach
-    <a href="{{ route('admin.projects.applicants', [$castingProject, 'tab' => 'cd']) }}"
-       class="btn btn-sm {{ ($tab ?? '') === 'cd' ? 'btn-brand' : '' }}">Sudah ke Client</a>
+    <a href="{{ route('admin.projects.applicants', [$castingProject, 'tab' => 'client']) }}"
+       class="btn btn-sm {{ ($tab ?? '') === 'client' ? 'btn-brand' : '' }}">Sudah ke Client</a>
 </div>
 
-@if (($tab ?? '') !== 'cd')
+@if (($tab ?? '') !== 'client')
     <div class="xfilter" aria-label="Filter status">
         @foreach (['' => 'Semua Status'] + \App\Models\ProjectApplication::LABELS as $value => $label)
             <a href="{{ route('admin.projects.applicants', [$castingProject, 'grade' => $grade ?: null, 'status' => $value ?: null]) }}"
@@ -91,8 +91,8 @@
 @endif
 
 @php
-    $cdStatusLabel = [
-        'diajukan_ke_cd' => ['Menunggu Review Client', 'badge-pending'],
+    $klienStatusLabel = [
+        'diajukan_ke_client' => ['Menunggu Review Client', 'badge-pending'],
         'lolos' => ['Lolos', 'badge-aktif'],
         'ditolak' => ['Ditolak', 'badge-tolak'],
     ];
@@ -108,7 +108,7 @@
         $aksi = match (true) {
             in_array($app->status_partisipasi, ['diajukan', 'direview_admin'], true) => ['label' => 'Mulai Nego', 'href' => route('admin.negotiations.show', $app)],
             $app->status_partisipasi === 'nego_fee' => ['label' => 'Lanjut Nego', 'href' => route('admin.negotiations.show', $app)],
-            $app->status_partisipasi === 'deal' => ['label' => 'Ajukan ke Client', 'post' => route('admin.negotiations.ajukan-ke-cd', $app), 'confirm' => "Ajukan @{$alias} ke Client?"],
+            $app->status_partisipasi === 'deal' => ['label' => 'Ajukan ke Client', 'post' => route('admin.negotiations.ajukan-ke-client', $app), 'confirm' => "Ajukan @{$alias} ke Client?"],
             $app->status_partisipasi === 'lolos' => ['label' => 'Siapkan Kontrak', 'href' => route('contracts.show', $app)],
             $app->status_partisipasi === 'kontrak_ditandatangani' || (bool) $app->payment => ['label' => 'Pembayaran', 'href' => route('payments.show', $app)],
             default => null,
@@ -117,8 +117,8 @@
     @include('partials.extras-card', [
         'profile' => $ex,
         'aplikasi' => $app,
-        'badge' => ($tab ?? '') === 'cd' ? ($cdStatusLabel[$app->status_partisipasi] ?? null) : null,
-        'check' => ($tab ?? '') !== 'cd' ? ['name' => 'ids[]', 'class' => 'bulk-check', 'form' => 'bulk-form'] : null,
+        'badge' => ($tab ?? '') === 'client' ? ($klienStatusLabel[$app->status_partisipasi] ?? null) : null,
+        'check' => ($tab ?? '') !== 'client' ? ['name' => 'ids[]', 'class' => 'bulk-check', 'form' => 'bulk-form'] : null,
         'sub' => implode(' · ', array_filter([$ex->user->name ?? null, $app->grade ? 'Grade '.$app->grade : null])),
         'lihat' => $ex->user ? ['href' => route('admin.extras.profil', $ex->user), 'data-profil-modal' => true, 'data-aksi-dialog' => 'detail-'.$app->id, 'data-aksi-label' => 'Detail & aksi'] : ['onclick' => "document.getElementById('detail-{$app->id}').showModal()"],
         'aksi' => $aksi,
@@ -131,7 +131,7 @@
     ])
 @empty
     <div class="card" style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 30px 0;">
-        {{ ($tab ?? '') === 'cd' ? 'Belum ada kandidat yang diajukan ke Client.' : 'Belum ada pendaftar.' }}
+        {{ ($tab ?? '') === 'client' ? 'Belum ada kandidat yang diajukan ke Client.' : 'Belum ada pendaftar.' }}
     </div>
 @endforelse
 </div>
