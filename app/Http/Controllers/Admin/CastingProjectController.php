@@ -39,7 +39,7 @@ class CastingProjectController extends Controller
             ->when($request->boolean('tanpa_client'), fn ($q) => $q->whereNull('client_id'))
             ->when($periode, fn ($q) => $q->shootingDalam(...$periode))
             ->when($bayar === 'staf', fn ($q) => $q->whereHas('payrolls', fn ($p) => $p->where('status_bayar', '!=', 'sudah')))
-            ->when($bayar === 'extras', fn ($q) => $q->whereHas('payments', fn ($p) => $p->whereNull('ditransfer_at')))
+            ->when($bayar === 'extras', fn ($q) => $q->whereHas('payments', fn ($p) => $p->perluDitransfer()))
             ->when($cari !== '', fn ($q) => $q->where(fn ($w) => $w->where('nama_produksi', 'like', "%{$cari}%")
                 ->orWhereHas('client', fn ($c) => $c->where('name', 'like', "%{$cari}%")->orWhere('nama_perusahaan', 'like', "%{$cari}%"))
                 ->orWhere(fn ($k) => $k->cariKode($cari))))

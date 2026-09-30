@@ -26,11 +26,12 @@ class DashboardController extends Controller
             ->pluck('total', 'status');
 
         $chartStatusPembayaran = [
-            'labels' => ['Belum Dibayar', 'Ditransfer', 'Dikonfirmasi Diterima'],
+            'labels' => ['Perlu Ditransfer', 'Ditransfer', 'Dikonfirmasi Diterima', 'Menunggu Kontrak'],
             'data' => [
-                (int) ($statusPembayaran['belum_dibayar'] ?? 0),
+                $perluDitransfer = Payment::perluDitransfer()->count(),
                 (int) ($statusPembayaran['ditransfer'] ?? 0),
                 (int) ($statusPembayaran['dikonfirmasi_diterima'] ?? 0),
+                (int) ($statusPembayaran['belum_dibayar'] ?? 0) - $perluDitransfer,
             ],
         ];
 

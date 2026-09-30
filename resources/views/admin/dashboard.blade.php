@@ -125,7 +125,7 @@
             labels: @json($chartStatusPembayaran['labels']),
             datasets: [{
                 data: @json($chartStatusPembayaran['data']),
-                backgroundColor: ['#374151', '#eab308', '#22c55e'],
+                backgroundColor: ['#374151', '#eab308', '#22c55e', '#9ca3af'],
                 borderWidth: 0,
             }]
         },
