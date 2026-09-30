@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\CastingProject;
 use App\Models\ClientReview;
+use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use App\Models\User;
 use Database\Seeders\DemoLengkapSeeder;
@@ -59,6 +60,7 @@ class DemoSeederTest extends TestCase
         $this->assertSame('menunggu_acc', $p('Video Klip')->client_request_status);
         $this->assertSame(['ghost01'], User::mangkrak()->pluck('username')->all());
         $this->assertSame(['ghost01'], User::akanDihapus()->pluck('username')->all());
+        $this->assertSame(3, ExtrasProfile::where('apresiasi', true)->count());
         $this->get('/')->assertOk()->assertSee('@dimas_rk')->assertDontSee('@arga_p')
             ->assertSee('Rumah di Ujung Senja')->assertSee('PT Kopi Pagi Nusantara')->assertDontSee('Sinar Rumah Produksi')->assertDontSee('PT Layar Senja Films');
 

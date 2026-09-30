@@ -138,7 +138,7 @@ class ApplicantController extends Controller
     }
 
     /**
-     * RF-54: Admin Default memberi / mencabut badge Apresiasi pada profil Extras.
+     * RF-54/BN.3: Admin/SA menandai / mencabut Favorit (kolom apresiasi) + catatan "kenapa favorit".
      * Murni catatan internal Admin, tidak terlihat oleh Extras maupun Client.
      */
     public function toggleApresiasi(Request $request, ProjectApplication $application): RedirectResponse
@@ -149,20 +149,10 @@ class ApplicantController extends Controller
         ]);
 
         $extras = $application->extras;
-        $isApresiasi = $request->has('apresiasi')
-            ? $request->boolean('apresiasi')
-            : ! $extras->apresiasi;
+        $favorit = $request->has('apresiasi') ? $request->boolean('apresiasi') : ! $extras->apresiasi;
+        $extras->setFavorit($favorit, $data['apresiasi_catatan'] ?? null, $request->user());
 
-        $extras->update([
-            'apresiasi' => $isApresiasi,
-            'apresiasi_catatan' => $isApresiasi ? ($data['apresiasi_catatan'] ?? null) : null,
-        ]);
-
-        $pesan = $isApresiasi
-            ? 'Badge Apresiasi berhasil disematkan pada Extras.'
-            : 'Badge Apresiasi berhasil dicabut.';
-
-        return back()->withFragment('app-'.$application->id)->with('status', $pesan);
+        return back()->withFragment('app-'.$application->id)->with('status', $favorit ? 'Ditandai sebagai Favorit.' : 'Dihapus dari Favorit.');
     }
 
     /**

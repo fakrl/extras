@@ -175,6 +175,8 @@ Route::middleware(['auth', 'role:admin,korlap,super_admin'])
             Route::post('/tag/{extrasCategory}/gabung', [TagController::class, 'gabung'])->name('admin.tags.gabung');
             Route::patch('/extras/{user}/beranda', [UserManagementController::class, 'toggleBeranda'])
                 ->name('admin.extras.beranda');
+            Route::patch('/extras/{user}/favorit', [UserManagementController::class, 'toggleFavorit'])
+                ->name('admin.extras.favorit');
             Route::post('/users/prune-abandoned', [UserManagementController::class, 'pruneAbandoned'])
                 ->name('admin.users.prune');
 

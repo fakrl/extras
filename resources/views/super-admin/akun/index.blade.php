@@ -64,6 +64,8 @@
         $f['status'] ? ['status', 'Status: '.ucfirst($f['status'])] : null,
         $f['sedang_aktif'] ? ['sedang_aktif', 'Sedang aktif di proyek'] : null,
         $f['akan_dihapus'] ? ['akan_dihapus', 'Akan dihapus'] : null,
+        $f['favorit'] ? ['favorit', '⭐ Favorit'] : null,
+        $f['urut'] ? ['urut', 'Urut: Favorit dulu'] : null,
         $f['grade'] ? ['grade', 'Grade: '.($f['grade'] === 'belum' ? 'Belum' : $f['grade'])] : null,
         ...array_map(fn ($id) => ['tag', 'Tag: #'.($tagNama[$id] ?? $id), $id], $f['tag']),
     ]">
@@ -73,6 +75,8 @@
         @if (in_array($f['role'], [null, 'extras'], true))
             <div class="fpanel-sub">
                 <div class="fpanel-judul">Khusus Extras</div>
+                <label class="fswitch">⭐ Favorit <input type="checkbox" name="favorit" value="1" @checked($f['favorit'])></label>
+                <x-filter-panel.grup label="Urutkan" name="urut" :opsi="['' => 'Terbaru', 'favorit' => 'Favorit dulu']" :nilai="$f['urut']" />
                 <label class="fswitch">Akan dihapus (sudah diperingatkan) <input type="checkbox" name="akan_dihapus" value="1" @checked($f['akan_dihapus'])></label>
                 <x-filter-panel.grup label="Grade" name="grade" :opsi="['' => 'Semua', 'A' => 'A', 'B' => 'B', 'C' => 'C', 'belum' => 'Belum']" :nilai="$f['grade']" />
                 @foreach ($tagGroups as $grup => $tags)
@@ -121,6 +125,7 @@
                 'sub' => $u->name.' · '.$sejak($u),
                 'lihat' => $bisaProfil ? ['href' => route('admin.extras.profil', $u), 'data-profil-modal' => true, 'data-aksi-dialog' => 'kelola-'.$u->id, 'data-aksi-label' => 'Kelola'] : ['onclick' => "document.getElementById('kelola-{$u->id}').showModal()"],
                 'aksi' => ['label' => 'Kelola', 'onclick' => "document.getElementById('kelola-{$u->id}').showModal()"],
+                'favorit' => ! $u->trashed(),
             ])
         @empty
             <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 24px 0;">Tidak ada akun yang cocok.</div>

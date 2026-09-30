@@ -29,6 +29,8 @@ class AdminManagementController extends Controller
             'status' => in_array($request->query('status'), ['aktif', 'nonaktif', 'dihapus'], true) ? $request->query('status') : null,
             'sedang_aktif' => $request->boolean('sedang_aktif'),
             'akan_dihapus' => $request->boolean('akan_dihapus'),
+            'favorit' => $request->boolean('favorit'),
+            'urut' => $request->query('urut') === 'favorit' ? 'favorit' : null,
             'tag' => array_filter(array_map('intval', (array) $request->query('tag', []))),
             'grade' => in_array($request->query('grade'), ['A', 'B', 'C', 'belum'], true) ? $request->query('grade') : null,
         ];
@@ -56,6 +58,8 @@ class AdminManagementController extends Controller
                         ->where(fn ($t) => $t->diTahap('mendatang'))
                         ->orWhere(fn ($t) => $t->diTahap('berjalan'))))))
             ->when($f['akan_dihapus'], fn ($q) => $q->akanDihapus())
+            ->when($f['favorit'], fn ($q) => $q->whereHas('extrasProfile', fn ($p) => $p->where('apresiasi', true)))
+            ->when($f['urut'], fn ($q) => $q->orderByDesc(ExtrasProfile::select('apresiasi')->whereColumn('extras_profiles.user_id', 'users.id')))
             ->when($f['tag'], function ($q, $tags) {
                 foreach ($tags as $id) {
                     $q->whereHas('extrasProfile.categories', fn ($c) => $c->where('extras_categories.id', $id));

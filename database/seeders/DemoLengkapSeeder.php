@@ -129,7 +129,10 @@ class DemoLengkapSeeder extends Seeder
             $profile->categories()->sync($tag->only([...$tags, $usia > 50 ? 'Sawo matang' : 'Kuning langsat'])->values());
         }
 
+        // BN.3: Favorit (kolom apresiasi).
         $this->u['dimas_rk']->extrasProfile->update(['apresiasi' => true, 'apresiasi_catatan' => 'Disukai Client, selalu on-time & gampang diarahkan.']);
+        $this->u['pak_harto']->extrasProfile->update(['apresiasi' => true, 'apresiasi_catatan' => 'Cocok peran bapak-bapak kantoran, on time.']);
+        $this->u['sari_mei']->extrasProfile->update(['apresiasi' => true]);
         $this->u['joko_s']->extrasProfile->forceFill(['status' => 'melanggar'])->save();
         $this->u['putri_a']->update(['status' => 'nonaktif']);
         $this->u['lama_dihapus']->delete();
