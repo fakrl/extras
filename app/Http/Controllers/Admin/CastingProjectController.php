@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\CastingProject;
 use App\Models\ExtrasCategory;
+use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use App\Models\User;
 use App\Services\KeuanganService;
@@ -369,7 +370,8 @@ class CastingProjectController extends Controller
 
         $klienStatuses = ['diajukan_ke_client', 'lolos', 'ditolak'];
         $tagIds = array_map('intval', array_filter((array) $request->query('tag', []), 'is_numeric'));
-        $urut = $request->query('urut') === 'cocok' ? 'cocok' : null;
+        $urut = in_array($request->query('urut'), ['cocok', 'favorit'], true) ? $request->query('urut') : null;
+        $favorit = $request->boolean('favorit');
         $cari = trim((string) $request->query('q', ''));
 
         $applicants = $castingProject->applications()
@@ -390,7 +392,9 @@ class CastingProjectController extends Controller
                     ->orWhereHas('castingProjectClass', fn ($c) => $c->where('nama_kelas', 'like', $like))
                     ->orWhere('karakter_override', 'like', $like);
             }))
-            ->when($urut, fn ($q) => $q->urutPalingCocok())
+            ->when($favorit, fn ($q) => $q->whereHas('extras', fn ($e) => $e->where('apresiasi', true)))
+            ->when($urut === 'cocok', fn ($q) => $q->urutPalingCocok())
+            ->when($urut === 'favorit', fn ($q) => $q->orderByDesc(ExtrasProfile::select('apresiasi')->whereColumn('extras_profiles.id', 'project_applications.extras_id')))
             ->latest()
             ->paginate(PerHalaman::dari($request, 24, PerHalaman::KARTU))
             ->withQueryString();
@@ -398,6 +402,6 @@ class CastingProjectController extends Controller
         $tagDicari = ExtrasCategory::dicariDiProyek($castingProject->id);
         $tagGroups = ExtrasCategory::perGrup();
 
-        return view('admin.projects.applicants', compact('castingProject', 'applicants', 'grade', 'tab', 'status', 'tagIds', 'urut', 'tagDicari', 'cari', 'tagGroups'));
+        return view('admin.projects.applicants', compact('castingProject', 'applicants', 'grade', 'tab', 'status', 'tagIds', 'urut', 'favorit', 'tagDicari', 'cari', 'tagGroups'));
     }
 }

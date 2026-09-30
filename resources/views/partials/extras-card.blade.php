@@ -1,6 +1,7 @@
-{{-- BA.4: kartu Extras. Param: profile, user?, aplikasi?, badge? [label, class], highlight?, check? [name, class, form], lihat [href (+ data-profil-modal, data-aksi-*)|onclick], aksi? [label, href|onclick|post (+method, confirm)], sub?, peringatan?, attrs? --}}
+{{-- BA.4: kartu Extras. Param: profile, user?, aplikasi?, badge? [label, class], highlight?, check? [name, class, form], lihat [href (+ data-profil-modal, data-aksi-*)|onclick], aksi? [label, href|onclick|post (+method, confirm)], sub?, peringatan?, attrs?, favorit? (bintang Admin/SA) --}}
 @php
     $aplikasi ??= null;
+    $favorit = ($favorit ?? false) && $profile && auth()->user()?->bisaSebagaiAdmin();
     $user ??= $profile?->user;
     $nama = $user?->username;
     $label = $nama ? '@'.$nama : '(belum isi username)';
@@ -35,6 +36,14 @@
                 <input type="checkbox" name="{{ $check['name'] }}" value="{{ $aplikasi?->id }}" class="{{ $check['class'] }}" @isset($check['form']) form="{{ $check['form'] }}" @endisset>
                 <span class="sr-only">Pilih {{ $label }}</span>
             </label>
+        @endif
+        @if ($favorit)
+            <form method="POST" action="{{ route('admin.extras.favorit', $profile->user_id) }}" class="xcard-fav" id="fav-{{ $profile->id }}">
+                @csrf @method('PATCH')
+                <button type="submit" @class(['is-on' => $profile->apresiasi]) aria-pressed="{{ $profile->apresiasi ? 'true' : 'false' }}"
+                        aria-label="{{ $profile->apresiasi ? 'Hapus '.$label.' dari Favorit' : 'Jadikan '.$label.' Favorit' }}"
+                        title="{{ $profile->apresiasi ? '⭐ Favorit'.($profile->apresiasi_catatan ? ': '.$profile->apresiasi_catatan : '') : 'Jadikan Favorit' }}">@if ($profile->apresiasi)<span aria-hidden="true">⭐</span>@else<i class="ti ti-star" aria-hidden="true"></i>@endif</button>
+            </form>
         @endif
         @if ($persen !== null)
             <div class="xcard-ring" style="--p: {{ $persen }}%;" role="img" aria-label="Cocok {{ $persen }}% dengan tag peran"><span>{{ $persen }}%</span></div>

@@ -61,15 +61,16 @@
     @endif
     <span class="xfilter-label" style="margin-left: auto;">Urutkan</span>
     <a href="{{ request()->fullUrlWithQuery(['urut' => null, 'page' => null]) }}" class="btn btn-sm {{ $urut ? '' : 'btn-brand' }}">Terbaru</a>
-    <a href="{{ request()->fullUrlWithQuery(['urut' => 'cocok', 'page' => null]) }}" class="btn btn-sm {{ $urut ? 'btn-brand' : '' }}">Paling cocok</a>
+    <a href="{{ request()->fullUrlWithQuery(['urut' => 'cocok', 'page' => null]) }}" class="btn btn-sm {{ $urut === 'cocok' ? 'btn-brand' : '' }}">Paling cocok</a>
+    <a href="{{ request()->fullUrlWithQuery(['urut' => 'favorit', 'page' => null]) }}" class="btn btn-sm {{ $urut === 'favorit' ? 'btn-brand' : '' }}">Favorit dulu</a>
 </div>
 @if ($tagDicari->isNotEmpty())
-    <p class="xfilter-note">Menampilkan yang punya <strong>salah satu</strong> tag{{ $urut ? ', diurutkan paling cocok' : '' }}</p>
+    <p class="xfilter-note">Menampilkan yang punya <strong>salah satu</strong> tag{{ $urut === 'cocok' ? ', diurutkan paling cocok' : '' }}</p>
 @endif
 
 {{-- live search server-side (lintas halaman paginasi); filter aktif ikut sebagai hidden input --}}
 <form method="GET" action="{{ route('admin.projects.applicants', $castingProject) }}" id="live-form" data-live role="search" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 16px;">
-    @foreach (request()->except(['q', 'page', 'per']) as $k => $v)
+    @foreach (request()->except(['q', 'page', 'per', 'favorit']) as $k => $v)
         @foreach ((array) $v as $vv)
             <input type="hidden" name="{{ is_array($v) ? $k.'[]' : $k }}" value="{{ $vv }}">
         @endforeach
@@ -81,6 +82,9 @@
     <i class="ti ti-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 15px;"></i>
     </span>
     <x-per-halaman :pilihan="\App\Support\PerHalaman::KARTU" :nilai="$applicants->perPage()" />
+    <x-filter-panel :filter="[$favorit ? ['favorit', '⭐ Favorit'] : null]">
+        <label class="fswitch">⭐ Favorit <input type="checkbox" name="favorit" value="1" @checked($favorit)></label>
+    </x-filter-panel>
 </form>
 
 <div data-live-target>
@@ -122,6 +126,7 @@
         'sub' => implode(' · ', array_filter([$ex->user->name ?? null, $app->grade ? 'Grade '.$app->grade : null])),
         'lihat' => $ex->user ? ['href' => route('admin.extras.profil', $ex->user), 'data-profil-modal' => true, 'data-aksi-dialog' => 'detail-'.$app->id, 'data-aksi-label' => 'Detail & aksi'] : ['onclick' => "document.getElementById('detail-{$app->id}').showModal()"],
         'aksi' => $aksi,
+        'favorit' => true,
         'peringatan' => $app->bentrok_jadwal_flag ? 'Bentrok jadwal' : null,
         'attrs' => [
             'id' => 'app-'.$app->id,
@@ -171,7 +176,7 @@
                     <span class="badge badge-pending">Continuity</span>
                 @endif
                 @if ($ex->apresiasi)
-                    <span class="badge badge-aktif" title="{{ $ex->apresiasi_catatan }}"><i class="ti ti-star-filled"></i> Apresiasi</span>
+                    <span class="badge badge-aktif" title="{{ $ex->apresiasi_catatan }}">⭐ Favorit</span>
                 @endif
             </div>
 
@@ -283,10 +288,10 @@
                         <form method="POST" action="{{ route('admin.applications.apresiasi', $app) }}">
                             @csrf
                             <input type="hidden" name="apresiasi" value="0">
-                            <button type="submit" class="btn btn-danger-outline">Cabut Apresiasi</button>
+                            <button type="submit" class="btn btn-danger-outline">Hapus dari Favorit</button>
                         </form>
                     @else
-                        <button type="button" class="btn" onclick="document.getElementById('apresiasi-dialog-{{ $app->id }}').showModal()"><i class="ti ti-star"></i> Apresiasi</button>
+                        <button type="button" class="btn" onclick="document.getElementById('apresiasi-dialog-{{ $app->id }}').showModal()"><i class="ti ti-star"></i> Jadikan Favorit</button>
                     @endif
                 @endif
                 @if ($ex->user)
@@ -321,11 +326,12 @@
             <form method="POST" action="{{ route('admin.applications.apresiasi', $app) }}" style="padding: 18px;">
                 @csrf
                 <input type="hidden" name="apresiasi" value="1">
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Beri Apresiasi ke {{ $alias }}?</div>
-                <textarea name="apresiasi_catatan" rows="3" maxlength="1000" placeholder="Catatan internal (opsional), mis. alasan diapresiasi." style="width: 100%; margin-bottom: 12px;"></textarea>
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Jadikan {{ $alias }} Favorit?</div>
+                <label for="apresiasi-catatan-{{ $app->id }}">Kenapa favorit?</label>
+                <textarea name="apresiasi_catatan" id="apresiasi-catatan-{{ $app->id }}" rows="3" maxlength="1000" placeholder="mis. cocok peran bapak-bapak kantoran, on time" style="width: 100%; margin-bottom: 12px;"></textarea>
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
                     <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
-                    <button type="submit" class="btn btn-sm btn-brand">Simpan Apresiasi</button>
+                    <button type="submit" class="btn btn-sm btn-brand">Simpan Favorit</button>
                 </div>
             </form>
         </dialog>

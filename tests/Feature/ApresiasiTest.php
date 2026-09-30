@@ -11,7 +11,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
- * RF-54: badge Apresiasi Extras, murni catatan internal Admin Default -
+ * RF-54/BN.3: Favorit (kolom apresiasi) Extras, murni catatan internal Admin -
  * tidak pernah boleh terlihat oleh Client maupun Extras sendiri.
  */
 class ApresiasiTest extends TestCase
@@ -88,11 +88,15 @@ class ApresiasiTest extends TestCase
         $klien = User::factory()->create(['role' => 'client']);
         $application->castingProject->update(['client_id' => $klien->id]);
 
-        $response = $this->actingAs($klien)->get(route('client.reviews.index'));
+        foreach ([route('client.reviews.index'), route('client.reviews.show', $application->castingProject)] as $url) {
+            $response = $this->actingAs($klien)->get($url);
 
-        $response->assertOk();
-        $response->assertDontSee('Apresiasi');
-        $response->assertDontSee('Rahasia internal admin.');
+            $response->assertOk();
+            $response->assertDontSee('Apresiasi');
+            $response->assertDontSee('Favorit');
+            $response->assertDontSee('class="xcard-fav"', false);
+            $response->assertDontSee('Rahasia internal admin.');
+        }
     }
 
     public function test_apresiasi_tidak_muncul_di_halaman_profil_extras_sendiri(): void
@@ -105,6 +109,7 @@ class ApresiasiTest extends TestCase
 
         $response->assertOk();
         $response->assertDontSee('Apresiasi');
+        $response->assertDontSee('Favorit');
         $response->assertDontSee('Rahasia internal admin.');
     }
 }

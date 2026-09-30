@@ -270,6 +270,10 @@
         .xcard .xcard-st { position: absolute; top: 10px; left: 10px; background: var(--bg-card); font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,0.15); pointer-events: none; }
         .xcard-ck { position: absolute; top: 2px; right: 2px; width: 44px; height: 44px; margin: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .xcard-ck input[type="checkbox"] { width: 22px; height: 22px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.35); }
+        .xcard-fav { position: absolute; left: 8px; bottom: 8px; margin: 0; }
+        .xcard-fav button { width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(0,0,0,0.45); color: #fff; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+        .xcard-fav button.is-on { background: var(--bg-card); font-size: 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.25); }
+        .xcard-fav button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
         .xcard-ring { position: absolute; right: 10px; bottom: -24px; width: 56px; height: 56px; border-radius: 50%; background: conic-gradient(var(--accent) var(--p), var(--bg-nav-active) 0); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px var(--bg-card), 0 3px 10px rgba(0,0,0,0.18); pointer-events: none; }
         .xcard-ring span { width: 44px; height: 44px; border-radius: 50%; background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: var(--fs-sm); color: var(--accent-strong); }
         .xcard-body { padding: 14px 14px 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; }

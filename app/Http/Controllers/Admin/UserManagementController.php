@@ -114,6 +114,17 @@ class UserManagementController extends Controller
         return back()->with('status', $nyala ? "@{$user->username} tampil di beranda." : "@{$user->username} disembunyikan dari beranda.");
     }
 
+    /** BN.3: bintang Favorit satu klik di kartu & popup profil. */
+    public function toggleFavorit(User $user, Request $request): RedirectResponse
+    {
+        abort_unless($request->user()->bisaSebagaiAdmin() && $user->role === 'extras' && $user->extrasProfile, 403);
+        $profile = $user->extrasProfile;
+        $favorit = ! $profile->apresiasi;
+        $profile->setFavorit($favorit, $favorit ? $request->validate(['apresiasi_catatan' => ['nullable', 'string', 'max:1000']])['apresiasi_catatan'] ?? null : null, $request->user());
+
+        return back()->withFragment('fav-'.$profile->id)->with('status', $favorit ? "@{$user->username} ditandai sebagai Favorit." : "@{$user->username} dihapus dari Favorit.");
+    }
+
     /**
      * AQ.3: Admin/SA melihat profil lengkap Extras (read-only admin view).
      */

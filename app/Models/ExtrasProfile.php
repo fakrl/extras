@@ -329,6 +329,19 @@ class ExtrasProfile extends Model
         }
     }
 
+    /** BN.3: Favorit (kolom apresiasi), penanda internal Admin/SA. */
+    public function setFavorit(bool $favorit, ?string $catatan, User $oleh): void
+    {
+        $this->update(['apresiasi' => $favorit, 'apresiasi_catatan' => $favorit ? $catatan : null]);
+
+        ActivityLog::record(
+            'TOGGLE_EXTRAS_FAVORIT',
+            "{$oleh->label()} {$oleh->name} ".($favorit ? 'menandai' : 'menghapus')." @{$this->user?->username} ".($favorit ? 'sebagai' : 'dari').' Favorit',
+            $this,
+            ['favorit' => $favorit]
+        );
+    }
+
     public function generateShareToken(): string
     {
         if (! $this->share_token) {
