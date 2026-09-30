@@ -30,8 +30,8 @@
 .sa-lihat-semua { color: var(--accent); font-weight: 600; }
 .sa-filterbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
 .sa-filterbar .btn { min-height: 34px; padding: 0 12px; font-size: 12.5px; border-radius: 20px; }
-.sa-filterbar-range { display: flex; gap: 6px; align-items: center; margin: 0; }
-.sa-filterbar-range input[type=date] { min-height: 34px; font-size: 12.5px; padding: 0 6px; width: auto; margin: 0; }
+.sa-filterbar-range { display: flex; gap: 6px; align-items: center; margin: 0; min-width: 0; }
+.sa-filterbar-range input[type=date] { min-height: 34px; font-size: 12.5px; padding: 0 6px; width: auto; margin: 0; flex: 1 1 auto; min-width: 0; }
 .sa-filterbar-info { margin-left: auto; cursor: help; white-space: nowrap; }
 @media (max-width: 860px) { .sa-filterbar-info { margin-left: 0; white-space: normal; } }
 .dash-tiga .sa-stat-grid { grid-template-columns: repeat(2, 1fr); }
