@@ -10,10 +10,10 @@
 @push('styles')
 <style>
     .kc-list { list-style: none; margin: 0; padding: 0; }
-    .kc-list li { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid var(--border-color); font-size: var(--fs-sm); min-width: 0; }
+    .kc-list li { display: grid; gap: 2px; padding: 8px 0; border-top: 1px solid var(--border-color); font-size: var(--fs-sm); min-width: 0; }
     .kc-list li:first-child { border-top: 0; }
     .kc-list li > span { min-width: 0; overflow-wrap: anywhere; }
-    .kc-list time { flex-shrink: 0; font-size: var(--fs-xs); color: var(--text-muted); white-space: nowrap; }
+    .kc-list time { font-size: var(--fs-xs); color: var(--text-muted); }
     .kc-lock { color: var(--accent-strong); }
     .kc-tolak { color: var(--danger); }
     .kc-kosong { margin: 0; font-size: var(--fs-sm); color: var(--text-muted); }

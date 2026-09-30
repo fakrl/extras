@@ -23,12 +23,21 @@
     .akc-ex a { font-weight: 600; color: inherit; overflow-wrap: anywhere; }
     .akc-peran { font-size: var(--fs-xs); color: var(--text-muted); flex: 1; min-width: 80px; }
     .akc-waktu { font-size: var(--fs-xs); color: var(--text-muted); white-space: nowrap; }
+    .akc-st { display: flex; gap: 8px; align-items: center; margin-left: auto; }
     .akc-kosong { font-size: var(--fs-sm); color: var(--text-muted); margin: 4px 0 10px; }
+    .akc-layout { display: grid; gap: 16px; align-items: start; }
+    .akc-kiri { min-width: 0; }
+    .akc-kanan > .card { margin: 0; }
+    @media (min-width: 1100px) {
+        .akc-layout { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+        .akc-kanan { position: sticky; top: 76px; }
+    }
     @media (max-width: 560px) {
         .akc-acc > summary { flex-wrap: wrap; }
         .akc-angka { flex-basis: 100%; padding-left: 26px; }
         .akc-isi { padding-left: 10px; }
         .akc-ex { padding-left: 10px; }
+        .akc-st { flex-basis: 100%; margin-left: 42px; }
     }
 </style>
 @endpush
@@ -39,6 +48,8 @@
 @endphp
 <p style="font-size: var(--fs-sm); color: var(--text-secondary); margin: 0 0 var(--space-3);">Riwayat Client: proyek & Extras yang diajukan. Akun Client dikelola Super Admin.</p>
 
+<div class="akc-layout">
+<div class="akc-kiri">
 <form method="GET" action="{{ route('admin.akun.client') }}" class="xtoolbar" id="live-form" data-live>
     <input type="search" name="q" value="{{ $q }}" class="xtoolbar-cari" placeholder="Cari nama, perusahaan, email Client…" aria-label="Cari Client">
     <x-per-halaman :pilihan="\App\Support\PerHalaman::TABEL" :nilai="$clients->perPage()" />
@@ -66,7 +77,7 @@
                             <i class="ti ti-chevron-right chevron-icon"></i>
                             <div class="akc-main">
                                 <div class="akc-nama">{{ $p->nama_produksi }}</div>
-                                <div class="akc-meta">{{ $p->kode_proyek }} · shooting {{ $p->rentangShooting() }}@if ($tahap) · <span class="badge {{ \App\Models\CastingProject::TAHAP_BADGES[$tahap] }}">{{ \App\Models\CastingProject::TAHAP[$tahap] }}</span>@endif</div>
+                                <div class="akc-meta">{{ $p->kode_proyek }} · {{ ($rs = $p->rentangShooting()) === '-' ? 'belum ada jadwal' : 'shooting '.$rs }}@if ($tahap) · <span class="badge {{ \App\Models\CastingProject::TAHAP_BADGES[$tahap] }}">{{ \App\Models\CastingProject::TAHAP[$tahap] }}</span>@endif</div>
                             </div>
                             <div class="akc-angka">
                                 <span class="badge badge-netral" title="Diajukan ke Client">{{ $p->applications->count() }} diajukan</span>
@@ -90,10 +101,12 @@
                                             <a href="{{ route('admin.extras.profil', $ex->user_id) }}" data-profil-modal>{{ '@'.($ex->user->username ?? 'tanpa-username') }}</a>
                                         @endif
                                         <span class="akc-peran">{{ $a->getKarakter() }}</span>
-                                        <span class="badge {{ $sisi[$s][1] }}">{{ $sisi[$s][0] }}@if ($s === 'lock' && $r?->grade_client) · Grade {{ $r->grade_client }}@endif</span>
-                                        @if ($s !== 'menunggu' && $r)
-                                            <time class="akc-waktu" datetime="{{ $r->created_at->toIso8601String() }}" title="{{ $r->created_at->translatedFormat('d M Y H:i') }}">{{ $r->created_at->locale('id')->diffForHumans() }}</time>
-                                        @endif
+                                        <span class="akc-st">
+                                            <span class="badge {{ $sisi[$s][1] }}">{{ $sisi[$s][0] }}@if ($s === 'lock' && $r?->grade_client) · Grade {{ $r->grade_client }}@endif</span>
+                                            @if ($s !== 'menunggu' && $r)
+                                                <time class="akc-waktu" datetime="{{ $r->created_at->toIso8601String() }}" title="{{ $r->created_at->translatedFormat('d M Y H:i') }}">{{ $r->created_at->locale('id')->diffForHumans() }}</time>
+                                            @endif
+                                        </span>
                                     </li>
                                 @endforeach
                             </ul>
@@ -111,8 +124,9 @@
 
 <x-pagination-bar :paginator="$clients" :pilihan="\App\Support\PerHalaman::TABEL" />
 </div>
-
-<div style="margin-top: var(--space-4);">
+</div>
+<aside class="akc-kanan" aria-label="Keputusan Client terbaru">
     @include('partials.keputusan-client', ['keputusan' => $keputusan])
+</aside>
 </div>
 @endsection
