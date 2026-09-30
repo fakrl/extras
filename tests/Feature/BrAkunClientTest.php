@@ -57,7 +57,7 @@ class BrAkunClientTest extends TestCase
             ->assertSee('@dimas_rk')->assertSee('Lock · Grade A')->assertSee('@rina_tunggu')->assertSee('Menunggu keputusan')->assertSee('@sari_tolak')
             ->assertDontSee('@admin_tolak')->assertDontSee('@baru_daftar')
             ->assertSee('data-profil-modal', false)
-            ->assertSee('Keputusan Client terbaru');
+            ->assertSeeInOrder(['Client Andini', 'Iklan Minuman', '@dimas_rk', 'Keputusan Client terbaru']);
 
         // read-only: isi halaman (dalam <main>) tanpa form POST, tanpa aksi edit/nonaktif/reset
         $html = $res->getContent();

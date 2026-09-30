@@ -39,9 +39,7 @@
 @endphp
 <p style="font-size: var(--fs-sm); color: var(--text-secondary); margin: 0 0 var(--space-3);">Riwayat Client: proyek & Extras yang diajukan. Akun Client dikelola Super Admin.</p>
 
-@include('partials.keputusan-client', ['keputusan' => $keputusan])
-
-<form method="GET" action="{{ route('admin.akun.client') }}" class="xtoolbar" id="live-form" data-live style="margin-top: var(--space-3);">
+<form method="GET" action="{{ route('admin.akun.client') }}" class="xtoolbar" id="live-form" data-live>
     <input type="search" name="q" value="{{ $q }}" class="xtoolbar-cari" placeholder="Cari nama, perusahaan, email Client…" aria-label="Cari Client">
     <x-per-halaman :pilihan="\App\Support\PerHalaman::TABEL" :nilai="$clients->perPage()" />
 </form>
@@ -112,5 +110,9 @@
 </div>
 
 <x-pagination-bar :paginator="$clients" :pilihan="\App\Support\PerHalaman::TABEL" />
+</div>
+
+<div style="margin-top: var(--space-4);">
+    @include('partials.keputusan-client', ['keputusan' => $keputusan])
 </div>
 @endsection
