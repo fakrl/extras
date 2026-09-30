@@ -21,7 +21,7 @@ class BdSidebarFinalTest extends TestCase
             ->assertOk()
             ->assertSeeInOrder(['Dashboard', 'Manajemen Akun', 'Proyek &amp; Keuangan', 'Log Aktivitas', 'Monitoring'], false)
             ->assertSee(route('super-admin.akun.index'), false)
-            ->assertSee(route('super-admin.mode.pilih', 'korlap'), false)
+            ->assertSee(route('super-admin.monitoring.korlap'), false)
             ->assertDontSee('Monitoring Akun')
             ->assertDontSee('Kelola Akun');
     }

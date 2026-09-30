@@ -18,14 +18,16 @@
     <i class="ti ti-activity"></i> Log Aktivitas
 </a>
 
-<details class="sidebar-dropdown" {{ str_starts_with($route, 'super-admin/sebagai') ? 'open' : '' }}>
+<details class="sidebar-dropdown" {{ str_starts_with($route, 'super-admin/sebagai') || str_starts_with($route, 'super-admin/monitoring') ? 'open' : '' }}>
     <summary class="sidebar-dropdown-summary">
         <span><i class="ti ti-eye" style="margin-right: 6px;"></i> Monitoring</span>
         <i class="ti ti-chevron-right chevron-icon"></i>
     </summary>
     <div class="sidebar-submenu">
+        {{-- BL.3: Admin/Korlap ke pratinjau, Client/Extras ke pemilih akun --}}
         @foreach (['admin' => 'ti-shield', 'korlap' => 'ti-map-pin', 'client' => 'ti-building', 'extras' => 'ti-user-star'] as $m => $ikon)
-            <a href="{{ route('super-admin.mode.pilih', $m) }}" class="sidebar-link {{ $route === 'super-admin/sebagai/'.$m ? 'active' : '' }}">
+            @php $pratinjau = in_array($m, ['admin', 'korlap'], true); @endphp
+            <a href="{{ $pratinjau ? route('super-admin.monitoring.'.$m) : route('super-admin.mode.pilih', $m) }}" class="sidebar-link {{ $route === ($pratinjau ? 'super-admin/monitoring/' : 'super-admin/sebagai/').$m ? 'active' : '' }}">
                 <i class="ti {{ $ikon }}"></i> {{ \App\Models\User::LABELS[$m] }}
             </a>
         @endforeach

@@ -8,6 +8,7 @@ use App\Models\Attendance;
 use App\Models\CastingProject;
 use App\Models\EventShootingDate;
 use App\Models\ProjectApplication;
+use App\Support\KorlapRingkasan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -58,24 +59,18 @@ class AttendanceController extends Controller
             }
 
             if ($shootingDate) {
-                $applicants = $castingProject->applications()
-                    ->whereIn('status_partisipasi', ProjectApplication::STATUS_AKTIF)
-                    ->with(['extras.user', 'castingProjectClass', 'attendances.divalidasiOleh'])
-                    ->get()
-                    ->each(fn ($a) => $a->setRelation('absen', $a->attendances->firstWhere('event_shooting_date_id', $shootingDate->id)))
-                    ->sortBy(fn ($a) => [
-                        $a->absen && $a->absen->status_validasi !== 'menunggu' ? 1 : 0,
-                        $a->jam_callingan ?: $a->castingProjectClass?->jam_callingan ?: '99:99',
-                    ]);
+                $applicants = KorlapRingkasan::peserta($castingProject, $shootingDate);
             }
         }
+
+        $rekap = $shootingDate ? KorlapRingkasan::rekap($applicants) : null;
 
         $jadwalBulanIni = EventShootingDate::whereBetween('tanggal', [now()->startOfMonth(), now()->endOfMonth()])
             ->with('castingProject:id,nama_produksi')
             ->get()
             ->map(fn ($e) => tap($e, fn ($e) => $e->nama_produksi = $e->castingProject?->nama_produksi));
 
-        return view('admin.attendance.index', compact('projects', 'castingProject', 'shootingDate', 'applicants', 'today', 'jadwalBulanIni'));
+        return view('admin.attendance.index', compact('projects', 'castingProject', 'shootingDate', 'applicants', 'rekap', 'today', 'jadwalBulanIni'));
     }
 
     public function store(Request $request, ProjectApplication $application): RedirectResponse
