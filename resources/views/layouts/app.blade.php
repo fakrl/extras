@@ -6,6 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="color-scheme" content="dark light">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script>try { if (localStorage.getItem('jbtb-sidebar') === 'ringkas') document.documentElement.classList.add('sb-ringkas'); } catch (e) {}</script>
     <title>@yield('title', 'SIM Casting JBTB')</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
@@ -25,6 +26,7 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
+            transition: width .2s ease, padding .2s ease;
         }
         [data-theme="dark"] .sidebar {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cpath d='M0 10L10 0L20 10L10 20Z' stroke='rgba(16%2C185%2C129%2C0.05)' stroke-width='1' fill='none'/%3E%3C/svg%3E");
@@ -39,7 +41,24 @@
             display: flex; align-items: center; justify-content: center;
             font-weight: 700; font-size: 15px;
         }
-        .sidebar-brand span { font-weight: 600; font-size: 15px; }
+        .sidebar-brand span { font-weight: 600; font-size: 15px; white-space: nowrap; }
+        .sidebar-toggle { margin-left: auto; width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: 10px; background: none; color: var(--text-secondary); font-size: 20px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+        .sidebar-toggle:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+        @media (min-width: 861px) {
+            .sb-ringkas .sidebar { width: 64px; padding: 20px 10px; }
+            .sb-ringkas .sidebar-brand { flex-direction: column; gap: 8px; padding: 0 0 12px; }
+            .sb-ringkas .sidebar-brand span, .sb-ringkas .sidebar-group-label, .sb-ringkas .sidebar .chevron-icon { display: none; }
+            .sb-ringkas .sidebar-toggle { margin: 0; }
+            .sb-ringkas .sidebar-toggle i { transform: scaleX(-1); }
+            .sb-ringkas .sidebar-link, .sb-ringkas .sidebar-dropdown-summary { justify-content: center; gap: 0; padding: 10px 0; min-height: 44px; font-size: 0; }
+            .sb-ringkas .sidebar i { font-size: 19px; margin: 0 !important; }
+            .sb-ringkas .sidebar-dropdown { position: relative; }
+            .sb-ringkas .sidebar-dropdown:has(.active) > summary { background: var(--bg-nav-active); color: var(--accent-strong); }
+            .sb-ringkas .sidebar-submenu { position: absolute; left: calc(100% + 12px); top: 0; z-index: 100; min-width: 200px; margin: 0; padding: 6px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: 0 8px 24px rgba(0,0,0,0.18); }
+            .sb-ringkas .sidebar-submenu::before { content: ''; position: absolute; right: 100%; top: 0; bottom: 0; width: 14px; }
+            .sb-ringkas .sidebar-submenu .sidebar-link { justify-content: flex-start; gap: 10px; padding: 10px; font-size: 13.5px; }
+            .sb-ringkas .sidebar-submenu i { font-size: 17px; }
+        }
         .sidebar-group-label {
             font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.5px;
             color: var(--text-muted); padding: 14px 10px 4px;
@@ -568,14 +587,18 @@
         .sa-lihat-saja form :disabled:not([type="hidden"]), .sa-lihat-saja [aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
         .sa-lock-note { margin: -8px 0 16px; font-size: var(--fs-sm); color: var(--text-secondary); }
 
-        /* ===== Mobile: sidebar berubah jadi bottom navigation bar =====
-           Extras (pengguna utama di HP) butuh navigasi yang selalu kelihatan
-           tanpa perlu membuka menu terpisah (pola navigasi mobile)
-           yang kemungkinan besar sudah familiar buat mereka. */
+        .topbar-kiri { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+        .topbar-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .topbar-actions { flex-shrink: 0; }
+        .nav-burger { display: none; width: 44px; height: 44px; margin-left: -10px; flex-shrink: 0; border: 0; border-radius: 10px; background: none; color: var(--text-primary); font-size: 22px; cursor: pointer; align-items: center; justify-content: center; }
+        .nav-burger:hover { background: var(--bg-card-hover); }
+        .nav-backdrop, .sidebar-tema { display: none; }
+        button.sidebar-link { width: 100%; border: 0; background: none; font-family: inherit; cursor: pointer; text-align: left; }
+
+        /* HP: Extras = bottom nav 3 item (BJ.5); role lain = drawer dari kiri (BR.3) */
         @media (max-width: 860px) {
             .app-shell { flex-direction: column; }
-
-            .sidebar {
+            .nav-bawah .sidebar {
                 position: fixed; bottom: 0; left: 0; right: 0; top: auto;
                 width: 100%; height: 64px;
                 flex-direction: row; align-items: center;
@@ -586,40 +609,40 @@
                 z-index: 50;
                 gap: 0;
             }
-            .sidebar-brand { display: none; }
-            .sidebar-group-label { display: none; }
-            .sidebar-link {
+            .nav-bawah .sidebar-brand, .nav-bawah .sidebar-group-label, .sidebar-toggle { display: none; }
+            .nav-bawah .sidebar-link {
                 flex-direction: column; justify-content: center;
                 gap: 2px; padding: 6px 8px; min-height: 52px;
                 font-size: var(--fs-xs); flex: 1 0 auto; min-width: 64px; text-align: center;
                 border-radius: 10px; white-space: nowrap;
             }
-            .sidebar-link i { font-size: 20px; }
-            .sidebar-link.active { background: var(--bg-nav-active); }
+            .nav-bawah .sidebar-link i { font-size: 20px; }
             .sidebar-link.is-utama i { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--accent); color: var(--accent-on); font-size: 20px; }
             .sidebar-link.is-utama { font-weight: 600; color: var(--accent-strong); }
             .sidebar-link.is-utama.active { background: transparent; }
-            /* dropdown (Monitoring SA) di bottom bar: 1 item, submenu jadi popup di atas bar */
-            .sidebar-dropdown { flex: 1 0 auto; min-width: 64px; margin: 0; }
-            .sidebar-dropdown-summary {
-                flex-direction: column; justify-content: center; gap: 2px;
-                padding: 6px 8px; min-height: 52px; font-size: var(--fs-xs); font-weight: 400;
-                border-radius: 10px; white-space: nowrap;
-            }
-            .sidebar-dropdown-summary > span { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-            .sidebar-dropdown-summary > span i { font-size: 20px; margin: 0 !important; }
-            .sidebar-dropdown-summary .chevron-icon { display: none; }
-            .sidebar-dropdown[open] .sidebar-dropdown-summary { background: var(--bg-nav-active); }
-            .sidebar-dropdown .sidebar-submenu {
-                position: fixed; bottom: 70px; right: 8px; z-index: 60;
-                background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg);
-                box-shadow: 0 8px 24px rgba(0,0,0,0.18); padding: 6px; margin: 0; min-width: 180px;
-            }
-            .sidebar-dropdown .sidebar-submenu .sidebar-link { flex-direction: row; justify-content: flex-start; min-height: 44px; font-size: var(--fs-sm); }
+            .nav-bawah .main-area { padding-bottom: 64px; }
 
-            .main-area { padding-bottom: 64px; }
+            .nav-laci .sidebar {
+                position: fixed; top: 0; bottom: 0; left: 0; z-index: 400;
+                width: min(300px, 86vw); overflow-y: auto; overscroll-behavior: contain;
+                transform: translateX(-100%); visibility: hidden;
+                transition: transform .2s ease, visibility 0s .2s;
+                box-shadow: 0 0 32px rgba(0,0,0,0.25);
+            }
+            .nav-buka .nav-laci .sidebar { transform: none; visibility: visible; transition: transform .2s ease; }
+            .nav-laci .sidebar-link, .nav-laci .sidebar-dropdown-summary { min-height: 44px; }
+            .nav-laci .nav-burger { display: inline-flex; }
+            .nav-laci .sidebar-tema { display: flex; margin-top: auto; }
+            .nav-laci #theme-toggle { display: none; }
+            .nav-buka .nav-backdrop { display: block; position: fixed; inset: 0; z-index: 399; background: rgba(0,0,0,0.45); }
+            html.nav-buka { overflow: hidden; }
+
             .content { padding: 16px; }
-            .topbar { padding: 14px 16px; }
+            .topbar { padding: 10px 16px; gap: 8px; }
+            .topbar-actions { gap: 8px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .sidebar, .nav-laci .sidebar, .nav-buka .nav-laci .sidebar, .sidebar-toggle i { transition: none; }
         }
 
         @media (max-width: 480px) {
@@ -645,22 +668,36 @@
     @stack('styles')
 </head>
 <body>
-    <div class="app-shell">
-        <aside class="sidebar">
+    @php($navRole = auth()->user()?->modeSa() ?? auth()->user()?->role ?? 'guest')
+    @php($laci = ! in_array($navRole, ['extras', 'guest'], true))
+    <div class="app-shell {{ $laci ? 'nav-laci' : 'nav-bawah' }}">
+        <aside class="sidebar" id="app-sidebar" aria-label="Menu utama">
             <div class="sidebar-brand">
                 <div class="logo">J</div>
                 <span>JBTB Casting</span>
+                <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-controls="app-sidebar" aria-pressed="false" aria-label="Ringkas sidebar" title="Ringkas sidebar"><i class="ti ti-layout-sidebar-left-collapse"></i></button>
             </div>
-            @include('partials.sidebar-' . (auth()->user()?->modeSa() ?? auth()->user()->role ?? 'guest'))
+            @include('partials.sidebar-' . $navRole)
+            @if ($laci)
+                <button type="button" class="sidebar-link sidebar-tema" data-theme-toggle><i class="ti ti-moon"></i> Ganti tema</button>
+            @endif
         </aside>
+        @if ($laci)
+            <div class="nav-backdrop" data-nav-tutup></div>
+        @endif
 
         <div class="main-area">
             <div class="topbar">
-                <div class="topbar-title">@yield('title', 'SIM Casting JBTB')</div>
+                <div class="topbar-kiri">
+                    @if ($laci)
+                        <button type="button" class="nav-burger" id="nav-burger" aria-controls="app-sidebar" aria-expanded="false" aria-label="Buka menu"><i class="ti ti-menu-2"></i></button>
+                    @endif
+                    <div class="topbar-title">@yield('title', 'SIM Casting JBTB')</div>
+                </div>
                 <div class="topbar-actions">
                     @auth
-                        <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Ganti tema">
-                            <i class="ti ti-sun" id="theme-icon"></i>
+                        <button type="button" class="theme-toggle-btn" id="theme-toggle" data-theme-toggle aria-label="Ganti tema">
+                            <i class="ti ti-sun"></i>
                         </button>
                         <div class="notif-bell-wrap" style="position:relative;">
                             <button type="button" class="theme-toggle-btn" id="notif-bell-btn" aria-label="Notifikasi" style="position:relative;">
@@ -764,20 +801,75 @@
             document.documentElement.setAttribute('data-theme', saved);
 
             document.addEventListener('DOMContentLoaded', function () {
-                var icon = document.getElementById('theme-icon');
-                if (icon) icon.className = saved === 'dark' ? 'ti ti-sun' : 'ti ti-moon';
-
-                var btn = document.getElementById('theme-toggle');
-                if (btn) {
+                var ikon = function (t) { document.querySelectorAll('[data-theme-toggle] i').forEach(function (i) { i.className = t === 'dark' ? 'ti ti-sun' : 'ti ti-moon'; }); };
+                ikon(saved);
+                document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
                     btn.addEventListener('click', function () {
-                        var current = document.documentElement.getAttribute('data-theme');
-                        var next = current === 'dark' ? 'light' : 'dark';
+                        var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
                         document.documentElement.setAttribute('data-theme', next);
                         localStorage.setItem('jbtb-theme-v2', next);
-                        icon.className = next === 'dark' ? 'ti ti-sun' : 'ti ti-moon';
+                        ikon(next);
                     });
-                }
+                });
             });
+        })();
+
+        // BR.4 sidebar desktop ringkas: label disembunyikan visual, tooltip + aria-label dari teks menu, submenu jadi flyout
+        (function () {
+            var html = document.documentElement, btn = document.getElementById('sidebar-toggle'), sb = document.getElementById('app-sidebar');
+            if (!btn) return;
+            var desk = matchMedia('(min-width: 861px)');
+            var ringkas = function () { return html.classList.contains('sb-ringkas') && desk.matches; };
+            var tutupFlyout = function (kecuali) { sb.querySelectorAll('.sidebar-dropdown[open]').forEach(function (d) { if (d !== kecuali) d.open = false; }); };
+            function segarkan() {
+                var r = html.classList.contains('sb-ringkas');
+                btn.setAttribute('aria-pressed', r);
+                sb.querySelectorAll('.sidebar-link, .sidebar-dropdown-summary').forEach(function (el) {
+                    if (el.closest('.sidebar-submenu') || el === btn) return;
+                    var teks = el.textContent.trim();
+                    if (r) { el.title = teks; if (!el.hasAttribute('aria-label')) { el.setAttribute('aria-label', teks); el.dataset.sbLabel = ''; } }
+                    else { el.removeAttribute('title'); if (el.hasAttribute('data-sb-label')) { el.removeAttribute('aria-label'); el.removeAttribute('data-sb-label'); } }
+                });
+                if (ringkas()) tutupFlyout();
+            }
+            btn.addEventListener('click', function () {
+                html.classList.toggle('sb-ringkas');
+                try { localStorage.setItem('jbtb-sidebar', html.classList.contains('sb-ringkas') ? 'ringkas' : 'penuh'); } catch (e) {}
+                segarkan();
+            });
+            sb.querySelectorAll('.sidebar-dropdown').forEach(function (d) {
+                d.addEventListener('mouseenter', function () { if (ringkas()) { tutupFlyout(d); d.open = true; } });
+                d.addEventListener('mouseleave', function () { if (ringkas()) d.open = false; });
+                d.querySelector('summary').addEventListener('click', function (e) { if (ringkas() && e.detail > 0) { e.preventDefault(); d.open = true; } });
+            });
+            document.addEventListener('click', function (e) { if (ringkas() && !e.target.closest('.sidebar-dropdown')) tutupFlyout(); });
+            document.addEventListener('keydown', function (e) {
+                var d = e.key === 'Escape' && ringkas() && sb.querySelector('.sidebar-dropdown[open]');
+                if (d) { d.open = false; d.querySelector('summary').focus(); }
+            });
+            segarkan();
+        })();
+
+        // BR.3 drawer menu HP (role non-Extras): main-area di-inert saat terbuka supaya fokus terkunci di drawer
+        (function () {
+            var btn = document.getElementById('nav-burger'), laci = document.getElementById('app-sidebar'), main = document.querySelector('.main-area');
+            if (!btn) return;
+            var hp = matchMedia('(max-width: 860px)');
+            function atur(buka) {
+                document.documentElement.classList.toggle('nav-buka', buka);
+                btn.setAttribute('aria-expanded', buka);
+                main.inert = buka;
+                if (buka) laci.querySelector('a, summary').focus();
+                else if (hp.matches) btn.focus();
+            }
+            btn.addEventListener('click', function () { atur(true); });
+            document.addEventListener('click', function (e) {
+                if (document.documentElement.classList.contains('nav-buka') && (e.target.closest('[data-nav-tutup]') || e.target.closest('#app-sidebar a'))) atur(false);
+            });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && document.documentElement.classList.contains('nav-buka')) atur(false);
+            });
+            hp.addEventListener('change', function () { if (!hp.matches && main.inert) atur(false); });
         })();
 
         var topbarUserMenu = document.getElementById('topbar-user-menu');

@@ -33,5 +33,3 @@
         @endforeach
     </div>
 </details>
-{{-- HP: dropdown Monitoring di bottom bar jadi popup; jangan kebuka sendiri nutupin konten --}}
-<script>if (matchMedia('(max-width: 860px)').matches) document.querySelectorAll('.sidebar .sidebar-dropdown[open]').forEach(function (d) { d.open = false; });</script>
