@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\CastingProject;
+use App\Models\ClientReview;
 use App\Models\ProjectApplication;
 use App\Models\User;
 use Database\Seeders\DemoLengkapSeeder;
@@ -68,6 +69,14 @@ class DemoSeederTest extends TestCase
         User::withTrashed()->withCount('notifications')->get()
             ->each(fn ($u) => $this->assertTrue($u->notifications_count >= 2 && $u->notifications_count <= 4, "{$u->username}: {$u->notifications_count} notif"));
         $this->assertDatabaseHas('notifications', ['read_at' => null]);
+
+        // BM: data demo pakai skema baru
+        $joko = User::where('username', 'joko_s')->firstOrFail()->extrasProfile;
+        $this->assertSame([3, 'melanggar'], [$joko->cancel_count, $joko->status]);
+        $this->assertSame('gagal', User::where('username', 'nadia_pu')->firstOrFail()->notifications()->where('data->jenis', 'hasil_seleksi')->sole()->data['wa']);
+        $this->assertSame(6, User::whereNotNull('honor_nominal')->count());
+        $this->assertSame(0, CastingProject::whereNull('client_id')->where('nama_produksi', 'not like', 'Iklan "Bank%')->count());
+        $this->assertTrue(ClientReview::whereNotNull('grade_client')->exists());
         $this->assertDatabaseHas('activity_logs', ['action' => 'DISPUTE_PAYMENT']);
     }
 

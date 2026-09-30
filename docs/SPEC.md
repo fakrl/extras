@@ -1529,10 +1529,34 @@ Update `DemoLengkapSeeder` + `DemoSeederTest`, isi Bukti, tulis DEV-NOTES. **Man
 
 | Item | Bukti | QA |
 |---|---|---|
-| BM.1 drop/gabung tabel | | [ ] |
-| BM.2 drop kolom dobel/sisa | | [ ] |
-| BM.3 rename cd → client + redirect URL lama | | [ ] |
-| BM.4 seeder, test, laporan tabel final | | [ ] |
+| BM.1 drop/gabung tabel | `9003bdd` — migration `2026_09_30_300001`: `cd_project_assignments` (→ `client_id`, helper `CastingProject::milikClient()`/scope), `extras_photos` (→ `extras_profiles.foto_tambahan`), `admin_profiles` (→ `users.honor_nominal`, ubah honor dicatat `UPDATE_HONOR`), `notifications_log` (→ `User::kabari()`, status `email`/`wa`/`wa_dikirim_at` di `notifications.data`, reminder anti-dobel via `kunci`, ikon status di detail akun SA). Test `BmDietDatabaseTest`, `ClientAksesProyekTest`. | [ ] |
+| BM.2 drop kolom dobel/sisa | `f51741f` — migration `2026_09_30_300002` (data dipindah dulu, lihat tabel di bawah). | [ ] |
+| BM.3 rename cd → client + redirect URL lama | `30d03c8` — migration `2026_09_30_300003` (`client_reviews`, `client_id`, `grade_client`, `ttd_client_signature_path`, `diajukan_ke_client`), route/view/namespace `client`, `GET /cd/{any}` → 301 `/client/{any}` (+query). Grep akhir bersih kecuali route redirect itu sendiri, test redirect, dan migration lama. | [ ] |
+| BM.4 seeder, test, laporan tabel final | Commit BM.4 — `DemoLengkapSeeder` (grade_client, 3 batal mendadak joko_s dari `cancellations`, status WA/email di beberapa notif, Client arsip portofolio) + `DemoSeederTest`. Skema final 32 tabel (dari 36). | [ ] |
+
+**Dihapus / Dipertahankan (BM)**
+
+| Tabel/kolom | Hasil | Alasan |
+|---|---|---|
+| `cd_project_assignments` | Dihapus | 1 proyek = 1 Client; data kosong `client_id` diisi dari assignment pertama |
+| `extras_photos` | Dihapus | Pindah ke `extras_profiles.foto_tambahan` json {slot: path} |
+| `admin_profiles` | Dihapus | Pindah ke `users.honor_nominal` |
+| `notifications_log` | Dihapus | Cuma ditulis; status kirim sekarang di `notifications.data`. Baris lama tidak dipindah (tanpa isi pesan, bakal jadi notif kosong) |
+| `casting_projects.wa_group_link` | Dihapus | Digabung ke `link_grup` |
+| `casting_projects.diajukan_oleh_client_id` | Dihapus | Pengaju = `client_id`; asal pengajuan Client = ada `brief_catatan` |
+| `casting_projects.client_ph` | Dihapus | Tampil dari `client->nama_perusahaan`; backfill ke Client kosong; proyek tanpa Client ditautkan ke akun bernama sama atau dibuatkan akun Client nonaktif |
+| `casting_projects.cover_path` | Dihapus | Sama fungsi dengan `poster_path`; kalau dua-duanya ada, cover dipindah ke lampiran proyek |
+| `casting_projects.kuota` | **Dipertahankan** | Pengajuan Client belum punya peran (`kuota_kelas`), SA ACC berdasarkan kuota ini |
+| `casting_projects.share_token` | **Dipertahankan** | Link `/event/{token}` |
+| `extras_profiles.pengalaman` / `warna_kulit` | Dihapus | Sudah jadi `riwayat_pengalaman` / tag grup "Warna kulit" (migrasi BJ dijalankan ulang sebelum drop) |
+| `extras_profiles.cancel_count` | Dihapus | Hitung dari `cancellations` (`ExtrasProfile::batalMendadak()`, mendadak & oleh Extras) |
+| `extras_profiles.berat_badan` | **Dipertahankan** | Keputusan Fakrul: angka baru BJ, bukan tag |
+| `extras_profiles.share_token` | **Dipertahankan** | Link profil publik masih token |
+| `project_applications.*_override` (4) | **Dipertahankan** | Masih diisi form breakdown per kandidat (`admin.applications.breakdown`) |
+| `casting_project_classes.karakter` | Dihapus | Tanpa input UI, dobel `nama_kelas`; nilai beda disalin ke `karakter_override` |
+| `cd_reviews.bulk_batch_id` | Dihapus | Cuma ditulis |
+| status `direview_cd` | Dihapus | Tak pernah di-set (data diarahkan ke `diajukan_ke_cd` dulu) |
+| `cancellations` | **Dipertahankan** | Riwayat batal + aturan 3× & D23 |
 
 ---
 
