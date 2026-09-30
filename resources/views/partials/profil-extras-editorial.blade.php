@@ -1,5 +1,5 @@
 {{-- BH.1: satu layout profil Extras. Param: $mode (pemilik|admin|client|publik), $profile, $fotoUrl, $videoUrl, $fotos (list url/alt).
-     Publik: tanpa grade, tarif, tautan tambahan, tag Look & Lainnya (D22, BJ.1), kontak; usia rentang; video terkunci.
+     Publik: tanpa grade, tarif, tautan tambahan, berat, warna kulit, tag Look/Warna kulit/Lainnya (D22, BJ.1), kontak; usia rentang; video terkunci.
      Client (BI.1): seperti publik tapi video, usia & tag Look tampil (CLAUDE.md §5, BA.6). --}}
 @php
     $publik = $mode === 'publik';
@@ -8,8 +8,9 @@
     preg_match('/^(.*?)([._-][^._-]*|.{1,2})$/u', $username, $um);
     $tagGrup = $profile->categories->groupBy(fn ($c) => $c->grup ?: 'Lainnya');
     $usiaTag = $tagGrup->pull('Usia tampilan', collect())->pluck('nama');
+    $tagGrup->forget('Warna kulit');
     if ($publik) {
-        $tagGrup->forget(['Tampilan/Look', 'Lainnya']);
+        $tagGrup->forget(\App\Models\ExtrasCategory::GRUP_PRIVAT);
     }
     $usia = $profile->usia ? ($publik ? (intdiv($profile->usia, 5) * 5).'–'.(intdiv($profile->usia, 5) * 5 + 4).' tahun' : $profile->usia.' tahun') : '-';
     $gender = ['pria' => 'Laki-laki', 'wanita' => 'Perempuan'][strtolower((string) $profile->gender)] ?? '-';
@@ -21,9 +22,13 @@
         'Usia' => $usia,
         'Jenis kelamin' => $gender,
         'Tinggi badan' => $profile->tinggi_badan ? $profile->tinggi_badan.' cm' : '-',
+        'Berat badan' => $profile->berat_badan ? $profile->berat_badan.' kg' : '-',
         'Ukuran baju' => $profile->ukuran_baju ?: '-',
-        'Warna kulit' => $profile->warna_kulit ?: '-',
+        'Warna kulit' => $profile->warnaKulit() ?? '-',
     ];
+    if ($publik) {
+        unset($data['Berat badan'], $data['Warna kulit']);
+    }
 @endphp
 <style>
 .pe { --pe-serif: Georgia, 'Times New Roman', serif; color: var(--pe-fg); background: var(--pe-bg); container-type: inline-size; }

@@ -52,13 +52,6 @@
         <option value="S">S</option><option value="M">M</option>
         <option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option>
     </select>
-    <select id="filter-warna-kulit" aria-label="Warna kulit">
-        <option value="">Semua warna kulit</option>
-        <option value="sawo matang">Sawo Matang</option>
-        <option value="kuning langsat">Kuning Langsat</option>
-        <option value="hitam">Hitam</option>
-        <option value="putih">Putih</option>
-    </select>
     </div>
     </details>
 </form>
@@ -134,7 +127,7 @@
                     'data-gender' => $app->extras->gender ?? '',
                     'data-tinggi' => $app->extras->tinggi_badan ?? '',
                     'data-ukuran-baju' => $app->extras->ukuran_baju ?? '',
-                    'data-warna-kulit' => $app->extras->warna_kulit ?? '',
+                    'data-warna-kulit' => $app->extras->warnaKulit() ?? '',
                     'data-pengalaman' => $app->extras->pengalamanTeks(),
                     'data-bahasa' => $app->extras->bahasa ?? '',
                     'data-karakter' => $app->castingProjectClass->nama_kelas ?? '-',
@@ -362,17 +355,15 @@
         function applyDemoFilter() {
             var search = (document.getElementById('filter-candidate-search')?.value || '').toLowerCase().trim();
             var ukuran = document.getElementById('filter-ukuran-baju').value.toUpperCase();
-            var warna = document.getElementById('filter-warna-kulit').value.toLowerCase();
             var tags = Array.from(document.querySelectorAll('.gl-tag[aria-pressed="true"]')).map(function (b) { return b.dataset.tag; });
             var tampil = 0;
             document.querySelectorAll('.kandidat-card').forEach(function (card) {
                 var u = (card.dataset.ukuranBaju || '').toUpperCase();
-                var w = (card.dataset.warnaKulit || '').toLowerCase();
                 var text = (card.textContent || '').toLowerCase();
                 var matchSearch = !search || text.includes(search);
                 var punya = (card.dataset.tags || '').split(' ');
                 var matchTag = !tags.length || tags.some(function (t) { return punya.includes(t); });
-                var visible = matchSearch && matchTag && (!ukuran || u === ukuran) && (!warna || w === warna);
+                var visible = matchSearch && matchTag && (!ukuran || u === ukuran);
                 card.style.display = visible ? '' : 'none';
                 if (visible) tampil++;
             });
@@ -395,7 +386,7 @@
                 .sort(function (a, b) { return key === 'cocok' ? (b.dataset.cocok - a.dataset.cocok) || (a.dataset.urut - b.dataset.urut) : a.dataset.urut - b.dataset.urut; })
                 .forEach(function (card) { grid.appendChild(card); });
         });
-        ['filter-candidate-search', 'filter-ukuran-baju', 'filter-warna-kulit'].forEach(function (id) {
+        ['filter-candidate-search', 'filter-ukuran-baju'].forEach(function (id) {
             var el = document.getElementById(id);
             if (el) { el.addEventListener('change', applyDemoFilter); el.addEventListener('input', applyDemoFilter); }
         });

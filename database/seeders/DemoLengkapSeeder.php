@@ -116,6 +116,7 @@ class DemoLengkapSeeder extends Seeder
                 'tinggi_badan' => $tinggi,
                 'ukuran_baju' => $baju[$g],
                 'warna_kulit' => $usia > 50 ? 'Sawo matang' : 'Kuning langsat',
+                'berat_badan' => $tinggi - ($g === 'pria' ? 105 : 110),
                 'pengalaman' => $pengalaman,
                 'riwayat_pengalaman' => collect(explode('. ', rtrim($pengalaman, '.')))->map(fn ($judul, $k) => [
                     'judul' => $judul, 'keterangan' => null, 'tahun' => now()->year - $k - $no % 3,
@@ -127,7 +128,7 @@ class DemoLengkapSeeder extends Seeder
                 'grade_diberikan_at' => $grade ? now()->subDays(30) : null,
                 'created_at' => now()->subDays($daftar),
             ]);
-            $profile->categories()->sync($tag->only($tags)->values());
+            $profile->categories()->sync($tag->only([...$tags, $usia > 50 ? 'Sawo matang' : 'Kuning langsat'])->values());
         }
 
         $this->u['dimas_rk']->extrasProfile->update(['apresiasi' => true, 'apresiasi_catatan' => 'Disukai Client, selalu on-time & gampang diarahkan.']);

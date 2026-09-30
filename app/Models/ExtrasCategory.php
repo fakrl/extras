@@ -14,11 +14,15 @@ class ExtrasCategory extends Model
     public const GRUP = [
         'Usia tampilan' => ['Anak-anak', 'Remaja', 'Dewasa muda', 'Dewasa', 'Orang Tua', 'Lansia'],
         'Tampilan/Look' => ['Chinese/Tionghoa', 'Timur Tengah', 'Indonesia Timur', 'Kaukasia/Bule', 'Melayu', 'Jawa', 'Sunda'],
+        'Warna kulit' => ['Kuning langsat', 'Sawo matang', 'Putih', 'Gelap'],
         'Tipe' => ['Mahasiswa', 'Pekerja kantoran', 'Atlet', 'Berhijab', 'Bertato', 'Rambut panjang'],
         'Kemampuan' => ['Naik motor', 'Nyetir mobil', 'Berenang', 'Menari', 'Bahasa daerah'],
     ];
 
     public const MAKS = 15;
+
+    /** D22: grup yang nggak tampil di profil publik. */
+    public const GRUP_PRIVAT = ['Tampilan/Look', 'Warna kulit', 'Lainnya'];
 
     public function extrasProfiles(): BelongsToMany
     {
@@ -48,6 +52,24 @@ class ExtrasCategory extends Model
 
         $tag = static::create(['nama' => $nama, 'grup' => null, 'dibuat_oleh' => $pembuat?->id]);
         ActivityLog::record('TAG_DIBUAT', ($pembuat ? "{$pembuat->label()} {$pembuat->name}" : 'Sistem')." membuat tag baru #{$nama}", $tag, [], $pembuat);
+
+        return $tag;
+    }
+
+    /** Teks warna_kulit lama → tag grup "Warna kulit" ("hitam" = Gelap). */
+    public static function tagWarnaKulit(string $warna): ?self
+    {
+        $nama = static::normalisasi($warna);
+        if (! $nama) {
+            return null;
+        }
+        $kecil = mb_strtolower($nama);
+        $nama = collect(self::GRUP['Warna kulit'])->first(fn ($n) => mb_strtolower($n) === $kecil)
+            ?? ($kecil === 'hitam' ? 'Gelap' : mb_strtoupper(mb_substr($kecil, 0, 1)).mb_substr($kecil, 1));
+        $tag = static::cariAtauBuat($nama);
+        if (! $tag->grup) {
+            $tag->update(['grup' => 'Warna kulit']);
+        }
 
         return $tag;
     }
