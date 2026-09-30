@@ -10,7 +10,7 @@
 @else
     @foreach ($projects as $project)
         <div class="card" style="margin-bottom: 14px;">
-            <div style="font-size: 14.5px; font-weight: 600; margin-bottom: 8px;">{{ $project->nama_produksi }}</div>
+            <div style="font-size: 14.5px; font-weight: 600; margin-bottom: 8px;">{{ $project->nama_produksi }} <span class="kode-proyek">{{ $project->kode_proyek }}</span></div>
             @if ($project->shootingDates->isEmpty())
                 <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 8px;">Belum ada tanggal shooting.</div>
             @else

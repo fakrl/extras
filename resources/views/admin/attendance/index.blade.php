@@ -26,7 +26,7 @@
         <label>Proyek</label>
         <select name="project" onchange="this.form.submit()">
             @foreach ($projects as $p)
-                <option value="{{ $p->id }}" @selected($castingProject?->id === $p->id)>{{ $p->nama_produksi }} ({{ $p->namaClient() }})</option>
+                <option value="{{ $p->id }}" @selected($castingProject?->id === $p->id)>{{ $p->kode_proyek }} · {{ $p->nama_produksi }} ({{ $p->namaClient() }})</option>
             @endforeach
         </select>
     </div>

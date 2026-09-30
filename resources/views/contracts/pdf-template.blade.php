@@ -52,6 +52,7 @@
     <h2>SURAT PERSETUJUAN TALENT (TALENT RELEASE)</h2>
 
     <table>
+        <tr><td width="30%">No. Proyek</td><td>: {{ $application->castingProject->kode_proyek }}</td></tr>
         <tr><td width="30%">Nama Produksi</td><td>: {{ $application->castingProject->nama_produksi }}</td></tr>
         <tr><td>Client / Production House</td><td>: {{ $application->castingProject->namaClient() }}</td></tr>
         <tr><td>Nama Talent (sesuai KTP)</td><td>: {{ $application->extras->nama_asli }}</td></tr>
