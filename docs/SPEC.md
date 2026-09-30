@@ -1335,3 +1335,60 @@ Terapkan komponen yang sama di **Log Aktivitas** dan **Proyek & Keuangan** (isi 
 | BI.2 panel filter + chip filter aktif, tanpa tombol Terapkan (3 halaman) | `566ffcc` — `--filter BiFilterPanelTest` (badge, chip hapus per param, Hapus semua pertahankan q & per). SQLite & MySQL 476 passed | [ ] |
 
 **Tes QA:** Manajemen Akun → klik Lihat Profil → popup, Esc nutup, Back nutup popup (nggak keluar halaman). Ctrl+klik → tab baru. Filter: pilih Role Extras + 1 tag → daftar langsung berubah, muncul 2 chip, hapus 1 chip → daftar ikut. Cek di HP: panel jadi bottom sheet.
+
+---
+
+# Bagian BJ: Profil & Dashboard Extras — tag bebas, form lebih ringkas, urutan mobile (30 September 2026)
+
+> Arahan Fakrul 30 Sept. **Menggantikan aturan BA.2 "Extras nggak bisa bikin tag baru".** Kerjakan setelah BH.1 (layout profil editorial). Subagent wajib (profil + data). Commit per sub-bagian.
+
+## BJ.1: Tag bebas (Extras tulis sendiri, daftar lama jadi contoh)
+
+1. Di edit profil, section "Tentang Kamu": chip tag yang sudah dipilih + **input "+ Tambah tag"** (ketik → Enter/koma = jadi chip). Tag bawaan per grup tetap tampil sebagai **saran** yang bisa di-tap.
+2. **Autocomplete** dari semua tag yang sudah ada di DB (siapa pun yang bikin) saat mengetik — supaya orang cenderung pakai tag yang sama dan filter/% cocok tetap jalan.
+3. **Normalisasi wajib** sebelum simpan (satu tempat, mis. `ExtrasCategory::normalisasi()`): trim, buang `#` di depan, rapikan spasi ganda, maks 30 karakter, lalu cocokkan **tanpa beda huruf besar/kecil** ke tag yang ada (`"dewasa"` = `"Dewasa"` → pakai yang lama). Kalau belum ada → buat tag baru dengan `grup = null` (tampil di grup "Lainnya") + kolom baru `dibuat_oleh` (user id).
+4. Batas: maks **15 tag** per Extras. Validasi server, bukan cuma JS.
+5. **Admin/SA** bisa menambah & menghapus tag Extras saat grading / di Lineup / di Manajemen Akun (fitur `updateKategori` yang sudah ada, pakai input yang sama). Admin/SA juga bisa memindahkan tag "Lainnya" ke grup yang benar atau menggabung dua tag yang sama artinya — cukup halaman kecil "Kelola Tag" di Manajemen Akun (daftar tag + jumlah pemakai + ubah grup + gabung ke tag lain). Semua perubahan tag masuk ActivityLog.
+6. Tag per peran di form proyek (BA.2.4) pakai input + autocomplete yang sama.
+7. Aturan D22 tetap: tag grup Look/Etnis nggak tampil di profil publik; tag "Lainnya" tampil publik hanya kalau Admin sudah memindahkannya ke grup non-Look.
+
+## BJ.2: Foto — satu section lebar
+
+1. Gabung foto utama + galeri jadi satu section **"Foto"** selebar form. Kotak pertama = **foto utama (wajib, ada label "Wajib")**, lalu foto-foto galeri, lalu satu kotak **"+"** untuk tambah (bukan 4 slot kosong berjejer). Kotak "+" hilang kalau galeri sudah penuh (maks 4 foto tambahan, sesuai tabel `extras_photos` yang ada).
+2. Hint di atas galeri: "💡 Profil dengan 3+ foto (close-up, setengah badan, seluruh badan) lebih sering dipilih Client." Kalau galeri kosong tampil sebagai **alert kuning ringan**, bukan error.
+3. Tiap foto: tap → ganti / hapus (konfirmasi). Video tetap section sendiri di bawahnya.
+4. Upload tetap AJAX per foto + progress (AY.5.4), nggak mengubah backend.
+
+## BJ.3: Pengalaman jadi daftar "+" (kayak tautan tambahan)
+
+1. Migration `extras_profiles.riwayat_pengalaman` (json, nullable): array `{judul, keterangan?, tahun?}` — contoh: `{judul: "Figuran iklan Ramadan", keterangan: "Stasiun kereta, pagi", tahun: 2025}`.
+2. Isi lama kolom `pengalaman` (teks) dipindah jadi entri pertama (migration data), lalu form pakai daftar ini. Kolom lama dibiarkan dulu (jangan drop) biar aman.
+3. Form: baris per pengalaman + tombol **"+ Tambah pengalaman"** + hapus per baris (pola sama persis dengan tautan tambahan, termasuk render ulang dari `old()` saat validasi gagal). Maks 20 entri.
+4. **Kemampuan** nggak jadi field terpisah — sudah ditangani tag (grup Kemampuan). Tulis hint: "Kemampuan (naik motor, menari, dll) tambahkan sebagai tag di atas."
+5. Section **Tautan tambahan dipindah ke tepat di bawah Pengalaman**, hint: "Punya portofolio/showreel? Taruh link-nya di sini."
+6. Profil (BH.1, section 02) & kartu/detail Admin tampilkan pengalaman sebagai daftar berurutan (tahun terbaru di atas).
+
+## BJ.4: Dashboard Extras — urutan baru (mobile & desktop sama)
+
+1. **Perlu tindakan** — paling atas, **hanya muncul kalau ada** (nego menunggu balasan, kontrak perlu TTD, lengkapi KTP, konfirmasi pembayaran, absen hari ini, profil belum lengkap). Kalau nggak ada → section **disembunyikan total** (bukan "Tidak ada tindakan").
+2. **Hapus** tombol "Lihat Profil Saya" dan "Lihat Casting Call" di dashboard (sudah ada di menu bawah).
+3. **Casting Call terbuka** — maks 5 lowongan (kartu ringkas: nama produksi, peran yang cocok + badge % cocok kalau ada, sisa kuota, deadline, tombol Daftar) + link "Lihat semua". Kosong → "Belum ada lowongan terbuka. Nanti kami kabari kalau ada yang baru."
+4. **Pendaftaran Saya** (step-bar yang sudah ada).
+5. **Status Talenta** (grade, status akun, apresiasi, linimasa).
+6. **Jadwal** (kalender) — paling bawah.
+
+## BJ.5: Menu bawah HP (Extras)
+
+Urutan bottom nav: **Casting Call (kiri) · Beranda/Dashboard (tengah) · Profil (kanan)**. Item tengah sedikit ditonjolkan (ikon rumah, bisa lingkaran accent). Label "Dashboard" di HP jadi "Beranda". Sidebar desktop boleh ikut urutan ini juga biar konsisten. Setelah login, Extras tetap mendarat di Dashboard (tengah).
+
+## Checklist BJ
+
+| Item | Bukti | QA |
+|---|---|---|
+| BJ.1 tag bebas + autocomplete + normalisasi + Kelola Tag | | [ ] |
+| BJ.2 section foto gabungan + tombol "+" | | [ ] |
+| BJ.3 pengalaman daftar "+" + tautan di bawahnya | | [ ] |
+| BJ.4 urutan dashboard Extras | | [ ] |
+| BJ.5 bottom nav Extras | | [ ] |
+
+**Tes QA (HP):** ketik tag "dewasa muda" → otomatis pakai tag "Dewasa muda" yang ada (nggak dobel). Tambah tag baru "Bisa silat" → muncul di "Lainnya", Admin pindahin ke grup Kemampuan. Upload 1 foto utama + 2 galeri lewat tombol "+". Tambah 3 pengalaman. Dashboard tanpa tindakan → section Perlu Tindakan nggak muncul.
