@@ -1636,4 +1636,4 @@ Konvensi baru: field **wajib** diberi tanda bintang merah `*` setelah label (`<s
 |---|---|---|
 | BO.1 normalisasi nomor WA + `wa:tes` | | [ ] |
 | BO.2 login Google: daftar khusus Extras, role lain via "Hubungkan Google" (aktif via config) | | [ ] |
-| BO.3 bintang `*` untuk field wajib, hapus teks "opsional" | | [ ] |
+| BO.3 bintang `*` untuk field wajib, hapus teks "opsional" | `.wajib`/`.wajib-ket` di theme-style, 30 view, `BoFieldWajibTest` | [ ] |

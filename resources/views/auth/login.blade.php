@@ -22,7 +22,7 @@
 
 <form method="POST" action="{{ route('login') }}">
     @csrf
-    <label>Email atau Username</label>
+    <label>Email atau Username <span class="wajib" aria-hidden="true">*</span></label>
     <input type="text" name="email" value="{{ old('email') }}" required autofocus
            placeholder="email@contoh.com atau username">
 

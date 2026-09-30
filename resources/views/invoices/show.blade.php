@@ -87,7 +87,7 @@
     <form method="POST" action="{{ route('invoices.upload-custom', $castingProject) }}" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
         @csrf
         <div style="flex: 1; min-width: 220px;">
-            <label style="font-size: 12px; margin-bottom: 4px; display: block;">Upload Dokumen PH (PDF, DOCX, XLSX, max 10MB)</label>
+            <label style="font-size: 12px; margin-bottom: 4px; display: block;">Upload Dokumen PH (PDF, DOCX, XLSX, max 10MB) <span class="wajib" aria-hidden="true">*</span></label>
             <input type="file" name="custom_doc" required accept=".pdf,.docx,.xlsx,.jpg,.jpeg,.png">
         </div>
         <button type="submit" class="btn btn-brand btn-sm">Upload Dokumen</button>

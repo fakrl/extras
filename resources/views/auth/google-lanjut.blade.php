@@ -19,7 +19,7 @@
     <div class="checkbox-row">
         <input type="checkbox" name="setuju_privasi" id="setuju_privasi" required>
         <label for="setuju_privasi">
-            Saya sudah membaca dan menyetujui <a href="{{ route('privacy-policy') }}" target="_blank">Kebijakan Privasi</a>.
+            Saya sudah membaca dan menyetujui <a href="{{ route('privacy-policy') }}" target="_blank">Kebijakan Privasi</a>. <span class="wajib" aria-hidden="true">*</span>
         </label>
     </div>
 

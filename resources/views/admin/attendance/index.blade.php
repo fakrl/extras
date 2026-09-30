@@ -128,7 +128,7 @@
                             <form method="POST" action="{{ route('admin.absensi.tolak', $absen) }}" style="padding: 18px;">
                                 @csrf
                                 <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Tolak kehadiran?</div>
-                                <label style="font-size: 12.5px;">Alasan penolakan</label>
+                                <label style="font-size: 12.5px;">Alasan penolakan <span class="wajib" aria-hidden="true">*</span></label>
                                 <textarea name="alasan" rows="3" required placeholder="Tulis alasan penolakan..." style="width: 100%; margin-bottom: 12px;"></textarea>
                                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
                                     <button type="button" class="btn" onclick="this.closest('dialog').close()">Batal</button>
@@ -167,7 +167,7 @@
                 <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Ambil Foto On-Site: {{ $app->extras->user->username ?? 'Extras' }}</div>
                 <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Foto extras di lokasi syuting sebagai bukti kehadiran untuk Client / PH. Maks. 10MB.</p>
                 <input type="file" name="foto" accept="image/*" capture="environment" required style="width: 100%; margin-bottom: 12px;">
-                <textarea name="catatan" rows="2" placeholder="Catatan kehadiran (opsional)..." style="width: 100%; margin-bottom: 12px;"></textarea>
+                <textarea name="catatan" rows="2" placeholder="Catatan kehadiran..." style="width: 100%; margin-bottom: 12px;"></textarea>
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
                     <button type="button" class="btn" onclick="this.closest('dialog').close()">Batal</button>
                     <button type="submit" class="btn btn-brand">Simpan & Tandai Hadir</button>

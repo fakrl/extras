@@ -18,10 +18,10 @@
 
 <form method="POST" action="{{ route('register') }}">
     @csrf
-    <label>Nama Lengkap</label>
+    <label>Nama Lengkap <span class="wajib" aria-hidden="true">*</span></label>
     <input type="text" name="name" value="{{ old('name') }}" required>
 
-    <label>Email</label>
+    <label>Email <span class="wajib" aria-hidden="true">*</span></label>
     <input type="email" name="email" value="{{ old('email') }}" required>
 
     <x-password-input name="password" label="Password" :minlength="8" />
@@ -30,7 +30,7 @@
     <div class="checkbox-row">
         <input type="checkbox" name="setuju_privasi" id="setuju_privasi" required>
         <label for="setuju_privasi">
-            Saya sudah membaca dan menyetujui <a href="{{ route('privacy-policy') }}" target="_blank">Kebijakan Privasi</a>.
+            Saya sudah membaca dan menyetujui <a href="{{ route('privacy-policy') }}" target="_blank">Kebijakan Privasi</a>. <span class="wajib" aria-hidden="true">*</span>
         </label>
     </div>
 

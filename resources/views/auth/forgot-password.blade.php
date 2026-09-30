@@ -20,7 +20,7 @@
 
 <form method="POST" action="{{ route('password.email') }}">
     @csrf
-    <label>Email atau username</label>
+    <label>Email atau username <span class="wajib" aria-hidden="true">*</span></label>
     <input type="text" name="email" value="{{ old('email') }}" required autofocus>
 
     <button type="submit" class="btn-brand">Kirim Link Reset</button>

@@ -193,7 +193,7 @@
 
                         @if ($shootingDates->count() > 1)
                             <div style="margin-bottom: 12px;">
-                                <label>Pilih Tanggal Shooting</label>
+                                <label>Pilih Tanggal Shooting <span class="wajib" aria-hidden="true">*</span></label>
                                 <select name="event_shooting_date_id" required style="width: 100%;">
                                     @foreach ($shootingDates as $sd)
                                         <option value="{{ $sd->id }}" @selected($sd->tanggal->isToday())>
@@ -210,7 +210,7 @@
                         @endif
 
                         <div style="margin-bottom: 16px;">
-                            <label>Foto Selfie di Lokasi (Kamera Saja)</label>
+                            <label>Foto Selfie di Lokasi (Kamera Saja) <span class="wajib" aria-hidden="true">*</span></label>
                             <input type="file" name="foto" accept="image/*" capture="user" required style="width: 100%;">
                             <span style="font-size: var(--fs-xs); color: var(--text-muted); display: block; margin-top: 4px;">Hanya kamera langsung (tidak bisa pilih dari galeri).</span>
                         </div>
