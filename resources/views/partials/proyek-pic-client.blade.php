@@ -1,6 +1,6 @@
 <div class="form-row">
     <div>
-        <label for="admin_id">Admin PIC</label>
+        <label for="admin_id">Admin PIC @if ($adminWajib)<span class="wajib" aria-hidden="true">*</span>@endif</label>
         <input type="search" placeholder="Cari admin..." data-cari-select="admin_id" style="margin-bottom: 6px;">
         <select name="admin_id" id="admin_id" @required($adminWajib)>
             <option value="">{{ $adminKosong }}</option>
@@ -10,7 +10,7 @@
         </select>
     </div>
     <div>
-        <label for="client_id">Akun Client</label>
+        <label for="client_id">Akun Client <span class="wajib" aria-hidden="true">*</span></label>
         <input type="search" placeholder="Cari client..." data-cari-select="client_id" style="margin-bottom: 6px;">
         <select name="client_id" id="client_id" required>
             <option value="">- Pilih Client -</option>

@@ -8,10 +8,11 @@
 
     <form method="POST" action="{{ route('admin.projects.store') }}" enctype="multipart/form-data">
         @csrf
+        <p class="wajib-ket"><span class="wajib">*</span> wajib diisi</p>
 
         <div class="form-row">
             <div>
-                <label>Nama Produksi</label>
+                <label>Nama Produksi <span class="wajib" aria-hidden="true">*</span></label>
                 <input type="text" name="nama_produksi" value="{{ old('nama_produksi') }}" required>
             </div>
         </div>
@@ -21,18 +22,18 @@
 
         <div class="form-row">
             <div>
-                <label>Link Grup Koordinasi <span style="color: var(--text-muted); font-weight: 400;">(WA/Telegram, opsional, dapat diisi menyusul)</span></label>
+                <label>Link Grup Koordinasi <span style="color: var(--text-muted); font-weight: 400;">(WA/Telegram, dapat diisi menyusul)</span></label>
                 <input type="url" name="link_grup" value="{{ old('link_grup') }}" placeholder="https://chat.whatsapp.com/... atau https://t.me/...">
             </div>
         </div>
 
         <div class="form-row">
             <div>
-                <label>Deadline Pendaftaran</label>
+                <label>Deadline Pendaftaran <span class="wajib" aria-hidden="true">*</span></label>
                 <input type="date" name="deadline" value="{{ old('deadline') }}" required>
             </div>
             <div>
-                <label>Kuota Total</label>
+                <label>Kuota Total <span class="wajib" aria-hidden="true">*</span></label>
                 <input type="number" name="kuota" value="{{ old('kuota') }}" min="1" required>
             </div>
             <div style="display: flex; align-items: center; padding-top: 22px;">
@@ -45,14 +46,14 @@
 
         <div class="form-row">
             <div>
-                <label>Poster Produksi <span style="color: var(--text-muted); font-weight: 400;">(opsional, maks. 2MB)</span></label>
+                <label>Poster Produksi <span style="color: var(--text-muted); font-weight: 400;">(maks. 2MB)</span></label>
                 <input type="file" name="poster_path" accept="image/jpeg,image/png,image/webp">
             </div>
         </div>
 
         <hr>
         <div style="font-size: 14px; font-weight: 500; margin-bottom: 8px;">
-            Tanggal Shooting <span style="color: var(--text-muted); font-weight: 400; font-size: 12.5px;">(bisa lebih dari satu, tidak harus berurutan)</span>
+            Tanggal Shooting <span class="wajib" aria-hidden="true">*</span> <span style="color: var(--text-muted); font-weight: 400; font-size: 12.5px;">(bisa lebih dari satu, tidak harus berurutan)</span>
         </div>
         <div id="tanggal-wrap">
             <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; align-items: center;">
@@ -70,15 +71,15 @@
             <div class="kelas-row" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; margin-bottom: 10px;">
                 <div class="form-row" style="align-items: flex-end;">
                     <div>
-                        <label>Nama Karakter</label>
+                        <label>Nama Karakter <span class="wajib" aria-hidden="true">*</span></label>
                         <input type="text" name="kelas[0][nama_kelas]" placeholder="misal: Ibu-ibu 29-50th" required>
                     </div>
                     <div>
-                        <label>Budget Client (Rp)</label>
+                        <label>Budget Client (Rp) <span class="wajib" aria-hidden="true">*</span></label>
                         <input type="number" name="kelas[0][budget_client]" min="0" required>
                     </div>
                     <div>
-                        <label>Kuota Kelas</label>
+                        <label>Kuota Kelas <span class="wajib" aria-hidden="true">*</span></label>
                         <input type="number" name="kelas[0][kuota_kelas]" min="1" required>
                     </div>
                     <div style="flex: 0;">
@@ -103,15 +104,15 @@
                     </div>
                 </div>
                 <div style="margin-top: 8px;">
-                    <label>Keterangan Scene <span style="color: var(--text-muted); font-weight: 400;">(opsional, misal: Scene 12-14 warung kopi, baju casual)</span></label>
+                    <label>Keterangan Scene <span style="color: var(--text-muted); font-weight: 400;">(misal: Scene 12-14 warung kopi, baju casual)</span></label>
                     <input type="text" name="kelas[0][keterangan_scene]" placeholder="Scene 12-14 di warung kopi...">
                 </div>
                 <div style="margin-top: 8px;">
-                    <label>Kriteria yang dibutuhkan <span style="color: var(--text-muted); font-weight: 400;">(opsional)</span></label>
+                    <label>Kriteria yang dibutuhkan</label>
                     <textarea name="kelas[0][kriteria]" rows="2" placeholder="Contoh: wanita 25-35 th, ekspresi natural, look sederhana" maxlength="500"></textarea>
                 </div>
                 <div style="margin-top: 8px;">
-                    <label>Tag yang dicari <span style="color: var(--text-muted); font-weight: 400;">(opsional, dipakai untuk % cocok)</span></label>
+                    <label>Tag yang dicari <span style="color: var(--text-muted); font-weight: 400;">(dipakai untuk % cocok)</span></label>
                     @include('partials.tag-input', ['name' => 'kelas[0][tag_nama]', 'selected' => []])
                 </div>
             </div>
@@ -154,11 +155,11 @@
             row.style.cssText = 'border:1px solid var(--border-color); border-radius:10px; padding:12px; margin-bottom:10px;';
             row.innerHTML =
                 '<div class="form-row" style="align-items:flex-end;">' +
-                '<div><label>Nama Karakter</label>' +
+                '<div><label>Nama Karakter <span class="wajib" aria-hidden="true">*</span></label>' +
                 '<input type="text" name="kelas[' + kelasIndex + '][nama_kelas]" required></div>' +
-                '<div><label>Budget Client (Rp)</label>' +
+                '<div><label>Budget Client (Rp) <span class="wajib" aria-hidden="true">*</span></label>' +
                 '<input type="number" name="kelas[' + kelasIndex + '][budget_client]" min="0" required></div>' +
-                '<div><label>Kuota Kelas</label>' +
+                '<div><label>Kuota Kelas <span class="wajib" aria-hidden="true">*</span></label>' +
                 '<input type="number" name="kelas[' + kelasIndex + '][kuota_kelas]" min="1" required></div>' +
                 '<div style="flex:0;"><button type="button" class="btn-icon-danger btn-remove-kelas">&times;</button></div>' +
                 '</div>' +
@@ -168,9 +169,9 @@
                 '<div><label>Tipe Kontinuitas</label><select name="kelas[' + kelasIndex + '][tipe_continuity]"><option value="free">Bebas (Single Day)</option><option value="continuity">Continuity (Multi-day)</option></select></div>' +
                 '</div>' +
                 '<div style="margin-top:8px;"><label>Keterangan Scene</label><input type="text" name="kelas[' + kelasIndex + '][keterangan_scene]" placeholder="Scene 12-14 di warung kopi..."></div>' +
-                '<div style="margin-top:8px;"><label>Kriteria yang dibutuhkan <span style="color:var(--text-muted);font-weight:400;">(opsional)</span></label>' +
+                '<div style="margin-top:8px;"><label>Kriteria yang dibutuhkan</label>' +
                 '<textarea name="kelas[' + kelasIndex + '][kriteria]" rows="2" placeholder="Contoh: wanita 25-35 th, ekspresi natural" maxlength="500"></textarea></div>' +
-                '<div style="margin-top:8px;"><label>Tag yang dicari <span style="color: var(--text-muted); font-weight: 400;">(opsional, dipakai untuk % cocok)</span></label>' + document.getElementById('tag-chips-tpl').innerHTML.replaceAll('__i__', kelasIndex) + '</div>';
+                '<div style="margin-top:8px;"><label>Tag yang dicari <span style="color: var(--text-muted); font-weight: 400;">(dipakai untuk % cocok)</span></label>' + document.getElementById('tag-chips-tpl').innerHTML.replaceAll('__i__', kelasIndex) + '</div>';
             kelasWrap.appendChild(row);
             kelasIndex++;
             updateRemoveButtons(kelasWrap, '.btn-remove-kelas');

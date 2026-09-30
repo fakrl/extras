@@ -63,6 +63,9 @@
     .password-toggle:hover { color: var(--text-primary); }
     .password-field-wrap { margin-bottom: 14px; }
 
+    .wajib { color: var(--danger); font-weight: 600; margin-left: 2px; }
+    .wajib-ket { font-size: var(--fs-xs); color: var(--text-muted); margin: 0 0 12px; }
+
     .alert-success {
         background: rgba(34,197,94,0.12); color: var(--accent-strong);
         padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 16px; font-size: var(--fs-base);

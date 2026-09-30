@@ -321,9 +321,9 @@
         @if ($p->client_request_status === 'disetujui')
             <form method="POST" action="{{ route('admin.projects.expenses.store', $p) }}" class="form-row" style="margin-top: 12px; align-items: flex-end;">
                 @csrf
-                <div><label for="biaya-label">Keterangan</label><input type="text" id="biaya-label" name="label" maxlength="255" required placeholder="mis. Konsumsi, transport" value="{{ old('label') }}"></div>
-                <div><label for="biaya-nominal">Nominal (Rp)</label><input type="number" id="biaya-nominal" name="nominal" min="1" step="1" required value="{{ old('nominal') }}"></div>
-                <div><label for="biaya-tanggal">Tanggal</label><input type="date" id="biaya-tanggal" name="tanggal" required value="{{ old('tanggal', today()->toDateString()) }}"></div>
+                <div><label for="biaya-label">Keterangan <span class="wajib" aria-hidden="true">*</span></label><input type="text" id="biaya-label" name="label" maxlength="255" required placeholder="mis. Konsumsi, transport" value="{{ old('label') }}"></div>
+                <div><label for="biaya-nominal">Nominal (Rp) <span class="wajib" aria-hidden="true">*</span></label><input type="number" id="biaya-nominal" name="nominal" min="1" step="1" required value="{{ old('nominal') }}"></div>
+                <div><label for="biaya-tanggal">Tanggal <span class="wajib" aria-hidden="true">*</span></label><input type="date" id="biaya-tanggal" name="tanggal" required value="{{ old('tanggal', today()->toDateString()) }}"></div>
                 <div style="flex: 0 0 auto;"><button type="submit" class="btn btn-brand">+ Tambah Biaya</button></div>
             </form>
         @endif

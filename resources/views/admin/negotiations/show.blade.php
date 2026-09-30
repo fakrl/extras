@@ -45,8 +45,8 @@
     @elseif ($application->feeNegotiations->isEmpty())
         <form method="POST" action="{{ route('admin.negotiations.ajukan', $application) }}" style="display: flex; gap: 8px; flex-wrap: wrap;">
             @csrf
-            <input type="number" name="nominal" class="input-inline" placeholder="Nominal penawaran awal" required value="{{ $application->extras->rate_card }}">
-            <input type="text" name="catatan" class="input-inline" placeholder="Catatan/alasan (opsional)" style="min-width: 200px;">
+            <input type="number" name="nominal" class="input-inline" placeholder="Nominal penawaran awal *" required value="{{ $application->extras->rate_card }}">
+            <input type="text" name="catatan" class="input-inline" placeholder="Catatan/alasan" style="min-width: 200px;">
             <button class="btn btn-brand">Ajukan Fee Awal</button>
         </form>
     @else
@@ -58,8 +58,8 @@
             </x-confirm-form>
             <form method="POST" action="{{ route('admin.negotiations.counter', $application) }}" style="display: flex; gap: 8px; flex-wrap: wrap;">
                 @csrf
-                <input type="number" name="nominal" class="input-inline" placeholder="Nominal counter" required style="width: 140px;">
-                <input type="text" name="catatan" class="input-inline" placeholder="Catatan/alasan counter (opsional)" style="min-width: 180px;">
+                <input type="number" name="nominal" class="input-inline" placeholder="Nominal counter *" required style="width: 140px;">
+                <input type="text" name="catatan" class="input-inline" placeholder="Catatan/alasan counter" style="min-width: 180px;">
                 <button class="btn">Counter</button>
             </form>
         </div>

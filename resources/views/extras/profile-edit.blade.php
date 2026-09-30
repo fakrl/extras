@@ -127,18 +127,19 @@
     <form method="POST" action="{{ route('extras.profile.update') }}">
         @csrf
         @method('PUT')
+        <p class="wajib-ket"><span class="wajib">*</span> wajib diisi</p>
 
         <div class="profile-section">
             <div class="profile-section-title">Nama & Kontak</div>
 
-            <label>Nama Asli (sesuai KTP) <span class="required-mark">*</span></label>
+            <label>Nama Asli (sesuai KTP) <span class="wajib" aria-hidden="true">*</span></label>
             <input type="text" name="nama_asli" value="{{ old('nama_asli', $profile->nama_asli) }}" required
                    placeholder="Contoh: Rina Wulandari" inputmode="text"
                    @class(['input-error' => $errors->has('nama_asli')])>
             @error('nama_asli')<span class="field-error">{{ $message }}</span>@enderror
             <p class="field-hint">Dipakai di dokumen kontrak resmi, bukan yang tampil ke publik.</p>
 
-            <label>Nama Panggung / Username <span class="required-mark">*</span></label>
+            <label>Nama Panggung / Username <span class="wajib" aria-hidden="true">*</span></label>
             <input type="text" name="username" value="{{ old('username', $profile->user->username) }}" required
                    placeholder="Contoh: rina_wulan" maxlength="50"
                    @class(['input-error' => $errors->has('username')])>
@@ -182,13 +183,13 @@
                 <div style="min-width: 130px;">
                     <label for="berat_badan">Berat Badan (kg)</label>
                     <input type="number" name="berat_badan" id="berat_badan" value="{{ old('berat_badan', $profile->berat_badan) }}"
-                           placeholder="Opsional, cth: 55" inputmode="numeric" min="20" max="250"
+                           placeholder="Contoh: 55" inputmode="numeric" min="20" max="250"
                            @class(['input-error' => $errors->has('berat_badan')])>
                     @error('berat_badan')<span class="field-error">{{ $message }}</span>@enderror
                 </div>
             </div>
 
-            <label for="ukuran_baju">Ukuran Baju <span style="color: var(--text-muted); font-weight: 400;">(opsional)</span></label>
+            <label for="ukuran_baju">Ukuran Baju</label>
             <input type="text" name="ukuran_baju" id="ukuran_baju" value="{{ old('ukuran_baju', $profile->ukuran_baju) }}"
                    placeholder="Contoh: M, L, XL"
                    @class(['input-error' => $errors->has('ukuran_baju')])>
@@ -207,7 +208,7 @@
 
         <div class="profile-section">
             <div class="profile-section-title">Pengalaman</div>
-            <p class="field-hint" style="margin-top: -4px;">Main film, iklan, video klip, teater, atau kerja lain yang relevan (opsional, maks 20). Kemampuan (naik motor, menari, dll) tambahkan sebagai tag di atas.</p>
+            <p class="field-hint" style="margin-top: -4px;">Main film, iklan, video klip, teater, atau kerja lain yang relevan (maks 20). Kemampuan (naik motor, menari, dll) tambahkan sebagai tag di atas.</p>
 
             @php
                 $maxTahun = now()->year + 1;
@@ -229,7 +230,7 @@
                             <input type="text" name="pengalaman_judul[]" id="pengalaman_judul_{{ $i }}" value="{{ $pg['judul'] }}" placeholder="Contoh: Figuran iklan Ramadan" maxlength="150" @class(['input-inline', 'input-error' => $errors->has("pengalaman_judul.$i")])>
                             <div class="pengalaman-sub">
                                 <label for="pengalaman_keterangan_{{ $i }}" class="sr-only">Keterangan</label>
-                                <input type="text" name="pengalaman_keterangan[]" id="pengalaman_keterangan_{{ $i }}" value="{{ $pg['keterangan'] }}" placeholder="Keterangan (opsional)" maxlength="255" class="input-inline">
+                                <input type="text" name="pengalaman_keterangan[]" id="pengalaman_keterangan_{{ $i }}" value="{{ $pg['keterangan'] }}" placeholder="Keterangan" maxlength="255" class="input-inline">
                                 <label for="pengalaman_tahun_{{ $i }}" class="sr-only">Tahun</label>
                                 <input type="number" name="pengalaman_tahun[]" id="pengalaman_tahun_{{ $i }}" value="{{ $pg['tahun'] }}" placeholder="Tahun" inputmode="numeric" min="1950" max="{{ $maxTahun }}" @class(['input-inline pengalaman-tahun', 'input-error' => $errors->has("pengalaman_tahun.$i")])>
                             </div>
@@ -246,7 +247,7 @@
                             <input type="text" name="pengalaman_judul[]" id="pengalaman_judul_0" placeholder="Contoh: Figuran iklan Ramadan" maxlength="150" class="input-inline">
                             <div class="pengalaman-sub">
                                 <label for="pengalaman_keterangan_0" class="sr-only">Keterangan</label>
-                                <input type="text" name="pengalaman_keterangan[]" id="pengalaman_keterangan_0" placeholder="Keterangan (opsional)" maxlength="255" class="input-inline">
+                                <input type="text" name="pengalaman_keterangan[]" id="pengalaman_keterangan_0" placeholder="Keterangan" maxlength="255" class="input-inline">
                                 <label for="pengalaman_tahun_0" class="sr-only">Tahun</label>
                                 <input type="number" name="pengalaman_tahun[]" id="pengalaman_tahun_0" placeholder="Tahun" inputmode="numeric" min="1950" max="{{ $maxTahun }}" class="input-inline pengalaman-tahun">
                             </div>

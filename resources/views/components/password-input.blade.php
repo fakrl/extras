@@ -4,7 +4,7 @@
     $inputId = 'pwd-' . $name;
 @endphp
 
-<label for="{{ $inputId }}">{{ $label }}</label>
+<label for="{{ $inputId }}">{{ $label }}@if ($required) <span class="wajib" aria-hidden="true">*</span>@endif</label>
 <div class="password-field-wrap">
     <div class="password-field">
         <input

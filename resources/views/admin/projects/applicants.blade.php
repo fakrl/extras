@@ -40,7 +40,7 @@
         <button type="button" class="btn btn-sm btn-danger-outline" onclick="document.getElementById('bulk-tolak-dialog').showModal()">Tolak Terpilih</button>
         <dialog id="bulk-tolak-dialog" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 18px; max-width: 360px; width: 90%;">
             <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Tolak semua kandidat terpilih?</div>
-            <label for="bulk-alasan">Alasan penolakan (dikirim ke Extras)</label>
+            <label for="bulk-alasan">Alasan penolakan (dikirim ke Extras) <span class="wajib" aria-hidden="true">*</span></label>
             <textarea name="alasan_tolak" id="bulk-alasan" rows="3" required maxlength="1000" style="width: 100%; margin-bottom: 12px;"></textarea>
             <div style="display: flex; gap: 8px; justify-content: flex-end;">
                 <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
@@ -322,7 +322,7 @@
                 @csrf
                 <input type="hidden" name="apresiasi" value="1">
                 <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Beri Apresiasi ke {{ $alias }}?</div>
-                <textarea name="apresiasi_catatan" rows="3" maxlength="1000" placeholder="Catatan internal (opsional), mis. alasan diapresiasi." style="width: 100%; margin-bottom: 12px;"></textarea>
+                <textarea name="apresiasi_catatan" rows="3" maxlength="1000" placeholder="Catatan internal, mis. alasan diapresiasi." style="width: 100%; margin-bottom: 12px;"></textarea>
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
                     <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
                     <button type="submit" class="btn btn-sm btn-brand">Simpan Apresiasi</button>

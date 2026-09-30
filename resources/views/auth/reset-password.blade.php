@@ -18,7 +18,7 @@
     @csrf
     <input type="hidden" name="token" value="{{ $token }}">
 
-    <label>Email</label>
+    <label>Email <span class="wajib" aria-hidden="true">*</span></label>
     <input type="email" name="email" value="{{ old('email', $email) }}" required autofocus>
 
     <x-password-input name="password" label="Password Baru" :minlength="8" />
