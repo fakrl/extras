@@ -1591,9 +1591,9 @@ Pakai definisi mangkrak yang sudah ada (`User::mangkrak` scope + tombol Prune ma
 
 | Item | Bukti | QA |
 |---|---|---|
-| BN.1 kode proyek JBTB-YYYY-NNN | | [ ] |
-| BN.2 peringatan + auto-hapus akun mangkrak terjadwal | | [ ] |
-| BN.3 Favorit ⭐ (dari kolom apresiasi) + filter | | [ ] |
+| BN.1 kode proyek JBTB-YYYY-NNN | `897ee30` — accessor `CastingProject::kodeProyek` (`JBTB-{tahun created_at}-{id %03d}`) + `namaKode()`; tampil di kartu/daftar & detail proyek, invoice halaman/PDF, kontrak PDF, notif proyek (`kabari`/in-app), pemilih absensi, dashboard & jadwal Client. Live search Proyek & Keuangan: `scopeCariKode` (parse `JBTB-2026-012`/`2026-012`/`012` → id + whereYear). Pratinjau notif dropdown 80→100 karakter. Test `BnKodeProyekTest`. | [ ] |
+| BN.2 peringatan + auto-hapus akun mangkrak terjadwal | `676af19` — `User::mangkrak($hari = HARI_MANGKRAK=30)`; "akan mangkrak dalam 7 hari" = `mangkrak(23)` (Extras umur ≥ 23 hari, profil belum lengkap, 0 pendaftaran; yang sudah >30 hari tapi belum diperingatkan ikut). `akun:peringatkan-mangkrak` (08:15 WIB, `kabari` jenis/kunci `peringatan_mangkrak`, tanggal = max(daftar+30, hari ini+7), in-app+email+WA) · `akun:hapus-mangkrak` (08:30 WIB, mangkrak + diperingatkan ≥ 7 hari, `User::hapusMangkrak()` = cara tombol Prune, log `AUTO_PRUNE_ABANDONED_USERS` user_id null/role system). Filter "Akan dihapus" di Manajemen Akun (`User::akanDihapus`), kalimat di kebijakan privasi. Test `BnMangkrakTerjadwalTest`. | [ ] |
+| BN.3 Favorit ⭐ (dari kolom apresiasi) + filter | `544f05e` — `ExtrasProfile::setFavorit()` (+ log `TOGGLE_EXTRAS_FAVORIT`) dipakai route lama `admin.applications.apresiasi` & baru `PATCH admin.extras.favorit` (bintang kartu Lineup/Manajemen Akun/Kelola Akun + popup profil, redirect ke `#fav-{id}`, tanpa JS). Filter "⭐ Favorit" + urut "Favorit dulu" di Lineup & Manajemen Akun. `ApresiasiTest` diperketat (assertDontSee Apresiasi + Favorit, termasuk halaman review Client). Test `BnFavoritTest`. | [ ] |
 
 ---
 
