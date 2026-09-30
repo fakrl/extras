@@ -819,6 +819,7 @@ Ini minimal diff — nggak nyentuh controller (query udah benar, semua jadwal em
 | D20 Grade Admin kelihatan Client? | BA.6 sudah sembunyiin dari HTML; putuskan apakah perlu ditampilkan | _(kosong)_ |
 | D21 Extras anak-anak | Akun atas nama wali + persetujuan (UU PDP data anak) | _(kosong)_ |
 | D22 Tag Look/Etnis di link publik | Rekomendasi: tidak tampil publik, opsional | _(kosong)_ |
+| D23 Batal karena jadwal diubah JBTB/Client dihitung batal mendadak? | Default: tidak dihitung (BK.4) | **Diputus Fakrul 30 Sept: DIHITUNG batal mendadak** (semua pembatalan sama, tanpa pengecualian). |
 | D15 Palet homepage vs dashboard | Satukan brand (lime vs hijau) atau sahkan sebagai 2 konteks berbeda di UI-GUIDELINES | _(kosong)_ |
 
 ## AY.7: Bersih-bersih role lama (teknis, boleh langsung setelah AY.1)
@@ -1392,3 +1393,90 @@ Urutan bottom nav: **Casting Call (kiri) · Beranda/Dashboard (tengah) · Profil
 | BJ.5 bottom nav Extras | `ccc137f` — `--filter BjBottomNavExtrasTest`. SQLite & MySQL 502 passed; `migrate` + seed tag di jbtb sudah | [ ] |
 
 **Tes QA (HP):** ketik tag "dewasa muda" → otomatis pakai tag "Dewasa muda" yang ada (nggak dobel). Tambah tag baru "Bisa silat" → muncul di "Lainnya", Admin pindahin ke grup Kemampuan. Upload 1 foto utama + 2 galeri lewat tombol "+". Tambah 3 pengalaman. Dashboard tanpa tindakan → section Perlu Tindakan nggak muncul.
+
+---
+
+# Bagian BK: Notif link, profil desktop, dashboard Extras, jadwal bentrok (30 September 2026)
+
+> Dari tes manual Fakrul 30 Sept. Subagent wajib (BK.4 nyentuh status pendaftaran & kontrak). Commit per sub-bagian.
+
+## BK.1: Link notifikasi nyasar ke ngrok — SUDAH DIPERBAIKI manager, tinggal test + commit
+
+Penyebab: `.env` `APP_URL=https://ferris-hardy-judo.ngrok-free.dev` + URL notif disimpan **absolut** (`route()` penuh), jadi notif yang dibuat saat akses lewat ngrok / dari command terjadwal nyasar ke ngrok walau dibuka dari localhost. Fix (sudah di working tree): `InAppNotification::relatif()` — URL disimpan & dirender **tanpa domain** (`/extras/nego/11`), notif lama di DB juga dinormalisasi saat render (`layouts/app.blade.php`). Claude Code: tambah test (notif dengan URL `https://x.test/extras/nego/1?a=b` → tersimpan `/extras/nego/1?a=b`), commit. Catatan buat Fakrul: kalau lagi kerja di localhost, `APP_URL` sebaiknya `http://localhost:9999` (link di email/WA ikut `APP_URL`).
+
+## BK.2: Profil Extras — desktop dirapikan, mobile JANGAN diubah
+
+Tampilan mobile profil sekarang sudah pas (disetujui Fakrul) — **dikunci**. Yang berantakan tampilan desktop. Rapikan hanya di `@media (min-width: 860px)`:
+- Hero 2 kolom seperti moodboard (`docs/ui-prototype/moodboard-sideroom/profile-page.tsx`): kiri foto utama lebar 360–420px, kanan username besar + chip + grade, rata bawah.
+- Section 01–05 jadi grid 2 kolom (01 Data diri | 02 Pengalaman, 03 Showreel | 04 Tarif), 05 Galeri full-width grid 4 kolom. Garis tipis antar sel.
+- Maks lebar konten ±1100px, di tengah.
+- Bukti wajib: screenshot 375px (harus sama dengan sebelum BK.2) **dan** 1280px, dark & light.
+
+## BK.3: Dashboard Extras — tombol dobel & urutan
+
+1. "Lanjut nego" (dan aksi lain yang juga ada di kartu pendaftaran) muncul dua kali. Di section **Perlu tindakan**, item yang terkait satu pendaftaran jadi **teks + link lompat** ke kartunya ("Negosiasi fee *Iklan Minuman Segar* menunggu balasanmu ↓" → scroll ke `#pendaftaran-{id}`), **tanpa tombol**. Tombol aksi cuma di kartu pendaftaran. Item yang nggak punya kartu (lengkapi profil, absen hari ini) tetap boleh punya tombol.
+2. Urutan baru: **Perlu tindakan → Pendaftaran saya → Casting call terbuka → Status talenta → Jadwal.**
+3. **Pendaftaran saya = satu kartu per proyek** yang didaftar (sudah begitu di kode — pastikan), urut tanggal shooting terdekat; yang selesai/ditolak/batal diringkas di bawah ("Riwayat (3) ▾").
+
+## BK.4: Jadwal bentrok antar proyek (Extras daftar di 2+ proyek)
+
+Kondisi sekarang (dicek): `activeShootingDates()` + `bentrok_jadwal_flag` sudah ada, tapi cuma **peringatan** (non-blocking) di `apply()` dan `ajukanKeCd()`. Perketat berdasarkan seberapa "pasti" proyek pertama:
+
+1. **Saat daftar proyek B**, cek tanggal shooting B vs semua pendaftaran aktif lain:
+   - Bentrok dengan pendaftaran yang sudah **lolos / kontrak ditandatangani** (sudah pasti syuting) → **tolak daftar**: "Kamu sudah terjadwal syuting *{proyek A}* tanggal {tgl}. Batalkan dulu yang itu kalau mau ikut proyek ini."
+   - Bentrok dengan pendaftaran yang **masih proses** (diajukan s/d diajukan ke Client) → **boleh daftar**, tapi muncul konfirmasi "Tanggal ini bentrok dengan *{proyek A}* yang masih diproses. Kalau dua-duanya lolos, kamu wajib pilih salah satu." + `bentrok_jadwal_flag = true` di **dua-duanya**.
+   - Tampilkan juga di detail lowongan sebelum daftar: badge "Bentrok dengan jadwalmu" di peran/tanggal yang kena.
+2. **Saat salah satu dipilih Client (jadi `lolos`)** dan masih ada pendaftaran lain yang bentrok → pendaftaran lain itu masuk **Perlu tindakan** Extras: "Jadwal bentrok: *{A}* sudah pasti, *{B}* tanggal sama. Batalkan *{B}*?" (tombol pakai alur `batalkan` yang sudah ada, alasan otomatis "Bentrok jadwal"). Admin proyek B dapat notifikasi.
+3. **Tanda tangan kontrak** ditolak kalau Extras sudah punya kontrak lain yang ditandatangani di tanggal yang sama — pesan jelas + link ke pendaftaran yang bentrok.
+4. **Jadwal berubah mendadak** (Admin/Client edit/tambah tanggal shooting) dan bikin bentrok dengan kontrak/lolos yang sudah ada → set flag, notifikasi ke Extras + Admin kedua proyek, masuk Perlu tindakan Extras untuk pilih salah satu.
+5. Kartu pendaftaran yang bentrok: badge merah "Bentrok jadwal dengan {proyek}" di **kedua** kartu; di Lineup Admin badge yang sudah ada tetap.
+6. Test: (a) A kontrak tgl 5, daftar B tgl 5 → ditolak; (b) A masih nego, daftar B tgl 5 → boleh + flag di dua-duanya; (c) A jadi lolos → B masuk Perlu tindakan; (d) TTD kontrak B saat A sudah TTD tgl sama → ditolak; (e) Admin tambah tanggal di A yang bentrok dengan kontrak B → notif + flag.
+
+**D23 DIPUTUS Fakrul (30 Sept):** pembatalan karena bentrok — termasuk yang dipicu jadwal diubah JBTB/Client (poin 4) — **tetap dihitung batal mendadak** seperti pembatalan biasa. Jangan bikin pengecualian. Di pesan konfirmasi batal, tulis jelas: "Pembatalan ini dihitung sebagai batal mendadak."
+
+## Checklist BK
+
+| Item | Bukti | QA |
+|---|---|---|
+| BK.1 notif URL relatif (test + commit) | | [ ] |
+| BK.2 profil desktop rapi, mobile tetap | | [ ] |
+| BK.3 dashboard Extras: tanpa tombol dobel, urutan baru | | [ ] |
+| BK.4 jadwal bentrok (blokir/peringatan/perlu tindakan/TTD/jadwal berubah) | | [ ] |
+
+---
+
+# Bagian BL: Monitoring Admin & Korlap — halaman pratinjau dulu, masuk mode kalau mau aksi (30 September 2026)
+
+> Arahan Fakrul: sekarang klik Monitoring ▸ Admin/Korlap langsung mengganti seluruh tampilan ke POV Admin/Korlap. Maunya: **pratinjau ringkas dulu** (apa yang sedang jalan), dan baru **masuk mode** (BD.6.1) kalau Super Admin mau aksi. Client & Extras tetap seperti sekarang (pilih akun → lihat saja).
+> **Jangan tulis query baru yang menduplikasi** dashboard Admin / halaman Absensi — ekstrak ke method yang dipakai bareng (mis. `AdminRingkasan::untuk()` / scope di model), lalu dipakai halaman pratinjau **dan** dashboard asli.
+
+## BL.1: Monitoring ▸ Admin (pratinjau)
+
+Halaman `super-admin/monitoring/admin` (tanpa ganti sidebar, tanpa banner mode):
+1. **Kartu angka** (klik → masuk mode Admin + langsung ke halaman terkait yang sudah terfilter): Nego menunggu balasan Admin · Kandidat Deal siap diajukan ke Client · Kontrak menunggu TTD Admin · Pembayaran Extras belum ditransfer · Proyek tanpa PIC/Client.
+2. **Per Admin** (tabel ringkas): nama, jumlah proyek PIC aktif, item menunggu dia (nego + kontrak), aksi terakhir (dari ActivityLog, waktu relatif). Klik nama → detail akun (Manajemen Akun).
+3. **Proyek berjalan** (maks 5): nama, PIC, tahap, pendaftar/kuota, progres (terisi · deal · lolos).
+4. Tombol utama kanan atas: **"Masuk mode Admin"** (menjalankan BD.6.1 yang sudah ada).
+
+## BL.2: Monitoring ▸ Korlap (pratinjau)
+
+Halaman `super-admin/monitoring/korlap`:
+1. **Shooting hari ini & besok** per proyek: lokasi, jam, Korlap yang ditugaskan, absensi **X/Y hadir · Z menunggu validasi · W tidak hadir** (bar kecil). Hari tanpa shooting → "Tidak ada shooting hari ini" + tanggal shooting terdekat.
+2. **Menunggu validasi** (maks 10 terbaru): foto selfie kecil, nama Extras, proyek, jam kirim. Klik → masuk mode Korlap di halaman absensi proyek itu.
+3. **Catatan lapangan terbaru** (maks 5): isi singkat, Korlap, Extras, jenis (catatan/sanksi).
+4. Tombol utama: **"Masuk mode Korlap"**.
+
+## BL.3: Aturan
+
+- Pratinjau = **murni baca**, nggak memicu apa pun (ingat BE.1).
+- Masuk mode dari kartu/baris membawa tujuan (`?ke=...`) supaya Super Admin langsung mendarat di halaman aksi yang relevan, bukan dashboard Admin/Korlap dari awal.
+- Keluar mode (banner) balik ke halaman pratinjau yang tadi, bukan ke dashboard SA.
+- Submenu Monitoring: Admin · Korlap mengarah ke pratinjau; Client · Extras tetap ke pemilih akun.
+
+## Checklist BL
+
+| Item | Bukti | QA |
+|---|---|---|
+| BL.1 pratinjau Admin | | [ ] |
+| BL.2 pratinjau Korlap | | [ ] |
+| BL.3 masuk mode dengan tujuan, keluar balik ke pratinjau | | [ ] |
