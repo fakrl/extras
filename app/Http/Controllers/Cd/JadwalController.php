@@ -53,6 +53,8 @@ class JadwalController extends Controller
         // Filter out empty panggilan rows sent from the form
         $panggilan = collect($data['panggilan'] ?? [])->filter(fn ($p) => ! empty($p['nama']))->values()->all();
 
+        $tanggalBaru = ! $project->shootingDates()->whereDate('tanggal', $data['tanggal'])->exists();
+
         EventShootingDate::updateOrCreate(
             ['casting_project_id' => $project->id, 'tanggal' => $data['tanggal']],
             [
@@ -63,6 +65,10 @@ class JadwalController extends Controller
                 'panggilan' => $panggilan ?: null,
             ]
         );
+
+        if ($tanggalBaru) {
+            $project->kabariBentrokJadwal([$data['tanggal']]);
+        }
 
         return redirect()->route('cd.jadwal.show', $project)->with('success', 'Jadwal disimpan.');
     }

@@ -6,6 +6,7 @@ use App\Models\ActivityLog;
 use App\Models\ProjectApplication;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -42,6 +43,19 @@ class ContractController extends Controller
 
         if (! $contract || $contract->isVoided() || $application->status_partisipasi !== 'lolos' || $contract->{$kolomTtd}) {
             return back()->with('error', 'Kontrak tidak bisa ditandatangani untuk status pendaftaran saat ini.');
+        }
+
+        // BK.4: Extras nggak bisa TTD dua kontrak di tanggal shooting yang sama.
+        $bentrok = $role === 'extras'
+            ? $application->extras->pendaftaranBentrok($application->tanggalShooting(), $application->id)
+                ->first(fn ($b) => $b->status_partisipasi === 'kontrak_ditandatangani' || $b->contract?->ttd_extras_signature_path)
+            : null;
+        if ($bentrok) {
+            $tgl = $bentrok->tanggalBentrok->map(fn ($t) => Carbon::parse($t)->translatedFormat('d M Y'))->join(', ');
+
+            return back()
+                ->with('error', "Kamu sudah tanda tangan kontrak {$bentrok->castingProject->nama_produksi} di tanggal yang sama ({$tgl}). Batalkan dulu yang itu kalau mau ikut proyek ini.")
+                ->with('bentrok_link', route('extras.dashboard').'#pendaftaran-'.$bentrok->id);
         }
 
         $data = $request->validate([

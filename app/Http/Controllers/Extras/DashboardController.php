@@ -38,6 +38,11 @@ class DashboardController extends Controller
             return $mendatang ? '0'.$mendatang : ($tanggal->isNotEmpty() ? '1'.$tanggal->max() : '2');
         })->values();
 
+        // BK.4: per kartu, pendaftaran lain yang tanggal shooting-nya sama.
+        $bentrokPer = $pendaftaranAktif->mapWithKeys(fn ($x) => [$x->id => in_array($x->status_partisipasi, [...ProjectApplication::STATUS_PROSES, ...ProjectApplication::STATUS_PASTI], true)
+            ? ProjectApplication::saringBentrok($pendaftaranAktif->where('id', '!=', $x->id), $x->tanggalShooting())
+            : collect()]);
+
         $aktivitasSaya = collect();
         if ($extrasProfile) {
             $aktivitasSaya = ActivityLog::where(function ($q) use ($extrasProfile) {
@@ -81,6 +86,6 @@ class DashboardController extends Controller
                 ->get()
             : collect();
 
-        return view('extras.dashboard', compact('extrasProfile', 'pendaftaranAktif', 'riwayatPendaftaran', 'aktivitasSaya', 'jadwalBulanIni', 'castingCallTerbuka', 'riwayatAbsensi'));
+        return view('extras.dashboard', compact('extrasProfile', 'pendaftaranAktif', 'riwayatPendaftaran', 'bentrokPer', 'aktivitasSaya', 'jadwalBulanIni', 'castingCallTerbuka', 'riwayatAbsensi'));
     }
 }

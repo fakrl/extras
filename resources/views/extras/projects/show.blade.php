@@ -11,7 +11,14 @@
     <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Tanggal Shooting</div>
     <ul style="margin: 0; padding-left: 18px; font-size: 13.5px;">
         @foreach ($castingProject->shootingDates as $date)
-            <li>{{ $date->tanggal->format('d M Y') }}</li>
+            @php($kena = $bentrok->filter(fn ($b) => $b->tanggalBentrok->contains($date->tanggal->toDateString())))
+            <li style="margin-bottom: 4px;">
+                {{ $date->tanggal->format('d M Y') }}
+                @if ($kena->isNotEmpty())
+                    <span class="badge badge-tolak">Bentrok dengan jadwalmu</span>
+                    <span style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $kena->map(fn ($b) => $b->castingProject->nama_produksi.' ('.($b->isPasti() ? 'sudah pasti' : 'masih diproses').')')->join(', ') }}</span>
+                @endif
+            </li>
         @endforeach
     </ul>
 </div>
@@ -47,5 +54,24 @@
     @endif
     <button type="submit" class="btn btn-brand">Daftar ke Proyek Ini</button>
 </form>
+
+@if (session('konfirmasi_bentrok'))
+    <dialog id="dialog-bentrok" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 380px; width: 90%;">
+        <form method="POST" action="{{ route('extras.projects.apply', $castingProject) }}" style="padding: 18px;">
+            @csrf
+            <input type="hidden" name="konfirmasi_bentrok" value="1">
+            @if (old('casting_project_class_id'))
+                <input type="hidden" name="casting_project_class_id" value="{{ old('casting_project_class_id') }}">
+            @endif
+            <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;"><span class="badge badge-tolak">Bentrok jadwal</span></div>
+            <p style="font-size: 13px; margin: 0 0 14px; line-height: 1.5;">{{ session('konfirmasi_bentrok') }}</p>
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
+                <button type="submit" class="btn btn-sm btn-brand">Tetap daftar</button>
+            </div>
+        </form>
+    </dialog>
+    <script>document.getElementById('dialog-bentrok').showModal();</script>
+@endif
 @endif
 @endsection

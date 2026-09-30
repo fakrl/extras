@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -188,19 +189,19 @@ class ExtrasProfile extends Model
     }
 
     /**
-     * RF-13: tanggal shooting dari proyek lain yang statusnya masih aktif
-     * (Deal ke atas, belum selesai/batal/ditolak), dipakai untuk deteksi
-     * bentrok jadwal saat extras mau apply ke proyek baru.
+     * RF-13/BK.4: pendaftaran lain (proses/pasti) yang tanggal shooting-nya beririsan
+     * dengan $tanggal. Satu-satunya sumber deteksi bentrok jadwal.
      */
-    public function activeShootingDates(?int $excludeApplicationId = null): Collection
+    public function pendaftaranBentrok(iterable $tanggal, ?int $kecuali = null): Collection
     {
-        return $this->applications()
-            ->whereIn('status_partisipasi', ProjectApplication::STATUS_AKTIF)
-            ->when($excludeApplicationId, fn ($q, $id) => $q->where('id', '!=', $id))
-            ->with('castingProject.shootingDates')
-            ->get()
-            ->flatMap(fn ($app) => $app->castingProject->shootingDates->pluck('tanggal'))
-            ->unique();
+        return ProjectApplication::saringBentrok(
+            $this->applications()
+                ->whereIn('status_partisipasi', [...ProjectApplication::STATUS_PROSES, ...ProjectApplication::STATUS_PASTI])
+                ->when($kecuali, fn ($q, $id) => $q->whereKeyNot($id))
+                ->with('castingProject.shootingDates', 'castingProject.admin')
+                ->get(),
+            collect($tanggal)->map(fn ($t) => Carbon::parse($t)->toDateString())
+        );
     }
 
     /**
