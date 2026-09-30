@@ -565,7 +565,7 @@
             background: rgba(59,130,246,0.12); color: var(--info);
             padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 16px; font-size: var(--fs-base);
         }
-        .table-container { overflow-x: auto; }
+        .table-container { overflow-x: auto; position: relative; }
 
         /* Pagination (markup pagination::bootstrap-4, lihat AppServiceProvider) */
         .pagination { display: flex; flex-wrap: wrap; gap: 4px; list-style: none; padding: 0; margin: 0; }
