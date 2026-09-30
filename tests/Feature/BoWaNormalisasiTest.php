@@ -62,7 +62,7 @@ class BoWaNormalisasiTest extends TestCase
             ->assertSessionHasErrors('nomor_wa');
 
         $sa = User::factory()->create(['role' => 'super_admin']);
-        $this->actingAs($sa)->post(route('super-admin.casting-directors.store'), ['name' => 'C', 'username' => 'client_c', 'nomor_wa' => '0811'])
+        $this->actingAs($sa)->post(route('super-admin.clients.store'), ['name' => 'C', 'username' => 'client_c', 'nomor_wa' => '0811'])
             ->assertSessionHasErrors('nomor_wa');
     }
 
