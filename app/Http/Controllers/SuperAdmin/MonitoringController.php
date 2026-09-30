@@ -15,6 +15,7 @@ class MonitoringController extends Controller
     public function admin()
     {
         $ringkasan = AdminRingkasan::untuk();
+        $tahapan = AdminRingkasan::tahapan();
 
         $admins = User::where('role', User::ROLE_ADMIN)->where('status', 'aktif')
             ->withCount(['castingProjects as proyek_aktif' => fn ($q) => $q->where('status', 'dibuka')])
@@ -36,7 +37,7 @@ class MonitoringController extends Controller
             ->orderByRaw('tanggal_acuan is null')->orderBy('tanggal_acuan')
             ->take(5)->get();
 
-        return view('super-admin.monitoring.admin', compact('ringkasan', 'admins', 'proyek'));
+        return view('super-admin.monitoring.admin', compact('ringkasan', 'tahapan', 'admins', 'proyek'));
     }
 
     public function korlap()

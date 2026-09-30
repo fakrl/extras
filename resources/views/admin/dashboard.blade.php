@@ -86,21 +86,9 @@
     </div>
 
     <div class="dashboard-grid-2col is-wide-narrow">
-        <div class="card">
+        <div class="card" style="min-width: 0;">
             <div class="card-title">Tahapan Partisipasi Kandidat</div>
-            @php $maxPartisipasi = max($chartStatusPartisipasi['data']) ?: 1; @endphp
-            <div class="funnel-steps">
-                @foreach ($chartStatusPartisipasi['labels'] as $i => $label)
-                    @php $val = $chartStatusPartisipasi['data'][$i]; @endphp
-                    <div class="funnel-step">
-                        <div class="funnel-step-label">{{ $label }}</div>
-                        <div class="funnel-step-track">
-                            <div class="funnel-step-fill" style="width: {{ round($val / $maxPartisipasi * 100) }}%;"></div>
-                        </div>
-                        <div class="funnel-step-value">{{ $val }}</div>
-                    </div>
-                @endforeach
-            </div>
+            @include('admin.partials.tahapan')
         </div>
         <div class="card">
             <div class="card-title">Status Pembayaran Extras</div>
