@@ -8,6 +8,10 @@
     .input-error { border-color: var(--danger) !important; }
     .upload-progress { display: none; width: 100%; height: 10px; margin-top: 8px; accent-color: var(--accent-strong); }
     .upload-error-msg { color: var(--danger); font-size: 12px; margin-top: 6px; display: none; }
+    .pengalaman-row { align-items: flex-start; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color); }
+    .pengalaman-isi { flex: 1; min-width: 0; display: grid; gap: 6px; }
+    .pengalaman-sub { display: flex; gap: 6px; }
+    .pengalaman-tahun { flex: 0 0 92px; }
     .foto-hint { font-size: 12px; color: var(--text-muted); line-height: 1.4; margin: -4px 0 12px; }
     .foto-hint.is-kosong { color: var(--text-primary); background: color-mix(in srgb, var(--warning) 14%, transparent); border: 1px solid color-mix(in srgb, var(--warning) 40%, transparent); border-radius: var(--radius-md); padding: 10px 12px; margin-top: 0; }
     .foto-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -186,22 +190,6 @@
         </div>
 
         <div class="profile-section">
-            <div class="profile-section-title">Pengalaman & Kemampuan</div>
-
-            <label>Pengalaman Main / Kerja Sebelumnya</label>
-            <textarea name="pengalaman" rows="3" placeholder="Contoh: Pernah jadi figuran di iklan A, sinetron B..."
-                      @class(['input-error' => $errors->has('pengalaman')])>{{ old('pengalaman', $profile->pengalaman) }}</textarea>
-            @error('pengalaman')<span class="field-error">{{ $message }}</span>@enderror
-            <p class="field-hint">Kosongkan bila belum memiliki pengalaman kerja.</p>
-
-            <label>Bahasa yang Kamu Kuasai</label>
-            <input type="text" name="bahasa" value="{{ old('bahasa', $profile->bahasa) }}"
-                   placeholder="Contoh: Indonesia, Jawa, Inggris"
-                   @class(['input-error' => $errors->has('bahasa')])>
-            @error('bahasa')<span class="field-error">{{ $message }}</span>@enderror
-        </div>
-
-        <div class="profile-section">
             <div class="profile-section-title">Tentang Kamu</div>
             <p class="field-hint">Tulis tag yang menggambarkan kamu (usia tampilan, tipe, kemampuan). Pilih dari saran atau ketik sendiri. Dipakai Admin untuk mencocokkan peran.</p>
             <input type="hidden" name="categories_present" value="1">
@@ -211,8 +199,68 @@
         </div>
 
         <div class="profile-section">
+            <div class="profile-section-title">Pengalaman</div>
+            <p class="field-hint" style="margin-top: -4px;">Main film, iklan, video klip, teater, atau kerja lain yang relevan (opsional, maks 20). Kemampuan (naik motor, menari, dll) tambahkan sebagai tag di atas.</p>
+
+            @php
+                $maxTahun = now()->year + 1;
+                if (old('pengalaman_judul')) {
+                    $existingPengalaman = collect(old('pengalaman_judul'))->map(fn ($judul, $i) => [
+                        'judul' => $judul,
+                        'keterangan' => old('pengalaman_keterangan')[$i] ?? '',
+                        'tahun' => old('pengalaman_tahun')[$i] ?? '',
+                    ])->all();
+                } else {
+                    $existingPengalaman = $profile->pengalamanUrut();
+                }
+            @endphp
+            <div id="pengalaman-wrap" data-max="20">
+                @forelse ($existingPengalaman as $i => $pg)
+                    <div class="tautan-row pengalaman-row">
+                        <div class="pengalaman-isi">
+                            <label for="pengalaman_judul_{{ $i }}" class="sr-only">Judul pengalaman</label>
+                            <input type="text" name="pengalaman_judul[]" id="pengalaman_judul_{{ $i }}" value="{{ $pg['judul'] }}" placeholder="Contoh: Figuran iklan Ramadan" maxlength="150" @class(['input-inline', 'input-error' => $errors->has("pengalaman_judul.$i")])>
+                            <div class="pengalaman-sub">
+                                <label for="pengalaman_keterangan_{{ $i }}" class="sr-only">Keterangan</label>
+                                <input type="text" name="pengalaman_keterangan[]" id="pengalaman_keterangan_{{ $i }}" value="{{ $pg['keterangan'] }}" placeholder="Keterangan (opsional)" maxlength="255" class="input-inline">
+                                <label for="pengalaman_tahun_{{ $i }}" class="sr-only">Tahun</label>
+                                <input type="number" name="pengalaman_tahun[]" id="pengalaman_tahun_{{ $i }}" value="{{ $pg['tahun'] }}" placeholder="Tahun" inputmode="numeric" min="1950" max="{{ $maxTahun }}" @class(['input-inline pengalaman-tahun', 'input-error' => $errors->has("pengalaman_tahun.$i")])>
+                            </div>
+                            @foreach (["pengalaman_judul.$i", "pengalaman_tahun.$i"] as $k)
+                                @error($k)<span class="field-error">{{ $message }}</span>@enderror
+                            @endforeach
+                        </div>
+                        <button type="button" class="btn-icon-danger btn-remove-row" aria-label="Hapus pengalaman ini">&times;</button>
+                    </div>
+                @empty
+                    <div class="tautan-row pengalaman-row">
+                        <div class="pengalaman-isi">
+                            <label for="pengalaman_judul_0" class="sr-only">Judul pengalaman</label>
+                            <input type="text" name="pengalaman_judul[]" id="pengalaman_judul_0" placeholder="Contoh: Figuran iklan Ramadan" maxlength="150" class="input-inline">
+                            <div class="pengalaman-sub">
+                                <label for="pengalaman_keterangan_0" class="sr-only">Keterangan</label>
+                                <input type="text" name="pengalaman_keterangan[]" id="pengalaman_keterangan_0" placeholder="Keterangan (opsional)" maxlength="255" class="input-inline">
+                                <label for="pengalaman_tahun_0" class="sr-only">Tahun</label>
+                                <input type="number" name="pengalaman_tahun[]" id="pengalaman_tahun_0" placeholder="Tahun" inputmode="numeric" min="1950" max="{{ $maxTahun }}" class="input-inline pengalaman-tahun">
+                            </div>
+                        </div>
+                        <button type="button" class="btn-icon-danger btn-remove-row" aria-label="Hapus pengalaman ini">&times;</button>
+                    </div>
+                @endforelse
+            </div>
+            @error('pengalaman_judul')<span class="field-error">{{ $message }}</span>@enderror
+            <button type="button" id="btn-add-pengalaman" class="btn btn-sm" style="margin: 4px 0 16px;">+ Tambah pengalaman</button>
+
+            <label>Bahasa yang Kamu Kuasai</label>
+            <input type="text" name="bahasa" value="{{ old('bahasa', $profile->bahasa) }}"
+                   placeholder="Contoh: Indonesia, Jawa, Inggris"
+                   @class(['input-error' => $errors->has('bahasa')])>
+            @error('bahasa')<span class="field-error">{{ $message }}</span>@enderror
+        </div>
+
+        <div class="profile-section">
             <div class="profile-section-title">Tautan Tambahan</div>
-            <p class="field-hint" style="margin-top: -4px;">Instagram, TikTok, portofolio, atau tautan lain (opsional, dapat lebih dari satu).</p>
+            <p class="field-hint" style="margin-top: -4px;">Punya portofolio/showreel? Taruh link-nya di sini. Instagram, TikTok, atau tautan lain juga boleh.</p>
 
             @php
                 if (old('tautan_label')) {
@@ -231,7 +279,7 @@
                         <input type="text" name="tautan_label[]" id="tautan_label_{{ $i }}" value="{{ $tautan['label'] }}" placeholder="Nama (contoh: Instagram)" class="input-inline" style="flex: 0 0 130px;">
                         <label for="tautan_url_{{ $i }}" class="sr-only">URL tautan</label>
                         <input type="url" name="tautan_url[]" id="tautan_url_{{ $i }}" value="{{ $tautan['url'] }}" placeholder="https://..." class="input-inline">
-                        <button type="button" class="btn-icon-danger btn-remove-tautan" aria-label="Hapus tautan ini">&times;</button>
+                        <button type="button" class="btn-icon-danger btn-remove-row" aria-label="Hapus tautan ini">&times;</button>
                     </div>
                 @empty
                     <div class="tautan-row">
@@ -239,7 +287,7 @@
                         <input type="text" name="tautan_label[]" id="tautan_label_0" placeholder="Nama (contoh: Instagram)" class="input-inline" style="flex: 0 0 130px;">
                         <label for="tautan_url_0" class="sr-only">URL tautan</label>
                         <input type="url" name="tautan_url[]" id="tautan_url_0" placeholder="https://..." class="input-inline">
-                        <button type="button" class="btn-icon-danger btn-remove-tautan" aria-label="Hapus tautan ini" style="display:none">&times;</button>
+                        <button type="button" class="btn-icon-danger btn-remove-row" aria-label="Hapus tautan ini" style="display:none">&times;</button>
                     </div>
                 @endforelse
             </div>
@@ -397,33 +445,35 @@
     wireUpload('upload-slot-3');
     wireUpload('upload-slot-4');
 
-    // Tautan tambahan
-    var wrap = document.getElementById('tautan-wrap');
-
-    document.getElementById('btn-add-tautan').addEventListener('click', function () {
-        var row = document.createElement('div');
-        row.className = 'tautan-row';
-        row.innerHTML =
-            '<input type="text" name="tautan_label[]" placeholder="Nama (contoh: Instagram)" class="input-inline" style="flex: 0 0 130px;">' +
-            '<input type="url" name="tautan_url[]" placeholder="https://..." class="input-inline">' +
-            '<button type="button" class="btn-icon-danger btn-remove-tautan" aria-label="Hapus tautan ini">&times;</button>';
-        wrap.appendChild(row);
-        updateRemoveButtons();
-    });
-
-    wrap.addEventListener('click', function (e) {
-        if (e.target.classList.contains('btn-remove-tautan')) {
-            e.target.closest('.tautan-row').remove();
-            updateRemoveButtons();
+    // BJ.3: daftar "+" (tautan & pengalaman): baris baru = salinan baris pertama dikosongkan
+    function daftarPlus(wrapId, btnId) {
+        var wrap = document.getElementById(wrapId);
+        var btn = document.getElementById(btnId);
+        var max = parseInt(wrap.dataset.max || '0', 10);
+        function segarkan() {
+            var rows = wrap.children;
+            Array.prototype.forEach.call(wrap.querySelectorAll('.btn-remove-row'), function (b) { b.style.display = rows.length > 1 ? '' : 'none'; });
+            btn.hidden = max > 0 && rows.length >= max;
         }
-    });
-
-    function updateRemoveButtons() {
-        var rows = wrap.querySelectorAll('.btn-remove-tautan');
-        rows.forEach(function (btn) {
-            btn.style.display = rows.length > 1 ? 'block' : 'none';
+        btn.addEventListener('click', function () {
+            var row = wrap.firstElementChild.cloneNode(true);
+            var n = wrap.children.length + Date.now();
+            row.querySelectorAll('.field-error').forEach(function (e) { e.remove(); });
+            row.querySelectorAll('input').forEach(function (i) { i.value = ''; i.classList.remove('input-error'); i.id = i.id.replace(/_\d+$/, '_' + n); });
+            row.querySelectorAll('label[for]').forEach(function (l) { l.htmlFor = l.htmlFor.replace(/_\d+$/, '_' + n); });
+            wrap.appendChild(row);
+            segarkan();
+            row.querySelector('input').focus();
         });
+        wrap.addEventListener('click', function (e) {
+            if (!e.target.classList.contains('btn-remove-row')) return;
+            e.target.closest('.tautan-row').remove();
+            segarkan();
+        });
+        segarkan();
     }
+    daftarPlus('tautan-wrap', 'btn-add-tautan');
+    daftarPlus('pengalaman-wrap', 'btn-add-pengalaman');
 
     // Auto-scroll ke field error pertama
     document.addEventListener('DOMContentLoaded', function () {

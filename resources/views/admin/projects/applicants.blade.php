@@ -213,6 +213,13 @@
                 <div><span class="xkv-l">Ukuran baju</span><b>{{ $ex->ukuran_baju ?: '-' }}</b></div>
             </div>
 
+            @if ($ex->riwayat_pengalaman)
+                <div class="xsec">Pengalaman</div>
+                @foreach ($ex->pengalamanUrut() as $pg)
+                    <div class="xrow"><span>{{ $pg['judul'] }}@if (! empty($pg['keterangan']))<span class="xrow-muted"> · {{ $pg['keterangan'] }}</span>@endif</span><span class="xrow-muted">{{ $pg['tahun'] ?? '' }}</span></div>
+                @endforeach
+            @endif
+
             @if ($ex->photos->isNotEmpty() || $ex->video_profil_path || ! empty($ex->tautan_tambahan))
                 <div class="xsec">Galeri & tautan</div>
                 @if ($ex->photos->isNotEmpty())

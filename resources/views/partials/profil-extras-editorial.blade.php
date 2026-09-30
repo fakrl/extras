@@ -61,6 +61,11 @@
 .pe-val { font-size: 22px; margin: 0; }
 .pe-text { font-size: 14px; line-height: 1.65; margin: 0; white-space: pre-line; }
 .pe-stack > * + * { margin-top: 24px; }
+.pe-exp { padding: 10px 0; border-top: 1px solid var(--pe-line); }
+.pe-exp:first-of-type { border-top: 0; padding-top: 0; }
+.pe-exp-judul { font-size: 18px; margin: 0; display: flex; justify-content: space-between; gap: 12px; }
+.pe-exp-judul span { font-family: inherit; font-size: 12px; letter-spacing: .1em; color: var(--pe-accent); white-space: nowrap; padding-top: 4px; }
+.pe-exp-ket { font-size: 13px; color: var(--pe-muted); margin: 2px 0 0; }
 .pe-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .pe-tag { font-size: 12px; padding: 5px 10px; border-radius: 999px; background: var(--pe-soft); color: var(--pe-fg); }
 .pe-link { display: block; font-size: 14px; color: var(--pe-accent); word-break: break-all; margin-bottom: 4px; }
@@ -144,7 +149,14 @@
             <p class="pe-num">02 / Pengalaman &amp; kemampuan</p>
             <div>
                 <p class="pe-label">Pengalaman main / kerja</p>
-                <p class="pe-text">{{ $profile->pengalaman ?: 'Belum diisi' }}</p>
+                @forelse ($profile->pengalamanUrut() as $pg)
+                    <div class="pe-exp">
+                        <p class="pe-exp-judul pe-serif">{{ $pg['judul'] }}@if (! empty($pg['tahun']))<span>{{ $pg['tahun'] }}</span>@endif</p>
+                        @if (! empty($pg['keterangan']))<p class="pe-exp-ket">{{ $pg['keterangan'] }}</p>@endif
+                    </div>
+                @empty
+                    <p class="pe-text">Belum diisi</p>
+                @endforelse
             </div>
             <div>
                 <p class="pe-label">Bahasa</p>

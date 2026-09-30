@@ -109,7 +109,7 @@ class ReviewController extends Controller
         $query = ProjectApplication::where('casting_project_id', $castingProject->id)
             ->whereIn('status_partisipasi', self::STATUS_TERLIHAT)
             ->with([
-                'extras' => fn ($q) => $q->select('id', 'user_id', 'usia', 'gender', 'tinggi_badan', 'ukuran_baju', 'warna_kulit', 'pengalaman', 'bahasa', 'foto_profil_path', 'video_profil_path')->withProyekSelesai(),
+                'extras' => fn ($q) => $q->select('id', 'user_id', 'usia', 'gender', 'tinggi_badan', 'ukuran_baju', 'warna_kulit', 'riwayat_pengalaman', 'bahasa', 'foto_profil_path', 'video_profil_path')->withProyekSelesai(),
                 'extras.user:id,username',
                 'extras.photos',
                 'extras.categories',
