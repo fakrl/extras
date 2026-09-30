@@ -20,7 +20,7 @@ class SuperAdminHonorRecapTest extends TestCase
     {
         $korlap = User::factory()->create(['role' => 'korlap', 'name' => 'Budi Korlap']);
         $project = CastingProject::create([
-            'admin_id' => $korlap->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',
+            'admin_id' => $korlap->id, 'nama_produksi' => 'P',
             'deadline' => now()->addDays(7), 'kuota' => 5,
             'client_id' => User::factory()->create(['role' => 'client'])->id,
         ]);

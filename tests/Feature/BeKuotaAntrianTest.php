@@ -21,7 +21,6 @@ class BeKuotaAntrianTest extends TestCase
         $this->project = CastingProject::create([
             'admin_id' => User::factory()->create(['role' => 'admin'])->id,
             'nama_produksi' => 'Proyek Antrian',
-            'client_ph' => 'PH',
             'deadline' => now()->addDays(7),
             'kuota' => 10,
             'status' => 'dibuka',

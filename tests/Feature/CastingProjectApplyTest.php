@@ -19,7 +19,6 @@ class CastingProjectApplyTest extends TestCase
         $project = CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => $namaProduksi,
-            'client_ph' => 'PH Test',
             'deadline' => now()->addDays(7),
             'kuota' => 5,
         ]);

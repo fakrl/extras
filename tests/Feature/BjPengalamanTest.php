@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\ExtrasProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /**
@@ -64,19 +63,5 @@ class BjPengalamanTest extends TestCase
         $this->actingAs($this->user)->from(route('extras.profile.edit'))->followingRedirects()
             ->put('/extras/profil', ['nama_asli' => 'Rina', 'username' => 'rina', 'pengalaman_judul' => ['Baris satu', ''], 'pengalaman_tahun' => ['1800', '']])
             ->assertSee('value="Baris satu"', false);
-    }
-
-    public function test_migrasi_teks_lama_jadi_entri_pertama_idempoten(): void
-    {
-        $profile = $this->user->extrasProfile;
-        DB::table('extras_profiles')->where('id', $profile->id)->update(['pengalaman' => ' Figuran sinetron B ', 'riwayat_pengalaman' => null]);
-        $lain = ExtrasProfile::create(['user_id' => User::factory()->create(['role' => 'extras'])->id, 'riwayat_pengalaman' => [['judul' => 'Sudah ada', 'keterangan' => null, 'tahun' => 2024]], 'pengalaman' => 'Lama']);
-        $migrasi = require database_path('migrations/2026_09_30_200002_add_riwayat_pengalaman_to_extras_profiles_table.php');
-        $migrasi->up();
-        $migrasi->up();
-
-        $this->assertEquals([['judul' => 'Figuran sinetron B', 'keterangan' => null, 'tahun' => null]], $profile->fresh()->riwayat_pengalaman);
-        $this->assertSame(' Figuran sinetron B ', $profile->fresh()->pengalaman);
-        $this->assertEquals([['judul' => 'Sudah ada', 'keterangan' => null, 'tahun' => 2024]], $lain->fresh()->riwayat_pengalaman);
     }
 }

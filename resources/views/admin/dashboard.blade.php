@@ -30,7 +30,7 @@
                         <div>
                             <span class="badge badge-tolak">Urgent</span>
                             <strong>{{ $p->nama_produksi }}</strong>
-                            <div class="dash-sub">{{ $p->client_ph ?? '-' }} &bull; {{ $p->rentangShooting() }}</div>
+                            <div class="dash-sub">{{ $p->namaClient() }} &bull; {{ $p->rentangShooting() }}</div>
                         </div>
                         <span class="dash-sub">Buka &rarr;</span>
                     </a>

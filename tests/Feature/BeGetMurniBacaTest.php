@@ -36,7 +36,7 @@ class BeGetMurniBacaTest extends TestCase
         $this->admin = User::factory()->create(['role' => 'admin', 'nomor_wa' => '081200000001']);
         $this->client = User::factory()->create(['role' => 'client']);
         $this->project = CastingProject::create([
-            'admin_id' => $this->admin->id, 'nama_produksi' => 'Proyek BE', 'client_ph' => 'PH',
+            'admin_id' => $this->admin->id, 'nama_produksi' => 'Proyek BE',
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
         $this->project->update(['client_id' => $this->client->id]);

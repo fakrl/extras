@@ -52,8 +52,6 @@ class ReviewController extends Controller
             'grade_cd' => ['nullable', 'required_if:keputusan,approve', 'in:A,B,C'],
         ]);
 
-        $bulkBatchId = count($data['application_ids']) > 1 ? Str::uuid()->toString() : null;
-
         $applications = ProjectApplication::whereIn('id', $data['application_ids'])
             ->where('status_partisipasi', 'diajukan_ke_cd')
             ->whereHas('castingProject', fn ($q) => $q->milikClient($request->user()))
@@ -64,7 +62,6 @@ class ReviewController extends Controller
             $application->cdReviews()->create([
                 'cd_id' => $request->user()->id,
                 'keputusan' => $data['keputusan'],
-                'bulk_batch_id' => $bulkBatchId,
                 'grade_cd' => $data['grade_cd'] ?? null,
             ]);
 
@@ -104,7 +101,7 @@ class ReviewController extends Controller
         $query = ProjectApplication::where('casting_project_id', $castingProject->id)
             ->whereIn('status_partisipasi', self::STATUS_TERLIHAT)
             ->with([
-                'extras' => fn ($q) => $q->select('id', 'user_id', 'usia', 'gender', 'tinggi_badan', 'berat_badan', 'ukuran_baju', 'warna_kulit', 'riwayat_pengalaman', 'bahasa', 'foto_profil_path', 'video_profil_path')->withProyekSelesai(),
+                'extras' => fn ($q) => $q->select('id', 'user_id', 'usia', 'gender', 'tinggi_badan', 'berat_badan', 'ukuran_baju', 'riwayat_pengalaman', 'bahasa', 'foto_profil_path', 'video_profil_path')->withProyekSelesai(),
                 'extras.user:id,username',
                 'extras.categories',
                 'castingProjectClass:id,nama_kelas,kriteria',

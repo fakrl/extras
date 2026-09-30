@@ -18,7 +18,7 @@
 
 <div id="casting-list">
 @forelse ($aktif as $project)
-    <div class="card casting-card-item" style="margin-bottom: 14px;" data-search="{{ strtolower($project->nama_produksi . ' ' . $project->client_ph) }}">
+    <div class="card casting-card-item" style="margin-bottom: 14px;" data-search="{{ strtolower($project->nama_produksi . ' ' . $project->namaClient()) }}">
         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
             <div style="font-size: 15px; font-weight: 600;">
                 {{ $project->nama_produksi }}
@@ -28,7 +28,7 @@
             </div>
             <span style="color: var(--text-muted); font-size: 13px;">Deadline: {{ $project->deadline->format('d M Y') }}</span>
         </div>
-        <p style="margin: 8px 0 4px; font-size: 13.5px;">Client: {{ $project->client_ph }}</p>
+        <p style="margin: 8px 0 4px; font-size: 13.5px;">Client: {{ $project->namaClient() }}</p>
         <p style="margin: 0 0 12px; font-size: 12.5px; color: var(--text-muted);">
             {{ $project->classes->count() }} peran · Kuota terisi: {{ $project->terisi }}/{{ $project->kuota }}
         </p>
@@ -44,12 +44,12 @@
 @if ($selesai->isNotEmpty())
     <div style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin: 24px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border-color);">Sudah Selesai</div>
     @foreach ($selesai as $project)
-        <div class="card casting-card-item" style="margin-bottom: 14px; opacity: 0.7;" data-search="{{ strtolower($project->nama_produksi . ' ' . $project->client_ph) }}">
+        <div class="card casting-card-item" style="margin-bottom: 14px; opacity: 0.7;" data-search="{{ strtolower($project->nama_produksi . ' ' . $project->namaClient()) }}">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div style="font-size: 15px; font-weight: 600;">{{ $project->nama_produksi }}</div>
                 <x-status-badge :model="$project" />
             </div>
-            <p style="margin: 8px 0 4px; font-size: 13.5px;">Client: {{ $project->client_ph }}</p>
+            <p style="margin: 8px 0 4px; font-size: 13.5px;">Client: {{ $project->namaClient() }}</p>
             <p style="margin: 0 0 12px; font-size: 12.5px; color: var(--text-muted);">
                 Kuota terisi: {{ $project->terisi }}/{{ $project->kuota }}
             </p>

@@ -15,7 +15,7 @@ class BhPortofolioTest extends TestCase
     private function proyek(string $nama, int $hariShooting): CastingProject
     {
         $p = CastingProject::create([
-            'admin_id' => User::factory()->create(['role' => 'admin'])->id, 'nama_produksi' => $nama, 'client_ph' => 'PH Rahasia '.$nama,
+            'admin_id' => User::factory()->create(['role' => 'admin'])->id, 'nama_produksi' => $nama, 'client_id' => User::factory()->create(['role' => 'client', 'nama_perusahaan' => 'PH Rahasia '.$nama])->id,
             'share_token' => Str::random(32), 'deadline' => today()->addDays($hariShooting - 3), 'kuota' => 5, 'status' => 'ditutup', 'client_request_status' => 'disetujui',
         ]);
         $p->shootingDates()->create(['tanggal' => today()->addDays($hariShooting), 'lokasi' => 'Jakarta']);

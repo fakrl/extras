@@ -13,7 +13,7 @@
 </head>
 <body>
     <h2>INVOICE</h2>
-    <p>Produksi: {{ $castingProject->nama_produksi }}<br>Client: {{ $castingProject->client_ph }}</p>
+    <p>Produksi: {{ $castingProject->nama_produksi }}<br>Client: {{ $castingProject->namaClient() }}</p>
 
     <table>
         <thead><tr><th>Kelas</th><th>Kuota</th><th>Budget per Orang</th><th>Subtotal</th></tr></thead>

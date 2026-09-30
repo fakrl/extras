@@ -24,7 +24,6 @@ class AyP0GuardsTest extends TestCase
         $project = CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Proyek AY Test',
-            'client_ph' => 'PH Test',
             'deadline' => now()->addDays(7),
             'kuota' => 5,
         ]);
@@ -51,7 +50,6 @@ class AyP0GuardsTest extends TestCase
         $korlapProject = CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Proyek Payroll',
-            'client_ph' => 'PH Test',
             'deadline' => now()->addDays(7),
             'kuota' => 5,
         ]);
@@ -206,7 +204,6 @@ class AyP0GuardsTest extends TestCase
         $project = CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Proyek Kuota',
-            'client_ph' => 'PH Test',
             'deadline' => now()->addDays(7),
             'kuota' => 1,
         ]);
@@ -263,7 +260,6 @@ class AyP0GuardsTest extends TestCase
         $project = CastingProject::create([
             'admin_id' => $sa->id,
             'nama_produksi' => 'Proyek Sudah Jalan',
-            'client_ph' => 'PH Test',
             'deadline' => now()->addDays(7),
             'kuota' => 5,
             'status' => 'dibuka',

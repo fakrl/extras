@@ -18,7 +18,6 @@ class CastingProjectEditTest extends TestCase
         $project = CastingProject::factory()->create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Proyek Lama',
-            'client_ph' => 'PH Lama',
             'deadline' => now()->addDays(7),
             'kuota' => 5,
             'status' => 'dibuka',
@@ -33,7 +32,6 @@ class CastingProjectEditTest extends TestCase
     {
         return array_merge([
             'nama_produksi' => 'Proyek Baru',
-            'client_ph' => 'PH Baru',
             'client_id' => User::factory()->create(['role' => 'client'])->id,
             'deadline' => now()->addDays(14)->toDateString(),
             'kuota' => 10,
@@ -57,7 +55,6 @@ class CastingProjectEditTest extends TestCase
 
         $project->refresh();
         $this->assertSame('Proyek Baru', $project->nama_produksi);
-        $this->assertSame('PH Baru', $project->client_ph);
         $this->assertSame(10, $project->kuota);
         $this->assertTrue($project->is_urgent);
         $this->assertSame(now()->addDays(20)->toDateString(), $project->shootingDates()->first()->tanggal->toDateString());

@@ -21,7 +21,6 @@ class CastingProjectFactory extends Factory
         return [
             'admin_id' => User::factory()->state(['role' => 'admin']),
             'nama_produksi' => fake()->sentence(3),
-            'client_ph' => fake()->company(),
             'deadline' => now()->addDays(7),
             'kuota' => fake()->numberBetween(5, 20),
             'is_urgent' => false,

@@ -180,7 +180,7 @@ class ProyekKeuanganTest extends TestCase
         $p = CastingProject::where('nama_produksi', 'Iklan Kopi')->firstOrFail();
         $this->assertSame($admin->id, (int) $p->admin_id);
         $this->assertSame($client->id, (int) $p->client_id);
-        $this->assertSame('PT Kopi Nusantara', $p->client_ph);
+        $this->assertSame('PT Kopi Nusantara', $p->namaClient());
         $this->assertSame('dibuka', $p->status);
         $this->assertSame('disetujui', $p->client_request_status);
         $this->assertSame($client->id, $p->fresh()->client_id);
@@ -195,7 +195,7 @@ class ProyekKeuanganTest extends TestCase
 
         $this->actingAs($sa)->post(route('admin.projects.store'), $this->payloadProyek(['admin_id' => $extras->id, 'client_id' => $nonaktif->id]))
             ->assertSessionHasErrors(['admin_id', 'client_id']);
-        $this->actingAs($sa)->post(route('admin.projects.store'), $this->payloadProyek(['client_ph' => 'PH']))
+        $this->actingAs($sa)->post(route('admin.projects.store'), $this->payloadProyek())
             ->assertSessionHasErrors(['admin_id', 'client_id']);
         $this->assertSame(0, CastingProject::count());
     }
@@ -207,16 +207,15 @@ class ProyekKeuanganTest extends TestCase
         $client = User::factory()->create(['role' => 'client']);
 
         // D1: Client wajib
-        $this->actingAs($admin)->post(route('admin.projects.store'), $this->payloadProyek(['client_ph' => 'PH Manual']))
+        $this->actingAs($admin)->post(route('admin.projects.store'), $this->payloadProyek())
             ->assertSessionHasErrors(['client_id']);
 
-        $this->actingAs($admin)->post(route('admin.projects.store'), $this->payloadProyek(['client_ph' => 'PH Manual', 'client_id' => $client->id]))
+        $this->actingAs($admin)->post(route('admin.projects.store'), $this->payloadProyek(['client_id' => $client->id]))
             ->assertRedirect(route('admin.projects.index'));
 
         $p = CastingProject::firstOrFail();
         $this->assertSame($admin->id, (int) $p->admin_id);
         $this->assertSame($client->id, (int) $p->client_id);
-        $this->assertSame('PH Manual', $p->client_ph);
         $this->assertDatabaseHas('activity_logs', ['description' => "Proyek 'Iklan Kopi' dibuat oleh Rina (Admin)"]);
     }
 

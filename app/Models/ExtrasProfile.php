@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -18,9 +19,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-// 'status' & 'cancel_count' SENGAJA tidak masuk $fillable, itu hasil
-// kalkulasi sistem (RF-07/RF-08), cuma boleh berubah lewat recordCancellation()
-// di bawah, bukan lewat mass-update dari request Extras sendiri.
+// 'status' SENGAJA tidak masuk $fillable, itu hasil kalkulasi sistem
+// (RF-07/RF-08), cuma boleh berubah lewat recordCancellation() di bawah,
+// bukan lewat mass-update dari request Extras sendiri.
 // Lihat SECURITY-CHECKLIST.md poin 8 (Block field tampering).
 //
 // 'foto_profil_path' & 'video_profil_path' TETAP masuk $fillable, tapi
@@ -41,8 +42,6 @@ use Illuminate\Support\Str;
     'tinggi_badan',
     'berat_badan',
     'ukuran_baju',
-    'warna_kulit',
-    'pengalaman',
     'riwayat_pengalaman',
     'bahasa',
     'tautan_tambahan',
@@ -80,10 +79,29 @@ class ExtrasProfile extends Model
         ];
     }
 
-    /** Warna kulit dari tag grup "Warna kulit", fallback kolom lama. */
+    /** Warna kulit dari tag grup "Warna kulit". */
     public function warnaKulit(): ?string
     {
-        return $this->categories->firstWhere('grup', 'Warna kulit')?->nama ?? ($this->warna_kulit ?: null);
+        return $this->categories->firstWhere('grup', 'Warna kulit')?->nama;
+    }
+
+    /** BM.2/RF-08: pembatalan mendadak oleh Extras sendiri, satu-satunya sumber hitungan (dulu kolom cancel_count). */
+    public function batalMendadak(): HasManyThrough
+    {
+        return $this->hasManyThrough(Cancellation::class, ProjectApplication::class, 'extras_id')
+            ->where('cancellations.is_mendadak', true)
+            ->where('cancellations.dibatalkan_oleh', 'extras');
+    }
+
+    public function scopeWithBatalMendadak($query)
+    {
+        return $query->withCount('batalMendadak as cancel_count');
+    }
+
+    /** Pakai hasil withBatalMendadak() kalau ada, kalau tidak hitung langsung. */
+    protected function cancelCount(): Attribute
+    {
+        return Attribute::get(fn ($value) => (int) ($value ?? $this->batalMendadak()->count()));
     }
 
     /** BJ.3: riwayat pengalaman {judul, keterangan, tahun}, tahun terbaru di atas, tanpa tahun di bawah. */
@@ -216,9 +234,7 @@ class ExtrasProfile extends Model
      */
     public function recordCancellation(): void
     {
-        $this->increment('cancel_count');
-
-        if ($this->cancel_count >= 3) {
+        if ($this->batalMendadak()->count() >= 3) {
             $this->forceFill(['status' => 'melanggar'])->save();
         }
     }

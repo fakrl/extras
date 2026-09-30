@@ -31,7 +31,6 @@ class LengkapiKtpTest extends TestCase
         $project = CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Proyek Test',
-            'client_ph' => 'PH Test',
             'deadline' => now()->addDays(7),
             'kuota' => 5,
         ]);

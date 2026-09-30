@@ -18,9 +18,6 @@
 @section('content')
 <p style="color: var(--text-secondary); margin: -8px 0 20px; font-size: 13.5px;">
     Proyek: {{ $application->castingProject->nama_produksi }} · Fee: Rp {{ number_format($application->fee_final, 0, ',', '.') }}
-    @if ($application->castingProject->wa_group_link)
-        · <a href="{{ $application->castingProject->wa_group_link }}" target="_blank">Grup WA Proyek</a>
-    @endif
     @if ($application->castingProject->link_grup && in_array($application->status_partisipasi, ['kontrak_ditandatangani', 'selesai_produksi'], true))
         · <a href="{{ $application->castingProject->link_grup }}" target="_blank" style="font-weight: 500;">Link Grup Koordinasi</a>
     @endif

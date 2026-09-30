@@ -40,8 +40,7 @@ class CastingProjectController extends Controller
             ->when($bayar === 'staf', fn ($q) => $q->whereHas('payrolls', fn ($p) => $p->where('status_bayar', '!=', 'sudah')))
             ->when($bayar === 'extras', fn ($q) => $q->whereHas('payments', fn ($p) => $p->whereNull('ditransfer_at')))
             ->when($cari !== '', fn ($q) => $q->where(fn ($w) => $w->where('nama_produksi', 'like', "%{$cari}%")
-                ->orWhere('client_ph', 'like', "%{$cari}%")
-                ->orWhereHas('client', fn ($c) => $c->where('name', 'like', "%{$cari}%"))))
+                ->orWhereHas('client', fn ($c) => $c->where('name', 'like', "%{$cari}%")->orWhere('nama_perusahaan', 'like', "%{$cari}%"))))
             ->when($request->boolean('urgent'), fn ($q) => $q->where(fn ($w) => $w->where('is_urgent', true)
                 ->orWhereHas('shootingDates', fn ($d) => $d->whereDate('tanggal', '>=', today())->whereDate('tanggal', '<=', today()->addDays(3)))))
             ->orderByDesc('is_urgent')
@@ -100,10 +99,7 @@ class CastingProjectController extends Controller
             'admin_id' => [$user->isSuperAdmin() ? 'required' : 'nullable', 'integer', $this->akunAktif(User::ROLE_ADMIN)],
             // D1: tiap proyek wajib punya 1 akun Client
             'client_id' => ['required', 'integer', $this->akunAktif(User::ROLE_CLIENT)],
-            'client_ph' => ['nullable', 'string', 'max:255'],
             'poster_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'cover_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
-            'wa_group_link' => ['nullable', 'url'],
             'link_grup' => ['nullable', 'url'],
             'deadline' => ['required', 'date'],
             'kuota' => ['required', 'integer', 'min:1'],
@@ -117,7 +113,6 @@ class CastingProjectController extends Controller
             'kelas.*.kuota_kelas' => ['required', 'integer', 'min:1'],
             'kelas.*.jam_callsheet' => ['nullable', 'string'],
             'kelas.*.jam_callingan' => ['nullable', 'string'],
-            'kelas.*.karakter' => ['nullable', 'string', 'max:255'],
             'kelas.*.keterangan_scene' => ['nullable', 'string', 'max:255'],
             'kelas.*.tipe_continuity' => ['nullable', 'in:continuity,free'],
             'kelas.*.categories' => ['nullable', 'array'],
@@ -132,21 +127,14 @@ class CastingProjectController extends Controller
             ? $request->file('poster_path')->store('posters', 'public')
             : null;
 
-        $coverPath = $request->hasFile('cover_path')
-            ? $request->file('cover_path')->store('covers', 'public')
-            : null;
-
         $client = isset($data['client_id']) ? User::find($data['client_id']) : null;
 
         $project = CastingProject::create([
             'admin_id' => $data['admin_id'] ?? $user->id,
             'client_id' => $client?->id,
             'nama_produksi' => $data['nama_produksi'],
-            'client_ph' => ($data['client_ph'] ?? null) ?: ($client->nama_perusahaan ?? null) ?: $client?->name,
             'poster_path' => $posterPath,
-            'cover_path' => $coverPath,
             'share_token' => Str::random(32),
-            'wa_group_link' => $data['wa_group_link'] ?? null,
             'link_grup' => $data['link_grup'] ?? null,
             'deadline' => $data['deadline'],
             'kuota' => $data['kuota'],
@@ -201,10 +189,7 @@ class CastingProjectController extends Controller
             'nama_produksi' => ['required', 'string', 'max:255'],
             'admin_id' => [$request->user()->isSuperAdmin() ? 'required' : 'nullable', 'integer', $this->akunAktif(User::ROLE_ADMIN)],
             'client_id' => ['required', 'integer', $this->akunAktif(User::ROLE_CLIENT)],
-            'client_ph' => ['nullable', 'string', 'max:255'],
             'poster_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'cover_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
-            'wa_group_link' => ['nullable', 'url'],
             'link_grup' => ['nullable', 'url'],
             'deadline' => ['required', 'date'],
             'kuota' => ['required', 'integer', 'min:1'],
@@ -219,7 +204,6 @@ class CastingProjectController extends Controller
             'kelas.*.kuota_kelas' => ['required', 'integer', 'min:1'],
             'kelas.*.jam_callsheet' => ['nullable', 'string'],
             'kelas.*.jam_callingan' => ['nullable', 'string'],
-            'kelas.*.karakter' => ['nullable', 'string', 'max:255'],
             'kelas.*.keterangan_scene' => ['nullable', 'string', 'max:255'],
             'kelas.*.tipe_continuity' => ['nullable', 'in:continuity,free'],
             'kelas.*.categories' => ['nullable', 'array'],
@@ -245,15 +229,9 @@ class CastingProjectController extends Controller
             }
         }
 
-        // BE.7: client_ph ikut Client baru kalau kosong atau masih nama otomatis Client lama.
         $castingProject->loadMissing('admin', 'client');
         $adminId = (int) ($data['admin_id'] ?? $castingProject->admin_id);
         $client = User::find($data['client_id']);
-        $otomatis = fn (?User $c) => $c ? ($c->nama_perusahaan ?: $c->name) : null;
-        $clientPh = $data['client_ph'] ?? null;
-        if (blank($clientPh) || $clientPh === $otomatis($castingProject->client)) {
-            $clientPh = $otomatis($client);
-        }
 
         $perubahan = array_filter([
             (int) $castingProject->admin_id !== $adminId ? 'Admin PIC '.($castingProject->admin?->name ?? '-').' → '.User::find($adminId)->name : null,
@@ -264,8 +242,6 @@ class CastingProjectController extends Controller
             'nama_produksi' => $data['nama_produksi'],
             'admin_id' => $adminId,
             'client_id' => $client->id,
-            'client_ph' => $clientPh,
-            'wa_group_link' => $data['wa_group_link'] ?? null,
             'link_grup' => $data['link_grup'] ?? null,
             'deadline' => $data['deadline'],
             'kuota' => $data['kuota'],
@@ -277,13 +253,6 @@ class CastingProjectController extends Controller
                 Storage::disk('public')->delete($castingProject->poster_path);
             }
             $updateData['poster_path'] = $request->file('poster_path')->store('posters', 'public');
-        }
-
-        if ($request->hasFile('cover_path')) {
-            if ($castingProject->cover_path) {
-                Storage::disk('public')->delete($castingProject->cover_path);
-            }
-            $updateData['cover_path'] = $request->file('cover_path')->store('covers', 'public');
         }
 
         $castingProject->update($updateData);
@@ -397,7 +366,7 @@ class CastingProjectController extends Controller
         $tab = $request->query('tab');
         $status = array_key_exists($request->query('status', ''), ProjectApplication::LABELS) ? $request->query('status') : null;
 
-        $cdStatuses = ['diajukan_ke_cd', 'direview_cd', 'lolos', 'ditolak'];
+        $cdStatuses = ['diajukan_ke_cd', 'lolos', 'ditolak'];
         $tagIds = array_map('intval', array_filter((array) $request->query('tag', []), 'is_numeric'));
         $urut = $request->query('urut') === 'cocok' ? 'cocok' : null;
         $cari = trim((string) $request->query('q', ''));

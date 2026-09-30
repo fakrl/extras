@@ -25,7 +25,7 @@ class BdLowonganExtrasTest extends TestCase
         parent::setUp();
 
         $this->project = CastingProject::factory()->create([
-            'nama_produksi' => 'Proyek BD7', 'client_ph' => 'PH Rahasia Banget',
+            'nama_produksi' => 'Proyek BD7',
             'kuota' => 20, 'share_token' => Str::random(32),
         ]);
         $this->project->shootingDates()->create(['tanggal' => now()->addDays(10), 'lokasi' => 'Gudang Rahasia Cibubur']);

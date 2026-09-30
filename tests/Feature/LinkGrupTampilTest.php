@@ -7,7 +7,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class WaGroupLinkTest extends TestCase
+class LinkGrupTampilTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -15,7 +15,6 @@ class WaGroupLinkTest extends TestCase
     {
         return array_merge([
             'nama_produksi' => 'Proyek Test',
-            'client_ph' => 'PH Test',
             'client_id' => \App\Models\User::factory()->create(['role' => 'client'])->id,
             'deadline' => now()->addDays(7)->toDateString(),
             'kuota' => 5,
@@ -26,18 +25,18 @@ class WaGroupLinkTest extends TestCase
         ], $overrides);
     }
 
-    public function test_wa_group_link_tersimpan_dan_tampil(): void
+    public function test_link_grup_tersimpan_dan_tampil_di_admin(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
 
         $response = $this->actingAs($admin)->post('/admin/projects', $this->payload([
-            'wa_group_link' => 'https://chat.whatsapp.com/abc123',
+            'link_grup' => 'https://chat.whatsapp.com/abc123',
         ]));
 
         $response->assertRedirect(route('admin.projects.index'));
 
         $project = CastingProject::first();
-        $this->assertSame('https://chat.whatsapp.com/abc123', $project->wa_group_link);
+        $this->assertSame('https://chat.whatsapp.com/abc123', $project->link_grup);
 
         $this->actingAs($admin)->get('/admin/projects')
             ->assertOk()
@@ -55,17 +54,17 @@ class WaGroupLinkTest extends TestCase
         $response = $this->actingAs($admin)->post('/admin/projects', $this->payload());
 
         $response->assertRedirect(route('admin.projects.index'));
-        $this->assertNull(CastingProject::first()->wa_group_link);
+        $this->assertNull(CastingProject::first()->link_grup);
     }
 
-    public function test_wa_group_link_invalid_url_ditolak(): void
+    public function test_link_grup_invalid_url_ditolak(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
 
         $response = $this->actingAs($admin)->post('/admin/projects', $this->payload([
-            'wa_group_link' => 'bukan-url',
+            'link_grup' => 'bukan-url',
         ]));
 
-        $response->assertSessionHasErrors('wa_group_link');
+        $response->assertSessionHasErrors('link_grup');
     }
 }

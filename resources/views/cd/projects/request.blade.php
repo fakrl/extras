@@ -18,8 +18,7 @@
         <label>Nama Produksi / Judul Film / Iklan <span style="color: red;">*</span></label>
         <input type="text" name="nama_produksi" value="{{ old('nama_produksi') }}" placeholder="Contoh: Kado Untuk Ibu / Iklan Bank Mandiri" required>
 
-        <label>Rumah Produksi (Production House) <span style="color: red;">*</span></label>
-        <input type="text" name="client_ph" value="{{ old('client_ph', auth()->user()->name) }}" placeholder="Contoh: Starvision Plus" required>
+        <p class="field-hint">Rumah Produksi: <strong>{{ auth()->user()->nama_perusahaan ?: auth()->user()->name }}</strong> (ubah di <a href="{{ route('cd.profil') }}">Profil</a>).</p>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
             <div>
@@ -35,16 +34,8 @@
         <label>Brief Kebutuhan Karakter & Catatan Tambahan <span style="color: red;">*</span></label>
         <textarea name="brief_catatan" rows="4" placeholder="Jelaskan kebutuhan peran (misal: 10 ibu-ibu pasar look Jawa, 5 bapak-bapak pos ronda), estimasi tanggal take kamera, dan lokasi syuting..." required>{{ old('brief_catatan') }}</textarea>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-            <div>
-                <label>Poster Acuan (Opsional)</label>
-                <input type="file" name="poster_path" accept="image/*">
-            </div>
-            <div>
-                <label>Cover Banner (Opsional)</label>
-                <input type="file" name="cover_path" accept="image/*">
-            </div>
-        </div>
+        <label>Poster Acuan (Opsional)</label>
+        <input type="file" name="poster_path" accept="image/*">
 
         <label for="req-files">Lampiran Dokumen (Opsional, bisa pilih beberapa)</label>
         <input type="file" id="req-files" name="files[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
@@ -75,7 +66,7 @@
                     @foreach ($myRequests as $req)
                         <tr style="border-bottom: 1px solid var(--border-color);">
                             <td style="padding: 10px 8px; font-weight: 600;">{{ $req->nama_produksi }}</td>
-                            <td style="padding: 10px 8px;">{{ $req->client_ph }}</td>
+                            <td style="padding: 10px 8px;">{{ $req->namaClient() }}</td>
                             <td style="padding: 10px 8px;">{{ $req->kuota }} orang</td>
                             <td style="padding: 10px 8px;">{{ $req->deadline?->format('d/m/Y') }}</td>
                             <td style="padding: 10px 8px;">

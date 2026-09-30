@@ -14,7 +14,7 @@ class StatusLabelsTest extends TestCase
     {
         $statuses = [
             'diajukan', 'direview_admin', 'nego_fee', 'deal', 'diajukan_ke_cd',
-            'direview_cd', 'lolos', 'ditolak', 'kontrak_ditandatangani',
+            'lolos', 'ditolak', 'kontrak_ditandatangani',
             'selesai_produksi', 'dibatalkan',
         ];
 

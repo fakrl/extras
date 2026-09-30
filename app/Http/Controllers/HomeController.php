@@ -10,9 +10,9 @@ class HomeController extends Controller
     public function index()
     {
         $allTerbuka = CastingProject::where('status', 'dibuka')
-            ->select(['id', 'nama_produksi', 'client_ph', 'deadline', 'kuota', 'is_urgent', 'status', 'poster_path'])
+            ->select(['id', 'nama_produksi', 'client_id', 'deadline', 'kuota', 'is_urgent', 'status', 'poster_path'])
             ->orderBy('deadline')
-            ->with(['classes:id,casting_project_id,nama_kelas,kuota_kelas', 'shootingDates:id,casting_project_id,tanggal'])
+            ->with(['client:id,name,nama_perusahaan', 'classes:id,casting_project_id,nama_kelas,kuota_kelas', 'shootingDates:id,casting_project_id,tanggal'])
             ->get()
             ->filter(fn ($p) => $p->menerimaPendaftaran());
 
@@ -20,7 +20,8 @@ class HomeController extends Controller
         $adaLebih = $allTerbuka->count() > 6;
 
         $portofolio = CastingProject::where('tampil_portofolio', true)
-            ->select(['id', 'nama_produksi', 'client_ph', 'poster_path', 'cover_path', 'portofolio_judul', 'portofolio_jenis', 'portofolio_tahun', 'tampilkan_nama_client'])
+            ->select(['id', 'nama_produksi', 'client_id', 'poster_path', 'portofolio_judul', 'portofolio_jenis', 'portofolio_tahun', 'tampilkan_nama_client'])
+            ->with('client:id,name,nama_perusahaan')
             ->orderByDesc('portofolio_tahun')
             ->latest('updated_at')
             ->take(12)

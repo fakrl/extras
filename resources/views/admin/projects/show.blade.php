@@ -21,7 +21,7 @@
             @endif
         </div>
         <div style="font-size: var(--fs-sm); color: var(--text-secondary);">
-            {{ $p->client?->name ?? $p->client_ph }} · PIC {{ $p->admin?->name ?? '-' }} · Shooting {{ $p->rentangShooting() }}
+            {{ $p->client?->name ?? '-' }} · PIC {{ $p->admin?->name ?? '-' }} · Shooting {{ $p->rentangShooting() }}
         </div>
     </div>
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
@@ -44,7 +44,7 @@
             <div class="card-title">Proyek</div>
             @foreach ([
                 'Client (akun)' => $p->client ? $p->client->name.($p->client->username ? ' (@'.$p->client->username.')' : '') : '-',
-                'Nama Client / PH' => $p->client_ph,
+                'Nama Client / PH' => $p->client?->nama_perusahaan ?: '-',
                 'Admin PIC' => $p->admin?->name ?? '-',
                 'Korlap' => $korlap->map(fn ($a) => $a->user->name)->implode(', ') ?: '-',
                 'Staf lain' => $stafLain->map(fn ($a) => $a->user?->name)->filter()->implode(', ') ?: '-',
@@ -59,7 +59,7 @@
                     <span class="entity-card-row-value">{{ $value }}</span>
                 </div>
             @endforeach
-            @foreach (['Grup WA' => $p->wa_group_link, 'Grup koordinasi' => $p->link_grup] as $label => $link)
+            @foreach (['Grup koordinasi' => $p->link_grup] as $label => $link)
                 @if ($link)
                     <div class="entity-card-row">
                         <span class="entity-card-row-label">{{ $label }}</span>
@@ -114,7 +114,7 @@
                 @endforeach
                 <label style="display: flex; gap: 8px; align-items: center;">
                     <input type="checkbox" name="tampilkan_nama_client" value="1" style="width: auto; min-height: auto; margin: 0;" @checked($p->tampilkan_nama_client)>
-                    Tampilkan nama client ({{ $p->client_ph }})
+                    Tampilkan nama client ({{ $p->namaClient() }})
                 </label>
                 <p style="font-size: var(--fs-xs); color: var(--text-muted); margin: 4px 0 10px;">Nama client default disembunyikan. Centang hanya kalau client sudah setuju.</p>
                 <button type="submit" class="btn btn-sm btn-brand">Simpan portofolio</button>
@@ -130,7 +130,7 @@
                 <tbody>
                     @forelse ($p->classes as $k)
                         <tr>
-                            <td><strong>{{ $k->nama_kelas }}</strong>@if ($k->karakter && $k->karakter !== $k->nama_kelas)<div style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $k->karakter }}</div>@endif
+                            <td><strong>{{ $k->nama_kelas }}</strong>
                                 @if ($k->kriteria)<div style="font-size: var(--fs-xs); color: var(--text-secondary);">{{ $k->kriteria }}</div>@endif</td>
                             <td>{{ $k->kuota_kelas }}</td>
                             <td>{{ $rp($k->budget_client) }}</td>

@@ -34,7 +34,7 @@ class DashboardController extends Controller
             ->where('status', 'dibuka')
             ->get(['id', 'nama_produksi', 'deadline']);
 
-        $pengajuan = CastingProject::where('diajukan_oleh_client_id', $cdId)
+        $pengajuan = CastingProject::query()->milikClient(Auth::user())->whereNotNull('brief_catatan')
             ->latest()
             ->take(5)
             ->get(['id', 'nama_produksi', 'client_request_status', 'alasan_tolak', 'created_at']);

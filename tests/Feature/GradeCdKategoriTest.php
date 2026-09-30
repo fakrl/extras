@@ -19,7 +19,6 @@ class GradeCdKategoriTest extends TestCase
         return CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Test Proyek',
-            'client_ph' => 'PH Test',
             'deadline' => now()->addDays(7),
             'kuota' => 5,
         ]);

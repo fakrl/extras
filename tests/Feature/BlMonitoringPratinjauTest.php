@@ -36,7 +36,6 @@ class BlMonitoringPratinjauTest extends TestCase
         $this->proyek = CastingProject::create([
             'admin_id' => $this->admin->id,
             'nama_produksi' => 'Proyek Senja',
-            'client_ph' => 'PH Test',
             'deadline' => now()->addDays(7),
             'kuota' => 5,
             'status' => 'dibuka',

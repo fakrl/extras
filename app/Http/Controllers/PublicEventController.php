@@ -13,7 +13,7 @@ class PublicEventController extends Controller
      * salah/proyek sudah tidak menerima pendaftaran tetap tampil halaman
      * graceful, BUKAN 404/500 mentah.
      *
-     * client_ph & budget_client SENGAJA tidak pernah dikirim ke view ini
+     * nama Client & budget_client SENGAJA tidak pernah dikirim ke view ini
      * (CLAUDE.md §5 + SPEC.md Bagian B, rahasia di semua permukaan publik).
      */
     public function show(Request $request, string $token)

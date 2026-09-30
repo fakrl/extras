@@ -5,9 +5,9 @@
 @section('content')
 <div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">Lineup: {{ $castingProject->nama_produksi }}</div>
 <p style="color: var(--text-secondary); margin: 0 0 20px; font-size: 13.5px;">
-    Client: {{ $castingProject->client_ph }} · {{ $applicants->total() }} pendaftar
-    @if ($castingProject->wa_group_link)
-        · <a href="{{ $castingProject->wa_group_link }}" target="_blank">Grup WA</a>
+    Client: {{ $castingProject->namaClient() }} · {{ $applicants->total() }} pendaftar
+    @if ($castingProject->link_grup)
+        · <a href="{{ $castingProject->link_grup }}" target="_blank">Grup koordinasi</a>
     @endif
 </p>
 
@@ -93,7 +93,6 @@
 @php
     $cdStatusLabel = [
         'diajukan_ke_cd' => ['Menunggu Review Client', 'badge-pending'],
-        'direview_cd' => ['Sedang Direview', 'badge-pending'],
         'lolos' => ['Lolos', 'badge-aktif'],
         'ditolak' => ['Ditolak', 'badge-tolak'],
     ];

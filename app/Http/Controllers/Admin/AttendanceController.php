@@ -30,7 +30,8 @@ class AttendanceController extends Controller
         $projects = CastingProject::whereHas('shootingDates', fn ($q) => $q->where('tanggal', '>=', now()->subDay()->toDateString()))
             ->when($request->query('project'), fn ($q, $id) => $q->orWhere('id', $id))
             ->orderByDesc('id')
-            ->get(['id', 'nama_produksi', 'client_ph']);
+            ->with('client:id,name,nama_perusahaan')
+            ->get(['id', 'nama_produksi', 'client_id']);
 
         $defaultProjectId = $request->query('project');
         if (! $defaultProjectId && $projects->isNotEmpty()) {

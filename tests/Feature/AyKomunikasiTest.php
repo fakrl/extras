@@ -18,7 +18,6 @@ class AyKomunikasiTest extends TestCase
         $project = CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Proyek Lineup',
-            'client_ph' => 'PH Test',
             'deadline' => now()->addDays(7),
             'kuota' => 10,
         ]);
@@ -81,7 +80,6 @@ class AyKomunikasiTest extends TestCase
         $lama = CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Proyek Lama Banget',
-            'client_ph' => 'PH Test',
             'deadline' => now()->subMonths(2),
             'kuota' => 5,
         ]);

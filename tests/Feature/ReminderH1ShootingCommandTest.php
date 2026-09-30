@@ -22,7 +22,6 @@ class ReminderH1ShootingCommandTest extends TestCase
         $project = CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Kado Untuk Ibu',
-            'client_ph' => 'Starvision',
             'deadline' => now()->addDays(7),
             'kuota' => 5,
         ]);
@@ -80,7 +79,6 @@ class ReminderH1ShootingCommandTest extends TestCase
         $project = CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Proyek Lain Hari',
-            'client_ph' => 'Starvision',
             'deadline' => now()->addDays(7),
             'kuota' => 5,
         ]);

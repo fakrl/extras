@@ -5,7 +5,6 @@
         'nego_fee'               => 2,
         'deal'                   => 2,
         'diajukan_ke_cd'         => 3,
-        'direview_cd'            => 3,
         'lolos'                  => 3,
         'kontrak_ditandatangani' => 4,
         'selesai_produksi'       => 5,

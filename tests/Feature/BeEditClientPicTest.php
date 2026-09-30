@@ -16,7 +16,6 @@ class BeEditClientPicTest extends TestCase
     {
         return array_merge([
             'nama_produksi' => 'Proyek Edit',
-            'client_ph' => '',
             'deadline' => now()->addDays(14)->toDateString(),
             'kuota' => 10,
             'tanggal_shooting' => [now()->addDays(20)->toDateString()],
@@ -24,24 +23,24 @@ class BeEditClientPicTest extends TestCase
         ], $overrides);
     }
 
-    public function test_ganti_client_dan_pic_buat_assignment_log_dan_client_ph_ikut(): void
+    public function test_ganti_client_dan_pic_buat_assignment_log_dan_nama_client_ikut(): void
     {
         $sa = User::factory()->create(['role' => 'super_admin']);
         $adminBaru = User::factory()->create(['role' => 'admin', 'name' => 'Admin Baru']);
         $lama = User::factory()->create(['role' => 'client', 'name' => 'Client Lama', 'nama_perusahaan' => 'PH Lama']);
         $baru = User::factory()->create(['role' => 'client', 'name' => 'Client Baru', 'nama_perusahaan' => 'PH Baru']);
-        $project = CastingProject::factory()->create(['client_id' => $lama->id, 'client_ph' => 'PH Lama']);
+        $project = CastingProject::factory()->create(['client_id' => $lama->id]);
         $project->update(['client_id' => $lama->id]);
 
         $this->actingAs($sa)->get(route('admin.projects.edit', $project))
             ->assertOk()->assertSee('data-cari-select="client_id"', false)->assertSee('client-baru-dialog');
 
         $this->actingAs($sa)->patch(route('admin.projects.update', $project), $this->payload([
-            'admin_id' => $adminBaru->id, 'client_id' => $baru->id, 'client_ph' => 'PH Lama',
+            'admin_id' => $adminBaru->id, 'client_id' => $baru->id,
         ]))->assertRedirect(route('admin.projects.index'));
 
         $project->refresh();
-        $this->assertSame([$adminBaru->id, $baru->id, 'PH Baru'], [$project->admin_id, $project->client_id, $project->client_ph]);
+        $this->assertSame([$adminBaru->id, $baru->id, 'PH Baru'], [$project->admin_id, $project->client_id, $project->namaClient()]);
         $this->assertSame($baru->id, $project->fresh()->client_id);
         $log = ActivityLog::where('action', 'UPDATE_PROJECT_PIC')->sole();
         $this->assertStringContainsString('Client Client Lama → Client Baru', $log->description);

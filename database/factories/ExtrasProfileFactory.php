@@ -25,12 +25,9 @@ class ExtrasProfileFactory extends Factory
             'gender' => fake()->randomElement(['Pria', 'Wanita']),
             'tinggi_badan' => fake()->numberBetween(155, 185),
             'ukuran_baju' => fake()->randomElement(['S', 'M', 'L', 'XL']),
-            'warna_kulit' => fake()->randomElement(['Sawo Matang', 'Kuning Langsat', 'Putih']),
-            'pengalaman' => fake()->sentence(),
             'bahasa' => 'Indonesia',
             'rate_card' => fake()->numberBetween(150000, 500000),
             'status' => 'aktif',
-            'cancel_count' => 0,
         ];
     }
 }

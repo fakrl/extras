@@ -104,8 +104,6 @@ class ProfileController extends Controller
             'tinggi_badan' => ['nullable', 'integer'],
             'berat_badan' => ['nullable', 'integer', 'min:20', 'max:250'],
             'ukuran_baju' => ['nullable', 'string'],
-            'warna_kulit' => ['nullable', 'string'],
-            'pengalaman' => ['nullable', 'string'],
             'bahasa' => is_array($request->input('bahasa')) ? ['nullable', 'array', 'max:10'] : ['nullable', 'string'],
             'bahasa.*' => ['nullable', 'string', 'max:40'],
             // Tautan tambahan (sosmed/portofolio, jumlah bebas via tombol "+"):
@@ -162,7 +160,7 @@ class ProfileController extends Controller
             $dataDisimpan['izin_tampil_publik'] = $request->boolean('izin_tampil_publik');
         }
 
-        // SENGAJA tidak menerima 'status', 'cancel_count', 'foto_profil_path',
+        // SENGAJA tidak menerima 'status', 'foto_profil_path',
         // atau 'video_profil_path' dari request ini, kolom-kolom itu tidak
         // ada di $fillable ExtrasProfile, jadi mass-update() di bawah otomatis
         // aman (lihat catatan di model).

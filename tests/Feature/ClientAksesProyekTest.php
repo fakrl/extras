@@ -7,6 +7,7 @@ use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 /**
@@ -22,7 +23,6 @@ class ClientAksesProyekTest extends TestCase
         return CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Proyek Test',
-            'client_ph' => 'PH Test',
             'deadline' => now()->addDays(7),
             'kuota' => 5,
         ]);
@@ -58,7 +58,7 @@ class ClientAksesProyekTest extends TestCase
 
     public function test_route_assign_cd_lama_sudah_tidak_ada(): void
     {
-        $this->assertFalse(\Illuminate\Support\Facades\Route::has('admin.projects.assign-cd'));
+        $this->assertFalse(Route::has('admin.projects.assign-cd'));
     }
 
     public function test_cd_yang_diassign_tetap_bisa_akses_invoice(): void

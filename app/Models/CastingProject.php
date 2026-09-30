@@ -18,9 +18,9 @@ use Illuminate\Support\Carbon;
 // user. Satu-satunya jalur yang mengisi field ini adalah
 // Admin\CastingProjectController::store() lewat Str::random(32) literal.
 #[Fillable([
-    'admin_id', 'nama_produksi', 'client_ph', 'poster_path', 'cover_path',
-    'share_token', 'wa_group_link', 'link_grup', 'deadline', 'kuota',
-    'is_urgent', 'status', 'client_request_status', 'diajukan_oleh_client_id', 'brief_catatan', 'alasan_tolak', 'client_id',
+    'admin_id', 'nama_produksi', 'poster_path',
+    'share_token', 'link_grup', 'deadline', 'kuota',
+    'is_urgent', 'status', 'client_request_status', 'brief_catatan', 'alasan_tolak', 'client_id',
     'tampil_portofolio', 'portofolio_judul', 'portofolio_jenis', 'portofolio_tahun', 'tampilkan_nama_client',
 ])]
 class CastingProject extends Model
@@ -67,6 +67,12 @@ class CastingProject extends Model
     public function client(): BelongsTo
     {
         return $this->belongsTo(User::class, 'client_id');
+    }
+
+    /** BM.2: nama Client/PH dari akun Client (pengganti kolom client_ph). */
+    public function namaClient(): string
+    {
+        return $this->client?->nama_perusahaan ?: ($this->client?->name ?? '-');
     }
 
     public function expenses(): HasMany
@@ -163,6 +169,7 @@ class CastingProject extends Model
     public static function lowonganTerbuka(): Collection
     {
         return static::where('status', 'dibuka')
+            ->with('client:id,name,nama_perusahaan')
             ->withCount(['applications as terisi' => fn ($q) => $q->whereIn('status_partisipasi', ['lolos', 'kontrak_ditandatangani', 'selesai_produksi'])])
             ->with(['classes' => fn ($q) => $q->withTerisi()->with('categories:id,nama'), 'shootingDates'])
             ->orderBy('deadline')
@@ -283,11 +290,6 @@ class CastingProject extends Model
             $awal->isSameDay($akhir) => $awal->translatedFormat('d M Y'),
             default => $awal->translatedFormat('d M').' – '.$akhir->translatedFormat('d M Y'),
         };
-    }
-
-    public function diajukanOlehClient(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'diajukan_oleh_client_id');
     }
 
     public function isUrgent(): bool

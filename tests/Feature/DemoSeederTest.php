@@ -33,7 +33,7 @@ class DemoSeederTest extends TestCase
         Http::assertNothingSent();
 
         $this->assertEquals(
-            ['admin' => 4, 'client' => 3, 'extras' => 24, 'korlap' => 2, 'super_admin' => 2],
+            ['admin' => 4, 'client' => 5, 'extras' => 24, 'korlap' => 2, 'super_admin' => 2],
             User::withTrashed()->selectRaw('role, count(*) c')->groupBy('role')->orderBy('role')->pluck('c', 'role')->all()
         );
         $this->assertTrue(User::where('email', 'fahrulmukhlisin13@gmail.com')->value('is_protected'));

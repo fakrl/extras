@@ -94,7 +94,7 @@ class BhProfilEditorialTest extends TestCase
         $url = route('public.extras.profile', $this->profile->fresh()->share_token);
         $this->get($url)->assertSee('Belum ada foto')->assertSee('>Aktif<', false);
 
-        $project = CastingProject::create(['admin_id' => User::factory()->create(['role' => 'admin'])->id, 'nama_produksi' => 'X', 'client_ph' => 'PH', 'deadline' => now()->addWeek(), 'kuota' => 5, 'status' => 'dibuka']);
+        $project = CastingProject::create(['admin_id' => User::factory()->create(['role' => 'admin'])->id, 'nama_produksi' => 'X', 'deadline' => now()->addWeek(), 'kuota' => 5, 'status' => 'dibuka']);
         ProjectApplication::create(['casting_project_id' => $project->id, 'extras_id' => $this->profile->id, 'status_partisipasi' => 'deal']);
         $this->get($url)->assertSee('Sedang di proyek');
 

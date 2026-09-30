@@ -115,9 +115,7 @@ class DemoLengkapSeeder extends Seeder
                 'gender' => $g,
                 'tinggi_badan' => $tinggi,
                 'ukuran_baju' => $baju[$g],
-                'warna_kulit' => $usia > 50 ? 'Sawo matang' : 'Kuning langsat',
                 'berat_badan' => $tinggi - ($g === 'pria' ? 105 : 110),
-                'pengalaman' => $pengalaman,
                 'riwayat_pengalaman' => collect(explode('. ', rtrim($pengalaman, '.')))->map(fn ($judul, $k) => [
                     'judul' => $judul, 'keterangan' => null, 'tahun' => now()->year - $k - $no % 3,
                 ])->all(),
@@ -132,7 +130,7 @@ class DemoLengkapSeeder extends Seeder
         }
 
         $this->u['dimas_rk']->extrasProfile->update(['apresiasi' => true, 'apresiasi_catatan' => 'Disukai Client, selalu on-time & gampang diarahkan.']);
-        $this->u['joko_s']->extrasProfile->forceFill(['status' => 'melanggar', 'cancel_count' => 3])->save();
+        $this->u['joko_s']->extrasProfile->forceFill(['status' => 'melanggar'])->save();
         $this->u['putri_a']->update(['status' => 'nonaktif']);
         $this->u['lama_dihapus']->delete();
 
@@ -162,7 +160,7 @@ class DemoLengkapSeeder extends Seeder
         [$andini, $rudy, $maya] = [$this->u['client_andini'], $this->u['client_rudy'], $this->u['client_maya']];
 
         // P1: selesai
-        $p1 = $this->project('Film "Rumah di Ujung Senja"', 'PT Layar Senja Films', $rina, -45, ['deadline' => today()->subDays(35), 'kuota' => 7, 'status' => 'ditutup', 'client_id' => $andini->id]);
+        $p1 = $this->project('Film "Rumah di Ujung Senja"', $rina, -45, ['deadline' => today()->subDays(35), 'kuota' => 7, 'status' => 'ditutup', 'client_id' => $andini->id]);
         $tgl1 = $this->jadwal($p1, [-30, -29, -28], 'Desa Cibodas, Lembang');
         $warga = $this->kelas($p1, 'Warga kampung', 4, 300000, ['Orang Tua', 'Jawa']);
         $mhsKos = $this->kelas($p1, 'Mahasiswa kos', 3, 350000, ['Dewasa muda', 'Mahasiswa']);
@@ -218,9 +216,9 @@ class DemoLengkapSeeder extends Seeder
         $p1->adminAssignments()->where('user_id', $rina->id)->first()->payroll->update(['status_bayar' => 'sudah', 'dibayar_at' => now()->subDays(20)]);
 
         // P2: berjalan, satu Extras di tiap tahap
-        $p2 = $this->project('Iklan "Minuman Segar"', 'PT Layar Senja Films', $rina, -7, [
-            'deadline' => today()->addDays(3), 'kuota' => 15, 'diajukan_oleh_client_id' => $andini->id, 'client_id' => $andini->id,
-            'brief_catatan' => 'Iklan TV 30 detik minuman isotonik, suasana kampus & kantor.', 'wa_group_link' => 'https://chat.whatsapp.com/demo-minuman-segar',
+        $p2 = $this->project('Iklan "Minuman Segar"', $rina, -7, [
+            'deadline' => today()->addDays(3), 'kuota' => 15, 'client_id' => $andini->id,
+            'brief_catatan' => 'Iklan TV 30 detik minuman isotonik, suasana kampus & kantor.', 'link_grup' => 'https://chat.whatsapp.com/demo-minuman-segar',
         ]);
         $this->jadwal($p2, [5, 6], 'Kampus UI Depok');
         $mhs = $this->kelas($p2, 'Mahasiswa kampus', 5, 300000, ['Dewasa muda', 'Mahasiswa', 'Naik motor']);
@@ -259,7 +257,7 @@ class DemoLengkapSeeder extends Seeder
         $this->biaya($p2, $rina, [['DP konsumsi', 300000, -1]]);
 
         // P3: shooting hari ini & besok
-        $p3 = $this->project('Series "Kampus Biru" eps 1-2', 'Kampus Biru Pictures', $yoga, -20, ['deadline' => today()->subDays(5), 'kuota' => 8, 'status' => 'ditutup', 'wa_group_link' => 'https://chat.whatsapp.com/demo-kampus-biru', 'client_id' => $rudy->id]);
+        $p3 = $this->project('Series "Kampus Biru" eps 1-2', $yoga, -20, ['deadline' => today()->subDays(5), 'kuota' => 8, 'status' => 'ditutup', 'link_grup' => 'https://chat.whatsapp.com/demo-kampus-biru', 'client_id' => $rudy->id]);
         [$hariIni] = $this->jadwal($p3, [0, 1], 'Kampus Universitas Pamulang');
         $mhs3 = $this->kelas($p3, 'Mahasiswa', 6, 300000, ['Mahasiswa']);
         $dosen = $this->kelas($p3, 'Dosen', 2, 400000, ['Orang Tua']);
@@ -285,25 +283,25 @@ class DemoLengkapSeeder extends Seeder
 
         // P4: pengajuan Client, menunggu ACC
         $p4 = CastingProject::create([
-            'nama_produksi' => 'Video Klip "Nadaria"', 'client_ph' => 'Nadaria Music', 'share_token' => Str::random(32),
+            'nama_produksi' => 'Video Klip "Nadaria"', 'share_token' => Str::random(32),
             'deadline' => today()->addDays(14), 'kuota' => 20, 'brief_catatan' => 'Video klip single baru, butuh 20 extras penonton konser umur 18-30.',
-            'diajukan_oleh_client_id' => $maya->id, 'client_id' => $maya->id, 'client_request_status' => 'menunggu_acc', 'status' => 'ditutup',
+            'client_id' => $maya->id, 'client_request_status' => 'menunggu_acc', 'status' => 'ditutup',
             'created_at' => now()->subDay(),
         ]);
         $this->log($maya, 'SUBMIT_PROJECT_REQUEST', "Client Maya Salsabila mengajukan proyek '{$p4->nama_produksi}'", $p4, -1);
 
         // P5: pengajuan Client, ditolak
         $p5 = CastingProject::create([
-            'nama_produksi' => '"Kampus Biru" season 2', 'client_ph' => 'Kampus Biru Pictures', 'share_token' => Str::random(32),
+            'nama_produksi' => '"Kampus Biru" season 2', 'share_token' => Str::random(32),
             'deadline' => today()->addDays(20), 'kuota' => 10, 'brief_catatan' => 'Lanjutan season 1, pemain extras yang sama kalau bisa.',
-            'diajukan_oleh_client_id' => $rudy->id, 'client_id' => $rudy->id, 'client_request_status' => 'ditolak', 'status' => 'ditutup',
+            'client_id' => $rudy->id, 'client_request_status' => 'ditolak', 'status' => 'ditutup',
             'alasan_tolak' => 'Jadwal bentrok produksi lain, ajukan ulang bulan depan.', 'created_at' => now()->subDays(10),
         ]);
         $this->log($rudy, 'SUBMIT_PROJECT_REQUEST', "Client Rudy Hartono mengajukan proyek '{$p5->nama_produksi}'", $p5, -10);
         $this->log($fakrul, 'REJECT_PROJECT_REQUEST', "Super Admin menolak permintaan proyek '{$p5->nama_produksi}' dari Client", $p5, -9);
 
         // P6: lowongan urgent kosong
-        $p6 = $this->project('Iklan "Bank Digital"', 'Bank Digital Nusantara', $yoga, -1, ['deadline' => today()->addDays(7), 'kuota' => 10, 'is_urgent' => true]);
+        $p6 = $this->project('Iklan "Bank Digital"', $yoga, -1, ['deadline' => today()->addDays(7), 'kuota' => 10, 'is_urgent' => true]);
         $this->jadwal($p6, [10], 'SCBD, Jakarta Selatan');
         $this->kelas($p6, 'Nasabah muda', 10, 450000, ['Dewasa', 'Pekerja kantoran']);
         $p6->adminAssignments()->create(['user_id' => $yoga->id, 'assigned_by' => $fakrul->id]);
@@ -311,11 +309,13 @@ class DemoLengkapSeeder extends Seeder
         // BH.3: portofolio beranda, P1 + 2 arsip lama (satu izinkan nama client)
         $p1->update(['tampil_portofolio' => true, 'portofolio_jenis' => 'Film layar lebar', 'portofolio_tahun' => today()->subDays(30)->year]);
         foreach ([['Iklan TV "Kopi Pagi Nusantara"', 'PT Kopi Pagi Nusantara', 'Iklan TV', -200, true], ['FTV "Cinta di Pasar Minggu"', 'Sinar Rumah Produksi', 'FTV', -320, false]] as [$nama, $ph, $jenis, $hari, $client]) {
-            $arsip = $this->project($nama, $ph, $rina, $hari - 20, [
-                'status' => 'ditutup', 'deadline' => today()->addDays($hari - 5), 'kuota' => 10, 'tampil_portofolio' => true,
+            $klien = $this->akun('client', $ph, 'client_'.Str::slug($ph, '_'), Str::slug($ph).'@arsip.test', now()->addDays($hari - 30), ['nama_perusahaan' => $ph, 'status' => 'nonaktif']);
+            $arsip = $this->project($nama, $rina, $hari - 20, [
+                'client_id' => $klien->id, 'status' => 'ditutup', 'deadline' => today()->addDays($hari - 5), 'kuota' => 10, 'tampil_portofolio' => true,
                 'portofolio_jenis' => $jenis, 'portofolio_tahun' => today()->addDays($hari)->year, 'tampilkan_nama_client' => $client,
             ]);
             $this->jadwal($arsip, [$hari], 'Jakarta');
+            $this->notif($klien, 'Proyek Selesai', "Proyek '{$nama}' selesai. Terima kasih sudah bekerja sama.", null, true, now()->addDays($hari + 1));
         }
 
         $this->notifikasiEvent($p1, $p2, $p3, $p4, $p5, $p6);
@@ -400,10 +400,10 @@ class DemoLengkapSeeder extends Seeder
         ] + $extra);
     }
 
-    private function project(string $nama, string $ph, User $pic, int $dibuat, array $extra = []): CastingProject
+    private function project(string $nama, User $pic, int $dibuat, array $extra = []): CastingProject
     {
         return CastingProject::create($extra + [
-            'nama_produksi' => $nama, 'client_ph' => $ph, 'admin_id' => $pic->id, 'share_token' => Str::random(32),
+            'nama_produksi' => $nama, 'admin_id' => $pic->id, 'share_token' => Str::random(32),
             'status' => 'dibuka', 'client_request_status' => 'disetujui', 'created_at' => now()->addDays($dibuat),
         ]);
     }
@@ -419,7 +419,7 @@ class DemoLengkapSeeder extends Seeder
     private function kelas(CastingProject $p, string $nama, int $kuota, int $budget, array $tags): CastingProjectClass
     {
         $kelas = $p->classes()->create([
-            'nama_kelas' => $nama, 'karakter' => $nama, 'kuota_kelas' => $kuota, 'budget_client' => $budget,
+            'nama_kelas' => $nama, 'kuota_kelas' => $kuota, 'budget_client' => $budget,
             'jam_callsheet' => '07:00', 'jam_callingan' => '06:00',
         ]);
         $kelas->categories()->sync(ExtrasCategory::whereIn('nama', $tags)->pluck('id'));

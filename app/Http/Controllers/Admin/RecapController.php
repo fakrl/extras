@@ -35,7 +35,7 @@ class RecapController extends Controller
         // RF-07/08: rekap Extras paling sering membatalkan mendadak, pelengkap
         // "Kelola Extras" (docs/CLAUDE.md §9), sebelumnya cuma ada agregat status,
         // belum ada ranking per-individu.
-        $extrasSeringBatal = ExtrasProfile::where('cancel_count', '>', 0)
+        $extrasSeringBatal = ExtrasProfile::withBatalMendadak()->has('batalMendadak')
             ->with('user:id,username')
             ->orderByDesc('cancel_count')
             ->take(10)

@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'casting_project_id', 'nama_kelas', 'kriteria', 'budget_client', 'kuota_kelas',
-    'jam_callsheet', 'jam_callingan', 'karakter', 'keterangan_scene', 'tipe_continuity',
+    'jam_callsheet', 'jam_callingan', 'keterangan_scene', 'tipe_continuity',
 ])]
 class CastingProjectClass extends Model
 {

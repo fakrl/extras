@@ -118,7 +118,7 @@
         @if (in_array($app->status_partisipasi, \App\Models\ProjectApplication::STATUS_LOLOS_KE_ATAS))
             @php
                 $callingan = $app->jam_callingan ?: $app->castingProjectClass?->jam_callingan;
-                $karakter = $app->karakter ?: $app->castingProjectClass?->karakter;
+                $karakter = $app->karakter;
                 $scene = $app->keterangan_scene ?: $app->castingProjectClass?->keterangan_scene;
                 $continuity = ($app->tipe_continuity ?: $app->castingProjectClass?->tipe_continuity) === 'continuity' ? 'Continuity (Multi-day)' : 'Bebas (Single Day)';
                 $shootingDates = $app->castingProject->shootingDates->sortBy('tanggal');
