@@ -65,3 +65,20 @@ Test pakai SQLite in-memory (`phpunit.xml`), tidak menyentuh database MySQL dev 
 - **Storage upload private:** foto/video profil, KTP, tanda tangan, bukti transfer disimpan di disk `local` (`storage/app/private`), bukan `public` — jangan diubah tanpa alasan kuat, ini keputusan keamanan (lihat `docs/SECURITY-CHECKLIST.md`).
 - Data sensitif (NIK, nama asli, rekening) di-enkripsi di level model (`encrypted` cast).
 - Dokumentasi lengkap ada di folder `docs/` — baca `docs/CLAUDE.md` dan `docs/DEV-NOTES.md` sebelum mulai kerja modul baru.
+
+## Login Google (opsional, BO.2)
+
+Mati selama `GOOGLE_CLIENT_ID` kosong (tombol hilang, route `/auth/google/*` 404). Cara mengaktifkan (bisa lokal):
+
+1. [Google Cloud Console](https://console.cloud.google.com/) → buat/pilih project.
+2. **APIs & Services → OAuth consent screen**: User type *External*, isi nama app & email, publishing status biarkan **Testing**. Di **Test users**, tambahkan email Google yang mau dipakai tes (maks 100).
+3. **APIs & Services → Credentials → Create credentials → OAuth client ID**: tipe *Web application*. **Authorized redirect URIs**: `http://localhost:9999/auth/google/callback` (produksi: `https://domain-kamu/auth/google/callback`).
+4. Salin Client ID & Secret ke `.env`:
+   ```
+   GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=xxxx
+   GOOGLE_REDIRECT_URI=http://localhost:9999/auth/google/callback
+   ```
+5. `php artisan config:clear && php artisan migrate`, lalu buka `/login` — tombol "Lanjut dengan Google" muncul.
+
+Aturan: daftar baru via Google = selalu akun Extras. Admin/Korlap/Client/Super Admin login dulu pakai username+password, lalu **Ubah Kata Sandi → Hubungkan akun Google**; setelah itu bisa masuk via tombol Google.

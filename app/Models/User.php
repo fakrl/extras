@@ -75,6 +75,12 @@ class User extends Authenticatable
         return self::normalisasiWa($this->nomor_wa);
     }
 
+    public function diblokir(): bool
+    {
+        return $this->status !== 'aktif'
+            || ($this->isExtras() && $this->extrasProfile?->status === 'melanggar');
+    }
+
     public function extrasProfile(): HasOne
     {
         return $this->hasOne(ExtrasProfile::class);

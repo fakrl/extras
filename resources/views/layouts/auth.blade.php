@@ -54,6 +54,16 @@
             font-size: 14px; font-weight: 600; cursor: pointer;
         }
         .btn-brand:hover { filter: brightness(1.08); }
+        .btn-google {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            width: 100%; min-height: 44px; box-sizing: border-box;
+            background: var(--bg-page); color: var(--text-primary);
+            border: 1px solid var(--border-color); border-radius: 10px;
+            font-size: 14px; font-weight: 600; text-decoration: none;
+        }
+        .btn-google:hover { border-color: var(--accent); }
+        .auth-atau { display: flex; align-items: center; gap: 10px; margin: 16px 0; color: var(--text-muted); font-size: 12px; }
+        .auth-atau::before, .auth-atau::after { content: ''; flex: 1; border-top: 1px solid var(--border-color); }
         .auth-footer { text-align: center; font-size: 13px; color: var(--text-secondary); margin-top: 18px; }
         .checkbox-row {
             display: flex; align-items: flex-start; gap: 8px; margin-bottom: 16px;
