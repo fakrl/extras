@@ -1634,8 +1634,8 @@ Konvensi baru: field **wajib** diberi tanda bintang merah `*` setelah label (`<s
 
 | Item | Bukti | QA |
 |---|---|---|
-| BO.1 normalisasi nomor WA + `wa:tes` | | [ ] |
-| BO.2 login Google: daftar khusus Extras, role lain via "Hubungkan Google" (aktif via config) | | [ ] |
+| BO.1 normalisasi nomor WA + `wa:tes` | `60088aa` — `--filter BoWaNormalisasiTest`; `php artisan wa:tes 0812xxxx "tes"`; setup Node di `whatsapp-service/README.md` | [ ] |
+| BO.2 login Google: daftar khusus Extras, role lain via "Hubungkan Google" (aktif via config) | `692e3f5` — `--filter BoLoginGoogleTest`; setup Google Cloud di `README.md`. `users.password` jadi nullable (akun Google tanpa password; Putuskan Google cuma kalau punya password) | [ ] |
 | BO.3 bintang `*` untuk field wajib, hapus teks "opsional" | `9208b7e` (merge) — `.wajib`/`.wajib-ket` di theme-style, 30 view, `--filter BoFieldWajibTest` | [ ] |
 
 ---
@@ -1660,4 +1660,4 @@ Konvensi baru: field **wajib** diberi tanda bintang merah `*` setelah label (`<s
 
 | Item | Bukti | QA |
 |---|---|---|
-| BP tahapan kandidat: step-bar tab + daftar siapa & aksi berikutnya | | [ ] |
+| BP tahapan kandidat: step-bar tab + daftar siapa & aksi berikutnya | `ffbcf11` (merge) — `--filter BpTahapanKandidatTest`; data dari `AdminRingkasan::tahapan()` (dipakai dashboard Admin & Monitoring Admin). SQLite & MySQL 574 passed | [ ] |
