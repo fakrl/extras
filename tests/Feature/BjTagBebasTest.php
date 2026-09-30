@@ -58,7 +58,10 @@ class BjTagBebasTest extends TestCase
         $this->actingAs($this->user)->get(route('extras.profile.edit'))->assertOk()
             ->assertSee('data-tag-input', false)
             ->assertSee('value="Bisa silat"', false)
-            ->assertSee('data-tag-saran="Naik motor"', false);
+            ->assertSee('data-tag-saran="Naik motor"', false)
+            ->assertSee('aria-expanded="false" aria-controls="tagp-', false)
+            ->assertSee('role="group" aria-label="Saran tag" hidden>', false)
+            ->assertDontSee('<datalist', false);
     }
 
     public function test_maks_15_tag(): void

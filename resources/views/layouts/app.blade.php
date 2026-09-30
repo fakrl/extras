@@ -150,7 +150,11 @@
         .tag-input-chip button { width: 36px; height: 36px; border: 0; background: none; color: inherit; cursor: pointer; border-radius: 999px; font-size: 14px; }
         .tag-input-field { flex: 1 1 140px; width: auto; min-width: 0; min-height: 36px; margin: 0; border: 0; background: transparent; padding: 0 6px; }
         .tag-input-field:focus-visible { outline: none; }
+        .tag-input-wrap { position: relative; }
         .tag-input .field-hint { margin-top: 6px; }
+        .tag-panel { position: absolute; z-index: 45; left: 0; right: 0; top: calc(100% + 4px); max-height: min(340px, 55vh); overflow-y: auto; padding: 4px 12px 12px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: 0 10px 28px rgba(0,0,0,.18); }
+        .tag-panel[hidden], .tag-panel [hidden] { display: none; }
+        .tag-panel-kosong { margin: 10px 0 0; font-size: var(--fs-sm); color: var(--text-muted); }
         .badge { display: inline-flex; padding: 3px 10px; border-radius: var(--radius-sm); border: 1px solid transparent; font-size: var(--fs-xs); font-weight: 500; }
         .badge-aktif { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.35); color: var(--accent-strong); }
         .badge-pending { background: rgba(234,179,8,0.15); border-color: rgba(234,179,8,0.35); color: var(--warning); }
@@ -908,11 +912,12 @@
             if (d) { d.open = false; d.querySelector('summary').focus(); }
         });
     }());
-    // BJ.1 input tag bebas (partials/tag-input): Enter/koma = chip, saran bisa di-tap, autocomplete via datalist.
+    // BJ.1 input tag bebas (partials/tag-input): Enter/koma = chip; panel saran (per grup + tag lain dari DB) muncul saat fokus, tersaring sesuai ketikan.
     (function () {
-        var timer, dl;
+        var timer, seq = 0;
         var norm = function (s) { return s.trim().replace(/^#+/, '').replace(/\s+/g, ' ').trim().slice(0, 30).trim(); };
-        var nama = function (w) { return Array.prototype.map.call(w.querySelectorAll('input[type=hidden]'), function (i) { return i.value.toLowerCase(); }); };
+        var nama = function (w) { return Array.prototype.map.call(w.querySelectorAll('.tag-input-box input[type=hidden]'), function (i) { return i.value.toLowerCase(); }); };
+        var field = function (w) { return w.querySelector('.tag-input-field'); };
         function segarkan(w) {
             var ada = nama(w);
             w.querySelectorAll('[data-tag-saran]').forEach(function (b) { b.setAttribute('aria-pressed', ada.indexOf(b.dataset.tagSaran.toLowerCase()) > -1); });
@@ -927,42 +932,88 @@
             inp.type = 'hidden'; inp.name = w.dataset.name; inp.value = n;
             b.type = 'button'; b.setAttribute('data-tag-hapus', ''); b.setAttribute('aria-label', 'Hapus tag ' + n); b.innerHTML = '<i class="ti ti-x" aria-hidden="true"></i>';
             chip.append('#' + n, inp, b);
-            w.querySelector('.tag-input-field').before(chip);
+            field(w).before(chip);
             segarkan(w);
         }
         function hapus(w, n) {
-            w.querySelectorAll('input[type=hidden]').forEach(function (i) { if (i.value.toLowerCase() === n.toLowerCase()) i.parentNode.remove(); });
+            w.querySelectorAll('.tag-input-box input[type=hidden]').forEach(function (i) { if (i.value.toLowerCase() === n.toLowerCase()) i.parentNode.remove(); });
             segarkan(w);
         }
+        function saring(w) {
+            var q = norm(field(w).value).toLowerCase(), panel = w.querySelector('.tag-panel'), lain = panel.querySelector('[data-tag-lain]');
+            var bawaan = [];
+            panel.querySelectorAll('.tag-panel-grup:not([data-tag-lain])').forEach(function (g) {
+                var ada = false;
+                g.querySelectorAll('[data-tag-saran]').forEach(function (b) {
+                    bawaan.push(b.dataset.tagSaran.toLowerCase());
+                    b.hidden = q && b.dataset.tagSaran.toLowerCase().indexOf(q) < 0;
+                    ada = ada || !b.hidden;
+                });
+                g.hidden = !ada;
+            });
+            var isi = lain.querySelector('.tag-chips');
+            clearTimeout(timer);
+            if (!q) { isi.replaceChildren(); lain.hidden = true; kosong(); return; }
+            timer = setTimeout(function () {
+                fetch(w.dataset.cari + '?q=' + encodeURIComponent(q), { headers: { Accept: 'application/json' } }).then(function (r) { return r.json(); }).then(function (daftar) {
+                    var ada = nama(w);
+                    isi.replaceChildren.apply(isi, daftar.filter(function (n) { return bawaan.indexOf(n.toLowerCase()) < 0; }).map(function (n) {
+                        var b = document.createElement('button');
+                        b.type = 'button'; b.className = 'tag-chip'; b.dataset.tagSaran = n; b.textContent = '#' + n;
+                        b.setAttribute('aria-pressed', ada.indexOf(n.toLowerCase()) > -1);
+                        return b;
+                    }));
+                    lain.hidden = !isi.children.length;
+                    kosong();
+                }).catch(function () {});
+            }, 200);
+            kosong();
+            function kosong() { panel.querySelector('.tag-panel-kosong').hidden = !!panel.querySelector('.tag-panel-grup:not([hidden])'); }
+        }
+        function buka(w) {
+            var f = field(w), panel = w.querySelector('.tag-panel');
+            if (document.querySelectorAll('[id="' + panel.id + '"]').length > 1) { panel.id = 'tagp-js' + (++seq); f.setAttribute('aria-controls', panel.id); }
+            if (!panel.hidden) return;
+            panel.hidden = false; f.setAttribute('aria-expanded', 'true');
+            saring(w);
+        }
+        function tutup(w) {
+            var panel = w && w.querySelector('.tag-panel');
+            if (!panel || panel.hidden) return;
+            panel.hidden = true; field(w).setAttribute('aria-expanded', 'false');
+        }
+        document.addEventListener('focusin', function (e) { if (e.target.matches('.tag-input-field')) buka(e.target.closest('[data-tag-input]')); });
+        document.addEventListener('focusout', function (e) {
+            var w = e.target.closest && e.target.closest('[data-tag-input]');
+            if (w && !(e.relatedTarget && w.contains(e.relatedTarget))) tutup(w);
+        });
+        // tap chip di panel: jangan ambil fokus dari input, biar panel tetap terbuka
+        document.addEventListener('pointerdown', function (e) {
+            if (e.target.closest('.tag-panel')) e.preventDefault();
+            document.querySelectorAll('[data-tag-input]').forEach(function (w) { if (!w.contains(e.target)) tutup(w); });
+        });
         document.addEventListener('keydown', function (e) {
             if (!e.target.matches('.tag-input-field')) return;
             var w = e.target.closest('[data-tag-input]');
-            if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); tambah(w, e.target.value); e.target.value = ''; }
+            if (e.key === 'Escape') { if (!w.querySelector('.tag-panel').hidden) { e.preventDefault(); e.stopPropagation(); tutup(w); } }
+            else if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); tambah(w, e.target.value); e.target.value = ''; saring(w); }
             else if (e.key === 'Backspace' && !e.target.value) { var c = w.querySelectorAll('.tag-input-chip'); if (c.length) { c[c.length - 1].remove(); segarkan(w); } }
-        });
+        }, true);
         document.addEventListener('input', function (e) {
             var f = e.target;
             if (!f.matches('.tag-input-field')) return;
             var w = f.closest('[data-tag-input]');
             if (f.value.indexOf(',') > -1) { var p = f.value.split(','); f.value = p.pop(); p.forEach(function (n) { tambah(w, n); }); }
-            if (dl && (!e.inputType || e.inputType === 'insertReplacementText') && Array.prototype.some.call(dl.options, function (o) { return o.value === f.value; })) { tambah(w, f.value); f.value = ''; return; }
-            if (!dl) { dl = document.createElement('datalist'); dl.id = 'tag-datalist'; document.body.append(dl); }
-            clearTimeout(timer);
-            var q = norm(f.value);
-            if (!q) return;
-            timer = setTimeout(function () {
-                fetch(w.dataset.cari + '?q=' + encodeURIComponent(q), { headers: { Accept: 'application/json' } }).then(function (r) { return r.json(); }).then(function (daftar) {
-                    dl.replaceChildren.apply(dl, daftar.map(function (n) { var o = document.createElement('option'); o.value = n; return o; }));
-                }).catch(function () {});
-            }, 200);
+            buka(w);
+            saring(w);
         });
         document.addEventListener('click', function (e) {
             var b = e.target.closest('[data-tag-hapus], [data-tag-saran]');
             var w = b && b.closest('[data-tag-input]');
             if (!w) return;
-            if (b.hasAttribute('data-tag-hapus')) { b.parentNode.remove(); segarkan(w); }
-            else if (b.getAttribute('aria-pressed') === 'true') hapus(w, b.dataset.tagSaran);
-            else tambah(w, b.dataset.tagSaran);
+            if (b.hasAttribute('data-tag-hapus')) { b.parentNode.remove(); segarkan(w); return; }
+            if (b.getAttribute('aria-pressed') === 'true') hapus(w, b.dataset.tagSaran);
+            else { tambah(w, b.dataset.tagSaran); if (field(w).value) { field(w).value = ''; saring(w); } }
         });
         document.addEventListener('submit', function (e) {
             e.target.querySelectorAll('.tag-input-field').forEach(function (f) { if (f.value.trim()) { tambah(f.closest('[data-tag-input]'), f.value); f.value = ''; } });
