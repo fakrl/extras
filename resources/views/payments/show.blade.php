@@ -40,7 +40,7 @@
 @if (auth()->user()->bisaSebagaiAdmin() && $application->payment->status === 'belum_dibayar')
     <div class="card" style="margin-bottom: 14px;">
         <x-confirm-form action="{{ route('payments.transfer', $application) }}" enctype="multipart/form-data" message="Tandai Rp {{ number_format($totalHonor, 0, ',', '.') }} sudah ditransfer ke {{ $application->extras->user->name }}? Aksi ini cuma bisa sekali.">
-            <label>Unggah Bukti Transfer</label>
+            <label>Unggah Bukti Transfer <span class="wajib" aria-hidden="true">*</span></label>
             <input type="file" name="bukti_transfer" accept=".jpg,.jpeg,.png,.pdf" required style="margin-bottom: 10px;">
             <button type="submit" class="btn btn-brand">Tandai Sudah Ditransfer (Rp {{ number_format($totalHonor, 0, ',', '.') }})</button>
         </x-confirm-form>
@@ -57,8 +57,8 @@
 @if ((auth()->user()->bisaSebagaiAdmin() || auth()->user()->isExtras()) && $application->payment->status !== 'dikonfirmasi_diterima')
     <form method="POST" action="{{ route('payments.addon', $application) }}" style="display: flex; gap: 8px; margin-bottom: 14px;">
         @csrf
-        <input type="text" name="label" class="input-inline" placeholder="Label (misal: Reimburse transport)" required>
-        <input type="number" name="nominal" class="input-inline" placeholder="Nominal" required>
+        <input type="text" name="label" class="input-inline" placeholder="Label (misal: Reimburse transport) *" required>
+        <input type="number" name="nominal" class="input-inline" placeholder="Nominal *" required>
         <button class="btn">+ Tambah Komponen</button>
     </form>
 @endif

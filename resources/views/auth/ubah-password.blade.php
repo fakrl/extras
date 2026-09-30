@@ -12,8 +12,8 @@
 
             @if (auth()->user()->password)
             <div style="margin-bottom:16px;">
-                <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:500;">Kata Sandi Saat Ini</label>
-                <input type="password" name="current_password" id="current-password-field"
+                <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:500;">Kata Sandi Saat Ini <span class="wajib" aria-hidden="true">*</span></label>
+                <input type="password" name="current_password" id="current-password-field" required
                     class="{{ $errors->has('current_password') ? 'input-error' : '' }}"
                     style="width:100%; padding:9px 12px; border-radius:7px; border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary); font-size:14px;">
                 <span id="cp-hint" style="font-size:12px; margin-top:4px; display:block;"></span>
@@ -26,8 +26,8 @@
             @endif
 
             <div style="margin-bottom:16px;">
-                <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:500;">Kata Sandi Baru</label>
-                <input type="password" name="new_password"
+                <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:500;">Kata Sandi Baru <span class="wajib" aria-hidden="true">*</span></label>
+                <input type="password" name="new_password" required
                     class="{{ $errors->has('new_password') ? 'input-error' : '' }}"
                     style="width:100%; padding:9px 12px; border-radius:7px; border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary); font-size:14px;">
                 @error('new_password')
@@ -36,8 +36,8 @@
             </div>
 
             <div style="margin-bottom:20px;">
-                <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:500;">Konfirmasi Kata Sandi Baru</label>
-                <input type="password" name="new_password_confirmation"
+                <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:500;">Konfirmasi Kata Sandi Baru <span class="wajib" aria-hidden="true">*</span></label>
+                <input type="password" name="new_password_confirmation" required
                     style="width:100%; padding:9px 12px; border-radius:7px; border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary); font-size:14px;">
             </div>
 

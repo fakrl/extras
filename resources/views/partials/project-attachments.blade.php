@@ -26,10 +26,10 @@
 
     <form method="POST" action="{{ route('project-attachments.store', $project) }}" enctype="multipart/form-data" class="lampiran-form">
         @csrf
-        <label for="lampiran-files">Unggah file (bisa pilih beberapa sekaligus)</label>
+        <label for="lampiran-files">Unggah file (bisa pilih beberapa sekaligus) <span class="wajib" aria-hidden="true">*</span></label>
         <input type="file" id="lampiran-files" name="files[]" multiple required accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
         <div class="lampiran-meta">PDF, Word, Excel, JPG, PNG · maks 10 MB per file</div>
-        <label for="lampiran-ket">Keterangan (opsional)</label>
+        <label for="lampiran-ket">Keterangan</label>
         <input type="text" id="lampiran-ket" name="keterangan" maxlength="255" value="{{ old('keterangan') }}" placeholder="mis. Brief final, rundown">
         <button type="submit" class="btn btn-brand">Unggah Lampiran</button>
     </form>

@@ -58,8 +58,8 @@
         <form method="POST" action="{{ route('super-admin.admins.honor', $user) }}" style="display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap;">
             @csrf @method('PATCH')
             <div style="flex: 1; min-width: 160px;">
-                <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px;">Nominal Honor (Rp)</label>
-                <input type="number" name="honor_nominal" min="0" value="{{ $user->honor_nominal ?? 0 }}" style="margin: 0;">
+                <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px;">Nominal Honor (Rp) <span class="wajib" aria-hidden="true">*</span></label>
+                <input type="number" name="honor_nominal" min="0" value="{{ $user->honor_nominal ?? 0 }}" required style="margin: 0;">
             </div>
             <button type="submit" class="btn btn-sm btn-brand">Simpan</button>
         </form>

@@ -15,29 +15,30 @@
 <div class="card" style="margin-bottom: 24px; max-width: 720px;">
     <form method="POST" action="{{ route('client.projects.request.store') }}" enctype="multipart/form-data">
         @csrf
-        <label>Nama Produksi / Judul Film / Iklan <span style="color: red;">*</span></label>
+        <p class="wajib-ket"><span class="wajib">*</span> wajib diisi</p>
+        <label>Nama Produksi / Judul Film / Iklan <span class="wajib" aria-hidden="true">*</span></label>
         <input type="text" name="nama_produksi" value="{{ old('nama_produksi') }}" placeholder="Contoh: Kado Untuk Ibu / Iklan Bank Mandiri" required>
 
         <p class="field-hint">Rumah Produksi: <strong>{{ auth()->user()->nama_perusahaan ?: auth()->user()->name }}</strong> (ubah di <a href="{{ route('client.profil') }}">Profil</a>).</p>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
             <div>
-                <label>Estimasi Deadline Perekrutan <span style="color: red;">*</span></label>
+                <label>Estimasi Deadline Perekrutan <span class="wajib" aria-hidden="true">*</span></label>
                 <input type="date" name="deadline" value="{{ old('deadline') }}" min="{{ date('Y-m-d') }}" required>
             </div>
             <div>
-                <label>Perkiraan Total Kuota Extras <span style="color: red;">*</span></label>
+                <label>Perkiraan Total Kuota Extras <span class="wajib" aria-hidden="true">*</span></label>
                 <input type="number" name="kuota" min="1" value="{{ old('kuota', 10) }}" required>
             </div>
         </div>
 
-        <label>Brief Kebutuhan Karakter & Catatan Tambahan <span style="color: red;">*</span></label>
+        <label>Brief Kebutuhan Karakter & Catatan Tambahan <span class="wajib" aria-hidden="true">*</span></label>
         <textarea name="brief_catatan" rows="4" placeholder="Jelaskan kebutuhan peran (misal: 10 ibu-ibu pasar look Jawa, 5 bapak-bapak pos ronda), estimasi tanggal take kamera, dan lokasi syuting..." required>{{ old('brief_catatan') }}</textarea>
 
-        <label>Poster Acuan (Opsional)</label>
+        <label>Poster Acuan</label>
         <input type="file" name="poster_path" accept="image/*">
 
-        <label for="req-files">Lampiran Dokumen (Opsional, bisa pilih beberapa)</label>
+        <label for="req-files">Lampiran Dokumen (bisa pilih beberapa)</label>
         <input type="file" id="req-files" name="files[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
         <div style="font-size: var(--fs-xs); color: var(--text-muted);">PDF, Word, Excel, JPG, PNG · maks 10 MB per file</div>
 

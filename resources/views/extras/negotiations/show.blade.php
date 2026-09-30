@@ -54,8 +54,8 @@
 
             <form method="POST" action="{{ route('extras.negotiations.counter', $application) }}" style="display: flex; gap: 8px; flex-wrap: wrap; flex: 1;">
                 @csrf
-                <input type="number" name="nominal" class="input-inline" placeholder="Nominal counter (Rp)" required style="min-width: 150px;">
-                <input type="text" name="catatan" class="input-inline" placeholder="Alasan counter (opsional, misal: butuh transport)" style="flex: 1; min-width: 200px;">
+                <input type="number" name="nominal" class="input-inline" placeholder="Nominal counter (Rp) *" required style="min-width: 150px;">
+                <input type="text" name="catatan" class="input-inline" placeholder="Alasan counter (misal: butuh transport)" style="flex: 1; min-width: 200px;">
                 <button class="btn">Ajukan Counter</button>
             </form>
         </div>

@@ -52,6 +52,13 @@ Semua aksi yang butuh network (submit form, nego fee, upload bukti transfer) HAR
 - Spesifik ke field yang salah, bukan generic "terjadi kesalahan".
 - Untuk aksi kritis (submit nego fee, konfirmasi pembayaran, approve/reject CD) — pakai konfirmasi dulu (modal/dialog) sebelum aksi final, karena efeknya tercatat permanen di riwayat.
 
+### Field Wajib (BO.3, 30 Sept 2026)
+- Field wajib: bintang merah setelah label `<span class="wajib" aria-hidden="true">*</span>` + atribut `required` di input. Wajib/tidaknya ikut aturan validasi server (`required` di controller/FormRequest), jangan asal.
+- Field tidak wajib: tanpa keterangan apa pun. JANGAN tulis "(opsional)"/"opsional" di label, placeholder, atau hint.
+- Form panjang: satu baris `<p class="wajib-ket"><span class="wajib">*</span> wajib diisi</p>` di atas form.
+- Input tanpa label terlihat (inline/placeholder saja): tambahkan ` *` di akhir placeholder.
+- CSS `.wajib` / `.wajib-ket` ada di `partials/theme-style` (warna `--danger`, dipakai layout app, auth, publik).
+
 ### Empty State
 - Halaman list kosong (belum ada lowongan, belum ada riwayat) HARUS ada ilustrasi/copy yang jelas + CTA relevan, bukan tabel kosong polos.
 
