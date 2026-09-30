@@ -49,7 +49,7 @@ class GreenlightKonsolidasiTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $cd = $this->buatCd();
         $project = $this->buatProyek($admin);
-        $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $project->update(['client_id' => $cd->id]);
 
         $this->buatApplication($project, 'diajukan_ke_cd');
         $this->buatApplication($project, 'lolos');
@@ -72,7 +72,7 @@ class GreenlightKonsolidasiTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $cd = $this->buatCd();
         $project = $this->buatProyek($admin);
-        $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $project->update(['client_id' => $cd->id]);
 
         $appPending = $this->buatApplication($project, 'diajukan_ke_cd');
         $appLolos = $this->buatApplication($project, 'lolos');
@@ -94,7 +94,7 @@ class GreenlightKonsolidasiTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $cd = $this->buatCd();
         $project = $this->buatProyek($admin);
-        $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $project->update(['client_id' => $cd->id]);
 
         $appPending = $this->buatApplication($project, 'diajukan_ke_cd');
         $appLolos = $this->buatApplication($project, 'lolos');
@@ -114,7 +114,7 @@ class GreenlightKonsolidasiTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $cd = $this->buatCd();
         $project = $this->buatProyek($admin);
-        $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $project->update(['client_id' => $cd->id]);
 
         $app = $this->buatApplication($project, 'diajukan_ke_cd');
 
@@ -138,7 +138,7 @@ class GreenlightKonsolidasiTest extends TestCase
         $cd = $this->buatCd();
         $cdLain = $this->buatCd();
         $project = $this->buatProyek($admin);
-        $project->cdAssignments()->create(['cd_user_id' => $cdLain->id]);
+        $project->update(['client_id' => $cdLain->id]);
 
         $this->actingAs($cd)->get(route('cd.reviews.show', $project))->assertForbidden();
     }
@@ -150,10 +150,10 @@ class GreenlightKonsolidasiTest extends TestCase
         $cdLain = $this->buatCd();
 
         $projectMilikCd = $this->buatProyek($admin);
-        $projectMilikCd->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $projectMilikCd->update(['client_id' => $cd->id]);
 
         $projectLain = $this->buatProyek($admin);
-        $projectLain->cdAssignments()->create(['cd_user_id' => $cdLain->id]);
+        $projectLain->update(['client_id' => $cdLain->id]);
 
         $appMilikCd = $this->buatApplication($projectMilikCd, 'lolos');
         $appLain = $this->buatApplication($projectLain, 'lolos');

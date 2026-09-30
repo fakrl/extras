@@ -180,34 +180,6 @@
 </div>
 
 <div class="card">
-    <div style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Client yang Ditugaskan</div>
-
-    @if ($castingProject->cdAssignments->isEmpty())
-        <div style="color: var(--text-muted); margin-bottom: 12px;">Belum ada Client ditugaskan ke proyek ini.</div>
-    @else
-        <ul style="margin-bottom: 12px;">
-            @foreach ($castingProject->cdAssignments as $assignment)
-                <li>{{ $assignment->cdUser->name }}</li>
-            @endforeach
-        </ul>
-    @endif
-
-    <form method="POST" action="{{ route('admin.projects.assign-cd', $castingProject) }}" style="display: flex; gap: 8px; align-items: flex-end;">
-        @csrf
-        <div style="flex: 1;">
-            <label>Tugaskan Client</label>
-            <select name="cd_user_id" required>
-                <option value="">Pilih Client</option>
-                @foreach ($cdUsers as $cd)
-                    <option value="{{ $cd->id }}">{{ $cd->name }}</option>
-                @endforeach
-            </select>
-        </div>
-        <button type="submit" class="btn btn-brand">Tugaskan</button>
-    </form>
-</div>
-
-<div class="card">
     <div style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Jadwal Shooting (Read-only)</div>
     @if ($castingProject->shootingDates->whereNotNull('lokasi')->isEmpty())
         <div style="color: var(--text-muted);">Client belum mengisi jadwal detail.</div>

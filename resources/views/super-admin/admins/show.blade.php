@@ -29,8 +29,8 @@
         @endif
         <tr><td style="padding: 4px 0; color: var(--text-muted);">Role</td><td>{{ $user->label() }}</td></tr>
         <tr><td style="padding: 4px 0; color: var(--text-muted);">Status</td><td><span class="badge {{ $user->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">{{ $user->status }}</span></td></tr>
-        @if ($user->adminProfile && $user->adminProfile->honor_nominal)
-        <tr><td style="padding: 4px 0; color: var(--text-muted);">Honor/Event</td><td>Rp {{ number_format($user->adminProfile->honor_nominal, 0, ',', '.') }}</td></tr>
+        @if ($user->honor_nominal)
+        <tr><td style="padding: 4px 0; color: var(--text-muted);">Honor/Event</td><td>Rp {{ number_format($user->honor_nominal, 0, ',', '.') }}</td></tr>
         @endif
         <tr><td style="padding: 4px 0; color: var(--text-muted);">Bergabung</td><td>{{ $user->created_at->format('d M Y') }}</td></tr>
     </table>
@@ -53,23 +53,21 @@
         </div>
     </div>
 
-    @if ($user->adminProfile)
     <div class="card" style="margin-bottom: 16px;">
         <div style="font-weight: 600; margin-bottom: 10px;">Edit Honor per Event</div>
         <form method="POST" action="{{ route('super-admin.admins.honor', $user) }}" style="display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap;">
             @csrf @method('PATCH')
             <div style="flex: 1; min-width: 160px;">
                 <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px;">Nominal Honor (Rp)</label>
-                <input type="number" name="honor_nominal" min="0" value="{{ $user->adminProfile->honor_nominal ?? 0 }}" style="margin: 0;">
+                <input type="number" name="honor_nominal" min="0" value="{{ $user->honor_nominal ?? 0 }}" style="margin: 0;">
             </div>
             <button type="submit" class="btn btn-sm btn-brand">Simpan</button>
         </form>
     </div>
-    @endif
 @endif
 
-{{-- Riwayat Proyek (Admin/Korlap/Client) --}}
-@if ($user->role !== 'extras')
+{{-- Riwayat Proyek (Admin/Korlap) --}}
+@if (! $user->isClient() && $user->role !== 'extras')
 <div class="card" style="margin-bottom: 16px;">
     <div style="font-weight: 600; margin-bottom: 12px;">Riwayat Proyek</div>
     @if ($assignments->isEmpty())
@@ -81,12 +79,8 @@
                 <tr style="border-bottom: 1px solid var(--border-color);">
                     <th style="text-align: left; padding: 8px 0;">Proyek</th>
                     <th style="text-align: left; padding: 8px 0;">Status</th>
-                    @if ($user->isCastingDirector())
-                        <th style="text-align: left; padding: 8px 0;">Review</th>
-                    @else
-                        <th style="text-align: left; padding: 8px 0;">Mulai</th>
-                        <th style="text-align: left; padding: 8px 0;">Honor</th>
-                    @endif
+                    <th style="text-align: left; padding: 8px 0;">Mulai</th>
+                    <th style="text-align: left; padding: 8px 0;">Honor</th>
                 </tr>
             </thead>
             <tbody>
@@ -94,12 +88,8 @@
                 <tr style="border-bottom: 1px solid var(--border-color);">
                     <td style="padding: 8px 0;"><a href="{{ route('admin.projects.applicants', $a->castingProject) }}" style="color: var(--accent);">{{ $a->castingProject->nama_produksi }}</a></td>
                     <td style="padding: 8px 0;"><span class="badge {{ $a->status_log === 'berjalan' ? 'badge-warning' : 'badge-aktif' }}">{{ $a->status_log }}</span></td>
-                    @if ($user->isCastingDirector())
-                        <td style="padding: 8px 0;">@php $cnt = $a->cdReviews()->count(); @endphp {{ $cnt }} review</td>
-                    @else
-                        <td style="padding: 8px 0;">{{ $a->created_at->format('d M') }}</td>
-                        <td style="padding: 8px 0;">@if ($a->payroll) Rp {{ number_format($a->payroll->nominalTotal(), 0, ',', '.') }} @else - @endif</td>
-                    @endif
+                    <td style="padding: 8px 0;">{{ $a->created_at->format('d M') }}</td>
+                    <td style="padding: 8px 0;">@if ($a->payroll) Rp {{ number_format($a->payroll->nominalTotal(), 0, ',', '.') }} @else - @endif</td>
                 </tr>
                 @endforeach
             </tbody>
@@ -109,10 +99,10 @@
 </div>
 @endif
 
-{{-- 2b: Client — Riwayat Proyek yang Diajukan --}}
+{{-- 2b: Client — proyek milik akun ini --}}
 @if ($user->isClient() && $clientProjects)
 <div class="card" style="margin-bottom: 16px;">
-    <div style="font-weight: 600; margin-bottom: 12px;">Proyek yang Diajukan</div>
+    <div style="font-weight: 600; margin-bottom: 12px;">Proyek Client</div>
     @if ($clientProjects->isEmpty())
         <div style="color: var(--text-muted); text-align: center; padding: 20px; font-size: 13px;">Belum ada proyek.</div>
     @else
@@ -128,9 +118,9 @@
             <tbody>
                 @foreach ($clientProjects as $p)
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                    <td style="padding: 8px 0;">{{ $p->nama_produksi }}</td>
+                    <td style="padding: 8px 0;"><a href="{{ route('admin.projects.show', $p) }}" style="color: var(--accent);">{{ $p->nama_produksi }}</a></td>
                     <td style="padding: 8px 0;"><span class="badge badge-pending">{{ $p->status }}</span></td>
-                    <td style="padding: 8px 0;">{{ $p->deadline_pengambilan ? \Carbon\Carbon::parse($p->deadline_pengambilan)->format('d M Y') : '-' }}</td>
+                    <td style="padding: 8px 0;">{{ $p->deadline?->format('d M Y') ?? '-' }}</td>
                 </tr>
                 @endforeach
             </tbody>
@@ -249,6 +239,51 @@
                     <td style="padding: 8px 0; color: var(--text-muted); font-size: 12px; white-space: nowrap;">{{ $act->created_at->format('d M Y H:i') }}</td>
                     <td style="padding: 8px 0;"><span class="badge badge-netral" title="{{ $act->action }}">{{ \App\Models\ActivityLog::actionLabel($act->action) }}</span></td>
                     <td style="padding: 8px 0;">{{ $act->description }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+    </div>
+    @endif
+</div>
+
+{{-- BM.1: notifikasi akun + status kirim WA/email, biar yang gagal bisa dikabari manual --}}
+<div class="card" style="margin-bottom: 16px;">
+    <div style="font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+        <i class="ti ti-bell" style="color: var(--accent);"></i> Notifikasi Terakhir
+    </div>
+    @if ($notifikasi->isEmpty())
+        <div style="color: var(--text-muted); text-align: center; padding: 20px; font-size: 13px;">Belum ada notifikasi.</div>
+    @else
+    <div class="table-container">
+    <table style="width: 100%; font-size: 13px;">
+        <thead>
+            <tr style="border-bottom: 1px solid var(--border-color);">
+                <th style="text-align: left; padding: 8px 0;">Waktu</th>
+                <th style="text-align: left; padding: 8px 0;">Notifikasi</th>
+                <th style="text-align: left; padding: 8px 0;">Kirim</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($notifikasi as $n)
+                @php
+                    $kanal = collect(['wa' => ['ti-brand-whatsapp', 'WA'], 'email' => ['ti-mail', 'Email']])
+                        ->filter(fn ($_, $k) => array_key_exists($k, $n->data));
+                @endphp
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 8px 0; color: var(--text-muted); font-size: 12px; white-space: nowrap;">{{ $n->created_at->format('d M Y H:i') }}</td>
+                    <td style="padding: 8px 0;"><strong>{{ $n->data['judul'] ?? '-' }}</strong><div style="color: var(--text-muted);">{{ $n->data['pesan'] ?? '' }}</div></td>
+                    <td style="padding: 8px 0; white-space: nowrap;">
+                        @forelse ($kanal as $k => [$ikon, $nama])
+                            @php $st = $n->data[$k]; @endphp
+                            <span data-status-{{ $k }}="{{ $st ?? 'antre' }}" title="{{ $nama }}: {{ $st ?? 'antre' }}{{ $k === 'wa' && ! empty($n->data['wa_dikirim_at']) ? ' ('.$n->data['wa_dikirim_at'].')' : '' }}"
+                                  style="color: {{ $st === 'terkirim' ? 'var(--accent)' : ($st === 'gagal' ? 'var(--danger)' : 'var(--text-muted)') }};">
+                                <i class="ti {{ $ikon }}" aria-hidden="true"></i><i class="ti {{ $st === 'terkirim' ? 'ti-check' : ($st === 'gagal' ? 'ti-x' : 'ti-clock') }}" aria-hidden="true"></i>
+                            </span>
+                        @empty
+                            <span style="color: var(--text-muted);">-</span>
+                        @endforelse
+                    </td>
                 </tr>
             @endforeach
         </tbody>

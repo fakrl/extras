@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use App\Services\WhatsAppService;
 use Illuminate\Contracts\Bus\Dispatcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
@@ -32,13 +31,8 @@ class WhatsAppDispatchFailureTest extends TestCase
             return $mock;
         });
 
-        app(WhatsAppService::class)->kirimNotifikasi($user, 'hasil_seleksi', 'pesan test');
+        $user->kabari('Hasil Seleksi', 'pesan test', jenis: 'hasil_seleksi', wa: 'pesan test');
 
-        $this->assertDatabaseHas('notifications_log', [
-            'user_id' => $user->id,
-            'jenis' => 'hasil_seleksi',
-            'channel' => 'whatsapp',
-            'status' => 'gagal',
-        ]);
+        $this->assertNotifikasi($user->id, 'hasil_seleksi', ['wa' => 'gagal']);
     }
 }

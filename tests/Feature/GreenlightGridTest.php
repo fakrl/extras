@@ -49,7 +49,7 @@ class GreenlightGridTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $cd = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
-        $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $project->update(['client_id' => $cd->id]);
         $this->buatApplication($project, 'diajukan_ke_cd', 'alias_aman');
 
         $response = $this->actingAs($cd)->get(route('cd.reviews.show', $project));
@@ -66,10 +66,10 @@ class GreenlightGridTest extends TestCase
         $cd = User::factory()->create(['role' => 'client']);
 
         $project1 = $this->buatProyek($admin);
-        $project1->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $project1->update(['client_id' => $cd->id]);
 
         $project2 = $this->buatProyek($admin);
-        $project2->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $project2->update(['client_id' => $cd->id]);
 
         $app1 = $this->buatApplication($project1, 'diajukan_ke_cd', 'alias_riwayat');
 
@@ -96,7 +96,7 @@ class GreenlightGridTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $cd = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
-        $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $project->update(['client_id' => $cd->id]);
         $app = $this->buatApplication($project, 'diajukan_ke_cd');
 
         $response = $this->actingAs($cd)->post(route('cd.reviews.review'), [
@@ -112,7 +112,7 @@ class GreenlightGridTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $cd = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
-        $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $project->update(['client_id' => $cd->id]);
 
         $app1 = $this->buatApplication($project, 'diajukan_ke_cd', 'alias_bulk1');
         $app2 = $this->buatApplication($project, 'diajukan_ke_cd', 'alias_bulk2');

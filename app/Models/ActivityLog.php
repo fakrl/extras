@@ -32,6 +32,7 @@ class ActivityLog extends Model
         'DISPUTE_PAYMENT' => 'Sengketakan pembayaran',
         'UPLOAD_PAYOUT_TRANSFER' => 'Unggah bukti transfer',
         'STAFF_PAYROLL_PAID' => 'Bayar honor staf',
+        'UPDATE_HONOR' => 'Ubah honor staf',
         'VALIDATE_ATTENDANCE' => 'Validasi absensi',
         'REJECT_ATTENDANCE' => 'Tolak absensi',
         'SUBMIT_SELFIE_ATTENDANCE' => 'Absen selfie',

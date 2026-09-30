@@ -6,7 +6,7 @@ use Illuminate\Notifications\Notification;
 
 class InAppNotification extends Notification
 {
-    public function __construct(public string $judul, public string $pesan, public ?string $url = null)
+    public function __construct(public string $judul, public string $pesan, public ?string $url = null, public array $data = [])
     {
         $this->url = self::relatif($url);
     }
@@ -35,6 +35,6 @@ class InAppNotification extends Notification
 
     public function toDatabase($notifiable): array
     {
-        return ['judul' => $this->judul, 'pesan' => $this->pesan, 'url' => $this->url];
+        return ['judul' => $this->judul, 'pesan' => $this->pesan, 'url' => $this->url, ...$this->data];
     }
 }

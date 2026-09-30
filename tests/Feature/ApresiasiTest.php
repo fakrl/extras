@@ -86,7 +86,7 @@ class ApresiasiTest extends TestCase
         $application->extras->update(['apresiasi' => true, 'apresiasi_catatan' => 'Rahasia internal admin.']);
 
         $cd = User::factory()->create(['role' => 'client']);
-        $application->castingProject->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $application->castingProject->update(['client_id' => $cd->id]);
 
         $response = $this->actingAs($cd)->get(route('cd.reviews.index'));
 

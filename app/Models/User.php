@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Notifications\InAppNotification;
+use App\Services\WhatsAppService;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -12,14 +14,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Mail\Mailable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 // 'role' & 'status' TETAP masuk $fillable (whitelist teknis, sama pola
 // dengan ExtrasProfile::$foto_profil_path), proteksinya bukan dari sini,
 // tapi karena tidak ada route/controller yang nerima 'role'/'status' mentah
 // dari $request->all(); RegisterController & AdminManagementController
 // selalu set literal/hasil validasi enum, bukan pass-through raw input.
-#[Fillable(['name', 'nama_perusahaan', 'email', 'username', 'password', 'wajib_ganti_password', 'role', 'status', 'nomor_wa'])]
+#[Fillable(['name', 'nama_perusahaan', 'email', 'username', 'password', 'wajib_ganti_password', 'role', 'status', 'nomor_wa', 'honor_nominal'])]
 // nomor_wa masuk Hidden, bukan super rahasia (bukan NIK/rekening), tapi
 // Kebijakan privasi: kontak Extras tidak ditampilkan untuk
 // Casting Director; defense-in-depth kalau nanti ada endpoint yang serialize
@@ -70,6 +75,44 @@ class User extends Authenticatable
         );
     }
 
+    /**
+     * BM.1: satu pintu notifikasi. Selalu bikin notif in-app; email/WA opsional, statusnya
+     * (`terkirim`/`gagal`/null = antre) disimpan di notifications.data. `kunci` = anti-dobel
+     * reminder terjadwal: user yang sudah punya notif dengan kunci sama tidak dikirimi lagi.
+     */
+    public function kabari(string $judul, string $pesan, ?string $url = null, ?string $jenis = null, ?Mailable $email = null, ?string $wa = null, ?string $kunci = null): bool
+    {
+        if ($kunci && $this->notifications()->where('data->kunci', $kunci)->exists()) {
+            return false;
+        }
+
+        $data = array_filter(['jenis' => $jenis, 'kunci' => $kunci]);
+        if ($email) {
+            try {
+                Mail::to($this)->queue($email);
+                $data['email'] = 'terkirim';
+            } catch (\Throwable) {
+                $data['email'] = 'gagal';
+            }
+        }
+        if ($wa !== null) {
+            $data['wa'] = null;
+        }
+
+        $notif = new InAppNotification($judul, $pesan, $url, $data);
+        $notif->id = (string) Str::uuid();
+        try {
+            $this->notify($notif);
+        } catch (\Throwable) {
+        }
+
+        if ($wa !== null) {
+            app(WhatsAppService::class)->kirimNotifikasi($this, $jenis ?? 'umum', $wa, $notif->id);
+        }
+
+        return true;
+    }
+
     public function extrasProfile(): HasOne
     {
         return $this->hasOne(ExtrasProfile::class);
@@ -90,11 +133,6 @@ class User extends Authenticatable
         return $this->hasOne(ActivityLog::class)->latestOfMany();
     }
 
-    public function adminProfile(): HasOne
-    {
-        return $this->hasOne(AdminProfile::class);
-    }
-
     public function castingProjects(): HasMany
     {
         return $this->hasMany(CastingProject::class, 'admin_id');
@@ -105,9 +143,10 @@ class User extends Authenticatable
         return $this->hasMany(AdminProjectAssignment::class);
     }
 
-    public function cdProjectAssignments(): HasMany
+    /** BM.1: proyek milik akun Client ini. */
+    public function proyekClient(): HasMany
     {
-        return $this->hasMany(CdProjectAssignment::class, 'cd_user_id');
+        return $this->hasMany(CastingProject::class, 'client_id');
     }
 
     public const ROLE_SUPER_ADMIN = 'super_admin';

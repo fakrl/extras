@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Cd;
 
 use App\Http\Controllers\Controller;
 use App\Models\CastingProject;
-use App\Models\CdProjectAssignment;
 use App\Models\CdReview;
 use App\Models\EventShootingDate;
 use App\Models\ProjectApplication;
@@ -17,7 +16,7 @@ class DashboardController extends Controller
     {
         $cdId = Auth::id();
 
-        $proyekIds = CdProjectAssignment::where('cd_user_id', $cdId)->pluck('casting_project_id');
+        $proyekIds = CastingProject::query()->milikClient(Auth::user())->pluck('id');
 
         $perluDireview = ProjectApplication::where('status_partisipasi', 'diajukan_ke_cd')
             ->whereIn('casting_project_id', $proyekIds)

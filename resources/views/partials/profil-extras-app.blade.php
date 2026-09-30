@@ -3,8 +3,8 @@
     'mode' => $mode,
     'fotoUrl' => $profile->foto_profil_path ? route('extras.media.foto', $profile) : null,
     'videoUrl' => $profile->video_profil_path ? route('extras.media.video', $profile) : null,
-    'fotos' => $profile->photos->whereBetween('urutan', [1, 4])->sortBy('urutan')->map(fn ($foto) => [
-        'url' => route('extras.media.foto-tambahan', [$profile, $foto->urutan]),
-        'alt' => 'Foto '.$foto->urutan,
-    ])->values()->all(),
+    'fotos' => $profile->fotoTambahan()->keys()->map(fn ($slot) => [
+        'url' => route('extras.media.foto-tambahan', [$profile, $slot]),
+        'alt' => 'Foto '.$slot,
+    ])->all(),
 ])

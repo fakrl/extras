@@ -220,10 +220,10 @@
                 @endforeach
             @endif
 
-            @if ($ex->photos->isNotEmpty() || $ex->video_profil_path || ! empty($ex->tautan_tambahan))
+            @if ($ex->fotoTambahan()->isNotEmpty() || $ex->video_profil_path || ! empty($ex->tautan_tambahan))
                 <div class="xsec">Galeri & tautan</div>
-                @if ($ex->photos->isNotEmpty())
-                    @include('partials.foto-lightbox', ['fotos' => $ex->photos->map(fn ($p) => ['url' => route('extras.media.foto-tambahan', [$ex, $p->urutan]), 'alt' => 'Foto '.$p->urutan])->values()->all(), 'lightboxId' => 'lb-'.$app->id])
+                @if ($ex->fotoTambahan()->isNotEmpty())
+                    @include('partials.foto-lightbox', ['fotos' => $ex->fotoTambahan()->keys()->map(fn ($slot) => ['url' => route('extras.media.foto-tambahan', [$ex, $slot]), 'alt' => 'Foto '.$slot])->values()->all(), 'lightboxId' => 'lb-'.$app->id])
                 @endif
                 @if ($ex->video_profil_path)
                     <a href="{{ route('extras.media.video', $ex) }}" target="_blank" class="btn btn-sm" style="margin-top: 8px;"><i class="ti ti-player-play"></i> Video</a>

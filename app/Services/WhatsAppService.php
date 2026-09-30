@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Jobs\SendWhatsAppNotification;
-use App\Models\NotificationLog;
 use App\Models\User;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -33,32 +33,31 @@ class WhatsAppService
     }
 
     /**
-     * Dipanggil dari model/controller trigger notif. Skip + catat gagal
-     * kalau nomor_wa belum diisi (in-process, murah). Kirim aktualnya
-     * di-dispatch ke queue biar HTTP call ke Node tidak blocking request
-     * (terutama bulk approve/reject CD).
-     *
-     * dispatch() sendiri dibungkus try/catch (bukan cuma di dalam job),
-     * audit 30 Agu 2026 nemu: kalau tabel `jobs` gagal di-insert (DB
-     * lock/down), dispatch() throw SEBELUM job sempat jalan, jadi
-     * try/catch di WhatsAppService::kirim()/job handle() nggak kepakai.
-     * Notifikasi WA harus tetap best-effort di titik manapun bisa gagal,
-     * termasuk saat enqueue, jangan sampai gagal kirim WA gagalkan aksi
-     * utama pemanggil (approve CD, dsb).
+     * Dipanggil dari User::kabari(). Nomor kosong -> langsung `gagal`. Kirim aktual
+     * di-queue biar HTTP ke Node tidak blocking request. dispatch() ikut dibungkus
+     * try/catch: insert ke tabel `jobs` bisa gagal sendiri, dan gagal kirim WA
+     * tidak boleh menggagalkan aksi utama pemanggil.
      */
-    public function kirimNotifikasi(User $user, string $jenis, string $pesan): void
+    public function kirimNotifikasi(User $user, string $jenis, string $pesan, ?string $notifikasiId = null): void
     {
         if (! $user->nomor_wa) {
-            NotificationLog::catat($user->id, $jenis, false, 'whatsapp');
+            self::catatStatus($notifikasiId, false);
 
             return;
         }
 
         try {
-            SendWhatsAppNotification::dispatch($user, $jenis, $pesan);
+            SendWhatsAppNotification::dispatch($user, $jenis, $pesan, $notifikasiId);
         } catch (\Throwable $e) {
             Log::warning('WhatsAppService::kirimNotifikasi gagal dispatch', ['user_id' => $user->id, 'error' => $e->getMessage()]);
-            NotificationLog::catat($user->id, $jenis, false, 'whatsapp');
+            self::catatStatus($notifikasiId, false);
         }
+    }
+
+    /** BM.1: status WA disimpan di data notifikasi in-app pasangannya. */
+    public static function catatStatus(?string $notifikasiId, bool $terkirim): void
+    {
+        $notif = $notifikasiId ? DatabaseNotification::find($notifikasiId) : null;
+        $notif?->forceFill(['data' => [...$notif->data, 'wa' => $terkirim ? 'terkirim' : 'gagal', 'wa_dikirim_at' => now()->toDateTimeString()]])->save();
     }
 }

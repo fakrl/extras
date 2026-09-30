@@ -140,7 +140,7 @@
                     'data-review-tgl' => $review ? $review->created_at->format('d M Y') : '',
                     'data-riwayat-approve' => $riwayatApprove,
                     'data-riwayat-reject' => $riwayatReject,
-                    'data-fotos' => json_encode($app->extras->photos->map(fn ($p) => route('extras.media.foto-tambahan', [$app->extras, $p->urutan]))->values()),
+                    'data-fotos' => json_encode($app->extras->fotoTambahan()->keys()->map(fn ($slot) => route('extras.media.foto-tambahan', [$app->extras, $slot]))->values()),
                 ],
             ])
             <template id="mk-tags-{{ $app->id }}">@include('partials.tag-cocok', ['profile' => $app->extras, 'aplikasi' => $app])</template>

@@ -11,12 +11,12 @@ class PublicExtrasProfileController extends Controller
     public function show(string $token)
     {
         $profile = ExtrasProfile::where('share_token', $token)->firstOrFail();
-        $profile->load(['photos', 'categories', 'user']);
+        $profile->load(['categories', 'user']);
 
-        $fotosArr = $profile->photos->map(fn ($foto) => [
-            'url' => route('public.extras.foto-tambahan', [$token, $foto->urutan]),
-            'alt' => 'Foto '.$foto->urutan,
-        ])->values()->all();
+        $fotosArr = $profile->fotoTambahan()->keys()->map(fn ($slot) => [
+            'url' => route('public.extras.foto-tambahan', [$token, $slot]),
+            'alt' => 'Foto '.$slot,
+        ])->all();
 
         return view('public.extras-profile', compact('profile', 'token', 'fotosArr'));
     }
@@ -40,8 +40,9 @@ class PublicExtrasProfileController extends Controller
     public function fotoTambahan(string $token, int $slot): StreamedResponse
     {
         $profile = ExtrasProfile::where('share_token', $token)->firstOrFail();
-        $foto = $profile->photos()->where('urutan', $slot)->firstOrFail();
+        $path = $profile->fotoTambahan()->get($slot);
+        abort_unless($path, 404);
 
-        return Storage::disk('local')->response($foto->path);
+        return Storage::disk('local')->response($path);
     }
 }

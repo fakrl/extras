@@ -10,10 +10,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * SPEC.md Bagian E: CD hanya boleh akses invoice & review kandidat proyek
- * yang dia di-assign. Regresi: CD yang memang di-assign tetap normal.
+ * SPEC.md Bagian E + BM.1: Client hanya boleh akses invoice & review kandidat proyek
+ * miliknya (casting_projects.client_id).
  */
-class CdProjectAssignmentTest extends TestCase
+class ClientAksesProyekTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -41,57 +41,24 @@ class CdProjectAssignmentTest extends TestCase
         ]);
     }
 
-    public function test_admin_bisa_assign_cd_ke_proyek(): void
+    public function test_milik_client_cuma_untuk_akun_client_proyek_itu(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $cd = User::factory()->create(['role' => 'client']);
+        $client = User::factory()->create(['role' => 'client']);
+        $lain = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
+        $project->update(['client_id' => $client->id]);
 
-        $response = $this->actingAs($admin)->post(route('admin.projects.assign-cd', $project), [
-            'cd_user_id' => $cd->id,
-        ]);
-
-        $response->assertRedirect();
-        $this->assertDatabaseHas('cd_project_assignments', [
-            'casting_project_id' => $project->id,
-            'cd_user_id' => $cd->id,
-        ]);
+        $this->assertTrue($project->milikClient($client));
+        $this->assertFalse($project->milikClient($lain));
+        $this->assertFalse($project->milikClient($admin));
+        $this->assertSame([$project->id], CastingProject::query()->milikClient($client)->pluck('id')->all());
+        $this->assertSame([], CastingProject::query()->milikClient($lain)->pluck('id')->all());
     }
 
-    public function test_satu_proyek_bisa_punya_multiple_cd_assigned(): void
+    public function test_route_assign_cd_lama_sudah_tidak_ada(): void
     {
-        $admin = User::factory()->create(['role' => 'admin']);
-        $cdA = User::factory()->create(['role' => 'client']);
-        $cdB = User::factory()->create(['role' => 'client']);
-        $project = $this->buatProyek($admin);
-
-        $this->actingAs($admin)->post(route('admin.projects.assign-cd', $project), ['cd_user_id' => $cdA->id]);
-        $this->actingAs($admin)->post(route('admin.projects.assign-cd', $project), ['cd_user_id' => $cdB->id]);
-
-        $this->assertSame(2, $project->cdAssignments()->count());
-    }
-
-    public function test_assign_cd_ditolak_untuk_user_bukan_client(): void
-    {
-        $admin = User::factory()->create(['role' => 'admin']);
-        $bukanCd = User::factory()->create(['role' => 'extras']);
-        $project = $this->buatProyek($admin);
-
-        $this->actingAs($admin)->post(route('admin.projects.assign-cd', $project), [
-            'cd_user_id' => $bukanCd->id,
-        ])->assertSessionHas('error');
-    }
-
-    public function test_assign_cd_duplikat_tidak_bikin_record_ganda(): void
-    {
-        $admin = User::factory()->create(['role' => 'admin']);
-        $cd = User::factory()->create(['role' => 'client']);
-        $project = $this->buatProyek($admin);
-
-        $this->actingAs($admin)->post(route('admin.projects.assign-cd', $project), ['cd_user_id' => $cd->id]);
-        $this->actingAs($admin)->post(route('admin.projects.assign-cd', $project), ['cd_user_id' => $cd->id]);
-
-        $this->assertSame(1, $project->cdAssignments()->count());
+        $this->assertFalse(\Illuminate\Support\Facades\Route::has('admin.projects.assign-cd'));
     }
 
     public function test_cd_yang_diassign_tetap_bisa_akses_invoice(): void
@@ -99,7 +66,7 @@ class CdProjectAssignmentTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $cdA = User::factory()->create(['role' => 'client']);
         $project1 = $this->buatProyek($admin);
-        $project1->cdAssignments()->create(['cd_user_id' => $cdA->id]);
+        $project1->update(['client_id' => $cdA->id]);
 
         $this->actingAs($cdA)->get(route('invoices.show', $project1))->assertOk();
     }
@@ -111,8 +78,8 @@ class CdProjectAssignmentTest extends TestCase
         $cdB = User::factory()->create(['role' => 'client']);
         $project1 = $this->buatProyek($admin);
         $project2 = $this->buatProyek($admin);
-        $project1->cdAssignments()->create(['cd_user_id' => $cdA->id]);
-        $project2->cdAssignments()->create(['cd_user_id' => $cdB->id]);
+        $project1->update(['client_id' => $cdA->id]);
+        $project2->update(['client_id' => $cdB->id]);
 
         $this->actingAs($cdB)->get(route('invoices.show', $project1))->assertStatus(403);
     }
@@ -131,7 +98,7 @@ class CdProjectAssignmentTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $cdA = User::factory()->create(['role' => 'client']);
         $project1 = $this->buatProyek($admin);
-        $project1->cdAssignments()->create(['cd_user_id' => $cdA->id]);
+        $project1->update(['client_id' => $cdA->id]);
         $application = $this->buatApplicationDiajukanKeCd($project1);
 
         // Level 1 (index) tidak tampilkan alias - cek via show (Level 2)
@@ -154,8 +121,8 @@ class CdProjectAssignmentTest extends TestCase
         $cdB = User::factory()->create(['role' => 'client']);
         $project1 = $this->buatProyek($admin);
         $project2 = $this->buatProyek($admin);
-        $project1->cdAssignments()->create(['cd_user_id' => $cdA->id]);
-        $project2->cdAssignments()->create(['cd_user_id' => $cdB->id]);
+        $project1->update(['client_id' => $cdA->id]);
+        $project2->update(['client_id' => $cdB->id]);
         $application = $this->buatApplicationDiajukanKeCd($project1);
 
         // Level 1: cdB hanya lihat proyek miliknya, bukan project1
@@ -170,7 +137,7 @@ class CdProjectAssignmentTest extends TestCase
         $cdA = User::factory()->create(['role' => 'client']);
         $cdB = User::factory()->create(['role' => 'client']);
         $project1 = $this->buatProyek($admin);
-        $project1->cdAssignments()->create(['cd_user_id' => $cdA->id]);
+        $project1->update(['client_id' => $cdA->id]);
         $application = $this->buatApplicationDiajukanKeCd($project1);
 
         $this->actingAs($cdB)->post(route('cd.reviews.review'), [
@@ -223,8 +190,8 @@ class CdProjectAssignmentTest extends TestCase
         $cdB = User::factory()->create(['role' => 'client']);
         $projectA = $this->buatProyek($admin);
         $projectB = $this->buatProyek($admin);
-        $projectA->cdAssignments()->create(['cd_user_id' => $cdA->id]);
-        $projectB->cdAssignments()->create(['cd_user_id' => $cdB->id]);
+        $projectA->update(['client_id' => $cdA->id]);
+        $projectB->update(['client_id' => $cdB->id]);
 
         // Level 1 index berbasis assignment - cdB hanya lihat proyeknya sendiri
         $this->actingAs($cdB)->get(route('cd.reviews.index'))
@@ -237,7 +204,7 @@ class CdProjectAssignmentTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $cd = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
-        $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $project->update(['client_id' => $cd->id]);
 
         // Level 1: hanya nama proyek, tidak ada data extras sama sekali
         $response = $this->actingAs($cd)->get(route('cd.reviews.index'));

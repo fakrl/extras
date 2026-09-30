@@ -43,7 +43,7 @@ class GradeCdKategoriTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $cd = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
-        $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $project->update(['client_id' => $cd->id]);
         $application = $this->buatApplicationDiajukanKeCd($project);
 
         $response = $this->actingAs($cd)->post(route('cd.reviews.review'), [
@@ -65,7 +65,7 @@ class GradeCdKategoriTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $cd = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
-        $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $project->update(['client_id' => $cd->id]);
         $application = $this->buatApplicationDiajukanKeCd($project);
 
         $response = $this->actingAs($cd)->post(route('cd.reviews.review'), [
@@ -81,7 +81,7 @@ class GradeCdKategoriTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $cd = User::factory()->create(['role' => 'client']);
         $project = $this->buatProyek($admin);
-        $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $project->update(['client_id' => $cd->id]);
         $application = $this->buatApplicationDiajukanKeCd($project);
 
         $response = $this->actingAs($cd)->post(route('cd.reviews.review'), [

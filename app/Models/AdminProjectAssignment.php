@@ -48,7 +48,7 @@ class AdminProjectAssignment extends Model
             'completed_at' => now(),
         ]);
 
-        $honorNominal = $this->user->adminProfile?->honor_nominal ?? 0;
+        $honorNominal = $this->user->honor_nominal ?? 0;
 
         return $this->payroll()->create([
             'nominal_pokok' => $honorNominal,

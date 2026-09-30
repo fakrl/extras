@@ -183,7 +183,7 @@ class ProyekKeuanganTest extends TestCase
         $this->assertSame('PT Kopi Nusantara', $p->client_ph);
         $this->assertSame('dibuka', $p->status);
         $this->assertSame('disetujui', $p->client_request_status);
-        $this->assertDatabaseHas('cd_project_assignments', ['casting_project_id' => $p->id, 'cd_user_id' => $client->id]);
+        $this->assertSame($client->id, $p->fresh()->client_id);
         $this->assertDatabaseHas('activity_logs', ['action' => 'CREATE_PROJECT', 'description' => "Proyek 'Iklan Kopi' dibuat oleh Fakhrul (Super Admin)"]);
     }
 

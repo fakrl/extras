@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Models\NotificationLog;
 use App\Models\User;
 use App\Services\WhatsAppService;
 use Illuminate\Bus\Queueable;
@@ -19,15 +18,17 @@ class SendWhatsAppNotification implements ShouldQueue
         public User $user,
         public string $jenis,
         public string $pesan,
+        public ?string $notifikasiId = null,
     ) {}
 
     public function handle(WhatsAppService $whatsapp): void
     {
         try {
             $terkirim = $whatsapp->kirim($this->user->nomor_wa, $this->pesan);
-            NotificationLog::catat($this->user->id, $this->jenis, $terkirim, 'whatsapp');
-        } catch (\Throwable $e) {
-            NotificationLog::catat($this->user->id, $this->jenis, false, 'whatsapp');
+        } catch (\Throwable) {
+            $terkirim = false;
         }
+
+        WhatsAppService::catatStatus($this->notifikasiId, $terkirim);
     }
 }

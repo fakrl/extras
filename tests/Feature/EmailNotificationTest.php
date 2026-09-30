@@ -48,11 +48,7 @@ class EmailNotificationTest extends TestCase
 
         Mail::assertQueued(HasilSeleksiMail::class);
 
-        $this->assertDatabaseHas('notifications_log', [
-            'user_id' => $application->extras->user_id,
-            'jenis' => 'hasil_seleksi',
-            'status' => 'terkirim',
-        ]);
+        $this->assertNotifikasi($application->extras->user_id, 'hasil_seleksi', ['email' => 'terkirim']);
     }
 
     public function test_cd_approve_mengirim_hasil_seleksi_mail(): void
@@ -61,7 +57,7 @@ class EmailNotificationTest extends TestCase
 
         $application = $this->buatAplikasi('diajukan_ke_cd');
         $cd = User::factory()->create(['role' => 'client']);
-        $application->castingProject->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $application->castingProject->update(['client_id' => $cd->id]);
 
         $response = $this->actingAs($cd)->post('/cd/reviews', [
             'application_ids' => [$application->id],
@@ -72,11 +68,7 @@ class EmailNotificationTest extends TestCase
         $response->assertRedirect();
         Mail::assertQueued(HasilSeleksiMail::class);
 
-        $this->assertDatabaseHas('notifications_log', [
-            'user_id' => $application->extras->user_id,
-            'jenis' => 'hasil_seleksi',
-            'status' => 'terkirim',
-        ]);
+        $this->assertNotifikasi($application->extras->user_id, 'hasil_seleksi', ['email' => 'terkirim']);
     }
 
     public function test_ajukan_fee_awal_mengirim_konfirmasi_fee_mail_ke_extras(): void
@@ -93,11 +85,7 @@ class EmailNotificationTest extends TestCase
         $response->assertRedirect();
         Mail::assertQueued(KonfirmasiFeeMail::class);
 
-        $this->assertDatabaseHas('notifications_log', [
-            'user_id' => $application->extras->user_id,
-            'jenis' => 'nego_fee',
-            'status' => 'terkirim',
-        ]);
+        $this->assertNotifikasi($application->extras->user_id, 'nego_fee', ['email' => 'terkirim']);
     }
 
     public function test_counter_fee_dari_extras_mengirim_ke_admin(): void
@@ -119,11 +107,7 @@ class EmailNotificationTest extends TestCase
         $response->assertRedirect();
         Mail::assertQueued(KonfirmasiFeeMail::class);
 
-        $this->assertDatabaseHas('notifications_log', [
-            'user_id' => $application->castingProject->admin_id,
-            'jenis' => 'nego_fee',
-            'status' => 'terkirim',
-        ]);
+        $this->assertNotifikasi($application->castingProject->admin_id, 'nego_fee', ['email' => 'terkirim']);
     }
 
     public function test_generate_kontrak_mengirim_kontrak_siap_ttd_mail_ke_extras_dan_admin(): void
@@ -139,15 +123,7 @@ class EmailNotificationTest extends TestCase
 
         Mail::assertQueued(KontrakSiapTtdMail::class, 2);
 
-        $this->assertDatabaseHas('notifications_log', [
-            'user_id' => $extras->id,
-            'jenis' => 'kontrak_siap_ttd',
-            'status' => 'terkirim',
-        ]);
-        $this->assertDatabaseHas('notifications_log', [
-            'user_id' => $application->castingProject->admin_id,
-            'jenis' => 'kontrak_siap_ttd',
-            'status' => 'terkirim',
-        ]);
+        $this->assertNotifikasi($extras->id, 'kontrak_siap_ttd', ['email' => 'terkirim']);
+        $this->assertNotifikasi($application->castingProject->admin_id, 'kontrak_siap_ttd', ['email' => 'terkirim']);
     }
 }

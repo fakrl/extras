@@ -104,7 +104,7 @@ class BhProfilEditorialTest extends TestCase
 
     public function test_gallery_berisi_pakai_route_sesuai_mode(): void
     {
-        $this->profile->photos()->create(['urutan' => 1, 'path' => 'extras/foto-tambahan/x.jpg']);
+        $this->profile->forceFill(['foto_tambahan' => [1 => 'extras/foto-tambahan/x.jpg']])->save();
         $token = $this->profile->fresh()->share_token;
 
         $this->get(route('public.extras.profile', $token))

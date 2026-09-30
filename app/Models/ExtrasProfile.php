@@ -76,6 +76,7 @@ class ExtrasProfile extends Model
             // Extras & Admin, tidak pernah dikirim ke view Casting Director.
             'tautan_tambahan' => 'array',
             'riwayat_pengalaman' => 'array',
+            'foto_tambahan' => 'array',
         ];
     }
 
@@ -180,12 +181,13 @@ class ExtrasProfile extends Model
     }
 
     /**
-     * RF-06 (perluasan): sampai 4 foto tambahan (foto model/visual sisi lain),
-     * di luar foto profil utama. Diurutkan berdasarkan slot (1-4).
+     * RF-06/BM.1: sampai 4 foto tambahan di luar foto utama, kolom json `foto_tambahan`
+     * {slot: path}. Balikan: slot (1-4) => path, urut slot.
      */
-    public function photos(): HasMany
+    public function fotoTambahan(): Collection
     {
-        return $this->hasMany(ExtrasPhoto::class)->orderBy('urutan');
+        return collect($this->foto_tambahan ?? [])->mapWithKeys(fn ($path, $slot) => [(int) $slot => $path])
+            ->filter(fn ($path, $slot) => $path && $slot >= 1 && $slot <= 4)->sortKeys();
     }
 
     /**
@@ -289,17 +291,13 @@ class ExtrasProfile extends Model
     {
         abort_unless($slot >= 1 && $slot <= 4, 422, 'Slot foto tidak valid.');
 
-        $existing = $this->photos()->where('urutan', $slot)->first();
-
-        if ($existing) {
-            Storage::disk('local')->delete($existing->path);
+        $foto = $this->fotoTambahan();
+        if ($foto->has($slot)) {
+            Storage::disk('local')->delete($foto[$slot]);
         }
 
-        $path = $file->store('extras/'.$this->id.'/foto-tambahan', 'local');
-
-        // updateOrCreate supaya aman kalau slot belum ada barisnya sama sekali
-        // (belum pernah diisi) maupun sudah ada (replace).
-        $this->photos()->updateOrCreate(['urutan' => $slot], ['path' => $path]);
+        $foto[$slot] = $file->store('extras/'.$this->id.'/foto-tambahan', 'local');
+        $this->forceFill(['foto_tambahan' => $foto->sortKeys()->all()])->save();
     }
 
     /**
@@ -308,11 +306,10 @@ class ExtrasProfile extends Model
      */
     public function hapusFotoTambahan(int $slot): void
     {
-        $existing = $this->photos()->where('urutan', $slot)->first();
-
-        if ($existing) {
-            Storage::disk('local')->delete($existing->path);
-            $existing->delete();
+        $foto = $this->fotoTambahan();
+        if ($foto->has($slot)) {
+            Storage::disk('local')->delete($foto[$slot]);
+            $this->forceFill(['foto_tambahan' => $foto->forget($slot)->all() ?: null])->save();
         }
     }
 

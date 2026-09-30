@@ -185,7 +185,7 @@ class FeeNegotiationFlowTest extends TestCase
         $admin = $application->castingProject->admin;
         $extras = $application->extras->user;
         $cd = User::factory()->create(['role' => 'client']);
-        $application->castingProject->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $application->castingProject->update(['client_id' => $cd->id]);
 
         $this->actingAs($admin)->post(route('admin.negotiations.ajukan', $application), ['nominal' => 200000]);
         $this->actingAs($extras)->post(route('extras.negotiations.terima', $application), ['nominal' => 200000]);
@@ -254,6 +254,8 @@ class FeeNegotiationFlowTest extends TestCase
         CdReview::create(['cd_id' => $cdA->id, 'project_application_id' => $app->id, 'keputusan' => 'approve']);
         CdReview::create(['cd_id' => $cdB->id, 'project_application_id' => $app->id, 'keputusan' => 'reject']);
 
+        $this->actingAs($cdA)->get(route('cd.riwayat.export.xlsx', $project))->assertForbidden();
+        $project->update(['client_id' => $cdA->id]);
         $this->actingAs($cdA)->get(route('cd.riwayat.export.xlsx', $project))->assertOk();
         Excel::assertDownloaded('riwayat-proyek-export.xlsx');
 
@@ -282,7 +284,7 @@ class FeeNegotiationFlowTest extends TestCase
 
         // Level 1 sekarang berbasis CD assignment, bukan CdReview.
         // CD hanya di-assign ke projectA - projectB tidak muncul.
-        $projectA->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $projectA->update(['client_id' => $cd->id]);
 
         $response = $this->actingAs($cd)->get(route('cd.reviews.index'));
         $response->assertOk()
@@ -301,7 +303,7 @@ class FeeNegotiationFlowTest extends TestCase
         ]);
 
         // show() sekarang cek CD assignment
-        $project->cdAssignments()->create(['cd_user_id' => $cd->id]);
+        $project->update(['client_id' => $cd->id]);
 
         $extrasUser = User::factory()->create(['role' => 'extras', 'username' => 'panggilan_user']);
         $extras = ExtrasProfile::create([
@@ -343,6 +345,8 @@ class FeeNegotiationFlowTest extends TestCase
 
         CdReview::create(['cd_id' => $cd->id, 'project_application_id' => $app->id, 'keputusan' => 'approve']);
 
+        $this->actingAs($cd)->get(route('cd.riwayat.export.pdf', $project))->assertForbidden();
+        $project->update(['client_id' => $cd->id]);
         $response = $this->actingAs($cd)->get(route('cd.riwayat.export.pdf', $project));
         $response->assertOk();
         $this->assertStringContainsString('application/pdf', $response->headers->get('Content-Type'));

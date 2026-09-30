@@ -68,7 +68,7 @@ class ProjectAttachmentTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $client = User::factory()->create(['role' => 'client']);
         $project = CastingProject::factory()->create();
-        $project->cdAssignments()->create(['cd_user_id' => $client->id]);
+        $project->update(['client_id' => $client->id]);
         $file = $this->lampiran($project, $admin);
 
         $this->actingAs($client)->get(route('project-attachments.download', $file))
@@ -92,7 +92,7 @@ class ProjectAttachmentTest extends TestCase
         $file = $this->lampiran($project, User::factory()->create(['role' => 'admin']));
 
         $lain = User::factory()->create(['role' => 'client']);
-        CastingProject::factory()->create()->cdAssignments()->create(['cd_user_id' => $lain->id]);
+        CastingProject::factory()->create()->update(['client_id' => $lain->id]);
 
         foreach ([$lain, User::factory()->create(['role' => 'extras']), User::factory()->create(['role' => 'korlap'])] as $u) {
             $this->actingAs($u)->get(route('project-attachments.download', $file))->assertForbidden();

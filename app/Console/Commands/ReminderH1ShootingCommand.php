@@ -4,14 +4,12 @@ namespace App\Console\Commands;
 
 use App\Models\CastingProject;
 use App\Models\ProjectApplication;
-use App\Services\WhatsAppService;
 use Illuminate\Console\Command;
 
 /**
- * RF-37: reminder WA H-1 shooting, jalan harian lewat scheduler
- * (routes/console.php). Cuma kirim ke Extras yang aplikasinya sudah Deal
- * ke atas (bukan yang masih nego/ditolak/dibatalkan), sama seperti daftar
- * status "aktif" yang dipakai deteksi bentrok jadwal di tempat lain.
+ * RF-37: reminder H-1 shooting (in-app + WA), jalan harian lewat scheduler
+ * (routes/console.php). Cuma ke Extras yang aplikasinya Deal ke atas.
+ * BM.1: anti-dobel per Extras + proyek + tanggal lewat kunci notifikasi.
  */
 class ReminderH1ShootingCommand extends Command
 {
@@ -19,7 +17,7 @@ class ReminderH1ShootingCommand extends Command
 
     protected $description = 'Kirim WA reminder H-1 ke Extras yang jadwal shooting-nya besok';
 
-    public function handle(WhatsAppService $whatsapp): int
+    public function handle(): int
     {
         $besok = now()->addDay()->toDateString();
 
@@ -32,8 +30,14 @@ class ReminderH1ShootingCommand extends Command
         foreach ($projects as $project) {
             foreach ($project->applications as $application) {
                 $user = $application->extras->user;
-                $pesan = "Halo {$user->name}, pengingat: kamu dijadwalkan shooting BESOK untuk proyek {$project->nama_produksi}. Jangan lupa persiapannya ya.";
-                $whatsapp->kirimNotifikasi($user, 'reminder_h1', $pesan);
+                $user->kabari(
+                    'Shooting Besok',
+                    "Pengingat: kamu dijadwalkan shooting besok untuk proyek {$project->nama_produksi}.",
+                    route('extras.dashboard').'#pendaftaran-'.$application->id,
+                    jenis: 'reminder_h1',
+                    wa: "Halo {$user->name}, pengingat: kamu dijadwalkan shooting BESOK untuk proyek {$project->nama_produksi}. Jangan lupa persiapannya ya.",
+                    kunci: "reminder_h1:{$project->id}:{$besok}",
+                );
             }
         }
 

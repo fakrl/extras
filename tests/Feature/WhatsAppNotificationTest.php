@@ -7,6 +7,7 @@ use App\Models\CastingProject;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use App\Models\User;
+use App\Notifications\InAppNotification;
 use App\Services\WhatsAppService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -76,12 +77,7 @@ class WhatsAppNotificationTest extends TestCase
         $response = $this->actingAs($extrasUser)->post("/extras/lowongan/{$project->id}/daftar");
 
         $response->assertRedirect();
-        $this->assertDatabaseHas('notifications_log', [
-            'user_id' => $extrasUser->id,
-            'jenis' => 'konfirmasi_apply',
-            'channel' => 'whatsapp',
-            'status' => 'terkirim',
-        ]);
+        $this->assertNotifikasi($extrasUser->id, 'konfirmasi_apply', ['wa' => 'terkirim']);
     }
 
     public function test_hasil_seleksi_mencatat_log_wa_selain_email(): void
@@ -92,18 +88,8 @@ class WhatsAppNotificationTest extends TestCase
         $application = $this->buatAplikasi('diajukan');
         $application->tolakDini('Tidak sesuai kriteria');
 
-        $this->assertDatabaseHas('notifications_log', [
-            'user_id' => $application->extras->user_id,
-            'jenis' => 'hasil_seleksi',
-            'channel' => 'whatsapp',
-            'status' => 'terkirim',
-        ]);
-        $this->assertDatabaseHas('notifications_log', [
-            'user_id' => $application->extras->user_id,
-            'jenis' => 'hasil_seleksi',
-            'channel' => 'email',
-            'status' => 'terkirim',
-        ]);
+        $this->assertNotifikasi($application->extras->user_id, 'hasil_seleksi', ['wa' => 'terkirim']);
+        $this->assertNotifikasi($application->extras->user_id, 'hasil_seleksi', ['email' => 'terkirim']);
     }
 
     public function test_kontrak_siap_ttd_mencatat_log_wa_ke_extras_dan_admin(): void
@@ -118,16 +104,8 @@ class WhatsAppNotificationTest extends TestCase
         $this->actingAs($extras)->post(route('extras.kontrak.simpan-ktp', $application), ['nik' => '3201234567890099'])
             ->assertRedirect();
 
-        $this->assertDatabaseHas('notifications_log', [
-            'user_id' => $extras->id,
-            'jenis' => 'kontrak_siap_ttd',
-            'channel' => 'whatsapp',
-        ]);
-        $this->assertDatabaseHas('notifications_log', [
-            'user_id' => $application->castingProject->admin_id,
-            'jenis' => 'kontrak_siap_ttd',
-            'channel' => 'whatsapp',
-        ]);
+        $this->assertNotifikasi($extras->id, 'kontrak_siap_ttd', ['wa' => 'terkirim']);
+        $this->assertArrayHasKey('wa', $this->notifikasi($application->castingProject->admin_id, 'kontrak_siap_ttd')[0]);
     }
 
     /**
@@ -144,14 +122,13 @@ class WhatsAppNotificationTest extends TestCase
 
         $user = User::factory()->create(['role' => 'extras', 'nomor_wa' => '628123456789']);
 
-        (new SendWhatsAppNotification($user, 'hasil_seleksi', 'pesan test'))->handle(app(WhatsAppService::class));
+        $notif = new InAppNotification('Hasil Seleksi', 'pesan', null, ['jenis' => 'hasil_seleksi', 'wa' => null]);
+        $notif->id = 'b0000000-0000-4000-8000-000000000001';
+        $user->notify($notif);
 
-        $this->assertDatabaseHas('notifications_log', [
-            'user_id' => $user->id,
-            'jenis' => 'hasil_seleksi',
-            'channel' => 'whatsapp',
-            'status' => 'gagal',
-        ]);
+        (new SendWhatsAppNotification($user, 'hasil_seleksi', 'pesan test', $notif->id))->handle(app(WhatsAppService::class));
+
+        $this->assertNotifikasi($user->id, 'hasil_seleksi', ['wa' => 'gagal']);
     }
 
     public function test_nomor_wa_null_tidak_mengirim_dan_mencatat_gagal(): void
@@ -161,12 +138,7 @@ class WhatsAppNotificationTest extends TestCase
         $application = $this->buatAplikasi('diajukan', null);
         $application->kirimKonfirmasiApply();
 
-        $this->assertDatabaseHas('notifications_log', [
-            'user_id' => $application->extras->user_id,
-            'jenis' => 'konfirmasi_apply',
-            'channel' => 'whatsapp',
-            'status' => 'gagal',
-        ]);
+        $this->assertNotifikasi($application->extras->user_id, 'konfirmasi_apply', ['wa' => 'gagal']);
         Http::assertNothingSent();
     }
 

@@ -88,7 +88,7 @@ class BkJadwalBentrokTest extends TestCase
     {
         $client = User::factory()->create(['role' => 'client']);
         $pa = $this->proyek('Film A', [5]);
-        $pa->cdAssignments()->create(['cd_user_id' => $client->id]);
+        $pa->update(['client_id' => $client->id]);
         $a = $this->daftar($pa, 'diajukan_ke_cd');
         $b = $this->daftar($pb = $this->proyek('Iklan B', [5]), 'nego_fee');
 
@@ -183,7 +183,7 @@ class BkJadwalBentrokTest extends TestCase
     {
         $client = User::factory()->create(['role' => 'client']);
         $pa = $this->proyek('Film A', [3]);
-        $pa->cdAssignments()->create(['cd_user_id' => $client->id]);
+        $pa->update(['client_id' => $client->id]);
         $this->daftar($pa, 'lolos');
         $b = $this->daftar($this->proyek('Iklan B', [3, 7]), 'nego_fee');
 

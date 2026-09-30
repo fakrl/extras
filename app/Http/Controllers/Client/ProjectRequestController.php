@@ -68,7 +68,6 @@ class ProjectRequestController extends Controller
         ]);
 
         // Otomatis assign client ini ke proyek yang diajukan
-        $project->cdAssignments()->create(['cd_user_id' => $request->user()->id]);
 
         ActivityLog::record(
             'SUBMIT_PROJECT_REQUEST',

@@ -39,7 +39,7 @@ class BeGetMurniBacaTest extends TestCase
             'admin_id' => $this->admin->id, 'nama_produksi' => 'Proyek BE', 'client_ph' => 'PH',
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
-        $this->project->cdAssignments()->create(['cd_user_id' => $this->client->id]);
+        $this->project->update(['client_id' => $this->client->id]);
     }
 
     private function aplikasi(string $status = 'diajukan_ke_cd', ?string $nik = '3201010101010001'): ProjectApplication
@@ -58,7 +58,7 @@ class BeGetMurniBacaTest extends TestCase
 
     private function hitung(): array
     {
-        return collect(['contracts', 'payments', 'invoices', 'notifications', 'notifications_log', 'jobs'])
+        return collect(['contracts', 'payments', 'invoices', 'notifications', 'jobs'])
             ->mapWithKeys(fn ($t) => [$t => DB::table($t)->count()])->all();
     }
 
@@ -102,7 +102,7 @@ class BeGetMurniBacaTest extends TestCase
         $this->assertNull($this->project->invoices()->sole()->nominal);
         Mail::assertQueued(KontrakSiapTtdMail::class, 2);
         Queue::assertPushed(SendWhatsAppNotification::class, 3);
-        $this->assertSame(2, DB::table('notifications_log')->where('jenis', 'kontrak_siap_ttd')->where('channel', 'email')->count());
+        $this->assertSame(2, DB::table('notifications')->where('data->jenis', 'kontrak_siap_ttd')->where('data->email', 'terkirim')->count());
         $this->assertSame(2, DB::table('notifications')->where('data', 'like', '%Kontrak Siap%')->count());
 
         $sebelum = $this->hitung();
@@ -157,7 +157,7 @@ class BeGetMurniBacaTest extends TestCase
         $migration->up();
 
         $this->assertSame($pertama, $this->hitung());
-        $this->assertSame(['contracts' => 2, 'payments' => 3, 'invoices' => 1, 'notifications' => 0, 'notifications_log' => 0, 'jobs' => 0], $pertama);
+        $this->assertSame(['contracts' => 2, 'payments' => 3, 'invoices' => 1, 'notifications' => 0, 'jobs' => 0], $pertama);
         Storage::disk('local')->assertExists($lengkap->fresh()->contract->pdf_path);
         $this->assertNull($tanpaNik->fresh()->contract);
         Mail::assertNothingQueued();

@@ -82,7 +82,7 @@ class BaKartuExtrasTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $client = User::factory()->create(['role' => 'client']);
         $project = CastingProject::factory()->create(['admin_id' => $admin->id]);
-        $project->cdAssignments()->create(['cd_user_id' => $client->id]);
+        $project->update(['client_id' => $client->id]);
         $t = $this->tags();
         $app = $this->lamaran($project, 'bagas_22', [$t[0], $t[1]], 'diajukan_ke_cd');
         $app->castingProjectClass->categories()->sync($t);
@@ -100,7 +100,7 @@ class BaKartuExtrasTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $client = User::factory()->create(['role' => 'client']);
         $project = CastingProject::factory()->create(['admin_id' => $admin->id]);
-        $project->cdAssignments()->create(['cd_user_id' => $client->id]);
+        $project->update(['client_id' => $client->id]);
         $app = $this->lamaran($project, 'rahasia_22', [], 'diajukan_ke_cd');
         $email = $app->extras->user->email;
 
