@@ -1674,9 +1674,9 @@ Konvensi baru: field **wajib** diberi tanda bintang merah `*` setelah label (`<s
 
 | Item | Bukti | QA |
 |---|---|---|
-| BQ.1 satu definisi "perlu ditransfer" | | [ ] |
-| BQ.2 Reset filter mengosongkan semua | | [ ] |
-| BQ.3 akun Google tanpa password | | [ ] |
+| BQ.1 satu definisi "perlu ditransfer" | `45bfca6` — scope `Payment::perluDitransfer()` (app `kontrak_ditandatangani` + `belum_dibayar`) dipakai kartu Admin/Monitoring (`AdminRingkasan::untuk`), tahapan Selesai, chart dashboard Admin, filter `?bayar=extras`; belum TTD → badge "Menunggu kontrak". `--filter BqPerluDitransferTest` (demo: 6 di semua tempat). Dashboard SA tidak punya angka honor Extras (tidak ditambah, freeze) | [ ] |
+| BQ.2 Reset filter mengosongkan semua | `0cf266d` — `FilterAktif::reset()` cuma pertahankan `per`; "Hapus semua" chip = filter saja (q tetap). Keduanya reload penuh (bar tag/status Lineup di luar area live). `--filter BiFilterPanelTest` | [ ] |
+| BQ.3 akun Google tanpa password | `5d70e3c` — pesan "Akun ini login pakai Google" hanya kalau akun ada & password null; lupa password bikin password pertama; putus Google ditolak. `--filter BqAkunGoogleTanpaPasswordTest`. SQLite & MySQL 579 passed | [ ] |
 
 ---
 
