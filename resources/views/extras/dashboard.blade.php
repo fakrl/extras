@@ -7,22 +7,23 @@
     $sudahAbsenHariIni = $riwayatAbsensi->filter(fn ($a) => $a->eventShootingDate?->tanggal->isToday())->pluck('project_application_id');
     $tindakan = collect();
     if (! $extrasProfile?->profilLengkap()) {
-        $tindakan->push(['badge-info', 'Profil belum lengkap', 'Lengkapi foto, usia, gender & tinggi badan', route('extras.profile.edit'), 'Lengkapi', null]);
+        $tindakan->push(['badge' => 'badge-info', 'label' => 'Profil belum lengkap', 'teks' => 'Lengkapi foto, usia, gender & tinggi badan', 'url' => route('extras.profile.edit'), 'tombol' => 'Lengkapi']);
     }
-    foreach ($pendaftaranSaya as $app) {
-        $nama = $app->castingProject->nama_produksi;
+    foreach ($pendaftaranAktif as $app) {
+        $nama = e($app->castingProject->nama_produksi);
+        $lompat = ['app' => $app->id];
         if ($app->status_partisipasi === 'nego_fee') {
-            $tindakan->push(['badge-pending', 'Nego fee', $nama, route('extras.negotiations.show', $app), 'Lanjut Nego Fee', null]);
+            $tindakan->push(['badge' => 'badge-pending', 'label' => 'Nego fee', 'teks' => "Negosiasi fee <em>{$nama}</em> menunggu balasanmu"] + $lompat);
         } elseif ($app->status_partisipasi === 'lolos' && ! $extrasProfile->nik_hash) {
-            $tindakan->push(['badge-pending', 'Lengkapi KTP', $nama.' · wajib sebelum TTD kontrak', route('extras.kontrak.lengkapi-ktp', $app), 'Lengkapi KTP', null]);
+            $tindakan->push(['badge' => 'badge-pending', 'label' => 'Lengkapi KTP', 'teks' => "Lengkapi KTP untuk <em>{$nama}</em>, wajib sebelum TTD kontrak"] + $lompat);
         } elseif ($app->status_partisipasi === 'lolos') {
-            $tindakan->push(['badge-aktif', 'Kontrak siap TTD', $nama, route('contracts.show', $app), 'Tanda Tangan', null]);
+            $tindakan->push(['badge' => 'badge-aktif', 'label' => 'Kontrak siap TTD', 'teks' => "Kontrak <em>{$nama}</em> siap kamu tanda tangani"] + $lompat);
         }
         if ($app->payment?->status === 'ditransfer') {
-            $tindakan->push(['badge-info', 'Konfirmasi bayar', $nama.' · honor sudah ditransfer', route('payments.show', $app), 'Konfirmasi', null]);
+            $tindakan->push(['badge' => 'badge-info', 'label' => 'Konfirmasi bayar', 'teks' => "Honor <em>{$nama}</em> sudah ditransfer, konfirmasi penerimaannya"] + $lompat);
         }
         if (in_array($app->status_partisipasi, \App\Models\ProjectApplication::STATUS_LOLOS_KE_ATAS) && $app->castingProject->shootingDates->contains(fn ($d) => $d->tanggal->isToday()) && ! $sudahAbsenHariIni->contains($app->id)) {
-            $tindakan->push(['badge-tolak', 'Absen hari ini', $nama, null, 'Absen Selfie', 'dialog-absen-'.$app->id]);
+            $tindakan->push(['badge' => 'badge-tolak', 'label' => 'Absen hari ini', 'teks' => $nama, 'tombol' => 'Absen Selfie', 'dialog' => 'dialog-absen-'.$app->id]);
         }
     }
 @endphp
@@ -39,63 +40,31 @@
             <i class="ti ti-clipboard-list"></i> Perlu Tindakan
             <span class="badge badge-pending" style="margin-left: 8px;">{{ $tindakan->count() }}</span>
         </div>
-        @foreach ($tindakan as [$badge, $label, $sub, $url, $tombol, $dialog])
+        @foreach ($tindakan as $t)
             <div class="dash-row">
                 <div style="min-width: 0; flex: 1;">
-                    <span class="badge {{ $badge }}">{{ $label }}</span>
-                    <div class="dash-sub" style="margin-top: 4px;">{{ $sub }}</div>
+                    <span class="badge {{ $t['badge'] }}">{{ $t['label'] }}</span>
+                    @isset($t['app'])
+                        <a href="#pendaftaran-{{ $t['app'] }}" class="dash-sub" style="display: block; margin-top: 4px; color: inherit;">{!! $t['teks'] !!} <span style="color: var(--accent);">&darr;</span></a>
+                    @else
+                        <div class="dash-sub" style="margin-top: 4px;">{!! $t['teks'] !!}</div>
+                    @endisset
                 </div>
-                @if ($dialog)
-                    <button type="button" class="btn btn-sm btn-brand" onclick="document.getElementById('{{ $dialog }}').showModal()"><i class="ti ti-camera"></i> {{ $tombol }}</button>
-                @else
-                    <a href="{{ $url }}" class="btn btn-sm btn-brand">{{ $tombol }}</a>
-                @endif
+                @isset($t['dialog'])
+                    <button type="button" class="btn btn-sm btn-brand" onclick="document.getElementById('{{ $t['dialog'] }}').showModal()"><i class="ti ti-camera"></i> {{ $t['tombol'] }}</button>
+                @elseif (isset($t['url']))
+                    <a href="{{ $t['url'] }}" class="btn btn-sm btn-brand">{{ $t['tombol'] }}</a>
+                @endisset
             </div>
         @endforeach
     </div>
 @endif
 
-<div class="card" data-dash="casting-call">
-    <div class="card-header-row" style="margin-bottom: 4px;">
-        <div class="card-title" style="margin: 0;"><i class="ti ti-microphone"></i> Casting Call Terbuka</div>
-        <a href="{{ route('extras.projects.index') }}" style="font-size: 12.5px; color: var(--accent);">Lihat semua &rarr;</a>
-    </div>
-    @forelse ($castingCallTerbuka as $project)
-        @php $peran = $project->peranCocok; @endphp
-        <div class="dash-row">
-            <div style="min-width: 0; flex: 1;">
-                <div style="font-weight: 600;">
-                    {{ $project->nama_produksi }}
-                    @if ($project->isUrgent()) <span class="badge badge-tolak">Dadakan</span> @endif
-                </div>
-                @if ($peran)
-                    <div style="margin-top: 4px; font-size: 13px;">
-                        {{ $peran->nama_kelas }}
-                        @if ($project->persenCocok !== null) <span class="badge {{ $project->persenCocok >= 50 ? 'badge-aktif' : 'badge-netral' }}">{{ $project->persenCocok }}% cocok</span> @endif
-                        @if ($project->classes->count() > 1) <span class="dash-sub">+{{ $project->classes->count() - 1 }} peran lain</span> @endif
-                    </div>
-                @endif
-                <div class="dash-sub" style="margin-top: 2px;">
-                    @if ($peran)
-                        {{ $peran->sisaKuota() === 0 ? 'Penuh' : 'Sisa '.$peran->sisaKuota().' dari '.$peran->kuota_kelas }}
-                    @else
-                        Kuota {{ $project->kuota }}
-                    @endif
-                    · Deadline {{ $project->deadline->translatedFormat('d M Y') }}
-                </div>
-            </div>
-            <a href="{{ route('extras.projects.show', $project) }}" class="btn btn-sm btn-brand">Daftar</a>
-        </div>
-    @empty
-        <div class="dash-sub" style="text-align: center; padding: 12px 0;">Belum ada lowongan terbuka. Nanti kami kabari kalau ada yang baru.</div>
-    @endforelse
-</div>
-
 <section data-dash="pendaftaran">
 <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Pendaftaran Saya</div>
 
-@forelse ($pendaftaranSaya as $app)
-    <div class="card" style="margin-bottom: 14px;">
+@forelse ($pendaftaranAktif as $app)
+    <div class="card" id="pendaftaran-{{ $app->id }}" style="margin-bottom: 14px; scroll-margin-top: 80px;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;">
             <div>
                 <div style="font-size: 14.5px; font-weight: 600;">{{ $app->castingProject->nama_produksi }}</div>
@@ -103,8 +72,12 @@
             </div>
             @if ($app->status_partisipasi === 'nego_fee')
                 <a href="{{ route('extras.negotiations.show', $app) }}" class="btn btn-brand">Lanjut Nego Fee</a>
+            @elseif ($app->status_partisipasi === 'lolos' && ! $extrasProfile->nik_hash)
+                <a href="{{ route('extras.kontrak.lengkapi-ktp', $app) }}" class="btn btn-brand">Lengkapi KTP</a>
             @elseif ($app->status_partisipasi === 'lolos')
-                <a href="{{ route('contracts.show', $app) }}" class="btn btn-brand">Kontrak</a>
+                <a href="{{ route('contracts.show', $app) }}" class="btn btn-brand">Tanda Tangan Kontrak</a>
+            @elseif ($app->payment?->status === 'ditransfer')
+                <a href="{{ route('payments.show', $app) }}" class="btn btn-brand">Konfirmasi Bayar</a>
             @elseif (in_array($app->status_partisipasi, ['kontrak_ditandatangani', 'selesai_produksi']))
                 <a href="{{ route('payments.show', $app) }}" class="btn btn-brand">Pembayaran</a>
             @endif
@@ -225,6 +198,7 @@
         @endif
     </div>
 @empty
+    @if ($riwayatPendaftaran->isEmpty())
     <div class="card" style="padding: 20px 0 24px;">
         <div style="font-size: 14px; font-weight: 600; margin-bottom: 16px;">Cara Kerja buat Calon Extras</div>
         <div class="step-bar-wrap">
@@ -244,8 +218,64 @@
             Belum ada pendaftaran. <a href="{{ route('extras.projects.index') }}" style="color: var(--accent);">Lihat lowongan casting</a> yang tersedia.
         </p>
     </div>
+    @endif
 @endforelse
+
+@if ($riwayatPendaftaran->isNotEmpty())
+    <details class="card" data-dash="riwayat" style="margin-bottom: 14px;">
+        <summary style="cursor: pointer; font-size: 13.5px; font-weight: 600;">Riwayat ({{ $riwayatPendaftaran->count() }}) &#9662;</summary>
+        @foreach ($riwayatPendaftaran as $app)
+            <div class="dash-row" id="pendaftaran-{{ $app->id }}">
+                <div style="min-width: 0; flex: 1;">
+                    <div style="font-weight: 600;">{{ $app->castingProject->nama_produksi }}</div>
+                    <x-status-badge :model="$app" style="margin-top: 4px; display: inline-block;" />
+                </div>
+                @if ($app->status_partisipasi === 'selesai_produksi')
+                    <a href="{{ route('payments.show', $app) }}" style="font-size: 12.5px; color: var(--accent);">Pembayaran &rarr;</a>
+                @else
+                    <a href="{{ route('extras.projects.show', $app->castingProject) }}" style="font-size: 12.5px; color: var(--accent);">Lihat proyek &rarr;</a>
+                @endif
+            </div>
+        @endforeach
+    </details>
+@endif
 </section>
+
+<div class="card" data-dash="casting-call">
+    <div class="card-header-row" style="margin-bottom: 4px;">
+        <div class="card-title" style="margin: 0;"><i class="ti ti-microphone"></i> Casting Call Terbuka</div>
+        <a href="{{ route('extras.projects.index') }}" style="font-size: 12.5px; color: var(--accent);">Lihat semua &rarr;</a>
+    </div>
+    @forelse ($castingCallTerbuka as $project)
+        @php $peran = $project->peranCocok; @endphp
+        <div class="dash-row">
+            <div style="min-width: 0; flex: 1;">
+                <div style="font-weight: 600;">
+                    {{ $project->nama_produksi }}
+                    @if ($project->isUrgent()) <span class="badge badge-tolak">Dadakan</span> @endif
+                </div>
+                @if ($peran)
+                    <div style="margin-top: 4px; font-size: 13px;">
+                        {{ $peran->nama_kelas }}
+                        @if ($project->persenCocok !== null) <span class="badge {{ $project->persenCocok >= 50 ? 'badge-aktif' : 'badge-netral' }}">{{ $project->persenCocok }}% cocok</span> @endif
+                        @if ($project->classes->count() > 1) <span class="dash-sub">+{{ $project->classes->count() - 1 }} peran lain</span> @endif
+                    </div>
+                @endif
+                <div class="dash-sub" style="margin-top: 2px;">
+                    @if ($peran)
+                        {{ $peran->sisaKuota() === 0 ? 'Penuh' : 'Sisa '.$peran->sisaKuota().' dari '.$peran->kuota_kelas }}
+                    @else
+                        Kuota {{ $project->kuota }}
+                    @endif
+                    · Deadline {{ $project->deadline->translatedFormat('d M Y') }}
+                </div>
+            </div>
+            <a href="{{ route('extras.projects.show', $project) }}" class="btn btn-sm btn-brand">Daftar</a>
+        </div>
+    @empty
+        <div class="dash-sub" style="text-align: center; padding: 12px 0;">Belum ada lowongan terbuka. Nanti kami kabari kalau ada yang baru.</div>
+    @endforelse
+</div>
 
 <div class="card" data-dash="status-talenta">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
