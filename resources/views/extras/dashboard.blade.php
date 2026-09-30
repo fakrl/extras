@@ -12,6 +12,9 @@
     foreach ($pendaftaranAktif as $app) {
         $nama = e($app->castingProject->nama_produksi);
         $lompat = ['app' => $app->id];
+        foreach ($bentrokPer[$app->id]->filter->isPasti() as $lawan) {
+            $tindakan->push(['badge' => 'badge-tolak', 'label' => 'Jadwal bentrok', 'teks' => 'Jadwal bentrok: <em>'.e($lawan->castingProject->nama_produksi)."</em> sudah pasti, <em>{$nama}</em> tanggal sama. Batalkan <em>{$nama}</em>?"] + $lompat);
+        }
         if ($app->status_partisipasi === 'nego_fee') {
             $tindakan->push(['badge' => 'badge-pending', 'label' => 'Nego fee', 'teks' => "Negosiasi fee <em>{$nama}</em> menunggu balasanmu"] + $lompat);
         } elseif ($app->status_partisipasi === 'lolos' && ! $extrasProfile->nik_hash) {
@@ -82,6 +85,33 @@
                 <a href="{{ route('payments.show', $app) }}" class="btn btn-brand">Pembayaran</a>
             @endif
         </div>
+
+        @php $bentrokPasti = $bentrokPer[$app->id]->filter->isPasti(); @endphp
+        @if ($bentrokPer[$app->id]->isNotEmpty())
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: -6px 0 12px;">
+                @foreach ($bentrokPer[$app->id] as $lawan)
+                    <span class="badge badge-tolak">Bentrok jadwal dengan {{ $lawan->castingProject->nama_produksi }}</span>
+                @endforeach
+                @if ($bentrokPasti->isNotEmpty())
+                    <button type="button" class="btn btn-sm btn-danger-outline" onclick="document.getElementById('dialog-batal-bentrok-{{ $app->id }}').showModal()">Batalkan {{ $app->castingProject->nama_produksi }}</button>
+                @endif
+            </div>
+            @if ($bentrokPasti->isNotEmpty())
+                <dialog id="dialog-batal-bentrok-{{ $app->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 380px; width: 90%;">
+                    <form method="POST" action="{{ route('extras.negotiations.batalkan', $app) }}" style="padding: 18px;">
+                        @csrf
+                        <input type="hidden" name="alasan" value="Bentrok jadwal">
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Batalkan {{ $app->castingProject->nama_produksi }}?</div>
+                        <p style="font-size: 13px; margin: 0 0 8px; line-height: 1.5;">Jadwalnya bentrok dengan {{ $bentrokPasti->map(fn ($b) => $b->castingProject->nama_produksi)->join(', ') }} yang sudah pasti. Alasan: Bentrok jadwal.</p>
+                        <p style="font-size: 13px; margin: 0 0 14px; line-height: 1.5; font-weight: 600; color: var(--danger, #d9534f);">Pembatalan ini dihitung sebagai batal mendadak.</p>
+                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                            <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
+                            <button type="submit" class="btn btn-sm btn-danger-outline">Ya, batalkan</button>
+                        </div>
+                    </form>
+                </dialog>
+            @endif
+        @endif
 
         @include('partials.application-progress', ['app' => $app])
 
@@ -223,7 +253,7 @@
 
 @if ($riwayatPendaftaran->isNotEmpty())
     <details class="card" data-dash="riwayat" style="margin-bottom: 14px;">
-        <summary style="cursor: pointer; font-size: 13.5px; font-weight: 600;">Riwayat ({{ $riwayatPendaftaran->count() }}) &#9662;</summary>
+        <summary style="list-style: none; cursor: pointer; font-size: 13.5px; font-weight: 600;">Riwayat ({{ $riwayatPendaftaran->count() }}) &#9662;</summary>
         @foreach ($riwayatPendaftaran as $app)
             <div class="dash-row" id="pendaftaran-{{ $app->id }}">
                 <div style="min-width: 0; flex: 1;">

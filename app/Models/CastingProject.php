@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Support\Carbon;
 
 // 'share_token' TETAP masuk $fillable, tapi proteksinya bukan dari sini,
 // sama pola dengan ExtrasProfile::foto_profil_path: cuma whitelist teknis,
@@ -91,6 +92,21 @@ class CastingProject extends Model
     public function applications(): HasMany
     {
         return $this->hasMany(ProjectApplication::class);
+    }
+
+    /** BK.4: dipanggil Admin/Client setelah menambah tanggal shooting; cuma tanggal yang baru dicek. */
+    public function kabariBentrokJadwal(iterable $tanggalBaru): void
+    {
+        $tanggal = collect($tanggalBaru)->map(fn ($t) => Carbon::parse($t)->toDateString())->unique()->values();
+        if ($tanggal->isEmpty()) {
+            return;
+        }
+
+        $this->applications()
+            ->whereIn('status_partisipasi', [...ProjectApplication::STATUS_PROSES, ...ProjectApplication::STATUS_PASTI])
+            ->with('extras', 'castingProject.shootingDates')
+            ->get()
+            ->each(fn ($app) => $app->kabariBentrokPasti($tanggal, true));
     }
 
     public function adminAssignments(): HasMany

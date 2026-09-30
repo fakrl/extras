@@ -294,10 +294,14 @@ class CastingProjectController extends Controller
 
         $castingProject->update($updateData);
 
+        $tanggalLama = $castingProject->shootingDates()->pluck('tanggal')->map(fn ($t) => Carbon::parse($t)->toDateString());
         $castingProject->shootingDates()->delete();
         foreach (array_unique($data['tanggal_shooting']) as $tanggal) {
             $castingProject->shootingDates()->create(['tanggal' => $tanggal]);
         }
+        $castingProject->kabariBentrokJadwal(
+            collect($data['tanggal_shooting'])->map(fn ($t) => Carbon::parse($t)->toDateString())->diff($tanggalLama)
+        );
 
         foreach ($data['kelas'] as &$k) {
             if (! empty($k['jam_callsheet']) && empty($k['jam_callingan'])) {

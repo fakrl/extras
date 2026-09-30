@@ -724,7 +724,7 @@
                     <div class="alert-success">{{ session('status') }}</div>
                 @endif
                 @if (session('error'))
-                    <div class="alert-danger">{{ session('error') }}</div>
+                    <div class="alert-danger">{{ session('error') }} @if (session('bentrok_link')) <a href="{{ session('bentrok_link') }}" style="color: inherit; font-weight: 600;">Lihat pendaftaran yang bentrok &rarr;</a> @endif</div>
                 @endif
                 @if ($errors->any())
                     <div class="alert-danger">

@@ -13,6 +13,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -26,6 +29,11 @@ class ProjectApplication extends Model
     const STATUS_AKTIF = ['deal', 'diajukan_ke_cd', 'direview_cd', 'lolos', 'kontrak_ditandatangani'];
 
     const STATUS_LOLOS_KE_ATAS = ['lolos', 'kontrak_ditandatangani', 'selesai_produksi'];
+
+    /** BK.4: bentrok dengan pendaftaran `pasti` memblokir; dengan `proses` cuma peringatan. */
+    const STATUS_PASTI = ['lolos', 'kontrak_ditandatangani'];
+
+    const STATUS_PROSES = ['diajukan', 'direview_admin', 'nego_fee', 'deal', 'diajukan_ke_cd', 'direview_cd'];
 
     const LABELS = [
         'diajukan' => 'Diajukan',
@@ -63,6 +71,71 @@ class ProjectApplication extends Model
     public function badgeClass(): string
     {
         return self::BADGES[$this->status_partisipasi] ?? 'badge-netral';
+    }
+
+    public function isPasti(): bool
+    {
+        return in_array($this->status_partisipasi, self::STATUS_PASTI, true);
+    }
+
+    /** BK.4: tanggal shooting proyek, format Y-m-d. */
+    public function tanggalShooting(): Collection
+    {
+        return $this->castingProject->shootingDates->toBase()->map(fn ($d) => $d->tanggal->toDateString());
+    }
+
+    /** BK.4: dari $apps, yang proses/pasti & beririsan dengan $tanggal; irisannya di relasi `tanggalBentrok`. */
+    public static function saringBentrok(Collection $apps, Collection $tanggal): Collection
+    {
+        return $apps->filter(fn ($a) => in_array($a->status_partisipasi, [...self::STATUS_PROSES, ...self::STATUS_PASTI], true))
+            ->each(fn ($a) => $a->setRelation('tanggalBentrok', $a->tanggalShooting()->intersect($tanggal)->values()))
+            ->filter(fn ($a) => $a->tanggalBentrok->isNotEmpty())
+            ->values();
+    }
+
+    /**
+     * BK.4: bentrok antara pendaftaran ini dan pendaftaran lain yang salah satunya sudah pasti
+     * (jadi lolos / jadwal berubah): flag di dua-duanya, kabari Extras + Admin proyek lain
+     * (+ Admin proyek ini kalau $adminProyekIni). Dikirim setelah commit.
+     */
+    public function kabariBentrokPasti(?Collection $tanggal = null, bool $adminProyekIni = false): Collection
+    {
+        $lain = $this->extras->pendaftaranBentrok($tanggal ?? $this->tanggalShooting(), $this->id)
+            ->filter(fn ($b) => $this->isPasti() || $b->isPasti())
+            ->values();
+
+        if ($lain->isEmpty()) {
+            return $lain;
+        }
+
+        self::whereKey([$this->id, ...$lain->modelKeys()])->update(['bentrok_jadwal_flag' => true]);
+        $this->bentrok_jadwal_flag = true;
+
+        DB::afterCommit(function () use ($lain, $adminProyekIni) {
+            $this->loadMissing('extras.user', 'castingProject.admin');
+            foreach ($lain as $b) {
+                [$pasti, $pilih] = $b->isPasti() ? [$b, $this] : [$this, $b];
+                $namaPasti = $pasti->castingProject->nama_produksi;
+                $namaPilih = $pilih->castingProject->nama_produksi;
+                $tgl = $b->tanggalBentrok->map(fn ($t) => Carbon::parse($t)->translatedFormat('d M Y'))->join(', ');
+
+                $kirim = [[$this->extras->user, 'Jadwal Bentrok', "{$namaPasti} sudah pasti dan tanggalnya sama dengan {$namaPilih} ({$tgl}). Pilih salah satu.", route('extras.dashboard').'#pendaftaran-'.$pilih->id]];
+                foreach (array_filter([$b, $adminProyekIni ? $this : null]) as $app) {
+                    if ($app->castingProject->admin && ($app === $b || $app->castingProject->admin_id !== $b->castingProject->admin_id)) {
+                        $kirim[] = [$app->castingProject->admin, 'Jadwal Bentrok Kandidat', "{$this->extras->user->name}: {$namaPasti} (sudah pasti) bentrok dengan {$namaPilih} tanggal {$tgl}.", route('admin.projects.applicants', $app->casting_project_id)];
+                    }
+                }
+
+                foreach ($kirim as [$user, $judul, $pesan, $url]) {
+                    try {
+                        $user->notify(new InAppNotification($judul, $pesan, $url));
+                    } catch (\Throwable) {
+                    }
+                }
+            }
+        });
+
+        return $lain;
     }
 
     public function getKarakterAttribute(): ?string
@@ -315,8 +388,7 @@ class ProjectApplication extends Model
             throw new \LogicException('Proyek ini belum ada Casting Director yang ditugaskan. Assign CD dulu lewat halaman proyek sebelum mengajukan kandidat.');
         }
 
-        $tanggalProyekIni = $this->castingProject->shootingDates->pluck('tanggal');
-        $adaBentrok = $this->extras->activeShootingDates($this->id)->intersect($tanggalProyekIni)->isNotEmpty();
+        $adaBentrok = $this->extras->pendaftaranBentrok($this->tanggalShooting(), $this->id)->isNotEmpty();
 
         $this->update([
             'status_partisipasi' => 'diajukan_ke_cd',
@@ -341,7 +413,11 @@ class ProjectApplication extends Model
      */
     public function batalkan(string $olehSiapa, string $alasan): Cancellation
     {
-        if (! in_array($this->status_partisipasi, ['deal', 'lolos', 'kontrak_ditandatangani'], true)) {
+        // BK.4: pendaftaran yang masih proses boleh dibatalkan kalau bentrok jadwal.
+        $bolehKarenaBentrok = in_array($this->status_partisipasi, self::STATUS_PROSES, true)
+            && $this->extras->pendaftaranBentrok($this->tanggalShooting(), $this->id)->isNotEmpty();
+
+        if (! in_array($this->status_partisipasi, ['deal', 'lolos', 'kontrak_ditandatangani'], true) && ! $bolehKarenaBentrok) {
             throw new \LogicException('Hanya aplikasi berstatus Deal, Lolos, atau Kontrak Ditandatangani yang bisa dibatalkan.');
         }
 

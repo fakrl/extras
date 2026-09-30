@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\CastingProject;
 use App\Models\CastingProjectClass;
+use App\Models\ProjectApplication;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class CastingProjectController extends Controller
@@ -36,8 +38,10 @@ class CastingProjectController extends Controller
     {
         $castingProject->load(['classes' => fn ($q) => $q->withTerisi()->with('categories:id,nama'), 'shootingDates']);
         $tagSaya = $this->tagSaya($request);
+        $bentrok = $request->user()->extrasProfile?->pendaftaranBentrok($castingProject->shootingDates->pluck('tanggal'))
+            ->where('casting_project_id', '!=', $castingProject->id) ?? collect();
 
-        return view('extras.projects.show', compact('castingProject', 'tagSaya'));
+        return view('extras.projects.show', compact('castingProject', 'tagSaya', 'bentrok'));
     }
 
     private function tagSaya(Request $request): array
@@ -47,8 +51,8 @@ class CastingProjectController extends Controller
 
     /**
      * RF-12/RF-13: Extras mendaftar (bisa paralel ke beberapa proyek).
-     * Sistem mengecek bentrok jadwal dan menampilkan warning non-blocking,
-     * BUKAN memblokir pendaftaran.
+     * BK.4: bentrok dengan pendaftaran pasti (lolos/kontrak) ditolak; dengan yang masih
+     * proses boleh setelah konfirmasi (konfirmasi_bentrok=1), flag di dua-duanya.
      */
     public function apply(Request $request, CastingProject $castingProject): RedirectResponse
     {
@@ -74,14 +78,22 @@ class CastingProjectController extends Controller
             $kelasId = $castingProject->classes()->findOrFail($data['casting_project_class_id'])->id;
         }
 
-        $tanggalProyekIni = $castingProject->shootingDates->pluck('tanggal')
-            ?: $castingProject->shootingDates()->pluck('tanggal');
+        // BK.4: bentrok dengan yang sudah pasti -> tolak; dengan yang masih proses -> konfirmasi dulu.
+        $bentrok = $profile->pendaftaranBentrok($castingProject->shootingDates()->pluck('tanggal'));
+        $namaTanggal = fn ($b) => $b->tanggalBentrok->map(fn ($t) => Carbon::parse($t)->translatedFormat('d M Y'))->join(', ');
 
-        $tanggalBentrok = $profile->activeShootingDates()->intersect($tanggalProyekIni);
-        $adaBentrok = $tanggalBentrok->isNotEmpty();
+        if ($pasti = $bentrok->first(fn ($b) => $b->isPasti())) {
+            return back()->with('error', "Kamu sudah terjadwal syuting {$pasti->castingProject->nama_produksi} tanggal {$namaTanggal($pasti)}. Batalkan dulu yang itu kalau mau ikut proyek ini.");
+        }
+
+        if ($bentrok->isNotEmpty() && ! $request->boolean('konfirmasi_bentrok')) {
+            return back()->withInput()->with('konfirmasi_bentrok', 'Tanggal ini bentrok dengan '.$bentrok->map(fn ($b) => $b->castingProject->nama_produksi)->join(', ', ' dan ').' yang masih diproses. Kalau dua-duanya lolos, kamu wajib pilih salah satu.');
+        }
+
+        $adaBentrok = $bentrok->isNotEmpty();
 
         // BE.4: kunci baris peran lalu hitung ulang terisi, biar slot terakhir nggak diisi dua orang.
-        $application = DB::transaction(function () use ($castingProject, $profile, $kelasId, $adaBentrok) {
+        $application = DB::transaction(function () use ($castingProject, $profile, $kelasId, $adaBentrok, $bentrok) {
             if ($kelasId) {
                 CastingProjectClass::whereKey($kelasId)->lockForUpdate()->first();
 
@@ -89,6 +101,8 @@ class CastingProjectController extends Controller
                     return null;
                 }
             }
+
+            ProjectApplication::whereKey($bentrok->modelKeys())->update(['bentrok_jadwal_flag' => true]);
 
             return $castingProject->applications()->create([
                 'extras_id' => $profile->id,
@@ -111,7 +125,7 @@ class CastingProjectController extends Controller
         );
 
         $pesan = $adaBentrok
-            ? 'Pendaftaran berhasil, tapi ada tanggal yang bertabrakan dengan proyek lain yang sedang kamu ikuti. Silakan cek kembali komitmenmu.'
+            ? 'Pendaftaran berhasil. Ingat, jadwalnya bentrok dengan pendaftaranmu yang lain, kalau dua-duanya lolos kamu wajib pilih salah satu.'
             : 'Pendaftaran berhasil! Admin akan mereview profilmu.';
 
         return redirect()->route('extras.dashboard')->with('status', $pesan);
