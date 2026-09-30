@@ -24,7 +24,7 @@ class BgGantiClientTest extends TestCase
         $sa = User::factory()->create(['role' => 'super_admin']);
         $lama = User::factory()->create(['role' => 'client', 'name' => 'Client Lama', 'username' => 'lama']);
         $baru = User::factory()->create(['role' => 'client', 'name' => 'Client Baru']);
-        $project = CastingProject::factory()->create(['client_id' => $lama->id, 'diajukan_oleh_client_id' => $lama->id, 'nama_produksi' => 'Proyek Pindah']);
+        $project = CastingProject::factory()->create(['client_id' => $lama->id, 'nama_produksi' => 'Proyek Pindah']);
         $project->update(['client_id' => $lama->id]);
         $app = ProjectApplication::create(['casting_project_id' => $project->id, 'extras_id' => ExtrasProfile::factory()->create()->id, 'status_partisipasi' => 'lolos']);
         $review = CdReview::create(['project_application_id' => $app->id, 'cd_id' => $lama->id, 'keputusan' => 'approve', 'grade_cd' => 'A']);

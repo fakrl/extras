@@ -21,7 +21,7 @@ class ExtrasBudgetVisibilityTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $project = CastingProject::create([
-            'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Rahasia', 'client_ph' => 'PH X',
+            'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Rahasia',
             'status' => 'dibuka', 'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
         $project->classes()->create([

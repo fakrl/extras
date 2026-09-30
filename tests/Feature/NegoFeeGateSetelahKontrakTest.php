@@ -27,7 +27,7 @@ class NegoFeeGateSetelahKontrakTest extends TestCase
         $extrasUser = User::factory()->create(['role' => 'extras']);
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $project = CastingProject::create([
-            'admin_id' => $admin->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',
+            'admin_id' => $admin->id, 'nama_produksi' => 'P',
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
         $application = ProjectApplication::create([
@@ -115,7 +115,7 @@ class NegoFeeGateSetelahKontrakTest extends TestCase
     public static function statusLamaYangSudahDiblokir(): array
     {
         return [
-            ['deal'], ['ditolak'], ['diajukan_ke_cd'], ['direview_cd'], ['lolos'],
+            ['deal'], ['ditolak'], ['diajukan_ke_cd'], ['lolos'],
         ];
     }
 

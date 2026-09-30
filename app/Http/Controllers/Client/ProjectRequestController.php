@@ -19,7 +19,7 @@ class ProjectRequestController extends Controller
      */
     public function create()
     {
-        $myRequests = CastingProject::where('diajukan_oleh_client_id', auth()->id())
+        $myRequests = CastingProject::query()->milikClient(auth()->user())->whereNotNull('brief_catatan')
             ->latest()
             ->get();
 
@@ -33,12 +33,10 @@ class ProjectRequestController extends Controller
     {
         $data = $request->validate([
             'nama_produksi' => ['required', 'string', 'max:255'],
-            'client_ph' => ['nullable', 'string', 'max:255'],
             'deadline' => ['required', 'date', 'after_or_equal:today'],
             'kuota' => ['required', 'integer', 'min:1'],
             'brief_catatan' => ['required', 'string', 'max:2000'],
             'poster_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'cover_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
             'files' => ['nullable', 'array'],
             'files.*' => ProjectAttachment::RULE_FILE,
         ]);
@@ -47,27 +45,18 @@ class ProjectRequestController extends Controller
             ? $request->file('poster_path')->store('posters', 'public')
             : null;
 
-        $coverPath = $request->hasFile('cover_path')
-            ? $request->file('cover_path')->store('covers', 'public')
-            : null;
-
         $project = CastingProject::create([
             'nama_produksi' => $data['nama_produksi'],
-            'client_ph' => $data['client_ph'] ?? $request->user()->name,
             'poster_path' => $posterPath,
-            'cover_path' => $coverPath,
             'share_token' => Str::random(32),
             'deadline' => $data['deadline'],
             'kuota' => $data['kuota'],
             'brief_catatan' => $data['brief_catatan'],
-            'diajukan_oleh_client_id' => $request->user()->id,
             'client_id' => $request->user()->id,
             'client_request_status' => 'menunggu_acc',
             'status' => 'ditutup',
             'is_urgent' => false,
         ]);
-
-        // Otomatis assign client ini ke proyek yang diajukan
 
         ActivityLog::record(
             'SUBMIT_PROJECT_REQUEST',

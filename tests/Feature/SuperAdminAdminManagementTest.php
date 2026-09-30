@@ -71,7 +71,7 @@ class SuperAdminAdminManagementTest extends TestCase
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
         $target = User::factory()->create(['role' => 'admin']);
         CastingProject::create([
-            'admin_id' => $target->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',
+            'admin_id' => $target->id, 'nama_produksi' => 'P',
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
 

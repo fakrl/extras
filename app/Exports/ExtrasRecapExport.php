@@ -18,6 +18,7 @@ class ExtrasRecapExport implements FromCollection, WithHeadings
         return ExtrasProfile::withCount([
             'applications' => fn ($q) => $q->whereIn('status_partisipasi', ProjectApplication::STATUS_LOLOS_KE_ATAS),
         ])
+            ->withBatalMendadak()
             ->orderByDesc('applications_count')
             ->with('user:id,username')
             ->get()

@@ -21,7 +21,6 @@ class SeoMetaTest extends TestCase
         $project = CastingProject::create([
             'admin_id' => User::factory()->create(['role' => 'admin'])->id,
             'nama_produksi' => 'Iklan Minuman Segar',
-            'client_ph' => 'PH Rahasia',
             'share_token' => Str::random(32),
             'deadline' => now()->addDays(7),
             'kuota' => 5,

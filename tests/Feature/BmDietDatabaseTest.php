@@ -28,6 +28,33 @@ class BmDietDatabaseTest extends TestCase
         $this->assertTrue(Schema::hasColumn('users', 'honor_nominal'));
     }
 
+    public function test_bm2_kolom_dobel_sudah_di_drop(): void
+    {
+        foreach ([
+            'casting_projects' => ['wa_group_link', 'diajukan_oleh_client_id', 'client_ph', 'cover_path'],
+            'extras_profiles' => ['pengalaman', 'cancel_count', 'warna_kulit'],
+            'casting_project_classes' => ['karakter'],
+            'cd_reviews' => ['bulk_batch_id'],
+        ] as $tabel => $kolom) {
+            $this->assertFalse(Schema::hasColumns($tabel, $kolom), $tabel);
+        }
+        $this->assertTrue(Schema::hasColumns('casting_projects', ['kuota', 'link_grup', 'poster_path', 'share_token']));
+        $this->assertTrue(Schema::hasColumns('extras_profiles', ['berat_badan', 'share_token']));
+        $this->assertTrue(Schema::hasColumns('project_applications', ['karakter_override', 'scene_override', 'jam_callingan_override', 'tipe_continuity_override']));
+    }
+
+    public function test_hitungan_batal_mendadak_dari_cancellations(): void
+    {
+        $extras = ExtrasProfile::factory()->create();
+        foreach ([[true, 'extras'], [true, 'extras'], [false, 'extras'], [true, 'admin']] as [$mendadak, $oleh]) {
+            ProjectApplication::create(['casting_project_id' => CastingProject::factory()->create()->id, 'extras_id' => $extras->id, 'status_partisipasi' => 'dibatalkan'])
+                ->cancellations()->create(['dibatalkan_oleh' => $oleh, 'alasan' => 'x', 'is_mendadak' => $mendadak]);
+        }
+
+        $this->assertSame(2, $extras->fresh()->cancel_count);
+        $this->assertSame(2, ExtrasProfile::withBatalMendadak()->find($extras->id)->cancel_count);
+    }
+
     public function test_foto_tambahan_upload_ganti_stream_hapus_per_slot(): void
     {
         Storage::fake('local');

@@ -32,7 +32,7 @@ class BiProfilModalTest extends TestCase
             'tautan_tambahan' => [['label' => 'Instagram', 'url' => 'https://instagram.com/dimasrahasia']],
         ]);
         $this->profile->categories()->attach(ExtrasCategory::create(['nama' => 'Jawa', 'grup' => 'Tampilan/Look'])->id);
-        $this->project = CastingProject::create(['admin_id' => User::factory()->create(['role' => 'admin'])->id, 'nama_produksi' => 'Proyek BI', 'client_ph' => 'PH', 'deadline' => now()->addWeek(), 'kuota' => 5]);
+        $this->project = CastingProject::create(['admin_id' => User::factory()->create(['role' => 'admin'])->id, 'nama_produksi' => 'Proyek BI', 'deadline' => now()->addWeek(), 'kuota' => 5]);
     }
 
     private function ajukan(string $status = 'diajukan_ke_cd'): ProjectApplication

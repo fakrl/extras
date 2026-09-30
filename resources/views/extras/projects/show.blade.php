@@ -4,7 +4,7 @@
 
 @section('content')
 <p style="color: var(--text-secondary); margin: -8px 0 20px; font-size: 13.5px;">
-    Client: {{ $castingProject->client_ph }} · Deadline: {{ $castingProject->deadline->format('d M Y') }}
+    Client: {{ $castingProject->namaClient() }} · Deadline: {{ $castingProject->deadline->format('d M Y') }}
 </p>
 
 <div class="card" style="margin-bottom: 16px;">

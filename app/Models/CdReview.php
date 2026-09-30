@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['project_application_id', 'cd_id', 'keputusan', 'bulk_batch_id', 'grade_cd'])]
+#[Fillable(['project_application_id', 'cd_id', 'keputusan', 'grade_cd'])]
 class CdReview extends Model
 {
     public function projectApplication(): BelongsTo

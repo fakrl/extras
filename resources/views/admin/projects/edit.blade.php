@@ -11,7 +11,7 @@
     </div>
 @endif
 
-@if ($castingProject->diajukan_oleh_client_id && $castingProject->classes->isEmpty())
+@if ($castingProject->brief_catatan && $castingProject->classes->isEmpty())
     <div style="background: #fef9c3; border: 1px solid #ca8a04; color: #713f12; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
         <strong>Proyek dari Client — Breakdown belum lengkap.</strong> Kelas karakter &amp; jadwal syuting belum diisi. Lengkapi di bagian bawah halaman ini sebelum mulai buka pendaftaran.
     </div>
@@ -37,10 +37,6 @@
                 <label>Nama Produksi</label>
                 <input type="text" name="nama_produksi" value="{{ old('nama_produksi', $castingProject->nama_produksi) }}" required>
             </div>
-            <div>
-                <label>Nama Client / PH di dokumen <span style="color: var(--text-muted); font-weight: 400;">(kosongkan = otomatis dari akun Client)</span></label>
-                <input type="text" name="client_ph" value="{{ old('client_ph', $castingProject->client_ph) }}">
-            </div>
         </div>
 
         @if (! $castingProject->client_id)
@@ -49,10 +45,6 @@
         @include('partials.proyek-pic-client', ['adminId' => $castingProject->admin_id, 'clientId' => $castingProject->client_id, 'adminKosong' => auth()->user()->isSuperAdmin() ? '- Pilih Admin -' : '- Tetap seperti sekarang -', 'adminWajib' => auth()->user()->isSuperAdmin()])
 
         <div class="form-row">
-            <div>
-                <label>Link Grup WhatsApp <span style="color: var(--text-muted); font-weight: 400;">(opsional)</span></label>
-                <input type="url" name="wa_group_link" value="{{ old('wa_group_link', $castingProject->wa_group_link) }}" placeholder="https://chat.whatsapp.com/...">
-            </div>
             <div>
                 <label>Link Grup Koordinasi <span style="color: var(--text-muted); font-weight: 400;">(WA/Telegram, opsional, dapat diisi menyusul)</span></label>
                 <input type="url" name="link_grup" value="{{ old('link_grup', $castingProject->link_grup) }}" placeholder="https://chat.whatsapp.com/... atau https://t.me/...">
@@ -69,16 +61,6 @@
                     </div>
                 @endif
                 <input type="file" name="poster_path" accept="image/jpeg,image/png,image/webp">
-            </div>
-            <div>
-                <label>Cover Naskah / Moodboard <span style="color: var(--text-muted); font-weight: 400;">(opsional, maks. 3MB)</span></label>
-                @if ($castingProject->cover_path)
-                    <div style="margin-bottom: 8px;">
-                        <img src="{{ Storage::url($castingProject->cover_path) }}" alt="Cover" style="height: 80px; border-radius: 6px; object-fit: cover;">
-                        <span style="font-size: 12px; color: var(--text-muted); margin-left: 8px;">Upload baru untuk mengganti</span>
-                    </div>
-                @endif
-                <input type="file" name="cover_path" accept="image/jpeg,image/png,image/webp">
             </div>
         </div>
 

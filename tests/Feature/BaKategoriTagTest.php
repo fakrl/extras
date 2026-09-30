@@ -56,8 +56,7 @@ class BaKategoriTagTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $base = [
             'nama_produksi' => 'Proyek Tag',
-            'client_ph' => 'PH',
-            'client_id' => \App\Models\User::factory()->create(['role' => 'client'])->id,
+            'client_id' => User::factory()->create(['role' => 'client'])->id,
             'deadline' => now()->addDays(7)->toDateString(),
             'kuota' => 5,
             'tanggal_shooting' => [now()->addDays(10)->toDateString()],

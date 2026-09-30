@@ -25,7 +25,7 @@ class BjDashboardExtrasTest extends TestCase
     {
         $p = CastingProject::create([
             'admin_id' => User::factory()->create(['role' => 'admin'])->id,
-            'nama_produksi' => $nama, 'client_ph' => 'PH', 'deadline' => now()->addDays($hari), 'kuota' => 10, 'status' => 'dibuka',
+            'nama_produksi' => $nama, 'deadline' => now()->addDays($hari), 'kuota' => 10, 'status' => 'dibuka',
         ]);
         $p->classes()->create(['nama_kelas' => 'Peran '.$nama, 'budget_client' => 1, 'kuota_kelas' => 3])->categories()->sync($tag);
 

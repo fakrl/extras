@@ -26,7 +26,7 @@
         <label>Proyek</label>
         <select name="project" onchange="this.form.submit()">
             @foreach ($projects as $p)
-                <option value="{{ $p->id }}" @selected($castingProject?->id === $p->id)>{{ $p->nama_produksi }} ({{ $p->client_ph }})</option>
+                <option value="{{ $p->id }}" @selected($castingProject?->id === $p->id)>{{ $p->nama_produksi }} ({{ $p->namaClient() }})</option>
             @endforeach
         </select>
     </div>
@@ -61,7 +61,7 @@
     @forelse ($applicants as $app)
         @php
             $absen = $app->absen;
-            $karakter = $app->karakter ?: $app->castingProjectClass?->karakter;
+            $karakter = $app->karakter;
             $callingan = $app->jam_callingan ?: $app->castingProjectClass?->jam_callingan;
             $scene = $app->keterangan_scene ?: $app->castingProjectClass?->keterangan_scene;
         @endphp

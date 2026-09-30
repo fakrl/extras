@@ -26,7 +26,6 @@ class PublicEventLinkTest extends TestCase
         return CastingProject::create(array_merge([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Proyek Event Test',
-            'client_ph' => 'PH Rahasia Banget',
             'share_token' => Str::random(32),
             'deadline' => now()->addDays(7),
             'kuota' => 5,
@@ -126,10 +125,10 @@ class PublicEventLinkTest extends TestCase
         }
     }
 
-    // 6. client_ph & budget_client tidak pernah muncul di halaman /event/{token}.
-    public function test_client_ph_dan_budget_client_tidak_tampil_di_halaman_event(): void
+    // 6. nama Client & budget_client tidak pernah muncul di halaman /event/{token}.
+    public function test_nama_client_dan_budget_client_tidak_tampil_di_halaman_event(): void
     {
-        $project = $this->buatProyek(['client_ph' => 'Client Sangat Rahasia XYZ']);
+        $project = $this->buatProyek(['client_id' => User::factory()->create(['role' => 'client', 'nama_perusahaan' => 'Client Sangat Rahasia XYZ'])->id]);
         $project->classes()->create([
             'nama_kelas' => 'Ibu-ibu', 'budget_client' => 777777, 'kuota_kelas' => 3,
         ]);
@@ -200,20 +199,20 @@ class PublicEventLinkTest extends TestCase
 
         $terbuka = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Terbuka ABC',
-            'client_ph' => 'PH RAHASIA XYZ', 'share_token' => Str::random(32),
+            'share_token' => Str::random(32),
             'deadline' => now()->addDays(7), 'kuota' => 5, 'status' => 'dibuka',
         ]);
         $terbuka->classes()->create(['nama_kelas' => 'Ibu-ibu', 'budget_client' => 999999, 'kuota_kelas' => 3]);
 
         CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Ditutup XYZ',
-            'client_ph' => 'PH LAIN', 'share_token' => Str::random(32),
+            'share_token' => Str::random(32),
             'deadline' => now()->addDays(7), 'kuota' => 5, 'status' => 'ditutup',
         ]);
 
         CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Deadline Lewat',
-            'client_ph' => 'PH LAIN2', 'share_token' => Str::random(32),
+            'share_token' => Str::random(32),
             'deadline' => now()->subDay(), 'kuota' => 5, 'status' => 'dibuka',
         ]);
 
@@ -225,7 +224,7 @@ class PublicEventLinkTest extends TestCase
         $response->assertSee('Ibu-ibu');
         // Proyek deadline lewat tidak muncul di lowongan (sudah lewat deadline, bukan menerimaPendaftaran())
         $response->assertDontSee('Proyek Deadline Lewat');
-        // K.12 produksi section: proyek ditutup BOLEH muncul (portfolio), tapi client_ph & budget_client TIDAK BOLEH
+        // K.12 produksi section: proyek ditutup BOLEH muncul (portfolio), tapi nama Client & budget_client TIDAK BOLEH
         $response->assertDontSee('PH RAHASIA XYZ');
         $response->assertDontSee('PH LAIN');
         $response->assertDontSee('PH LAIN2');
@@ -239,15 +238,15 @@ class PublicEventLinkTest extends TestCase
         User::factory()->create(['role' => 'korlap']);
         User::factory()->create(['role' => 'extras']);
         User::factory()->create(['role' => 'extras']);
-        CastingProject::create(['admin_id' => $admin->id, 'nama_produksi' => 'P1', 'client_ph' => 'PH', 'deadline' => now()->addDays(7), 'kuota' => 5]);
-        CastingProject::create(['admin_id' => $admin->id, 'nama_produksi' => 'P2', 'client_ph' => 'PH', 'deadline' => now()->addDays(7), 'kuota' => 5]);
+        CastingProject::create(['admin_id' => $admin->id, 'nama_produksi' => 'P1', 'deadline' => now()->addDays(7), 'kuota' => 5]);
+        CastingProject::create(['admin_id' => $admin->id, 'nama_produksi' => 'P2', 'deadline' => now()->addDays(7), 'kuota' => 5]);
 
         $response = $this->get('/');
 
         $response->assertOk();
         $response->assertSee('2'); // totalProyek + jumlahAdmin + jumlahExtras semua ada angka 2
         // Pastikan angka dari DB, bukan hardcode - tambah 1 proyek lagi dan cek berubah
-        CastingProject::create(['admin_id' => $admin->id, 'nama_produksi' => 'P3', 'client_ph' => 'PH', 'deadline' => now()->addDays(7), 'kuota' => 5]);
+        CastingProject::create(['admin_id' => $admin->id, 'nama_produksi' => 'P3', 'deadline' => now()->addDays(7), 'kuota' => 5]);
         $response2 = $this->get('/');
         $response2->assertSee('3'); // totalProyek sekarang 3
     }

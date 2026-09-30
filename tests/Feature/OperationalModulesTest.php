@@ -8,6 +8,7 @@ use App\Models\ExtrasProfile;
 use App\Models\Invoice;
 use App\Models\ProjectApplication;
 use App\Models\User;
+use App\Notifications\InAppNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -17,18 +18,17 @@ class OperationalModulesTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_admin_bisa_buat_proyek_dengan_breakdown_dan_cover(): void
+    public function test_admin_bisa_buat_proyek_dengan_breakdown_dan_poster(): void
     {
         Storage::fake('public');
         $admin = User::factory()->create(['role' => 'admin']);
 
         $response = $this->actingAs($admin)->post(route('admin.projects.store'), [
             'nama_produksi' => 'Proyek Breakdown Test',
-            'client_ph' => 'PH Visual Test',
             'client_id' => User::factory()->create(['role' => 'client'])->id,
             'deadline' => today()->addDays(5)->format('Y-m-d'),
             'kuota' => 10,
-            'cover_path' => UploadedFile::fake()->image('cover.jpg'),
+            'poster_path' => UploadedFile::fake()->image('poster.jpg'),
             'tanggal_shooting' => [today()->addDays(7)->format('Y-m-d')],
             'kelas' => [
                 [
@@ -47,7 +47,7 @@ class OperationalModulesTest extends TestCase
 
         $project = CastingProject::where('nama_produksi', 'Proyek Breakdown Test')->first();
         $this->assertNotNull($project);
-        $this->assertNotNull($project->cover_path);
+        $this->assertNotNull($project->poster_path);
 
         $class = $project->classes->first();
         $this->assertSame('07:00', $class->jam_callsheet);
@@ -101,8 +101,7 @@ class OperationalModulesTest extends TestCase
 
         $project = CastingProject::create([
             'nama_produksi' => 'Proyek Ditolak',
-            'client_ph' => $client->name,
-            'diajukan_oleh_client_id' => $client->id,
+            'client_id' => $client->id,
             'client_request_status' => 'menunggu_acc',
             'status' => 'ditutup',
             'deadline' => today()->addDays(7),
@@ -126,7 +125,7 @@ class OperationalModulesTest extends TestCase
         $notif = $client->notifications()->first();
         $this->assertNotNull($notif);
         $this->assertStringContainsString('Budget belum sesuai.', $notif->data['pesan']);
-        $this->assertSame(\App\Notifications\InAppNotification::relatif(route('cd.dashboard')), $notif->data['url']);
+        $this->assertSame(InAppNotification::relatif(route('cd.dashboard')), $notif->data['url']);
 
         $this->actingAs($client)->get(route('cd.dashboard'))
             ->assertOk()
@@ -146,7 +145,6 @@ class OperationalModulesTest extends TestCase
         $project = CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Proyek Absensi Hybrid',
-            'client_ph' => 'PH Test',
             'deadline' => today()->addDays(2),
             'kuota' => 5,
         ]);
@@ -200,7 +198,6 @@ class OperationalModulesTest extends TestCase
         $project = CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Proyek Breakdown Applicant',
-            'client_ph' => 'PH Test',
             'deadline' => today()->addDays(5),
             'kuota' => 5,
         ]);
@@ -261,7 +258,6 @@ class OperationalModulesTest extends TestCase
         $project = CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Proyek Riil',
-            'client_ph' => 'PH Aktif',
             'deadline' => today()->addDays(5),
             'kuota' => 5,
         ]);
@@ -288,10 +284,8 @@ class OperationalModulesTest extends TestCase
         $project = CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Proyek Invoice Dual Model',
-            'client_ph' => 'PH Test',
             'deadline' => today()->addDays(5),
             'kuota' => 5,
-            'diajukan_oleh_client_id' => $client->id,
             'client_id' => $client->id,
         ]);
 

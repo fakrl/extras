@@ -24,14 +24,14 @@ use Illuminate\Support\Facades\Log;
 ])]
 class ProjectApplication extends Model
 {
-    const STATUS_AKTIF = ['deal', 'diajukan_ke_cd', 'direview_cd', 'lolos', 'kontrak_ditandatangani'];
+    const STATUS_AKTIF = ['deal', 'diajukan_ke_cd', 'lolos', 'kontrak_ditandatangani'];
 
     const STATUS_LOLOS_KE_ATAS = ['lolos', 'kontrak_ditandatangani', 'selesai_produksi'];
 
     /** BK.4: bentrok dengan pendaftaran `pasti` memblokir; dengan `proses` cuma peringatan. */
     const STATUS_PASTI = ['lolos', 'kontrak_ditandatangani'];
 
-    const STATUS_PROSES = ['diajukan', 'direview_admin', 'nego_fee', 'deal', 'diajukan_ke_cd', 'direview_cd'];
+    const STATUS_PROSES = ['diajukan', 'direview_admin', 'nego_fee', 'deal', 'diajukan_ke_cd'];
 
     const LABELS = [
         'diajukan' => 'Diajukan',
@@ -39,7 +39,6 @@ class ProjectApplication extends Model
         'nego_fee' => 'Nego Fee',
         'deal' => 'Deal',
         'diajukan_ke_cd' => 'Diajukan ke Client',
-        'direview_cd' => 'Direview Client',
         'lolos' => 'Lolos',
         'ditolak' => 'Ditolak',
         'kontrak_ditandatangani' => 'Kontrak Ditandatangani',
@@ -53,7 +52,6 @@ class ProjectApplication extends Model
         'nego_fee' => 'badge-pending',
         'deal' => 'badge-aktif',
         'diajukan_ke_cd' => 'badge-info',
-        'direview_cd' => 'badge-info',
         'lolos' => 'badge-aktif',
         'ditolak' => 'badge-tolak',
         'kontrak_ditandatangani' => 'badge-aktif',
@@ -138,7 +136,7 @@ class ProjectApplication extends Model
 
     public function getKarakterAttribute(): ?string
     {
-        return $this->karakter_override ?? $this->castingProjectClass?->karakter;
+        return $this->karakter_override ?? $this->castingProjectClass?->nama_kelas;
     }
 
     public function getKeteranganSceneAttribute(): ?string
@@ -161,7 +159,7 @@ class ProjectApplication extends Model
 
     public function getKarakter(): string
     {
-        return $this->karakter_override ?? $this->castingProjectClass?->karakter ?? '-';
+        return $this->karakter_override ?? $this->castingProjectClass?->nama_kelas ?? '-';
     }
 
     public function getScene(): string
@@ -407,7 +405,7 @@ class ProjectApplication extends Model
      * konfirmasi Fakrul 29 Agu 2026), konsisten dengan pola aksi sepihak lain
      * di sini.
      * RF-08: kalau pembatalan mendadak (< H-2 dari tanggal shooting
-     * terdekat proyek ini), trigger hitungan cancel_count di ExtrasProfile.
+     * terdekat proyek ini), cek aturan 3x batal mendadak di ExtrasProfile.
      */
     public function batalkan(string $olehSiapa, string $alasan): Cancellation
     {
@@ -593,7 +591,7 @@ class ProjectApplication extends Model
     {
         abort_if(
             in_array($this->status_partisipasi, [
-                'deal', 'ditolak', 'diajukan_ke_cd', 'direview_cd', 'lolos',
+                'deal', 'ditolak', 'diajukan_ke_cd', 'lolos',
                 'kontrak_ditandatangani', 'selesai_produksi', 'dibatalkan',
             ], true),
             422,

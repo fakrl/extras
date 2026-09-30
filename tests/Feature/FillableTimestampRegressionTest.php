@@ -28,7 +28,7 @@ class FillableTimestampRegressionTest extends TestCase
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $admin = User::factory()->create(['role' => 'admin']);
         $project = CastingProject::create([
-            'admin_id' => $admin->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',
+            'admin_id' => $admin->id, 'nama_produksi' => 'P',
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
         $application = ProjectApplication::create([
@@ -49,7 +49,7 @@ class FillableTimestampRegressionTest extends TestCase
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $admin = User::factory()->create(['role' => 'admin']);
         $project = CastingProject::create([
-            'admin_id' => $admin->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',
+            'admin_id' => $admin->id, 'nama_produksi' => 'P',
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
         $application = ProjectApplication::create([
@@ -70,7 +70,7 @@ class FillableTimestampRegressionTest extends TestCase
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $admin = User::factory()->create(['role' => 'admin']);
         $project = CastingProject::create([
-            'admin_id' => $admin->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',
+            'admin_id' => $admin->id, 'nama_produksi' => 'P',
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
         $application = ProjectApplication::create([
@@ -93,7 +93,7 @@ class FillableTimestampRegressionTest extends TestCase
         $admin = User::factory()->create(['role' => 'korlap']);
         $admin->update(['honor_nominal' => 500000]);
         $project = CastingProject::create([
-            'admin_id' => $admin->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',
+            'admin_id' => $admin->id, 'nama_produksi' => 'P',
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
         $assignment = AdminProjectAssignment::create([
@@ -113,7 +113,7 @@ class FillableTimestampRegressionTest extends TestCase
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
         $admin = User::factory()->create(['role' => 'korlap']);
         $project = CastingProject::create([
-            'admin_id' => $admin->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',
+            'admin_id' => $admin->id, 'nama_produksi' => 'P',
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
         $assignment = AdminProjectAssignment::create([

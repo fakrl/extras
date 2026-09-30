@@ -27,7 +27,6 @@ class ActivityLogAndEnhancementsTest extends TestCase
         $project = CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Proyek Iklan Catatan',
-            'client_ph' => 'PH Kreatif',
             'deadline' => now()->addDays(7),
             'kuota' => 5,
         ]);
@@ -86,7 +85,6 @@ class ActivityLogAndEnhancementsTest extends TestCase
         $project = CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Film Layar Lebar',
-            'client_ph' => 'Cinema Utama',
             'deadline' => now()->addDays(10),
             'kuota' => 10,
         ]);
@@ -167,7 +165,7 @@ class ActivityLogAndEnhancementsTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin', 'name' => 'Budi Admin']);
         $project = CastingProject::create([
             'admin_id' => $admin->id,
-            'nama_produksi' => 'Film Senja Merah', 'client_ph' => 'PH Senja', 'kuota' => 5,
+            'nama_produksi' => 'Film Senja Merah', 'kuota' => 5,
             'deadline' => now()->addWeek(),
             'status' => 'dibuka',
         ]);
@@ -209,7 +207,6 @@ class ActivityLogAndEnhancementsTest extends TestCase
         $project = CastingProject::create([
             'admin_id' => $admin->id,
             'nama_produksi' => 'Proyek Iklan Sampo',
-            'client_ph' => 'PH Glamour',
             'deadline' => now()->addDays(5),
             'kuota' => 2,
         ]);

@@ -23,7 +23,7 @@ class RecapControllerTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $project = CastingProject::create([
-            'admin_id' => $admin->id, 'nama_produksi' => 'P', 'client_ph' => 'PH',
+            'admin_id' => $admin->id, 'nama_produksi' => 'P',
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
 
@@ -52,11 +52,20 @@ class RecapControllerTest extends TestCase
 
         $seringBatal = ExtrasProfile::factory()->for(
             User::factory()->state(['role' => 'extras', 'username' => 'tukang_batal'])
-        )->create(['cancel_count' => 3]);
+        )->create();
         $sesekaliBatal = ExtrasProfile::factory()->for(
             User::factory()->state(['role' => 'extras', 'username' => 'sesekali_batal'])
-        )->create(['cancel_count' => 1]);
-        $tidakPernahBatal = ExtrasProfile::factory()->create(['cancel_count' => 0]);
+        )->create();
+        $tidakPernahBatal = ExtrasProfile::factory()->create();
+        $batal = fn (ExtrasProfile $e, bool $mendadak = true, string $oleh = 'extras') => ProjectApplication::create([
+            'casting_project_id' => CastingProject::factory()->create()->id, 'extras_id' => $e->id, 'status_partisipasi' => 'dibatalkan',
+        ])->cancellations()->create(['dibatalkan_oleh' => $oleh, 'alasan' => 'x', 'is_mendadak' => $mendadak]);
+        foreach (range(1, 3) as $_) {
+            $batal($seringBatal);
+        }
+        $batal($sesekaliBatal);
+        $batal($sesekaliBatal, false);
+        $batal($tidakPernahBatal, true, 'admin');
 
         $response = $this->actingAs($admin)->get(route('admin.recap.index'));
 
@@ -70,7 +79,7 @@ class RecapControllerTest extends TestCase
     public function test_halaman_recap_tetap_ok_kalau_belum_ada_yang_pernah_batal(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        ExtrasProfile::factory()->create(['cancel_count' => 0]);
+        ExtrasProfile::factory()->create();
 
         $response = $this->actingAs($admin)->get(route('admin.recap.index'));
 

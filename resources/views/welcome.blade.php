@@ -502,7 +502,7 @@
                                     @if ($proyek->poster_path)
                                         <img src="{{ Storage::url($proyek->poster_path) }}" alt="">
                                     @else
-                                        <div class="lowongan-thumb-mono">{{ strtoupper(substr($proyek->client_ph ?: 'J', 0, 1)) }}</div>
+                                        <div class="lowongan-thumb-mono">{{ strtoupper(substr($proyek->client ? $proyek->namaClient() : 'J', 0, 1)) }}</div>
                                     @endif
                                 </div>
                                 <div class="lowongan-summary-info">
@@ -572,7 +572,7 @@
             <div class="marquee-track">
                 @for ($r = 0; $r < $putaranP * 2; $r++)
                     @foreach ($portofolio as $p)
-                        @php $gambar = $p->poster_path ?: $p->cover_path; @endphp
+                        @php $gambar = $p->poster_path; @endphp
                         <article class="porto-card" @if ($r) data-dup aria-hidden="true" @endif>
                             <div class="porto-img">
                                 @if ($gambar)
@@ -582,7 +582,7 @@
                                 @endif
                             </div>
                             <h3 class="porto-title">{{ $p->portofolio_judul ?: $p->nama_produksi }}</h3>
-                            <div class="porto-sub">{{ implode(' · ', array_filter([$p->portofolio_jenis, $p->portofolio_tahun, $p->tampilkan_nama_client ? $p->client_ph : null])) }}</div>
+                            <div class="porto-sub">{{ implode(' · ', array_filter([$p->portofolio_jenis, $p->portofolio_tahun, $p->tampilkan_nama_client ? $p->namaClient() : null])) }}</div>
                         </article>
                     @endforeach
                 @endfor

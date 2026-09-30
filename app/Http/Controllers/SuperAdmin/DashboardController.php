@@ -52,7 +52,7 @@ class DashboardController extends Controller
         $jumlahHari = (int) $dari->copy()->startOfDay()->diffInDays($sampai->copy()->startOfDay()) + 1;
 
         $pendingRequests = CastingProject::where('client_request_status', 'menunggu_acc')
-            ->with('diajukanOlehClient')->latest()->get();
+            ->with('client')->latest()->get();
         $sengketa = Payment::where('status', 'disengketakan')
             ->with('projectApplication.extras.user', 'projectApplication.castingProject:id,nama_produksi')->latest()->get();
         $honorStaf = (object) [
@@ -164,7 +164,7 @@ class DashboardController extends Controller
     private function kabariClient(CastingProject $castingProject, string $judul, string $pesan): void
     {
         try {
-            $castingProject->diajukanOlehClient?->notify(new InAppNotification($judul, $pesan, route('cd.dashboard')));
+            $castingProject->client?->notify(new InAppNotification($judul, $pesan, route('cd.dashboard')));
         } catch (\Throwable) {
         }
     }

@@ -27,7 +27,6 @@ class EmailNotificationTest extends TestCase
         $project = CastingProject::create([
             'admin_id' => $adminUser->id,
             'nama_produksi' => 'Kado Untuk Ibu',
-            'client_ph' => 'Starvision',
             'deadline' => now()->addDays(7),
             'kuota' => 5,
         ]);

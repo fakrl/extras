@@ -50,7 +50,7 @@ class DashboardController extends Controller
         $ringkasan = AdminRingkasan::untuk();
 
         $urgentProjects = CastingProject::where('status', 'dibuka')
-            ->with(['shootingDates', 'applications'])
+            ->with(['shootingDates', 'applications', 'client'])
             ->get()
             ->filter(fn ($p) => $p->isUrgent())
             ->values();

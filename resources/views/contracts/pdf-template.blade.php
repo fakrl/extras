@@ -53,7 +53,7 @@
 
     <table>
         <tr><td width="30%">Nama Produksi</td><td>: {{ $application->castingProject->nama_produksi }}</td></tr>
-        <tr><td>Client / Production House</td><td>: {{ $application->castingProject->client_ph }}</td></tr>
+        <tr><td>Client / Production House</td><td>: {{ $application->castingProject->namaClient() }}</td></tr>
         <tr><td>Nama Talent (sesuai KTP)</td><td>: {{ $application->extras->nama_asli }}</td></tr>
         <tr><td>Nama Panggung (Alias)</td><td>: {{ $application->extras->user->username ?? '-' }}</td></tr>
         <tr><td>Fee Disepakati</td><td>: Rp {{ number_format($application->fee_final, 0, ',', '.') }}</td></tr>

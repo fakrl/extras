@@ -24,7 +24,7 @@ class BkDashboardExtrasTest extends TestCase
     {
         $p = CastingProject::create([
             'admin_id' => User::factory()->create(['role' => 'admin'])->id,
-            'nama_produksi' => $nama, 'client_ph' => 'PH', 'deadline' => now()->addDays(30), 'kuota' => 10, 'status' => 'dibuka',
+            'nama_produksi' => $nama, 'deadline' => now()->addDays(30), 'kuota' => 10, 'status' => 'dibuka',
         ]);
         if ($hari !== null) {
             $p->shootingDates()->create(['tanggal' => now()->addDays($hari)->toDateString()]);

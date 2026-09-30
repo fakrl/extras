@@ -22,7 +22,7 @@ class UserManagementController extends Controller
     {
         $castingDirectors = User::where('role', 'client')->get();
         $extras = User::where('role', 'extras')
-            ->with(['extrasProfile' => fn ($q) => $q->withProyekSelesai(), 'extrasProfile.user:id,username', 'extrasProfile.categories'])
+            ->with(['extrasProfile' => fn ($q) => $q->withProyekSelesai()->withBatalMendadak(), 'extrasProfile.user:id,username', 'extrasProfile.categories'])
             ->get();
         $tagGroups = ExtrasCategory::perGrup();
 

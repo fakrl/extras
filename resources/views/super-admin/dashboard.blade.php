@@ -80,7 +80,7 @@
             <div>
                 <span class="badge badge-pending">Menunggu ACC</span>
                 <strong>{{ $req->nama_produksi }}</strong>
-                <div class="dash-sub">{{ $req->client_ph }} &bull; {{ $req->diajukanOlehClient?->name }}</div>
+                <div class="dash-sub">{{ $req->namaClient() }} &bull; {{ $req->client?->name }}</div>
                 <details style="margin-top: 6px; font-size: 13px;">
                     <summary style="cursor: pointer; color: var(--accent);">Lihat brief, kuota, deadline</summary>
                     <div style="margin-top: 6px;">Kuota: <strong>{{ $req->kuota }} orang</strong> &bull; Deadline: <strong>{{ $req->deadline?->format('d M Y') ?? '-' }}</strong></div>
@@ -175,7 +175,7 @@
                 <a href="{{ route('admin.projects.show', $p) }}" class="dash-row">
                     <div>
                         <strong>{{ $p->nama_produksi }}</strong>
-                        <div class="dash-sub">{{ $p->client?->name ?? $p->client_ph ?? '-' }} &bull; {{ $p->rentangShooting() }}</div>
+                        <div class="dash-sub">{{ $p->client?->name ?? '-' }} &bull; {{ $p->rentangShooting() }}</div>
                     </div>
                     <span class="dash-sub">{{ $p->tanggal_acuan ? \Carbon\Carbon::parse($p->tanggal_acuan)->translatedFormat('d M') : '' }}</span>
                 </a>

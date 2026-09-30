@@ -115,7 +115,7 @@
             </div>
             <div class="xmodal-badges">
                 <span class="badge {{ $ex->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">{{ ucfirst($ex->status) }}</span>
-                {{-- RF-08: cancel_count cuma dari pembatalan mendadak (<H-2), lihat ProjectApplication::batalkan() --}}
+                {{-- RF-08: hitungan dari cancellations (mendadak <H-2 oleh Extras), lihat ExtrasProfile::batalMendadak() --}}
                 <span class="badge {{ $cancelCount >= 3 ? 'badge-tolak' : ($cancelCount > 0 ? 'badge-pending' : 'badge-aktif') }}">Batal mendadak {{ $cancelCount }}x</span>
             </div>
 

@@ -16,8 +16,7 @@ class KarakterKriteriaTest extends TestCase
     {
         return array_merge([
             'nama_produksi' => 'Proyek Test',
-            'client_ph' => 'PH Test',
-            'client_id' => \App\Models\User::factory()->create(['role' => 'client'])->id,
+            'client_id' => User::factory()->create(['role' => 'client'])->id,
             'deadline' => now()->addDays(7)->toDateString(),
             'kuota' => 5,
             'tanggal_shooting' => [now()->addDays(10)->toDateString()],

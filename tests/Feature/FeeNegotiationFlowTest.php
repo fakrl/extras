@@ -35,7 +35,7 @@ class FeeNegotiationFlowTest extends TestCase
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
         $project = CastingProject::create([
-            'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Nego', 'client_ph' => 'PH',
+            'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Nego',
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
 
@@ -240,7 +240,7 @@ class FeeNegotiationFlowTest extends TestCase
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
 
         $project = CastingProject::create([
-            'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Export', 'client_ph' => 'PH',
+            'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Export',
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
 
@@ -274,11 +274,11 @@ class FeeNegotiationFlowTest extends TestCase
         $cd = User::factory()->create(['role' => 'client']);
 
         $projectA = CastingProject::create([
-            'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Ada Review', 'client_ph' => 'PH',
+            'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Ada Review',
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
         $projectB = CastingProject::create([
-            'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Tanpa Review', 'client_ph' => 'PH',
+            'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Tanpa Review',
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
 
@@ -298,7 +298,7 @@ class FeeNegotiationFlowTest extends TestCase
         $cd = User::factory()->create(['role' => 'client']);
 
         $project = CastingProject::create([
-            'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Level2', 'client_ph' => 'PH',
+            'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Level2',
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
 
@@ -330,7 +330,7 @@ class FeeNegotiationFlowTest extends TestCase
         $cd = User::factory()->create(['role' => 'client']);
 
         $project = CastingProject::create([
-            'admin_id' => $admin->id, 'nama_produksi' => 'Proyek PDF', 'client_ph' => 'PH',
+            'admin_id' => $admin->id, 'nama_produksi' => 'Proyek PDF',
             'deadline' => now()->addDays(7), 'kuota' => 5,
         ]);
 

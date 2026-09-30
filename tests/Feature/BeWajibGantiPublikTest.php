@@ -18,7 +18,7 @@ class BeWajibGantiPublikTest extends TestCase
         $token = ExtrasProfile::create(['user_id' => $user->id])->generateShareToken();
         $project = CastingProject::create([
             'admin_id' => User::factory()->create(['role' => 'admin'])->id,
-            'nama_produksi' => 'Proyek Publik', 'client_ph' => 'PH',
+            'nama_produksi' => 'Proyek Publik',
             'deadline' => now()->addDays(7), 'kuota' => 5, 'status' => 'dibuka',
             'share_token' => 'tok-publik',
         ]);

@@ -88,7 +88,7 @@
                     @endif
                 </div>
                 <div class="entity-card-sub">
-                    {{ $project->client?->name ?? $project->client_ph }}{{ $project->client && $project->client_ph !== $project->client->name ? ' · '.$project->client_ph : '' }}
+                    {{ $project->client?->name ?? '-' }}{{ $project->client?->nama_perusahaan ? ' · '.$project->client->nama_perusahaan : '' }}
                     · PIC {{ $project->admin?->name ?? '-' }}
                 </div>
 
@@ -107,11 +107,11 @@
                     <span class="entity-card-row-value">{{ $project->rentangShooting() }}</span>
                 </div>
 
-                @if ($project->wa_group_link)
+                @if ($project->link_grup)
                     <div class="entity-card-row">
-                        <span class="entity-card-row-label">Grup WA</span>
+                        <span class="entity-card-row-label">Grup koordinasi</span>
                         <span class="entity-card-row-value">
-                            <a href="{{ $project->wa_group_link }}" target="_blank">Buka Link</a>
+                            <a href="{{ $project->link_grup }}" target="_blank">Buka Link</a>
                         </span>
                     </div>
                 @endif

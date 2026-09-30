@@ -23,24 +23,16 @@ class BjBeratWarnaKulitTest extends TestCase
         return ExtrasProfile::factory()->create(['user_id' => User::factory()->create(['role' => 'extras'])->id] + $attr);
     }
 
-    public function test_migrasi_warna_kulit_jadi_tag_idempoten(): void
+    public function test_warna_kulit_cuma_dari_tag_grup_warna_kulit(): void
     {
         $this->seed(ExtrasCategorySeeder::class);
-        $a = $this->profil(['warna_kulit' => 'sawo MATANG']);
-        $b = $this->profil(['warna_kulit' => 'Hitam']);
-        $c = $this->profil(['warna_kulit' => 'Coklat']);
-        $d = $this->profil(['warna_kulit' => null]);
-        $migrasi = require database_path('migrations/2026_09_30_200004_warna_kulit_jadi_tag.php');
-        $migrasi->up();
-        $migrasi->up();
+        $this->assertSame('Sawo matang', ExtrasCategory::tagWarnaKulit('sawo MATANG')->nama);
+        $this->assertSame('Gelap', ExtrasCategory::tagWarnaKulit('Hitam')->nama);
 
-        $this->assertSame(['Sawo matang'], $a->categories()->pluck('nama')->all());
-        $this->assertSame(['Gelap'], $b->categories()->pluck('nama')->all());
-        $this->assertSame('Warna kulit', ExtrasCategory::where('nama', 'Coklat')->value('grup'));
-        $this->assertSame(1, $c->categories()->count());
-        $this->assertSame(0, $d->categories()->count());
-        $this->assertSame('Gelap', $b->fresh()->warnaKulit());
-        $this->assertSame('Putih', $this->profil(['warna_kulit' => 'Putih'])->warnaKulit());
+        $a = $this->profil();
+        $this->assertNull($a->warnaKulit());
+        $a->categories()->attach(ExtrasCategory::tagWarnaKulit('Hitam'));
+        $this->assertSame('Gelap', $a->fresh()->warnaKulit());
     }
 
     public function test_form_berat_tanpa_warna_kulit_dan_simpan(): void
@@ -60,7 +52,7 @@ class BjBeratWarnaKulitTest extends TestCase
     public function test_publik_tanpa_berat_dan_warna_kulit_pemilik_tampil(): void
     {
         $this->seed(ExtrasCategorySeeder::class);
-        $p = $this->profil(['berat_badan' => 57, 'warna_kulit' => null]);
+        $p = $this->profil(['berat_badan' => 57]);
         $p->categories()->attach(ExtrasCategory::where('nama', 'Sawo matang')->value('id'));
         $p->generateShareToken();
 
