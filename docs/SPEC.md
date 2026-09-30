@@ -1637,3 +1637,27 @@ Konvensi baru: field **wajib** diberi tanda bintang merah `*` setelah label (`<s
 | BO.1 normalisasi nomor WA + `wa:tes` | | [ ] |
 | BO.2 login Google: daftar khusus Extras, role lain via "Hubungkan Google" (aktif via config) | | [ ] |
 | BO.3 bintang `*` untuk field wajib, hapus teks "opsional" | | [ ] |
+
+---
+
+# Bagian BP: Dashboard Admin — "Tahapan Partisipasi Kandidat" jadi daftar siapa & harus apa (30 September 2026)
+
+> Keluhan Fakrul: section ini (`admin/dashboard.blade.php` ±baris 90, `funnel-steps` = bar angka per status) kerasa banyak tapi nggak jelas **siapa** Extras-nya dan **harus ngapain**. Maunya mirip step-bar di dashboard Extras. Admin pegang puluhan–ratusan kandidat, jadi bukan step-bar per orang, tapi step-bar sebagai **tab** + daftar orang di tahap itu.
+> Datanya **pakai method yang sama dengan pratinjau Monitoring Admin (BL.1)** — jangan query terpisah.
+
+1. **Step-bar 5 tahap** — label & gaya sama persis dengan `partials/application-progress` Extras: Ajuan · Nego Fee · Dipilih Client · Kontrak · Selesai. Tiap langkah menampilkan angka, plus badge merah kecil **"n perlu kamu"** kalau ada kandidat di tahap itu yang menunggu aksi Admin. Langkah = tab (klik ganti daftar, tanpa reload). Default: tahap dengan "perlu kamu" terbanyak.
+2. **Daftar di bawahnya** (maks 8, urut paling lama menunggu): foto kecil + `@username`, nama proyek (kode BN.1) · peran, **aksi berikutnya dalam kalimat**, lama menunggu, dan **1 tombol** ke halaman aksinya. Contoh teks aksi:
+   - Ajuan: "Belum direview — beri grade / tolak"
+   - Nego: "Extras counter Rp 200.000 — balas" (perlu kamu) / "Menunggu balasan Extras (2 hari)"
+   - Deal: "Siap diajukan ke Client" (perlu kamu)
+   - Dipilih Client: "Menunggu keputusan Client (3 hari)"
+   - Kontrak: "Tunggu TTD Extras" / "TTD Admin belum" (perlu kamu)
+   - Selesai: "Honor belum ditransfer" (perlu kamu) / "Menunggu konfirmasi Extras"
+3. Yang "perlu kamu" ditandai (titik merah / teks tebal), yang menunggu pihak lain abu-abu.
+4. Link bawah: "Lihat semua di tahap ini →" ke Lineup/Proyek & Keuangan yang terfilter status (lintas proyek kalau perlu, pakai filter yang sudah ada).
+5. Hapus bar `funnel-steps` lama. Kosong di satu tahap → "Nggak ada kandidat di tahap ini."
+6. Di HP: step-bar geser horizontal, daftar jadi kartu satu kolom.
+
+| Item | Bukti | QA |
+|---|---|---|
+| BP tahapan kandidat: step-bar tab + daftar siapa & aksi berikutnya | | [ ] |
