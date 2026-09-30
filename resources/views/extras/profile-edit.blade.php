@@ -8,6 +8,20 @@
     .input-error { border-color: var(--danger) !important; }
     .upload-progress { display: none; width: 100%; height: 10px; margin-top: 8px; accent-color: var(--accent-strong); }
     .upload-error-msg { color: var(--danger); font-size: 12px; margin-top: 6px; display: none; }
+    .foto-hint { font-size: 12px; color: var(--text-muted); line-height: 1.4; margin: -4px 0 12px; }
+    .foto-hint.is-kosong { color: var(--text-primary); background: color-mix(in srgb, var(--warning) 14%, transparent); border: 1px solid color-mix(in srgb, var(--warning) 40%, transparent); border-radius: var(--radius-md); padding: 10px 12px; margin-top: 0; }
+    .foto-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .foto-tile { position: relative; min-width: 0; }
+    .foto-tile[hidden] { display: none; }
+    .foto-box { position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 3 / 4; margin: 0; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-nav-active); border: 2px dashed var(--border-color); cursor: pointer; }
+    .foto-box:has(img:not([hidden])) { border-style: solid; }
+    .foto-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .foto-box img[hidden], .foto-kosong[hidden] { display: none; }
+    .foto-kosong { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); text-align: center; padding: 8px; }
+    .foto-kosong i { font-size: 26px; color: var(--accent-strong); }
+    .foto-wajib { position: absolute; left: 6px; top: 6px; padding: 2px 8px; border-radius: 999px; background: var(--accent); color: var(--accent-on); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .foto-hapus { position: absolute; right: 4px; top: 4px; margin: 0; }
+    .foto-hapus button { width: 36px; height: 36px; border-radius: 999px; border: 0; background: rgba(0,0,0,.6); color: #fff; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 </style>
 @endpush
 
@@ -25,32 +39,53 @@
         <div class="alert-success">{{ session('status') }}</div>
     @endif
 
-    {{-- ===== Foto Profil ===== --}}
+    {{-- ===== Foto (BJ.2: utama + galeri satu section) ===== --}}
+    @php
+        $jumlahGaleri = count(array_filter($fotoTambahan));
+        $slotKosong = array_keys(array_filter($fotoTambahan, fn ($f) => ! $f));
+    @endphp
     <div class="profile-section">
-        <div class="profile-section-title">Foto Profil</div>
-        <p class="field-hint" style="margin-top: -4px;">Ini yang pertama dilihat Client. Pakai foto wajah yang jelas & terang.</p>
+        <div class="profile-section-title">Foto</div>
+        <p id="foto-hint" @class(['foto-hint', 'is-kosong' => ! $jumlahGaleri])>💡 Profil dengan 3+ foto (close-up, setengah badan, seluruh badan) lebih sering dipilih Client.</p>
 
-        <label for="upload-foto" class="media-upload-box" id="box-foto">
-            @if ($profile->foto_profil_path)
-                <img id="preview-foto" src="{{ route('extras.media.foto', $profile) }}" alt="Foto profil" class="media-upload-preview">
-                <span class="media-upload-overlay">Ketuk untuk ganti foto</span>
-            @else
-                <span class="media-upload-empty" id="empty-foto">
-                    <i class="ti ti-camera"></i>
-                    Ketuk untuk pilih foto
-                </span>
-                <img id="preview-foto" src="" alt="Foto profil" class="media-upload-preview" style="display:none">
+        <div class="foto-grid">
+            <div class="foto-tile">
+                <label for="upload-foto" class="foto-box" aria-label="{{ $profile->foto_profil_path ? 'Ganti foto utama' : 'Pilih foto utama' }}">
+                    <img id="preview-foto" src="{{ $profile->foto_profil_path ? route('extras.media.foto', $profile) : '' }}" alt="Foto utama" @if (! $profile->foto_profil_path) hidden @endif>
+                    <span class="foto-kosong" id="empty-foto" @if ($profile->foto_profil_path) hidden @endif><i class="ti ti-camera" aria-hidden="true"></i> Foto utama</span>
+                    <span class="foto-wajib">Wajib</span>
+                </label>
+            </div>
+            @foreach ($fotoTambahan as $slot => $foto)
+                <div class="foto-tile" id="tile-slot-{{ $slot }}" @if (! $foto) hidden @endif>
+                    <label for="upload-slot-{{ $slot }}" class="foto-box" aria-label="Ganti foto galeri {{ $slot }}">
+                        <img id="preview-slot-{{ $slot }}" src="{{ $foto ? route('extras.media.foto-tambahan', [$profile, $slot]) : '' }}" alt="Foto galeri {{ $slot }}">
+                    </label>
+                    <x-confirm-form action="{{ route('extras.profile.foto-tambahan.hapus', $slot) }}" method="DELETE" class="foto-hapus" message="Hapus foto galeri ini? Foto yang sudah dihapus tidak bisa dikembalikan.">
+                        <button type="submit" aria-label="Hapus foto galeri {{ $slot }}"><i class="ti ti-trash" aria-hidden="true"></i></button>
+                    </x-confirm-form>
+                </div>
+            @endforeach
+            @if ($slotKosong)
+                <label for="upload-slot-{{ $slotKosong[0] }}" class="foto-box foto-tambah" id="foto-tambah" aria-label="Tambah foto galeri">
+                    <span class="foto-kosong"><i class="ti ti-plus" aria-hidden="true"></i> Tambah foto</span>
+                </label>
             @endif
-        </label>
-        <input type="file" name="foto" id="upload-foto" accept="image/jpeg,image/png" style="display: none;"
-               data-endpoint="{{ route('extras.profile.foto.ajax') }}"
-               data-progress="progress-foto"
-               data-max="5120"
-               data-preview="preview-foto"
-               data-error="err-foto">
+        </div>
+
+        <input type="file" name="foto" id="upload-foto" accept="image/jpeg,image/png" hidden
+               data-endpoint="{{ route('extras.profile.foto.ajax') }}" data-progress="progress-foto" data-max="5120"
+               data-preview="preview-foto" data-error="err-foto" data-empty="empty-foto">
         <progress id="progress-foto" class="upload-progress" max="100" value="0"></progress>
         <span id="err-foto" class="upload-error-msg"></span>
-        <p class="field-hint">Format JPG/PNG, maksimal 5MB.</p>
+        @foreach ($fotoTambahan as $slot => $foto)
+            <input type="file" name="foto" id="upload-slot-{{ $slot }}" accept="image/jpeg,image/png" hidden
+                   data-endpoint="{{ route('extras.profile.foto-tambahan.ajax', $slot) }}" data-progress="progress-slot-{{ $slot }}" data-max="5120"
+                   data-preview="preview-slot-{{ $slot }}" data-error="err-slot-{{ $slot }}" data-tile="tile-slot-{{ $slot }}">
+            <progress id="progress-slot-{{ $slot }}" class="upload-progress" max="100" value="0"></progress>
+            <span id="err-slot-{{ $slot }}" class="upload-error-msg"></span>
+        @endforeach
+        <p class="field-hint" style="margin: 8px 0 0;">Ketuk foto untuk ganti. Foto utama = yang pertama dilihat Client, pakai wajah yang jelas &amp; terang. Maks 4 foto galeri, JPG/PNG maks 5MB.</p>
     </div>
 
     {{-- ===== Video Perkenalan ===== --}}
@@ -81,52 +116,7 @@
         @if ($profile->video_profil_path)
             <label for="upload-video" class="btn btn-sm" style="margin-top: 8px; cursor: pointer;">Ganti Video</label>
         @endif
-        <p class="field-hint">Format MP4/MOV, maksimal 50MB.</p>
-    </div>
-
-    {{-- ===== Gallery ===== --}}
-    <div class="profile-section">
-        <div class="profile-section-title">Gallery</div>
-        <p class="field-hint" style="margin-top: -4px;">Foto tambahan untuk penilaian Admin (tampak samping, seluruh badan, atau gaya lain).</p>
-
-        <div class="photo-slot-grid">
-            @foreach ($fotoTambahan as $slot => $foto)
-                <div @if($slot === 1) style="grid-column: span 2;" @endif>
-                    @if($slot === 1)
-                        <p style="font-size: var(--fs-xs); color:var(--accent-strong); font-weight:600; margin:0 0 4px; text-transform:uppercase; letter-spacing:.5px;">Foto Grid (kolase gaya Instagram)</p>
-                    @endif
-                    <label for="upload-slot-{{ $slot }}" class="media-upload-box photo-slot-box" id="box-slot-{{ $slot }}"
-                           @if($slot === 1) style="aspect-ratio:2/1;" @endif>
-                        @if ($foto)
-                            <img id="preview-slot-{{ $slot }}" src="{{ route('extras.media.foto-tambahan', [$profile, $slot]) }}" alt="Foto tambahan {{ $slot }}" class="media-upload-preview">
-                            <span class="media-upload-overlay">Ketuk untuk ganti</span>
-                        @else
-                            <span class="media-upload-empty" id="empty-slot-{{ $slot }}">
-                                <i class="ti ti-plus"></i>
-                                Slot {{ $slot }}
-                            </span>
-                            <img id="preview-slot-{{ $slot }}" src="" alt="Foto tambahan {{ $slot }}" class="media-upload-preview" style="display:none">
-                        @endif
-                    </label>
-                    <input type="file" name="foto" id="upload-slot-{{ $slot }}" accept="image/jpeg,image/png"
-                           style="display: none;"
-                           data-endpoint="{{ route('extras.profile.foto-tambahan.ajax', $slot) }}"
-                           data-progress="progress-slot-{{ $slot }}"
-                           data-max="5120"
-                           data-preview="preview-slot-{{ $slot }}"
-                           data-error="err-slot-{{ $slot }}"
-                           data-empty="empty-slot-{{ $slot }}">
-                    <progress id="progress-slot-{{ $slot }}" class="upload-progress" max="100" value="0"></progress>
-                    <span id="err-slot-{{ $slot }}" class="upload-error-msg"></span>
-                    @if ($foto)
-                        <x-confirm-form action="{{ route('extras.profile.foto-tambahan.hapus', $slot) }}" method="DELETE" style="margin-top: 4px;" message="Hapus foto galeri ini? Foto yang sudah dihapus tidak bisa dikembalikan.">
-                            <button type="submit" class="btn btn-sm btn-danger-outline" style="width: 100%;">Hapus</button>
-                        </x-confirm-form>
-                    @endif
-                </div>
-            @endforeach
-        </div>
-        <p class="field-hint">Format JPG/PNG, maksimal 5MB per foto.</p>
+        <p class="field-hint" style="margin-top: 8px;">Format MP4/MOV, maksimal 50MB.</p>
     </div>
 
     <form method="POST" action="{{ route('extras.profile.update') }}">
@@ -360,6 +350,7 @@
         var errorEl    = document.getElementById(input.dataset.error);
         var emptyEl    = input.dataset.empty ? document.getElementById(input.dataset.empty) : null;
         var isVideo    = input.dataset.type === 'video';
+        var tileEl     = input.dataset.tile ? document.getElementById(input.dataset.tile) : null;
 
         function tampilError(msg) {
             errorEl.textContent = msg;
@@ -378,13 +369,25 @@
                     function (data) {
                         previewEl.src = data.url;
                         previewEl.style.display = 'block';
-                        if (emptyEl) emptyEl.style.display = 'none';
+                        previewEl.hidden = false;
+                        if (emptyEl) emptyEl.hidden = true;
+                        if (tileEl) { tileEl.hidden = false; aturTambah(); }
                         if (!isVideo) previewEl.onload = null;
                     },
                     tampilError
                 );
             });
         });
+    }
+
+    // BJ.2: kotak "+" menunjuk slot galeri kosong pertama, hilang kalau penuh
+    function aturTambah() {
+        var tambah = document.getElementById('foto-tambah');
+        var kosong = document.querySelector('.foto-tile[hidden]');
+        document.getElementById('foto-hint').classList.remove('is-kosong');
+        if (!tambah) return;
+        if (kosong) tambah.htmlFor = kosong.id.replace('tile-', 'upload-');
+        else tambah.remove();
     }
 
     wireUpload('upload-foto');

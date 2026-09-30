@@ -503,15 +503,6 @@
             font-size: var(--fs-xs); text-align: center; padding: 6px 4px;
         }
 
-        /* Grid 4 slot foto tambahan (RF-06 perluasan) */
-        .photo-slot-grid {
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
-            max-width: 320px;
-        }
-        .photo-slot-box { max-width: 100%; aspect-ratio: 1 / 1; }
-        .photo-slot-box .media-upload-empty { padding: 8px; }
-        .photo-slot-box .media-upload-empty i { font-size: 22px; }
-
         /* Thumbnail kecil di tabel pendaftar (Admin & CD) */
         .thumb-photo {
             width: 44px; height: 56px; object-fit: cover;
