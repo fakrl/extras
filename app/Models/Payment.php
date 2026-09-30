@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -24,9 +25,21 @@ class Payment extends Model
         'disengketakan' => 'badge-pending',
     ];
 
+    /** BQ.1: satu definisi "perlu ditransfer" = kontrak sudah TTD lengkap + belum dibayar. */
+    public function scopePerluDitransfer(Builder $query): void
+    {
+        $query->where('status', 'belum_dibayar')
+            ->whereHas('projectApplication', fn ($a) => $a->where('status_partisipasi', 'kontrak_ditandatangani'));
+    }
+
+    public function menungguKontrak(): bool
+    {
+        return $this->status === 'belum_dibayar' && $this->project_application_id && $this->projectApplication?->status_partisipasi !== 'kontrak_ditandatangani';
+    }
+
     public function label(): string
     {
-        return self::LABELS[$this->status] ?? ucfirst(str_replace('_', ' ', $this->status));
+        return $this->menungguKontrak() ? 'Menunggu kontrak' : (self::LABELS[$this->status] ?? ucfirst(str_replace('_', ' ', $this->status)));
     }
 
     public function badgeClass(): string

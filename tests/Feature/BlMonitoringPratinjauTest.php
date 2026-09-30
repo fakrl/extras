@@ -81,6 +81,7 @@ class BlMonitoringPratinjauTest extends TestCase
     public function test_angka_kartu_sama_dengan_dashboard_admin(): void
     {
         $this->isiData();
+        $this->aplikasi('kontrak_ditandatangani')->payment()->create(['status' => 'belum_dibayar']);
 
         $pratinjau = $this->actingAs($this->sa)->get(route('super-admin.monitoring.admin'))->assertOk()
             ->assertSee('Admin Rina')->assertSee('Proyek Senja')->assertSee('Masuk mode Admin');

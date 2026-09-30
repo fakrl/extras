@@ -37,7 +37,7 @@ class AdminRingkasan
             ],
             'bayar' => [
                 'label' => 'Pembayaran Extras belum ditransfer',
-                'jumlah' => Payment::where('status', 'belum_dibayar')->tap($lamaran)->count(),
+                'jumlah' => Payment::perluDitransfer()->tap($lamaran)->count(),
                 'url' => $url(['bayar' => 'extras']),
             ],
             'tanpa_pic' => [
@@ -103,7 +103,8 @@ class AdminRingkasan
                 'dikonfirmasi_diterima' => [null, false, null, null, null],
                 'ditransfer' => ['Menunggu konfirmasi Extras', false, $bayar->ditransfer_at ?? $bayar->updated_at, 'Lihat', route('payments.show', $a, false)],
                 'disengketakan' => ['Extras menyengketakan pembayaran — tinjau', true, $bayar->updated_at, 'Tinjau', route('payments.show', $a, false)],
-                default => ['Honor belum ditransfer', true, $kontrak?->signed_at ?? $bayar?->created_at ?? $a->updated_at, 'Transfer', route('payments.show', $a, false)],
+                'belum_dibayar' => ['Honor belum ditransfer', true, $kontrak?->signed_at ?? $bayar->created_at, 'Transfer', route('payments.show', $a, false)],
+                default => ['Data pembayaran belum dibuat', false, $a->updated_at, 'Lihat', route('payments.show', $a, false)],
             },
         };
 
