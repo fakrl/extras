@@ -135,7 +135,7 @@
                     'data-tinggi' => $app->extras->tinggi_badan ?? '',
                     'data-ukuran-baju' => $app->extras->ukuran_baju ?? '',
                     'data-warna-kulit' => $app->extras->warna_kulit ?? '',
-                    'data-pengalaman' => $app->extras->pengalaman ?? '',
+                    'data-pengalaman' => $app->extras->pengalamanTeks(),
                     'data-bahasa' => $app->extras->bahasa ?? '',
                     'data-karakter' => $app->castingProjectClass->nama_kelas ?? '-',
                     'data-kriteria' => $app->castingProjectClass->kriteria ?? '',
@@ -316,7 +316,7 @@
             var box = document.createElement('div');
             if (pair[2]) box.className = 'full';
             var lbl = document.createElement('span'); lbl.className = 'xkv-l'; lbl.textContent = pair[0];
-            var val = document.createElement('b'); val.textContent = pair[1] || '-';
+            var val = document.createElement('b'); val.textContent = pair[1] || '-'; if (pair[2]) val.style.whiteSpace = 'pre-line';
             box.appendChild(lbl); box.appendChild(val); atEl.appendChild(box);
         });
 

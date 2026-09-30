@@ -41,6 +41,7 @@ use Illuminate\Support\Str;
     'ukuran_baju',
     'warna_kulit',
     'pengalaman',
+    'riwayat_pengalaman',
     'bahasa',
     'tautan_tambahan',
     'rate_card',
@@ -72,7 +73,21 @@ class ExtrasProfile extends Model
             // Array of {label, url}, RF-14 & CLAUDE.md §5: cuma dilihat
             // Extras & Admin, tidak pernah dikirim ke view Casting Director.
             'tautan_tambahan' => 'array',
+            'riwayat_pengalaman' => 'array',
         ];
+    }
+
+    /** BJ.3: riwayat pengalaman {judul, keterangan, tahun}, tahun terbaru di atas, tanpa tahun di bawah. */
+    public function pengalamanUrut(): array
+    {
+        return collect($this->riwayat_pengalaman ?? [])->sortByDesc(fn ($p) => $p['tahun'] ?? 0)->values()->all();
+    }
+
+    public function pengalamanTeks(): string
+    {
+        return collect($this->pengalamanUrut())
+            ->map(fn ($p) => $p['judul'].(empty($p['tahun']) ? '' : " ({$p['tahun']})").(empty($p['keterangan']) ? '' : " - {$p['keterangan']}"))
+            ->implode("\n");
     }
 
     /** BH.2: tampil di beranda = izin Extras + persetujuan Admin + foto utama + akun aktif. */

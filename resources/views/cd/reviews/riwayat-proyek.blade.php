@@ -55,7 +55,7 @@
                     data-tinggi="{{ $extras?->tinggi_badan ?? '' }}"
                     data-ukuran-baju="{{ $extras?->ukuran_baju ?? '' }}"
                     data-warna-kulit="{{ $extras?->warna_kulit ?? '' }}"
-                    data-pengalaman="{{ $extras?->pengalaman ?? '' }}"
+                    data-pengalaman="{{ $extras?->pengalamanTeks() }}"
                     data-bahasa="{{ $extras?->bahasa ?? '' }}">
                     <td>{{ $extras?->user?->username ?? '-' }}</td>
                     <td>
@@ -179,6 +179,7 @@
                 label.textContent = pair[0];
                 var val = document.createElement('div');
                 val.textContent = pair[1] || '-';
+                val.style.whiteSpace = 'pre-line';
                 atEl.appendChild(label);
                 atEl.appendChild(val);
             });

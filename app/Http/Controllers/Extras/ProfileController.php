@@ -43,7 +43,7 @@ class ProfileController extends Controller
 
     /**
      * RF-06: Extras melengkapi profil (usia, gender, tinggi badan, ukuran
-     * baju, warna kulit, pengalaman, bahasa, rate card, video, foto,
+     * baju, warna kulit, riwayat pengalaman, bahasa, rate card, video, foto,
      * portofolio/sosmed).
      */
     public function edit(Request $request)
@@ -119,6 +119,15 @@ class ProfileController extends Controller
             'categories.*' => ['integer', 'exists:extras_categories,id'],
             'tag_nama' => ['nullable', 'array'],
             'tag_nama.*' => ['nullable', 'string', 'max:100'],
+            'pengalaman_judul' => ['nullable', 'array', 'max:20'],
+            'pengalaman_judul.*' => ['nullable', 'required_with:pengalaman_keterangan.*,pengalaman_tahun.*', 'string', 'max:150'],
+            'pengalaman_keterangan' => ['nullable', 'array', 'max:20'],
+            'pengalaman_keterangan.*' => ['nullable', 'string', 'max:255'],
+            'pengalaman_tahun' => ['nullable', 'array', 'max:20'],
+            'pengalaman_tahun.*' => ['nullable', 'integer', 'min:1950', 'max:'.(now()->year + 1)],
+        ], [
+            'pengalaman_judul.*.required_with' => 'Judul pengalaman wajib diisi.',
+            'pengalaman_judul.max' => 'Maksimal 20 pengalaman.',
         ]);
         $tagIds = $request->boolean('categories_present')
             ? ExtrasCategory::idsDariInput($data['tag_nama'] ?? [], $data['categories'] ?? [], $request->user())
@@ -132,8 +141,15 @@ class ProfileController extends Controller
             }
         }
 
-        $dataDisimpan = collect($data)->except(['tautan_label', 'tautan_url', 'nomor_wa', 'username', 'alias', 'categories', 'tag_nama'])->toArray();
+        $dataDisimpan = collect($data)->except(['tautan_label', 'tautan_url', 'nomor_wa', 'username', 'alias', 'categories', 'tag_nama', 'pengalaman_judul', 'pengalaman_keterangan', 'pengalaman_tahun'])->toArray();
         $dataDisimpan['tautan_tambahan'] = $tautanTambahan;
+        if ($request->has('pengalaman_judul')) {
+            $dataDisimpan['riwayat_pengalaman'] = collect($data['pengalaman_judul'] ?? [])->filter()->map(fn ($judul, $i) => [
+                'judul' => $judul,
+                'keterangan' => $data['pengalaman_keterangan'][$i] ?? null,
+                'tahun' => isset($data['pengalaman_tahun'][$i]) ? (int) $data['pengalaman_tahun'][$i] : null,
+            ])->values()->all();
+        }
         if ($request->boolean('izin_present')) {
             $dataDisimpan['izin_tampil_publik'] = $request->boolean('izin_tampil_publik');
         }

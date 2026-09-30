@@ -117,6 +117,9 @@ class DemoLengkapSeeder extends Seeder
                 'ukuran_baju' => $baju[$g],
                 'warna_kulit' => $usia > 50 ? 'Sawo matang' : 'Kuning langsat',
                 'pengalaman' => $pengalaman,
+                'riwayat_pengalaman' => collect(explode('. ', rtrim($pengalaman, '.')))->map(fn ($judul, $k) => [
+                    'judul' => $judul, 'keterangan' => null, 'tahun' => now()->year - $k - $no % 3,
+                ])->all(),
                 'bahasa' => $bahasa,
                 'rate_card' => $rate,
                 'rekening' => sprintf('BCA 12345%05d a.n. %s', $no, $nama),
