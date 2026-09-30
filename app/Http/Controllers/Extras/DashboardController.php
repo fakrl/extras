@@ -24,7 +24,19 @@ class DashboardController extends Controller
                 ->with(['castingProject.shootingDates', 'payment:id,project_application_id,status'])
                 ->latest()
                 ->get()
+                ->unique('casting_project_id')
             : collect();
+
+        // BK.3: selesai/ditolak/batal ke Riwayat (kecuali honor masih menunggu konfirmasi); sisanya urut tanggal shooting terdekat.
+        $hariIni = now()->toDateString();
+        [$riwayatPendaftaran, $pendaftaranAktif] = $pendaftaranSaya->partition(fn ($a) => in_array($a->status_partisipasi, ['selesai_produksi', 'ditolak', 'dibatalkan'], true)
+            && $a->payment?->status !== 'ditransfer');
+        $pendaftaranAktif = $pendaftaranAktif->sortBy(function ($a) use ($hariIni) {
+            $tanggal = $a->castingProject->shootingDates->map(fn ($d) => $d->tanggal->toDateString());
+            $mendatang = $tanggal->filter(fn ($t) => $t >= $hariIni)->min();
+
+            return $mendatang ? '0'.$mendatang : ($tanggal->isNotEmpty() ? '1'.$tanggal->max() : '2');
+        })->values();
 
         $aktivitasSaya = collect();
         if ($extrasProfile) {
@@ -69,6 +81,6 @@ class DashboardController extends Controller
                 ->get()
             : collect();
 
-        return view('extras.dashboard', compact('extrasProfile', 'pendaftaranSaya', 'aktivitasSaya', 'jadwalBulanIni', 'castingCallTerbuka', 'riwayatAbsensi'));
+        return view('extras.dashboard', compact('extrasProfile', 'pendaftaranAktif', 'riwayatPendaftaran', 'aktivitasSaya', 'jadwalBulanIni', 'castingCallTerbuka', 'riwayatAbsensi'));
     }
 }
