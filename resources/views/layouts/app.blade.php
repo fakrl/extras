@@ -180,19 +180,6 @@
             color: var(--text-primary); text-decoration: none;
         }
 
-        /* Progress steps: visualisasi progress alur pendaftaran */
-        .funnel-steps { display: flex; flex-direction: column; gap: 10px; }
-        .funnel-step { display: grid; grid-template-columns: 110px 1fr 34px; align-items: center; gap: 10px; }
-        .funnel-step-label { font-size: 12.5px; color: var(--text-secondary); }
-        .funnel-step-track {
-            background: var(--bg-nav-active); border-radius: 20px; height: 8px; overflow: hidden;
-        }
-        .funnel-step-fill {
-            background: var(--accent); height: 100%; border-radius: 20px;
-            transition: width 0.3s ease; min-width: 2px;
-        }
-        .funnel-step-value { font-size: 12.5px; color: var(--text-primary); text-align: right; font-weight: 500; }
-
         /* Step-bar horizontal: progress pendaftaran Extras (dashboard Extras).
            Bisa discroll ke samping di layar kecil, bukan wrap/vertical. */
         .step-bar-wrap { overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
@@ -227,6 +214,32 @@
         .step-bar-stopped i { color: var(--danger); font-size: 18px; flex-shrink: 0; }
         .step-bar-stopped-title { font-size: 13px; font-weight: 600; color: var(--danger); }
         .step-bar-stopped-reason { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; }
+
+        /* BP: step-bar sebagai tab tahapan kandidat (dashboard Admin & Monitoring). */
+        .tahap-bar { padding: 2px 2px 0; }
+        .step-bar .tahap-tab { background: none; border: none; font: inherit; color: inherit; cursor: pointer; padding: 4px 0 6px; border-radius: 8px; width: 96px; }
+        .tahap-tab:hover .step-bar-circle { border-color: var(--accent); }
+        .tahap-tab:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+        .tahap-tab.is-active { background: var(--bg-nav-active); }
+        .tahap-tab .step-bar-circle { width: 32px; height: 32px; font-size: 13px; }
+        .tahap-bar .step-bar-line { margin-top: 20px; }
+        .tahap-perlu { margin-top: 4px; padding: 1px 7px; border-radius: 999px; background: var(--danger); color: #fff; font-size: 10.5px; font-weight: 700; white-space: nowrap; }
+        .tahap-panel { margin-top: 12px; }
+        .tahap-row { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color); font-size: 13.5px; }
+        .tahap-foto { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; display: flex; align-items: center; justify-content: center; background: var(--bg-nav-active); color: var(--text-secondary); font-size: 12px; font-weight: 700; }
+        .tahap-isi { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+        .tahap-isi strong, .tahap-isi .dash-sub { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .tahap-aksi { color: var(--text-muted); font-size: 13px; }
+        .tahap-row.is-perlu .tahap-aksi { color: var(--text-primary); font-weight: 600; }
+        .tahap-row.is-perlu .tahap-aksi::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--danger); margin-right: 6px; vertical-align: 1px; }
+        .tahap-kanan { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+        .tahap-kosong { margin: 6px 0; padding: 14px 0; text-align: center; }
+        .tahap-semua { display: inline-block; margin-top: 10px; font-size: 12.5px; color: var(--accent); font-weight: 600; text-decoration: none; }
+        button.tahap-semua { background: none; border: none; padding: 0; font-family: inherit; cursor: pointer; }
+        @media (max-width: 600px) {
+            .tahap-row { grid-template-columns: 36px minmax(0, 1fr); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+            .tahap-kanan { grid-column: 1 / -1; justify-content: space-between; }
+        }
 
         @media (max-width: 480px) {
             .step-bar-item { width: 68px; }

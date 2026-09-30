@@ -21,18 +21,6 @@ class DashboardController extends Controller
         $totalPendaftar = ProjectApplication::count();
         $perluDinego = ProjectApplication::where('status_partisipasi', 'nego_fee')->count();
 
-        $statusPartisipasi = ProjectApplication::selectRaw('status_partisipasi, count(*) as total')
-            ->groupBy('status_partisipasi')
-            ->pluck('total', 'status_partisipasi');
-
-        // satu sumber label (AY.3.4), jangan map lokal
-        $partisipasiLabels = ProjectApplication::LABELS;
-
-        $chartStatusPartisipasi = [
-            'labels' => array_values($partisipasiLabels),
-            'data' => array_map(fn ($key) => (int) ($statusPartisipasi[$key] ?? 0), array_keys($partisipasiLabels)),
-        ];
-
         $statusPembayaran = Payment::selectRaw('status, count(*) as total')
             ->groupBy('status')
             ->pluck('total', 'status');
@@ -48,6 +36,7 @@ class DashboardController extends Controller
 
         $pembayaranSengketa = Payment::where('status', 'disengketakan')->count();
         $ringkasan = AdminRingkasan::untuk();
+        $tahapan = AdminRingkasan::tahapan();
 
         $urgentProjects = CastingProject::where('status', 'dibuka')
             ->with(['shootingDates', 'applications', 'client'])
@@ -66,12 +55,12 @@ class DashboardController extends Controller
             'proyekAktif',
             'totalPendaftar',
             'perluDinego',
-            'chartStatusPartisipasi',
             'chartStatusPembayaran',
             'urgentProjects',
             'jadwalBulanIni',
             'pembayaranSengketa',
-            'ringkasan'
+            'ringkasan',
+            'tahapan'
         ));
     }
 }
