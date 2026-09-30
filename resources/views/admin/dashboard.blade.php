@@ -5,7 +5,7 @@
 @section('content')
 @php $tampilAdmin = auth()->user()->bisaSebagaiAdmin() && auth()->user()->modeSa() !== 'korlap'; @endphp
 @if ($tampilAdmin)
-    @php $jumlahTindakan = $urgentProjects->count() + ($pembayaranSengketa ? 1 : 0) + ($perluDinego ? 1 : 0); @endphp
+    @php $tindakan = array_filter($ringkasan, fn ($r) => $r['jumlah'] > 0); $jumlahTindakan = $urgentProjects->count() + ($pembayaranSengketa ? 1 : 0) + count($tindakan); @endphp
     <div class="dash-tiga">
         <div class="card">
             <div class="card-title">Jadwal Shooting Bulan Ini</div>
@@ -49,16 +49,12 @@
                 </a>
             @endif
 
-            @if ($perluDinego)
-                <a href="{{ route('admin.projects.index', ['peserta' => 'nego_fee']) }}" class="dash-row">
-                    <div>
-                        <span class="badge badge-info">Perlu dinego</span>
-                        <strong>{{ $perluDinego }} kandidat</strong>
-                        <div class="dash-sub">Nego fee belum deal</div>
-                    </div>
+            @foreach ($tindakan as $r)
+                <a href="{{ $r['url'] }}" class="dash-row">
+                    <div><strong>{{ $r['jumlah'] }}</strong> {{ $r['label'] }}</div>
                     <span class="dash-sub">Buka &rarr;</span>
                 </a>
-            @endif
+            @endforeach
 
             @unless ($jumlahTindakan)
                 <div class="dash-aman" role="status"><i class="ti ti-circle-check"></i> Semua aman &mdash; tidak ada yang perlu ditindak.</div>

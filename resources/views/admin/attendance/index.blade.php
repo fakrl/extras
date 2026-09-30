@@ -52,8 +52,6 @@
     <div class="card" style="text-align:center; color: var(--text-muted); padding: 30px 0;">Proyek ini belum punya tanggal shooting.</div>
 @else
     @php
-        $jmlHadir = $applicants->filter(fn ($a) => $a->absen?->status === 'hadir' && $a->absen->status_validasi === 'tervalidasi')->count();
-        $jmlMenunggu = $applicants->filter(fn ($a) => ! $a->absen || $a->absen->status_validasi === 'menunggu')->count();
         $perluValidasi = $applicants->filter(fn ($a) => $a->absen?->status_validasi === 'menunggu');
         $belumDiabsen = $applicants->filter(fn ($a) => ! $a->absen);
     @endphp
@@ -199,15 +197,15 @@
 @endif
 </div>
 
-@isset($jmlMenunggu)
-    <div class="card dash-perlu absen-perlu {{ $jmlMenunggu ? '' : 'is-aman' }}">
+@if ($rekap)
+    <div class="card dash-perlu absen-perlu {{ $rekap['menunggu'] ? '' : 'is-aman' }}">
         <div class="card-title">
             <i class="ti ti-clipboard-list"></i> Perlu Tindakan
-            @if ($jmlMenunggu)
-                <span class="badge badge-pending" style="margin-left: 8px;">{{ $jmlMenunggu }}</span>
+            @if ($rekap['menunggu'])
+                <span class="badge badge-pending" style="margin-left: 8px;">{{ $rekap['menunggu'] }}</span>
             @endif
         </div>
-        <div style="font-size: var(--fs-md); font-weight: 600; margin-bottom: 6px;">{{ $jmlHadir }}/{{ $applicants->count() }} hadir · {{ $jmlMenunggu }} menunggu</div>
+        <div style="font-size: var(--fs-md); font-weight: 600; margin-bottom: 6px;">{{ $rekap['hadir'] }}/{{ $rekap['total'] }} hadir · {{ $rekap['menunggu'] }} menunggu</div>
         <div class="dash-sub" style="margin-bottom: 4px;">{{ $shootingDate->tanggal->translatedFormat('l, d M Y') }}</div>
         @if ($perluValidasi->isNotEmpty())
             <a href="#app-{{ $perluValidasi->first()->id }}" class="dash-row">
@@ -221,11 +219,11 @@
                 <span class="dash-sub">Cek &rarr;</span>
             </a>
         @endif
-        @unless ($jmlMenunggu)
+        @unless ($rekap['menunggu'])
             <div class="dash-aman" role="status"><i class="ti ti-circle-check"></i> Semua sudah diabsen &amp; divalidasi.</div>
         @endunless
     </div>
-@endisset
+@endif
 
 <div class="card absen-jadwal">
     <div class="card-title">Jadwal Shooting Bulan Ini</div>

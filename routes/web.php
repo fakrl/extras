@@ -36,6 +36,7 @@ use App\Http\Controllers\SuperAdmin\AdminManagementController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\SuperAdmin\GlobalSearchController;
 use App\Http\Controllers\SuperAdmin\ModeRoleController;
+use App\Http\Controllers\SuperAdmin\MonitoringController;
 use App\Http\Controllers\SuperAdmin\ProjectAssignmentController;
 use App\Http\Controllers\UbahPasswordController;
 use Illuminate\Support\Facades\Route;
@@ -259,6 +260,8 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
 
     Route::get('/akun', [AdminManagementController::class, 'akun'])->name('super-admin.akun.index');
     Route::get('/monitoring', [AdminManagementController::class, 'keAkun'])->name('super-admin.monitoring');
+    Route::get('/monitoring/admin', [MonitoringController::class, 'admin'])->name('super-admin.monitoring.admin');
+    Route::get('/monitoring/korlap', [MonitoringController::class, 'korlap'])->name('super-admin.monitoring.korlap');
 
     Route::get('/attendance', [AttendanceController::class, 'index'])
         ->name('super-admin.attendance.index');

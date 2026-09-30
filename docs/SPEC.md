@@ -1477,9 +1477,9 @@ Halaman `super-admin/monitoring/korlap`:
 
 | Item | Bukti | QA |
 |---|---|---|
-| BL.1 pratinjau Admin | | [ ] |
-| BL.2 pratinjau Korlap | | [ ] |
-| BL.3 masuk mode dengan tujuan, keluar balik ke pratinjau | | [ ] |
+| BL.1 pratinjau Admin | `8f34ced` (merge) — `MonitoringController@admin`, angka dari `AdminRingkasan::untuk()` (juga dipakai dashboard Admin); `--filter BlMonitoringPratinjauTest` | [ ] |
+| BL.2 pratinjau Korlap | `8f34ced` — `KorlapRingkasan` (`peserta()`/`rekap()` juga dipakai `AttendanceController@index`) | [ ] |
+| BL.3 masuk mode dengan tujuan, keluar balik ke pratinjau | `8f34ced` — `ke` cuma `/admin/...` (URL luar ditolak), `sa_kembali` cuma `/super-admin/monitoring/...`; pratinjau GET nggak nulis apa pun | [ ] |
 
 ---
 

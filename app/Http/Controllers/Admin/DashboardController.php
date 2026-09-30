@@ -7,6 +7,7 @@ use App\Models\CastingProject;
 use App\Models\EventShootingDate;
 use App\Models\Payment;
 use App\Models\ProjectApplication;
+use App\Support\AdminRingkasan;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -46,6 +47,7 @@ class DashboardController extends Controller
         ];
 
         $pembayaranSengketa = Payment::where('status', 'disengketakan')->count();
+        $ringkasan = AdminRingkasan::untuk();
 
         $urgentProjects = CastingProject::where('status', 'dibuka')
             ->with(['shootingDates', 'applications'])
@@ -68,7 +70,8 @@ class DashboardController extends Controller
             'chartStatusPembayaran',
             'urgentProjects',
             'jadwalBulanIni',
-            'pembayaranSengketa'
+            'pembayaranSengketa',
+            'ringkasan'
         ));
     }
 }
