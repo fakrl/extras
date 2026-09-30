@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\FeeNegotiationController as AdminFeeNegotiationController;
 use App\Http\Controllers\Admin\KeuanganProyekController;
 use App\Http\Controllers\Admin\RecapController;
+use App\Http\Controllers\Admin\TagController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\WorkHistoryController;
 use App\Http\Controllers\Auth\LoginController;
@@ -99,6 +100,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/ubah-password', [UbahPasswordController::class, 'update'])->name('ubah-password.update');
     Route::post('/validate-current-password', [UbahPasswordController::class, 'validateCurrentPassword'])->name('ubah-password.validate');
     Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
+    Route::get('/tag/cari', [TagController::class, 'cari'])->name('tag.cari');
 });
 
 // ==================== EXTRAS ====================
@@ -155,6 +157,9 @@ Route::middleware(['auth', 'role:admin,korlap,super_admin'])
                 ->name('admin.users.toggle-status');
             Route::patch('/users/{user}/kategori', [UserManagementController::class, 'updateKategori'])
                 ->name('admin.users.kategori');
+            Route::get('/tag', [TagController::class, 'index'])->name('admin.tags.index');
+            Route::patch('/tag/{extrasCategory}', [TagController::class, 'update'])->name('admin.tags.update');
+            Route::post('/tag/{extrasCategory}/gabung', [TagController::class, 'gabung'])->name('admin.tags.gabung');
             Route::patch('/extras/{user}/beranda', [UserManagementController::class, 'toggleBeranda'])
                 ->name('admin.extras.beranda');
             Route::post('/users/prune-abandoned', [UserManagementController::class, 'pruneAbandoned'])
@@ -266,7 +271,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
     Route::patch('/admins/{user}', [AdminManagementController::class, 'update'])->name('super-admin.admins.update');
     Route::patch('/admins/{user}/honor', [AdminManagementController::class, 'updateHonor'])->name('super-admin.admins.honor');
     Route::patch('/admins/{user}/toggle-status', [AdminManagementController::class, 'toggleStatus'])->name('super-admin.admins.toggle-status');
-    Route::patch('/admins/{user}/kategori', [AdminManagementController::class, 'updateKategori'])->name('super-admin.admins.kategori');
+    Route::patch('/admins/{user}/kategori', [UserManagementController::class, 'updateKategori'])->name('super-admin.admins.kategori');
     Route::patch('/admins/{user}/restore', [AdminManagementController::class, 'restore'])->name('super-admin.admins.restore');
     Route::delete('/admins/{user}', [AdminManagementController::class, 'destroy'])->name('super-admin.admins.destroy');
 

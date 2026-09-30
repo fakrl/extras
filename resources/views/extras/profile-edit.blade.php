@@ -213,10 +213,10 @@
 
         <div class="profile-section">
             <div class="profile-section-title">Tentang Kamu</div>
-            <p class="field-hint">Pilih tag yang sesuai denganmu (boleh lebih dari satu). Dipakai Admin untuk mencocokkan peran.</p>
+            <p class="field-hint">Tulis tag yang menggambarkan kamu (usia tampilan, tipe, kemampuan). Pilih dari saran atau ketik sendiri. Dipakai Admin untuk mencocokkan peran.</p>
             <input type="hidden" name="categories_present" value="1">
-            @include('partials.tag-chips', ['name' => 'categories[]', 'selected' => array_map('intval', old('categories', $profile->categories->pluck('id')->all()))])
-            @error('categories')<span class="field-error">{{ $message }}</span>@enderror
+            @include('partials.tag-input', ['name' => 'tag_nama', 'selected' => old('categories_present') ? old('tag_nama', []) : $profile->categories])
+            @error('tag_nama')<span class="field-error">{{ $message }}</span>@enderror
             @error('categories.*')<span class="field-error">{{ $message }}</span>@enderror
         </div>
 

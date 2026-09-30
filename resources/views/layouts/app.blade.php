@@ -143,6 +143,14 @@
         .tag-chip { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; margin: 0; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-card-hover); color: var(--text-primary); font-size: var(--fs-sm); font-weight: 500; cursor: pointer; user-select: none; }
         .tag-chip:has(:checked) { background: var(--accent); border-color: var(--accent); color: var(--accent-on); }
         .tag-chip:has(:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .tag-chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-on); }
+        .tag-input-box { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 6px; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--bg-card); }
+        .tag-input-box:focus-within { border-color: var(--accent); }
+        .tag-input-chip { display: inline-flex; align-items: center; gap: 2px; min-height: 36px; padding-left: 12px; border-radius: 999px; background: var(--accent); color: var(--accent-on); font-size: var(--fs-sm); font-weight: 500; }
+        .tag-input-chip button { width: 36px; height: 36px; border: 0; background: none; color: inherit; cursor: pointer; border-radius: 999px; font-size: 14px; }
+        .tag-input-field { flex: 1 1 140px; width: auto; min-width: 0; min-height: 36px; margin: 0; border: 0; background: transparent; padding: 0 6px; }
+        .tag-input-field:focus-visible { outline: none; }
+        .tag-input .field-hint { margin-top: 6px; }
         .badge { display: inline-flex; padding: 3px 10px; border-radius: var(--radius-sm); border: 1px solid transparent; font-size: var(--fs-xs); font-weight: 500; }
         .badge-aktif { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.35); color: var(--accent-strong); }
         .badge-pending { background: rgba(234,179,8,0.15); border-color: rgba(234,179,8,0.35); color: var(--warning); }
@@ -908,6 +916,66 @@
             var d = e.key === 'Escape' && !document.querySelector('dialog[open]') && document.querySelector('details.fpanel[open]');
             if (d) { d.open = false; d.querySelector('summary').focus(); }
         });
+    }());
+    // BJ.1 input tag bebas (partials/tag-input): Enter/koma = chip, saran bisa di-tap, autocomplete via datalist.
+    (function () {
+        var timer, dl;
+        var norm = function (s) { return s.trim().replace(/^#+/, '').replace(/\s+/g, ' ').trim().slice(0, 30).trim(); };
+        var nama = function (w) { return Array.prototype.map.call(w.querySelectorAll('input[type=hidden]'), function (i) { return i.value.toLowerCase(); }); };
+        function segarkan(w) {
+            var ada = nama(w);
+            w.querySelectorAll('[data-tag-saran]').forEach(function (b) { b.setAttribute('aria-pressed', ada.indexOf(b.dataset.tagSaran.toLowerCase()) > -1); });
+            w.querySelector('[data-tag-hitung]').textContent = ada.length;
+        }
+        function tambah(w, n) {
+            n = norm(n);
+            if (!n || nama(w).indexOf(n.toLowerCase()) > -1) return;
+            if (nama(w).length >= +w.dataset.max) return alert('Maksimal ' + w.dataset.max + ' tag.');
+            var chip = document.createElement('span'), inp = document.createElement('input'), b = document.createElement('button');
+            chip.className = 'tag-input-chip';
+            inp.type = 'hidden'; inp.name = w.dataset.name; inp.value = n;
+            b.type = 'button'; b.setAttribute('data-tag-hapus', ''); b.setAttribute('aria-label', 'Hapus tag ' + n); b.innerHTML = '<i class="ti ti-x" aria-hidden="true"></i>';
+            chip.append('#' + n, inp, b);
+            w.querySelector('.tag-input-field').before(chip);
+            segarkan(w);
+        }
+        function hapus(w, n) {
+            w.querySelectorAll('input[type=hidden]').forEach(function (i) { if (i.value.toLowerCase() === n.toLowerCase()) i.parentNode.remove(); });
+            segarkan(w);
+        }
+        document.addEventListener('keydown', function (e) {
+            if (!e.target.matches('.tag-input-field')) return;
+            var w = e.target.closest('[data-tag-input]');
+            if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); tambah(w, e.target.value); e.target.value = ''; }
+            else if (e.key === 'Backspace' && !e.target.value) { var c = w.querySelectorAll('.tag-input-chip'); if (c.length) { c[c.length - 1].remove(); segarkan(w); } }
+        });
+        document.addEventListener('input', function (e) {
+            var f = e.target;
+            if (!f.matches('.tag-input-field')) return;
+            var w = f.closest('[data-tag-input]');
+            if (f.value.indexOf(',') > -1) { var p = f.value.split(','); f.value = p.pop(); p.forEach(function (n) { tambah(w, n); }); }
+            if (dl && (!e.inputType || e.inputType === 'insertReplacementText') && Array.prototype.some.call(dl.options, function (o) { return o.value === f.value; })) { tambah(w, f.value); f.value = ''; return; }
+            if (!dl) { dl = document.createElement('datalist'); dl.id = 'tag-datalist'; document.body.append(dl); }
+            clearTimeout(timer);
+            var q = norm(f.value);
+            if (!q) return;
+            timer = setTimeout(function () {
+                fetch(w.dataset.cari + '?q=' + encodeURIComponent(q), { headers: { Accept: 'application/json' } }).then(function (r) { return r.json(); }).then(function (daftar) {
+                    dl.replaceChildren.apply(dl, daftar.map(function (n) { var o = document.createElement('option'); o.value = n; return o; }));
+                }).catch(function () {});
+            }, 200);
+        });
+        document.addEventListener('click', function (e) {
+            var b = e.target.closest('[data-tag-hapus], [data-tag-saran]');
+            var w = b && b.closest('[data-tag-input]');
+            if (!w) return;
+            if (b.hasAttribute('data-tag-hapus')) { b.parentNode.remove(); segarkan(w); }
+            else if (b.getAttribute('aria-pressed') === 'true') hapus(w, b.dataset.tagSaran);
+            else tambah(w, b.dataset.tagSaran);
+        });
+        document.addEventListener('submit', function (e) {
+            e.target.querySelectorAll('.tag-input-field').forEach(function (f) { if (f.value.trim()) { tambah(f.closest('[data-tag-input]'), f.value); f.value = ''; } });
+        }, true);
     }());
     </script>
     @stack('scripts')

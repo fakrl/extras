@@ -169,19 +169,11 @@
 
 @if ($availableKategori && $user->extrasProfile)
 <div class="card" style="margin-bottom: 16px;">
-    <div style="font-weight: 600; margin-bottom: 10px;">Kategori Extras</div>
+    <div style="font-weight: 600; margin-bottom: 10px;">Tag Extras</div>
     <form method="POST" action="{{ route('super-admin.admins.kategori', $user) }}">
         @csrf @method('PATCH')
-        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
-            @foreach ($availableKategori as $kat)
-                <label style="font-size: 12.5px; display: flex; align-items: center; gap: 4px;">
-                    <input type="checkbox" name="kategori_ids[]" value="{{ $kat->id }}"
-                        {{ $user->extrasProfile->categories->contains('id', $kat->id) ? 'checked' : '' }}>
-                    {{ $kat->nama }}
-                </label>
-            @endforeach
-        </div>
-        <button type="submit" class="btn btn-sm">Simpan Kategori</button>
+        @include('partials.tag-input', ['name' => 'tag_nama', 'selected' => $user->extrasProfile->categories, 'tagGroups' => $availableKategori])
+        <button type="submit" class="btn btn-sm btn-brand" style="margin-top: 12px;">Simpan Tag</button>
     </form>
 </div>
 @endif

@@ -117,7 +117,12 @@ class ProfileController extends Controller
             'nomor_wa' => ['nullable', 'string'],
             'categories' => ['nullable', 'array'],
             'categories.*' => ['integer', 'exists:extras_categories,id'],
+            'tag_nama' => ['nullable', 'array'],
+            'tag_nama.*' => ['nullable', 'string', 'max:100'],
         ]);
+        $tagIds = $request->boolean('categories_present')
+            ? ExtrasCategory::idsDariInput($data['tag_nama'] ?? [], $data['categories'] ?? [], $request->user())
+            : null;
 
         $tautanTambahan = [];
         foreach ($data['tautan_label'] ?? [] as $i => $label) {
@@ -127,7 +132,7 @@ class ProfileController extends Controller
             }
         }
 
-        $dataDisimpan = collect($data)->except(['tautan_label', 'tautan_url', 'nomor_wa', 'username', 'alias', 'categories'])->toArray();
+        $dataDisimpan = collect($data)->except(['tautan_label', 'tautan_url', 'nomor_wa', 'username', 'alias', 'categories', 'tag_nama'])->toArray();
         $dataDisimpan['tautan_tambahan'] = $tautanTambahan;
         if ($request->boolean('izin_present')) {
             $dataDisimpan['izin_tampil_publik'] = $request->boolean('izin_tampil_publik');
@@ -138,8 +143,8 @@ class ProfileController extends Controller
         // ada di $fillable ExtrasProfile, jadi mass-update() di bawah otomatis
         // aman (lihat catatan di model).
         $profile = $request->user()->extrasProfile()->updateOrCreate([], $dataDisimpan);
-        if ($request->boolean('categories_present')) {
-            $profile->categories()->sync($data['categories'] ?? []);
+        if ($tagIds !== null) {
+            $profile->categories()->sync($tagIds);
         }
         if (! $profile->izin_tampil_publik && $profile->tampil_di_beranda) {
             $profile->forceFill(['tampil_di_beranda' => false, 'tampil_di_beranda_at' => null])->save();

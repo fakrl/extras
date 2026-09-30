@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\CastingProject;
-use App\Models\ExtrasCategory;
 use App\Models\ExtrasProfile;
 
 class HomeController extends Controller
@@ -28,7 +27,7 @@ class HomeController extends Controller
             ->get();
 
         $castExtras = ExtrasProfile::tampilDiBeranda()
-            ->with(['user:id,username', 'categories' => fn ($q) => $q->whereIn('nama', ExtrasCategory::GRUP['Usia tampilan'])])
+            ->with(['user:id,username', 'categories' => fn ($q) => $q->where('grup', 'Usia tampilan')])
             ->latest('tampil_di_beranda_at')
             ->limit(16)
             ->get(['id', 'user_id', 'share_token', 'tampil_di_beranda_at']);

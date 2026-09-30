@@ -72,16 +72,28 @@ class UserManagementController extends Controller
 
     public function updateKategori(User $user, Request $request): RedirectResponse
     {
-        abort_unless($user->role === 'extras', 403);
+        abort_unless($user->role === 'extras' && $user->extrasProfile, 403);
 
         $data = $request->validate([
             'kategori_ids' => ['nullable', 'array'],
             'kategori_ids.*' => ['exists:extras_categories,id'],
+            'tag_nama' => ['nullable', 'array'],
+            'tag_nama.*' => ['nullable', 'string', 'max:100'],
         ]);
 
-        $user->extrasProfile?->categories()->sync($data['kategori_ids'] ?? []);
+        $ids = ExtrasCategory::idsDariInput($data['tag_nama'] ?? [], $data['kategori_ids'] ?? [], $request->user());
+        $ubah = $user->extrasProfile->categories()->sync($ids);
+        $nama = fn ($ids) => ExtrasCategory::whereKey($ids)->pluck('nama')->all();
+        if ($ubah['attached'] || $ubah['detached']) {
+            ActivityLog::record(
+                'UPDATE_EXTRAS_KATEGORI',
+                "{$request->user()->label()} {$request->user()->name} mengubah tag @{$user->username}",
+                $user,
+                ['ditambah' => $nama($ubah['attached']), 'dihapus' => $nama($ubah['detached'])]
+            );
+        }
 
-        return back()->with('status', 'Kategori extras diperbarui.');
+        return back()->with('status', 'Tag extras diperbarui.');
     }
 
     /** BH.2: Admin/SA nyalakan/matikan tampil di beranda, cuma kalau Extras sudah kasih izin. */
