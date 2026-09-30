@@ -10,6 +10,7 @@
 @include('partials.profil-extras-app')
 
 @if ($mode === 'pemilik')
+@include('partials.google-akun')
 <dialog id="modal-share" style="border:1px solid var(--border-color); border-radius:16px; padding:0; max-width:360px; width:95%;">
     <div style="padding:20px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">

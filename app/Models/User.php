@@ -59,20 +59,31 @@ class User extends Authenticatable
      */
     protected function nomorWa(): Attribute
     {
-        return Attribute::make(
-            set: function (?string $value) {
-                if (! $value) {
-                    return null;
-                }
+        return Attribute::make(set: fn (?string $value) => self::normalisasiWa($value));
+    }
 
-                $digits = preg_replace('/\D/', '', $value);
-                if (str_starts_with($digits, '0')) {
-                    return '62'.substr($digits, 1);
-                }
+    // BO.1: buang non-digit; 0.. → 62.., 8.. → 628.., 62.. tetap; kosong/terlalu pendek/ngaco → null.
+    public static function normalisasiWa(?string $nomor): ?string
+    {
+        $digits = preg_replace('/\D/', '', (string) $nomor);
+        $digits = match (true) {
+            str_starts_with($digits, '0') => '62'.substr($digits, 1),
+            str_starts_with($digits, '8') => '62'.$digits,
+            default => $digits,
+        };
 
-                return str_starts_with($digits, '62') ? $digits : '62'.$digits;
-            },
-        );
+        return preg_match('/^62\d{8,13}$/', $digits) ? $digits : null;
+    }
+
+    public function nomorWaInternasional(): ?string
+    {
+        return self::normalisasiWa($this->nomor_wa);
+    }
+
+    public function diblokir(): bool
+    {
+        return $this->status !== 'aktif'
+            || ($this->isExtras() && $this->extrasProfile?->status === 'melanggar');
     }
 
     /**
