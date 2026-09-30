@@ -41,11 +41,7 @@ class LoginController extends Controller
             ])->onlyInput('email');
         }
 
-        $user = Auth::user();
-        $diblokir = $user->status !== 'aktif'
-            || ($user->role === 'extras' && $user->extrasProfile?->status === 'melanggar');
-
-        if ($diblokir) {
+        if (Auth::user()->diblokir()) {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
@@ -57,6 +53,12 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
+        return self::arahkanSetelahLogin($request);
+    }
+
+    // Dipakai juga GoogleController (BO.2).
+    public static function arahkanSetelahLogin(Request $request): RedirectResponse
+    {
         // SPEC.md Bagian B5: mekanisme TERPISAH dari redirect()->intended()
         // (sengaja tidak dipakai, lihat komentar di bawah), session key
         // eksplisit yang cuma terisi kalau login ini datang dari link event

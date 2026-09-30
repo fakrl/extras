@@ -14,6 +14,8 @@
     </div>
 @endif
 
+@include('partials.google-tombol')
+
 <form method="POST" action="{{ route('register') }}">
     @csrf
     <label>Nama Lengkap</label>

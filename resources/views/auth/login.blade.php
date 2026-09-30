@@ -18,6 +18,8 @@
     </div>
 @endif
 
+@include('partials.google-tombol')
+
 <form method="POST" action="{{ route('login') }}">
     @csrf
     <label>Email atau Username</label>

@@ -38,3 +38,28 @@ pm2 startup
 
 - Status koneksi/QR pairing dipantau manual lewat terminal/log proses ini oleh Fakrul, sesuai `docs/SPEC.md` Batasan — tidak ada dashboard di sisi Laravel.
 - Kalau WA logout/ke-unlink dari HP, hapus `.wwebjs_auth/` lalu jalankan ulang untuk scan QR baru.
+
+## Tes kirim dari Laravel (BO.1)
+
+Variabel yang harus cocok:
+
+| `whatsapp-service/.env` | `.env` Laravel (root) |
+|---|---|
+| `PORT=3001` | `WHATSAPP_SERVICE_URL=http://127.0.0.1:3001` (port sama) |
+| `WHATSAPP_SERVICE_TOKEN=abc...` | `WHATSAPP_SERVICE_TOKEN=abc...` (sama persis, tanpa spasi/kutip) |
+
+Setelah ubah `.env` Laravel, jalankan `php artisan config:clear`.
+
+Urutan nyalain:
+
+1. `cd whatsapp-service && node server.js`
+2. Scan QR di terminal (sekali saja), tunggu log `WhatsApp client siap.`
+3. `php artisan wa:tes 0812xxxxxxxx "Halo tes"` — kirim langsung tanpa queue. Nomor boleh `0812…`, `+62 812…`, `812…` (dinormalisasi ke `62812…`).
+4. Kalau terkirim, nyalakan worker notifikasi: `php artisan queue:work`
+
+Arti error `wa:tes`:
+
+- **Koneksi ditolak** — Node belum jalan / port beda.
+- **401** — token beda antara dua `.env`.
+- **503** — belum scan QR / masih connect.
+- **500** — Node gagal kirim (nomor tidak punya WA / sesi putus).

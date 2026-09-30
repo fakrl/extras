@@ -21,16 +21,18 @@ class UbahPasswordController extends Controller
 
     public function update(Request $request)
     {
+        $user = $request->user();
+
+        // BO.2: akun daftar via Google belum punya password → boleh set pertama tanpa password lama.
         $request->validate([
-            'current_password' => ['required'],
+            'current_password' => [$user->password ? 'required' : 'nullable'],
             'new_password' => ['required', 'min:8', 'confirmed'],
         ]);
 
-        if (! Hash::check($request->current_password, $request->user()->password)) {
+        if ($user->password && ! Hash::check($request->current_password, $user->password)) {
             return back()->withErrors(['current_password' => 'Kata sandi saat ini tidak sesuai.'])->withInput();
         }
 
-        $user = $request->user();
         $dipaksa = $user->wajib_ganti_password;
         $user->update(['password' => Hash::make($request->new_password), 'wajib_ganti_password' => false]);
 

@@ -8,6 +8,7 @@ use App\Models\CastingProject;
 use App\Models\ExtrasCategory;
 use App\Models\ExtrasProfile;
 use App\Models\User;
+use App\Rules\NomorWa;
 use App\Support\PerHalaman;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -166,7 +167,7 @@ class AdminManagementController extends Controller
             'nama_perusahaan' => ['nullable', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'unique:users,email'],
             'username' => ['required', 'alpha_dash', 'max:50', 'unique:users,username'],
-            'nomor_wa' => ['nullable', 'string', 'max:20'],
+            'nomor_wa' => ['nullable', 'string', 'max:20', new NomorWa],
         ]);
 
         $password = self::passwordSementara();

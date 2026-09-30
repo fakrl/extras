@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\RecapController;
 use App\Http\Controllers\Admin\TagController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\WorkHistoryController;
+use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -87,7 +88,17 @@ Route::middleware('guest')->group(function () {
         ->name('password.reset');
     Route::post('/reset-password', [PasswordResetController::class, 'reset'])
         ->name('password.update');
+
+    Route::get('/auth/google/lanjut', [GoogleController::class, 'lanjut'])->name('google.lanjut');
+    Route::post('/auth/google/lanjut', [GoogleController::class, 'daftar'])->middleware('throttle:5,1')->name('google.daftar');
 });
+
+// BO.2: login Google (mode=login) & hubungkan (mode=hubungkan, perlu login). 404 kalau GOOGLE_CLIENT_ID kosong.
+Route::middleware('throttle:10,1')->group(function () {
+    Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name('google.redirect');
+    Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('google.callback');
+});
+Route::post('/auth/google/putus', [GoogleController::class, 'putus'])->middleware('auth')->name('google.putus');
 
 Route::get('/privacy-policy', function () {
     return view('privacy-policy');
