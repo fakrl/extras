@@ -31,9 +31,9 @@ class BaProfilFixTest extends TestCase
         $extras = User::factory()->create(['role' => 'extras']);
 
         $this->actingAs($admin)
-            ->from(route('admin.users.index'))
+            ->from(route('admin.akun.extras'))
             ->get(route('admin.extras.profil', $extras))
-            ->assertRedirect(route('admin.users.index'))
+            ->assertRedirect(route('admin.akun.extras'))
             ->assertSessionHas('error');
     }
 

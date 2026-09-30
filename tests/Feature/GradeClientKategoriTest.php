@@ -124,8 +124,10 @@ class GradeClientKategoriTest extends TestCase
         $extrasUserB = User::factory()->create(['role' => 'extras']);
         ExtrasProfile::create(['user_id' => $extrasUserB->id]);
 
-        $response = $this->actingAs($admin)->get(route('admin.recap.index', ['kategori_id' => $kat->id]));
-
-        $response->assertOk();
+        $this->actingAs($admin)->get(route('admin.recap.index', ['kategori_id' => $kat->id]))
+            ->assertRedirect(route('admin.akun.extras', ['tag' => [$kat->id]]));
+        $this->actingAs($admin)->get(route('admin.akun.extras', ['tag' => [$kat->id]]))
+            ->assertOk()
+            ->assertViewHas('extras', fn ($p) => $p->pluck('id')->all() === [$extrasUserA->id]);
     }
 }

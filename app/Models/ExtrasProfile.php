@@ -192,6 +192,12 @@ class ExtrasProfile extends Model
             ? 'Sedang di proyek' : 'Aktif';
     }
 
+    /** BR.1: `terpilih_count` (lolos ke atas) buat rekap di Kelola Akun ▸ Extras. */
+    public function scopeWithTerpilih($query)
+    {
+        return $query->withCount(['applications as terpilih_count' => fn ($q) => $q->whereIn('status_partisipasi', ProjectApplication::STATUS_LOLOS_KE_ATAS)]);
+    }
+
     /** BA.4: `proyek_selesai_count` buat baris riwayat di kartu Extras. */
     public function scopeWithProyekSelesai($query)
     {

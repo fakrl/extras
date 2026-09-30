@@ -6,7 +6,6 @@ use App\Http\Controllers\Admin\CastingProjectController as AdminCastingProjectCo
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\FeeNegotiationController as AdminFeeNegotiationController;
 use App\Http\Controllers\Admin\KeuanganProyekController;
-use App\Http\Controllers\Admin\RecapController;
 use App\Http\Controllers\Admin\TagController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\WorkHistoryController;
@@ -164,7 +163,11 @@ Route::middleware(['auth', 'role:admin,korlap,super_admin'])
 
         // Operasional Proyek: Admin & Super Admin (Godmode)
         Route::middleware('role:admin,super_admin')->group(function () {
-            Route::get('/users', [UserManagementController::class, 'index'])->name('admin.users.index');
+            Route::get('/akun/extras', [UserManagementController::class, 'extras'])->name('admin.akun.extras');
+            Route::get('/akun/extras/export', [UserManagementController::class, 'export'])->name('admin.akun.extras.export');
+            Route::get('/users', [UserManagementController::class, 'keExtras'])->name('admin.users.index');
+            Route::get('/recap', [UserManagementController::class, 'keExtras'])->name('admin.recap.index');
+            Route::get('/recap/export', [UserManagementController::class, 'keExtras'])->name('admin.recap.export');
             Route::get('/extras/{user}/profil', [UserManagementController::class, 'showProfile'])->name('admin.extras.profil');
             Route::patch('/users/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])
                 ->name('admin.users.toggle-status');
@@ -221,9 +224,6 @@ Route::middleware(['auth', 'role:admin,korlap,super_admin'])
                 ->name('admin.negotiations.ajukan-ke-client');
             Route::post('/applications/{application}/batalkan', [AdminFeeNegotiationController::class, 'batalkan'])
                 ->name('admin.negotiations.batalkan');
-
-            Route::get('/recap', [RecapController::class, 'index'])->name('admin.recap.index');
-            Route::get('/recap/export', [RecapController::class, 'export'])->name('admin.recap.export');
         });
 
         // RF-35: Korlap, Admin, dan Super Admin boleh nulis catatan lapangan.
