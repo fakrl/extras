@@ -14,6 +14,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -55,7 +56,7 @@ class ReviewController extends Controller
         $applications = ProjectApplication::whereIn('id', $data['application_ids'])
             ->where('status_partisipasi', 'diajukan_ke_client')
             ->whereHas('castingProject', fn ($q) => $q->milikClient($request->user()))
-            ->with('extras.user', 'castingProject')
+            ->with('extras.user', 'castingProject.admin')
             ->get();
 
         foreach ($applications as $application) {
@@ -83,10 +84,29 @@ class ReviewController extends Controller
             );
         }
 
+        $this->kabariAdmin($request->user(), $applications, $data['keputusan'] === 'approve', $data['grade_client'] ?? null);
+
         $jumlah = $applications->count();
         $aksi = $data['keputusan'] === 'approve' ? 'disetujui' : 'ditolak';
 
         return back()->with('status', "{$jumlah} kandidat berhasil {$aksi}.");
+    }
+
+    /** Satu notif in-app per proyek per keputusan ke Admin PIC (pola notif kontrak & bentrok), link ke accordion Kelola Akun ▸ Client. */
+    private function kabariAdmin(User $client, Collection $applications, bool $lock, ?string $grade): void
+    {
+        foreach ($applications->groupBy('casting_project_id') as $apps) {
+            $proyek = $apps->first()->castingProject;
+            $nama = $apps->map(fn ($a) => '@'.$a->extras->user->username);
+            $daftar = $nama->take(5)->join(', ').($nama->count() > 5 ? ' +'.($nama->count() - 5).' lainnya' : '');
+
+            $proyek->admin?->kabari(
+                $lock ? 'Client Lock Kandidat' : 'Client Menolak Kandidat',
+                "{$client->name} ".($lock ? 'me-lock' : 'menolak')." {$daftar} di proyek {$proyek->namaKode()}".($lock && $grade ? " (Grade {$grade})" : '').'.',
+                route('admin.akun.client', ['q' => $client->name, 'proyek' => $proyek->id]).'#proyek-'.$proyek->id,
+                jenis: 'keputusan_client',
+            );
+        }
     }
 
     public function show(Request $request, CastingProject $castingProject): Response

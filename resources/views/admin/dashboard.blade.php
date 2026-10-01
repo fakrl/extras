@@ -84,8 +84,6 @@
         </div>
     </div>
 
-    @include('partials.keputusan-client', ['kecil' => true])
-
     <div class="dashboard-grid-2col is-wide-narrow">
         <div class="card" style="min-width: 0;">
             <div class="card-title">Tahapan Partisipasi Kandidat</div>

@@ -25,13 +25,6 @@
     .akc-waktu { font-size: var(--fs-xs); color: var(--text-muted); white-space: nowrap; }
     .akc-st { display: flex; gap: 8px; align-items: center; margin-left: auto; }
     .akc-kosong { font-size: var(--fs-sm); color: var(--text-muted); margin: 4px 0 10px; }
-    .akc-layout { display: grid; gap: 16px; align-items: start; }
-    .akc-kiri { min-width: 0; }
-    .akc-kanan > .card { margin: 0; }
-    @media (min-width: 1100px) {
-        .akc-layout { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
-        .akc-kanan { position: sticky; top: 76px; }
-    }
     @media (max-width: 560px) {
         .akc-acc > summary { flex-wrap: wrap; }
         .akc-angka { flex-basis: 100%; padding-left: 26px; }
@@ -44,12 +37,11 @@
 
 @section('content')
 @php
+    $buka = (int) request('proyek');
     $sisi = ['menunggu' => ['Menunggu keputusan', 'badge-pending'], 'lock' => ['Lock', 'badge-aktif'], 'ditolak' => ['Ditolak', 'badge-tolak']];
 @endphp
 <p style="font-size: var(--fs-sm); color: var(--text-secondary); margin: 0 0 var(--space-3);">Riwayat Client: proyek & Extras yang diajukan. Akun Client dikelola Super Admin.</p>
 
-<div class="akc-layout">
-<div class="akc-kiri">
 <form method="GET" action="{{ route('admin.akun.client') }}" class="xtoolbar" id="live-form" data-live>
     <input type="search" name="q" value="{{ $q }}" class="xtoolbar-cari" placeholder="Cari nama, perusahaan, email Client…" aria-label="Cari Client">
     <x-per-halaman :pilihan="\App\Support\PerHalaman::TABEL" :nilai="$clients->perPage()" />
@@ -58,7 +50,7 @@
 <div data-live-target>
 <div class="card" style="padding-top: 4px; padding-bottom: 4px;">
     @forelse ($clients as $c)
-        <details class="akc-acc">
+        <details class="akc-acc" id="client-{{ $c->id }}" @if ($c->proyekClient->contains('id', $buka)) open @endif>
             <summary>
                 <i class="ti ti-chevron-right chevron-icon"></i>
                 <div class="akc-main">
@@ -72,7 +64,7 @@
                         $n = $p->applications->countBy(fn ($a) => $a->sisiClient());
                         $tahap = $p->tahap();
                     @endphp
-                    <details class="akc-acc">
+                    <details class="akc-acc" id="proyek-{{ $p->id }}" @if ((int) $p->id === $buka) open @endif>
                         <summary>
                             <i class="ti ti-chevron-right chevron-icon"></i>
                             <div class="akc-main">
@@ -123,10 +115,5 @@
 </div>
 
 <x-pagination-bar :paginator="$clients" :pilihan="\App\Support\PerHalaman::TABEL" />
-</div>
-</div>
-<aside class="akc-kanan" aria-label="Keputusan Client terbaru">
-    @include('partials.keputusan-client', ['keputusan' => $keputusan])
-</aside>
 </div>
 @endsection
