@@ -1750,6 +1750,6 @@ Keputusan Fakrul: halaman Kelola Tag (`admin/tag`, tombol di Kelola Akun Admin &
 
 | Item | Bukti | QA |
 |---|---|---|
-| BS.1 throttle reset-password | `routes/web.php` `password.update` + `throttle:5,1` (sama pola `password.email`). `SecurityHardeningTest::test_reset_password_kena_rate_limit_pada_percobaan_keenam`. 609 test SQLite | [ ] |
+| BS.1 throttle reset-password | `routes/web.php` `password.update` + `throttle:5,1` (sama pola `password.email`). `SecurityHardeningTest::test_reset_password_kena_rate_limit_pada_percobaan_keenam`. 609 test SQLite & MySQL `jbtb_test` | [ ] |
 | BS.2 blok tandai-transfer sebelum kontrak TTD lengkap | `PaymentController::tandaiTransfer()` guard `$application->payment->menungguKontrak()` → `back()->with('error', ...)`; tombol admin di `payments/show.blade.php` disembunyikan kalau `menungguKontrak()`. `PaymentStatusGateTest::test_transfer_ditolak_saat_kontrak_belum_ditandatangani`. Regresi ketemu & diperbaiki: `BdMonitoringModeTest` godmode SA tadinya nguji perilaku lama (transfer lolos tanpa TTD) — disesuaikan ke perilaku baru (blocked, godmode tetap bisa lihat kontrak/invoice/payment) | [ ] |
 | BS.3 halaman 404 sesuai desain | `resources/views/errors/404.blade.php` (extends `layouts.auth`, guest-safe, tanpa `layouts.app`). `SecurityHardeningTest::test_halaman_404_tampil_untuk_url_ngaco` | [ ] |
