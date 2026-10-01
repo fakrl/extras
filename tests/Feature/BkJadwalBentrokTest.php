@@ -98,7 +98,7 @@ class BkJadwalBentrokTest extends TestCase
         $this->assertTrue($a->fresh()->bentrok_jadwal_flag);
         $this->assertTrue($b->fresh()->bentrok_jadwal_flag);
         $this->assertSame(1, $pb->admin->notifications()->count());
-        $this->assertSame(0, $pa->admin->notifications()->count());
+        $this->assertSame(['Client Lock Kandidat'], $pa->admin->notifications()->get()->pluck('data.judul')->all());
         $this->assertTrue($this->extras->notifications()->get()->contains(fn ($n) => $n->data['judul'] === 'Jadwal Bentrok'));
 
         $html = $this->actingAs($this->extras)->get(route('extras.dashboard'))->assertOk()

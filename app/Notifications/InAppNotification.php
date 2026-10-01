@@ -23,7 +23,7 @@ class InAppNotification extends Notification
             return null;
         }
         $bagian = parse_url($url);
-        $path = ($bagian['path'] ?? '/').(isset($bagian['query']) ? '?'.$bagian['query'] : '');
+        $path = ($bagian['path'] ?? '/').(isset($bagian['query']) ? '?'.$bagian['query'] : '').(isset($bagian['fragment']) ? '#'.$bagian['fragment'] : '');
 
         return str_starts_with($path, '/') ? $path : '/'.$path;
     }

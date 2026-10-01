@@ -167,7 +167,6 @@ Route::middleware(['auth', 'role:admin,korlap,super_admin'])
             Route::get('/akun/extras', [UserManagementController::class, 'extras'])->name('admin.akun.extras');
             Route::get('/akun/extras/export', [UserManagementController::class, 'export'])->name('admin.akun.extras.export');
             Route::get('/akun/client', [AkunClientController::class, 'index'])->name('admin.akun.client');
-            Route::get('/akun/client/keputusan', [AkunClientController::class, 'keputusan'])->name('admin.akun.client.keputusan');
             Route::get('/users', [UserManagementController::class, 'keExtras'])->name('admin.users.index');
             Route::get('/recap', [UserManagementController::class, 'keExtras'])->name('admin.recap.index');
             Route::get('/recap/export', [UserManagementController::class, 'keExtras'])->name('admin.recap.export');

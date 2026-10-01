@@ -7,13 +7,13 @@ use App\Models\ClientReview;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use App\Models\User;
-use App\Support\KeputusanClient;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-/** BR.2: Kelola Akun ▸ Client untuk Admin, read-only + feed keputusan Client. */
+/** BR.2: Kelola Akun ▸ Client untuk Admin, read-only + notif keputusan Client ke Admin PIC. */
 class BrAkunClientTest extends TestCase
 {
     use RefreshDatabase;
@@ -57,7 +57,7 @@ class BrAkunClientTest extends TestCase
             ->assertSee('@dimas_rk')->assertSee('Lock · Grade A')->assertSee('@rina_tunggu')->assertSee('Menunggu keputusan')->assertSee('@sari_tolak')
             ->assertDontSee('@admin_tolak')->assertDontSee('@baru_daftar')
             ->assertSee('data-profil-modal', false)
-            ->assertSeeInOrder(['Client Andini', 'Iklan Minuman', '@dimas_rk', 'Keputusan Client terbaru']);
+            ->assertDontSee('Keputusan Client terbaru')->assertDontSee('data-feed-keputusan', false)->assertDontSee('akc-kanan', false);
 
         // read-only: isi halaman (dalam <main>) tanpa form POST, tanpa aksi edit/nonaktif/reset
         $html = $res->getContent();
@@ -95,65 +95,62 @@ class BrAkunClientTest extends TestCase
         $this->assertSame($n, count(DB::getQueryLog()));
     }
 
-    public function test_feed_10_terbaru_dan_endpoint_partial(): void
+    public function test_dashboard_tanpa_feed_dan_endpoint_dihapus(): void
     {
-        [, $p] = $this->data();
-        foreach (range(1, 12) as $i) {
-            $this->app($p, "lama_{$i}", 'lolos', 'approve', null, 60 + $i);
-        }
-
-        $feed = KeputusanClient::terbaru(10);
-        $this->assertCount(10, $feed);
-        $this->assertSame('dimas_rk', $feed->first()->projectApplication->extras->user->username);
-        $this->assertSame('sari_tolak', $feed[1]->projectApplication->extras->user->username);
-
-        $admin = User::factory()->create(['role' => 'admin']);
-        $res = $this->actingAs($admin)->get(route('admin.akun.client.keputusan'))->assertOk()
-            ->assertSeeInOrder(['Client Andini', 'lock', '@dimas_rk', 'Iklan Minuman', '5 menit yang lalu'])
-            ->assertSee('tolak')
-            ->assertDontSee('<html', false)
-            ->assertDontSee('lama_12');
-        $this->assertSame(10, substr_count($res->getContent(), '<li>'));
-
-        $sa = User::factory()->create(['role' => 'super_admin']);
-        $this->actingAs($sa)->get(route('admin.akun.client.keputusan'))->assertOk()->assertSee('@dimas_rk');
-        $this->actingAs($sa)->get(route('super-admin.dashboard'))->assertOk()->assertSee('Keputusan Client terbaru')->assertSee('data-feed-keputusan', false);
-        $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()->assertSee('Keputusan Client terbaru')->assertSee(route('admin.akun.client.keputusan', ['kecil' => 1]), false);
+        $this->assertFalse(Route::has('admin.akun.client.keputusan'));
+        $this->actingAs(User::factory()->create(['role' => 'admin']))->get(route('admin.dashboard'))->assertOk()->assertDontSee('Keputusan Client terbaru');
+        $this->actingAs(User::factory()->create(['role' => 'super_admin']))->get(route('super-admin.dashboard'))->assertOk()->assertDontSee('Keputusan Client terbaru');
     }
 
-    public function test_feed_paginasi_kp_kper_terpisah_dari_daftar_client(): void
+    public function test_anchor_proyek_membuka_accordion_client_dan_proyek(): void
+    {
+        [$client, $p] = $this->data();
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $html = $this->actingAs($admin)->get(route('admin.akun.client', ['q' => $client->name, 'proyek' => $p->id]))->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('#id="client-'.$client->id.'"\s+open#', $html);
+        $this->assertMatchesRegularExpression('#id="proyek-'.$p->id.'"\s+open#', $html);
+        $this->assertDoesNotMatchRegularExpression('#id="proyek-'.$p->id.'"\s+open#', $this->actingAs($admin)->get(route('admin.akun.client'))->getContent());
+    }
+
+    private function putuskan(string $keputusan, int $jumlah = 1): array
     {
         $client = User::factory()->create(['role' => 'client', 'name' => 'Client Andini']);
-        $p = CastingProject::factory()->create(['client_id' => $client->id]);
-        foreach (range(1, 25) as $i) {
-            $this->app($p, "kp_{$i}", 'lolos', 'approve', null, $i);
-        }
-        User::factory()->count(11)->create(['role' => 'client']);
-        $admin = User::factory()->create(['role' => 'admin']);
-        $nama = fn ($f) => $f->getCollection()->map(fn ($r) => $r->projectApplication->extras->user->username)->all();
+        $p = CastingProject::factory()->create(['client_id' => $client->id, 'nama_produksi' => 'Iklan Minuman']);
+        $apps = collect(range(1, $jumlah))->map(fn ($i) => $this->app($p, "kandidat_{$i}", 'diajukan_ke_client'));
+        $this->actingAs($client)->post(route('client.reviews.review'), [
+            'application_ids' => $apps->pluck('id')->all(), 'keputusan' => $keputusan, 'grade_client' => $keputusan === 'approve' ? 'A' : null,
+        ])->assertRedirect();
 
-        $res = $this->actingAs($admin)->get(route('admin.akun.client', ['per' => 10]))->assertOk()
-            ->assertSee('Menampilkan 1–10 dari 25')->assertSee('name="kper"', false)->assertSee('kp=2', false)
-            ->assertViewHas('keputusan', fn ($f) => $nama($f) === array_map(fn ($i) => "kp_{$i}", range(1, 10)))
-            ->assertViewHas('clients', fn ($c) => $c->currentPage() === 1 && $c->count() === 10);
+        return [$p->admin->notifications()->where('data->jenis', 'keputusan_client')->get(), $p];
+    }
 
-        $this->actingAs($admin)->get(route('admin.akun.client', ['per' => 10, 'kp' => 2]))->assertOk()
-            ->assertSee('Menampilkan 11–20 dari 25')
-            ->assertSee(e(route('admin.akun.client.keputusan', ['per' => 10, 'kp' => 2])), false)
-            ->assertViewHas('keputusan', fn ($f) => $nama($f)[0] === 'kp_11')
-            ->assertViewHas('clients', fn ($c) => $c->currentPage() === 1);
+    public function test_client_lock_admin_pic_dapat_notif(): void
+    {
+        [$notif, $p] = $this->putuskan('approve');
+        $this->assertCount(1, $notif);
+        $d = $notif->first()->data;
+        $this->assertSame('Client Lock Kandidat', $d['judul']);
+        $this->assertSame("Client Andini me-lock @kandidat_1 di proyek {$p->namaKode()} (Grade A).", $d['pesan']);
+        $this->assertSame('/admin/akun/client?q=Client%20Andini&proyek='.$p->id.'#proyek-'.$p->id, $d['url']);
+        $this->assertSame($p->admin->notifications()->count(), $p->admin->notifications()->get()->unique(fn ($n) => $n->data['pesan'])->count());
+        $this->assertSame(0, User::where('role', 'admin')->whereKeyNot($p->admin_id)->withCount('notifications')->get()->sum('notifications_count'));
+    }
 
-        $this->actingAs($admin)->get(route('admin.akun.client', ['per' => 10, 'page' => 2, 'kper' => 25]))->assertOk()
-            ->assertViewHas('keputusan', fn ($f) => $f->count() === 25 && $f->currentPage() === 1)
-            ->assertViewHas('clients', fn ($c) => $c->currentPage() === 2 && $c->count() === 2);
+    public function test_client_tolak_admin_pic_dapat_notif(): void
+    {
+        [$notif, $p] = $this->putuskan('reject');
+        $this->assertCount(1, $notif);
+        $this->assertSame('Client Menolak Kandidat', $notif->first()->data['judul']);
+        $this->assertSame("Client Andini menolak @kandidat_1 di proyek {$p->namaKode()}.", $notif->first()->data['pesan']);
+        $this->assertSame(1, $p->admin->notifications()->count());
+    }
 
-        $res = $this->actingAs($admin)->get(route('admin.akun.client.keputusan', ['kp' => 3]))->assertOk()
-            ->assertSee('Menampilkan 21–25 dari 25')->assertSee('@kp_21')->assertDontSee('@kp_20<', false)->assertDontSee('<html', false);
-        $this->assertSame(5, substr_count($res->getContent(), '<li>'));
-        $res = $this->actingAs($admin)->get(route('admin.akun.client.keputusan', ['kper' => 25]))->assertOk();
-        $this->assertSame(25, substr_count($res->getContent(), '<li>'));
-        $this->assertMatchesRegularExpression('#name="kper".*<option value="25" selected#s', $res->getContent());
-        $this->assertSame(10, substr_count($this->actingAs($admin)->get(route('admin.akun.client.keputusan', ['kecil' => 1, 'kper' => 25]))->getContent(), '<li>'));
+    public function test_bulk_satu_notif_ringkas_per_proyek(): void
+    {
+        [$notif, $p] = $this->putuskan('reject', 7);
+        $this->assertCount(1, $notif);
+        $this->assertSame("Client Andini menolak @kandidat_1, @kandidat_2, @kandidat_3, @kandidat_4, @kandidat_5 +2 lainnya di proyek {$p->namaKode()}.", $notif->first()->data['pesan']);
     }
 
     public static function bukanAdminProvider(): array
@@ -166,6 +163,5 @@ class BrAkunClientTest extends TestCase
     {
         $user = User::factory()->create(['role' => $role]);
         $this->actingAs($user)->get(route('admin.akun.client'))->assertForbidden();
-        $this->actingAs($user)->get(route('admin.akun.client.keputusan'))->assertForbidden();
     }
 }
