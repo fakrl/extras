@@ -107,4 +107,20 @@ class BiFilterPanelTest extends TestCase
             $this->assertSame(['per' => '48'], $sisa, $halaman);
         }
     }
+
+    /** BT: toolbar Lineup dirapikan — Grade/Status/Tag masuk panel filter, chip cuma muncul kalau ada filter aktif. */
+    public function test_lineup_chip_filter_hanya_muncul_saat_ada_filter_aktif(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $project = CastingProject::create(['nama_produksi' => 'Proyek Chip', 'deadline' => now()->addDays(7), 'kuota' => 5, 'status' => 'dibuka', 'client_request_status' => 'disetujui', 'admin_id' => $admin->id]);
+
+        $kosong = $this->actingAs($admin)->get(route('admin.projects.applicants', $project))->assertOk();
+        $this->assertStringNotContainsString('class="fchip"', $kosong->getContent());
+
+        $this->actingAs($admin)->get(route('admin.projects.applicants', [$project, 'grade' => 'A']))
+            ->assertOk()->assertSee('class="fchip"', false);
+
+        $this->actingAs($admin)->get(route('admin.projects.applicants', [$project, 'status' => ['lolos']]))
+            ->assertOk()->assertSee('class="fchip"', false);
+    }
 }

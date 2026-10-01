@@ -2,6 +2,13 @@
 
 @section('title', 'Lineup: ' . $castingProject->nama_produksi)
 
+@push('styles')
+<style>
+    #bulk-toolbar { display: none; position: sticky; top: 10px; z-index: 30; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: var(--space-3); padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
+    #bulk-toolbar select { width: auto; margin: 0; min-height: 36px; }
+</style>
+@endpush
+
 @section('content')
 <div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">Lineup: {{ $castingProject->nama_produksi }}</div>
 <p style="color: var(--text-secondary); margin: 0 0 20px; font-size: 13.5px;">
@@ -12,82 +19,80 @@
 </p>
 
 <div class="xfilter">
-    @php $tabs = ['' => 'Semua', 'A' => 'Grade A', 'B' => 'Grade B', 'C' => 'Grade C', 'belum' => 'Belum Dinilai']; @endphp
-    @foreach ($tabs as $value => $label)
-        <a href="{{ route('admin.projects.applicants', [$castingProject, 'grade' => $value ?: null]) }}"
-           class="btn btn-sm {{ ($tab ?? '') !== 'client' && ($grade ?? '') === $value ? 'btn-brand' : '' }}">{{ $label }}</a>
-    @endforeach
-    <a href="{{ route('admin.projects.applicants', [$castingProject, 'tab' => 'client']) }}"
-       class="btn btn-sm {{ ($tab ?? '') === 'client' ? 'btn-brand' : '' }}">Sudah ke Client</a>
+    <a href="{{ route('admin.projects.applicants', $castingProject) }}" class="btn btn-sm {{ ($tab ?? '') !== 'client' ? 'btn-brand' : '' }}">Lineup</a>
+    <a href="{{ route('admin.projects.applicants', [$castingProject, 'tab' => 'client']) }}" class="btn btn-sm {{ ($tab ?? '') === 'client' ? 'btn-brand' : '' }}">Sudah ke Client</a>
 </div>
 
-@if (($tab ?? '') !== 'client')
-    <div class="xfilter" aria-label="Filter status">
-        @foreach (['' => 'Semua Status'] + \App\Models\ProjectApplication::LABELS as $value => $label)
-            <a href="{{ route('admin.projects.applicants', [$castingProject, 'grade' => $grade ?: null, 'status' => $value ?: null]) }}"
-               class="btn btn-sm {{ ($status ?? '') === $value ? 'btn-brand' : '' }}">{{ $label }}</a>
-        @endforeach
-    </div>
-
-    <form method="POST" action="{{ route('admin.projects.applicants.bulk', $castingProject) }}" id="bulk-form" class="card" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; padding: 12px;">
-        @csrf
-        <label style="margin: 0; display: flex; align-items: center; gap: 6px;"><input type="checkbox" onclick="document.querySelectorAll('.bulk-check').forEach(c => { if (c.offsetParent !== null) c.checked = this.checked; })"> Pilih semua</label>
-        <label for="bulk-grade" style="margin: 0;">Grade</label>
-        <select name="grade" id="bulk-grade" style="width: 70px; min-height: 36px; margin-bottom: 0;">
-            <option value="A">A</option><option value="B">B</option><option value="C">C</option>
-        </select>
-        <button type="submit" name="aksi" value="grade" class="btn btn-sm" formnovalidate onclick="var n = document.querySelectorAll('.bulk-check:checked').length; return n > 0 && confirm('Set grade ' + document.getElementById('bulk-grade').value + ' untuk ' + n + ' kandidat? Grade terkunci 2 bulan.');">Set Grade Terpilih</button>
-        <button type="button" class="btn btn-sm btn-danger-outline" onclick="document.getElementById('bulk-tolak-dialog').showModal()">Tolak Terpilih</button>
-        <dialog id="bulk-tolak-dialog" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 18px; max-width: 360px; width: 90%;">
-            <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Tolak semua kandidat terpilih?</div>
-            <label for="bulk-alasan">Alasan penolakan (dikirim ke Extras) <span class="wajib" aria-hidden="true">*</span></label>
-            <textarea name="alasan_tolak" id="bulk-alasan" rows="3" required maxlength="1000" style="width: 100%; margin-bottom: 12px;"></textarea>
-            <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
-                <button type="submit" name="aksi" value="tolak" class="btn btn-sm btn-danger-outline">Tolak Terpilih</button>
-            </div>
-        </dialog>
-    </form>
-@endif
-
-<div class="xfilter" aria-label="Filter tag dan urutan">
-    @if ($tagDicari->isNotEmpty())
-        <span class="xfilter-label">Tag dicari</span>
-        @foreach ($tagDicari as $tag)
-            @php $on = in_array($tag->id, $tagIds); @endphp
-            <a href="{{ request()->fullUrlWithQuery(['tag' => ($on ? array_values(array_diff($tagIds, [$tag->id])) : [...$tagIds, $tag->id]) ?: null, 'page' => null]) }}"
-               class="btn btn-sm {{ $on ? 'btn-brand' : '' }}" @if ($on) aria-current="true" @endif>#{{ $tag->nama }}</a>
-        @endforeach
-    @endif
-    <span class="xfilter-label" style="margin-left: auto;">Urutkan</span>
-    <a href="{{ request()->fullUrlWithQuery(['urut' => null, 'page' => null]) }}" class="btn btn-sm {{ $urut ? '' : 'btn-brand' }}">Terbaru</a>
-    <a href="{{ request()->fullUrlWithQuery(['urut' => 'cocok', 'page' => null]) }}" class="btn btn-sm {{ $urut === 'cocok' ? 'btn-brand' : '' }}">Paling cocok</a>
-    <a href="{{ request()->fullUrlWithQuery(['urut' => 'favorit', 'page' => null]) }}" class="btn btn-sm {{ $urut === 'favorit' ? 'btn-brand' : '' }}">Favorit dulu</a>
-</div>
-@if ($tagDicari->isNotEmpty())
-    <p class="xfilter-note">Menampilkan yang punya <strong>salah satu</strong> tag{{ $urut === 'cocok' ? ', diurutkan paling cocok' : '' }}</p>
-@endif
+@php
+    $statusAktif = ['diajukan', 'direview_admin', 'nego_fee', 'deal', 'diajukan_ke_client', 'lolos', 'kontrak_ditandatangani'];
+    $statusSelesai = ['ditolak', 'selesai_produksi', 'dibatalkan'];
+    $tagNamaDicari = $tagDicari->pluck('nama', 'id');
+@endphp
 
 {{-- live search server-side (lintas halaman paginasi); filter aktif ikut sebagai hidden input --}}
-<form method="GET" action="{{ route('admin.projects.applicants', $castingProject) }}" id="live-form" data-live role="search" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 16px;">
-    @foreach (request()->except(['q', 'page', 'per', 'favorit']) as $k => $v)
+<form method="GET" action="{{ route('admin.projects.applicants', $castingProject) }}" id="live-form" class="xtoolbar" data-live role="search">
+    @foreach (request()->except(['q', 'page', 'per', 'favorit', 'grade', 'status', 'tag', 'urut']) as $k => $v)
         @foreach ((array) $v as $vv)
             <input type="hidden" name="{{ is_array($v) ? $k.'[]' : $k }}" value="{{ $vv }}">
         @endforeach
     @endforeach
-    <span style="position: relative; flex: 1 1 260px; max-width: 400px;">
     <label for="search-applicants" class="sr-only">Cari pelamar</label>
-    <input type="search" name="q" id="search-applicants" value="{{ $cari }}" placeholder="Cari nama pelamar, alias/username, peran, kelas..."
-           style="width: 100%; padding: 8px 14px 8px 36px; border: 1px solid var(--border-color); border-radius: 8px; font-size: var(--fs-md); background: var(--bg-card); color: var(--text-primary); margin-bottom: 0;">
-    <i class="ti ti-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 15px;"></i>
-    </span>
-    <x-per-halaman :pilihan="\App\Support\PerHalaman::KARTU" :nilai="$applicants->perPage()" />
-    <x-filter-panel :filter="[$favorit ? ['favorit', '⭐ Favorit'] : null]">
+    <input type="search" name="q" id="search-applicants" value="{{ $cari }}" class="xtoolbar-cari" placeholder="Cari nama pelamar, alias/username, peran, kelas...">
+    <x-filter-panel :pertahankan="['urut']" :filter="[
+        ($tab ?? '') !== 'client' && $grade ? ['grade', 'Grade: '.($grade === 'belum' ? 'Belum Dinilai' : $grade)] : null,
+        ...(($tab ?? '') !== 'client' ? array_map(fn ($s) => ['status', 'Status: '.\App\Models\ProjectApplication::LABELS[$s], $s], $statuses) : []),
+        ...array_map(fn ($id) => ['tag', 'Tag: #'.($tagNamaDicari[$id] ?? $id), $id], $tagIds),
+        $favorit ? ['favorit', '⭐ Favorit'] : null,
+    ]">
+        @if (($tab ?? '') !== 'client')
+            <x-filter-panel.grup label="Grade" name="grade" :opsi="['' => 'Semua', 'A' => 'A', 'B' => 'B', 'C' => 'C', 'belum' => 'Belum Dinilai']" :nilai="$grade" />
+            <x-filter-panel.grup label="Status: Aktif" name="status[]" :opsi="collect(\App\Models\ProjectApplication::LABELS)->only($statusAktif)->all()" :nilai="$statuses" multi />
+            <x-filter-panel.grup label="Status: Selesai/Berhenti" name="status[]" :opsi="collect(\App\Models\ProjectApplication::LABELS)->only($statusSelesai)->all()" :nilai="$statuses" multi />
+        @endif
+        @if ($tagDicari->isNotEmpty())
+            <div class="fpanel-sub">
+                <div class="fpanel-judul">Tag</div>
+                <x-filter-panel.grup label="" name="tag[]" :opsi="$tagNamaDicari->map(fn ($n) => '#'.$n)->all()" :nilai="$tagIds" multi />
+                <p class="xfilter-note">Menampilkan yang punya <strong>salah satu</strong> tag{{ $urut === 'cocok' ? ', diurutkan paling cocok' : '' }}</p>
+            </div>
+        @endif
         <label class="fswitch">⭐ Favorit <input type="checkbox" name="favorit" value="1" @checked($favorit)></label>
     </x-filter-panel>
+    <select name="urut" aria-label="Urutkan">
+        <option value="" @selected(! $urut)>Terbaru</option>
+        <option value="cocok" @selected($urut === 'cocok')>Paling cocok</option>
+        <option value="favorit" @selected($urut === 'favorit')>Favorit dulu</option>
+    </select>
+    <x-per-halaman :pilihan="\App\Support\PerHalaman::KARTU" :nilai="$applicants->perPage()" />
 </form>
 
 <div data-live-target>
+@if (($tab ?? '') !== 'client')
+    <form method="POST" action="{{ route('admin.projects.applicants.bulk', $castingProject) }}" id="bulk-form">
+        @csrf
+    </form>
+    <div id="bulk-toolbar">
+        <span id="bulk-count" style="font-size: var(--fs-sm); font-weight: 600;"></span>
+        <label for="bulk-grade" style="margin: 0;">Grade</label>
+        <select name="grade" id="bulk-grade" form="bulk-form" style="width: 70px; min-height: 36px; margin-bottom: 0;">
+            <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+        </select>
+        <button type="submit" name="aksi" value="grade" form="bulk-form" class="btn btn-sm" formnovalidate onclick="var n = document.querySelectorAll('.bulk-check:checked').length; return n > 0 && confirm('Set grade ' + document.getElementById('bulk-grade').value + ' untuk ' + n + ' kandidat? Grade terkunci 2 bulan.');">Set Grade Terpilih</button>
+        <button type="button" class="btn btn-sm btn-danger-outline" onclick="document.getElementById('bulk-tolak-dialog').showModal()">Tolak Terpilih</button>
+        <dialog id="bulk-tolak-dialog" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 18px; max-width: 360px; width: 90%;">
+            <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Tolak semua kandidat terpilih?</div>
+            <label for="bulk-alasan">Alasan penolakan (dikirim ke Extras) <span class="wajib" aria-hidden="true">*</span></label>
+            <textarea name="alasan_tolak" id="bulk-alasan" form="bulk-form" rows="3" required maxlength="1000" style="width: 100%; margin-bottom: 12px;"></textarea>
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
+                <button type="submit" name="aksi" value="tolak" form="bulk-form" class="btn btn-sm btn-danger-outline">Tolak Terpilih</button>
+            </div>
+        </dialog>
+    </div>
+
+    <label style="display: flex; align-items: center; gap: 6px; margin: 0 0 8px; font-size: var(--fs-xs); color: var(--text-muted); cursor: pointer;"><input type="checkbox" id="select-all-cb" style="min-height: 0;"> Pilih semua di halaman ini</label>
+@endif
+
 @if ($applicants->isEmpty())
     <div class="card" style="text-align: center; color: var(--text-muted); padding: 24px;">
         {{ $cari !== '' ? 'Tidak ada pelamar yang sesuai dengan pencarian.' : 'Belum ada pelamar di filter ini.' }}
@@ -406,3 +411,24 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    // delegasi di document: grid bisa diganti live search (AJAX) tanpa kehilangan listener
+    function sync() {
+        var toolbar = document.getElementById('bulk-toolbar');
+        if (!toolbar) return;
+        var n = document.querySelectorAll('.bulk-check:checked').length;
+        toolbar.style.display = n ? 'flex' : 'none';
+        document.getElementById('bulk-count').textContent = n + ' kandidat dipilih';
+    }
+    document.addEventListener('change', function (e) {
+        if (e.target.id === 'select-all-cb') {
+            document.querySelectorAll('.bulk-check').forEach(function (c) { if (c.offsetParent !== null) c.checked = e.target.checked; });
+        }
+        if (e.target.id === 'select-all-cb' || e.target.classList.contains('bulk-check')) sync();
+    });
+}());
+</script>
+@endpush

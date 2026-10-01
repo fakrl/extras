@@ -366,7 +366,7 @@ class CastingProjectController extends Controller
     {
         $grade = $request->query('grade');
         $tab = $request->query('tab');
-        $status = array_key_exists($request->query('status', ''), ProjectApplication::LABELS) ? $request->query('status') : null;
+        $statuses = array_values(array_intersect((array) $request->query('status', []), array_keys(ProjectApplication::LABELS)));
 
         $klienStatuses = ['diajukan_ke_client', 'lolos', 'ditolak'];
         $tagIds = array_map('intval', array_filter((array) $request->query('tag', []), 'is_numeric'));
@@ -383,7 +383,7 @@ class CastingProjectController extends Controller
             ->when($tab === 'client', fn ($q) => $q->whereIn('status_partisipasi', $klienStatuses))
             ->when($tab !== 'client' && $grade === 'belum', fn ($q) => $q->whereNull('grade'))
             ->when($tab !== 'client' && in_array($grade, ['A', 'B', 'C'], true), fn ($q) => $q->where('grade', $grade))
-            ->when($tab !== 'client' && $status, fn ($q) => $q->where('status_partisipasi', $status))
+            ->when($tab !== 'client' && $statuses, fn ($q) => $q->whereIn('status_partisipasi', $statuses))
             ->when($tagIds, fn ($q) => $q->whereHas('extras.categories', fn ($c) => $c->whereIn('extras_categories.id', $tagIds)))
             ->when($cari !== '', fn ($q) => $q->where(function ($w) use ($cari) {
                 $like = "%{$cari}%";
@@ -402,6 +402,6 @@ class CastingProjectController extends Controller
         $tagDicari = ExtrasCategory::dicariDiProyek($castingProject->id);
         $tagGroups = ExtrasCategory::perGrup();
 
-        return view('admin.projects.applicants', compact('castingProject', 'applicants', 'grade', 'tab', 'status', 'tagIds', 'urut', 'favorit', 'tagDicari', 'cari', 'tagGroups'));
+        return view('admin.projects.applicants', compact('castingProject', 'applicants', 'grade', 'tab', 'statuses', 'tagIds', 'urut', 'favorit', 'tagDicari', 'cari', 'tagGroups'));
     }
 }

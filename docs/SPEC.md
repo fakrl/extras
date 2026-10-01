@@ -1753,3 +1753,15 @@ Keputusan Fakrul: halaman Kelola Tag (`admin/tag`, tombol di Kelola Akun Admin &
 | BS.1 throttle reset-password | `routes/web.php` `password.update` + `throttle:5,1` (sama pola `password.email`). `SecurityHardeningTest::test_reset_password_kena_rate_limit_pada_percobaan_keenam`. 609 test SQLite & MySQL `jbtb_test` | [ ] |
 | BS.2 blok tandai-transfer sebelum kontrak TTD lengkap | `PaymentController::tandaiTransfer()` guard `$application->payment->menungguKontrak()` → `back()->with('error', ...)`; tombol admin di `payments/show.blade.php` disembunyikan kalau `menungguKontrak()`. `PaymentStatusGateTest::test_transfer_ditolak_saat_kontrak_belum_ditandatangani`. Regresi ketemu & diperbaiki: `BdMonitoringModeTest` godmode SA tadinya nguji perilaku lama (transfer lolos tanpa TTD) — disesuaikan ke perilaku baru (blocked, godmode tetap bisa lihat kontrak/invoice/payment) | [ ] |
 | BS.3 halaman 404 sesuai desain | `resources/views/errors/404.blade.php` (extends `layouts.auth`, guest-safe, tanpa `layouts.app`). `SecurityHardeningTest::test_halaman_404_tampil_untuk_url_ngaco` | [ ] |
+
+---
+
+# Bagian BT: Bugfix — rapikan toolbar Lineup (1 Oktober 2026)
+
+> **FEATURE FREEZE tetap berlaku.** Bugfix/UI cleanup, bukan fitur baru.
+
+Toolbar `admin/projects/applicants` (Lineup) numpuk 3 baris `.xfilter` (Grade, Status, Tag+Urutkan) + bulk-form selalu tampil sebagai card biasa — nggak konsisten sama pola `x-filter-panel` yang udah dipakai halaman lain (Kelola Akun, Manajemen Akun SA).
+
+| Item | Bukti | QA |
+|---|---|---|
+| BT.1 toolbar satu baris + filter panel (Grade/Status/Tag/Favorit) + bulk bar sticky | `resources/views/admin/projects/applicants.blade.php`: toolbar `.xtoolbar` (cari · Filter · Urutkan · per halaman), toggle "Lineup/Sudah ke Client" dipisah dari filter (bukan filter, ganti halaman). Status jadi multi-select (`status[]`, grup Aktif/Selesai-Berhenti) — backward compat `?status=single` tetap jalan (`CastingProjectController::showApplicants` pakai `array_intersect`). Tag pindah ke panel jadi checkbox (`tag[]`), bukan pill link. Bulk bar (`#bulk-toolbar`) sticky muncul kalau ada `.bulk-check` tercentang (pola sama `super-admin/akun/index.blade.php`). `FilterAktif::hapusSemua()` tambah param `$pertahankan` (dipakai applicants biar "Hapus semua" nggak ikut hapus `urut`) — default `[]`, nggak ubah halaman lain. `--filter BiFilterPanelTest`. 610 test SQLite & MySQL `jbtb_test` | [ ] |
