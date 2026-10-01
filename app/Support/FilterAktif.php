@@ -42,8 +42,8 @@ class FilterAktif
     }
 
     /** "Hapus semua" chip = hapus filter yang tampil sebagai chip; pencarian tetap. */
-    public static function hapusSemua(Request $request): string
+    public static function hapusSemua(Request $request, array $pertahankan = []): string
     {
-        return self::url($request, Arr::only($request->query(), ['q', 'per', 'tampil']));
+        return self::url($request, Arr::only($request->query(), ['q', 'per', 'tampil', ...$pertahankan]));
     }
 }

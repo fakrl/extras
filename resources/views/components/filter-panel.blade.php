@@ -1,4 +1,4 @@
-@props(['filter' => []])
+@props(['filter' => [], 'pertahankan' => []])
 @php
     $chips = \App\Support\FilterAktif::chips(request(), $filter);
     $reset = \App\Support\FilterAktif::reset(request());
@@ -18,6 +18,6 @@
         @foreach ($chips as $c)
             <a href="{{ $c['url'] }}" class="fchip" aria-label="Hapus filter {{ $c['label'] }}">{{ $c['label'] }} <i class="ti ti-x"></i></a>
         @endforeach
-        <a href="{{ \App\Support\FilterAktif::hapusSemua(request()) }}" class="fchips-hapus" target="_self">Hapus semua</a>
+        <a href="{{ \App\Support\FilterAktif::hapusSemua(request(), $pertahankan) }}" class="fchips-hapus" target="_self">Hapus semua</a>
     @endif
 </div>
