@@ -154,6 +154,21 @@ class PaymentStatusGateTest extends TestCase
         ])->assertRedirect();
     }
 
+    public function test_transfer_ditolak_saat_kontrak_belum_ditandatangani(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $extrasUser = User::factory()->create(['role' => 'extras']);
+        $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
+        $application = $this->buatAplikasi($admin, $extras, 'lolos');
+        $application->payment()->create(['status' => 'belum_dibayar']);
+
+        $this->actingAs($admin)->post(route('payments.transfer', $application), [
+            'bukti_transfer' => UploadedFile::fake()->create('bukti.pdf', 100),
+        ])->assertRedirect();
+
+        $this->assertSame('belum_dibayar', $application->payment->fresh()->status);
+    }
+
     public function test_sengketa_menyimpan_status_disengketakan(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);

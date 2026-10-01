@@ -217,7 +217,7 @@ class BdMonitoringModeTest extends TestCase
         $this->assertStringEndsWith('(sebagai Korlap)', $log->description);
     }
 
-    public function test_sa_godmode_tandai_transfer_lihat_kontrak_invoice_tapi_tidak_ttd_sebagai_extras(): void
+    public function test_sa_godmode_lihat_kontrak_invoice_tapi_transfer_diblokir_sebelum_ttd_extras(): void
     {
         $application = $this->aplikasi('lolos');
         $application->payment()->create(['status' => 'belum_dibayar']);
@@ -225,8 +225,8 @@ class BdMonitoringModeTest extends TestCase
 
         $this->actingAs($this->sa)->post(route('payments.transfer', $application), [
             'bukti_transfer' => UploadedFile::fake()->create('bukti.pdf', 100),
-        ])->assertRedirect()->assertSessionHas('status');
-        $this->assertSame('ditransfer', $application->payment->fresh()->status);
+        ])->assertRedirect()->assertSessionHas('error');
+        $this->assertSame('belum_dibayar', $application->payment->fresh()->status);
 
         $this->actingAs($this->sa)->get(route('payments.show', $application))->assertOk();
         $this->actingAs($this->sa)->get(route('contracts.show', $application))->assertOk();
@@ -239,8 +239,13 @@ class BdMonitoringModeTest extends TestCase
         $this->assertNotNull($contract->ttd_admin_signature_path);
         $this->assertNull($contract->ttd_extras_signature_path);
 
+        $this->actingAs($this->sa)->post(route('payments.transfer', $application), [
+            'bukti_transfer' => UploadedFile::fake()->create('bukti.pdf', 100),
+        ])->assertRedirect()->assertSessionHas('error');
+        $this->assertSame('belum_dibayar', $application->payment->fresh()->status);
+
         $this->actingAs($this->sa)->post(route('payments.confirm', $application))->assertForbidden();
-        $this->assertSame('ditransfer', $application->payment->fresh()->status);
+        $this->assertSame('belum_dibayar', $application->payment->fresh()->status);
     }
 
     public function test_logout_tetap_boleh_saat_view_as(): void

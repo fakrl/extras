@@ -37,7 +37,7 @@
     </div>
 @endif
 
-@if (auth()->user()->bisaSebagaiAdmin() && $application->payment->status === 'belum_dibayar')
+@if (auth()->user()->bisaSebagaiAdmin() && $application->payment->status === 'belum_dibayar' && ! $application->payment->menungguKontrak())
     <div class="card" style="margin-bottom: 14px;">
         <x-confirm-form action="{{ route('payments.transfer', $application) }}" enctype="multipart/form-data" message="Tandai Rp {{ number_format($totalHonor, 0, ',', '.') }} sudah ditransfer ke {{ $application->extras->user->name }}? Aksi ini cuma bisa sekali.">
             <label>Unggah Bukti Transfer <span class="wajib" aria-hidden="true">*</span></label>

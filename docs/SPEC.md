@@ -1737,3 +1737,19 @@ Keputusan Fakrul: halaman Kelola Tag (`admin/tag`, tombol di Kelola Akun Admin &
 | BR.3 mobile tanpa overflow (screenshot 360/390 semua halaman) + hamburger drawer non-Extras | Drawer/topbar HP `7538753`. Audit `405a049` (global) + `13d010e` (per view): 94 halaman (publik 9, SA 25, Admin 21, Korlap 4, Client 11, Extras 12, SA mode Admin 2/Korlap 3/lihat Client 4/lihat Extras 3) × 360 & 390, Edge headless via iframe, cek `scrollWidth <= innerWidth`. Data demo: sebelum 3 halaman overflow (4 dari 184 cek; SA mode Admin ditambah sesudahnya) (Kelola Akun Extras daftar 672px: `.sr-only` absolut lolos dari `.table-container` → `position: relative`; form Pengalaman profil Extras 364px → `grid-template-columns: minmax(0,1fr)`; filter tanggal dashboard SA 368px → `min-width: 0`) → sesudah 188/188 OK. Data teks panjang (nama proyek + URL, email, nama Client, username): sebelum 47 halaman overflow (94/188 cek) (detail/daftar proyek, lineup, kontrak, bayar, nego, invoice, jadwal, dashboard Client & Extras, lowongan, event publik, Monitoring) → `body { overflow-wrap: anywhere }` (tabel/`.btn`/`.badge` tetap normal) + `img, video { max-width: 100% }` → 188/188 OK. Tanpa `overflow-x: hidden`. Profil publik & dashboard Extras identik piksel (beda cuma alt-text foto rusak di avatar). `--filter BrOverflowMobileTest`. Shot `scratchpad/shots/ov/png/` | [ ] |
 | BR.4 sidebar desktop buka/tutup | `1c56bc9` — toggle ringkas (64px, ikon + tooltip, submenu flyout), `localStorage` `jbtb-sidebar` (try/catch), hormati `prefers-reduced-motion`. `--filter BrNavigasiSidebarTest` | [ ] |
 | BR.5 Kelola Tag jadi dialog "Rapikan tag" | `c58519b` — halaman & tombol Kelola Tag dihapus, `admin/tag` redirect ke Kelola Akun ▸ Extras. Link "Rapikan tag (n)" di panel filter Tag (Admin & SA), `ExtrasCategory::perluDirapikan()` (grup null, atau non-bawaan dipakai ≤1 Extras). Dialog: pindah grup / gabung (autocomplete `/tag/cari`) / hapus (`admin.tags.destroy`, log `TAG_HAPUS`), `TagController::update/gabung` sama + respons JSON. Poin 4 skip. `--filter BrRapikanTagTest`. Shot `br125-rapikan-*`. 600 test SQLite & MySQL | [ ] |
+
+---
+
+# Bagian BS: Bugfix pasca-freeze (2) (1 Oktober 2026)
+
+> **FEATURE FREEZE tetap berlaku.** Bagian ini cuma perbaikan bug, bukan fitur baru.
+
+1. `POST /reset-password` belum dibatasi rate-limit (cuma `/forgot-password` yang dibatasi) — brute-force token reset tidak dicegah.
+2. "Tandai transfer" masih bisa diklik Admin/SA godmode sebelum kontrak TTD lengkap (`Payment::menungguKontrak()` sudah ada tapi belum dipakai sebagai guard server di `tandaiTransfer()`).
+3. URL salah/tidak ada menampilkan halaman error bawaan Laravel, bukan desain sistem.
+
+| Item | Bukti | QA |
+|---|---|---|
+| BS.1 throttle reset-password | `routes/web.php` `password.update` + `throttle:5,1` (sama pola `password.email`). `SecurityHardeningTest::test_reset_password_kena_rate_limit_pada_percobaan_keenam`. 609 test SQLite | [ ] |
+| BS.2 blok tandai-transfer sebelum kontrak TTD lengkap | `PaymentController::tandaiTransfer()` guard `$application->payment->menungguKontrak()` → `back()->with('error', ...)`; tombol admin di `payments/show.blade.php` disembunyikan kalau `menungguKontrak()`. `PaymentStatusGateTest::test_transfer_ditolak_saat_kontrak_belum_ditandatangani`. Regresi ketemu & diperbaiki: `BdMonitoringModeTest` godmode SA tadinya nguji perilaku lama (transfer lolos tanpa TTD) — disesuaikan ke perilaku baru (blocked, godmode tetap bisa lihat kontrak/invoice/payment) | [ ] |
+| BS.3 halaman 404 sesuai desain | `resources/views/errors/404.blade.php` (extends `layouts.auth`, guest-safe, tanpa `layouts.app`). `SecurityHardeningTest::test_halaman_404_tampil_untuk_url_ngaco` | [ ] |
