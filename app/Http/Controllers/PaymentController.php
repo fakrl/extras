@@ -52,6 +52,10 @@ class PaymentController extends Controller
             return back()->with('error', 'Transfer hanya bisa ditandai sekali, dari status Belum Dibayar.');
         }
 
+        if ($application->payment->menungguKontrak()) {
+            return back()->with('error', 'Transfer belum bisa ditandai, kontrak belum ditandatangani lengkap.');
+        }
+
         $request->validate([
             'bukti_transfer' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
         ]);

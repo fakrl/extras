@@ -20,6 +20,34 @@ class SecurityHardeningTest extends TestCase
         $response->assertStatus(429);
     }
 
+    public function test_reset_password_kena_rate_limit_pada_percobaan_keenam(): void
+    {
+        for ($i = 0; $i < 5; $i++) {
+            $this->post(route('password.update'), [
+                'token' => 'token-salah',
+                'email' => 'x@x.com',
+                'password' => 'password-baru',
+                'password_confirmation' => 'password-baru',
+            ]);
+        }
+
+        $response = $this->post(route('password.update'), [
+            'token' => 'token-salah',
+            'email' => 'x@x.com',
+            'password' => 'password-baru',
+            'password_confirmation' => 'password-baru',
+        ]);
+
+        $response->assertStatus(429);
+    }
+
+    public function test_halaman_404_tampil_untuk_url_ngaco(): void
+    {
+        $this->get('/url-ngaco-xyz')
+            ->assertStatus(404)
+            ->assertSee('Halaman Tidak Ditemukan');
+    }
+
     public function test_response_punya_security_headers(): void
     {
         $response = $this->get('/login');

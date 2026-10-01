@@ -87,7 +87,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])
         ->name('password.reset');
     Route::post('/reset-password', [PasswordResetController::class, 'reset'])
-        ->name('password.update');
+        ->middleware('throttle:5,1')->name('password.update');
 
     Route::get('/auth/google/lanjut', [GoogleController::class, 'lanjut'])->name('google.lanjut');
     Route::post('/auth/google/lanjut', [GoogleController::class, 'daftar'])->middleware('throttle:5,1')->name('google.daftar');
