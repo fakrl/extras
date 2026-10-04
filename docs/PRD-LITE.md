@@ -1,58 +1,69 @@
 # PRD Lite — SIM Casting JBTB
 
-> Sumber kebenaran ringkas buat mulai coding. Detail lengkap tetap di `BAB-3-DRAFT.md` (Bab 3 Proposal) dan `CLAUDE.md` (konteks bisnis penuh) — file ini cuma distilasi biar AI/dev nggak perlu nyuap seluruh dokumen tiap mulai fitur baru.
+> Distilasi ringkas per 1 Okt 2026 (sistem final, **feature freeze**). Detail lengkap: `BAB-3-DRAFT.md` (kebutuhan RF), `DATABASE-SCHEMA.md` (31 tabel), `SPEC.md` (riwayat tugas AY–BR), `docs/CLAUDE.md` (konteks bisnis). Jangan tambah fitur tanpa eskalasi ke Fakrul.
 
 ## Tujuan Utama
 
-Ganti proses rekrutmen & pembayaran extras/figuran PT. JBTB Casting Creative Group yang masih manual (grup WA + Excel + Google Drive) jadi sistem terpusat. Dua masalah inti yang diselesaikan:
-1. **Transparansi fee** — kesepakatan fee antara Admin dan Extras harus tercatat, nggak bisa dibantah ("udah kerja belum dibayar / nggak sesuai deal").
-2. **Transparansi honor staf** — karyawan pendukung (Talco/Korlap/Sosmed) belum punya slip gaji, sering "kira-kira" nominal yang didapat.
+Ganti proses rekrutmen dan pembayaran Extras/figuran PT. JBTB Casting Creative Group yang manual (grup WA + Excel + Google Drive) jadi sistem terpusat. Masalah inti:
 
-**User:** 7 role — Super Admin (owner), Admin Default (operasional, bisa >1 akun), 3 sub-role Admin (Talco/Korlap/Sosmed — akses terbatas), Casting Director (representasi client, akses via link khusus), Extras (figuran, self-register publik).
+1. **Transparansi fee** — kesepakatan fee Admin dan Extras tercatat (nego bertingkat), tidak bisa dibantah.
+2. **Transparansi honor staf** — slip honor jelas per proyek.
+3. **Keuangan proyek terlihat** — Masuk, Piutang, Keluar, Saldo, Proyeksi dari satu sumber hitung.
 
-## Core Features (MVP) — JANGAN nambah di luar ini tanpa diskusi
+## User: 5 Role
 
-Urutan sesuai dependency, bukan prioritas bisnis:
+| Role | Ringkas |
+|---|---|
+| Super Admin | Pimpinan. Dashboard + monitoring, kelola semua akun, ACC proyek Client, tugaskan Admin, honor staf, log aktivitas. Mode pantau: sebagai Admin/Korlap (aksi penuh), sebagai Client/Extras (lihat-saja) |
+| Admin | Operasional inti: proyek, seleksi, grade, nego, ajukan ke Client, kontrak, invoice, pembayaran, keuangan, Kelola Akun Extras/Client |
+| Korlap | Lapangan: absensi, validasi selfie, catatan/sanksi, riwayat kerja sendiri |
+| Client | Wakil PH. Ajukan brief, Greenlight (lock/tolak), jadwal, invoice. Akun dibuat Super Admin |
+| Extras | Figuran. Daftar mandiri (form/Google), profil, daftar peran, nego, TTD kontrak, absen selfie, konfirmasi honor |
 
-1. **Autentikasi RBAC 7-role** — 1 sistem login, hak akses beda per role.
-2. **Profil Extras** — data diri, rate card, foto/video, status Aktif/Melanggar.
-3. **Manajemen Proyek Casting** — Admin Default posting lowongan (kelas, kuota, tanggal shooting jamak, urgent flag).
-4. **Pendaftaran & Seleksi** — Extras apply, deteksi bentrok jadwal (soft-warning, bukan blocking), Admin filter + set Grade.
-5. **Negosiasi Fee in-app** — model ala InDrive: tawar-menawar multi-round tercatat, sampai Deal. HARUS terjadi sebelum present ke CD.
-6. **Review & Approval CD** — CD approve/reject kandidat yang fee-nya udah Deal (individual/massal).
-7. **Kontrak Digital** — auto-generate PDF Talent Release, TTD via canvas signature (bukan upload scan, bukan PSrE).
-8. **Pembayaran Extras** — manual bukti transfer (BUKAN payment gateway), status Belum Dibayar → Ditransfer → Dikonfirmasi.
-9. **Manajemen Karyawan (baru)** — Super Admin tambah Admin + sub-role + set nominal honor per-event.
-10. **Absensi & Penggajian Staf (baru)** — log aktivitas nempel status "proyek selesai" → slip honor PDF auto-generate. Ditambah absensi formal Extras oleh Korlap di lapangan (revisi 31 Agu 2026).
-11. **Notifikasi** — email (primer) + WhatsApp via `whatsapp-web.js` self-hosted (pelengkap; revisi 28 Agu 2026 — lihat `TECH-STACK.md` & `OPEN-QUESTIONS-PROPOSAL.md` poin 3 untuk alasan ganti dari rencana gateway berbayar).
-12. **Dashboard & Riwayat Kerja** — per-role, termasuk view read-only Talco/Sosmed.
-13. **Void Kontrak Digital (baru)** — kontrak batal otomatis begitu pendaftaran dibatalkan setelah disepakati/ditandatangani (revisi 31 Agu 2026).
+## Fitur Final (yang sudah ada)
 
-**Eksplisit DI LUAR scope** (lihat `BAB-3-DRAFT.md` §3.1.4 buat detail penuh):
-- Talent profesional/pemeran utama (bukan Extras) — di luar sistem, cuma tercatat sebagai log kerja Talco.
-- Payment gateway (Midtrans/Tripay) — ditolak, biaya transaksi nggak sepadan + beda produk (payout vs receive).
-- Verifikasi Dukcapil buat NIK — validasi cuma duplikasi internal.
-- Geolocation/foto check-in buat absensi staf — cuma log status proyek.
-- E-signature tersertifikasi (PSrE) — canvas signature aja.
+1. **Autentikasi RBAC 5 role** + login Google (aktif bila config diisi) + wajib ganti password sementara.
+2. **Profil Extras** — data diri, tag bebas, pengalaman, foto utama + 4 foto tambahan, video, izin tampil di beranda publik.
+3. **Proyek casting** — peran + budget + kuota per peran, tanggal shooting jamak, lampiran, kode `JBTB-tahun-nomor`, tautan publik `/event/{token}`, pengajuan brief Client (ACC Super Admin).
+4. **Pendaftaran & seleksi** — kuota antrian, aturan bentrok jadwal (blokir hanya bila bentrok dengan Lolos/Kontrak), filter tag/grade/favorit, grade A/B/C, Favorit ⭐ internal.
+5. **Nego fee in-app** — multi-round tercatat sampai Deal, sebelum diajukan ke Client.
+6. **Greenlight Client** — grid kandidat, filter, lock/tolak (individual/massal), notifikasi ke Admin PIC.
+7. **Kontrak digital** — PDF otomatis saat Lolos, TTD canvas, void otomatis bila batal.
+8. **Pembayaran & keuangan** — bukti transfer manual (bukan payment gateway), sengketa, add-on, biaya lain-lain, invoice + TTD + tandai lunas, cashflow per proyek dan per periode.
+9. **Staf** — akun Admin/Korlap, penugasan, honor per-event, slip PDF, riwayat kerja.
+10. **Lapangan** — absensi (Admin/Korlap catat, Extras selfie, Korlap validasi), catatan/sanksi.
+11. **Notifikasi** — in-app (lonceng) utama; WhatsApp via `whatsapp-web.js` self-hosted sebagai pelengkap (queue); pengingat terjadwal (H-3, input jadwal, H-1, akun mangkrak).
+12. **Dashboard per role, Manajemen Akun SA, Log Aktivitas, Monitoring per role, Landing publik terkurasi, Export Excel/PDF.**
+13. **UI mobile** — Extras bottom-nav 3 menu; role lain hamburger + drawer; sidebar desktop bisa diciutkan; audit overflow 360/390px lulus.
 
-## User Flow Utama (happy path)
+## Di Luar Scope (future work, dicatat di Bab 3 §3.1.5)
+
+- Cek kelayakan registrasi, rating sikap 1–5 Korlap, scoring otomatis, re-book "panggil lagi".
+- Email domain perusahaan (Lark) dan konfigurasi Google produksi — ditunda sampai deploy.
+- QR check-in absensi, realtime/WebSocket (polling + notifikasi dinilai cukup).
+- Payment gateway, PSrE, API Dukcapil, geolokasi absensi, pajak/BPJS staf.
+- Talent profesional/pemeran utama.
+
+## User Flow Utama
 
 ```
-Extras daftar → lengkapi profil+rate card
-   → lihat lowongan → apply (+warning bentrok jadwal kalau relevan)
-   → Admin Default filter+grade → NEGO FEE in-app (multi-round) → Deal
-   → Admin present ke CD → CD approve
-   → Extras lengkapi KTP+rekening → kontrak auto-generate → TTD canvas (Admin+Extras)
-   → Admin tandai transfer+bukti → Extras konfirmasi terima → Selesai
+Client ajukan brief → Super Admin ACC (atau SA/Admin buat proyek langsung)
+Extras daftar peran → Admin review + grade → NEGO FEE → Deal
+   → Admin ajukan ke Client → Client lock → Lolos (kontrak + payment dibuat)
+   → Extras lengkapi KTP → TTD canvas (Admin + Extras)
+   → hari H: absensi → Admin transfer + bukti → Extras konfirmasi → Selesai
+   → Invoice ke Client → tandai lunas → cashflow
 ```
 
 ```
-Super Admin tambah Admin+sub-role+set honor
-   → tugaskan ke proyek (Talco/Korlap/Sosmed, opsional per proyek)
-   → sistem log aktivitas → proyek Selesai → slip honor PDF auto-generate
-   → staf lihat riwayat kerja & status honor sendiri (read-only)
+Super Admin buat akun Admin/Korlap + honor → tugaskan ke proyek
+   → proyek Selesai → slip honor PDF → staf lihat riwayat & status honor
 ```
 
-## Cara pakai file ini
+## Keputusan Bisnis Masih Terbuka
 
-Kalau lagi kerjain 1 modul spesifik, cukup mention file ini + `DATABASE-SCHEMA.md` bagian tabel yang relevan — jangan suapin seluruh `BAB-3-DRAFT.md` (39+ RF) ke tiap prompt. Detail requirement lengkap per modul (kode RF-xx) tetap rujuk `BAB-3-DRAFT.md` kalau butuh presisi.
+Tabel `SPEC.md` AY.6 (D3–D9, D11–D22) menunggu rapat dengan Erlina dan Direktur. Paling berdampak: D5 (dasar invoice), D4 (aturan deal fee), D13 (repo public vs private).
+
+## Cara Pakai File Ini
+
+Mengerjakan satu modul: sebut file ini + bagian tabel relevan di `DATABASE-SCHEMA.md`. Presisi kebutuhan per kode RF ada di `BAB-3-DRAFT.md`.

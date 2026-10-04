@@ -1,29 +1,27 @@
 BAB III
 ANALISIS KEBUTUHAN DAN METODE PENGEMBANGAN
 
+> Revisi 1 Oktober 2026: disesuaikan dengan sistem final (lima peran, fitur sampai SPEC bagian BR). Kode RF lama dipertahankan agar jejak ke proposal tidak putus; kebutuhan baru bernomor RF-60 ke atas; kebutuhan yang dicabut ditandai "Dicabut" beserta alasannya.
+
 3.1 Analisis Kebutuhan
 
-Analisis kebutuhan sistem disusun berdasarkan hasil wawancara dan observasi terhadap proses bisnis PT. JBTB Casting Creative Group, sebagaimana diuraikan pada Bab II, serta hasil bimbingan dengan dosen pembimbing yang memperluas cakupan sistem dari sekadar pengelolaan Extras menjadi pengelolaan operasional agensi secara lebih menyeluruh, termasuk pengelolaan karyawan pendukung produksi. Kebutuhan sistem dibagi menjadi kebutuhan fungsional dan kebutuhan non-fungsional.
+Analisis kebutuhan sistem disusun berdasarkan hasil wawancara dan observasi terhadap proses bisnis PT. JBTB Casting Creative Group, sebagaimana diuraikan pada Bab II, serta hasil bimbingan dengan dosen pembimbing yang memperluas cakupan sistem dari sekadar pengelolaan Extras menjadi pengelolaan operasional agensi secara lebih menyeluruh, termasuk pengelolaan staf pendukung produksi dan keuangan proyek. Kebutuhan sistem dibagi menjadi kebutuhan fungsional dan kebutuhan non-fungsional.
 
-Penyusunan struktur akses pengguna pada sistem ini mengacu pada konsep Role-Based Access Control (RBAC), yaitu pendekatan pengendalian akses yang memberikan hak dan kewenangan kepada pengguna berdasarkan peran yang dimilikinya di dalam organisasi, bukan berdasarkan identitas individu secara langsung. Pendekatan ini dipilih karena struktur organisasi PT. JBTB Casting Creative Group memiliki peran yang bersifat kondisional — sebagian peran hanya diperlukan pada proyek tertentu, sehingga otorisasi harus dapat diberikan atau ditarik sesuai kebutuhan tanpa mengubah struktur inti sistem.
+Penyusunan struktur akses pengguna mengacu pada konsep Role-Based Access Control (RBAC), yaitu pendekatan pengendalian akses yang memberikan hak dan kewenangan kepada pengguna berdasarkan peran yang dimilikinya di dalam organisasi, bukan berdasarkan identitas individu. Selama pengembangan, struktur peran yang semula tujuh disederhanakan menjadi lima peran setelah evaluasi bersama mitra: sub-peran Talent Coordinator dan Sosial Media/Multimedia tidak memiliki fitur fungsional pada sistem selain pencatatan penugasan dan honor, sehingga dilebur ke peran Admin, sedangkan Casting Director dipertegas menjadi peran Client.
 
 3.1.1. Aktor Sistem
 
-Sistem ini melibatkan tujuh aktor yang terbagi menjadi dua kelompok: aktor eksternal (Extras dan Casting Director) serta aktor internal agensi (Super Admin, Admin Default, dan tiga sub-role Admin: Talent Coordinator, Koordinator Lapangan, dan Sosial Media/Multimedia).
+Sistem ini melibatkan lima aktor: dua aktor eksternal (Client dan Extras) serta tiga aktor internal agensi (Super Admin, Admin, dan Koordinator Lapangan).
 
 | Aktor | Deskripsi Peran | Cara Masuk Sistem |
 |---|---|---|
-| Super Admin | Pemilik/pimpinan agensi (Direktur Utama). Memantau seluruh kegiatan operasional melalui dashboard analitik dan monitoring, menambahkan akun Admin baru beserta penetapan sub-role spesifiknya, serta menetapkan nominal honor staf saat perekrutan. Tidak menjalankan operasional harian (seleksi, negosiasi, dsb). | Akun tunggal, dibuat manual oleh tim internal saat inisialisasi sistem |
-| Admin Default | Menjalankan seluruh operasional inti: membuat proyek casting, menyeleksi kandidat, menetapkan grade, menjalankan negosiasi fee, mengajukan kandidat kepada Casting Director, mengelola kontrak dan pembayaran Extras, mengelola akun Extras, serta membuat rekap. Dapat terdiri dari lebih dari satu akun. | Dibuat oleh Super Admin |
-| Admin — Talent Coordinator (Talco) | Sub-role Admin yang bertugas mengoordinasikan kebutuhan talent utama/pemeran inti (bukan Extras) pada saat produksi: jadwal wardrobe, make up, pengambilan gambar, serta koordinasi dengan asisten sutradara dan tim produksi. Karena objek kerjanya (talent utama) berada di luar batasan sistem (lihat 3.1.4 poin 1), peran ini tidak memiliki fitur fungsional pada sistem selain sebagai catatan penugasan dan riwayat kerja untuk keperluan penggajian. | Dibuat oleh Super Admin, ditugaskan per proyek sesuai kebutuhan |
-| Admin — Koordinator Lapangan (Korlap) | Sub-role Admin yang mengawasi Extras secara langsung di lokasi produksi: mencatat kehadiran, memantau ketepatan waktu, mengelola informasi wardrobe dan callingan, serta memberikan catatan atau sanksi terhadap Extras berdasarkan kondisi di lapangan. | Dibuat oleh Super Admin, ditugaskan per proyek sesuai kebutuhan |
-| Admin — Sosial Media/Multimedia | Sub-role Admin yang mengelola kebutuhan publikasi dan dokumentasi media sosial agensi. Sebagaimana Talco, peran ini tidak memiliki fitur fungsional pada sistem selain sebagai catatan penugasan dan riwayat kerja untuk keperluan penggajian. | Dibuat oleh Super Admin, ditugaskan per proyek sesuai kebutuhan |
-| Casting Director (CD) | Mewakili kebutuhan client/Production House (PH); melakukan review dan approve/reject terhadap kandidat yang telah diajukan Admin. | Registrasi melalui tautan khusus yang terpisah dari tautan registrasi Extras; siapa pun yang mendaftar melalui tautan ini secara otomatis memperoleh peran Casting Director |
-| Extras | Mendaftar secara mandiri, melengkapi profil dan portofolio, mengikuti proses seleksi, melakukan negosiasi fee, serta mengunggah kontrak yang telah ditandatangani. | Registrasi mandiri melalui tautan publik |
+| Super Admin | Pemilik/pimpinan agensi. Memantau seluruh operasional melalui dashboard (ringkasan perlu tindakan, status proyek, arus uang per periode, kalender), mengelola seluruh akun (Admin, Korlap, Client), menyetujui atau menolak pengajuan proyek dari Client, menugaskan Admin pada proyek, menetapkan honor staf, serta melihat log aktivitas. Dapat memasuki mode pemantauan: sebagai Admin atau Korlap dengan aksi penuh (setiap aksi tercatat atas nama Super Admin), dan sebagai Client atau Extras dengan tampilan lihat-saja. | Akun tunggal terproteksi, dibuat saat inisialisasi sistem |
+| Admin | Menjalankan operasional inti: membuat dan mengelola proyek casting, menyeleksi kandidat, menetapkan grade, menjalankan negosiasi fee, mengajukan kandidat kepada Client, mengelola kontrak, invoice, pembayaran Extras, keuangan proyek (cashflow), serta kelola akun Extras. Dapat berjumlah lebih dari satu; setiap proyek memiliki satu Admin PIC. | Dibuat oleh Super Admin |
+| Koordinator Lapangan (Korlap) | Mengawasi Extras di lokasi produksi: mencatat kehadiran, memvalidasi atau menolak foto absensi Extras, serta mencatat catatan atau sanksi lapangan. Melihat riwayat kerja dan status honor miliknya sendiri. Tidak memiliki akses keuangan maupun pengelolaan akun. | Dibuat oleh Super Admin, ditugaskan per proyek |
+| Client | Mewakili Production House (PH). Mengajukan kebutuhan proyek (brief) untuk disetujui Super Admin, melakukan Greenlight (lock atau tolak) terhadap kandidat yang diajukan Admin, melengkapi jadwal shooting, melihat dan menandatangani invoice, serta mengunduh riwayat pilihannya. Seorang Client dapat memiliki lebih dari satu proyek dengan satu akun. | Dibuat oleh Super Admin dengan kata sandi sementara dan wajib ganti kata sandi pada login pertama; registrasi publik Client ditutup |
+| Extras | Mendaftar mandiri, melengkapi profil dan portofolio, mendaftar pada peran proyek, bernegosiasi fee, menandatangani kontrak, melakukan absensi selfie, serta mengonfirmasi penerimaan honor. | Registrasi mandiri (formulir atau akun Google) |
 
-Catatan mengenai struktur Admin: Talco, Korlap, dan Sosial Media/Multimedia bukan merupakan peran admin yang berdiri sendiri, melainkan cabang kewenangan terbatas dari Admin Default yang ditetapkan Super Admin sesuai kebutuhan tiap proyek — tidak seluruh proyek memerlukan ketiganya. Talco dan Sosial Media/Multimedia memiliki akses login yang bersifat terbatas (read-only) untuk melihat riwayat penugasan dan status honor mereka sendiri, tanpa akses ke fitur operasional inti. Korlap memiliki akses fungsional karena tugasnya bersinggungan langsung dengan pencatatan kehadiran dan status Extras di lapangan.
-
-Production House (PH) selaku entitas perusahaan tidak memiliki akun pada sistem. Kebutuhan casting dari PH disampaikan melalui Casting Director yang mewakilinya; individu yang login dan bertindak dalam sistem adalah Casting Director, bukan PH sebagai entitas.
+Production House (PH) selaku entitas perusahaan tidak memiliki akun tersendiri; individu yang login dan bertindak adalah Client yang mewakilinya, dengan nama perusahaan tersimpan pada data akun Client.
 
 3.1.2. Kebutuhan Fungsional
 
@@ -31,201 +29,226 @@ Modul Autentikasi dan Manajemen Akun
 
 | Kode | Kebutuhan | Aktor |
 |---|---|---|
-| RF-01 | Registrasi mandiri untuk Extras (data diri, foto, portofolio, video profil) | Extras |
-| RF-02 | Registrasi khusus untuk Casting Director melalui tautan terpisah (otomatis berperan sebagai CD) | CD |
-| RF-03 | Login dengan hak akses berbeda untuk tujuh aktor sistem sesuai peran (Role-Based Access Control) | Semua |
-| RF-04 | Validasi duplikasi NIK saat Extras dinyatakan lolos seleksi (satu NIK untuk satu akun) | Sistem |
-| RF-05 | Admin Default dapat mengelola akun CD dan menonaktifkan akun Extras yang bermasalah | Admin Default |
-| RF-54 | Admin Default dapat memberi atau mencabut badge Apresiasi pada Extras beserta catatan internal opsional, sebagai catatan kualitatif yang tidak terlihat oleh CD maupun Extras (ditambahkan pasca-proposal, 1 September 2026) | Admin Default |
-| RF-55 | Halaman beranda publik (compro) menampilkan perkenalan sistem, alur kerja pendaftaran Extras, dan jumlah proyek casting yang sedang membuka pendaftaran, tanpa detail per proyek — nama client (`client_ph`) dan budget tidak pernah ditampilkan di halaman publik manapun (ditambahkan pasca-proposal, 1 September 2026) | Publik/Sistem |
-| RF-57 | Super Admin dapat menonaktifkan/mengaktifkan atau menghapus permanen akun Admin maupun sesama Super Admin (menu "Kelola Admin") dan akun Casting Director (menu terpisah "Kelola Casting Director") — kecuali akun sistem terproteksi dan akun miliknya sendiri yang sedang login; penghapusan permanen ditolak otomatis kalau akun tersebut masih punya riwayat penugasan (ditambahkan pasca-proposal, 1 September 2026) | Super Admin |
-| RF-58 | Satu akun Super Admin sistem yang ditandai terproteksi dapat membuat akun Super Admin baru lewat menu Tambah Admin — kemampuan ini TIDAK dimiliki Super Admin lain manapun, termasuk yang dibuat lewat mekanisme ini (ditambahkan pasca-proposal, 1 September 2026) | Super Admin (akun terproteksi) |
-| RF-59 | Super Admin (siapapun, tidak terbatas akun terproteksi) dapat membuat akun Casting Director secara manual lewat menu "Kelola Casting Director", terpisah dari alur registrasi mandiri CD (RF-02); tersedia juga tombol untuk menyalin tautan registrasi mandiri CD guna dibagikan manual ke pihak client/PH (ditambahkan pasca-proposal, 2 September 2026) | Super Admin |
+| RF-01 | Registrasi mandiri untuk Extras, melalui formulir atau akun Google | Extras |
+| RF-02 | Dicabut. Registrasi Client melalui tautan terpisah diganti RF-59 (akun Client dibuat Super Admin) | - |
+| RF-03 | Login dengan hak akses berbeda untuk lima peran sesuai Role-Based Access Control; akun nonaktif ditolak login | Semua |
+| RF-04 | Validasi duplikasi NIK (satu NIK untuk satu akun) melalui pengecekan pada basis data tanpa integrasi Dukcapil; NIK dilengkapi Extras sebelum penandatanganan kontrak | Sistem |
+| RF-05 | Admin menonaktifkan atau mengaktifkan akun Extras yang bermasalah. Pengelolaan akun Client menjadi wewenang Super Admin | Admin |
+| RF-54 | Admin menandai Extras sebagai Favorit sebagai catatan internal yang tidak terlihat oleh Client maupun Extras (pengembangan dari badge Apresiasi) | Admin |
+| RF-55 | Halaman beranda publik menampilkan perkenalan agensi, alur pendaftaran, jumlah proyek yang membuka pendaftaran, cast terkurasi, dan portofolio proyek terkurasi; budget dan data sensitif tidak pernah ditampilkan | Publik |
+| RF-57 | Super Admin mengelola seluruh akun (Admin, Korlap, Client, Extras) melalui satu menu Manajemen Akun: pencarian, filter, aksi massal, nonaktifkan, hapus, pulihkan; akun sistem terproteksi dan akun sendiri tidak dapat dihapus | Super Admin |
+| RF-58 | Hanya akun Super Admin terproteksi yang dapat membuat Super Admin baru | Super Admin |
+| RF-59 | Super Admin membuat akun Client dengan kata sandi sementara; email bersifat opsional; Client wajib mengganti kata sandi pada login pertama | Super Admin |
+| RF-60 | Login dengan akun Google; pendaftaran baru hanya untuk Extras, peran lain harus menghubungkan akun Google lebih dahulu; fitur nonaktif otomatis bila konfigurasi Google belum diisi | Semua |
+| RF-61 | Sistem menghapus otomatis akun Extras yang tidak pernah melengkapi profil dan tidak pernah mendaftar selama 30 hari, didahului peringatan H-7; Admin dapat memangkas secara manual | Sistem/Admin |
+| RF-62 | Super Admin dapat masuk mode pemantauan per peran: Admin dan Korlap (aksi penuh, tercatat sebagai aksi Super Admin), Client dan Extras (lihat-saja, seluruh aksi tulis ditolak) | Super Admin |
+| RF-63 | Sistem mencatat log aktivitas (aktor, peran, aksi, waktu) yang dapat dicari dan difilter oleh Super Admin | Sistem/Super Admin |
 
 Modul Profil Extras
 
 | Kode | Kebutuhan | Aktor |
 |---|---|---|
-| RF-06 | Extras melengkapi profil: usia, gender, tinggi badan, ukuran baju, warna kulit, pengalaman, bahasa, rate card, serta video dan foto profil | Extras |
+| RF-06 | Extras melengkapi profil: usia, gender, tinggi dan berat badan, ukuran baju, bahasa, rate card, riwayat pengalaman, tautan portofolio, foto utama, empat foto tambahan, dan video profil | Extras |
 | RF-07 | Sistem menandai status Extras (Aktif/Tidak Aktif/Melanggar) berdasarkan riwayat pembatalan | Sistem |
-| RF-08 | Pembatalan mendadak sebanyak tiga kali pada proyek berbeda mengubah status Extras secara otomatis menjadi "Melanggar" | Sistem |
+| RF-08 | Pembatalan sebanyak tiga kali mengubah status Extras otomatis menjadi "Melanggar"; seluruh pembatalan dihitung sebagai pembatalan mendadak (keputusan D23) | Sistem |
+| RF-64 | Extras memberi tag ciri dengan teks bebas (disarankan lewat autocomplete dan dinormalisasi otomatis); Admin merapikan tag melalui dialog "Rapikan tag" (pindah grup, gabung, hapus) | Extras/Admin |
+| RF-65 | Extras menentukan izin tampil profil pada beranda publik; penayangan tetap memerlukan persetujuan Admin | Extras/Admin |
 
-Modul Manajemen Karyawan (Admin Sub-Role)
-
-Modul ini menjawab kebutuhan tambahan hasil bimbingan: agensi memiliki karyawan pendukung produksi (Talco, Korlap, Sosial Media/Multimedia) yang sifatnya tidak tetap — dibayar per proyek/event, bukan gaji bulanan, sehingga model penugasannya sejalan dengan model fee proyek-basis milik Extras.
+Modul Manajemen Staf (Admin dan Korlap)
 
 | Kode | Kebutuhan | Aktor |
 |---|---|---|
-| RF-40 | Super Admin menambahkan akun Admin baru beserta penetapan sub-role spesifik (Admin Default / Talco / Korlap / Sosial Media-Multimedia) | Super Admin |
-| RF-41 | Super Admin menetapkan nominal honor per-event untuk tiap sub-admin pada saat perekrutan, dengan nominal yang dapat disesuaikan kembali di kemudian hari | Super Admin |
-| RF-42 | Super Admin menugaskan sub-admin (Talco/Korlap/Sosial Media-Multimedia) ke proyek casting tertentu sesuai kebutuhan proyek tersebut | Super Admin |
-| RF-43 | Sistem mencatat riwayat kerja setiap Admin (Default maupun sub-role) berupa daftar proyek yang pernah ditangani, sebagai dasar kelayakan honor | Sistem |
-| RF-44 | Talco dan Sosial Media/Multimedia dapat mengakses tampilan terbatas (read-only) berisi riwayat penugasan dan status honor milik mereka sendiri | Talco/Sosmed |
+| RF-40 | Super Admin menambahkan akun Admin atau Korlap | Super Admin |
+| RF-41 | Super Admin menetapkan nominal honor per-event staf, dapat disesuaikan kembali | Super Admin |
+| RF-42 | Super Admin menugaskan Admin pada proyek dan menandai penugasan selesai | Super Admin |
+| RF-43 | Sistem mencatat riwayat kerja staf berupa daftar proyek yang ditangani, sebagai dasar kelayakan honor | Sistem |
+| RF-44 | Korlap dan Admin melihat riwayat kerja dan status honor milik sendiri | Admin/Korlap |
 
 Modul Manajemen Proyek Casting
 
 | Kode | Kebutuhan | Aktor |
 |---|---|---|
-| RF-09 | Admin Default membuat proyek casting: nama produksi, kriteria per kelas, kuota, deadline, tanggal-tanggal shooting (dapat lebih dari satu tanggal dan tidak harus berurutan), serta penanda "Butuh Dadakan/Urgent" | Admin Default |
-| RF-10 | Admin Default mengedit atau menutup proyek casting | Admin Default |
-| RF-11 | Extras melihat daftar proyek casting yang dibuka, diurutkan berdasarkan fee tertinggi dan status urgent di posisi teratas | Extras |
-| RF-56 | Admin Default membagikan tautan publik per proyek (disebar via WhatsApp); pengunjung tautan (termasuk yang belum punya akun) dapat melihat kriteria & kuota proyek tanpa nama client, lalu diarahkan otomatis ke halaman pendaftaran proyek tersebut setelah daftar/masuk; tautan proyek yang sudah ditutup/lewat deadline/kuota penuh menampilkan halaman pemberitahuan, bukan error (ditambahkan pasca-proposal, 1 September 2026) | Admin Default/Extras/Publik |
+| RF-09 | Admin atau Super Admin membuat proyek casting: nama produksi, peran beserta kriteria, tag, budget dan kuota per peran, deadline, tanggal-tanggal shooting (jamak, tidak harus berurutan), Admin PIC, Client, serta penanda "Urgent". Setiap proyek memperoleh kode otomatis berformat JBTB-tahun-nomor | Admin |
+| RF-10 | Admin mengedit, membuka, atau menutup proyek; lampiran file proyek (naskah, moodboard) disimpan pada penyimpanan privat | Admin |
+| RF-11 | Extras melihat daftar proyek yang dibuka beserta tingkat kecocokan tag, kuota tersisa, dan status Penuh | Extras |
+| RF-56 | Admin membagikan tautan publik per proyek; pengunjung dapat melihat kriteria dan kuota tanpa nama client lalu diarahkan ke pendaftaran; proyek tertutup menampilkan halaman pemberitahuan | Admin/Extras/Publik |
+| RF-66 | Client mengajukan brief proyek; proyek baru aktif setelah disetujui Super Admin, dan penolakan disertai alasan serta notifikasi | Client/Super Admin |
+| RF-67 | Admin dapat mengaitkan proyek dengan portofolio terkurasi untuk beranda publik | Admin |
 
 Modul Pendaftaran dan Seleksi
 
 | Kode | Kebutuhan | Aktor |
 |---|---|---|
-| RF-12 | Extras mendaftar pada proyek casting, termasuk mendaftar secara paralel pada beberapa proyek | Extras |
-| RF-13 | Sistem mendeteksi potensi bentrok jadwal; apabila Extras memiliki keterlibatan aktif (status Deal/Lolos) pada proyek lain dengan tanggal shooting yang tumpang tindih, sistem menampilkan peringatan kepada Extras pada saat mendaftar, tanpa melakukan pemblokiran | Sistem |
-| RF-14 | Admin Default memfilter pendaftar berdasarkan kriteria proyek dan melihat profil lengkap (media sosial, portofolio, rate card) | Admin Default |
-| RF-15 | Admin Default menetapkan Grade (A/B/C) untuk pendaftar sebagai penilaian kualitas yang independen dari besaran fee | Admin Default |
+| RF-12 | Extras mendaftar pada peran proyek, termasuk secara paralel pada beberapa proyek | Extras |
+| RF-13 | Sistem menegakkan aturan bentrok jadwal: pendaftaran ditolak bila bentrok dengan keterlibatan berstatus Lolos atau Kontrak Ditandatangani; bila bentrok dengan proses yang belum pasti, Extras diberi peringatan dan dapat melanjutkan dengan konfirmasi; penandatanganan kontrak ditolak bila bentrok dengan kontrak lain | Sistem |
+| RF-14 | Admin memfilter pendaftar (tag, grade, status, favorit) dan melihat profil lengkap | Admin |
+| RF-15 | Admin menetapkan Grade (A/B/C) sebagai penilaian kualitas yang independen dari fee | Admin |
+| RF-68 | Kuota peran bersifat antrian: setiap pendaftar yang tidak ditolak atau dibatalkan menempati slot; pendaftaran diblokir saat penuh dan slot terbuka kembali saat ada penolakan atau pembatalan | Sistem |
 
 Modul Negosiasi Fee
 
-Negosiasi fee dilakukan pada tahap Admin menyeleksi kandidat, sebelum kandidat diajukan kepada Casting Director. Urutan ini dipilih agar Casting Director hanya menerima kandidat yang fee-nya telah disepakati, sehingga proses review CD terfokus pada kesesuaian talent, bukan pada negosiasi harga.
+Negosiasi fee dilakukan saat Admin menyeleksi kandidat, sebelum kandidat diajukan kepada Client, agar Client hanya menerima kandidat yang fee-nya telah disepakati dan fokus pada kesesuaian talent.
 
 | Kode | Kebutuhan | Aktor |
 |---|---|---|
-| RF-16 | Admin Default mengajukan penawaran fee awal kepada kandidat berdasarkan rate card Extras dan budget dari client | Admin Default |
-| RF-17 | Extras dapat menerima penawaran atau mengajukan counter dengan nominal fee yang berbeda, tanpa batas jumlah putaran (mekanisme tawar-menawar bertingkat) | Extras |
-| RF-18 | Admin Default dapat menerima counter dari Extras, mengajukan counter balik, atau menghentikan proses negosiasi | Admin Default |
-| RF-19 | Sistem mencatat setiap putaran penawaran dan counter (pengaju, nominal, waktu) sebagai riwayat negosiasi fee | Sistem |
-| RF-20 | Ketika salah satu pihak menyetujui penawaran, status negosiasi berubah menjadi "Deal" dan fee terkunci pada nominal yang disepakati | Sistem |
+| RF-16 | Admin mengajukan penawaran fee awal berdasarkan rate card dan budget peran | Admin |
+| RF-17 | Extras menerima penawaran atau mengajukan counter, tanpa batas jumlah putaran | Extras |
+| RF-18 | Admin menerima counter, mengajukan counter balik, atau menghentikan negosiasi dengan alasan | Admin |
+| RF-19 | Sistem mencatat setiap putaran (pengaju, nominal, waktu, catatan) sebagai riwayat | Sistem |
+| RF-20 | Saat disepakati, status menjadi "Deal" dan fee terkunci pada nominal tersebut | Sistem |
 
-Modul Review dan Approval Casting Director
+Modul Greenlight Client
 
 | Kode | Kebutuhan | Aktor |
 |---|---|---|
-| RF-21 | Admin Default mengajukan kandidat yang fee-nya telah Deal kepada CD untuk direview | Admin Default |
-| RF-22 | Sistem menampilkan peringatan bentrok jadwal kepada Admin Default pada saat kandidat akan diajukan kepada CD, apabila kandidat tersebut memiliki keterlibatan aktif pada proyek lain dengan tanggal yang tumpang tindih | Sistem |
-| RF-23 | CD melakukan approve/reject terhadap kandidat yang diajukan, baik secara individual maupun secara massal | CD |
-| RF-24 | Sistem mencatat status pendaftar secara berjenjang: Diajukan → Direview Admin → Nego Fee → Deal → Diajukan ke CD → Direview CD → Lolos/Ditolak → Kontrak Ditandatangani → Selesai Produksi, dengan status pembayaran yang tercatat secara terpisah: Belum Dibayar → Ditransfer (dengan bukti) → Dikonfirmasi Diterima | Sistem |
+| RF-21 | Admin mengajukan kandidat berstatus Deal kepada Client | Admin |
+| RF-22 | Sistem menampilkan peringatan bentrok jadwal kepada Admin saat kandidat akan diajukan | Sistem |
+| RF-23 | Client meninjau kandidat dalam tampilan grid dengan filter demografis dan tag, memberi grade, lalu melakukan lock (Lolos) atau tolak, secara individual maupun massal | Client |
+| RF-24 | Sistem mencatat status pendaftar secara berjenjang: Diajukan, Direview Admin, Nego Fee, Deal, Diajukan ke Client, Lolos, Kontrak Ditandatangani, Selesai Produksi, dengan cabang Ditolak dan Dibatalkan; status pembayaran dicatat terpisah: Belum Dibayar, Ditransfer (dengan bukti), Dikonfirmasi Diterima, dengan cabang Disengketakan | Sistem |
+| RF-69 | Setiap keputusan Client (lock maupun tolak) memicu notifikasi kepada Admin PIC proyek berisi nama Client, kandidat, proyek, dan tautan langsung ke halaman terkait | Sistem |
+| RF-70 | Admin melihat, secara hanya-baca, daftar Client beserta proyek dan status kandidat yang diajukan (Menunggu, Lock, Ditolak) | Admin |
 
 Modul Kontrak Digital
 
 | Kode | Kebutuhan | Aktor |
 |---|---|---|
-| RF-25 | Sistem melakukan auto-generate dokumen kontrak (Talent Release) dari data proyek, Extras, dan fee yang disepakati, dengan harga kontrak mengikuti hasil negosiasi | Sistem |
-| RF-26 | Admin Default dan Extras menandatangani kontrak melalui canvas signature (tanda tangan digital yang digambar langsung pada peramban), yang disematkan pada dokumen PDF kontrak; tanda tangan ini bukan tanda tangan elektronik tersertifikasi (PSrE) | Admin Default/Extras |
-| RF-27 | Sistem menyimpan dan mengarsipkan dokumen kontrak final untuk setiap proyek dan setiap Extras | Sistem |
+| RF-25 | Sistem membuat dokumen kontrak (Talent Release) otomatis saat kandidat Lolos, dengan harga mengikuti hasil negosiasi; pembuatan terjadi pada transisi status, bukan saat halaman dibuka | Sistem |
+| RF-26 | Admin dan Extras menandatangani kontrak melalui canvas signature yang disematkan pada PDF; bukan tanda tangan elektronik tersertifikasi (PSrE) | Admin/Extras |
+| RF-27 | Sistem menyimpan dan mengarsipkan kontrak final; kontrak otomatis dibatalkan (void) bila keikutsertaan dibatalkan | Sistem |
 
-Modul Pembayaran Extras
-
-| Kode | Kebutuhan | Aktor |
-|---|---|---|
-| RF-28 | Admin Default menandai status pembayaran "Sudah Ditransfer" beserta unggahan bukti transfer | Admin Default |
-| RF-29 | Extras mengonfirmasi penerimaan pembayaran | Extras |
-| RF-30 | Sistem menampilkan rekap keuangan proyek (penerimaan dari client, payout kepada Extras, dan margin) khusus untuk Admin Default dan Super Admin | Admin Default/Super Admin |
-| RF-31 | Sistem melakukan auto-generate invoice penagihan kepada client, yang ditandatangani melalui canvas signature oleh Admin Default dan Casting Director | Admin Default/CD |
-| RF-32 | Admin Default atau Extras dapat menambahkan komponen tambahan (add-on) pada catatan pembayaran, seperti reimbursement transport atau penginapan, berupa label bebas dan nominal yang diisi manual sesuai kebutuhan | Admin Default |
-
-Modul Absensi dan Penggajian Karyawan
-
-Modul ini menjawab kebutuhan hasil bimbingan sekaligus permasalahan nyata di lapangan yang disampaikan pihak mitra: agensi belum memiliki slip gaji yang jelas untuk karyawannya, sehingga staf sering tidak mengetahui secara pasti nominal honor yang akan diterima. Modul ini menerapkan prinsip transparansi yang sama dengan modul negosiasi fee Extras, diterapkan untuk konteks internal staf agensi.
+Modul Pembayaran dan Keuangan
 
 | Kode | Kebutuhan | Aktor |
 |---|---|---|
-| RF-45 | Sistem mencatat status keaktifan setiap Admin pada suatu proyek sebagai log aktivitas, ditandai selesai ketika status proyek berubah menjadi "Selesai" | Sistem |
-| RF-46 | Status "Selesai" pada log aktivitas Admin menjadi dasar kelayakan honor untuk proyek terkait | Sistem |
-| RF-47 | Super Admin dapat menambahkan komponen tambahan (add-on) pada catatan honor Admin, seperti reimbursement transport atau penginapan, berupa label bebas dan nominal yang diisi manual sesuai kebutuhan | Super Admin |
-| RF-48 | Sistem melakukan auto-generate slip honor (PDF) untuk setiap Admin pada saat proyek berstatus "Selesai", berisi rincian nominal honor pokok dan komponen tambahan (add-on) | Sistem |
-| RF-49 | Super Admin dapat melihat rekap honor seluruh Admin pada dashboard monitoring | Super Admin |
+| RF-28 | Admin menandai "Sudah Ditransfer" beserta bukti transfer; "perlu ditransfer" didefinisikan sebagai kontrak sudah ditandatangani lengkap dan belum dibayar | Admin |
+| RF-29 | Extras mengonfirmasi penerimaan honor atau mengajukan sengketa beralasan | Extras |
+| RF-30 | Sistem menampilkan keuangan per proyek dengan satu sumber perhitungan: Masuk (invoice lunas), Piutang (invoice belum lunas), Keluar (honor Extras, honor staf, biaya lain-lain), Saldo, dan Proyeksi; ringkasan per periode tersedia pada dashboard Super Admin | Admin/Super Admin |
+| RF-31 | Sistem membuat invoice penagihan kepada Client, ditandatangani canvas oleh Admin dan Client, dengan opsi dokumen kustom; Admin menandai lunas | Admin/Client |
+| RF-32 | Admin menambahkan komponen tambahan (add-on) pada pembayaran, berupa label bebas dan nominal manual | Admin |
+| RF-71 | Admin mencatat biaya lain-lain proyek sebagai komponen pengeluaran cashflow | Admin |
 
-Modul Pembatalan
+Modul Penggajian Staf
 
 | Kode | Kebutuhan | Aktor |
 |---|---|---|
-| RF-33 | Admin Default atau Extras dapat membatalkan keikutsertaan pada status "Deal", "Lolos", atau "Kontrak Ditandatangani" (diperluas dari status "Deal" saja; revisi 31 Agustus 2026) dengan mengisi alasan pembatalan | Admin Default/Extras |
-| RF-34 | Sistem mencatat riwayat pembatalan dan menghitung akumulasi pembatalan mendadak untuk setiap Extras | Sistem |
-| RF-35 | Korlap dapat memberikan catatan atau sanksi terhadap Extras berdasarkan kondisi di lapangan (misalnya keterlambatan atau pelanggaran ketentuan wardrobe) | Korlap |
-| RF-53 | Korlap dapat mencatat kehadiran Extras per tanggal shooting sebagai catatan formal, terpisah dari catatan/sanksi (RF-35) (ditambahkan pasca-proposal, 31 Agustus 2026) | Korlap |
+| RF-45 | Sistem mencatat status penugasan staf per proyek, ditandai selesai saat proyek selesai | Sistem |
+| RF-46 | Status selesai menjadi dasar kelayakan honor proyek terkait | Sistem |
+| RF-47 | Super Admin menambahkan add-on pada honor staf | Super Admin |
+| RF-48 | Sistem membuat slip honor (PDF) untuk setiap staf saat penugasan selesai | Sistem |
+| RF-49 | Super Admin melihat rekap honor seluruh staf dan menandai honor staf telah dibayar | Super Admin |
+
+Modul Pembatalan dan Lapangan
+
+| Kode | Kebutuhan | Aktor |
+|---|---|---|
+| RF-33 | Admin atau Extras membatalkan keikutsertaan pada status Deal, Lolos, atau Kontrak Ditandatangani dengan alasan | Admin/Extras |
+| RF-34 | Sistem mencatat riwayat pembatalan dan akumulasinya per Extras | Sistem |
+| RF-35 | Korlap memberi catatan atau sanksi terhadap Extras berdasarkan kondisi lapangan | Korlap |
+| RF-53 | Korlap atau Admin mencatat kehadiran Extras per tanggal shooting | Korlap/Admin |
+| RF-72 | Extras mengirim foto selfie absensi; Korlap memvalidasi atau menolaknya; Client dapat melihat foto absensi proyeknya | Extras/Korlap/Client |
 
 Modul Notifikasi
 
 | Kode | Kebutuhan | Aktor |
 |---|---|---|
-| RF-36 | Sistem mengirimkan notifikasi email untuk hasil seleksi, permintaan konfirmasi fee, dan permintaan tanda tangan kontrak | Sistem |
-| RF-37 | Sistem mengirimkan notifikasi WhatsApp otomatis melalui `whatsapp-web.js` self-hosted (gratis, bukan gateway pihak ketiga berbayar) sebagai kanal pelengkap, untuk konfirmasi apply, hasil seleksi, pengingat jadwal shooting (H-1), dan pemberitahuan kontrak siap ditandatangani | Sistem |
-| RF-38 | Admin Default dapat menginput tautan grup WhatsApp untuk setiap proyek sebagai kanal informasi lanjutan | Admin Default |
+| RF-36 | Sistem mengirim notifikasi dalam aplikasi (ikon lonceng, tautan relatif, penanda dibaca) untuk kejadian penting, dengan email sebagai kanal tambahan bila tersedia | Sistem |
+| RF-37 | Sistem mengirim notifikasi WhatsApp otomatis melalui `whatsapp-web.js` self-hosted sebagai kanal pelengkap (hasil seleksi, kontrak siap ditandatangani, pengingat), melalui antrian sehingga kegagalan kirim tidak menggagalkan aksi utama; nomor dinormalisasi ke format 62 | Sistem |
+| RF-38 | Admin menginput tautan grup WhatsApp proyek sebagai kanal informasi lanjutan | Admin |
+| RF-73 | Pengingat terjadwal: H-3 pemilihan Extras, pengingat input jadwal, H-1 shooting, dan peringatan akun mangkrak | Sistem |
 
-Modul Dashboard, Riwayat Kerja, dan Laporan
+Modul Dashboard dan Laporan
 
 | Kode | Kebutuhan | Aktor |
 |---|---|---|
-| RF-39 | Sistem menyediakan dashboard sesuai kebutuhan masing-masing peran | Semua |
-| RF-50 | Super Admin memiliki dashboard monitoring khusus berisi ringkasan seluruh kegiatan operasional (proyek berjalan, status honor staf) serta ringkasan seluruh akun sistem (jumlah dan status Extras, Casting Director, dan Admin) secara read-only, tanpa akses langsung ke operasional harian maupun aksi pengelolaan akun (aksi tersebut tetap wewenang Admin Default sesuai RF-05) | Super Admin |
-| RF-51 | Admin Default dapat melihat rekap Extras yang paling sering terpilih dan rekap status keaktifan Extras | Admin Default |
-| RF-52 | Admin Default dan Super Admin dapat mengekspor data rekap ke format Excel | Admin Default/Super Admin |
+| RF-39 | Dashboard sesuai kebutuhan tiap peran, termasuk kalender jadwal bergaya mobile dan tahapan partisipasi kandidat | Semua |
+| RF-50 | Dashboard Super Admin berisi ringkasan "perlu tindakan", status proyek, arus uang periode, dan kalender; pemantauan per peran melalui RF-62 | Super Admin |
+| RF-51 | Admin melihat rekap Extras (sering dipilih, sering batal) pada satu halaman Kelola Akun Extras dengan opsi pengurutan | Admin |
+| RF-52 | Admin dan Client mengekspor data ke Excel (rekap Extras sesuai filter; riwayat pilihan Client, juga PDF) | Admin/Client |
 
 3.1.3. Kebutuhan Non-Fungsional
 
 | Kode | Kategori | Kebutuhan |
 |---|---|---|
-| RNF-01 | Keamanan | Data sensitif (KTP, foto, video profil) disimpan dalam bentuk terenkripsi |
-| RNF-02 | Keamanan | Penerapan Role-Based Access Control (RBAC) sesuai tujuh aktor sistem, termasuk pembatasan akses read-only untuk sub-role Talco dan Sosial Media/Multimedia |
-| RNF-03 | Keamanan | Password disimpan dalam bentuk hash |
-| RNF-04 | Performa | Sistem mampu menangani kurang lebih 50–80 Extras aktif dan 4–5 proyek casting aktif per bulan tanpa penurunan performa yang signifikan |
-| RNF-05 | Usability | Antarmuka responsif pada perangkat desktop dan mobile, mudah digunakan oleh pengguna non-teknis (tombol berukuran besar, bahasa yang sederhana, indikator status berwarna konsisten) |
-| RNF-06 | Reliability | Data tersimpan secara terpusat pada basis data, menggantikan penggunaan Excel, WhatsApp, dan Google Drive |
-| RNF-07 | Maintainability | Sistem dibangun menggunakan framework Laravel dengan arsitektur Model-View-Controller |
-| RNF-08 | Compatibility | Sistem dapat diakses melalui peramban pada perangkat desktop maupun mobile |
-| RNF-09 | Availability | Sistem di-hosting pada shared hosting atau Virtual Private Server (VPS) |
+| RNF-01 | Keamanan | Data sensitif (NIK, nama asli, rekening) dienkripsi pada basis data; berkas sensitif (kontrak, TTD, bukti transfer, foto absensi, foto dan video profil, lampiran) disimpan pada penyimpanan privat dan disajikan melalui kontrol akses |
+| RNF-02 | Keamanan | RBAC lima peran dengan pembatasan akses per rute dan otorisasi tingkat data (misalnya Client hanya melihat proyek miliknya) |
+| RNF-03 | Keamanan | Kata sandi disimpan dalam bentuk hash; pembatasan percobaan login dan pendaftaran; kata sandi sementara wajib diganti |
+| RNF-04 | Performa | Mampu menangani sekitar 50–80 Extras aktif dan 4–5 proyek aktif per bulan tanpa penurunan performa signifikan |
+| RNF-05 | Usability | Antarmuka responsif; pada perangkat mobile, Extras memakai navigasi bawah tiga menu dan peran lain memakai menu hamburger; tidak terjadi overflow horizontal pada lebar 360 dan 390 piksel (diverifikasi pada seluruh halaman lintas peran); indikator status berwarna konsisten |
+| RNF-06 | Reliability | Data tersimpan terpusat, menggantikan Excel, WhatsApp, dan Google Drive; aksi terbaca (GET) tidak mengubah data |
+| RNF-07 | Maintainability | Laravel dengan arsitektur MVC; cakupan pengujian otomatis di atas 600 pengujian pada SQLite dan MySQL |
+| RNF-08 | Compatibility | Dapat diakses melalui peramban desktop maupun mobile |
+| RNF-09 | Availability | Dihosting pada shared hosting atau VPS |
+| RNF-10 | Keamanan | Header keamanan (CSP, X-Frame-Options, nosniff, HSTS pada produksi) dan seluruh aksi penting tercatat pada log aktivitas |
 
 3.1.4. Batasan Sistem
 
-1. Sistem hanya mengelola Extras/figuran dan tidak mencakup talent profesional/pemeran utama; koordinasi kebutuhan talent utama (Talent Coordination) tercatat pada sistem hanya sebagai data penugasan dan riwayat kerja untuk keperluan honor, tanpa fitur operasional terhadap talent itu sendiri.
-2. Production House (PH) sebagai entitas tidak memiliki akun pada sistem; PH diwakili oleh Casting Director yang memiliki akun melalui tautan registrasi terpisah.
-3. Sistem tidak memproses pembayaran (bukan payment gateway); transfer dilakukan di luar sistem, dan sistem hanya mencatat status pembayaran.
-4. Tanda tangan kontrak berupa canvas signature (tanda tangan digital yang digambar pada peramban), bukan tanda tangan elektronik tersertifikasi (PSrE).
-5. Notifikasi WhatsApp menggunakan `whatsapp-web.js` self-hosted (otomasi sesi WhatsApp Web pribadi, gratis), bukan integrasi API resmi WhatsApp Business maupun layanan gateway pihak ketiga berbayar — konsisten dengan RF-37.
-6. Deteksi bentrok jadwal bersifat peringatan (warning) dan tidak melakukan pemblokiran otomatis.
-7. Validasi NIK dilakukan secara internal melalui pengecekan duplikasi pada basis data, tanpa integrasi dengan API Dukcapil.
-8. Karyawan sub-role Admin (Talco, Korlap, Sosial Media/Multimedia) bukan merupakan karyawan tetap agensi; penugasan dan honor bersifat per-proyek, bukan gaji bulanan, dan tidak mencakup perhitungan potongan pajak maupun BPJS.
-9. Absensi karyawan bersifat sederhana berupa log aktivitas sistem yang mengikuti status penyelesaian proyek, bukan verifikasi kehadiran berbasis lokasi (geolocation) atau foto check-in.
+1. Sistem hanya mengelola Extras/figuran dan tidak mencakup talent profesional/pemeran utama.
+2. Production House (PH) tidak memiliki akun tersendiri; diwakili Client yang akunnya dibuat Super Admin.
+3. Sistem tidak memproses pembayaran (bukan payment gateway); transfer dilakukan di luar sistem dan sistem hanya mencatat status.
+4. Tanda tangan berupa canvas signature, bukan tanda tangan elektronik tersertifikasi (PSrE).
+5. Notifikasi WhatsApp menggunakan `whatsapp-web.js` self-hosted, bukan API resmi WhatsApp Business maupun gateway berbayar (lihat catatan penyimpangan di bawah).
+6. Aturan bentrok jadwal memblokir hanya pada keterlibatan yang sudah pasti (Lolos atau Kontrak Ditandatangani); selain itu bersifat peringatan.
+7. Validasi NIK dilakukan internal melalui pengecekan duplikasi, tanpa integrasi API Dukcapil.
+8. Staf Admin dan Korlap bukan karyawan tetap; honor bersifat per-proyek dan tidak mencakup pajak maupun BPJS.
+9. Absensi berupa pencatatan kehadiran dan foto selfie yang divalidasi Korlap, tanpa verifikasi geolokasi.
+10. Pembaruan informasi bersifat polling dan notifikasi dalam aplikasi, bukan komunikasi real-time (WebSocket).
+11. Pengiriman email melalui domain perusahaan belum diaktifkan pada tahap ini dan menjadi bagian pengembangan lanjutan.
 
 Catatan Penyimpangan dari Proposal: WhatsApp Gateway
 
 Dokumen proposal awal (Bab 3.1.4 Batasan Sistem, poin 5) menetapkan: *"Notifikasi WhatsApp menggunakan layanan gateway pihak ketiga berbayar, bukan integrasi API resmi WhatsApp Business maupun otomasi tidak resmi berbasis sesi pribadi."*
 
-Implementasi akhir sistem menggunakan pendekatan yang berlawanan dengan batasan tersebut: `whatsapp-web.js` self-hosted (otomasi sesi WhatsApp Web pribadi, gratis) — bukan layanan gateway berbayar. Keputusan ini diambil secara sadar pada 28 Agustus 2026, bukan merupakan kelalaian dalam mengikuti batasan yang telah ditetapkan.
+Implementasi akhir menggunakan pendekatan yang berlawanan: `whatsapp-web.js` self-hosted (otomasi sesi WhatsApp Web, gratis). Keputusan diambil secara sadar pada 28 Agustus 2026. Kajian layanan gateway berbayar (Fonnte, Wablas, dan sejenisnya) menunjukkan layanan tersebut pada praktiknya juga bersifat unofficial dan memiliki risiko pemblokiran nomor yang setara, sehingga biaya tambahan dinilai tidak sepadan bagi tim pengembang berskala kecil. Mitigasi risiko (nomor khusus sistem, volume rendah non-broadcast, WhatsApp sebagai kanal pelengkap dengan notifikasi dalam aplikasi sebagai kanal utama) diterapkan pada desain akhir. Detail trade-off didokumentasikan pada `docs/OPEN-QUESTIONS-PROPOSAL.md` poin 3.
 
-Pertimbangan teknis di balik keputusan ini: kajian terhadap layanan gateway berbayar (Fonnte, Wablas, dan sejenisnya) menunjukkan bahwa layanan-layanan tersebut, pada praktiknya, juga bersifat *unofficial* dan memiliki risiko pemblokiran nomor (banned) yang setara dengan otomasi sesi pribadi seperti `whatsapp-web.js` — keduanya sama-sama tidak menggunakan API resmi WhatsApp Business. Dengan risiko yang setara namun salah satunya berbayar tanpa keuntungan konkret yang sepadan, alokasi anggaran dinilai lebih tepat dialihkan ke kebutuhan lain, mengingat tim pengembang bersifat solo-developer dengan dukungan tim kecil. Mitigasi risiko pemblokiran (nomor khusus sistem, volume rendah non-broadcast, WhatsApp sebagai kanal pelengkap dengan email tetap sebagai kanal utama) tetap diterapkan pada desain akhir, independen dari penyedia yang dipilih.
+3.1.5. Pengembangan Lanjutan (Di Luar Cakupan Implementasi Saat Ini)
 
-Detail pertimbangan trade-off lengkap (perbandingan biaya, arsitektur, dan mitigasi risiko) didokumentasikan pada `docs/OPEN-QUESTIONS-PROPOSAL.md` poin 3.
+Gagasan berikut muncul selama bimbingan dan pengembangan, dinilai bernilai, tetapi sengaja ditunda agar sistem inti dapat diselesaikan dan diuji secara menyeluruh.
+
+| Gagasan | Alasan Ditunda |
+|---|---|
+| Pemeriksaan kelayakan otomatis saat registrasi Extras | Kriteria kelayakan belum disepakati bersama mitra |
+| Penilaian sikap Extras 1–5 oleh Korlap dan skor otomatis | Memerlukan data historis dan rumus penilaian yang disepakati |
+| Fitur "panggil lagi" (re-book) Extras terdahulu | Kebutuhan tertutup sementara oleh fitur Favorit dan filter |
+| Email melalui domain perusahaan (Lark Suite) dan login Google pada lingkungan produksi | Bergantung pada domain dan konfigurasi saat penayangan |
+| Pemindaian QR untuk check-in absensi | Memerlukan konfirmasi alur dengan mitra |
+| Pembaruan real-time (WebSocket) | Pengalaman penggunaan sebelumnya kurang stabil; polling dan notifikasi dinilai cukup |
+| Tanda tangan elektronik tersertifikasi (PSrE) dan API Dukcapil | Biaya dan ketergantungan pihak ketiga |
 
 3.2 Metode Pengembangan
 
-Sistem ini dikembangkan menggunakan metodologi Agile dengan kerangka kerja Scrum, sejalan dengan sifat proses bisnis agensi yang dinamis serta kebutuhan validasi bertahap dari mitra, PT. JBTB Casting Creative Group. Pendekatan iteratif dipilih karena ruang lingkup sistem — sebagaimana diuraikan pada 3.1 — mencakup dua kelompok modul yang saling terintegrasi (pengelolaan Extras dan pengelolaan karyawan internal agensi), sehingga validasi bertahap per sprint memungkinkan tim menyesuaikan detail kebutuhan tanpa menunggu seluruh sistem selesai dibangun.
+Sistem ini dikembangkan menggunakan metodologi Agile dengan kerangka kerja Scrum, sejalan dengan sifat proses bisnis agensi yang dinamis serta kebutuhan validasi bertahap dari mitra, PT. JBTB Casting Creative Group. Pendekatan iteratif dipilih karena ruang lingkup sistem mencakup beberapa kelompok modul yang saling terintegrasi (pengelolaan Extras, proyek dan Client, keuangan, serta staf internal), sehingga validasi bertahap memungkinkan penyesuaian kebutuhan tanpa menunggu seluruh sistem selesai.
+
+Pada tahap akhir diterapkan pembekuan fitur (feature freeze): setelah paket fitur terakhir selesai, hanya perbaikan bug dan perapian tampilan yang dikerjakan, dilanjutkan pengujian manual per peran oleh anggota tim.
 
 3.2.1. Peran Scrum
 
-Product Owner dijalankan bersama oleh tim peneliti dan pihak PT. JBTB Casting Creative Group, yaitu Jestika Aisya Kordak selaku Direktur Utama/Super Admin dan Erlina Stepani Gultom selaku Direktur Keuangan yang memvalidasi kebutuhan data dan proses keuangan, termasuk kebutuhan penggajian karyawan. Scrum Master dan Development Team dijalankan oleh tim peneliti, dengan Fakhrul Mukhlisin sebagai pengembang utama dan Imanisa yang berperan dalam analisis kebutuhan serta pengujian.
+Product Owner dijalankan bersama oleh tim peneliti dan pihak PT. JBTB Casting Creative Group, yaitu Jestika Aisya Kordak selaku Direktur Utama/Super Admin dan Erlina Stepani Gultom selaku Direktur Keuangan yang memvalidasi kebutuhan data dan proses keuangan. Scrum Master dan Development Team dijalankan oleh tim peneliti, dengan Fakhrul Mukhlisin sebagai pengembang utama dan Imanisa yang berperan dalam analisis kebutuhan serta pengujian. Dosen pembimbing memberi arahan melalui sesi bimbingan berkala.
 
 3.2.2. Pembagian Sprint
 
-Pengembangan dibagi menjadi enam sprint dengan durasi masing-masing dua minggu, disusun berdasarkan urutan ketergantungan antarmodul serta tingkat risiko implementasi. Modul yang bersifat baru atau melibatkan ketergantungan pada pihak ketiga ditempatkan pada sprint yang lebih awal, sedangkan modul yang bersifat pelengkap dan berisiko rendah ditempatkan pada sprint akhir.
+Pengembangan dibagi menjadi enam sprint berdurasi dua minggu, disusun berdasarkan ketergantungan antarmodul dan tingkat risiko. Modul baru atau yang bergantung pada pihak ketiga ditempatkan lebih awal. Peran yang disebut pada tabel mengikuti struktur lima peran final.
 
 | Sprint | Modul | Fokus |
 |---|---|---|
-| Sprint 1 | Autentikasi dan Manajemen Akun, Profil Extras | Fondasi: login RBAC tujuh peran, registrasi terpisah untuk CD, profil Extras, serta inisiasi integrasi WhatsApp Gateway |
-| Sprint 2 | Manajemen Proyek Casting, Pendaftaran dan Seleksi | Posting lowongan, pendaftaran, filter kandidat, deteksi bentrok jadwal |
-| Sprint 3 | Grade, Negosiasi Fee, Review dan Approval CD | Penetapan grade dan tawar-menawar fee bertingkat hingga Deal, dilanjutkan dengan approve/reject kandidat oleh CD |
-| Sprint 4 | Kontrak Digital, Invoice | Auto-generate kontrak, canvas signature, invoice dengan tanda tangan Admin Default dan CD |
-| Sprint 5 | Manajemen Karyawan, Absensi, dan Penggajian Staf | Penambahan akun Admin dan sub-role oleh Super Admin, log aktivitas per proyek, auto-generate slip honor, dashboard monitoring Super Admin |
-| Sprint 6 | Pembayaran, Dashboard, Riwayat Kerja, Laporan | Penandaan transfer dan bukti pembayaran Extras, rekap riwayat kerja seluruh Admin, ekspor rekap ke Excel |
+| Sprint 1 | Autentikasi, Manajemen Akun, Profil Extras | Login RBAC lima peran, registrasi Extras, profil Extras, inisiasi integrasi WhatsApp |
+| Sprint 2 | Manajemen Proyek Casting, Pendaftaran dan Seleksi | Posting proyek per peran, pendaftaran, filter kandidat, kuota, aturan bentrok jadwal |
+| Sprint 3 | Grade, Negosiasi Fee, Greenlight Client | Grade, tawar-menawar bertingkat hingga Deal, lock atau tolak oleh Client |
+| Sprint 4 | Kontrak Digital, Invoice | Pembuatan kontrak otomatis, canvas signature, invoice |
+| Sprint 5 | Manajemen Staf dan Penggajian | Akun Admin dan Korlap, penugasan, honor, slip, dashboard dan pemantauan Super Admin |
+| Sprint 6 | Pembayaran, Keuangan, Dashboard, Laporan | Transfer dan bukti, cashflow, ekspor Excel, notifikasi, perapian UI/UX dan pengujian |
 
 3.2.3. Pemodelan dan Pengujian
 
-Pemodelan sistem menggunakan Unified Modeling Language (UML), yang meliputi Use Case Diagram, Activity Diagram, Sequence Diagram, dan Class Diagram. Pengujian sistem menggunakan metode Black Box Testing pada setiap modul fungsional, dengan skenario pengujian berupa input, hasil yang diharapkan, hasil aktual, dan status (Pass/Fail).
+Pemodelan sistem menggunakan Unified Modeling Language (UML): Use Case Diagram, Activity Diagram, Sequence Diagram, dan Class Diagram. Pengujian menggunakan Black Box Testing pada setiap modul dengan skenario berupa input, hasil diharapkan, hasil aktual, dan status (Pass/Fail), dilengkapi pengujian otomatis (feature test) pada basis data SQLite dan MySQL serta audit tampilan mobile pada lebar 360 dan 390 piksel.
 
 3.3 Timeline
 
-Timeline berikut mencakup tahapan pengajuan proposal hingga sidang judul (sempro), sesuai jadwal program studi pada September 2026. Tahapan pengembangan sistem (pembagian sprint pada 3.2.2) disusun terpisah dan akan dituangkan pada dokumen Laporan Akhir setelah judul dinyatakan disetujui.
+Timeline berikut mencakup tahapan pengajuan proposal hingga sidang judul (sempro), sesuai jadwal program studi pada September 2026. Tahapan pengembangan sistem (pembagian sprint pada 3.2.2) dituangkan pada dokumen Laporan Akhir.
 
 | Tahapan | Aktivitas | Estimasi Waktu |
 |---|---|---|
 | Penyusunan Proposal | Revisi dan konsolidasi proposal (Bab I–III) bersama tim dan hasil bimbingan dosen pembimbing | Agustus 2026 |
 | Pendaftaran Seminar Proposal (Sempro) | Pengajuan berkas proposal ke program studi | 1 September 2026 |
-| Sidang Judul | Presentasi dan validasi judul serta ruang lingkup proyek di hadapan dosen pembimbing/penguji | 3 September 2026 (dapat berubah menyesuaikan jadwal dosen pembimbing) |
+| Sidang Judul | Presentasi dan validasi judul serta ruang lingkup proyek | 3 September 2026 (dapat berubah menyesuaikan jadwal dosen) |
 
-Setelah sidang judul disetujui ("di-acc"), tahapan pengembangan sistem berjalan sesuai pembagian sprint pada 3.2.2, dengan estimasi total durasi pengembangan kurang lebih tiga bulan, diikuti tahapan pengujian dan penyusunan Laporan Akhir sebelum sidang/UAPS sesuai jadwal program studi.
+Setelah sidang judul disetujui, pengembangan berjalan sesuai pembagian sprint pada 3.2.2, dengan estimasi total sekitar tiga bulan, diikuti pengujian dan penyusunan Laporan Akhir sebelum sidang/UAPS sesuai jadwal program studi.
