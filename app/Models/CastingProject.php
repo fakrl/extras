@@ -319,7 +319,21 @@ class CastingProject extends Model
         return match (true) {
             ! $awal => '-',
             $awal->isSameDay($akhir) => $awal->translatedFormat('d M Y'),
+            $awal->format('Y-m') === $akhir->format('Y-m') => $awal->format('d').'–'.$akhir->translatedFormat('d M Y'),
             default => $awal->translatedFormat('d M').' – '.$akhir->translatedFormat('d M Y'),
+        };
+    }
+
+    public function keteranganShooting(): ?string
+    {
+        $awal = $this->shootingDates->min('tanggal');
+        $akhir = $this->shootingDates->max('tanggal');
+
+        return match (true) {
+            ! $awal => null,
+            $awal->isAfter(today()) => 'dalam '.(int) today()->diffInDays($awal).' hari',
+            $akhir->isBefore(today()) => 'selesai',
+            default => 'berlangsung',
         };
     }
 

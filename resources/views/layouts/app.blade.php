@@ -289,6 +289,40 @@
         .entity-card-row-value { font-weight: 500; text-align: right; }
         .entity-card-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
 
+        /* Daftar proyek (BX): baris tabel, seluruh baris bisa diklik lewat .tp-link::after */
+        .table-container.tp-wrap { overflow: visible; }
+        .tabel-proyek tbody tr { position: relative; cursor: pointer; }
+        .tabel-proyek tbody tr:hover { background: var(--bg-card-hover); }
+        .tabel-proyek td { vertical-align: middle; padding: 12px 8px; }
+        .tp-link { color: inherit; text-decoration: none; font-weight: 600; font-size: var(--fs-base); }
+        .tp-link::after { content: ''; position: absolute; inset: 0; }
+        .tp-kode { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+        .tp-nama { font-weight: 600; }
+        .tp-sub { font-size: var(--fs-xs); color: var(--text-secondary); margin-top: 2px; }
+        .tp-kosong { font-size: var(--fs-sm); color: var(--text-muted); font-style: italic; }
+        .tp-bar { height: 4px; width: 90px; max-width: 100%; border-radius: 2px; background: var(--bg-card-hover); margin-top: 6px; }
+        .tp-bar > i { display: block; height: 100%; background: var(--accent); }
+        .tp-aksi { text-align: right; white-space: nowrap; }
+        .tp-aksi-isi { display: inline-flex; align-items: center; justify-content: flex-end; gap: 8px; }
+        .tp-aksi .badge, .tp-menu { position: relative; z-index: 2; }
+        .tp-chevron { color: var(--text-muted); font-size: 18px; }
+        @media (max-width: 719px) {
+            .tabel-proyek thead { display: none; }
+            .tabel-proyek, .tabel-proyek tbody { display: block; }
+            .tabel-proyek tbody tr { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 0; padding: 12px 14px; border-bottom: 1px solid var(--border-color); }
+            .tabel-proyek td { display: block; padding: 0; border: 0; }
+            .tp-c-proyek, .tp-c-client, .tp-aksi { flex: 0 0 100%; }
+            .tp-c-proyek { padding-right: 44px; }
+            .tp-c-daftar::before { content: '·'; margin: 0 8px; color: var(--text-muted); }
+            .tp-c-shoot > div, .tp-c-daftar > div { display: inline; }
+            .tp-c-shoot .tp-sub { margin-left: 6px; }
+            .tp-bar { display: none; }
+            .tp-aksi { text-align: left; }
+            .tp-aksi-isi { justify-content: flex-start; }
+            .tp-chevron { display: none; }
+            .tp-menu { position: absolute; top: 8px; right: 8px; }
+        }
+
         /* BA.4: kartu Extras (partials/extras-card) + modal detail, ikut prototype 07 */
         .xgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; margin-bottom: var(--space-4); }
         .xcard { position: relative; display: flex; flex-direction: column; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; scroll-margin-top: 80px; transition: box-shadow .15s ease; }

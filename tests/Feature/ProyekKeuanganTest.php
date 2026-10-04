@@ -245,7 +245,7 @@ class ProyekKeuanganTest extends TestCase
             ->assertOk()
             ->assertSee('Film Senja')
             ->assertDontSee('Iklan Lain')
-            ->assertSee('Lihat detail')
+            ->assertDontSee('Lihat detail')
             ->assertDontSee('Rp 2.000.000')->assertDontSee('Rp 900.000')
             ->assertDontSee('Piutang')->assertDontSee('Saldo')->assertDontSee('Proyeksi');
     }
@@ -257,8 +257,40 @@ class ProyekKeuanganTest extends TestCase
 
         $r = $this->actingAs($sa)->get(route('admin.projects.index'))->assertOk();
         $r->assertSee('Proyek Kilat')->assertSee('badge badge-tolak">Urgent', false)
-            ->assertDontSee('<span class="entity-card-row-label"', false)->assertDontSee('Pendaftar / kuota')
+            ->assertDontSee('<span class="entity-card-row-label"', false)->assertDontSee('Pendaftar / kuota')->assertDontSee('Lihat detail')
             ->assertDontSee('Lowongan ditutup')->assertDontSee('>dibuka<', false);
+    }
+
+    public function test_baris_tabel_client_shooting_relatif_dan_tanpa_tombol_lihat_detail(): void
+    {
+        $sa = User::factory()->create(['role' => 'super_admin']);
+        $client = User::factory()->create(['role' => 'client', 'name' => 'Budi Kontak', 'nama_perusahaan' => 'PT Sinema Jaya']);
+        $buat = function (string $nama, array $tgl, ?User $c = null) {
+            $p = CastingProject::factory()->create(['nama_produksi' => $nama, 'client_id' => $c?->id, 'client_request_status' => 'disetujui', 'kuota' => 10]);
+            foreach ($tgl as $t) {
+                $p->shootingDates()->create(['tanggal' => $t]);
+            }
+        };
+        $buat('Pr Depan', [today()->addDays(4)], $client);
+        $buat('Pr Jalan', [today()->subDay(), today()->addDay()]);
+        $buat('Pr Lewat', [today()->subDays(3)]);
+        $buat('Pr Kosong', []);
+
+        $this->actingAs($sa)->get(route('admin.projects.index'))->assertOk()
+            ->assertSee('<table class="tabel-proyek">', false)->assertDontSee('Lihat detail')
+            ->assertSee('PT Sinema Jaya')->assertSee('Budi Kontak')->assertSee('Belum ada Client')
+            ->assertSee('dalam 4 hari')->assertSee('berlangsung')->assertSee('selesai</div>', false)
+            ->assertSee('Belum dijadwalkan')->assertSee('0 / 10');
+    }
+
+    public function test_baris_tabel_perlu_tindakan_tetap_tampil_dan_kuota_nol_tanpa_bar(): void
+    {
+        $sa = User::factory()->create(['role' => 'super_admin']);
+        $p = CastingProject::factory()->create(['kuota' => 0, 'client_request_status' => 'disetujui']);
+        ProjectApplication::create(['casting_project_id' => $p->id, 'extras_id' => ExtrasProfile::factory()->create()->id, 'status_partisipasi' => 'diajukan']);
+
+        $this->actingAs($sa)->get(route('admin.projects.index'))
+            ->assertSee('Perlu tindakan (1)')->assertSee('1 / 0')->assertDontSee('class="tp-bar"', false);
     }
 
     public function test_badge_lowongan_ditutup_hanya_untuk_proyek_mendatang(): void
