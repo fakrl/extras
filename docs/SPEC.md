@@ -1889,3 +1889,58 @@ Perilaku:
 | BX.1 baris bisa diklik penuh, tombol Lihat detail dihapus, tinggi seragam | Stretched link `.tp-link::after` pada `tr` relative; ⋮ dan badge Perlu tindakan `z-index: 2`; hover `--bg-card-hover`; tombol "Lihat detail" dan teksnya dihapus (assert `assertDontSee`) | [ ] |
 | BX.1 mobile bertumpuk tanpa overflow 360/390 | CSS `max-width: 719px`: baris flex-wrap bertumpuk (nama+Urgent / Client / shooting · pendaftar / Tindakan), ⋮ di kanan atas. `BrOverflowMobileTest` hijau. Screenshot 390 px dicek lewat iframe 390 px (tidak ada overflow terlihat); 360 px tidak diambil | [ ] |
 | BX.2 test + SQLite & MySQL berurutan + screenshot | 611 → **613 passed** di SQLite lalu MySQL `jbtb_test` (berurutan). Screenshot (Edge headless, HTML hasil render test dengan data contoh, bukan DB asli): 1366 px dan 390 px di folder scratchpad sesi, `bx-1366.png`, `bx-390.png` | [ ] |
+
+---
+
+# Bagian BY: Perbaiki tabel daftar proyek (menu ⋮ rusak, tampilan berantakan) (4 Oktober 2026)
+
+> **FEATURE FREEZE tetap berlaku.** Bugfix tampilan atas BX. Commit, **jangan push** sebelum Fakrul cek.
+
+Fakrul membuka `admin/projects` di browser (1366 px) dan hasilnya masih berantakan. Temuan dari screenshot dan pembacaan `resources/views/admin/projects/index.blade.php` + CSS `.tp-*` di `layouts/app.blade.php`:
+
+1. **Menu ⋮ tertimpa baris di bawahnya.** `.tp-aksi .badge, .tp-menu { position: relative; z-index: 2 }` membuat tiap baris punya stacking context sendiri; panel menu (`z-index: 20`) terkurung di dalam stacking context `.tp-menu` (z 2), sehingga badge "Perlu tindakan"/"Ditolak" dan tombol ⋮ milik baris berikutnya (urutan DOM lebih akhir) tampil di atas menu yang sedang terbuka.
+2. **Teks menu rata kanan.** Panel menu mewarisi `.tp-aksi { text-align: right }`.
+3. **Menu terlalu panjang dan dobel.** 6–7 item, padahal "Detail Proyek" sama dengan klik baris, dan "Invoice" serta "Edit" sudah ada di header detail proyek.
+4. **`<details>` tidak menutup sendiri** saat klik di luar atau menekan Esc, jadi beberapa menu bisa terbuka bersamaan.
+5. **Tinggi baris tidak seragam** (baris dengan badge Urgent lebih tinggi dari yang tidak).
+6. **Baris Selesai/Ditolak sama menonjolnya dengan proyek aktif.**
+7. **Screenshot BX bukan dari aplikasi asli** (HTML hasil render test, menu tidak dibuka), jadi bug 1–2 lolos.
+
+## BY.0: Revisi keputusan Fakrul (menggantikan BY.1 poin 1–4): aksi jadi ikon langsung, menu ⋮ dihapus
+
+Fakrul: kolom Tindakan jangan titik tiga, jadikan ikon saja supaya langsung kelihatan tiap ikon untuk apa. Ini sekaligus menghilangkan bug menu ⋮ (tertimpa baris, rata kanan, tidak menutup), jadi **poin 1–4 di BY.1 di bawah tidak perlu dikerjakan**; poin 5–8 tetap berlaku.
+
+1. **Hapus `<details class="tp-menu">` dan seluruh CSS/JS menu ⋮** (`.tp-menu`, skrip tutup-menu, style inline item menu). Jangan tinggalkan kode mati. Skrip `data-copy-link` tetap dipakai.
+2. **Kolom Tindakan = baris ikon tombol** (`btn btn-sm btn-ikon`, ukuran sentuh minimal 36×36 px, jarak 6 px), urut kiri ke kanan:
+   - **Lineup** `ti-users-group` → `admin.projects.applicants` (tooltip "Lineup")
+   - **Edit** `ti-pencil` → `admin.projects.edit` (tooltip "Edit proyek")
+   - **Salin link pendaftaran** `ti-link` → `data-copy-link` (hanya bila `dibuka` dan ada `share_token`; setelah klik ikon berubah `ti-check` 2 detik, tooltip "Link disalin!")
+   - **Tutup/Buka lowongan** `ti-lock` (bila `dibuka`, tooltip "Tutup lowongan") atau `ti-lock-open` (bila `ditutup`, tooltip "Buka lagi lowongan") → form PATCH `admin.projects.toggle-status` dibungkus `<x-confirm-form>` (menutup lowongan berdampak ke Extras, jangan tanpa konfirmasi)
+3. Setiap ikon wajib punya `title` **dan** `aria-label` yang sama (tooltip bawaan browser cukup; jangan pasang library tooltip). Ikon bukan satu-satunya penanda: fokus keyboard terlihat jelas.
+4. **Badge "Perlu tindakan (n)" dan "Ditolak"/"Lowongan ditutup" pindah ke kolom Pendaftar** (di bawah `11 / 15`), supaya kolom Tindakan cuma berisi ikon dan lebarnya tetap. Hapus ikon panah `ti-chevron-right` (sudah ada ikon aksi, dan seluruh baris tetap bisa diklik).
+5. Klik ikon **tidak** boleh ikut membuka detail proyek (ikon di atas tautan penutup baris: `position: relative; z-index: 2`, hanya ikon itu, bukan seluruh kolom).
+6. **Mobile (di bawah 720 px):** ikon tetap ikon saja, satu baris di bagian bawah blok proyek, rata kiri, tanpa overflow di 360/390 px.
+
+## BY.1: Perbaikan (poin 1–4 digantikan BY.0, jangan dikerjakan)
+
+1. **Menu ⋮**: tampil di atas semua baris dan tidak terpotong. Pilih salah satu cara: (a) paling kecil, `.tp-menu[open] { z-index: 30 }` dan `.tabel-proyek tbody tr:has(.tp-menu[open]) { z-index: 30 }`; atau (b) lebih tahan banting, ubah panel jadi elemen `popover` (top layer) yang diposisikan dari tombol (flip ke atas bila mepet bawah layar). Dahulukan (a) bila hasilnya benar di baris paling bawah halaman dan di mobile; pindah ke (b) bila tidak.
+2. Panel menu `text-align: left`, lebar tetap (min 180 px), `white-space: nowrap`, item setinggi seragam (kelas yang sama untuk `<a>` dan `<button>`; hapus style inline berulang jadi satu kelas `.tp-menu-item`).
+3. **Isi menu dipangkas jadi 4 item**: Lineup · Edit Proyek · Copy Link Pendaftaran (hanya bila `dibuka` dan ada `share_token`) · Tutup Lowongan / Buka Lagi. Hapus "Detail Proyek" dan "Invoice" dari menu ini (keduanya ada di detail proyek).
+4. **Menutup menu**: klik di luar, tombol Esc, dan membuka menu lain menutup yang sebelumnya. Satu skrip kecil di bawah daftar, delegasi (tetap jalan setelah live search mengganti daftar).
+5. **Tinggi baris seragam**: `.tabel-proyek td` diberi `height`/`min-height` tetap (cukup untuk dua baris teks + badge), `vertical-align: middle`; badge Urgent tidak boleh menambah tinggi baris.
+6. **Proyek Selesai dan Ditolak dipudarkan**: teks `--text-muted`, bar pendaftar abu-abu, tanpa badge "Perlu tindakan" (aturan perhitungan tidak berubah, hanya penampilan). Proyek aktif (Menunggu ACC/Mendatang/Berjalan) tampil normal.
+7. Kolom: lebar tetap per kolom (Proyek lebih lebar, Pendaftar sempit) supaya tidak bergeser antar halaman/tab; header "Tindakan" diganti kosong (kolomnya sudah jelas) atau "Status".
+8. Pastikan seluruh baris tetap bisa diklik, badge "Perlu tindakan" dan tombol ⋮ tetap bisa diklik sendiri.
+
+## BY.2: Verifikasi (wajib, ini yang kelewat di BX)
+
+1. **Screenshot dari aplikasi asli** (login sebagai Admin lewat server dev, data demo `DemoLengkapSeeder`), bukan HTML hasil render test. Ambil di 1366 px dan 390 px: (a) daftar semua tab, (b) **menu ⋮ terbuka pada baris pertama, baris tengah, dan baris terakhir**, (c) dua menu dibuka berurutan (yang pertama harus menutup).
+2. Test: item menu sesuai (4 item, tidak ada "Detail Proyek"/"Invoice"), Copy Link hanya muncul bila `dibuka` + `share_token`, baris proyek Selesai/Ditolak memakai kelas pudar.
+3. `BrOverflowMobileTest` hijau. SQLite lalu MySQL `jbtb_test` **berurutan**. Isi Bukti. Commit, jangan push.
+
+| Item | Bukti | QA |
+|---|---|---|
+| BY.0 menu ⋮ dihapus, diganti 4 ikon aksi (Lineup, Edit, Salin link, Tutup/Buka) + tooltip/aria-label, badge pindah ke kolom Pendaftar | `<details class="tp-menu">`, CSS, style inline, chevron dihapus. 4 ikon `btn-ikon` 36 px (title = aria-label, fokus `outline`), Salin link hanya `dibuka`+`share_token` (ikon jadi `ti-check` 2 dtk, dicek nyata di browser), Tutup/Buka lewat `x-confirm-form`. Badge Ditolak/Lowongan ditutup/Perlu tindakan di kolom Pendaftar. Klik ikon Lineup tidak membuka detail, klik baris membuka detail (dicek nyata di 1366 & 390) | [ ] |
+| BY.1 tinggi baris seragam, Selesai/Ditolak dipudarkan, lebar kolom tetap | `table-layout: fixed`, kolom tetap, tinggi baris 80 px (terukur seragam di semua tab 1366 px), kelas `tp-pudar` untuk Selesai/Ditolak (tanpa badge Perlu tindakan), header Tindakan kosong | [ ] |
+| BY.2 screenshot aplikasi asli (menu terbuka di baris atas/tengah/bawah, 1366 & 390) | Aplikasi asli (server dev, SQLite sementara + `DemoLengkapSeeder`, login Super Admin, Edge headless), 1366 & 390: semua tab, hover, fokus, salin link; tanpa overflow. Menu ⋮ sudah tidak ada (BY.0), jadi butir "menu terbuka" tidak berlaku. File di folder scratchpad sesi: `by-{1366,390}-{semua,menunggu_acc,mendatang,berjalan,selesai,hover,fokus,salin}.png`. DB dev asli tidak disentuh | [ ] |
+| BY.2 test + SQLite & MySQL berurutan + overflow 360/390 | 613 → **615 passed** di SQLite lalu MySQL `jbtb_test` (berurutan). +2 di `ProyekKeuanganTest`; `BrOverflowMobileTest` hijau; overflow horizontal 0 px di 390 px (360 px tidak diambil) | [ ] |

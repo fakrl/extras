@@ -56,7 +56,7 @@
     <div class="table-container tp-wrap" id="projects-grid">
     <table class="tabel-proyek">
         <thead>
-            <tr><th>Proyek</th><th>Client</th><th>Shooting</th><th>Pendaftar</th><th style="text-align: right;">Tindakan</th></tr>
+            <tr><th>Proyek</th><th class="tp-c-client">Client</th><th class="tp-c-shoot">Shooting</th><th class="tp-c-daftar">Pendaftar</th><th class="tp-aksi" aria-label="Tindakan"></th></tr>
         </thead>
         <tbody>
         @foreach ($projects as $project)
@@ -65,8 +65,13 @@
                 $perluTindakan = $perlu[$project->id] ?? 0;
                 $kuota = (int) $project->kuota;
                 $ket = $project->keteranganShooting();
+                $ditolak = $project->client_request_status === 'ditolak';
+                $pudar = $ditolak || $tahapProyek === 'selesai';
+                $dibuka = $project->status === 'dibuka';
+                $tutup = $tahapProyek === 'mendatang' && ! $dibuka;
+                $adaPerlu = $perluTindakan && ! $pudar;
             @endphp
-            <tr>
+            <tr @class(['tp-pudar' => $pudar])>
                 <td class="tp-c-proyek">
                     <a href="{{ route('admin.projects.show', $project) }}" class="tp-link">{{ $project->nama_produksi }}</a>
                     <div class="tp-kode">
@@ -97,34 +102,25 @@
                     @if ($kuota > 0)
                         <div class="tp-bar"><i style="width: {{ min(100, round($project->applications_count / $kuota * 100)) }}%;"></i></div>
                     @endif
+                    @if ($ditolak || $tutup || $adaPerlu)
+                    <span class="tp-badges">
+                        @if ($ditolak)<span class="badge badge-tolak">Ditolak</span>@endif
+                        @if ($tutup)<span class="badge badge-netral">Lowongan ditutup</span>@endif
+                        @if ($adaPerlu)
+                            <a href="{{ route('admin.projects.show', [$project, 'tab' => 'pendaftar']) }}" class="badge badge-pending tp-perlu" title="Pendaftar yang menunggu tindakan Admin">Perlu tindakan ({{ $perluTindakan }})</a>
+                        @endif
+                    </span>
+                    @endif
                 </td>
                 <td class="tp-aksi"><div class="tp-aksi-isi">
-                @if ($project->client_request_status === 'ditolak')<span class="badge badge-tolak">Ditolak</span>@endif
-                @if ($tahapProyek === 'mendatang' && $project->status === 'ditutup')<span class="badge badge-netral">Lowongan ditutup</span>@endif
-                @if ($perluTindakan)
-                    <a href="{{ route('admin.projects.show', [$project, 'tab' => 'pendaftar']) }}" class="badge badge-pending" style="text-decoration: none;" title="Pendaftar yang menunggu tindakan Admin">Perlu tindakan ({{ $perluTindakan }})</a>
-                @endif
-                <details class="tp-menu">
-                    <summary aria-label="Menu proyek" style="list-style: none; cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card);">
-                        <i class="ti ti-dots-vertical"></i>
-                    </summary>
-                    <div style="position: absolute; right: 0; top: 36px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; min-width: 160px; box-shadow: 0 4px 12px rgba(0,0,0,.12); padding: 4px 0; z-index: 20;">
-                        <a href="{{ route('admin.projects.show', $project) }}" style="display: block; padding: 8px 14px; font-size: 13px; color: var(--text-primary); text-decoration: none;">Detail Proyek</a>
-                        <a href="{{ route('admin.projects.applicants', [$project, 'status' => $peserta]) }}" style="display: block; padding: 8px 14px; font-size: 13px; color: var(--text-primary); text-decoration: none;">Lineup</a>
-                        <a href="{{ route('admin.projects.edit', $project) }}" style="display: block; padding: 8px 14px; font-size: 13px; color: var(--text-primary); text-decoration: none;">Edit Proyek</a>
-                        @if ($project->status === 'dibuka' && $project->share_token)
-                            <button type="button" style="display: block; width: 100%; padding: 8px 14px; font-size: 13px; text-align: left; background: none; border: none; color: var(--text-primary); cursor: pointer;" data-copy-link="{{ url('/event/'.$project->share_token) }}">Copy Link Pendaftaran</button>
-                        @endif
-                        <form method="POST" action="{{ route('admin.projects.toggle-status', $project) }}">
-                            @csrf @method('PATCH')
-                            <button style="display: block; width: 100%; padding: 8px 14px; font-size: 13px; text-align: left; background: none; border: none; color: var(--text-primary); cursor: pointer;">
-                                {{ $project->status === 'dibuka' ? 'Tutup Lowongan' : 'Buka Lagi' }}
-                            </button>
-                        </form>
-                        <a href="{{ route('invoices.show', $project) }}" style="display: block; padding: 8px 14px; font-size: 13px; color: var(--text-primary); text-decoration: none;">Invoice</a>
-                    </div>
-                </details>
-                <i class="ti ti-chevron-right tp-chevron" aria-hidden="true"></i>
+                    <a href="{{ route('admin.projects.applicants', [$project, 'status' => $peserta]) }}" class="btn btn-sm btn-ikon" title="Lineup" aria-label="Lineup"><i class="ti ti-users-group" aria-hidden="true"></i></a>
+                    <a href="{{ route('admin.projects.edit', $project) }}" class="btn btn-sm btn-ikon" title="Edit proyek" aria-label="Edit proyek"><i class="ti ti-pencil" aria-hidden="true"></i></a>
+                    @if ($dibuka && $project->share_token)
+                        <button type="button" class="btn btn-sm btn-ikon" data-copy-link="{{ url('/event/'.$project->share_token) }}" title="Salin link pendaftaran" aria-label="Salin link pendaftaran"><i class="ti ti-link" aria-hidden="true"></i></button>
+                    @endif
+                    <x-confirm-form :action="route('admin.projects.toggle-status', $project)" method="PATCH" :message="$dibuka ? 'Tutup lowongan '.$project->nama_produksi.'? Extras tidak bisa mendaftar lagi.' : 'Buka lagi lowongan '.$project->nama_produksi.'?'">
+                        <button type="submit" class="btn btn-sm btn-ikon" title="{{ $dibuka ? 'Tutup lowongan' : 'Buka lagi lowongan' }}" aria-label="{{ $dibuka ? 'Tutup lowongan' : 'Buka lagi lowongan' }}"><i class="ti {{ $dibuka ? 'ti-lock' : 'ti-lock-open' }}" aria-hidden="true"></i></button>
+                    </x-confirm-form>
                 </div></td>
             </tr>
         @endforeach
@@ -141,9 +137,10 @@
         var btn = e.target.closest('[data-copy-link]');
         if (!btn) return;
         navigator.clipboard.writeText(btn.dataset.copyLink).then(function () {
-            var original = btn.textContent;
-            btn.textContent = 'Link disalin!';
-            setTimeout(function () { btn.textContent = original; }, 2000);
+            var ikon = btn.querySelector('i'), judul = btn.title;
+            ikon.className = 'ti ti-check';
+            btn.title = 'Link disalin!'; btn.setAttribute('aria-label', btn.title);
+            setTimeout(function () { ikon.className = 'ti ti-link'; btn.title = judul; btn.setAttribute('aria-label', judul); }, 2000);
         });
     });
 </script>
