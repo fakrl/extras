@@ -32,11 +32,9 @@ class CastingProjectController extends Controller
         $tgl = fn (string $k) => rescue(fn () => Carbon::createFromFormat('!Y-m-d', (string) $request->query($k)), null, false) ?: null;
         $periode = ($dari = $tgl('dari')) && ($sampai = $tgl('sampai')) ? [min($dari, $sampai), max($dari, $sampai)] : null;
 
-        $projects = CastingProject::withCount('applications')
-            ->with(['client', 'admin', 'shootingDates'])
+        $saring = fn ($q) => $q
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($peserta, fn ($q) => $q->whereHas('applications', fn ($a) => $a->where('status_partisipasi', $peserta)))
-            ->when($tahap, fn ($q) => $q->diTahap($tahap))
             ->when($request->boolean('tanpa_client'), fn ($q) => $q->whereNull('client_id'))
             ->when($periode, fn ($q) => $q->shootingDalam(...$periode))
             ->when($bayar === 'staf', fn ($q) => $q->whereHas('payrolls', fn ($p) => $p->where('status_bayar', '!=', 'sudah')))
@@ -45,7 +43,16 @@ class CastingProjectController extends Controller
                 ->orWhereHas('client', fn ($c) => $c->where('name', 'like', "%{$cari}%")->orWhere('nama_perusahaan', 'like', "%{$cari}%"))
                 ->orWhere(fn ($k) => $k->cariKode($cari))))
             ->when($request->boolean('urgent'), fn ($q) => $q->where(fn ($w) => $w->where('is_urgent', true)
-                ->orWhereHas('shootingDates', fn ($d) => $d->whereDate('tanggal', '>=', today())->whereDate('tanggal', '<=', today()->addDays(3)))))
+                ->orWhereHas('shootingDates', fn ($d) => $d->whereDate('tanggal', '>=', today())->whereDate('tanggal', '<=', today()->addDays(3)))));
+        $diTahap = fn ($q, string $t) => $t === 'menunggu_acc'
+            ? $q->whereIn('client_request_status', ['menunggu_acc', 'ditolak'])
+            : $q->diTahap($t);
+
+        $jumlahTahap = collect(CastingProject::TAHAP)->map(fn ($label, $t) => $diTahap($saring(CastingProject::query()), $t)->count())
+            ->prepend($saring(CastingProject::query())->count(), '');
+
+        $projects = $saring(CastingProject::withCount('applications')->with(['client', 'admin', 'shootingDates']))
+            ->when($tahap, fn ($q) => $diTahap($q, $tahap))
             ->orderByDesc('is_urgent')
             ->latest()
             ->paginate(PerHalaman::dari($request, 24, PerHalaman::KARTU))
@@ -57,7 +64,7 @@ class CastingProjectController extends Controller
 
         $perlu = AdminRingkasan::perluPerProyek($projects->pluck('id')->all());
 
-        return view('admin.projects.index', compact('projects', 'perlu', 'peserta', 'tahap', 'bayar', 'cari', 'periode'));
+        return view('admin.projects.index', compact('projects', 'perlu', 'peserta', 'tahap', 'bayar', 'cari', 'periode', 'jumlahTahap'));
     }
 
     /**

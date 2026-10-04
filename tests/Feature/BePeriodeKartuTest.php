@@ -61,10 +61,12 @@ class BePeriodeKartuTest extends TestCase
         foreach (CastingProject::TAHAP as $tahap => $label) {
             $this->assertSame(1, preg_match('/href="([^"]*tahap='.$tahap.'[^"]*)" class="sa-lihat-semua"/', $r->getContent(), $m), $tahap);
             $url = html_entity_decode($m[1]);
+            // daftar proyek menaruh pengajuan ditolak (BW.1) di tab Menunggu ACC; kartu dashboard tidak
             $this->assertSame($tahap !== 'menunggu_acc', str_contains($url, 'dari='), $tahap);
 
             $daftar = $this->get($url)->assertOk();
-            $this->assertSame($angka[$tahap], $daftar->viewData('projects')->total(), "$tahap $url");
+            $harap = $angka[$tahap] + ($tahap === 'menunggu_acc' ? 1 : 0);
+            $this->assertSame($harap, $daftar->viewData('projects')->total(), "$tahap $url");
         }
     }
 

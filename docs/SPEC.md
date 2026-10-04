@@ -1815,3 +1815,38 @@ Keputusan Fakrul (didukung review solution architect): halaman daftar `admin/pro
 | BV.3 tab Keuangan = 4 blok catatan | `admin/projects/show.blade.php` tab Keuangan: (a) Invoice Client (nominal, Lunas/Belum, Simpan Nominal, Tandai Lunas, PDF), (b) Honor Extras per Extras nominal `Payment::nominalTotal()` (pokok + add-on) + `x-status-badge` + "n dari m sudah ditransfer", (c) Honor Staf (nominal + status + Tandai Dibayar), (d) Biaya Lain-lain (daftar, tambah, hapus). Kartu Masuk/Piutang/Keluar/Saldo/Proyeksi/Terpakai dan semua total lintas blok dibuang. Test baru `ProyekKeuanganTest::test_tab_keuangan_empat_blok_catatan_tanpa_total_lintas_blok` | [ ] |
 | BV.4 dashboard SA: honor staf belum dibayar + invoice belum lunas | Kartu "Yang perlu dicatat": "Honor staf belum dibayar" (`totalHonorStafBelumDiproses()`) dan "Invoice belum lunas (n)" (`$invoiceBelumLunas->count()`). "Perlu tindakan" tidak diubah. `SuperAdminHonorRecapTest::test_honor_staf_sudah_dibayar_tidak_muncul_dan_empty_state_tampil` diubah: assert pada badge baris Perlu tindakan (label kartu baru selalu tampil walau Rp 0). Test: `SuperAdminDashboardTest::test_dashboard_dua_angka_honor_staf_dan_invoice_belum_lunas` | [ ] |
 | BV.5 grep: nol sisa `saldo`/`proyeksi`/`piutang`/`marginBulanIni`/`rekap-margin`; test pembayaran & honor staf tetap hijau; SQLite + MySQL | Grep (`app resources routes tests database`, case-insensitive) `saldo|proyeksi|piutang|marginBulanIni|trendMarginBulanan|cashflowProyek|ringkasanPeriode|RELASI_CASHFLOW|rekap-margin|Terpakai`: kode/view/route nol; sisa di `tests/` hanya assertDontSee guard (`ProyekKeuanganTest`, `SuperAdminDashboardTest`) + nama test `LengkapiKtpTest::test_nik_format_berbeda_dari_nik_terpakai_...` ("terpakai" = NIK dipakai akun lain, bukan analisis). Test: 610 → **605 passed** di SQLite & MySQL `jbtb_test` (−7 dihapus, +2 baru, 1 diganti 1:1, 9 method disesuaikan teks/struktur/guard) | [ ] |
+
+
+---
+
+# Bagian BW: Revisi UI daftar Proyek + tab Keuangan (4 Oktober 2026)
+
+> **FEATURE FREEZE tetap berlaku.** Revisi tampilan atas BU/BV, tanpa mengubah logika bisnis. Pakai subagent bila menyentuh >3 file. Commit, **jangan push** sebelum Fakrul cek.
+
+Keputusan Fakrul setelah melihat hasil BU: daftar proyek masih kebanyakan. Baris "Tahap" dan "Lowongan dibuka/ditutup" di tiap kartu tidak perlu (tahap cukup sebagai tab, status lowongan ada di detail). Tampilkan info yang jelas saja, pola sama seperti kartu "Status Proyek" di dashboard. Revisi ini menggantikan keputusan BU soal badge Dibuka/Ditutup di kartu.
+
+## BW.1: Daftar proyek `admin/projects`
+
+1. **Tahap jadi tab** di atas daftar: Semua · Menunggu ACC · Mendatang · Berjalan · Selesai, masing-masing dengan angka. Pola sama kartu "Status Proyek" di dashboard (pakai ulang `CastingProject::tahap()` dan logika hitung yang sudah ada, jangan tulis ulang). Filter lewat query string `?tahap=`, bekerja bersama pencarian dan per-halaman, dan ikut terjaga di pagination.
+2. **Kartu jadi baris ringkas tanpa label.** Isi per proyek: nama + kode proyek (+ badge **Urgent** bila urgent), Client, tanggal shooting, pendaftar/kuota (contoh `11 / 15`), badge **"Perlu tindakan (n)"** bila ada (definisi dari revisi BU: `AdminRingkasan::langkah()` field `perlu`, link ke `?tab=pendaftar`), tombol **Lihat detail**. Menu titik tiga (Lineup dan aksi lain) tetap.
+3. **Dihapus dari daftar:** baris "Tahap", baris "Lowongan dibuka/ditutup", dan label teks "Shooting", "Pendaftar / kuota" (cukup nilainya). PIC, deadline, link grup tetap hanya di detail. Pengecualian kecil: proyek berstatus Mendatang yang lowongannya ditutup boleh diberi badge kecil "Lowongan ditutup".
+4. Proyek **Ditolak** (pengajuan Client yang ditolak) masuk ke tab Menunggu ACC dengan badge "Ditolak", bukan kartu penuh tersendiri.
+5. Mobile satu kolom, tanpa overflow di 360 dan 390 px (`BrOverflowMobileTest` harus tetap hijau). Daftar kosong per tab menampilkan pesan singkat.
+
+## BW.2: Tab Keuangan di detail proyek
+
+Aksi di tab ini (simpan nominal invoice, tandai lunas, tandai honor staf dibayar, tambah dan hapus biaya lain-lain) **sudah ada, jangan diubah**. Satu perubahan saja, pada kolom honor Extras:
+
+1. Tombol **"Transfer"** (`btn-brand`) bila `Payment::perluDitransfer` (kontrak TTD lengkap + belum dibayar), selain itu tombol **"Lihat"**. Tetap link ke `payments.show`. **Jangan di-inline**: halaman pembayaran juga memuat bukti transfer, sengketa, konfirmasi, dan add-on, dan guard BS.2 jangan diduplikasi di tempat kedua.
+
+## BW.3: Test dan penutup
+
+1. Sesuaikan test yang meng-assert struktur daftar lama (`ProyekKeuanganTest`, `BnKodeProyekTest`, `BdSidebarFinalTest`, dan lain-lain). Tambah test: filter `?tahap=` menampilkan hanya proyek di tahap itu, angka tab benar, kartu tidak lagi memuat baris "Tahap" dan "Lowongan", badge Urgent tetap tampil, tombol Transfer vs Lihat sesuai status.
+2. Jalankan SQLite lalu MySQL `jbtb_test` **berurutan** (jangan paralel, `DemoSeederTest` berbagi storage).
+3. Isi kolom Bukti. Dokumen manager (`BAB-3-DRAFT`, `PRD-LITE`, `SYSTEM-ARCHITECTURE`, `DATABASE-SCHEMA`, `SECURITY-CHECKLIST`, `ARSITEKTUR-VISUAL.html`, `info.txt`) boleh ikut di-commit, tapi sebagai commit **terpisah** dari kode.
+
+| Item | Bukti | QA |
+|---|---|---|
+| BW.1 tab tahap + baris ringkas tanpa label | `CastingProjectController::index`: filter dipisah ke closure `$saring` (dipakai query daftar + hitungan tab), `?tahap=` pakai ulang `diTahap()` (Menunggu ACC di daftar = `menunggu_acc` + `ditolak`; dashboard tidak diubah), `$jumlahTahap` = Semua + 4 tahap sesuai filter lain (5 query count, tetap per halaman). View: tab `xfilter` `Semua (n) · Menunggu ACC (n) · ...` (link menjaga q/per/filter, `page` dibuang; hidden `tahap` di form cari; pagination `withQueryString`), grup+chip Tahap di panel filter dibuang. Kartu: nama+kode+Urgent, Client, `rentangShooting()` + `n / kuota` (tanpa label), Perlu tindakan (n), Lihat detail, menu ⋮ tetap. Dibuang: baris Tahap, Lowongan dibuka/ditutup, label Shooting/Pendaftar/kuota. Badge "Ditolak" (client_request_status ditolak) dan "Lowongan ditutup" (hanya tahap Mendatang). Test baru: `ProyekKeuanganTest` `test_tab_tahap_filter_angka_dan_ditolak_masuk_menunggu_acc`, `test_tahap_terjaga_di_pagination`, `test_badge_lowongan_ditutup_hanya_untuk_proyek_mendatang`, `test_kartu_daftar_proyek_urgent_tanpa_baris_tahap_dan_lowongan` (ganti test Urgent/lowongan BU) | [ ] |
+| BW.2 tombol Transfer/Lihat di honor Extras | `Payment::bisaDitransfer()` (belum_dibayar + kontrak TTD, sama kriteria scope `perluDitransfer`). Tab Keuangan: tombol `btn-brand` "Transfer" bila true, selain itu "Lihat"; tetap link `payments.show`, tidak inline, guard BS.2 tidak diduplikasi, aksi lain tab Keuangan tidak disentuh. Test `ProyekKeuanganTest::test_honor_extras_tombol_transfer_atau_lihat_sesuai_status` | [ ] |
+| BW.3 test + SQLite & MySQL berurutan + 360/390px | Disesuaikan: `BiFilterPanelTest` (chip Tahap jadi tab, panel 2 → 1), `BePeriodeKartuTest` (daftar Menunggu ACC = kartu dashboard + proyek ditolak), `ProyekKeuanganTest` (test Urgent/lowongan diganti). `BnKodeProyekTest`, `BdSidebarFinalTest` tidak perlu diubah. 607 → **611 passed** di SQLite lalu MySQL `jbtb_test` (berurutan, +4 baru); `BrOverflowMobileTest` hijau (layout tab `flex-wrap`, kartu satu kolom) | [ ] |
