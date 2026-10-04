@@ -73,14 +73,12 @@ class BiFilterPanelTest extends TestCase
             ->assertSee('href="'.route('super-admin.activity-logs').'" class="btn btn-sm" target="_self">Reset', false);
     }
 
-    public function test_proyek_chip_tahap_dan_tanpa_client(): void
+    public function test_proyek_chip_tanpa_client_dan_tahap_jadi_tab(): void
     {
         $r = $this->actingAs($this->sa)->get(route('admin.projects.index', ['per' => 12, 'tahap' => 'berjalan', 'tanpa_client' => 1]))->assertOk();
 
-        $this->cekPanel($r, 2);
-        $r->assertSee('Tahap: Berjalan')->assertSee('Client belum diisi')
-            ->assertSee(e(route('admin.projects.index', ['per' => 12, 'tanpa_client' => 1])).'"', false)
-            ->assertSee(e(route('admin.projects.index', ['per' => 12, 'tahap' => 'berjalan'])).'"', false)
+        $this->cekPanel($r, 1);
+        $r->assertSee('Client belum diisi')->assertDontSee('Tahap: Berjalan')
             ->assertSee(e(route('admin.projects.index', ['per' => 12])).'"', false);
 
         $this->assertStringNotContainsString('fpanel-n', $this->form($this->get(route('admin.projects.index'))));

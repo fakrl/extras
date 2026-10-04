@@ -250,7 +250,7 @@
                             <td>{{ $app?->karakter ?: '-' }}</td>
                             <td>{{ $rp($pay->nominalTotal()) }}</td>
                             <td><x-status-badge :model="$pay" /></td>
-                            <td>@if ($app)<a href="{{ route('payments.show', $app) }}" class="btn btn-sm">Pembayaran</a>@endif</td>
+                            <td>@if ($app)<a href="{{ route('payments.show', $app) }}" class="btn btn-sm {{ $pay->bisaDitransfer() ? 'btn-brand' : '' }}">{{ $pay->bisaDitransfer() ? 'Transfer' : 'Lihat' }}</a>@endif</td>
                         </tr>
                     @empty
                         <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Belum ada honor Extras.</td></tr>

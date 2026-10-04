@@ -32,6 +32,11 @@ class Payment extends Model
             ->whereHas('projectApplication', fn ($a) => $a->where('status_partisipasi', 'kontrak_ditandatangani'));
     }
 
+    public function bisaDitransfer(): bool
+    {
+        return $this->status === 'belum_dibayar' && $this->projectApplication?->status_partisipasi === 'kontrak_ditandatangani';
+    }
+
     public function menungguKontrak(): bool
     {
         return $this->status === 'belum_dibayar' && $this->project_application_id && $this->projectApplication?->status_partisipasi !== 'kontrak_ditandatangani';

@@ -250,13 +250,83 @@ class ProyekKeuanganTest extends TestCase
             ->assertDontSee('Piutang')->assertDontSee('Saldo')->assertDontSee('Proyeksi');
     }
 
-    public function test_kartu_daftar_proyek_tampil_urgent_dan_status_lowongan(): void
+    public function test_kartu_daftar_proyek_urgent_tanpa_baris_tahap_dan_lowongan(): void
     {
         $sa = User::factory()->create(['role' => 'super_admin']);
-        CastingProject::factory()->create(['nama_produksi' => 'Proyek Kilat', 'is_urgent' => true, 'status' => 'ditutup']);
+        CastingProject::factory()->create(['nama_produksi' => 'Proyek Kilat', 'is_urgent' => true, 'status' => 'dibuka', 'client_request_status' => 'disetujui']);
 
-        $this->actingAs($sa)->get(route('admin.projects.index'))
-            ->assertSee('Urgent')->assertSee('Lowongan')->assertSee('ditutup');
+        $r = $this->actingAs($sa)->get(route('admin.projects.index'))->assertOk();
+        $r->assertSee('Proyek Kilat')->assertSee('badge badge-tolak">Urgent', false)
+            ->assertDontSee('<span class="entity-card-row-label"', false)->assertDontSee('Pendaftar / kuota')
+            ->assertDontSee('Lowongan ditutup')->assertDontSee('>dibuka<', false);
+    }
+
+    public function test_badge_lowongan_ditutup_hanya_untuk_proyek_mendatang(): void
+    {
+        $sa = User::factory()->create(['role' => 'super_admin']);
+        $mendatang = CastingProject::factory()->create(['nama_produksi' => 'Akan Datang', 'status' => 'ditutup', 'client_request_status' => 'disetujui']);
+        $mendatang->shootingDates()->create(['tanggal' => today()->addDays(20)]);
+        $selesai = CastingProject::factory()->create(['nama_produksi' => 'Sudah Lewat', 'status' => 'ditutup', 'client_request_status' => 'disetujui']);
+        $selesai->shootingDates()->create(['tanggal' => today()->subDays(20)]);
+
+        $url = fn ($t) => route('admin.projects.index', ['tahap' => $t]);
+        $this->actingAs($sa)->get($url('mendatang'))->assertSee('Lowongan ditutup');
+        $this->get($url('selesai'))->assertSee('Sudah Lewat')->assertDontSee('Lowongan ditutup');
+    }
+
+    public function test_tab_tahap_filter_angka_dan_ditolak_masuk_menunggu_acc(): void
+    {
+        $sa = User::factory()->create(['role' => 'super_admin']);
+        $buat = function (string $nama, string $req, ?int $hari = null) {
+            $p = CastingProject::factory()->create(['nama_produksi' => $nama, 'client_request_status' => $req]);
+            $hari !== null && $p->shootingDates()->create(['tanggal' => today()->addDays($hari)]);
+        };
+        $buat('P Acc', 'menunggu_acc');
+        $buat('P Tolak', 'ditolak');
+        $buat('P Depan1', 'disetujui', 5);
+        $buat('P Depan2', 'disetujui', 9);
+        $buat('P Jalan', 'disetujui', 0);
+        $buat('P Lewat', 'disetujui', -9);
+
+        $r = $this->actingAs($sa)->get(route('admin.projects.index'))->assertOk();
+        $this->assertSame(['' => 6, 'menunggu_acc' => 2, 'mendatang' => 2, 'berjalan' => 1, 'selesai' => 1], $r->viewData('jumlahTahap')->all());
+        $r->assertSee('Semua (6)')->assertSee('Menunggu ACC (2)')->assertSee('Mendatang (2)')->assertSee('Berjalan (1)')->assertSee('Selesai (1)');
+
+        $this->get(route('admin.projects.index', ['tahap' => 'mendatang']))
+            ->assertSee('P Depan1')->assertSee('P Depan2')->assertDontSee('P Jalan')->assertDontSee('P Lewat')->assertDontSee('P Acc');
+        $acc = $this->get(route('admin.projects.index', ['tahap' => 'menunggu_acc']))
+            ->assertSee('P Acc')->assertSee('P Tolak')->assertDontSee('P Depan1');
+        $acc->assertSee('badge badge-tolak">Ditolak', false);
+
+        $r = $this->get(route('admin.projects.index', ['tahap' => 'selesai', 'q' => 'Depan']))->assertDontSee('P Lewat');
+        $this->assertSame(['' => 2, 'menunggu_acc' => 0, 'mendatang' => 2, 'berjalan' => 0, 'selesai' => 0], $r->viewData('jumlahTahap')->all());
+        $r->assertSee('Tidak ada proyek yang sesuai filter.');
+    }
+
+    public function test_tahap_terjaga_di_pagination(): void
+    {
+        $sa = User::factory()->create(['role' => 'super_admin']);
+        CastingProject::factory()->count(14)->create(['client_request_status' => 'disetujui'])
+            ->each(fn ($p) => $p->shootingDates()->create(['tanggal' => today()->addDays(7)]));
+
+        $r = $this->actingAs($sa)->get(route('admin.projects.index', ['tahap' => 'mendatang', 'per' => 12]))->assertOk();
+        $this->assertSame(14, $r->viewData('projects')->total());
+        $this->assertStringContainsString('tahap=mendatang', $r->viewData('projects')->nextPageUrl());
+    }
+
+    public function test_honor_extras_tombol_transfer_atau_lihat_sesuai_status(): void
+    {
+        ['admin' => $admin, 'project' => $project] = $this->proyekLengkap();
+        $url = route('admin.projects.show', [$project, 'tab' => 'keuangan']);
+        $this->actingAs($admin)->get($url)->assertDontSee('>Transfer<', false)->assertSee('>Lihat<', false);
+
+        $pay = $project->payments()->first();
+        $pay->update(['status' => 'belum_dibayar', 'ditransfer_at' => null]);
+        $href = route('payments.show', $pay->project_application_id);
+        $this->get($url)->assertSee('href="'.$href.'" class="btn btn-sm btn-brand"', false)->assertSee('>Transfer<', false);
+
+        $pay->projectApplication->update(['status_partisipasi' => 'lolos']);
+        $this->get($url)->assertDontSee('>Transfer<', false);
     }
 
     public function test_perlu_tindakan_kartu_sama_dengan_ringkasan_dashboard_dan_tanpa_n_plus_1(): void

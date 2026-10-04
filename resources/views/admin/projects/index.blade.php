@@ -14,9 +14,9 @@
 <form method="GET" action="{{ route('admin.projects.index') }}" class="xtoolbar" role="search" id="live-form" data-live>
     <input type="search" name="q" value="{{ $cari }}" class="xtoolbar-cari" placeholder="Cari nama produksi atau client..." aria-label="Cari proyek">
     @if ($peserta)<input type="hidden" name="peserta" value="{{ $peserta }}">@endif
+    @if ($tahap)<input type="hidden" name="tahap" value="{{ $tahap }}">@endif
     <x-per-halaman :pilihan="\App\Support\PerHalaman::KARTU" :nilai="$projects->perPage()" />
     <x-filter-panel :filter="[
-        $tahap ? ['tahap', 'Tahap: '.\App\Models\CastingProject::TAHAP[$tahap]] : null,
         $periode ? [['dari', 'sampai'], 'Periode: '.$periode[0]->translatedFormat($periode[0]->year === $periode[1]->year ? 'd M' : 'd M Y').'–'.$periode[1]->translatedFormat('d M Y')] : null,
         $bayar ? ['bayar', $bayar === 'staf' ? 'Honor staf belum dibayar' : 'Honor Extras belum ditransfer'] : null,
         request('status') ? ['status', 'Lowongan: '.(\App\Models\CastingProject::LABELS[request('status')] ?? request('status'))] : null,
@@ -24,7 +24,6 @@
         request()->boolean('tanpa_client') ? ['tanpa_client', 'Client belum diisi'] : null,
         $peserta ? ['peserta', 'Ada kandidat '.(\App\Models\ProjectApplication::LABELS[$peserta] ?? $peserta)] : null,
     ]">
-        <x-filter-panel.grup label="Tahap" name="tahap" :opsi="['' => 'Semua'] + \App\Models\CastingProject::TAHAP" :nilai="$tahap" baris />
         <x-filter-panel.grup label="Lowongan" name="status" :opsi="['' => 'Semua'] + \App\Models\CastingProject::LABELS" :nilai="request('status')" />
         <x-filter-panel.grup label="Honor" name="bayar" :opsi="['' => 'Semua', 'staf' => 'Staf belum dibayar', 'extras' => 'Extras belum ditransfer']" :nilai="$bayar" />
         <label class="fswitch">Urgent <input type="checkbox" name="urgent" value="1" @checked(request()->boolean('urgent'))></label>
@@ -41,6 +40,13 @@
 </form>
 
 <div data-live-target>
+
+<div class="xfilter" role="tablist" aria-label="Tahap proyek">
+    @foreach (['' => 'Semua'] + \App\Models\CastingProject::TAHAP as $key => $label)
+        <a href="{{ route('admin.projects.index', array_merge(request()->except(['tahap', 'page']), $key === '' ? [] : ['tahap' => $key])) }}" role="tab"
+           class="btn btn-sm {{ (string) $tahap === (string) $key ? 'btn-brand' : '' }}" @if ((string) $tahap === (string) $key) aria-selected="true" @endif>{{ $label }} ({{ $jumlahTahap[$key] }})</a>
+    @endforeach
+</div>
 
 @if ($projects->isEmpty())
     <div class="card" style="text-align:center; color: var(--text-muted); padding: 30px 0;">
@@ -86,30 +92,15 @@
                 </div>
 
                 <div class="entity-card-row">
-                    <span class="entity-card-row-label">Tahap</span>
-                    <span class="entity-card-row-value">
-                        @if ($tahapProyek)
-                            <span class="badge {{ \App\Models\CastingProject::TAHAP_BADGES[$tahapProyek] }}">{{ \App\Models\CastingProject::TAHAP[$tahapProyek] }}</span>
-                        @else
-                            <span class="badge badge-tolak">{{ ucfirst($project->client_request_status) }}</span>
-                        @endif
-                    </span>
-                </div>
-                <div class="entity-card-row">
-                    <span class="entity-card-row-label">Shooting</span>
                     <span class="entity-card-row-value">{{ $project->rentangShooting() }}</span>
-                </div>
-
-                <div class="entity-card-row">
-                    <span class="entity-card-row-label">Lowongan</span>
-                    <span class="entity-card-row-value">
-                        <span class="badge {{ $project->status === 'dibuka' ? 'badge-aktif' : 'badge-tolak' }}">{{ $project->status }}</span>
-                    </span>
-                </div>
-                <div class="entity-card-row">
-                    <span class="entity-card-row-label">Pendaftar / kuota</span>
                     <span class="entity-card-row-value">{{ $project->applications_count }} / {{ $project->kuota }}</span>
                 </div>
+                @if ($project->client_request_status === 'ditolak' || ($tahapProyek === 'mendatang' && $project->status === 'ditutup'))
+                    <div style="margin-top: 8px;">
+                        @if ($project->client_request_status === 'ditolak')<span class="badge badge-tolak">Ditolak</span>@endif
+                        @if ($tahapProyek === 'mendatang' && $project->status === 'ditutup')<span class="badge badge-netral">Lowongan ditutup</span>@endif
+                    </div>
+                @endif
                 @if ($perluTindakan)
                     <a href="{{ route('admin.projects.show', [$project, 'tab' => 'pendaftar']) }}" class="badge badge-pending" style="text-decoration: none; margin-top: 8px;" title="Pendaftar yang menunggu tindakan Admin">Perlu tindakan ({{ $perluTindakan }})</a>
                 @endif
