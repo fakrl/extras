@@ -1,0 +1,103 @@
+========================================
+SIM CASTING JBTB — CATATAN RUTIN MANUAL
+========================================
+(update file ini kalo ada cara baru/port ganti, dll)
+
+----------------------------------------
+1. NYALAIN SERVER LOKAL (Laravel)
+----------------------------------------
+Buka terminal di folder project (C:\Users\fahru\Documents\GitHub\extras), lalu:
+
+    php artisan serve --port=9999
+
+Server jalan di: http://127.0.0.1:9999
+Biarin terminal ini TETAP KEBUKA selama dipake — kalo di-close/Ctrl+C, server mati.
+
+Kalau abis ganti .env / config / clear cache:
+
+    php artisan config:clear
+    php artisan view:clear
+    php artisan cache:clear
+
+(Sering jadi biang "kok belum berubah" padahal kodenya udah bener.)
+
+----------------------------------------
+2. BUKA TUNNEL NGROK (biar kelompok bisa akses dari luar)
+----------------------------------------
+Buka terminal BARU (jangan tutup terminal `php artisan serve`), lalu:
+
+    ngrok http --url=ferris-hardy-judo.ngrok-free.dev 9999
+
+Link yang di-share ke kelompok SELALU:
+    https://ferris-hardy-judo.ngrok-free.dev
+
+(Ini domain tetap punya sendiri, jadi linknya GAK GANTI-GANTI tiap restart —
+tinggal share sekali ke kelompok, gak perlu update link lagi tiap nyalain ulang.)
+
+Kalau lupa ketik `--url=...` dan cuma jalanin `ngrok http 9999` biasa, nanti dapet
+link acak (xxxx-xxx-xxx.ngrok-free.app) yang BEDA dari link yang biasa di-share
+ke kelompok — jangan dipake, ulang lagi pake command di atas.
+
+----------------------------------------
+2b. PROSES LATAR (wajib kalau mau notif WA & reminder jalan)
+----------------------------------------
+Notif WhatsApp masuk antrean (QUEUE_CONNECTION=database). Tanpa worker,
+WA-nya NUMPUK di tabel jobs dan nggak pernah kekirim.
+
+    Terminal 3: php artisan queue:work
+    Terminal 4: php artisan schedule:work     (reminder H-1/H-3 jam 07:30-08:00 WIB)
+    Terminal 5: cd whatsapp-service && npm start   (port 3001, scan QR sekali)
+
+Abis ganti kode yang nyentuh job/notif, restart queue:work (Ctrl+C lalu jalanin lagi),
+karena worker nyimpen kode lama di memori.
+
+Kalau cuma mau demo UI tanpa WA, terminal 3-5 boleh nggak dinyalain.
+
+----------------------------------------
+2c. ABIS GANTI .env / PULL KODE BARU
+----------------------------------------
+    php artisan migrate
+    php artisan config:clear
+    php artisan view:clear
+
+Setting wajib di .env (sekali aja):
+    APP_LOCALE=id
+    APP_FALLBACK_LOCALE=id
+
+----------------------------------------
+3. MATIIN
+----------------------------------------
+- Matiin ngrok dulu: klik terminal ngrok-nya, tekan Ctrl+C.
+- Baru matiin server Laravel: klik terminal `php artisan serve`, tekan Ctrl+C.
+(Urutan gak terlalu penting, tapi biar rapi ya ngrok dulu.)
+
+----------------------------------------
+4. CEK CEPAT KALO ERROR
+----------------------------------------
+- "Port 9999 already in use" → ada proses lama masih jalan. Cari & kill:
+    netstat -ano | findstr :9999
+    taskkill /PID <nomor_PID> /F
+
+- Ngrok minta login/authtoken → daftar gratis di ngrok.com, ambil authtoken di dashboard,
+  lalu sekali aja setup:
+    ngrok config add-authtoken <TOKEN_KAMU>
+
+- Kelompok akses link ngrok tapi blank/404 → cek server Laravel-nya beneran masih nyala
+  di terminal (bukan ke-close gak sengaja).
+
+----------------------------------------
+5. RINGKASAN URUTAN (COPAS AJA)
+----------------------------------------
+Nyalain:
+    Terminal 1: php artisan serve --port=9999
+    Terminal 2: ngrok http --url=ferris-hardy-judo.ngrok-free.dev 9999
+    -> link buat kelompok: https://ferris-hardy-judo.ngrok-free.dev (fix, gak ganti-ganti)
+
+    (opsional) Terminal 3: php artisan queue:work
+    (opsional) Terminal 4: php artisan schedule:work
+    (opsional) Terminal 5: cd whatsapp-service && npm start
+
+Matiin:
+    Ctrl+C di terminal 5, 4, 3 (kalau nyala)
+    Ctrl+C di terminal 2 (ngrok)
+    Ctrl+C di terminal 1 (php artisan serve)

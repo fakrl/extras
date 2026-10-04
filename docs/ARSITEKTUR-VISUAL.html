@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arsitektur SIM Casting JBTB — Visual</title>
+<style>
+  :root { --ink:#1a2233; --mut:#5b667a; --line:#c9d1de; --bg:#f6f8fb; --card:#fff; --accent:#0f9d58; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color:var(--ink); background:var(--bg); line-height:1.5; }
+  header { padding:32px 40px 8px; max-width:1240px; margin:0 auto; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  header p { margin:0; color:var(--mut); }
+  main { max-width:1240px; margin:0 auto; padding:16px 40px 56px; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:24px 24px 20px; margin-top:24px; }
+  h2 { font-size:19px; margin:0 0 4px; }
+  .sub { color:var(--mut); margin:0 0 16px; font-size:14px; }
+  svg { width:100%; height:auto; display:block; }
+  svg text { font-family: inherit; fill:#1a2233; }
+  .t-sm { font-size:12px; } .t-md { font-size:14px; } .t-b { font-weight:600; } .t-mut { fill:#5b667a; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .box { border:1px solid var(--line); border-radius:10px; padding:14px 16px; background:#fbfcfe; }
+  .box h3 { font-size:14px; margin:0 0 8px; }
+  ul { margin:0; padding-left:18px; font-size:14px; } li { margin:3px 0; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { background:#eef2f8; font-size:13px; }
+  .tag { display:inline-block; font-size:12px; padding:1px 8px; border-radius:99px; background:#e3f6ea; color:#0b6b3a; }
+  .tag.w { background:#fff1d6; color:#8a5a00; }
+  @media (max-width:800px){ .grid2{grid-template-columns:1fr;} header,main{padding-left:16px;padding-right:16px;} }
+  @media print { body{background:#fff;} section{break-inside:avoid;} }
+</style>
+</head>
+<body>
+<header>
+  <h1>SIM Casting JBTB — Arsitektur</h1>
+  <p>Per 1 Okt 2026 · Laravel 13 monolith · 5 role · 31 tabel (23 bisnis + 8 framework)</p>
+</header>
+<main>
+
+<!-- ============ 1. MASALAH ============ -->
+<section>
+  <h2>1. Masalah yang diselesaikan</h2>
+  <p class="sub">Dari Problem Statement di SYSTEM-ARCHITECTURE.md §1.</p>
+  <div class="grid2">
+    <div class="box">
+      <h3>Sebelum (WhatsApp + Excel + Google Drive)</h3>
+      <ul>
+        <li>Kesepakatan fee tidak punya rekam jejak: "udah kerja belum dibayar / nggak sesuai deal".</li>
+        <li>Kontrak tidak mengikat, tidak terarsip per Extras dan per proyek.</li>
+        <li>Status pembayaran tidak transparan; honor staf tanpa slip.</li>
+        <li>Bentrok jadwal Extras terdeteksi manual.</li>
+        <li>Data tersebar di tiga media, tidak ada satu sumber kebenaran.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Sesudah (sistem terpusat)</h3>
+      <ul>
+        <li>Nego fee multi-round tercatat sampai Deal, fee terkunci.</li>
+        <li>Kontrak PDF otomatis + TTD canvas, void otomatis bila batal.</li>
+        <li>Status partisipasi dan pembayaran dilacak terpisah, bukti transfer tersimpan.</li>
+        <li>Aturan bentrok jadwal + kuota antrian ditegakkan sistem.</li>
+        <li>Keuangan proyek dari satu sumber hitung (Masuk, Piutang, Keluar, Saldo, Proyeksi).</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. HLD ============ -->
+<section>
+  <h2>2. High Level Design</h2>
+  <p class="sub">Monolith Laravel; layanan eksternal hanya untuk hal yang memang harus terpisah (WhatsApp, email, Google).</p>
+  <svg viewBox="0 0 1100 700" role="img" aria-label="Diagram arsitektur tingkat tinggi">
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="#5b667a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </marker>
+    </defs>
+
+    <!-- actors -->
+    <g class="t-md t-b" text-anchor="middle">
+      <rect x="40"  y="20" width="190" height="56" rx="10" fill="#e8eefc" stroke="#7b93d6"/><text x="135" y="44">Super Admin</text><text x="135" y="62" class="t-sm t-mut" style="font-weight:400">godmode + monitoring</text>
+      <rect x="250" y="20" width="190" height="56" rx="10" fill="#e8eefc" stroke="#7b93d6"/><text x="345" y="44">Admin</text><text x="345" y="62" class="t-sm t-mut" style="font-weight:400">operasional inti</text>
+      <rect x="460" y="20" width="190" height="56" rx="10" fill="#e8eefc" stroke="#7b93d6"/><text x="555" y="44">Korlap</text><text x="555" y="62" class="t-sm t-mut" style="font-weight:400">lapangan</text>
+      <rect x="670" y="20" width="190" height="56" rx="10" fill="#e8eefc" stroke="#7b93d6"/><text x="765" y="44">Client</text><text x="765" y="62" class="t-sm t-mut" style="font-weight:400">wakil PH</text>
+      <rect x="880" y="20" width="190" height="56" rx="10" fill="#e8eefc" stroke="#7b93d6"/><text x="975" y="44">Extras</text><text x="975" y="62" class="t-sm t-mut" style="font-weight:400">figuran</text>
+    </g>
+    <g stroke="#5b667a" stroke-width="1.4" fill="none">
+      <path d="M135 76V96M345 76V96M555 76V96M765 76V96M975 76V96M135 96H975"/>
+      <path d="M400 96V118" marker-end="url(#ar)"/>
+    </g>
+
+    <!-- app container -->
+    <rect x="40" y="120" width="720" height="380" rx="14" fill="#f3f9f5" stroke="#6fb88b"/>
+    <text x="60" y="144" class="t-md t-b">Aplikasi web — Laravel 13 (MVC monolith)</text>
+
+    <rect x="60" y="156" width="680" height="44" rx="8" fill="#fff" stroke="#6fb88b"/>
+    <text x="400" y="176" text-anchor="middle" class="t-sm t-b">Middleware: CheckRole (RBAC 5 role) · WajibGantiPassword · ViewAs · SecurityHeaders · Throttle</text>
+    <text x="400" y="192" text-anchor="middle" class="t-sm t-mut">+ otorisasi tingkat data di controller (Client hanya proyek miliknya, dst.)</text>
+
+    <rect x="60" y="210" width="680" height="36" rx="8" fill="#fff" stroke="#6fb88b"/>
+    <text x="400" y="233" text-anchor="middle" class="t-sm t-b">Activity Logger / Audit Trail — setiap aksi penting, termasuk "(sebagai X)" saat mode pantau</text>
+
+    <g class="t-sm t-b" text-anchor="middle">
+      <rect x="60"  y="266" width="128" height="70" rx="8" fill="#fff" stroke="#2f855a"/><text x="124" y="296">Proyek &amp;</text><text x="124" y="312">Lowongan</text>
+      <rect x="198" y="266" width="128" height="70" rx="8" fill="#fff" stroke="#2f855a"/><text x="262" y="296">Nego Fee &amp;</text><text x="262" y="312">Greenlight</text>
+      <rect x="336" y="266" width="128" height="70" rx="8" fill="#fff" stroke="#2f855a"/><text x="400" y="296">Kontrak &amp;</text><text x="400" y="312">TTD Canvas</text>
+      <rect x="474" y="266" width="128" height="70" rx="8" fill="#fff" stroke="#2f855a"/><text x="538" y="296">Absensi</text><text x="538" y="312">Lapangan</text>
+      <rect x="612" y="266" width="128" height="70" rx="8" fill="#fff" stroke="#2f855a"/><text x="676" y="296">Keuangan &amp;</text><text x="676" y="312">Invoice</text>
+    </g>
+    <text x="60" y="258" class="t-sm t-mut">Modul bisnis</text>
+
+    <g class="t-sm" text-anchor="middle">
+      <rect x="60"  y="350" width="216" height="56" rx="8" fill="#fff" stroke="#9aa7bd"/><text x="168" y="374" class="t-b">KeuanganService</text><text x="168" y="392" class="t-mut">satu sumber angka uang</text>
+      <rect x="292" y="350" width="216" height="56" rx="8" fill="#fff" stroke="#9aa7bd"/><text x="400" y="374" class="t-b">PdfGeneratorService</text><text x="400" y="392" class="t-mut">DomPDF: kontrak, slip, invoice</text>
+      <rect x="524" y="350" width="216" height="56" rx="8" fill="#fff" stroke="#9aa7bd"/><text x="632" y="374" class="t-b">Notifikasi</text><text x="632" y="392" class="t-mut">in-app + WA + email (queued)</text>
+    </g>
+
+    <g class="t-sm" text-anchor="middle">
+      <rect x="60"  y="422" width="336" height="60" rx="8" fill="#fff" stroke="#9aa7bd" stroke-dasharray="4 3"/><text x="228" y="446" class="t-b">Scheduler (Asia/Jakarta)</text><text x="228" y="464" class="t-mut">reminder H-3, H-1, input jadwal, akun mangkrak</text>
+      <rect x="404" y="422" width="336" height="60" rx="8" fill="#fff" stroke="#9aa7bd" stroke-dasharray="4 3"/><text x="572" y="446" class="t-b">Queue worker (database)</text><text x="572" y="464" class="t-mut">kirim WA/email tanpa menahan request</text>
+    </g>
+
+    <!-- external -->
+    <text x="800" y="144" class="t-md t-b">Layanan eksternal</text>
+    <g class="t-sm" text-anchor="middle">
+      <rect x="800" y="156" width="270" height="86" rx="10" fill="#fff6e5" stroke="#d9a23a"/><text x="935" y="182" class="t-b">WhatsApp Service</text><text x="935" y="200" class="t-mut">Node.js + whatsapp-web.js</text><text x="935" y="218" class="t-mut">127.0.0.1:3001 · Bearer token</text>
+      <rect x="800" y="262" width="270" height="64" rx="10" fill="#fff6e5" stroke="#d9a23a"/><text x="935" y="288" class="t-b">Email (SMTP)</text><text x="935" y="306" class="t-mut">opsional, domain Lark = future work</text>
+      <rect x="800" y="346" width="270" height="64" rx="10" fill="#fff6e5" stroke="#d9a23a"/><text x="935" y="372" class="t-b">Google OAuth (Socialite)</text><text x="935" y="390" class="t-mut">aktif bila config diisi</text>
+    </g>
+    <g stroke="#5b667a" stroke-width="1.4" fill="none" stroke-dasharray="5 4">
+      <path d="M740 199H798" marker-end="url(#ar)"/>
+      <path d="M740 294H798" marker-end="url(#ar)"/>
+      <path d="M798 378H740" marker-end="url(#ar)"/>
+    </g>
+    <text x="935" y="432" text-anchor="middle" class="t-sm t-mut">Kegagalan kirim tidak menggagalkan aksi utama</text>
+
+    <!-- storage -->
+    <g stroke="#5b667a" stroke-width="1.4" fill="none">
+      <path d="M205 500V556" marker-end="url(#ar)"/>
+      <path d="M560 500V556" marker-end="url(#ar)"/>
+      <path d="M900 500V520H905V556" marker-end="url(#ar)"/>
+    </g>
+    <text x="40" y="546" class="t-md t-b">Penyimpanan</text>
+    <g class="t-sm" text-anchor="middle">
+      <rect x="40"  y="560" width="330" height="110" rx="10" fill="#eef3fb" stroke="#7b93d6"/><text x="205" y="590" class="t-b t-md">MySQL — 31 tabel</text><text x="205" y="612" class="t-mut">NIK, nama asli, rekening: cast encrypted</text><text x="205" y="630" class="t-mut">nik_hash (HMAC) untuk cek duplikat</text><text x="205" y="648" class="t-mut">SoftDeletes pada users</text>
+      <rect x="395" y="560" width="330" height="110" rx="10" fill="#eef3fb" stroke="#7b93d6"/><text x="560" y="590" class="t-b t-md">Private disk</text><text x="560" y="612" class="t-mut">kontrak, TTD, bukti transfer, foto absen,</text><text x="560" y="630" class="t-mut">foto/video profil, lampiran</text><text x="560" y="648" class="t-mut">disajikan lewat controller ber-otorisasi</text>
+      <rect x="750" y="560" width="310" height="110" rx="10" fill="#eef3fb" stroke="#7b93d6"/><text x="905" y="590" class="t-b t-md">Public disk</text><text x="905" y="612" class="t-mut">hanya poster proyek</text>
+    </g>
+  </svg>
+</section>
+
+<!-- ============ 3. STATE MACHINE ============ -->
+<section>
+  <h2>3. Low Level Design — dua jalur status</h2>
+  <p class="sub">Partisipasi dan pembayaran sengaja dua lifecycle terpisah: Extras bisa <em>selesai produksi</em> sementara honor masih <em>belum dibayar</em>.</p>
+  <svg viewBox="0 0 1160 470" role="img" aria-label="State machine status partisipasi dan pembayaran">
+    <defs>
+      <marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="#5b667a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </marker>
+    </defs>
+    <text x="40" y="34" class="t-md t-b">Jalur 1 — status_partisipasi</text>
+
+    <g class="t-sm t-b" text-anchor="middle">
+      <rect x="40"   y="52" width="100" height="48" rx="9" fill="#e8eefc" stroke="#7b93d6"/><text x="90"  y="80">Diajukan</text>
+      <rect x="180"  y="52" width="100" height="48" rx="9" fill="#e8eefc" stroke="#7b93d6"/><text x="230" y="73">Direview</text><text x="230" y="89">Admin</text>
+      <rect x="320"  y="52" width="100" height="48" rx="9" fill="#fff1d6" stroke="#d9a23a"/><text x="370" y="80">Nego Fee</text>
+      <rect x="460"  y="52" width="100" height="48" rx="9" fill="#e3f6ea" stroke="#6fb88b"/><text x="510" y="80">Deal</text>
+      <rect x="600"  y="52" width="100" height="48" rx="9" fill="#e8eefc" stroke="#7b93d6"/><text x="650" y="73">Diajukan</text><text x="650" y="89">ke Client</text>
+      <rect x="740"  y="52" width="100" height="48" rx="9" fill="#e3f6ea" stroke="#6fb88b"/><text x="790" y="80">Lolos</text>
+      <rect x="880"  y="52" width="100" height="48" rx="9" fill="#e3f6ea" stroke="#6fb88b"/><text x="930" y="73">Kontrak</text><text x="930" y="89">TTD</text>
+      <rect x="1020" y="52" width="100" height="48" rx="9" fill="#d6f0e0" stroke="#2f855a"/><text x="1070" y="73">Selesai</text><text x="1070" y="89">Produksi</text>
+    </g>
+    <g stroke="#5b667a" stroke-width="1.5" fill="none">
+      <path d="M140 76H178" marker-end="url(#a2)"/><path d="M280 76H318" marker-end="url(#a2)"/><path d="M420 76H458" marker-end="url(#a2)"/><path d="M560 76H598" marker-end="url(#a2)"/>
+      <path d="M700 76H738" marker-end="url(#a2)"/><path d="M840 76H878" marker-end="url(#a2)"/><path d="M980 76H1018" marker-end="url(#a2)"/>
+    </g>
+    <g class="t-sm t-mut" text-anchor="middle">
+      <text x="90"  y="118">Extras daftar</text>
+      <text x="230" y="118">Admin beri grade</text>
+      <text x="370" y="118">Admin ⇄ Extras</text>
+      <text x="510" y="118">sepakat, fee terkunci</text>
+      <text x="650" y="118">Admin ajukan</text>
+      <text x="790" y="118">Client lock</text>
+      <text x="930" y="118">Admin + Extras TTD</text>
+      <text x="1070" y="118">hari H selesai</text>
+    </g>
+
+    <!-- stop states -->
+    <g class="t-sm t-b" text-anchor="middle">
+      <rect x="250" y="170" width="120" height="44" rx="9" fill="#fde8e8" stroke="#d66"/><text x="310" y="197">Ditolak</text>
+      <rect x="760" y="170" width="140" height="44" rx="9" fill="#fde8e8" stroke="#d66"/><text x="830" y="197">Dibatalkan</text>
+    </g>
+    <g stroke="#c44" stroke-width="1.4" fill="none" stroke-dasharray="5 4">
+      <path d="M230 100V140H290V168" marker-end="url(#a2)"/>
+      <path d="M650 100V150H356V192" />
+      <path d="M356 192H372" />
+      <path d="M510 100V140" />
+      <path d="M510 140V160H790V168" marker-end="url(#a2)"/>
+      <path d="M790 100V160" />
+      <path d="M930 100V160H870V168" marker-end="url(#a2)"/>
+    </g>
+    <text x="330" y="236" class="t-sm t-mut">Ditolak: Admin saat seleksi, atau Client saat Greenlight</text>
+    <text x="630" y="236" class="t-sm t-mut">Dibatalkan: dari Deal / Lolos / Kontrak TTD, kontrak otomatis di-void</text>
+
+    <!-- jalur 2 -->
+    <text x="40" y="288" class="t-md t-b">Jalur 2 — payments.status</text>
+    <g class="t-sm t-b" text-anchor="middle">
+      <rect x="40"  y="306" width="150" height="48" rx="9" fill="#f1f3f7" stroke="#9aa7bd"/><text x="115" y="335">Belum dibayar</text>
+      <rect x="260" y="306" width="150" height="48" rx="9" fill="#e8eefc" stroke="#7b93d6"/><text x="335" y="335">Ditransfer</text>
+      <rect x="480" y="306" width="190" height="48" rx="9" fill="#d6f0e0" stroke="#2f855a"/><text x="575" y="335">Dikonfirmasi diterima</text>
+      <rect x="480" y="392" width="190" height="44" rx="9" fill="#fff1d6" stroke="#d9a23a"/><text x="575" y="419">Disengketakan</text>
+    </g>
+    <g stroke="#5b667a" stroke-width="1.5" fill="none">
+      <path d="M190 330H258" marker-end="url(#a2)"/>
+      <path d="M410 330H478" marker-end="url(#a2)"/>
+      <path d="M335 354V414H478" stroke-dasharray="5 4" marker-end="url(#a2)"/>
+    </g>
+    <g class="t-sm t-mut">
+      <text x="196" y="322">Admin + bukti</text>
+      <text x="418" y="322">Extras konfirmasi</text>
+      <text x="345" y="388">Extras sengketa (alasan wajib)</text>
+    </g>
+
+    <!-- coupling -->
+    <path d="M930 100V280H115" stroke="#2f855a" stroke-width="1.3" fill="none" stroke-dasharray="2 4" opacity="0"/>
+    <rect x="720" y="300" width="400" height="136" rx="10" fill="#f3f9f5" stroke="#6fb88b"/>
+    <text x="740" y="326" class="t-sm t-b">Titik temu kedua jalur</text>
+    <text x="740" y="348" class="t-sm">• Payment dibuat saat status → Lolos (bukan saat halaman dibuka)</text>
+    <text x="740" y="368" class="t-sm">• "Perlu ditransfer" = Kontrak TTD lengkap + belum dibayar</text>
+    <text x="740" y="388" class="t-sm">• Transfer sebelum kontrak TTD ditolak server (BS.2)</text>
+    <text x="740" y="408" class="t-sm">• Batal → kontrak void, slot kuota terbuka lagi</text>
+  </svg>
+</section>
+
+<!-- ============ 4. EVOLUSI ============ -->
+<section>
+  <h2>4. Evolusi arsitektur — awal vs akhir</h2>
+  <p class="sub">Yang berubah setelah bimbingan, review arsitektur, dan evaluasi bersama mitra.</p>
+  <table>
+    <tr><th style="width:22%">Aspek</th><th style="width:30%">Rancangan awal</th><th style="width:30%">Sistem final</th><th>Alasan</th></tr>
+    <tr><td>Role</td><td>7 role (3 sub-role Admin, Casting Director)</td><td>5 role: super_admin, admin, korlap, client, extras</td><td>Talco/Sosmed tidak punya fitur di sistem; CD = Client</td></tr>
+    <tr><td>Tabel</td><td>36 tabel</td><td>31 tabel</td><td>Tabel 1–3 kolom digabung ke induk; <code>notifications_log</code> tidak pernah dibaca</td></tr>
+    <tr><td>Akun Client</td><td>Registrasi mandiri via tautan</td><td>Dibuat Super Admin, password sementara wajib ganti</td><td>Kontrol akses dan keabsahan akun Client</td></tr>
+    <tr><td>Notifikasi</td><td>Email primer + WA</td><td>In-app primer, WA pelengkap, email opsional</td><td>Email domain belum ada; polling cukup, tanpa WebSocket</td></tr>
+    <tr><td>WhatsApp</td><td>Gateway berbayar</td><td><code>whatsapp-web.js</code> self-hosted</td><td>Risiko ban setara, tanpa biaya</td></tr>
+    <tr><td>Bentrok jadwal</td><td>Peringatan saja</td><td>Blokir bila bentrok dengan Lolos/Kontrak; sisanya peringatan</td><td>Mencegah komitmen ganda yang sudah pasti</td></tr>
+    <tr><td>Kuota</td><td>Angka statis</td><td>Antrian per peran dengan row lock</td><td>Slot terbuka lagi saat ada penolakan/batal</td></tr>
+  </table>
+</section>
+
+<!-- ============ 5. KEPUTUSAN ============ -->
+<section>
+  <h2>5. Keputusan arsitektur dan trade-off</h2>
+  <p class="sub">Termasuk kelemahan yang diketahui.</p>
+  <table>
+    <tr><th style="width:24%">Keputusan</th><th style="width:38%">Kenapa</th><th>Harga yang dibayar</th></tr>
+    <tr><td>Monolith Laravel</td><td>Tim kecil, skala 50–80 Extras dan 4–5 proyek/bulan; satu deploy, satu DB, transaksi sederhana</td><td>Skala besar butuh pemisahan layanan nanti</td></tr>
+    <tr><td>Dua status terpisah</td><td>Partisipasi dan pembayaran lifecycle independen; satu state machine gabungan menghasilkan kombinasi membingungkan</td><td>Dua tempat yang harus dijaga konsisten (titik temu di §3)</td></tr>
+    <tr><td>Polling + notifikasi, bukan WebSocket</td><td>Pengalaman buruk sebelumnya, infrastruktur ekstra tidak sepadan</td><td>Tidak benar-benar real-time</td></tr>
+    <tr><td>WA self-hosted</td><td>Gratis, kontrol penuh, nomor khusus sistem</td><td>Risiko nomor diblokir; makanya hanya kanal pelengkap</td></tr>
+    <tr><td>Enkripsi atribut + blind index</td><td>NIK/rekening terenkripsi, duplikat tetap bisa dicek lewat HMAC</td><td>Kunci <code>NIK_HASH_KEY</code> tidak boleh dirotasi tanpa re-hash</td></tr>
+    <tr><td>Satu sumber hitung uang</td><td><code>KeuanganService</code> mencegah angka beda antar halaman</td><td>Semua tampilan uang wajib lewat service</td></tr>
+    <tr><td>Aksi GET tidak mengubah data</td><td>Kontrak/payment dibuat pada transisi status, aman dari tautan atau prefetch</td><td>Logika transisi harus disiplin</td></tr>
+  </table>
+  <p class="sub" style="margin-top:14px"><span class="tag w">Kelemahan jujur</span> Belum pakai Laravel Policy formal (otorisasi manual per controller), validasi masih inline, belum ada CAPTCHA, <code>composer audit</code> belum rutin, dan repo masih public.</p>
+</section>
+
+</main>
+</body>
+</html>
