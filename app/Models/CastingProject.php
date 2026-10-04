@@ -330,7 +330,7 @@ class CastingProject extends Model
         }
 
         // Otomatis H-3 jika shooting terdekat <= 3 hari dan kuota belum penuh
-        $closestShooting = $this->shootingDates()->where('tanggal', '>=', today())->min('tanggal');
+        $closestShooting = $this->shootingDates->where('tanggal', '>=', today())->min('tanggal');
         if ($closestShooting) {
             $daysLeft = (int) today()->diffInDays($closestShooting, false);
             if ($daysLeft >= 0 && $daysLeft <= 3 && ! $this->kuotaPenuh()) {

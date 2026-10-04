@@ -1,16 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Proyek & Keuangan')
+@section('title', 'Proyek')
 
 @section('content')
-@php
-    $rp = fn ($n) => 'Rp '.number_format($n, 0, ',', '.');
-@endphp
 <div class="card-header-row">
     <div>
-        <div style="font-size: 16px; font-weight: 600;">Proyek &amp; Keuangan</div>
-        <div style="font-size: var(--fs-sm); color: var(--text-secondary);">Semua proyek casting beserta uang masuk, piutang, keluar, saldo, dan proyeksinya</div>
-        <div style="font-size: var(--fs-xs); color: var(--text-muted);">Saldo minus wajar kalau invoice belum dibayar — lihat Proyeksi.</div>
+        <div style="font-size: 16px; font-weight: 600;">Proyek</div>
+        <div style="font-size: var(--fs-sm); color: var(--text-secondary);">Semua proyek casting. Info lengkap, pendaftar, dan keuangan ada di Lihat detail.</div>
     </div>
     <a href="{{ route('admin.projects.create') }}" class="btn btn-brand">+ Buat Proyek</a>
 </div>
@@ -54,8 +50,8 @@
     <div class="entity-card-grid" id="projects-grid">
         @foreach ($projects as $project)
             @php
-                $cf = $cashflow[$project->id];
                 $tahapProyek = $project->tahap();
+                $perluTindakan = $perlu[$project->id] ?? 0;
             @endphp
             <div class="entity-card project-card" style="position: relative;">
                 <details style="position: absolute; top: 10px; right: 10px; z-index: 10;">
@@ -64,7 +60,7 @@
                     </summary>
                     <div style="position: absolute; right: 0; top: 36px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; min-width: 160px; box-shadow: 0 4px 12px rgba(0,0,0,.12); padding: 4px 0; z-index: 20;">
                         <a href="{{ route('admin.projects.show', $project) }}" style="display: block; padding: 8px 14px; font-size: 13px; color: var(--text-primary); text-decoration: none;">Detail Proyek</a>
-                        <a href="{{ route('admin.projects.show', [$project, 'tab' => 'cashflow']) }}" style="display: block; padding: 8px 14px; font-size: 13px; color: var(--text-primary); text-decoration: none;">Cashflow</a>
+                        <a href="{{ route('admin.projects.applicants', [$project, 'status' => $peserta]) }}" style="display: block; padding: 8px 14px; font-size: 13px; color: var(--text-primary); text-decoration: none;">Lineup</a>
                         <a href="{{ route('admin.projects.edit', $project) }}" style="display: block; padding: 8px 14px; font-size: 13px; color: var(--text-primary); text-decoration: none;">Edit Proyek</a>
                         @if ($project->status === 'dibuka' && $project->share_token)
                             <button type="button" style="display: block; width: 100%; padding: 8px 14px; font-size: 13px; text-align: left; background: none; border: none; color: var(--text-primary); cursor: pointer;" data-copy-link="{{ url('/event/'.$project->share_token) }}">Copy Link Pendaftaran</button>
@@ -84,13 +80,9 @@
                     @if ($project->isUrgent())
                         <span class="badge badge-tolak">Urgent</span>
                     @endif
-                    @if (! $project->client_id)
-                        <span class="badge badge-pending">Client belum diisi</span>
-                    @endif
                 </div>
                 <div class="entity-card-sub">
                     {{ $project->client?->name ?? '-' }}{{ $project->client?->nama_perusahaan ? ' · '.$project->client->nama_perusahaan : '' }}
-                    · PIC {{ $project->admin?->name ?? '-' }}
                 </div>
 
                 <div class="entity-card-row">
@@ -108,44 +100,22 @@
                     <span class="entity-card-row-value">{{ $project->rentangShooting() }}</span>
                 </div>
 
-                @if ($project->link_grup)
-                    <div class="entity-card-row">
-                        <span class="entity-card-row-label">Grup koordinasi</span>
-                        <span class="entity-card-row-value">
-                            <a href="{{ $project->link_grup }}" target="_blank">Buka Link</a>
-                        </span>
-                    </div>
-                @endif
-
-                <div class="entity-card-row">
-                    <span class="entity-card-row-label">Deadline</span>
-                    <span class="entity-card-row-value">{{ $project->deadline->format('d M Y') }}</span>
-                </div>
                 <div class="entity-card-row">
                     <span class="entity-card-row-label">Lowongan</span>
                     <span class="entity-card-row-value">
-                        <span class="badge {{ $project->status === 'dibuka' ? 'badge-aktif' : 'badge-tolak' }}">
-                            {{ $project->status }}
-                        </span>
+                        <span class="badge {{ $project->status === 'dibuka' ? 'badge-aktif' : 'badge-tolak' }}">{{ $project->status }}</span>
                     </span>
                 </div>
                 <div class="entity-card-row">
                     <span class="entity-card-row-label">Pendaftar / kuota</span>
                     <span class="entity-card-row-value">{{ $project->applications_count }} / {{ $project->kuota }}</span>
                 </div>
-                <a href="{{ route('admin.projects.show', [$project, 'tab' => 'cashflow']) }}" class="proyek-uang" title="Buka cashflow proyek">
-                    <span><small>Masuk</small>{{ $rp($cf->total_masuk) }}</span>
-                    <span><small>Piutang</small>{{ $rp($cf->piutang) }}</span>
-                    <span title="Dashboard cuma menghitung yang sudah dibayar dalam periode; di proyek dihitung semua kewajiban."><small>Keluar &#9432;</small>{{ $rp($cf->total_keluar) }}<small>Sudah dibayar {{ $rp($cf->keluar_dibayar) }}</small><small>Belum dibayar {{ $rp($cf->keluar_belum) }}</small></span>
-                    <span><small>Saldo</small><b style="color: {{ $cf->saldo >= 0 ? 'var(--accent-strong)' : 'var(--danger)' }};">{{ $rp($cf->saldo) }}</b></span>
-                    <span><small>Proyeksi</small><b style="color: {{ $cf->proyeksi >= 0 ? 'var(--accent-strong)' : 'var(--danger)' }};">{{ $rp($cf->proyeksi) }}</b></span>
-                </a>
+                @if ($perluTindakan)
+                    <a href="{{ route('admin.projects.show', [$project, 'tab' => 'pendaftar']) }}" class="badge badge-pending" style="text-decoration: none; margin-top: 8px;" title="Pendaftar yang menunggu tindakan Admin">Perlu tindakan ({{ $perluTindakan }})</a>
+                @endif
 
                 <div class="entity-card-actions">
-                    <a href="{{ route('admin.projects.show', $project) }}" class="btn" style="flex: 1; text-align: center;">Detail</a>
-                    <a href="{{ route('admin.projects.applicants', [$project, 'status' => $peserta]) }}" class="btn btn-brand" style="flex: 1; text-align: center;">
-                        Lihat Lineup ({{ $project->applications_count }})
-                    </a>
+                    <a href="{{ route('admin.projects.show', $project) }}" class="btn btn-brand" style="flex: 1; text-align: center;">Lihat detail</a>
                 </div>
             </div>
         @endforeach
@@ -153,12 +123,6 @@
 @endif
 <x-pagination-bar :paginator="$projects" :pilihan="\App\Support\PerHalaman::KARTU" />
 </div>
-
-<style>
-    .proyek-uang { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; padding: 8px 10px; border-radius: 8px; background: var(--bg-page); color: var(--text-primary); text-decoration: none; font-size: var(--fs-sm); font-weight: 600; }
-    .proyek-uang > span { white-space: nowrap; }
-    .proyek-uang small { display: block; font-size: var(--fs-xs); font-weight: 500; color: var(--text-muted); }
-</style>
 
 <script>
     // delegasi: tombol tetap jalan setelah daftar diganti live search

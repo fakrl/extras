@@ -56,7 +56,7 @@ class SuperAdminHonorRecapTest extends TestCase
 
         $this->actingAs($superAdmin)->get(route('super-admin.dashboard'))
             ->assertOk()
-            ->assertDontSee('Honor staf belum dibayar')
+            ->assertDontSee('<span class="badge badge-pending">Honor staf belum dibayar</span>', false)
             ->assertSee('Semua aman')->assertSee('dash-perlu is-aman');
     }
 

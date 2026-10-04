@@ -64,8 +64,8 @@ class AyP0GuardsTest extends TestCase
         ]);
 
         $this->actingAs($admin)->get(route('admin.projects.index'))->assertOk();
-        $this->actingAs($admin)->get(route('admin.projects.show', [$korlapProject, 'tab' => 'cashflow']))->assertOk();
-        $this->actingAs($admin)->get(route('admin.projects.show', [$application->casting_project_id, 'tab' => 'cashflow']))->assertOk();
+        $this->actingAs($admin)->get(route('admin.projects.show', [$korlapProject, 'tab' => 'keuangan']))->assertOk();
+        $this->actingAs($admin)->get(route('admin.projects.show', [$application->casting_project_id, 'tab' => 'keuangan']))->assertOk();
     }
 
     public function test_sign_setelah_batalkan_status_tetap_dibatalkan(): void

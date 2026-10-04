@@ -13,7 +13,7 @@
 
 <div class="card-header-row" style="flex-wrap: wrap; gap: 10px;">
     <div>
-        <div style="font-size: var(--fs-xs); color: var(--text-muted);"><a href="{{ route('admin.projects.index') }}">&larr; Proyek &amp; Keuangan</a></div>
+        <div style="font-size: var(--fs-xs); color: var(--text-muted);"><a href="{{ route('admin.projects.index') }}">&larr; Proyek</a></div>
         <div style="font-size: 18px; font-weight: 700;">
             {{ $p->nama_produksi }}
             <span class="kode-proyek">{{ $p->kode_proyek }}</span>
@@ -33,7 +33,7 @@
 </div>
 
 <div class="xfilter" role="tablist" aria-label="Bagian detail proyek">
-    @foreach (['info' => 'Info', 'pendaftar' => 'Pendaftar', 'cashflow' => 'Cashflow', 'lampiran' => 'Lampiran'] as $key => $label)
+    @foreach (['info' => 'Info', 'pendaftar' => 'Pendaftar', 'keuangan' => 'Keuangan', 'lampiran' => 'Lampiran'] as $key => $label)
         <a href="{{ route('admin.projects.show', [$p, 'tab' => $key === 'info' ? null : $key]) }}" role="tab"
            class="btn btn-sm {{ $tab === $key ? 'btn-brand' : '' }}" @if ($tab === $key) aria-selected="true" @endif>{{ $label }}</a>
     @endforeach
@@ -182,71 +182,74 @@
     @include('partials.project-attachments', ['project' => $p])
 
 @else
-    @php $cf = $cashflow; @endphp
-    <div class="cf-ringkas">
-        <div class="metric-card card"><div class="metric-label">Masuk</div><div class="metric-value">{{ $rp($cf->total_masuk) }}</div><div class="cf-ket">invoice lunas</div></div>
-        <div class="metric-card card"><div class="metric-label">Piutang</div><div class="metric-value">{{ $rp($cf->piutang) }}</div><div class="cf-ket">invoice belum lunas</div></div>
-        <div class="metric-card card"><div class="metric-label">Keluar <span title="Dashboard cuma menghitung yang sudah dibayar dalam periode; di proyek dihitung semua kewajiban." style="cursor: help;">&#9432;</span></div><div class="metric-value">{{ $rp($cf->total_keluar) }}</div><div class="cf-ket">Sudah dibayar {{ $rp($cf->keluar_dibayar) }}</div><div class="cf-ket">Belum dibayar {{ $rp($cf->keluar_belum) }}</div></div>
-        <div class="metric-card card"><div class="metric-label">Saldo</div><div class="metric-value" style="color: {{ $cf->saldo >= 0 ? 'var(--accent-strong)' : 'var(--danger)' }};">{{ $rp($cf->saldo) }}</div><div class="cf-ket">masuk − keluar</div></div>
-        <div class="metric-card card"><div class="metric-label">Proyeksi</div><div class="metric-value" style="color: {{ $cf->proyeksi >= 0 ? 'var(--accent-strong)' : 'var(--danger)' }};">{{ $rp($cf->proyeksi) }}</div><div class="cf-ket">masuk + piutang − keluar</div></div>
-        <div class="metric-card card"><div class="metric-label">Terpakai</div><div class="metric-value">{{ $cf->persen_terpakai === null ? '-' : number_format($cf->persen_terpakai, 1, ',', '.').'%' }}</div><div class="cf-ket">keluar ÷ total tagihan</div></div>
-    </div>
-    <p class="cf-ket" style="margin: -6px 0 14px;">Saldo minus wajar kalau invoice belum dibayar — lihat Proyeksi.</p>
-
+    @php
+        $inv = $p->invoices->first();
+        $lunas = $inv?->isLunas();
+        $nominalInv = (int) ($inv?->nominal ?? $usulanInvoice);
+    @endphp
     <div class="card cf-seksi">
-        <div class="card-title">Masuk · Invoice Client</div>
+        <div class="card-title">Invoice Client</div>
         <div class="table-container">
             <table>
                 <thead><tr><th>Invoice</th><th>Nominal</th><th>Status</th><th>Aksi</th></tr></thead>
                 <tbody>
-                    @foreach ($cf->masuk as $m)
-                        <tr>
-                            <td>
-                                <a href="{{ route('invoices.show', $p) }}">Invoice {{ $p->nama_produksi }}</a>
-                                @if ($m->invoice?->pdf_path)
-                                    · <a href="{{ route('invoices.download-pdf', $p) }}">PDF</a>
-                                @endif
-                                @if (! $m->invoice)
-                                    <div style="font-size: var(--fs-xs); color: var(--text-muted);">Belum dibuat · perkiraan dari rincian peran, belum dihitung Piutang</div>
-                                @endif
-                            </td>
-                            <td>{{ $rp($m->nominal) }}</td>
-                            <td>
-                                @if ($m->lunas)
-                                    <span class="badge badge-aktif">Lunas</span>
-                                    <div style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $m->invoice->dibayar_at?->translatedFormat('d M Y H:i') }}</div>
-                                @else
-                                    <span class="badge badge-pending">Belum</span>
-                                @endif
-                            </td>
-                            <td>
-                                @unless ($m->lunas)
-                                    <x-confirm-form :action="route('admin.projects.invoice-lunas', $p)" method="PATCH" message="Tandai invoice ini lunas? Nominal tersimpan dan tidak bisa dibatalkan dari sini." style="display: flex; gap: 6px; flex-wrap: wrap;">
-                                        <input type="number" name="nominal" value="{{ (int) $m->nominal }}" min="0" step="1" required aria-label="Nominal diterima" style="width: 140px; margin: 0; min-height: 32px;">
-                                        <button type="submit" class="btn btn-sm btn-brand">Tandai Lunas</button>
-                                    </x-confirm-form>
-                                @endunless
-                            </td>
-                        </tr>
-                    @endforeach
+                    <tr>
+                        <td>
+                            <a href="{{ route('invoices.show', $p) }}">Invoice {{ $p->nama_produksi }}</a>
+                            @if ($inv?->pdf_path)
+                                · <a href="{{ route('invoices.download-pdf', $p) }}">PDF</a>
+                            @endif
+                            @if (! $inv?->nominal && ! $lunas)
+                                <div style="font-size: var(--fs-xs); color: var(--text-muted);">Nominal belum diisi · usulan dari rincian peran, bisa diedit</div>
+                            @endif
+                        </td>
+                        <td>
+                            @if ($lunas)
+                                {{ $rp($inv->nominal) }}
+                            @else
+                                <form method="POST" action="{{ route('admin.projects.invoice-nominal', $p) }}" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                    @csrf @method('PATCH')
+                                    <input type="number" name="nominal" value="{{ old('nominal', $nominalInv) }}" min="0" step="1" required aria-label="Nominal invoice" style="width: 140px; margin: 0; min-height: 32px;">
+                                    <button type="submit" class="btn btn-sm">Simpan Nominal</button>
+                                </form>
+                            @endif
+                        </td>
+                        <td>
+                            @if ($lunas)
+                                <span class="badge badge-aktif">Lunas</span>
+                                <div style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $inv->dibayar_at?->translatedFormat('d M Y H:i') }}</div>
+                            @else
+                                <span class="badge badge-pending">Belum</span>
+                            @endif
+                        </td>
+                        <td>
+                            @unless ($lunas)
+                                <x-confirm-form :action="route('admin.projects.invoice-lunas', $p)" method="PATCH" message="Tandai invoice ini lunas? Nominal tersimpan dan tidak bisa dibatalkan dari sini.">
+                                    <input type="hidden" name="nominal" value="{{ $nominalInv }}">
+                                    <button type="submit" class="btn btn-sm btn-brand">Tandai Lunas</button>
+                                </x-confirm-form>
+                            @endunless
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
     </div>
 
     <div class="card cf-seksi">
-        <div class="card-title">Keluar · Honor Extras</div>
+        <div class="card-title">Honor Extras</div>
+        <p style="font-size: var(--fs-xs); color: var(--text-muted); margin: 0 0 8px;">{{ $p->payments->whereNotNull('ditransfer_at')->count() }} dari {{ $p->payments->count() }} sudah ditransfer</p>
         <div class="table-container">
             <table>
-                <thead><tr><th>Extras</th><th>Peran</th><th>Nominal</th><th>Status</th><th></th></tr></thead>
+                <thead><tr><th>Extras</th><th>Peran</th><th>Nominal (pokok + add-on)</th><th>Status</th><th></th></tr></thead>
                 <tbody>
-                    @forelse ($cf->extras as $e)
-                        @php $app = $e->payment->projectApplication; @endphp
+                    @forelse ($p->payments as $pay)
+                        @php $app = $pay->projectApplication; @endphp
                         <tr>
                             <td>{{ $app?->extras?->user?->username ? '@'.$app->extras->user->username : ($app?->extras?->user?->name ?? '-') }}</td>
                             <td>{{ $app?->karakter ?: '-' }}</td>
-                            <td>{{ $rp($e->nominal) }}</td>
-                            <td><x-status-badge :model="$e->payment" /></td>
+                            <td>{{ $rp($pay->nominalTotal()) }}</td>
+                            <td><x-status-badge :model="$pay" /></td>
                             <td>@if ($app)<a href="{{ route('payments.show', $app) }}" class="btn btn-sm">Pembayaran</a>@endif</td>
                         </tr>
                     @empty
@@ -258,28 +261,28 @@
     </div>
 
     <div class="card cf-seksi">
-        <div class="card-title">Keluar · Honor Staf</div>
+        <div class="card-title">Honor Staf</div>
         <div class="table-container">
             <table>
                 <thead><tr><th>Staf</th><th>Role</th><th>Nominal</th><th>Status</th><th></th></tr></thead>
                 <tbody>
-                    @forelse ($cf->staf as $s)
-                        @php $staf = $s->payroll->assignment?->user; @endphp
+                    @forelse ($p->payrolls as $payroll)
+                        @php $staf = $payroll->assignment?->user; @endphp
                         <tr>
                             <td>{{ $staf?->name ?? '-' }}</td>
                             <td>{{ $staf?->label() ?? '-' }}</td>
-                            <td>{{ $rp($s->nominal) }}</td>
+                            <td>{{ $rp($payroll->nominalTotal()) }}</td>
                             <td>
-                                @if ($s->lunas)
+                                @if ($payroll->isDibayar())
                                     <span class="badge badge-aktif">Sudah Dibayar</span>
-                                    <div style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $s->payroll->dibayar_at?->translatedFormat('d M Y H:i') }}</div>
+                                    <div style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $payroll->dibayar_at?->translatedFormat('d M Y H:i') }}</div>
                                 @else
                                     <span class="badge badge-pending">Belum Dibayar</span>
                                 @endif
                             </td>
                             <td>
-                                @unless ($s->lunas)
-                                    <x-confirm-form :action="route('admin.payrolls.tandai-dibayar', $s->payroll)" method="PATCH" message="Tandai honor staf ini sudah dibayarkan?">
+                                @unless ($payroll->isDibayar())
+                                    <x-confirm-form :action="route('admin.payrolls.tandai-dibayar', $payroll)" method="PATCH" message="Tandai honor staf ini sudah dibayarkan?">
                                         <button type="submit" class="btn btn-sm btn-brand">Tandai Dibayar</button>
                                     </x-confirm-form>
                                 @endunless
@@ -294,12 +297,12 @@
     </div>
 
     <div class="card cf-seksi">
-        <div class="card-title">Keluar · Biaya Lain-lain</div>
+        <div class="card-title">Biaya Lain-lain</div>
         <div class="table-container">
             <table>
                 <thead><tr><th>Tanggal</th><th>Keterangan</th><th>Nominal</th><th>Dicatat</th><th></th></tr></thead>
                 <tbody>
-                    @forelse ($cf->biaya as $b)
+                    @forelse ($p->expenses as $b)
                         <tr>
                             <td>{{ $b->tanggal->translatedFormat('d M Y') }}</td>
                             <td>{{ $b->label }}</td>
@@ -333,10 +336,7 @@
 
 <style>
     .detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
-    .cf-ringkas { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 14px; }
     .cf-seksi { margin-bottom: 14px; }
     .cf-seksi td { white-space: nowrap; }
-    .cf-ringkas .metric-value { white-space: nowrap; font-size: clamp(16px, 4.6vw, var(--fs-lg)); }
-    .cf-ket { font-size: var(--fs-xs); color: var(--text-muted); }
 </style>
 @endsection

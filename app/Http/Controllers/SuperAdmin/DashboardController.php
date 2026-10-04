@@ -77,8 +77,6 @@ class DashboardController extends Controller
             ->take(5)->get());
         $tabAwal = collect(['berjalan', 'mendatang', 'menunggu_acc', 'selesai'])->first(fn ($t) => $statusProyek[$t] > 0, 'berjalan');
 
-        $uang = $this->keuanganService->ringkasanPeriode($dari, $sampai);
-
         $bulan = rescue(fn () => Carbon::createFromFormat('!Y-m', (string) $request->query('bulan')), null, false) ?: now();
         $jadwal = EventShootingDate::whereDate('tanggal', '>=', $bulan->copy()->startOfMonth()->startOfWeek(Carbon::MONDAY))
             ->whereDate('tanggal', '<=', $bulan->copy()->endOfMonth()->endOfWeek(Carbon::SUNDAY))
@@ -100,7 +98,7 @@ class DashboardController extends Controller
         return view('super-admin.dashboard', compact(
             'dari', 'sampai', 'preset', 'jumlahHari',
             'pendingRequests', 'sengketa', 'honorStaf', 'invoiceBelumLunas', 'tanpaClient',
-            'statusProyek', 'proyekPerTahap', 'tabAwal', 'uang', 'bulan', 'jadwal',
+            'statusProyek', 'proyekPerTahap', 'tabAwal', 'bulan', 'jadwal',
             'akunPerRole', 'clientBelumGantiPassword'
         ));
     }

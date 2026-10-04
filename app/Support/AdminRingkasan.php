@@ -60,9 +60,8 @@ class AdminRingkasan
     /** BP: step-bar tahapan kandidat + daftar siapa & aksi berikutnya, urut paling lama menunggu. */
     public static function tahapan(?int $adminId = null, int $maks = 8): array
     {
-        $apps = ProjectApplication::whereIn('status_partisipasi', array_merge(...array_column(self::TAHAP, 'status')))
+        $apps = self::lamaranAktif()
             ->when($adminId, fn ($q) => $q->whereHas('castingProject', fn ($p) => $p->where('admin_id', $adminId)))
-            ->with(['extras.user', 'castingProject', 'castingProjectClass', 'contract', 'payment', 'feeNegotiations'])
             ->get()->map(fn ($a) => self::langkah($a))->filter();
 
         return collect(self::TAHAP)->map(function ($t, $key) use ($apps, $maks) {
@@ -76,6 +75,20 @@ class AdminRingkasan
                 'daftar' => $isi->sortBy(fn ($i) => $i['sejak']?->timestamp ?? 0)->take($maks)->values(),
             ];
         })->all();
+    }
+
+    private static function lamaranAktif()
+    {
+        return ProjectApplication::whereIn('status_partisipasi', array_merge(...array_column(self::TAHAP, 'status')))
+            ->with(['extras.user', 'castingProject', 'castingProjectClass', 'contract', 'payment', 'feeNegotiations']);
+    }
+
+    /** Jumlah lamaran "perlu tindakan" per proyek (id => n), definisi sama dengan step-bar dashboard. */
+    public static function perluPerProyek(array $projectIds): array
+    {
+        return self::lamaranAktif()->whereIn('casting_project_id', $projectIds)->get()
+            ->map(fn ($a) => self::langkah($a))->filter(fn ($i) => $i && $i['perlu'])
+            ->countBy(fn ($i) => $i['app']->casting_project_id)->all();
     }
 
     private static function langkah(ProjectApplication $a): ?array

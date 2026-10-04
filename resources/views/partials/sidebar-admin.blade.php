@@ -7,7 +7,7 @@
     <i class="ti ti-layout-dashboard"></i> Dashboard
 </a>
 <a href="{{ url('/admin/projects') }}" class="sidebar-link {{ str_starts_with($route, 'admin/projects') ? 'active' : '' }}">
-    <i class="ti ti-movie"></i> Proyek &amp; Keuangan
+    <i class="ti ti-movie"></i> Proyek
 </a>
 <details class="sidebar-dropdown" {{ str_starts_with($route, 'admin/akun') ? 'open' : '' }}>
     <summary class="sidebar-dropdown-summary">

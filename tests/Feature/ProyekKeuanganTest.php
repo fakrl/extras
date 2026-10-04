@@ -10,9 +10,10 @@ use App\Models\ProjectApplication;
 use App\Models\ProjectExpense;
 use App\Models\StaffPayroll;
 use App\Models\User;
-use App\Services\KeuanganService;
+use App\Support\AdminRingkasan;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -53,53 +54,38 @@ class ProyekKeuanganTest extends TestCase
         return compact('sa', 'admin', 'project', 'payroll');
     }
 
-    public function test_cashflow_proyek_saldo_dan_persen_benar(): void
+    public function test_tab_keuangan_empat_blok_catatan_tanpa_total_lintas_blok(): void
     {
-        ['project' => $project] = $this->proyekLengkap();
+        ['admin' => $admin, 'project' => $project] = $this->proyekLengkap();
 
-        $cf = app(KeuanganService::class)->cashflowProyek($project->fresh());
+        $r = $this->actingAs($admin)->get(route('admin.projects.show', [$project, 'tab' => 'keuangan']))->assertOk();
 
-        $this->assertSame(2000000.0, $cf->total_masuk);
-        $this->assertSame(0.0, $cf->piutang);
-        $this->assertEqualsWithDelta(900000, $cf->total_keluar, 0.01); // 350rb + 200rb + 250rb + 100rb
-        $this->assertEqualsWithDelta(1100000, $cf->saldo, 0.01);
-        $this->assertSame(45.0, $cf->persen_terpakai);
-        $this->assertCount(2, $cf->extras);
-        $this->assertFalse($cf->staf->first()->lunas);
+        $r->assertSee('Invoice Client')->assertSee('Honor Extras')->assertSee('Honor Staf')->assertSee('Biaya Lain-lain')
+            ->assertSee('2 dari 2 sudah ditransfer')->assertSee('Rp 350.000')->assertSee('Rp 200.000')->assertSee('Rp 250.000')->assertSee('Rp 100.000');
+        foreach (['Saldo', 'Proyeksi', 'Piutang', 'Terpakai', 'Margin'] as $kata) {
+            $r->assertDontSee($kata);
+        }
     }
 
-    public function test_cashflow_tanpa_masuk_persen_null_dan_invoice_belum_pakai_nilai_live(): void
+    public function test_invoice_nominal_manual_dengan_usulan_dari_rincian(): void
     {
+        $admin = User::factory()->create(['role' => 'admin']);
         $project = CastingProject::factory()->create();
-        $cf = app(KeuanganService::class)->cashflowProyek($project);
-        $this->assertNull($cf->persen_terpakai);
-        $this->assertSame(0.0, $cf->total_masuk);
+        $project->classes()->create(['nama_kelas' => 'Warga', 'budget_client' => 150000, 'kuota_kelas' => 4]);
+        $url = route('admin.projects.show', [$project, 'tab' => 'keuangan']);
 
-        $project->classes()->create(['nama_kelas' => 'A', 'budget_client' => 150000, 'kuota_kelas' => 4]);
-        $project->invoices()->create([]);
-        $cf = app(KeuanganService::class)->cashflowProyek($project->fresh());
-        $this->assertSame(0.0, $cf->total_masuk);
-        $this->assertSame(600000.0, $cf->piutang);
-    }
+        $this->actingAs($admin)->get($url)->assertOk()->assertSee('name="nominal" value="600000"', false);
 
-    public function test_ringkasan_periode_abaikan_transaksi_di_luar_periode(): void
-    {
-        ['project' => $project, 'payroll' => $payroll] = $this->proyekLengkap();
-        $payroll->tandaiDibayar();
-        ProjectExpense::create(['casting_project_id' => $project->id, 'label' => 'Lama', 'nominal' => 999000, 'tanggal' => today()->subMonths(3)]);
-        $project->invoices()->create(['nominal' => 5000000, 'status_bayar' => 'lunas', 'dibayar_at' => now()->subMonths(3)]);
+        $this->patch(route('admin.projects.invoice-nominal', $project), ['nominal' => 750000])->assertSessionHas('status');
+        $this->assertEquals(750000, $project->invoices()->first()->nominal);
+        $this->assertDatabaseHas('activity_logs', ['action' => 'INVOICE_NOMINAL_SET', 'user_id' => $admin->id]);
+        $this->get($url)->assertSee('name="nominal" value="750000"', false);
 
-        $r = app(KeuanganService::class)->ringkasanPeriode(today()->startOfMonth(), today()->endOfMonth());
+        $this->patch(route('admin.projects.invoice-nominal', $project), ['nominal' => -1])->assertSessionHasErrors('nominal');
 
-        $this->assertEqualsWithDelta(2000000, $r->total_masuk, 0.01);
-        $this->assertEqualsWithDelta(900000, $r->total_keluar, 0.01);
-        $this->assertEqualsWithDelta(1100000, $r->saldo, 0.01);
-        $this->assertCount(1, $r->per_bulan);
-
-        $r3 = app(KeuanganService::class)->ringkasanPeriode(today()->subMonths(3)->startOfMonth(), today()->endOfMonth());
-        $this->assertCount(4, $r3->per_bulan);
-        $this->assertEqualsWithDelta(7000000, $r3->total_masuk, 0.01);
-        $this->assertEqualsWithDelta(5000000, $r3->per_bulan->first()->masuk, 0.01);
+        $this->patch(route('admin.projects.invoice-lunas', $project), ['nominal' => 750000]);
+        $this->patch(route('admin.projects.invoice-nominal', $project), ['nominal' => 1])->assertSessionHas('error');
+        $this->assertEquals(750000, $project->invoices()->first()->nominal);
     }
 
     public function test_tandai_lunas_idempotent_dan_tercatat(): void
@@ -249,7 +235,7 @@ class ProyekKeuanganTest extends TestCase
         }
     }
 
-    public function test_daftar_proyek_search_chip_dan_uang(): void
+    public function test_daftar_proyek_search_chip_tanpa_angka_uang(): void
     {
         ['sa' => $sa, 'project' => $project] = $this->proyekLengkap();
         $project->update(['nama_produksi' => 'Film Senja']);
@@ -259,35 +245,70 @@ class ProyekKeuanganTest extends TestCase
             ->assertOk()
             ->assertSee('Film Senja')
             ->assertDontSee('Iklan Lain')
-            ->assertSee('Rp 2.000.000')
-            ->assertSee('Rp 900.000')
-            ->assertSee('Rp 1.100.000');
+            ->assertSee('Lihat detail')
+            ->assertDontSee('Rp 2.000.000')->assertDontSee('Rp 900.000')
+            ->assertDontSee('Piutang')->assertDontSee('Saldo')->assertDontSee('Proyeksi');
     }
 
-    public function test_detail_proyek_tiga_tab_dan_tandai_dibayar_honor_staf(): void
+    public function test_kartu_daftar_proyek_tampil_urgent_dan_status_lowongan(): void
+    {
+        $sa = User::factory()->create(['role' => 'super_admin']);
+        CastingProject::factory()->create(['nama_produksi' => 'Proyek Kilat', 'is_urgent' => true, 'status' => 'ditutup']);
+
+        $this->actingAs($sa)->get(route('admin.projects.index'))
+            ->assertSee('Urgent')->assertSee('Lowongan')->assertSee('ditutup');
+    }
+
+    public function test_perlu_tindakan_kartu_sama_dengan_ringkasan_dashboard_dan_tanpa_n_plus_1(): void
+    {
+        $sa = User::factory()->create(['role' => 'super_admin']);
+        $buat = function (array $status) {
+            $p = CastingProject::factory()->create();
+            foreach ($status as $s) {
+                ProjectApplication::create(['casting_project_id' => $p->id, 'extras_id' => ExtrasProfile::factory()->create()->id, 'status_partisipasi' => $s]);
+            }
+
+            return $p;
+        };
+        $a = $buat(['diajukan', 'direview_admin', 'diajukan_ke_client', 'ditolak']);
+        $b = $buat(['deal']);
+        $c = $buat(['diajukan_ke_client']);
+
+        $this->assertSame([$a->id => 2, $b->id => 1], AdminRingkasan::perluPerProyek([$a->id, $b->id, $c->id]));
+        $this->assertSame(3, array_sum(array_column(AdminRingkasan::tahapan(), 'perlu')));
+
+        $r = $this->actingAs($sa)->get(route('admin.projects.index'))->assertOk();
+        $r->assertSee('Perlu tindakan (2)')->assertSee('Perlu tindakan (1)')
+            ->assertSee(route('admin.projects.show', [$a, 'tab' => 'pendaftar']), false);
+
+        $hitung = function () use ($sa) {
+            DB::flushQueryLog();
+            DB::enableQueryLog();
+            $this->actingAs($sa)->get(route('admin.projects.index'))->assertOk();
+
+            return count(DB::getQueryLog());
+        };
+        $sebelum = $hitung();
+        $buat(['diajukan', 'nego_fee']);
+        $buat(['lolos']);
+        $buat(['kontrak_ditandatangani']);
+        $this->assertSame($sebelum, $hitung(), 'jumlah query tumbuh per proyek');
+    }
+
+    public function test_detail_proyek_empat_tab_dan_tandai_dibayar_honor_staf(): void
     {
         ['admin' => $admin, 'project' => $project, 'payroll' => $payroll] = $this->proyekLengkap();
 
         $this->actingAs($admin)->get(route('admin.projects.show', $project))->assertOk()->assertSee('Korlap Budi')->assertSee('Warga');
         $this->actingAs($admin)->get(route('admin.projects.show', [$project, 'tab' => 'pendaftar']))->assertOk()->assertSee('xcard', false);
-        $this->actingAs($admin)->get(route('admin.projects.show', [$project, 'tab' => 'cashflow']))
+        $this->actingAs($admin)->get(route('admin.projects.show', [$project, 'tab' => 'keuangan']))
             ->assertOk()
-            ->assertSee('45,0%')
             ->assertSee('Konsumsi')
             ->assertSee(route('admin.payrolls.tandai-dibayar', $payroll), false);
 
         $this->actingAs($admin)->patch(route('admin.payrolls.tandai-dibayar', $payroll))->assertSessionHas('status');
         $this->assertTrue($payroll->fresh()->isDibayar());
         $this->actingAs($admin)->patch(route('admin.payrolls.tandai-dibayar', $payroll))->assertSessionHas('error');
-    }
-
-    public function test_rekap_margin_lama_redirect_ke_proyek_keuangan(): void
-    {
-        $admin = User::factory()->create(['role' => 'admin']);
-
-        $this->actingAs($admin)->get('/admin/rekap-margin')->assertRedirect(route('admin.projects.index'));
-        $this->actingAs($admin)->get('/super-admin/rekap-margin?tab=staf')->assertRedirect(route('admin.projects.index', ['bayar' => 'staf']));
-        $this->actingAs($admin)->get('/admin/rekap-margin?tab=extras')->assertRedirect(route('admin.projects.index', ['bayar' => 'extras']));
     }
 
     #[DataProvider('roleDitolak')]
@@ -299,6 +320,7 @@ class ProyekKeuanganTest extends TestCase
         $this->actingAs($user)->get(route('admin.projects.index'))->assertForbidden();
         $this->actingAs($user)->get(route('admin.projects.show', $project))->assertForbidden();
         $this->actingAs($user)->patch(route('admin.projects.invoice-lunas', $project), ['nominal' => 1])->assertForbidden();
+        $this->actingAs($user)->patch(route('admin.projects.invoice-nominal', $project), ['nominal' => 1])->assertForbidden();
         $this->actingAs($user)->post(route('admin.projects.expenses.store', $project), ['label' => 'X', 'nominal' => 1, 'tanggal' => today()->toDateString()])->assertForbidden();
     }
 
