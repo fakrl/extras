@@ -10,6 +10,7 @@ use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use App\Models\User;
 use App\Services\KeuanganService;
+use App\Support\AdminRingkasan;
 use App\Support\PerHalaman;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -22,7 +23,7 @@ use Illuminate\Validation\Rules\Exists;
 
 class CastingProjectController extends Controller
 {
-    public function index(Request $request, KeuanganService $keuangan)
+    public function index(Request $request)
     {
         $peserta = $request->query('peserta');
         $tahap = array_key_exists((string) $request->query('tahap'), CastingProject::TAHAP) ? $request->query('tahap') : null;
@@ -32,7 +33,7 @@ class CastingProjectController extends Controller
         $periode = ($dari = $tgl('dari')) && ($sampai = $tgl('sampai')) ? [min($dari, $sampai), max($dari, $sampai)] : null;
 
         $projects = CastingProject::withCount('applications')
-            ->with(['client', 'admin', 'shootingDates', ...KeuanganService::RELASI_CASHFLOW])
+            ->with(['client', 'admin', 'shootingDates'])
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($peserta, fn ($q) => $q->whereHas('applications', fn ($a) => $a->where('status_partisipasi', $peserta)))
             ->when($tahap, fn ($q) => $q->diTahap($tahap))
@@ -54,17 +55,17 @@ class CastingProjectController extends Controller
             $projects->setCollection($projects->getCollection()->filter(fn ($p) => $p->isUrgent())->values());
         }
 
-        $cashflow = $projects->getCollection()->mapWithKeys(fn ($p) => [$p->id => $keuangan->cashflowProyek($p)]);
+        $perlu = AdminRingkasan::perluPerProyek($projects->pluck('id')->all());
 
-        return view('admin.projects.index', compact('projects', 'peserta', 'tahap', 'bayar', 'cari', 'cashflow', 'periode'));
+        return view('admin.projects.index', compact('projects', 'perlu', 'peserta', 'tahap', 'bayar', 'cari', 'periode'));
     }
 
     /**
-     * BD.2.4: detail proyek, tab info | pendaftar | cashflow.
+     * BD.2.4: detail proyek, tab info | pendaftar | keuangan | lampiran.
      */
     public function show(Request $request, CastingProject $castingProject, KeuanganService $keuangan)
     {
-        $tab = in_array($request->query('tab'), ['pendaftar', 'cashflow', 'lampiran'], true) ? $request->query('tab') : 'info';
+        $tab = in_array($request->query('tab'), ['pendaftar', 'keuangan', 'lampiran'], true) ? $request->query('tab') : 'info';
 
         $castingProject->load(['client', 'admin', 'shootingDates', 'classes.categories', 'adminAssignments.user']);
 
@@ -74,9 +75,13 @@ class CastingProjectController extends Controller
                 ->latest()->get()->groupBy('status_partisipasi')
             : collect();
 
-        $cashflow = $tab === 'cashflow' ? $keuangan->cashflowProyek($castingProject) : null;
+        $usulanInvoice = null;
+        if ($tab === 'keuangan') {
+            $castingProject->load(['invoices', 'expenses.pembuat', 'payments.addons', 'payments.projectApplication.extras.user', 'payrolls.addons', 'payrolls.assignment.user']);
+            $usulanInvoice = $keuangan->nilaiInvoice($castingProject);
+        }
 
-        return view('admin.projects.show', compact('castingProject', 'tab', 'pendaftar', 'cashflow'));
+        return view('admin.projects.show', compact('castingProject', 'tab', 'pendaftar', 'usulanInvoice'));
     }
 
     public function create()

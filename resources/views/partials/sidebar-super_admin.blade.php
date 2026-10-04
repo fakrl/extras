@@ -12,7 +12,7 @@
     <i class="ti ti-users-group"></i> Manajemen Akun
 </a>
 <a href="{{ route('admin.projects.index') }}" class="sidebar-link {{ str_starts_with($route, 'admin/projects') ? 'active' : '' }}">
-    <i class="ti ti-wallet"></i> Proyek &amp; Keuangan
+    <i class="ti ti-movie"></i> Proyek
 </a>
 <a href="{{ route('super-admin.activity-logs') }}" class="sidebar-link {{ str_starts_with($route, 'super-admin/activity-logs') ? 'active' : '' }}">
     <i class="ti ti-activity"></i> Log Aktivitas

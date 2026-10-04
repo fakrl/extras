@@ -36,7 +36,7 @@ class BrAkunExtrasTest extends TestCase
         $this->actingAs($this->admin())->get(route('admin.akun.extras'))
             ->assertOk()
             ->assertSee('<details class="sidebar-dropdown" open>', false)
-            ->assertSeeInOrder(['Dashboard', 'Proyek &amp; Keuangan', 'Kelola Akun', 'Extras', 'Riwayat Kerja', 'Absensi Lapangan'], false)
+            ->assertSeeInOrder(['Dashboard', 'Proyek', 'Kelola Akun', 'Extras', 'Riwayat Kerja', 'Absensi Lapangan'], false)
             ->assertDontSee('Rekap Extras')
             ->assertDontSee('/admin/recap');
     }

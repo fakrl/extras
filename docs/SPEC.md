@@ -1765,3 +1765,53 @@ Toolbar `admin/projects/applicants` (Lineup) numpuk 3 baris `.xfilter` (Grade, S
 | Item | Bukti | QA |
 |---|---|---|
 | BT.1 toolbar satu baris + filter panel (Grade/Status/Tag/Favorit) + bulk bar sticky | `resources/views/admin/projects/applicants.blade.php`: toolbar `.xtoolbar` (cari · Filter · Urutkan · per halaman), toggle "Lineup/Sudah ke Client" dipisah dari filter (bukan filter, ganti halaman). Status jadi multi-select (`status[]`, grup Aktif/Selesai-Berhenti) — backward compat `?status=single` tetap jalan (`CastingProjectController::showApplicants` pakai `array_intersect`). Tag pindah ke panel jadi checkbox (`tag[]`), bukan pill link. Bulk bar (`#bulk-toolbar`) sticky muncul kalau ada `.bulk-check` tercentang (pola sama `super-admin/akun/index.blade.php`). `FilterAktif::hapusSemua()` tambah param `$pertahankan` (dipakai applicants biar "Hapus semua" nggak ikut hapus `urut`) — default `[]`, nggak ubah halaman lain. `--filter BiFilterPanelTest`. 610 test SQLite & MySQL `jbtb_test` | [ ] |
+
+---
+
+# Bagian BU: Daftar Proyek dirampingkan (4 Oktober 2026)
+
+> **FEATURE FREEZE tetap berlaku.** Ini pengurangan/penyederhanaan tampilan, bukan fitur baru. Kerjakan BU lebih dulu, BV sesudahnya.
+
+Keputusan Fakrul (didukung review solution architect): halaman daftar `admin/projects` ("Proyek & Keuangan") terlalu padat, susah dipahami user. Prinsip: **daftar = info penting + penanda perlu tindakan; info lengkap ada di "Lihat detail"**.
+
+1. Menu Admin & SA "Proyek & Keuangan" → **"Proyek"** (label menu, judul halaman, breadcrumb). URL/route tetap.
+2. Setiap proyek di daftar cuma menampilkan: kode + nama, Client, badge tahap (Menunggu ACC / Mendatang / Berjalan / Selesai), jadwal terdekat, pendaftar/kuota, penanda "perlu tindakan (n)", tombol **Lihat detail**. Semua angka uang, ringkasan cashflow, dan chip/info lain **dikeluarkan dari daftar** (bukan dihapus, pindah ke detail).
+3. Detail proyek: tab **Info · Pendaftar (Lineup) · Keuangan (isi: BV) · Lampiran**. Isi tab lama dipindah, tidak ditulis ulang.
+4. Sesuaikan test yang meng-assert teks/struktur daftar lama (`BdSidebarFinalTest`, `ProyekKeuanganTest`, `BnKodeProyekTest`, dll).
+
+---
+
+# Bagian BV: Keuangan = pencatatan, bukan perhitungan (4 Oktober 2026)
+
+> **FEATURE FREEZE tetap berlaku.** Ini pengurangan scope. Subagent WAJIB (menyentuh pembayaran, >3 file).
+
+**Dasar keputusan:** kebutuhan dospem hanya penggajian staf Admin + riwayat kerja tiap Admin (RF-40–49). Analisis keuangan proyek bukan kebutuhan dospem, bergantung pada keputusan bisnis yang belum final (D4–D7), dan ranahnya urusan internal JBTB. Sistem **mencatat** arus uang per proyek; JBTB yang menganalisis.
+
+**DIPERTAHANKAN — jangan disentuh:**
+- Pembayaran honor Extras: `Payment` (status, bukti transfer, sengketa, add-on, guard BS.2), kontrak.
+- Penggajian staf: `StaffPayroll`, add-on honor, slip PDF, `status_bayar`, Riwayat Kerja, rekap honor SA, `totalHonorStafBelumDiproses()`.
+- Invoice sebagai **dokumen**: PDF, TTD canvas, dokumen kustom, tandai lunas. Rincian per kelas di PDF tetap (itu dokumen, bukan analisis).
+- Biaya lain-lain (`project_expenses`) + ActivityLog.
+
+**DIHAPUS (kode + tampilan + test terkait):**
+- `KeuanganService::marginBulanIni`, `trendMarginBulanan`, `cashflowProyek`, `ringkasanPeriode`, konstanta `RELASI_CASHFLOW`.
+- Halaman/route `rekap-margin` (+ redirect-nya), kartu/chart uang per periode dan filter periode uang di dashboard SA.
+- Istilah Masuk / Piutang / Keluar / Saldo / Proyeksi / Terpakai % di UI manapun.
+- Test yang hanya menguji angka-angka itu (mis. `BePiutangTest`, `BgLabelKeluarTest`, bagian angka `ProyekKeuanganTest`). Catat jumlah test yang dihapus/diubah di kolom Bukti, jangan hapus test pembayaran Extras/honor staf/guard.
+
+**DIUBAH:**
+1. **Invoice:** `nominal` diisi manual Admin saat buat/ubah invoice. Form diisi usulan awal dari `rincianInvoice()` (budget × kuota) yang bisa diedit. `nilaiInvoice()` dipakai hanya untuk usulan awal dan rincian PDF, tidak dipakai di perhitungan lain.
+2. **Tab Keuangan di detail proyek**, empat blok catatan tanpa total gabungan: (a) Invoice: nominal, Lunas/Belum, tombol tandai lunas; (b) Honor Extras: per Extras nominal total (pokok + add-on) + status pembayaran, ringkasan hitungan "n dari m sudah ditransfer"; (c) Honor staf: per staf nominal + status; (d) Biaya lain-lain: daftar + tambah/hapus (sudah ada). Subtotal per blok boleh; **tidak ada** saldo, proyeksi, margin, atau total lintas blok.
+3. **Dashboard SA:** kartu uang periode diganti dua angka sederhana: "Honor staf belum dibayar" (`totalHonorStafBelumDiproses()`) dan "Invoice belum lunas (n)". Bagian "Perlu tindakan" tidak berubah.
+4. `KeuanganService` tersisa `totalHonorStafBelumDiproses`, `rincianInvoice`, `nilaiInvoice`.
+5. Manager yang memperbarui dokumen (bukan Claude Code): `BAB-3-DRAFT.md` (RF-30 jadi pencatatan, dicatat sebagai penyimpangan dari proposal), `PRD-LITE.md`, `SYSTEM-ARCHITECTURE.md`.
+
+| Item | Bukti | QA |
+|---|---|---|
+| BU.1 menu "Proyek" + daftar ringkas | Label menu `partials/sidebar-admin` & `sidebar-super_admin` (ikon SA jadi `ti-movie`), judul/`@section('title')`, breadcrumb detail, link dashboard SA jadi "Proyek" (URL/route tetap). `admin/projects/index.blade.php`: kartu: kode+nama + badge Urgent, Client, badge tahap, jadwal (`rentangShooting()`), status lowongan (Dibuka/Ditutup), pendaftar/kuota, badge "Perlu tindakan (n)" (n = jumlah lamaran `perlu` per proyek dari `AdminRingkasan::perluPerProyek()`, satu definisi `langkah()` dengan dashboard Admin, satu set query per halaman paginasi, tanpa N+1; link ke tab Pendaftar), tombol "Lihat detail". Dikeluarkan dari kartu: PIC, deadline, link grup, badge Client belum diisi, kotak uang. `CastingProject::isUrgent()` pakai relasi `shootingDates` yang sudah di-load (bukan query per kartu). Menu ⋮ tetap (aksi, bukan info): Detail, Lineup (pindah dari tombol), Edit, Copy link, Tutup/Buka lowongan, Invoice; item Cashflow dihapus. Test disesuaikan: `BdSidebarFinalTest`, `BrAkunExtrasTest` (teks menu), `LinkGrupTampilTest` (link grup dicek di detail, bukan daftar), `ProyekKeuanganTest::test_daftar_proyek_search_chip_tanpa_angka_uang`. 607 test SQLite & MySQL `jbtb_test` (+2 test kartu: Urgent/lowongan, n sama dengan `AdminRingkasan` + jumlah query tetap) | [ ] |
+| BU.2 tab Info/Pendaftar/Keuangan/Lampiran di detail | `CastingProjectController::show`: tab `cashflow` → `keuangan` (isi Info/Pendaftar/Lampiran dipindah apa adanya, tidak ditulis ulang); relasi keuangan cuma di-load saat tab Keuangan. Link dashboard SA & `AyP0GuardsTest` ikut `tab=keuangan`. `ProyekKeuanganTest::test_detail_proyek_empat_tab_dan_tandai_dibayar_honor_staf` | [ ] |
+| BV.1 hapus analisis keuangan (service, rekap-margin, dashboard SA, label) | `KeuanganService`: `marginBulanIni`, `trendMarginBulanan`, `cashflowProyek`, `ringkasanPeriode`, `RELASI_CASHFLOW` dihapus (tersisa `totalHonorStafBelumDiproses`, `rincianInvoice`, `nilaiInvoice`). `KeuanganProyekController::rekapMargin` + route `admin.recap-margin` & `super-admin.recap-margin` (+ redirect) dihapus. Dashboard SA: kartu "Uang Periode Ini", chart bulanan (Chart.js) & teks Masuk/Piutang/Keluar/Saldo/Proyeksi dihapus; `DashboardController` tidak lagi menghitung `$uang`. Filter periode dashboard TETAP (dipakai Status Proyek via tanggal shooting, `BePeriodeKartuTest`), cuma tooltip "uang pakai tanggal transaksi" dibuang. **Test dihapus 7**: `BePiutangTest` (file, 2 test), `BgLabelKeluarTest` (file, 1 test), `ProyekKeuanganTest` 4 test (`test_cashflow_proyek_saldo_dan_persen_benar`, `test_cashflow_tanpa_masuk_persen_null_dan_invoice_belum_pakai_nilai_live`, `test_ringkasan_periode_abaikan_transaksi_di_luar_periode`, `test_rekap_margin_lama_redirect_ke_proyek_keuangan`). **Diubah 1**: `SuperAdminDashboardTest` `test_filter_custom_menghitung_uang_dari_tanggal_transaksi` → `test_dashboard_dua_angka_honor_staf_dan_invoice_belum_lunas`; `BdSidebarFinalTest::test_route_lama_redirect_bukan_404` dua URL rekap-margin dibuang. Test pembayaran Extras/honor staf/guard BS.2/invoice dokumen tidak dihapus | [ ] |
+| BV.2 invoice nominal manual + usulan awal | Route baru `PATCH admin/projects/{p}/invoice-nominal` (`admin.projects.invoice-nominal` → `KeuanganProyekController::simpanNominal`): validasi `numeric|min:0`, `firstOrCreate` invoice, ditolak kalau sudah lunas, ActivityLog `INVOICE_NOMINAL_SET`. Form di tab Keuangan diisi `nominal` tersimpan, kalau belum ada `nilaiInvoice()` (usulan, bisa diedit); `tandaiLunas` tidak diubah. PDF/`rincianInvoice` tidak diubah. Test baru `ProyekKeuanganTest::test_invoice_nominal_manual_dengan_usulan_dari_rincian` (+ guard role di `test_client_extras_korlap_ditolak`) | [ ] |
+| BV.3 tab Keuangan = 4 blok catatan | `admin/projects/show.blade.php` tab Keuangan: (a) Invoice Client (nominal, Lunas/Belum, Simpan Nominal, Tandai Lunas, PDF), (b) Honor Extras per Extras nominal `Payment::nominalTotal()` (pokok + add-on) + `x-status-badge` + "n dari m sudah ditransfer", (c) Honor Staf (nominal + status + Tandai Dibayar), (d) Biaya Lain-lain (daftar, tambah, hapus). Kartu Masuk/Piutang/Keluar/Saldo/Proyeksi/Terpakai dan semua total lintas blok dibuang. Test baru `ProyekKeuanganTest::test_tab_keuangan_empat_blok_catatan_tanpa_total_lintas_blok` | [ ] |
+| BV.4 dashboard SA: honor staf belum dibayar + invoice belum lunas | Kartu "Yang perlu dicatat": "Honor staf belum dibayar" (`totalHonorStafBelumDiproses()`) dan "Invoice belum lunas (n)" (`$invoiceBelumLunas->count()`). "Perlu tindakan" tidak diubah. `SuperAdminHonorRecapTest::test_honor_staf_sudah_dibayar_tidak_muncul_dan_empty_state_tampil` diubah: assert pada badge baris Perlu tindakan (label kartu baru selalu tampil walau Rp 0). Test: `SuperAdminDashboardTest::test_dashboard_dua_angka_honor_staf_dan_invoice_belum_lunas` | [ ] |
+| BV.5 grep: nol sisa `saldo`/`proyeksi`/`piutang`/`marginBulanIni`/`rekap-margin`; test pembayaran & honor staf tetap hijau; SQLite + MySQL | Grep (`app resources routes tests database`, case-insensitive) `saldo|proyeksi|piutang|marginBulanIni|trendMarginBulanan|cashflowProyek|ringkasanPeriode|RELASI_CASHFLOW|rekap-margin|Terpakai`: kode/view/route nol; sisa di `tests/` hanya assertDontSee guard (`ProyekKeuanganTest`, `SuperAdminDashboardTest`) + nama test `LengkapiKtpTest::test_nik_format_berbeda_dari_nik_terpakai_...` ("terpakai" = NIK dipakai akun lain, bukan analisis). Test: 610 → **605 passed** di SQLite & MySQL `jbtb_test` (−7 dihapus, +2 baru, 1 diganti 1:1, 9 method disesuaikan teks/struktur/guard) | [ ] |

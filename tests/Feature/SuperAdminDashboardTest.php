@@ -7,7 +7,7 @@ use App\Models\CastingProject;
 use App\Models\ExtrasProfile;
 use App\Models\Payment;
 use App\Models\ProjectApplication;
-use App\Models\ProjectExpense;
+use App\Models\StaffPayroll;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -46,22 +46,21 @@ class SuperAdminDashboardTest extends TestCase
         return ProjectApplication::create(['casting_project_id' => $p->id, 'extras_id' => $profil->id, 'status_partisipasi' => $status]);
     }
 
-    public function test_filter_custom_menghitung_uang_dari_tanggal_transaksi(): void
+    public function test_dashboard_dua_angka_honor_staf_dan_invoice_belum_lunas(): void
     {
         $p = $this->proyek([]);
         $p->invoices()->create(['nominal' => 1000000, 'status_bayar' => 'lunas', 'dibayar_at' => '2026-03-10 09:00:00']);
-        $p->invoices()->create(['nominal' => 7000000, 'status_bayar' => 'lunas', 'dibayar_at' => '2026-05-01 09:00:00']);
-        ProjectExpense::create(['casting_project_id' => $p->id, 'label' => 'Konsumsi', 'nominal' => 250000, 'tanggal' => '2026-03-20', 'created_by' => $this->sa->id]);
-        ProjectExpense::create(['casting_project_id' => $p->id, 'label' => 'Lain', 'nominal' => 333000, 'tanggal' => '2026-04-02', 'created_by' => $this->sa->id]);
+        $this->proyek([])->invoices()->create(['nominal' => 7000000]);
+        $asg = $p->adminAssignments()->create(['user_id' => User::factory()->create(['role' => 'korlap'])->id, 'assigned_by' => $this->sa->id, 'status_log' => 'selesai']);
+        StaffPayroll::create(['admin_project_assignment_id' => $asg->id, 'nominal_pokok' => 250000]);
 
         $r = $this->actingAs($this->sa)->get(route('super-admin.dashboard', ['dari' => '2026-03-01', 'sampai' => '2026-03-31']));
 
-        $r->assertOk()->assertSee('31 hari')->assertSee('Proyek difilter pakai tanggal shooting, uang pakai tanggal transaksi');
-        $uang = $r->viewData('uang');
-        $this->assertEqualsWithDelta(1000000, $uang->total_masuk, 0.01);
-        $this->assertEqualsWithDelta(250000, $uang->total_keluar, 0.01);
-        $this->assertEqualsWithDelta(750000, $uang->saldo, 0.01);
-        $r->assertSee('Rp 750.000')->assertDontSee('Rp 7.000.000')->assertDontSee('Rp 333.000');
+        $r->assertOk()->assertSee('31 hari')
+            ->assertSee('Honor staf belum dibayar')->assertSee('Rp 250.000')
+            ->assertSee('Invoice belum lunas (1)')
+            ->assertDontSee('Uang Periode')->assertDontSee('Proyeksi')->assertDontSee('Piutang');
+
     }
 
     public function test_preset_dan_parameter_rusak_jatuh_ke_bulan_ini(): void

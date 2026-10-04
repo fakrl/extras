@@ -13,13 +13,26 @@ use Illuminate\Http\Request;
 class KeuanganProyekController extends Controller
 {
     /**
-     * BD.2.5: rekap-margin lama digabung ke Proyek & Keuangan; tab lama jadi filter.
+     * BV.2: nominal invoice diisi manual Admin (form diberi usulan dari rincian peran).
      */
-    public function rekapMargin(Request $request): RedirectResponse
+    public function simpanNominal(Request $request, CastingProject $castingProject): RedirectResponse
     {
-        $bayar = in_array($request->query('tab'), ['staf', 'extras'], true) ? $request->query('tab') : null;
+        $data = $request->validate(['nominal' => ['required', 'numeric', 'min:0']]);
 
-        return redirect()->route('admin.projects.index', array_filter(['bayar' => $bayar]));
+        $invoice = $castingProject->invoices()->firstOrCreate([]);
+        if ($invoice->isLunas()) {
+            return back()->with('error', 'Invoice sudah lunas, nominal tidak bisa diubah.');
+        }
+
+        $invoice->update(['nominal' => $data['nominal']]);
+
+        ActivityLog::record(
+            'INVOICE_NOMINAL_SET',
+            "Nominal invoice proyek '{$castingProject->nama_produksi}' diisi Rp ".number_format($data['nominal'], 0, ',', '.'),
+            $invoice
+        );
+
+        return back()->with('status', 'Nominal invoice disimpan.');
     }
 
     public function tandaiLunas(Request $request, CastingProject $castingProject): RedirectResponse

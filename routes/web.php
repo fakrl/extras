@@ -249,13 +249,14 @@ Route::middleware(['auth', 'role:admin,korlap,super_admin'])
         });
     });
 
-// RF-30 & SPEC AV/BD.2: Keuangan proyek - Admin & Super Admin. rekap-margin lama = redirect.
+// SPEC AV/BD.2/BV: pencatatan keuangan proyek - Admin & Super Admin.
 Route::middleware(['auth', 'role:admin,super_admin'])->prefix('admin')->group(function () {
-    Route::get('/rekap-margin', [KeuanganProyekController::class, 'rekapMargin'])->name('admin.recap-margin');
     Route::patch('/payrolls/{staffPayroll}/tandai-dibayar', [KeuanganProyekController::class, 'tandaiDibayar'])
         ->name('admin.payrolls.tandai-dibayar');
     Route::patch('/projects/{castingProject}/invoice-lunas', [KeuanganProyekController::class, 'tandaiLunas'])
         ->name('admin.projects.invoice-lunas');
+    Route::patch('/projects/{castingProject}/invoice-nominal', [KeuanganProyekController::class, 'simpanNominal'])
+        ->name('admin.projects.invoice-nominal');
     Route::post('/projects/{castingProject}/biaya', [KeuanganProyekController::class, 'storeExpense'])
         ->name('admin.projects.expenses.store');
     Route::delete('/biaya/{projectExpense}', [KeuanganProyekController::class, 'destroyExpense'])
@@ -263,7 +264,6 @@ Route::middleware(['auth', 'role:admin,super_admin'])->prefix('admin')->group(fu
 });
 
 Route::middleware(['auth', 'role:admin,super_admin'])->prefix('super-admin')->group(function () {
-    Route::get('/rekap-margin', [KeuanganProyekController::class, 'rekapMargin'])->name('super-admin.recap-margin');
     Route::patch('/payrolls/{staffPayroll}/tandai-dibayar', [KeuanganProyekController::class, 'tandaiDibayar'])
         ->name('super-admin.payrolls.tandai-dibayar');
 });

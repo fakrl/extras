@@ -14,11 +14,8 @@
 .sa-filter .btn { min-height: 32px; padding: 0 12px; font-size: 12px; border-radius: 20px; }
 .sa-filter input[type=date] { min-height: 32px; font-size: 12px; padding: 0 6px; width: auto; }
 .sa-stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
-.sa-stat-grid.is-5 .metric-card:last-child { grid-column: span 2; }
 @media (min-width: 861px) {
     .sa-stat-grid { grid-template-columns: repeat(4, 1fr); }
-    .sa-stat-grid.is-5 { grid-template-columns: repeat(5, 1fr); }
-    .sa-stat-grid.is-5 .metric-card:last-child { grid-column: auto; }
 }
 .sa-role-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; }
 .sa-akun { display: grid; gap: 10px; align-items: center; }
@@ -54,8 +51,8 @@
         <input type="date" name="sampai" value="{{ $sampai->format('Y-m-d') }}" aria-label="Sampai tanggal" required>
         <button type="submit" class="btn {{ $preset ? '' : 'btn-brand' }}">Terapkan</button>
     </form>
-    <span class="dash-sub sa-filterbar-info" title="Proyek difilter pakai tanggal shooting, uang pakai tanggal transaksi (invoice lunas, transfer honor, biaya lain-lain).">
-        <strong>{{ $jumlahHari }} hari</strong> &middot; {{ $dari->translatedFormat('d M Y') }} &ndash; {{ $sampai->translatedFormat('d M Y') }} &#9432;
+    <span class="dash-sub sa-filterbar-info">
+        <strong>{{ $jumlahHari }} hari</strong> &middot; {{ $dari->translatedFormat('d M Y') }} &ndash; {{ $sampai->translatedFormat('d M Y') }}
     </span>
 </div>
 
@@ -143,7 +140,7 @@
     @endif
 
     @foreach ($invoiceBelumLunas as $inv)
-        <a href="{{ route('admin.projects.show', [$inv->casting_project_id, 'tab' => 'cashflow']) }}" class="dash-row">
+        <a href="{{ route('admin.projects.show', [$inv->casting_project_id, 'tab' => 'keuangan']) }}" class="dash-row">
             <div>
                 <span class="badge badge-info">Invoice belum lunas</span>
                 <strong>{{ $inv->castingProject?->nama_produksi }}</strong>
@@ -184,7 +181,7 @@
             @endforelse
             <div style="margin-top: 10px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12.5px;">
                 <a href="{{ route('admin.projects.index', ['tahap' => $tahap] + ($tahap === 'menunggu_acc' ? [] : ['dari' => $dari->format('Y-m-d'), 'sampai' => $sampai->format('Y-m-d')])) }}" class="sa-lihat-semua">Lihat semua {{ $label }} &rarr;</a>
-                <a href="{{ route('admin.projects.index') }}" style="color: var(--accent);">Proyek &amp; Keuangan &rarr;</a>
+                <a href="{{ route('admin.projects.index') }}" style="color: var(--accent);">Semua proyek &rarr;</a>
             </div>
         </div>
     @endforeach
@@ -211,29 +208,21 @@
 </div>
 
 <div class="card">
-    <div class="card-title">Uang Periode Ini</div>
-    <div class="sa-stat-grid is-5">
-        @foreach ([
-            ['Masuk', $uang->total_masuk, 'invoice lunas'],
-            ['Piutang', $uang->piutang, 'invoice belum lunas'],
-            ['Keluar (sudah dibayar)', $uang->total_keluar, 'honor & biaya dibayar di periode ini'],
-            ['Saldo', $uang->saldo, 'masuk − keluar'],
-            ['Proyeksi', $uang->proyeksi, 'masuk + piutang − keluar'],
-        ] as [$label, $nilai, $ket])
-            <div class="metric-card" style="border: 1px solid var(--border-color);">
-                <div class="metric-label">{{ $label }}@if (str_starts_with($label, 'Keluar')) <span title="Dashboard cuma menghitung yang sudah dibayar dalam periode; di proyek dihitung semua kewajiban." style="cursor: help;">&#9432;</span>@endif</div>
-                <div class="metric-value" style="font-size: var(--fs-lg, 18px);{{ in_array($label, ['Saldo', 'Proyeksi']) ? ' color: '.($nilai < 0 ? 'var(--danger)' : 'var(--accent-strong)').';' : '' }}">{{ $rp($nilai) }}</div>
-                <div class="dash-sub">{{ $ket }}</div>
-            </div>
-        @endforeach
+    <div class="card-title">Yang perlu dicatat</div>
+    <div class="sa-stat-grid">
+        <div class="metric-card" style="border: 1px solid var(--border-color);">
+            <div class="metric-label">Honor staf belum dibayar</div>
+            <div class="metric-value" style="font-size: var(--fs-lg, 18px);">{{ $rp($honorStaf->total) }}</div>
+        </div>
+        <div class="metric-card" style="border: 1px solid var(--border-color);">
+            <div class="metric-label">Invoice belum lunas ({{ $invoiceBelumLunas->count() }})</div>
+            <div class="dash-sub">Rincian ada di Perlu Tindakan.</div>
+        </div>
     </div>
-    <p class="dash-sub" style="margin: 0 0 12px;">Saldo minus wajar kalau invoice belum dibayar — lihat Proyeksi. Piutang = invoice belum lunas dari proyek yang shooting-nya dalam periode.</p>
-    <div class="chart-box"><canvas id="chartUangBulanan"></canvas></div>
 </div>
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
 (function () {
     var tabs = [].slice.call(document.querySelectorAll('.sa-tab'));
@@ -255,28 +244,6 @@
             pilih(t2);
             t2.focus();
         });
-    });
-}());
-</script>
-<script>
-(function () {
-    var css = getComputedStyle(document.documentElement);
-    var warna = function (v, d) { return css.getPropertyValue(v).trim() || d; };
-    var rp = function (v) { return 'Rp ' + Number(v).toLocaleString('id-ID'); };
-    new Chart(document.getElementById('chartUangBulanan'), {
-        type: 'bar',
-        data: {
-            labels: @json($uang->per_bulan->pluck('label')),
-            datasets: [
-                { label: 'Masuk', data: @json($uang->per_bulan->pluck('masuk')), backgroundColor: warna('--accent-strong', '#15803D') },
-                { label: 'Keluar', data: @json($uang->per_bulan->pluck('keluar')), backgroundColor: warna('--danger', '#DC2626') }
-            ]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { tooltip: { callbacks: { label: function (c) { return c.dataset.label + ': ' + rp(c.raw); } } } },
-            scales: { y: { beginAtZero: true, suggestedMax: 1000000, ticks: { precision: 0, callback: rp } } }
-        }
     });
 }());
 </script>

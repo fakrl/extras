@@ -19,7 +19,7 @@ class BdSidebarFinalTest extends TestCase
 
         $this->actingAs($sa)->get(route('super-admin.dashboard'))
             ->assertOk()
-            ->assertSeeInOrder(['Dashboard', 'Manajemen Akun', 'Proyek &amp; Keuangan', 'Log Aktivitas', 'Monitoring'], false)
+            ->assertSeeInOrder(['Dashboard', 'Manajemen Akun', 'Proyek', 'Log Aktivitas', 'Monitoring'], false)
             ->assertSee(route('super-admin.akun.index'), false)
             ->assertSee(route('super-admin.monitoring.korlap'), false)
             ->assertDontSee('Monitoring Akun')
@@ -30,7 +30,7 @@ class BdSidebarFinalTest extends TestCase
     {
         $sa = User::factory()->create(['role' => 'super_admin']);
 
-        foreach (['/super-admin/monitoring', '/super-admin/admins?role=client', '/super-admin/casting-directors', '/super-admin/rekap-margin', '/admin/rekap-margin'] as $url) {
+        foreach (['/super-admin/monitoring', '/super-admin/admins?role=client', '/super-admin/casting-directors'] as $url) {
             $this->actingAs($sa)->get($url)->assertRedirect();
         }
     }

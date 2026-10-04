@@ -15,7 +15,7 @@ class LinkGrupTampilTest extends TestCase
     {
         return array_merge([
             'nama_produksi' => 'Proyek Test',
-            'client_id' => \App\Models\User::factory()->create(['role' => 'client'])->id,
+            'client_id' => User::factory()->create(['role' => 'client'])->id,
             'deadline' => now()->addDays(7)->toDateString(),
             'kuota' => 5,
             'tanggal_shooting' => [now()->addDays(10)->toDateString()],
@@ -38,7 +38,7 @@ class LinkGrupTampilTest extends TestCase
         $project = CastingProject::first();
         $this->assertSame('https://chat.whatsapp.com/abc123', $project->link_grup);
 
-        $this->actingAs($admin)->get('/admin/projects')
+        $this->actingAs($admin)->get(route('admin.projects.show', $project))
             ->assertOk()
             ->assertSee('https://chat.whatsapp.com/abc123');
 
