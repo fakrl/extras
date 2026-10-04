@@ -293,6 +293,40 @@ class ProyekKeuanganTest extends TestCase
             ->assertSee('Perlu tindakan (1)')->assertSee('1 / 0')->assertDontSee('class="tp-bar"', false);
     }
 
+    public function test_kolom_tindakan_empat_ikon_tanpa_menu_titik_tiga(): void
+    {
+        $sa = User::factory()->create(['role' => 'super_admin']);
+        $buka = CastingProject::factory()->create(['nama_produksi' => 'Pr Buka', 'status' => 'dibuka', 'share_token' => 'tok123', 'client_request_status' => 'disetujui']);
+        $tutup = CastingProject::factory()->create(['nama_produksi' => 'Pr Tutup', 'status' => 'ditutup', 'share_token' => 'tok456', 'client_request_status' => 'disetujui']);
+
+        $r = $this->actingAs($sa)->get(route('admin.projects.index'))->assertOk();
+        foreach (['Lineup', 'Edit proyek', 'Salin link pendaftaran', 'Tutup lowongan', 'Buka lagi lowongan'] as $label) {
+            $r->assertSee('title="'.$label.'" aria-label="'.$label.'"', false);
+        }
+        $r->assertSee('data-copy-link="'.url('/event/tok123').'"', false)->assertDontSee('tok456')
+            ->assertSee('ti-lock"', false)->assertSee('ti-lock-open', false)
+            ->assertSee(route('admin.projects.applicants', $buka), false)->assertSee(route('admin.projects.edit', $tutup), false)
+            ->assertDontSee('tp-menu')->assertDontSee('ti-dots-vertical')->assertDontSee('Detail Proyek')->assertDontSee('>Invoice<', false)
+            ->assertDontSee('tp-chevron');
+    }
+
+    public function test_baris_selesai_dan_ditolak_dipudarkan_tanpa_badge_perlu_tindakan(): void
+    {
+        $sa = User::factory()->create(['role' => 'super_admin']);
+        $selesai = CastingProject::factory()->create(['nama_produksi' => 'Pr Selesai', 'client_request_status' => 'disetujui']);
+        $selesai->shootingDates()->create(['tanggal' => today()->subDays(9)]);
+        $ditolak = CastingProject::factory()->create(['nama_produksi' => 'Pr Ditolak', 'client_request_status' => 'ditolak']);
+        $aktif = CastingProject::factory()->create(['nama_produksi' => 'Pr Aktif', 'client_request_status' => 'disetujui']);
+        $aktif->shootingDates()->create(['tanggal' => today()->addDays(9)]);
+        foreach ([$selesai, $ditolak, $aktif] as $p) {
+            ProjectApplication::create(['casting_project_id' => $p->id, 'extras_id' => ExtrasProfile::factory()->create()->id, 'status_partisipasi' => 'diajukan']);
+        }
+
+        $r = $this->actingAs($sa)->get(route('admin.projects.index'))->assertOk();
+        $this->assertSame(2, substr_count($r->getContent(), '<tr class="tp-pudar">'));
+        $this->assertSame(1, substr_count($r->getContent(), 'Perlu tindakan ('));
+    }
+
     public function test_badge_lowongan_ditutup_hanya_untuk_proyek_mendatang(): void
     {
         $sa = User::factory()->create(['role' => 'super_admin']);

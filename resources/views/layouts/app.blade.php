@@ -289,11 +289,16 @@
         .entity-card-row-value { font-weight: 500; text-align: right; }
         .entity-card-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
 
-        /* Daftar proyek (BX): baris tabel, seluruh baris bisa diklik lewat .tp-link::after */
+        /* Daftar proyek: baris tabel seragam, seluruh baris bisa diklik lewat .tp-link::after, ikon aksi di atasnya */
         .table-container.tp-wrap { overflow: visible; }
+        .tabel-proyek { table-layout: fixed; width: 100%; }
         .tabel-proyek tbody tr { position: relative; cursor: pointer; }
         .tabel-proyek tbody tr:hover { background: var(--bg-card-hover); }
-        .tabel-proyek td { vertical-align: middle; padding: 12px 8px; }
+        .tabel-proyek td { vertical-align: middle; padding: 12px 8px; height: 80px; }
+        .tabel-proyek th.tp-c-client { width: 18%; }
+        .tabel-proyek th.tp-c-shoot { width: 16%; }
+        .tabel-proyek th.tp-c-daftar { width: 170px; }
+        .tabel-proyek th.tp-aksi { width: 190px; }
         .tp-link { color: inherit; text-decoration: none; font-weight: 600; font-size: var(--fs-base); }
         .tp-link::after { content: ''; position: absolute; inset: 0; }
         .tp-kode { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
@@ -302,25 +307,25 @@
         .tp-kosong { font-size: var(--fs-sm); color: var(--text-muted); font-style: italic; }
         .tp-bar { height: 4px; width: 90px; max-width: 100%; border-radius: 2px; background: var(--bg-card-hover); margin-top: 6px; }
         .tp-bar > i { display: block; height: 100%; background: var(--accent); }
-        .tp-aksi { text-align: right; white-space: nowrap; }
-        .tp-aksi-isi { display: inline-flex; align-items: center; justify-content: flex-end; gap: 8px; }
-        .tp-aksi .badge, .tp-menu { position: relative; z-index: 2; }
-        .tp-chevron { color: var(--text-muted); font-size: 18px; }
+        .tp-badges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+        .tp-perlu { text-decoration: none; position: relative; z-index: 2; }
+        .tp-pudar, .tp-pudar .tp-nama, .tp-pudar .tp-sub { color: var(--text-muted); }
+        .tp-pudar .tp-bar > i { background: var(--text-muted); }
+        .tp-aksi-isi { display: flex; align-items: center; gap: 6px; }
+        .btn-ikon { position: relative; z-index: 2; flex: none; width: 36px; min-height: 36px; height: 36px; padding: 0; overflow: hidden; font-size: 18px; }
+        .btn-ikon:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
         @media (max-width: 719px) {
             .tabel-proyek thead { display: none; }
             .tabel-proyek, .tabel-proyek tbody { display: block; }
             .tabel-proyek tbody tr { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 0; padding: 12px 14px; border-bottom: 1px solid var(--border-color); }
-            .tabel-proyek td { display: block; padding: 0; border: 0; }
+            .tabel-proyek td { display: block; padding: 0; border: 0; height: auto; }
             .tp-c-proyek, .tp-c-client, .tp-aksi { flex: 0 0 100%; }
-            .tp-c-proyek { padding-right: 44px; }
+            .tp-aksi { margin-top: 6px; }
             .tp-c-daftar::before { content: '·'; margin: 0 8px; color: var(--text-muted); }
             .tp-c-shoot > div, .tp-c-daftar > div { display: inline; }
             .tp-c-shoot .tp-sub { margin-left: 6px; }
             .tp-bar { display: none; }
-            .tp-aksi { text-align: left; }
-            .tp-aksi-isi { justify-content: flex-start; }
-            .tp-chevron { display: none; }
-            .tp-menu { position: absolute; top: 8px; right: 8px; }
+            .tp-badges { display: inline-flex; margin: 0 0 0 8px; vertical-align: middle; }
         }
 
         /* BA.4: kartu Extras (partials/extras-card) + modal detail, ikut prototype 07 */
