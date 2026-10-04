@@ -1850,3 +1850,42 @@ Aksi di tab ini (simpan nominal invoice, tandai lunas, tandai honor staf dibayar
 | BW.1 tab tahap + baris ringkas tanpa label | `CastingProjectController::index`: filter dipisah ke closure `$saring` (dipakai query daftar + hitungan tab), `?tahap=` pakai ulang `diTahap()` (Menunggu ACC di daftar = `menunggu_acc` + `ditolak`; dashboard tidak diubah), `$jumlahTahap` = Semua + 4 tahap sesuai filter lain (5 query count, tetap per halaman). View: tab `xfilter` `Semua (n) · Menunggu ACC (n) · ...` (link menjaga q/per/filter, `page` dibuang; hidden `tahap` di form cari; pagination `withQueryString`), grup+chip Tahap di panel filter dibuang. Kartu: nama+kode+Urgent, Client, `rentangShooting()` + `n / kuota` (tanpa label), Perlu tindakan (n), Lihat detail, menu ⋮ tetap. Dibuang: baris Tahap, Lowongan dibuka/ditutup, label Shooting/Pendaftar/kuota. Badge "Ditolak" (client_request_status ditolak) dan "Lowongan ditutup" (hanya tahap Mendatang). Test baru: `ProyekKeuanganTest` `test_tab_tahap_filter_angka_dan_ditolak_masuk_menunggu_acc`, `test_tahap_terjaga_di_pagination`, `test_badge_lowongan_ditutup_hanya_untuk_proyek_mendatang`, `test_kartu_daftar_proyek_urgent_tanpa_baris_tahap_dan_lowongan` (ganti test Urgent/lowongan BU) | [ ] |
 | BW.2 tombol Transfer/Lihat di honor Extras | `Payment::bisaDitransfer()` (belum_dibayar + kontrak TTD, sama kriteria scope `perluDitransfer`). Tab Keuangan: tombol `btn-brand` "Transfer" bila true, selain itu "Lihat"; tetap link `payments.show`, tidak inline, guard BS.2 tidak diduplikasi, aksi lain tab Keuangan tidak disentuh. Test `ProyekKeuanganTest::test_honor_extras_tombol_transfer_atau_lihat_sesuai_status` | [ ] |
 | BW.3 test + SQLite & MySQL berurutan + 360/390px | Disesuaikan: `BiFilterPanelTest` (chip Tahap jadi tab, panel 2 → 1), `BePeriodeKartuTest` (daftar Menunggu ACC = kartu dashboard + proyek ditolak), `ProyekKeuanganTest` (test Urgent/lowongan diganti). `BnKodeProyekTest`, `BdSidebarFinalTest` tidak perlu diubah. 607 → **611 passed** di SQLite lalu MySQL `jbtb_test` (berurutan, +4 baru); `BrOverflowMobileTest` hijau (layout tab `flex-wrap`, kartu satu kolom) | [ ] |
+
+---
+
+# Bagian BX: Daftar proyek jadi tabel (4 Oktober 2026)
+
+> **FEATURE FREEZE tetap berlaku.** Revisi tampilan atas BW.1, tanpa mengubah logika. Commit, **jangan push** sebelum Fakrul cek.
+
+Keputusan Fakrul setelah melihat hasil BW: kartu masih kurang enak dan info dasarnya malah kurang (Client belum tampil jelas). Masalah yang ditemukan: tinggi kartu tidak seragam (badge Urgent kadang pindah baris, baris Client kadang kosong), angka tanpa label sehingga ambigu, tanda `-` sendirian, tombol "Lihat detail" hijau terlalu dominan, Client terlalu kecil. **Ganti kartu jadi baris tabel** (isi daftar ini teks dan angka yang dipindai, bukan konten visual).
+
+## BX.1: Tabel daftar proyek
+
+Tab tahap, pencarian, per-halaman, dan filter dari BW.1 tetap. Hanya bentuk daftar yang berubah. Kolom, kiri ke kanan:
+
+1. **Proyek**: nama (tebal), di bawahnya kode `JBTB-…` (mono, kecil) + badge **Urgent** bila urgent. Badge Urgent selalu di baris kode, tidak pernah pindah ke samping/bawah judul.
+2. **Client**: nama perusahaan (`users.nama_perusahaan`, fallback `name`) tebal; di bawahnya nama kontak Client abu-abu kecil. Bila belum ada Client: teks abu-abu miring "Belum ada Client" (jangan `-`).
+3. **Shooting**: tanggal (`05–06 Okt 2026`) + keterangan relatif kecil di bawahnya: "dalam N hari" / "berlangsung" / "selesai". Bila belum ada jadwal: "Belum dijadwalkan" abu-abu. Keterangan relatif memakai logika `CastingProject::tahap()`/tanggal shooting yang sudah ada, jangan tulis ulang.
+4. **Pendaftar**: `11 / 15` + progress bar tipis (terisi/kuota). Kuota 0 atau kosong tampil `0 / 0` tanpa bar.
+5. **Tindakan**: badge "Perlu tindakan (n)" (aturan revisi BU, tidak berubah) bila ada, kosong bila tidak. Di ujung kanan menu ⋮ (Lineup dan aksi lain, seperti sekarang) dan ikon panah `ti-chevron-right`.
+
+Perilaku:
+- **Seluruh baris bisa diklik** menuju detail (tautan di nama proyek dengan `::after` yang menutupi baris / "stretched link"; menu ⋮ dan badge "Perlu tindakan" tetap bisa diklik sendiri lewat `position: relative; z-index`). **Tombol hijau "Lihat detail" dihapus.**
+- Hover baris: latar token hover yang sudah ada, kursor pointer. Tinggi baris seragam, tidak ada baris yang melompat karena badge.
+- Pakai kelas tabel yang sudah ada di design system (`.table-container`, token warna, skala `fs`). Tidak ada warna baru, tidak ada `overflow-x: hidden`.
+- **Mobile (di bawah 720 px)**: tiap baris menjadi blok bertumpuk satu kolom: baris 1 nama + Urgent; baris 2 Client; baris 3 shooting · pendaftar; baris 4 badge "Perlu tindakan". Seluruh blok tetap bisa diklik. Tidak overflow di 360 dan 390 px (`BrOverflowMobileTest` hijau).
+- Proyek Ditolak tetap seperti BW.1 (masuk tab Menunggu ACC dengan badge "Ditolak" di kolom Tindakan).
+- Hindari N+1: `client`, `shootingDates`, hitungan pendaftar, dan data "perlu tindakan" di-eager-load per halaman.
+
+## BX.2: Test dan penutup
+
+1. Sesuaikan test yang meng-assert struktur kartu (`ProyekKeuanganTest`, `BnKodeProyekTest`, `BdSidebarFinalTest`, dll). Tambah test: nama perusahaan Client tampil di baris, "Belum ada Client" saat kosong, keterangan relatif benar (dalam N hari / berlangsung / selesai), "Belum dijadwalkan" saat tanpa jadwal, tombol "Lihat detail" tidak ada lagi, badge Urgent dan "Perlu tindakan" tetap tampil.
+2. SQLite lalu MySQL `jbtb_test` **berurutan**. Screenshot 1366 px dan 390 px (daftar dengan banyak proyek, satu tanpa Client, satu tanpa jadwal).
+3. Isi kolom Bukti.
+
+| Item | Bukti | QA |
+|---|---|---|
+| BX.1 daftar jadi tabel: Proyek, Client, Shooting (relatif), Pendaftar (bar), Tindakan | `admin/projects/index`: `<table class="tabel-proyek">` (`.table-container.tp-wrap`), kolom Proyek (nama + kode + Urgent di baris kode), Client (`namaClient()` + kontak, "Belum ada Client"), Shooting (`rentangShooting()` jadi `05–06 Okt 2026` + `keteranganShooting()` baru: dalam N hari/berlangsung/selesai, "Belum dijadwalkan"), Pendaftar (`n / kuota` + bar tipis, kuota 0 tanpa bar), Tindakan (Ditolak/Lowongan ditutup/Perlu tindakan + ⋮ + chevron). Controller tidak diubah (eager load sudah ada). Test baru `ProyekKeuanganTest::test_baris_tabel_client_shooting_relatif_dan_tanpa_tombol_lihat_detail`, `test_baris_tabel_perlu_tindakan_tetap_tampil_dan_kuota_nol_tanpa_bar` | [ ] |
+| BX.1 baris bisa diklik penuh, tombol Lihat detail dihapus, tinggi seragam | Stretched link `.tp-link::after` pada `tr` relative; ⋮ dan badge Perlu tindakan `z-index: 2`; hover `--bg-card-hover`; tombol "Lihat detail" dan teksnya dihapus (assert `assertDontSee`) | [ ] |
+| BX.1 mobile bertumpuk tanpa overflow 360/390 | CSS `max-width: 719px`: baris flex-wrap bertumpuk (nama+Urgent / Client / shooting · pendaftar / Tindakan), ⋮ di kanan atas. `BrOverflowMobileTest` hijau. Screenshot 390 px dicek lewat iframe 390 px (tidak ada overflow terlihat); 360 px tidak diambil | [ ] |
+| BX.2 test + SQLite & MySQL berurutan + screenshot | 611 → **613 passed** di SQLite lalu MySQL `jbtb_test` (berurutan). Screenshot (Edge headless, HTML hasil render test dengan data contoh, bukan DB asli): 1366 px dan 390 px di folder scratchpad sesi, `bx-1366.png`, `bx-390.png` | [ ] |

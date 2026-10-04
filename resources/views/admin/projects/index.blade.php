@@ -6,7 +6,7 @@
 <div class="card-header-row">
     <div>
         <div style="font-size: 16px; font-weight: 600;">Proyek</div>
-        <div style="font-size: var(--fs-sm); color: var(--text-secondary);">Semua proyek casting. Info lengkap, pendaftar, dan keuangan ada di Lihat detail.</div>
+        <div style="font-size: var(--fs-sm); color: var(--text-secondary);">Semua proyek casting. Info lengkap, pendaftar, dan keuangan ada di detail proyek (klik barisnya).</div>
     </div>
     <a href="{{ route('admin.projects.create') }}" class="btn btn-brand">+ Buat Proyek</a>
 </div>
@@ -53,14 +53,58 @@
         {{ array_filter(request()->except(['per', 'page'])) ? 'Tidak ada proyek yang sesuai filter.' : 'Belum ada proyek casting. Klik "+ Buat Proyek" untuk membuat yang pertama.' }}
     </div>
 @else
-    <div class="entity-card-grid" id="projects-grid">
+    <div class="table-container tp-wrap" id="projects-grid">
+    <table class="tabel-proyek">
+        <thead>
+            <tr><th>Proyek</th><th>Client</th><th>Shooting</th><th>Pendaftar</th><th style="text-align: right;">Tindakan</th></tr>
+        </thead>
+        <tbody>
         @foreach ($projects as $project)
             @php
                 $tahapProyek = $project->tahap();
                 $perluTindakan = $perlu[$project->id] ?? 0;
+                $kuota = (int) $project->kuota;
+                $ket = $project->keteranganShooting();
             @endphp
-            <div class="entity-card project-card" style="position: relative;">
-                <details style="position: absolute; top: 10px; right: 10px; z-index: 10;">
+            <tr>
+                <td class="tp-c-proyek">
+                    <a href="{{ route('admin.projects.show', $project) }}" class="tp-link">{{ $project->nama_produksi }}</a>
+                    <div class="tp-kode">
+                        <span class="kode-proyek">{{ $project->kode_proyek }}</span>
+                        @if ($project->isUrgent())
+                            <span class="badge badge-tolak">Urgent</span>
+                        @endif
+                    </div>
+                </td>
+                <td class="tp-c-client">
+                    @if ($project->client)
+                        <div class="tp-nama">{{ $project->namaClient() }}</div>
+                        @if ($project->client->nama_perusahaan)<div class="tp-sub">{{ $project->client->name }}</div>@endif
+                    @else
+                        <span class="tp-kosong">Belum ada Client</span>
+                    @endif
+                </td>
+                <td class="tp-c-shoot">
+                    @if ($ket)
+                        <div>{{ $project->rentangShooting() }}</div>
+                        <div class="tp-sub">{{ $ket }}</div>
+                    @else
+                        <span class="tp-kosong">Belum dijadwalkan</span>
+                    @endif
+                </td>
+                <td class="tp-c-daftar">
+                    <div>{{ $project->applications_count }} / {{ $kuota }}</div>
+                    @if ($kuota > 0)
+                        <div class="tp-bar"><i style="width: {{ min(100, round($project->applications_count / $kuota * 100)) }}%;"></i></div>
+                    @endif
+                </td>
+                <td class="tp-aksi"><div class="tp-aksi-isi">
+                @if ($project->client_request_status === 'ditolak')<span class="badge badge-tolak">Ditolak</span>@endif
+                @if ($tahapProyek === 'mendatang' && $project->status === 'ditutup')<span class="badge badge-netral">Lowongan ditutup</span>@endif
+                @if ($perluTindakan)
+                    <a href="{{ route('admin.projects.show', [$project, 'tab' => 'pendaftar']) }}" class="badge badge-pending" style="text-decoration: none;" title="Pendaftar yang menunggu tindakan Admin">Perlu tindakan ({{ $perluTindakan }})</a>
+                @endif
+                <details class="tp-menu">
                     <summary aria-label="Menu proyek" style="list-style: none; cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card);">
                         <i class="ti ti-dots-vertical"></i>
                     </summary>
@@ -80,36 +124,12 @@
                         <a href="{{ route('invoices.show', $project) }}" style="display: block; padding: 8px 14px; font-size: 13px; color: var(--text-primary); text-decoration: none;">Invoice</a>
                     </div>
                 </details>
-                <div class="entity-card-title" style="padding-right: 40px;">
-                    <a href="{{ route('admin.projects.show', $project) }}" style="color: inherit; text-decoration: none;">{{ $project->nama_produksi }}</a>
-                    <span class="kode-proyek">{{ $project->kode_proyek }}</span>
-                    @if ($project->isUrgent())
-                        <span class="badge badge-tolak">Urgent</span>
-                    @endif
-                </div>
-                <div class="entity-card-sub">
-                    {{ $project->client?->name ?? '-' }}{{ $project->client?->nama_perusahaan ? ' · '.$project->client->nama_perusahaan : '' }}
-                </div>
-
-                <div class="entity-card-row">
-                    <span class="entity-card-row-value">{{ $project->rentangShooting() }}</span>
-                    <span class="entity-card-row-value">{{ $project->applications_count }} / {{ $project->kuota }}</span>
-                </div>
-                @if ($project->client_request_status === 'ditolak' || ($tahapProyek === 'mendatang' && $project->status === 'ditutup'))
-                    <div style="margin-top: 8px;">
-                        @if ($project->client_request_status === 'ditolak')<span class="badge badge-tolak">Ditolak</span>@endif
-                        @if ($tahapProyek === 'mendatang' && $project->status === 'ditutup')<span class="badge badge-netral">Lowongan ditutup</span>@endif
-                    </div>
-                @endif
-                @if ($perluTindakan)
-                    <a href="{{ route('admin.projects.show', [$project, 'tab' => 'pendaftar']) }}" class="badge badge-pending" style="text-decoration: none; margin-top: 8px;" title="Pendaftar yang menunggu tindakan Admin">Perlu tindakan ({{ $perluTindakan }})</a>
-                @endif
-
-                <div class="entity-card-actions">
-                    <a href="{{ route('admin.projects.show', $project) }}" class="btn btn-brand" style="flex: 1; text-align: center;">Lihat detail</a>
-                </div>
-            </div>
+                <i class="ti ti-chevron-right tp-chevron" aria-hidden="true"></i>
+                </div></td>
+            </tr>
         @endforeach
+        </tbody>
+    </table>
     </div>
 @endif
 <x-pagination-bar :paginator="$projects" :pilihan="\App\Support\PerHalaman::KARTU" />
