@@ -86,6 +86,24 @@
         <div style="font-weight: 600; color: var(--warning, #eab308); margin-bottom: 4px;"><i class="ti ti-alert-circle"></i> Pembayaran Sedang Disengketakan</div>
         <div style="font-size: 13px; color: var(--text-secondary);">{{ $application->payment->alasan_sengketa }}</div>
     </div>
+    @if (auth()->user()->bisaSebagaiAdmin())
+        <div class="card" style="margin-top: 12px;">
+            <x-confirm-form action="{{ route('payments.selesaikan-sengketa', $application) }}" enctype="multipart/form-data" message="Selesaikan sengketa dan kembalikan pembayaran ke {{ $application->extras->user->name }}?">
+                <label>Tanggapan untuk Extras <span class="wajib" aria-hidden="true">*</span></label>
+                <textarea name="catatan" rows="3" maxlength="500" required style="width: 100%; margin-bottom: 8px; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); resize: vertical;"></textarea>
+                <label>Bukti transfer baru, bila transfer ulang atau koreksi</label>
+                <input type="file" name="bukti_transfer" accept=".jpg,.jpeg,.png,.pdf" style="margin-bottom: 10px;">
+                <button type="submit" class="btn btn-brand">Selesaikan dan kembalikan ke Extras</button>
+            </x-confirm-form>
+        </div>
+    @endif
+@endif
+
+@if ($application->payment->catatan_penyelesaian)
+    <div class="card" style="margin-top: 12px;">
+        <div style="font-weight: 600; margin-bottom: 4px;"><i class="ti ti-message-circle"></i> Tanggapan Admin</div>
+        <div style="font-size: 13.5px;">{{ $application->payment->catatan_penyelesaian }}</div>
+    </div>
 @endif
 
 @if ($application->payment->status === 'dikonfirmasi_diterima')

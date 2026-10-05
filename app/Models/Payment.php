@@ -7,8 +7,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['project_application_id', 'status', 'bukti_transfer_path', 'ditransfer_at', 'dikonfirmasi_at', 'alasan_sengketa'])]
+#[Fillable(['project_application_id', 'status', 'bukti_transfer_path', 'ditransfer_at', 'dikonfirmasi_at', 'alasan_sengketa', 'catatan_penyelesaian'])]
 class Payment extends Model
 {
     const LABELS = [
@@ -116,5 +117,17 @@ class Payment extends Model
             'status' => 'disengketakan',
             'alasan_sengketa' => $alasan,
         ]);
+    }
+
+    public function selesaikanSengketa(string $catatan, ?string $buktiBaru = null): void
+    {
+        $data = ['status' => 'ditransfer', 'catatan_penyelesaian' => $catatan];
+        if ($buktiBaru) {
+            if ($this->bukti_transfer_path) {
+                Storage::disk('local')->delete($this->bukti_transfer_path);
+            }
+            $data += ['bukti_transfer_path' => $buktiBaru, 'ditransfer_at' => now()];
+        }
+        $this->update($data);
     }
 }
