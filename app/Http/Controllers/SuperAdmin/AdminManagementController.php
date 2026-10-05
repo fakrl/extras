@@ -28,7 +28,7 @@ class AdminManagementController extends Controller
 
         $users = FilterAkun::terapkan(User::query()->where('id', '!=', auth()->id()), $f)
             ->with(['extrasProfile.categories', 'aktivitasTerakhir'])
-            ->paginate($f['role'] === User::ROLE_EXTRAS ? PerHalaman::dari($request, 24, PerHalaman::KARTU) : PerHalaman::dari($request, 25, PerHalaman::TABEL))
+            ->paginate($f['role'] === User::ROLE_EXTRAS ? PerHalaman::dari($request, PerHalaman::KARTU) : PerHalaman::dari($request, PerHalaman::TABEL))
             ->withQueryString();
 
         $tagGroups = ExtrasCategory::perGrup();

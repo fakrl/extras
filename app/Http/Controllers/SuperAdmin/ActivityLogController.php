@@ -44,7 +44,7 @@ class ActivityLogController extends Controller
             ->when($f['dari'] ?? null, fn ($query, $d) => $query->where('created_at', '>=', $d))
             ->when($f['sampai'] ?? null, fn ($query, $d) => $query->where('created_at', '<', date('Y-m-d', strtotime($d.' +1 day'))))
             ->latest('created_at')
-            ->paginate(PerHalaman::dari($request, 25, PerHalaman::TABEL))
+            ->paginate(PerHalaman::dari($request, PerHalaman::TABEL))
             ->withQueryString();
 
         $aksiList = ActivityLog::distinct()->orderBy('action')->pluck('action');

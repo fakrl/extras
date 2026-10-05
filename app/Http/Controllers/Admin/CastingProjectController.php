@@ -55,7 +55,7 @@ class CastingProjectController extends Controller
             ->when($tahap, fn ($q) => $diTahap($q, $tahap))
             ->orderByDesc('is_urgent')
             ->latest()
-            ->paginate(PerHalaman::dari($request, 24, PerHalaman::KARTU))
+            ->paginate(PerHalaman::dari($request, PerHalaman::KARTU))
             ->withQueryString();
 
         if ($request->boolean('urgent')) {
@@ -408,7 +408,7 @@ class CastingProjectController extends Controller
             ->when($urut === 'cocok', fn ($q) => $q->urutPalingCocok())
             ->when($urut === 'favorit', fn ($q) => $q->orderByDesc(ExtrasProfile::select('apresiasi')->whereColumn('extras_profiles.id', 'project_applications.extras_id')))
             ->latest()
-            ->paginate(PerHalaman::dari($request, 24, PerHalaman::KARTU))
+            ->paginate(PerHalaman::dari($request, PerHalaman::KARTU))
             ->withQueryString();
 
         $tagDicari = ExtrasCategory::dicariDiProyek($castingProject->id);

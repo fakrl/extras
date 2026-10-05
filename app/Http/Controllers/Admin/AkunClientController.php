@@ -30,7 +30,7 @@ class AkunClientController extends Controller
                 'applications' => fn ($a) => $a->diajukanKeClient()->with(['reviewClientTerakhir', 'castingProjectClass:id,nama_kelas', 'extras:id,user_id,foto_profil_path', 'extras.user:id,username'])->latest('updated_at'),
             ])])
             ->orderByDesc('proyek_client_max_created_at')->orderBy('name')
-            ->paginate(PerHalaman::dari($request, 25, PerHalaman::TABEL))
+            ->paginate(PerHalaman::dari($request, PerHalaman::TABEL))
             ->withQueryString();
 
         return view('admin.akun.client', ['clients' => $clients, 'q' => $q]);

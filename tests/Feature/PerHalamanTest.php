@@ -18,16 +18,16 @@ class PerHalamanTest extends TestCase
 
     public function test_helper_hanya_terima_pilihan(): void
     {
-        $dari = fn ($per) => PerHalaman::dari(Request::create('/', 'GET', ['per' => $per]), 25, PerHalaman::TABEL);
+        $dari = fn ($per) => PerHalaman::dari(Request::create('/', 'GET', ['per' => $per]), PerHalaman::TABEL);
 
         $this->assertSame(50, $dari('50'));
-        $this->assertSame(25, $dari('999'));
-        $this->assertSame(25, $dari('abc'));
-        $this->assertSame(25, $dari(['50']));
-        $this->assertSame(25, PerHalaman::dari(Request::create('/'), 25, PerHalaman::TABEL));
+        $this->assertSame(10, $dari('999'));
+        $this->assertSame(10, $dari('abc'));
+        $this->assertSame(10, $dari(['50']));
+        $this->assertSame(10, PerHalaman::dari(Request::create('/'), PerHalaman::TABEL));
     }
 
-    public function test_tabel_per_50_default_dan_halaman_2_bawa_per(): void
+    public function test_tabel_per_50_dan_halaman_2_bawa_per(): void
     {
         $sa = User::factory()->create(['role' => 'super_admin']);
         User::factory()->count(60)->create(['role' => 'client']);
@@ -46,11 +46,11 @@ class PerHalamanTest extends TestCase
             $this->assertStringContainsString('per=50', $r->viewData($var)->url(2), $route);
             $r->assertSee('Menampilkan 1–50 dari', false)->assertSee('name="per"', false)->assertSee('form="live-form"', false);
 
-            $this->assertSame(25, $this->get(route($route, $param + ['per' => 999]))->viewData($var)->perPage(), $route);
+            $this->assertSame(10, $this->get(route($route, $param + ['per' => 999]))->viewData($var)->perPage(), $route);
         }
     }
 
-    public function test_grid_kartu_pakai_12_24_48_96(): void
+    public function test_grid_kartu_pakai_12_24_48_96_default_12(): void
     {
         $sa = User::factory()->create(['role' => 'super_admin']);
         $admin = User::factory()->create(['role' => 'admin']);
@@ -63,14 +63,14 @@ class PerHalamanTest extends TestCase
 
         $akun = $this->actingAs($sa)->get(route('super-admin.akun.index', ['role' => 'extras', 'per' => 48]));
         $this->assertSame(48, $akun->viewData('users')->perPage());
-        $this->assertSame(24, $this->get(route('super-admin.akun.index', ['role' => 'extras', 'per' => 50]))->viewData('users')->perPage());
+        $this->assertSame(12, $this->get(route('super-admin.akun.index', ['role' => 'extras', 'per' => 50]))->viewData('users')->perPage());
 
         foreach ([
             [route('admin.projects.applicants', $project), 'applicants'],
             [route('admin.projects.index'), 'projects'],
         ] as [$url, $var]) {
-            $this->assertSame(24, $this->actingAs($admin)->get($url)->viewData($var)->perPage(), $url);
-            $this->assertSame(24, $this->get($url.'?per=25')->viewData($var)->perPage(), $url);
+            $this->assertSame(12, $this->actingAs($admin)->get($url)->viewData($var)->perPage(), $url);
+            $this->assertSame(12, $this->get($url.'?per=25')->viewData($var)->perPage(), $url);
             $r = $this->get($url.'?per=12&page=2')->assertOk();
             $this->assertSame(12, $r->viewData($var)->perPage());
             $this->assertStringContainsString('per=12', $r->viewData($var)->url(3));
