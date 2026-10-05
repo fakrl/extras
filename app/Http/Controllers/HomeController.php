@@ -7,6 +7,14 @@ use App\Models\ExtrasProfile;
 
 class HomeController extends Controller
 {
+    const CAST_MAKS = 12;
+
+    const PORTO_MAKS = 8;
+
+    const CAST_MUAT = 6;
+
+    const PORTO_MUAT = 4;
+
     public function index()
     {
         $allTerbuka = CastingProject::where('status', 'dibuka')
@@ -24,18 +32,21 @@ class HomeController extends Controller
             ->with('client:id,name,nama_perusahaan')
             ->orderByDesc('portofolio_tahun')
             ->latest('updated_at')
-            ->take(12)
+            ->take(self::PORTO_MAKS)
             ->get();
 
         $castExtras = ExtrasProfile::tampilDiBeranda()
             ->with(['user:id,username', 'categories' => fn ($q) => $q->where('grup', 'Usia tampilan')])
             ->latest('tampil_di_beranda_at')
-            ->limit(16)
+            ->limit(self::CAST_MAKS)
             ->get(['id', 'user_id', 'share_token', 'tampil_di_beranda_at']);
         if ($castExtras->count() < 4) {
             $castExtras = collect();
         }
 
-        return view('welcome', compact('proyekTerbuka', 'adaLebih', 'portofolio', 'castExtras'));
+        $castStatis = $castExtras->count() <= self::CAST_MUAT;
+        $portoStatis = $portofolio->count() <= self::PORTO_MUAT;
+
+        return view('welcome', compact('proyekTerbuka', 'adaLebih', 'portofolio', 'castExtras', 'castStatis', 'portoStatis'));
     }
 }

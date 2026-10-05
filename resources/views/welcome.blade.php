@@ -156,6 +156,12 @@
             .marquee-track > * { scroll-snap-align: start; }
             .marquee [data-dup] { display: none; }
         }
+        .baris-statis { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px 16px; max-width: 1500px; margin: 0 auto; padding: 4px 32px; }
+        .baris-statis > * { min-width: 0; }
+        .baris-statis .cast-card { flex: 0 1 210px; }
+        .baris-statis .porto-card { flex: 0 1 380px; }
+        @media (min-width: 768px) { .baris-statis { flex-wrap: nowrap; } }
+        @media (max-width: 767px) { .baris-statis .cast-card { flex-basis: 160px; } .baris-statis .porto-card { flex-basis: 280px; } }
         .hp-sec-head { max-width: 1100px; margin: 0 auto 2.5rem; padding: 0 32px; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px 24px; flex-wrap: wrap; }
         .hp-sec-title { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2.2rem, 5.5vw, 3.75rem); font-weight: 400; line-height: 1; letter-spacing: -0.04em; margin: 0; color: var(--hp-fg); }
         .hp-sec-note { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--hp-muted); }
@@ -371,9 +377,8 @@
         </div>
     </div>
 
-    {{-- Cast (BH.2): cuma Extras yang izin + disetujui Admin, minimal 4 --}}
+    {{-- Cast (BH.2): cuma Extras yang izin + disetujui Admin, minimal 4. CB: <= CAST_MUAT statis, lebih = marquee satu set duplikat --}}
     @if ($castExtras->isNotEmpty())
-    @php $putaran = (int) ceil(8 / $castExtras->count()); @endphp
     <section class="cast-section" id="cast" aria-labelledby="cast-judul">
         <div class="hp-sec-head">
             <div>
@@ -382,22 +387,22 @@
             </div>
             <span class="hp-sec-note">Extras JBTB</span>
         </div>
-        <div class="marquee" data-marquee style="--marquee-durasi: {{ $castExtras->count() * $putaran * 5 }}s;">
-            <div class="marquee-track">
-                @for ($r = 0; $r < $putaran * 2; $r++)
+        <div @class(['marquee' => ! $castStatis]) @unless ($castStatis) data-marquee style="--marquee-durasi: {{ $castExtras->count() * 5 }}s;" @endunless>
+            <div @class(['marquee-track' => ! $castStatis, 'baris-statis' => $castStatis])>
+                @foreach (range(0, $castStatis ? 0 : 1) as $r)
                     @foreach ($castExtras as $i => $ex)
                         <a href="{{ route('public.extras.profile', $ex->share_token) }}" class="cast-card"
                            @if ($r) data-dup aria-hidden="true" tabindex="-1" @endif>
                             <div class="cast-photo-wrap">
                                 <img src="{{ route('public.extras.foto', $ex->share_token) }}" alt="{{ $r ? '' : 'Foto @'.$ex->user->username }}" class="cast-photo" loading="lazy">
-                                <span class="cast-no" aria-hidden="true">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</span>
+                                @unless ($r)<span class="cast-no" aria-hidden="true">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</span>@endunless
                                 <span class="cast-view" aria-hidden="true">Lihat &#x2197;</span>
                             </div>
                             <div class="cast-name">{{ '@'.$ex->user->username }}</div>
                             <div class="cast-tag">{{ $ex->categories->first()?->nama ?? 'Extras' }}</div>
                         </a>
                     @endforeach
-                @endfor
+                @endforeach
             </div>
         </div>
     </section>
@@ -558,7 +563,6 @@
 
     {{-- Portofolio (BH.3): cuma proyek selesai yang dicentang Admin/SA --}}
     @if ($portofolio->isNotEmpty())
-    @php $putaranP = (int) ceil(4 / $portofolio->count()); @endphp
     <div class="film-strip-divider" aria-hidden="true"></div>
     <section class="porto-section" id="portofolio" aria-labelledby="porto-judul">
         <div class="hp-sec-head">
@@ -568,9 +572,9 @@
             </div>
             <span class="hp-sec-note">Produksi yang kami cast</span>
         </div>
-        <div class="marquee is-rev" data-marquee style="--marquee-durasi: {{ $portofolio->count() * $putaranP * 9 }}s;">
-            <div class="marquee-track">
-                @for ($r = 0; $r < $putaranP * 2; $r++)
+        <div @class(['marquee is-rev' => ! $portoStatis]) @unless ($portoStatis) data-marquee style="--marquee-durasi: {{ $portofolio->count() * 9 }}s;" @endunless>
+            <div @class(['marquee-track' => ! $portoStatis, 'baris-statis' => $portoStatis])>
+                @foreach (range(0, $portoStatis ? 0 : 1) as $r)
                     @foreach ($portofolio as $p)
                         @php $gambar = $p->poster_path; @endphp
                         <article class="porto-card" @if ($r) data-dup aria-hidden="true" @endif>
@@ -585,7 +589,7 @@
                             <div class="porto-sub">{{ implode(' · ', array_filter([$p->portofolio_jenis, $p->portofolio_tahun, $p->tampilkan_nama_client ? $p->namaClient() : null])) }}</div>
                         </article>
                     @endforeach
-                @endfor
+                @endforeach
             </div>
         </div>
     </section>
