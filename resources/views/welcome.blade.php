@@ -137,7 +137,7 @@
         }
 
         /* ── Marquee (BH.2/BH.3): track = 2 paruh identik, geser -50% ── */
-        .marquee { position: relative; overflow: hidden; }
+        .marquee { position: relative; overflow: hidden; max-width: var(--hp-reel, 1440px); margin-inline: auto; }
         .marquee::before, .marquee::after { content: ''; position: absolute; top: 0; bottom: 0; width: 80px; z-index: 2; pointer-events: none; }
         .marquee::before { left: 0; background: linear-gradient(to right, var(--hp-bg), transparent); }
         .marquee::after { right: 0; background: linear-gradient(to left, var(--hp-bg), transparent); }
@@ -156,7 +156,7 @@
             .marquee-track > * { scroll-snap-align: start; }
             .marquee [data-dup] { display: none; }
         }
-        .baris-statis { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px 16px; max-width: 1500px; margin: 0 auto; padding: 4px 32px; }
+        .baris-statis { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px 16px; max-width: var(--hp-reel, 1440px); margin: 0 auto; padding: 4px 32px; }
         .baris-statis > * { min-width: 0; }
         .baris-statis .cast-card { flex: 0 1 210px; }
         .baris-statis .porto-card { flex: 0 1 380px; }
