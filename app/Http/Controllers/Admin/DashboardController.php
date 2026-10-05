@@ -8,6 +8,7 @@ use App\Models\EventShootingDate;
 use App\Models\Payment;
 use App\Models\ProjectApplication;
 use App\Support\AdminRingkasan;
+use App\Support\KorlapRingkasan;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -52,7 +53,21 @@ class DashboardController extends Controller
             ->get()
             ->map(fn ($e) => tap($e, fn ($e) => $e->nama_produksi = $e->castingProject?->nama_produksi));
 
-        return view('admin.dashboard', compact(
+        $korlap = [];
+        if ($user->bisaSebagaiKorlap() && ! ($user->bisaSebagaiAdmin() && $user->modeSa() !== 'korlap')) {
+            $id = $user->isKorlap() ? $user->id : null;
+            $punyaTugas = ! $id || $user->adminProjectAssignments()->exists();
+            $hari = ['Hari ini' => KorlapRingkasan::shooting(today()->toDateString(), $id), 'Besok' => KorlapRingkasan::shooting(today()->addDay()->toDateString(), $id)];
+            $korlap = [
+                'punyaTugas' => $punyaTugas,
+                'hari' => $hari,
+                'terdekat' => $hari['Hari ini']->isEmpty() ? KorlapRingkasan::shootingTerdekat($id) : null,
+                'menunggu' => KorlapRingkasan::menungguValidasi(10, $id),
+                'catatan' => KorlapRingkasan::catatanTerbaru(5, $id),
+            ];
+        }
+
+        return view('admin.dashboard', $korlap + compact(
             'proyekAktif',
             'totalPendaftar',
             'perluDinego',
