@@ -387,6 +387,7 @@ Route::middleware('auth')->prefix('pembayaran')->group(function () {
     Route::post('/{application}/konfirmasi', [PaymentController::class, 'konfirmasi'])->name('payments.confirm');
     Route::post('/{application}/addon', [PaymentController::class, 'addAddon'])->name('payments.addon');
     Route::post('/{application}/sengketa', [PaymentController::class, 'sengketa'])->name('payments.sengketa');
+    Route::post('/{application}/selesaikan-sengketa', [PaymentController::class, 'selesaikanSengketa'])->name('payments.selesaikan-sengketa');
     Route::get('/{application}/bukti', [PaymentController::class, 'buktiStream'])->name('payments.bukti');
 });
 

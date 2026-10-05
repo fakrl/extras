@@ -8,6 +8,7 @@ use App\Notifications\InAppNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -171,6 +172,52 @@ class PaymentController extends Controller
             $application
         );
 
+        $application->loadMissing('extras.user', 'castingProject.admin');
+        $proyek = $application->castingProject;
+        $proyek->admin?->kabari(
+            'Pembayaran Disengketakan',
+            "{$application->extras->user->name} melaporkan masalah pembayaran di proyek {$proyek->namaKode()}: ".Str::limit($request->alasan, 100),
+            route('payments.show', $application),
+            jenis: 'sengketa_pembayaran',
+        );
+
         return back()->with('status', 'Pembayaran ditandai sebagai sengketa. Admin akan menindaklanjuti.');
+    }
+
+    public function selesaikanSengketa(Request $request, ProjectApplication $application): RedirectResponse
+    {
+        abort_unless($request->user()->bisaSebagaiAdmin(), 403);
+        $this->guardStatusLolos($application);
+
+        if ($application->payment?->status !== 'disengketakan') {
+            return back()->with('error', 'Hanya pembayaran yang disengketakan yang bisa diselesaikan.');
+        }
+
+        $data = $request->validate([
+            'catatan' => ['required', 'string', 'max:500'],
+            'bukti_transfer' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+        ]);
+
+        $transferUlang = $request->hasFile('bukti_transfer');
+        $application->payment->selesaikanSengketa(
+            $data['catatan'],
+            $transferUlang ? $request->file('bukti_transfer')->store('payments/bukti-transfer', 'local') : null
+        );
+
+        ActivityLog::record(
+            'RESOLVE_DISPUTE',
+            "{$request->user()->label()} {$request->user()->name} menyelesaikan sengketa pembayaran proyek '{$application->castingProject->nama_produksi}'".($transferUlang ? ' (dengan transfer ulang)' : ''),
+            $application
+        );
+
+        $application->loadMissing('extras.user');
+        $application->extras->user->kabari(
+            'Admin Menanggapi Laporanmu',
+            "Admin menanggapi laporan pembayaran di proyek {$application->castingProject->namaKode()}. Silakan cek dan konfirmasi.",
+            route('payments.show', $application),
+            jenis: 'sengketa_ditanggapi',
+        );
+
+        return back()->with('status', 'Sengketa diselesaikan, pembayaran dikembalikan ke Extras.');
     }
 }

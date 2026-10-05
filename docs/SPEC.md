@@ -1975,3 +1975,71 @@ Keputusan Fakrul: dashboard Korlap sekarang cuma paragraf `alert-info` + dua tom
 | BZ.1 partial bersama dipakai Monitoring SA dan dashboard Korlap, alert-info dihapus | `partials/korlap-ringkasan.blade.php` (param `masuk`: true = `<button form="mon-masuk">` di Monitoring SA, false = tautan `admin.attendance.index`, selfie `#app-{id}`); `monitoring/korlap` tinggal `@include`. Dashboard Korlap: alert-info dihapus, dua tombol di atas lalu partial; `monitoring/_gaya` di-include (CSS tidak diduplikat). Cabang Admin/kalender tidak diubah. Data lewat `KorlapRingkasan` di `Admin\DashboardController` | [ ] |
 | BZ.2 filter penugasan Korlap (SA tetap semua), keadaan kosong ramah | `?int $korlapId` di `shooting`, `menungguValidasi`, `catatanTerbaru`, plus `shootingTerdekat` (tanpa ini tanggal shooting proyek lain bocor); `whereHas ... adminAssignments.user_id`. Dashboard: `$user->isKorlap() ? $user->id : null`, jadi SA (godmode mode Korlap) dan Monitoring SA tanpa filter. Tanpa penugasan: "Belum ada proyek yang ditugaskan kepadamu" | [ ] |
 | BZ.3 test + SQLite & MySQL berurutan + screenshot aplikasi asli | 615 → **620 passed** SQLite lalu MySQL `jbtb_test` (berurutan, driver dicek `mysql`). `BzDashboardKorlapTest` (+5): proyek lain tidak bocor di shooting/selfie/catatan/terdekat, baris = tautan absensi, kosong ramah, SA godmode & Monitoring SA tetap semua + form mode-SA. `BrOverflowMobileTest` hijau. Screenshot aplikasi asli (artisan serve, SQLite sementara + `DemoLengkapSeeder`, Edge/Playwright, 1366 & 390; overflow 0 px): `bz-{bambang,dedi,kosong}-{1366,390}.png` di scratchpad sesi (Bambang: ada penugasan + data; Dedi: ada penugasan tanpa shooting hari ini; Kosong: tanpa penugasan). DB dev asli tidak disentuh | [ ] |
+
+---
+
+# Bagian CA: Penyelesaian sengketa pembayaran (5 Oktober 2026)
+
+> **FEATURE FREEZE tetap berlaku.** Ini menutup jalan buntu pada fitur yang sudah ada (sengketa bisa diajukan tapi tidak bisa diselesaikan), bukan fitur baru. Menyentuh pembayaran: **subagent WAJIB**. Satu migrasi kecil aditif. Commit, **jangan push** sebelum Fakrul cek.
+
+Temuan Fakrul saat uji mandiri: Extras yang menekan "Laporkan Masalah" membuat `payments.status = disengketakan`, lalu **tidak ada yang bisa dilakukan** (`PaymentController` cuma punya `sengketa()`; tidak ada jalan keluar dari status itu). Temuan tambahan dari kode: pengajuan sengketa **hanya** menulis ActivityLog, **tidak ada notifikasi ke Admin PIC**, jadi Admin baru tahu kalau membuka dashboard.
+
+## CA.1: Alur yang diinginkan
+
+Hanya satu jalur, sederhana: Extras lapor → Admin menanggapi → pembayaran kembali ke `ditransfer` → Extras konfirmasi atau lapor lagi.
+
+1. **Notifikasi saat sengketa diajukan:** di `PaymentController::sengketa()`, kabari **Admin PIC proyek** (pola `User::kabari`/`InAppNotification` seperti notif keputusan Client), jenis baru `sengketa_pembayaran`, isi: nama Extras, kode proyek, alasan (dipotong), tautan ke `payments.show`.
+2. **Form "Selesaikan sengketa"** di `payments/show.blade.php`, tampil untuk Admin/SA (`bisaSebagaiAdmin()`) hanya bila `status === disengketakan`, di bawah kotak "Pembayaran Sedang Disengketakan" yang sudah ada. Isi:
+   - `catatan` (wajib, maks 500): tanggapan/penjelasan Admin ke Extras.
+   - `bukti_transfer` baru (**opsional**, jpg/jpeg/png/pdf, maks 5 MB): diisi bila Admin melakukan transfer ulang/koreksi.
+   - Tombol "Selesaikan dan kembalikan ke Extras" dibungkus `<x-confirm-form>`.
+   - Komponen tambahan (add-on) tetap bisa ditambah lewat form add-on yang sudah ada (status belum `dikonfirmasi_diterima`).
+3. **Route baru** `payments.selesaikan-sengketa` (POST, `/{application}/selesaikan-sengketa`). Guard server: hanya `bisaSebagaiAdmin()`; `guardStatusLolos`; status harus `disengketakan` (selain itu `back()->with('error', …)`). Korlap tidak boleh.
+4. **Method model** `Payment::selesaikanSengketa(string $catatan, ?string $buktiBaru)`: status → `ditransfer`; bila ada bukti baru: ganti `bukti_transfer_path` (hapus file lama dari disk) dan `ditransfer_at = now()`; simpan `catatan_penyelesaian`; `alasan_sengketa` **tetap tersimpan** (riwayat, jangan dikosongkan).
+5. **Migrasi aditif:** `payments.catatan_penyelesaian` text nullable. Tidak ada kolom/tabel lain. Perbarui `$fillable`.
+6. **Extras setelah diselesaikan:** notif "Admin menanggapi laporanmu" dengan tautan ke `payments.show`. Di halaman, tampilkan kartu "Tanggapan Admin" berisi `catatan_penyelesaian` (dan tautan bukti baru bila ada). Tombol Konfirmasi dan Laporkan Masalah yang sudah ada tampil lagi karena status kembali `ditransfer`; Extras boleh lapor lagi (tercatat di log tiap kali).
+7. **ActivityLog:** aksi baru `RESOLVE_DISPUTE` ("Selesaikan sengketa pembayaran") ditambahkan di `ActivityLog::actionLabel`. Catat aktor dan apakah ada transfer ulang.
+8. **Dashboard:** hitungan/kartu sengketa di dashboard Admin dan Super Admin tetap, otomatis berkurang saat status keluar dari `disengketakan`. Daftar "perlu tindakan" (`AdminRingkasan`, 'Tinjau') tidak berubah.
+
+## CA.2: Test dan penutup
+
+1. Test: Extras lapor → Admin PIC dapat notif; Admin menyelesaikan tanpa bukti baru → status `ditransfer`, `catatan_penyelesaian` tersimpan, `alasan_sengketa` tetap; dengan bukti baru → path dan `ditransfer_at` berganti, file lama terhapus; catatan kosong ditolak; Korlap dan Extras ditolak (403); status bukan `disengketakan` ditolak; Extras dapat notif tanggapan; Extras bisa konfirmasi (`dikonfirmasi_diterima`) dan bisa lapor lagi; SA godmode bisa menyelesaikan.
+2. Guard BS.2 dan alur transfer biasa tidak berubah (test lama tetap hijau).
+3. SQLite lalu MySQL `jbtb_test` **berurutan** (catat driver). Screenshot aplikasi asli: halaman pembayaran sebagai Extras (sebelum lapor, setelah lapor), sebagai Admin (form selesaikan), sebagai Extras setelah ditanggapi.
+
+| Item | Bukti | QA |
+|---|---|---|
+| CA.1 notif ke Admin PIC saat sengketa diajukan | `PaymentController::sengketa()` memanggil `$proyek->admin?->kabari(..., jenis: 'sengketa_pembayaran')`: nama Extras, kode proyek, alasan dipotong 100, tautan `payments.show`. Validasi dan guard sengketa lama tidak diubah | [ ] |
+| CA.1 form + route + method selesaikan sengketa, migrasi `catatan_penyelesaian` | Migrasi aditif `2026_10_05_000001` (`catatan_penyelesaian` text nullable, tanpa SQL khusus driver, jalan di SQLite dan MySQL). Route `payments.selesaikan-sengketa`; guard: `bisaSebagaiAdmin()` (Korlap/Extras 403), `guardStatusLolos`, status harus `disengketakan` (selain itu `back()` error), `catatan` wajib maks 500, `bukti_transfer` opsional jpg/png/pdf maks 5 MB. `Payment::selesaikanSengketa()`: status `ditransfer`; bukti baru menghapus file lama + `ditransfer_at = now()`; `alasan_sengketa` tetap. Form di `payments/show` dengan `x-confirm-form` | [ ] |
+| CA.1 Extras: notif tanggapan + kartu "Tanggapan Admin", bisa konfirmasi/lapor lagi | Notif `sengketa_ditanggapi` ke Extras; kartu "Tanggapan Admin" tampil bila `catatan_penyelesaian` terisi; tombol Konfirmasi/Laporkan muncul lagi karena status `ditransfer` (diuji: lapor lagi lalu konfirmasi). Catatan: kartu menampilkan tanggapan terakhir, tetap tampil bila Extras lapor lagi sampai ditanggapi ulang | [ ] |
+| CA.1 ActivityLog `RESOLVE_DISPUTE` | Label "Selesaikan sengketa pembayaran" di `ActivityLog::ACTION_LABELS`; deskripsi memuat aktor dan "(dengan transfer ulang)" bila ada bukti baru | [ ] |
+| CA.2 test + SQLite & MySQL berurutan + screenshot aplikasi asli | 620 → **628 passed** SQLite lalu MySQL `jbtb_test` (berurutan, driver dicek `mysql`). `CaSelesaikanSengketaTest` (+8): notif PIC, tanpa/dengan bukti baru (file lama terhapus), catatan kosong, Korlap/Extras 403, status salah, konfirmasi dan lapor lagi, SA godmode. `PaymentAddonTest` dan test pembayaran lama hijau, guard BS.2 tidak diubah. Screenshot aplikasi asli (artisan serve, SQLite sementara + `DemoLengkapSeeder`, Edge/Playwright; overflow 0 px): `ca-1-extras-sebelum-lapor`, `ca-2-extras-setelah-lapor`, `ca-3-admin-form-selesaikan`, `ca-3b-admin-setelah-selesai`, `ca-4-extras-setelah-ditanggapi`, `ca-5-extras-ditanggapi-390` di scratchpad sesi. DB dev asli tidak disentuh | [ ] |
+
+---
+
+# Bagian CB: Landing page, data dinamis tidak diulang-ulang (5 Oktober 2026)
+
+> **FEATURE FREEZE tetap berlaku.** Perapian tampilan `welcome.blade.php`. Commit, **jangan push** sebelum Fakrul cek.
+
+Temuan dari `welcome.blade.php`: bagian **Cast** dan **Portofolio** memakai marquee yang menggandakan isi secara paksa (`$putaran = ceil(8 / jumlah)`, `$putaranP = ceil(4 / jumlah)`, lalu `@for` ×2). Akibatnya bila datanya sedikit (mis. 4 Extras), orang yang sama muncul berulang di layar desktop dan terlihat seperti data palsu. Keputusan Fakrul: **data dinamis dibatasi sesuai muat layar desktop; kalau tidak muat, jalan lalu berulang mulus, tapi jangan menggandakan data sedikit supaya terlihat banyak.**
+
+## CB.1: Aturan tampilan
+
+1. **Batas jumlah di sisi server** (controller `HomeController`, bukan di Blade): Cast paling banyak **12**, Portofolio paling banyak **8** (urutan/kurasi seperti sekarang, tidak ada perubahan logika). Jadikan konstanta bernama.
+2. **Cukup di satu layar → statis.** Bila total lebar kartu ≤ lebar kontainer desktop (cast ≈ 6 kartu, portofolio ≈ 3–4 kartu, ikuti lebar `.cast-card` / `.porto-card` yang sudah ada), tampilkan sebagai **baris/grid statis rata tengah**, **tanpa marquee, tanpa duplikat**. Tentukan lewat hitungan jumlah (konstanta, mis. `CAST_MUAT = 6`, `PORTO_MUAT = 4`), bukan JS ukur layar.
+3. **Lebih banyak dari muat → marquee berulang mulus** (perilaku sekarang), tapi penggandaan **hanya satu kali** (dua paruh identik agar `translateX(-50%)` mulus, paruh kedua `aria-hidden` dan `tabindex=-1`), **tidak lagi memakai `$putaran`**. Kecepatan konstan per kartu (durasi = jumlah kartu × detik per kartu).
+4. Hapus `$putaran`, `$putaranP`, dan `@for ($r …)` yang menggandakan. Pertahankan: jeda saat hover/fokus/sentuh, `prefers-reduced-motion` (daftar bisa di-scroll horizontal tanpa duplikat, `[data-dup]` disembunyikan), gradien tepi, dan nomor urut `cast-no` (hanya pada kartu asli).
+5. **Mobile:** tetap boleh geser horizontal seperti sekarang; aturan batas jumlah yang sama berlaku. Tidak ada overflow halaman di 360/390 px.
+6. Bagian Cast dan Portofolio tetap tidak tampil bila datanya kosong (kondisi `isNotEmpty()` yang sudah ada).
+
+## CB.2: Test dan penutup
+
+1. Test (feature, render `/`): 3 Extras → tidak ada elemen `data-dup` dan tidak ada track beranimasi; 6 → statis; 7+ → marquee dengan tepat satu set duplikat (jumlah kartu = 2 × jumlah asli); 20 Extras di database → maksimal 12 tampil; tanpa data → bagian tidak muncul; tidak ada Extras yang muncul dua kali pada kondisi statis.
+2. `BrOverflowMobileTest` hijau untuk `/`. SQLite lalu MySQL `jbtb_test` berurutan.
+3. Screenshot aplikasi asli (1366 dan 390 px), tiga skenario data: sedikit (3 Extras, 2 portofolio), pas (6 / 4), banyak (12+ / 8+).
+
+| Item | Bukti | QA |
+|---|---|---|
+| CB.1 batas jumlah di controller (Cast 12, Portofolio 8), konstanta bernama | | [ ] |
+| CB.1 statis bila muat, marquee bila lebih, tanpa `$putaran`, satu set duplikat | | [ ] |
+| CB.2 test + overflow + SQLite & MySQL berurutan + screenshot 3 skenario data | | [ ] |

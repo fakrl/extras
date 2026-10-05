@@ -30,6 +30,7 @@ class ActivityLog extends Model
         'SUBMIT_PROJECT_REQUEST' => 'Ajukan proyek',
         'CONFIRM_PAYMENT' => 'Konfirmasi pembayaran',
         'DISPUTE_PAYMENT' => 'Sengketakan pembayaran',
+        'RESOLVE_DISPUTE' => 'Selesaikan sengketa pembayaran',
         'UPLOAD_PAYOUT_TRANSFER' => 'Unggah bukti transfer',
         'STAFF_PAYROLL_PAID' => 'Bayar honor staf',
         'UPDATE_HONOR' => 'Ubah honor staf',
