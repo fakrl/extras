@@ -27,7 +27,7 @@ class ModeRoleController extends Controller
                 ->orWhere('username', 'like', "%{$q}%")
                 ->orWhere('email', 'like', "%{$q}%")
                 ->orWhere('nama_perusahaan', 'like', "%{$q}%")))
-            ->orderBy('name')->paginate(PerHalaman::dari($request, 25, PerHalaman::TABEL))->withQueryString();
+            ->orderBy('name')->paginate(PerHalaman::dari($request, PerHalaman::TABEL))->withQueryString();
 
         return view('super-admin.mode-role', compact('mode', 'akun', 'q'));
     }

@@ -105,9 +105,9 @@ class BrAkunExtrasTest extends TestCase
             ->assertSee(route('admin.extras.favorit', $fav->user_id), false)
             ->assertDontSee('class="xgrid"', false);
 
-        // per kartu (24) tidak berlaku di tampilan daftar → default tabel 25
+        // per kartu (24) tidak berlaku di tampilan daftar → default tabel 10
         $this->actingAs($admin)->get(route('admin.akun.extras', ['tampil' => 'daftar', 'per' => 24]))
-            ->assertViewHas('extras', fn ($p) => $p->perPage() === 25);
+            ->assertViewHas('extras', fn ($p) => $p->perPage() === 10);
     }
 
     public function test_export_mengikuti_filter_aktif(): void

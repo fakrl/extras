@@ -24,7 +24,7 @@ class UserManagementController extends Controller
         $perPilihan = $daftar ? PerHalaman::TABEL : PerHalaman::KARTU;
         $extras = FilterAkun::terapkan(User::query(), $f)
             ->with(['extrasProfile' => fn ($q) => $q->withProyekSelesai()->withBatalMendadak()->withTerpilih(), 'extrasProfile.user:id,username', 'extrasProfile.categories'])
-            ->paginate(PerHalaman::dari($request, $daftar ? 25 : 24, $perPilihan))
+            ->paginate(PerHalaman::dari($request, $perPilihan))
             ->withQueryString();
         $tagGroups = ExtrasCategory::perGrup();
         $mangkrakCount = User::mangkrak()->count();

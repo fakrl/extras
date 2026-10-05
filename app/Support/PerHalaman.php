@@ -10,10 +10,10 @@ class PerHalaman
 
     public const KARTU = [12, 24, 48, 96];
 
-    public static function dari(Request $request, int $default, array $pilihan): int
+    public static function dari(Request $request, array $pilihan): int
     {
         $per = filter_var($request->query('per'), FILTER_VALIDATE_INT);
 
-        return in_array($per, $pilihan, true) ? $per : $default;
+        return in_array($per, $pilihan, true) ? $per : min($pilihan);
     }
 }
