@@ -41,30 +41,41 @@ class KorlapRingkasan
         ];
     }
 
-    public static function shooting(string $tanggal): Collection
+    // BZ.2: $korlapId diisi = hanya proyek penugasan Korlap itu; null = semua (Super Admin).
+    private static function penugasan(?int $korlapId): \Closure
+    {
+        return fn ($q) => $q->where('user_id', $korlapId);
+    }
+
+    public static function shooting(string $tanggal, ?int $korlapId = null): Collection
     {
         return EventShootingDate::whereDate('tanggal', $tanggal)
+            ->when($korlapId, fn ($q) => $q->whereHas('castingProject.adminAssignments', self::penugasan($korlapId)))
             ->with(['castingProject.adminAssignments.user', 'castingProject.shootingDates'])
             ->orderBy('jam_mulai')->get()
             ->filter(fn ($sd) => $sd->castingProject)
             ->each(fn ($sd) => $sd->rekap = self::rekap(self::peserta($sd->castingProject, $sd)));
     }
 
-    public static function shootingTerdekat(): ?EventShootingDate
+    public static function shootingTerdekat(?int $korlapId = null): ?EventShootingDate
     {
-        return EventShootingDate::whereDate('tanggal', '>', today())->orderBy('tanggal')->first();
+        return EventShootingDate::whereDate('tanggal', '>', today())
+            ->when($korlapId, fn ($q) => $q->whereHas('castingProject.adminAssignments', self::penugasan($korlapId)))
+            ->orderBy('tanggal')->first();
     }
 
-    public static function menungguValidasi(int $limit = 10): Collection
+    public static function menungguValidasi(int $limit = 10, ?int $korlapId = null): Collection
     {
         return Attendance::where('status_validasi', 'menunggu')
+            ->when($korlapId, fn ($q) => $q->whereHas('projectApplication.castingProject.adminAssignments', self::penugasan($korlapId)))
             ->with(['projectApplication.extras.user', 'projectApplication.castingProject:id,nama_produksi'])
             ->latest()->take($limit)->get();
     }
 
-    public static function catatanTerbaru(int $limit = 5): Collection
+    public static function catatanTerbaru(int $limit = 5, ?int $korlapId = null): Collection
     {
-        return FieldNote::with(['korlap:id,name', 'projectApplication.extras.user', 'projectApplication.castingProject:id,nama_produksi'])
+        return FieldNote::when($korlapId, fn ($q) => $q->whereHas('projectApplication.castingProject.adminAssignments', self::penugasan($korlapId)))
+            ->with(['korlap:id,name', 'projectApplication.extras.user', 'projectApplication.castingProject:id,nama_produksi'])
             ->latest()->take($limit)->get();
     }
 }

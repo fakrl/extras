@@ -2,6 +2,8 @@
 
 @section('title', 'Dashboard Admin')
 
+@include('super-admin.monitoring._gaya')
+
 @section('content')
 @php $tampilAdmin = auth()->user()->bisaSebagaiAdmin() && auth()->user()->modeSa() !== 'korlap'; @endphp
 @if ($tampilAdmin)
@@ -95,13 +97,15 @@
         </div>
     </div>
 @elseif (auth()->user()->bisaSebagaiKorlap())
-    <div class="alert-info" style="margin-bottom: 16px;">
-        Sebagai Koordinator Lapangan (Korlap), tugas utama kamu adalah memvalidasi kehadiran Extras di lokasi syuting dan mencatat evaluasi lapangan.
-    </div>
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
         <a href="{{ route('admin.attendance.index') }}" class="btn btn-brand"><i class="ti ti-camera"></i> Absensi Lapangan</a>
         <a href="{{ route('admin.work-history') }}" class="btn">Riwayat Kerja & Status Gaji Saya</a>
     </div>
+    @if ($punyaTugas)
+        @include('partials.korlap-ringkasan', ['masuk' => false])
+    @else
+        <div class="card"><div class="dash-sub" role="status">Belum ada proyek yang ditugaskan kepadamu.</div></div>
+    @endif
 @else
     <div class="alert-info">
         Akses kamu sebagai {{ auth()->user()->role }} terbatas ke pencatatan penugasan & riwayat kerja.

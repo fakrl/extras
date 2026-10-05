@@ -1944,3 +1944,34 @@ Fakrul: kolom Tindakan jangan titik tiga, jadikan ikon saja supaya langsung keli
 | BY.1 tinggi baris seragam, Selesai/Ditolak dipudarkan, lebar kolom tetap | `table-layout: fixed`, kolom tetap, tinggi baris 80 px (terukur seragam di semua tab 1366 px), kelas `tp-pudar` untuk Selesai/Ditolak (tanpa badge Perlu tindakan), header Tindakan kosong | [ ] |
 | BY.2 screenshot aplikasi asli (menu terbuka di baris atas/tengah/bawah, 1366 & 390) | Aplikasi asli (server dev, SQLite sementara + `DemoLengkapSeeder`, login Super Admin, Edge headless), 1366 & 390: semua tab, hover, fokus, salin link; tanpa overflow. Menu ⋮ sudah tidak ada (BY.0), jadi butir "menu terbuka" tidak berlaku. File di folder scratchpad sesi: `by-{1366,390}-{semua,menunggu_acc,mendatang,berjalan,selesai,hover,fokus,salin}.png`. DB dev asli tidak disentuh | [ ] |
 | BY.2 test + SQLite & MySQL berurutan + overflow 360/390 | 613 → **615 passed** di SQLite lalu MySQL `jbtb_test` (berurutan). +2 di `ProyekKeuanganTest`; `BrOverflowMobileTest` hijau; overflow horizontal 0 px di 390 px (360 px tidak diambil) | [ ] |
+
+---
+
+# Bagian BZ: Dashboard Korlap = isi halaman Monitoring Korlap (4 Oktober 2026)
+
+> **FEATURE FREEZE tetap berlaku.** Mengisi dashboard yang kosong dengan komponen yang sudah ada, bukan fitur baru. Commit, **jangan push** sebelum Fakrul cek.
+
+Keputusan Fakrul: dashboard Korlap sekarang cuma paragraf `alert-info` + dua tombol (`admin/dashboard.blade.php` cabang `bisaSebagaiKorlap()`), kosong. Pakai isi halaman **Monitoring ▸ Korlap** milik Super Admin (`super-admin/monitoring/korlap.blade.php`, data dari `App\Support\KorlapRingkasan`): Shooting hari ini & besok (rekap hadir/menunggu validasi/tidak hadir + bar), Menunggu validasi (selfie), Catatan lapangan terbaru.
+
+## BZ.1: Satu partial, dua pemakai
+
+1. Ekstrak isi `<div class="mon-dua">…</div>` dari `monitoring/korlap.blade.php` ke partial bersama (mis. `partials/korlap-ringkasan.blade.php`). Halaman Monitoring SA dan dashboard Korlap sama-sama `@include` partial itu. Jangan menyalin markup, jangan menulis ulang query.
+2. Partial menerima parameter cara klik baris: di Monitoring SA baris tetap `<button form="mon-masuk">` (masuk mode Korlap); di dashboard Korlap baris berupa **tautan biasa** ke `admin.attendance.index` (parameter sama seperti `$absensi(...)`, untuk selfie dengan `#app-{id}`). Kelas gaya `monitoring/_gaya` ikut dipakai di dashboard (jangan duplikat CSS).
+3. Dashboard Korlap (cabang `bisaSebagaiKorlap()` dan bukan mode Admin): hapus paragraf `alert-info`. Urutan: dua tombol aksi yang sudah ada (Absensi Lapangan, Riwayat Kerja & Status Gaji Saya) di atas, lalu partial ringkasan. Komponen lain yang sudah tampil untuk Korlap (mis. kalender) tetap, jangan dihapus.
+4. Controller dashboard memuat data lewat `KorlapRingkasan` (`shooting(hari ini)`, `shooting(besok)`, `shootingTerdekat()` bila hari ini kosong, `menungguValidasi()`, `catatanTerbaru()`), sama seperti `MonitoringController::korlap()`.
+
+## BZ.2: Batasi ke proyek yang ditugaskan (penting)
+
+`KorlapRingkasan` di Monitoring SA menampilkan **semua** proyek (SA melihat semuanya). Di dashboard Korlap sungguhan, Korlap hanya boleh melihat proyek yang **ditugaskan kepadanya** (`admin_project_assignments.user_id`). Tambah parameter opsional `?int $korlapId = null` pada ketiga method `KorlapRingkasan` (shooting, menungguValidasi, catatanTerbaru); bila diisi, filter ke proyek penugasan Korlap itu. Dashboard Korlap memakai `auth()->id()` bila role asli `korlap`; Monitoring SA dan SA yang masuk mode Korlap (godmode) tetap tanpa filter. Korlap tanpa penugasan: tampil keadaan kosong yang ramah ("Belum ada proyek yang ditugaskan kepadamu"), bukan halaman kosong atau error.
+
+## BZ.3: Test dan penutup
+
+1. Test: dashboard Korlap menampilkan shooting hari ini/besok proyek penugasannya; **tidak** menampilkan proyek yang bukan penugasannya (selfie dan catatan juga); Korlap tanpa penugasan melihat pesan kosong; baris klik menuju halaman absensi (bukan form mode SA); Monitoring SA tidak berubah (tetap semua proyek, tetap tombol masuk-mode).
+2. `BrOverflowMobileTest` hijau (dashboard Korlap di 360/390 px). SQLite lalu MySQL `jbtb_test` berurutan.
+3. Screenshot **dari aplikasi asli** (login sebagai Korlap demo, 1366 dan 390 px), satu Korlap dengan penugasan dan satu tanpa.
+
+| Item | Bukti | QA |
+|---|---|---|
+| BZ.1 partial bersama dipakai Monitoring SA dan dashboard Korlap, alert-info dihapus | `partials/korlap-ringkasan.blade.php` (param `masuk`: true = `<button form="mon-masuk">` di Monitoring SA, false = tautan `admin.attendance.index`, selfie `#app-{id}`); `monitoring/korlap` tinggal `@include`. Dashboard Korlap: alert-info dihapus, dua tombol di atas lalu partial; `monitoring/_gaya` di-include (CSS tidak diduplikat). Cabang Admin/kalender tidak diubah. Data lewat `KorlapRingkasan` di `Admin\DashboardController` | [ ] |
+| BZ.2 filter penugasan Korlap (SA tetap semua), keadaan kosong ramah | `?int $korlapId` di `shooting`, `menungguValidasi`, `catatanTerbaru`, plus `shootingTerdekat` (tanpa ini tanggal shooting proyek lain bocor); `whereHas ... adminAssignments.user_id`. Dashboard: `$user->isKorlap() ? $user->id : null`, jadi SA (godmode mode Korlap) dan Monitoring SA tanpa filter. Tanpa penugasan: "Belum ada proyek yang ditugaskan kepadamu" | [ ] |
+| BZ.3 test + SQLite & MySQL berurutan + screenshot aplikasi asli | 615 → **620 passed** SQLite lalu MySQL `jbtb_test` (berurutan, driver dicek `mysql`). `BzDashboardKorlapTest` (+5): proyek lain tidak bocor di shooting/selfie/catatan/terdekat, baris = tautan absensi, kosong ramah, SA godmode & Monitoring SA tetap semua + form mode-SA. `BrOverflowMobileTest` hijau. Screenshot aplikasi asli (artisan serve, SQLite sementara + `DemoLengkapSeeder`, Edge/Playwright, 1366 & 390; overflow 0 px): `bz-{bambang,dedi,kosong}-{1366,390}.png` di scratchpad sesi (Bambang: ada penugasan + data; Dedi: ada penugasan tanpa shooting hari ini; Kosong: tanpa penugasan). DB dev asli tidak disentuh | [ ] |
