@@ -181,21 +181,11 @@
                             <a href="{{ route('super-admin.admins.show', $u) }}">{{ $u->name }}</a>
                         @endif
                         <x-status-badge :model="$u" />
-                        @if ($grade = $u->extrasProfile?->grade_saat_ini)
-                            <span class="badge badge-netral">Grade {{ $grade }}</span>
-                        @endif
+                        <span class="badge {{ $statusBadge($u)[1] }}">{{ $statusBadge($u)[0] }}</span>
+                        <span class="akun-meta">{{ $sejak($u) }}</span>
                     </div>
                     <div class="akun-meta">
-                        {{ implode(' · ', array_filter([$u->username ? '@'.$u->username : null, $u->email, $u->nomor_wa ? '+'.$u->nomor_wa : null, $u->nama_perusahaan])) }}
-                    </div>
-                    <div class="akun-meta"><span class="badge {{ $statusBadge($u)[1] }}">{{ $statusBadge($u)[0] }}</span> {{ $sejak($u) }}</div>
-                    <div class="akun-log">
-                        <i class="ti ti-activity"></i>
-                        @if ($log = $u->aktivitasTerakhir)
-                            <span title="{{ $log->description }}">{{ $log->description }}</span> · <time datetime="{{ $log->created_at->toIso8601String() }}">{{ $log->created_at->locale('id')->diffForHumans() }}</time>
-                        @else
-                            Belum ada aktivitas.
-                        @endif
+                        {{ implode(' · ', array_filter([$u->username ? '@'.$u->username : null, $u->email])) }}
                     </div>
                 </div>
                 <details class="akun-kebab">

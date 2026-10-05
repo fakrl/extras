@@ -108,13 +108,13 @@ class ManajemenAkunTest extends TestCase
             ->assertSee(route('super-admin.admins.toggle-status', $profil->user_id));
     }
 
-    public function test_baris_menampilkan_status_sejak_dan_aktivitas_terakhir(): void
+    public function test_baris_menampilkan_status_sejak_tanpa_aktivitas_terakhir(): void
     {
         $admin = User::factory()->create(['role' => 'admin', 'name' => 'Admin Log']);
         ActivityLog::create(['user_id' => $admin->id, 'role' => 'admin', 'action' => 'X', 'description' => 'Log lama', 'created_at' => now()->subDay()]);
         ActivityLog::create(['user_id' => $admin->id, 'role' => 'admin', 'action' => 'X', 'description' => 'Log paling baru', 'created_at' => now()]);
 
-        $this->akun()->assertSee('aktif sejak')->assertSee('Log paling baru')->assertDontSee('Log lama')
+        $this->akun()->assertSee('aktif sejak')->assertDontSee('Log paling baru')->assertDontSee('Log lama')
             ->assertSee('client-baru-dialog', false)->assertSee('add-admin-dialog', false);
     }
 
