@@ -306,7 +306,7 @@ class DemoLengkapSeeder extends Seeder
         $this->log($fakrul, 'REJECT_PROJECT_REQUEST', "Super Admin menolak permintaan proyek '{$p5->nama_produksi}' dari Client", $p5, -9);
 
         // P6: lowongan urgent kosong
-        $p6 = $this->project('Iklan "Bank Digital"', $yoga, -1, ['deadline' => today()->addDays(7), 'kuota' => 10, 'is_urgent' => true]);
+        $p6 = $this->project('Iklan "Bank Digital"', $yoga, -1, ['deadline' => today()->addDays(7), 'kuota' => 10, 'is_urgent' => true, 'nego_terbuka' => false]);
         $this->jadwal($p6, [10], 'SCBD, Jakarta Selatan');
         $this->kelas($p6, 'Nasabah muda', 10, 450000, ['Dewasa', 'Pekerja kantoran']);
         $p6->adminAssignments()->create(['user_id' => $yoga->id, 'assigned_by' => $fakrul->id]);

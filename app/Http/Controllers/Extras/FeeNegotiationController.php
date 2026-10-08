@@ -41,6 +41,10 @@ class FeeNegotiationController extends Controller
     public function counter(Request $request, ProjectApplication $application): RedirectResponse
     {
         $this->pastikanMilikSendiri($request, $application);
+        if (! $application->castingProject->nego_terbuka) {
+            return back()->with('error', 'Fee proyek ini tetap dan tidak bisa ditawar.');
+        }
+
         $application->pastikanMasihBisaNego();
 
         $data = $request->validate([

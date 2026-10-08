@@ -54,6 +54,7 @@
                 'Lowongan' => ucfirst($p->status),
                 'Pengajuan' => ucfirst(str_replace('_', ' ', $p->client_request_status)),
                 'Urgent' => $p->is_urgent ? 'Ya' : 'Tidak',
+                'Fee' => $p->nego_terbuka ? 'Terbuka untuk nego fee' : 'Fee tetap',
             ] as $label => $value)
                 <div class="entity-card-row">
                     <span class="entity-card-row-label">{{ $label }}</span>

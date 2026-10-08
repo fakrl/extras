@@ -46,6 +46,9 @@
         .btn-brand:hover { filter: brightness(1.08); }
         .btn-outline { background: transparent; color: var(--text-primary); border: 1px solid var(--border-color); }
         .btn-outline:hover { background: var(--bg-card); }
+        .badge { display: inline-flex; padding: 3px 10px; border-radius: var(--radius-sm); border: 1px solid transparent; font-size: var(--fs-xs); font-weight: 500; }
+        .badge-info { background: rgba(29,78,216,0.12); border-color: rgba(29,78,216,0.35); color: var(--info); }
+        .badge-netral { background: rgba(148,163,184,0.18); border-color: rgba(148,163,184,0.4); color: var(--text-secondary); }
         p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
     </style>
 </head>
@@ -64,6 +67,7 @@
             <a href="{{ route('home') }}" class="btn-outline">Ke Beranda SIM Casting JBTB</a>
         @else
             <h1>{{ $project->nama_produksi }}</h1>
+            <p style="margin: 0 0 8px;">@include('partials.label-nego', ['project' => $project])</p>
             <p class="meta">Deadline pendaftaran: {{ $project->deadline->format('d M Y') }} · Kuota: {{ $project->kuota }} orang</p>
             {{-- lokasi disembunyikan sebelum lolos (AZ.1, keputusan akhir D17) --}}
 

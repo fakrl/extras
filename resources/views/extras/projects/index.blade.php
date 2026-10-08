@@ -25,6 +25,7 @@
                 @if ($project->isUrgent())
                     <span class="badge badge-tolak">Butuh Dadakan</span>
                 @endif
+                @include('partials.label-nego', ['project' => $project])
             </div>
             <span style="color: var(--text-muted); font-size: 13px;">Deadline: {{ $project->deadline->format('d M Y') }}</span>
         </div>

@@ -80,6 +80,13 @@
                     <label for="is_urgent" style="margin-bottom:0;">Butuh Dadakan / Urgent</label>
                 </div>
             </div>
+            <div style="padding-top: 22px;">
+                <div class="form-check">
+                    <input type="checkbox" name="nego_terbuka" value="1" id="nego_terbuka" @checked(old('nego_terbuka', $castingProject->nego_terbuka)) @disabled($castingProject->sudahAdaPenawaran())>
+                    <label for="nego_terbuka" style="margin-bottom:0;">Fee bisa dinego</label>
+                </div>
+                <div style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $castingProject->sudahAdaPenawaran() ? 'Sudah ada penawaran, tidak bisa diubah' : 'Matikan bila fee proyek ini tetap dan tidak bisa ditawar' }}</div>
+            </div>
         </div>
 
         <hr>

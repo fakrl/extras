@@ -5,6 +5,10 @@
 @section('content')
 <p style="color: var(--text-secondary); margin: -8px 0 20px; font-size: 13.5px;">
     Client: {{ $castingProject->namaClient() }} · Deadline: {{ $castingProject->deadline->format('d M Y') }}
+    @if ($castingProject->isUrgent())
+        <span class="badge badge-tolak">Butuh Dadakan</span>
+    @endif
+    @include('partials.label-nego', ['project' => $castingProject])
 </p>
 
 <div class="card" style="margin-bottom: 16px;">

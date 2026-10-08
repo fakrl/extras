@@ -7,6 +7,9 @@
     Proyek: {{ $application->castingProject->nama_produksi }} ·
     Rate card awal: Rp {{ number_format($application->extras->rate_card ?? 0, 0, ',', '.') }} ·
     Status: <span class="badge badge-pending">{{ $application->status_partisipasi }}</span>
+    @unless ($application->castingProject->nego_terbuka)
+        <span class="badge badge-netral">Fee tetap</span>
+    @endunless
 </p>
 
 <div style="margin-bottom: 80px;">
@@ -49,6 +52,9 @@
             <input type="text" name="catatan" class="input-inline" placeholder="Catatan/alasan" style="min-width: 200px;">
             <button class="btn btn-brand">Ajukan Fee Awal</button>
         </form>
+        @unless ($application->castingProject->nego_terbuka)
+            <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 6px;">Penawaran ini final, Extras hanya bisa menerima atau menolak.</div>
+        @endunless
     @else
         @php $nominalTerakhir = $application->feeNegotiations->last()->nominal; @endphp
         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
@@ -56,12 +62,14 @@
                 <input type="hidden" name="nominal" value="{{ $nominalTerakhir }}">
                 <button type="submit" class="btn btn-brand">Terima Rp {{ number_format($nominalTerakhir, 0, ',', '.') }} untuk {{ $application->extras->user->name }}</button>
             </x-confirm-form>
+            @if ($application->castingProject->nego_terbuka)
             <form method="POST" action="{{ route('admin.negotiations.counter', $application) }}" style="display: flex; gap: 8px; flex-wrap: wrap;">
                 @csrf
                 <input type="number" name="nominal" class="input-inline" placeholder="Nominal counter *" required style="width: 140px;">
                 <input type="text" name="catatan" class="input-inline" placeholder="Catatan/alasan counter" style="min-width: 180px;">
                 <button class="btn">Counter</button>
             </form>
+            @endif
         </div>
 
         <div style="margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--border-color);">

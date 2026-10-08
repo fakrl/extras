@@ -21,13 +21,15 @@ use Illuminate\Support\Carbon;
 #[Fillable([
     'admin_id', 'nama_produksi', 'poster_path',
     'share_token', 'link_grup', 'deadline', 'kuota',
-    'is_urgent', 'status', 'client_request_status', 'brief_catatan', 'alasan_tolak', 'client_id',
+    'is_urgent', 'nego_terbuka', 'status', 'client_request_status', 'brief_catatan', 'alasan_tolak', 'client_id',
     'tampil_portofolio', 'portofolio_judul', 'portofolio_jenis', 'portofolio_tahun', 'tampilkan_nama_client',
 ])]
 class CastingProject extends Model
 {
     /** @use HasFactory<CastingProjectFactory> */
     use HasFactory;
+
+    protected $attributes = ['nego_terbuka' => true];
 
     const LABELS = [
         'dibuka' => 'Dibuka',
@@ -54,6 +56,7 @@ class CastingProject extends Model
         return [
             'deadline' => 'date',
             'is_urgent' => 'boolean',
+            'nego_terbuka' => 'boolean',
             'tampil_portofolio' => 'boolean',
             'portofolio_tahun' => 'integer',
             'tampilkan_nama_client' => 'boolean',
@@ -129,6 +132,11 @@ class CastingProject extends Model
     public function applications(): HasMany
     {
         return $this->hasMany(ProjectApplication::class);
+    }
+
+    public function sudahAdaPenawaran(): bool
+    {
+        return FeeNegotiation::whereIn('project_application_id', $this->applications()->select('id'))->exists();
     }
 
     /** BK.4: dipanggil Admin/Client setelah menambah tanggal shooting; cuma tanggal yang baru dicek. */
