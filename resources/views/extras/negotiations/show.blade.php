@@ -52,12 +52,16 @@
                 <button type="submit" class="btn btn-brand">Terima Rp {{ number_format($application->feeNegotiations->last()->nominal, 0, ',', '.') }}</button>
             </x-confirm-form>
 
+            @if ($application->castingProject->nego_terbuka)
             <form method="POST" action="{{ route('extras.negotiations.counter', $application) }}" style="display: flex; gap: 8px; flex-wrap: wrap; flex: 1;">
                 @csrf
                 <input type="number" name="nominal" class="input-inline" placeholder="Nominal counter (Rp) *" required style="min-width: 150px;">
                 <input type="text" name="catatan" class="input-inline" placeholder="Alasan counter (misal: butuh transport)" style="flex: 1; min-width: 200px;">
                 <button class="btn">Ajukan Counter</button>
             </form>
+            @else
+            <p style="margin: 0; flex: 1; font-size: 13.5px; color: var(--text-secondary);">Penawaran ini final, tidak bisa ditawar. Terima atau tolak.</p>
+            @endif
         </div>
     </div>
 @else

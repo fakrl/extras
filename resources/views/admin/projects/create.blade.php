@@ -42,6 +42,13 @@
                     <label for="is_urgent" style="margin-bottom:0;">Butuh Dadakan / Urgent</label>
                 </div>
             </div>
+            <div style="padding-top: 22px;">
+                <div class="form-check">
+                    <input type="checkbox" name="nego_terbuka" value="1" id="nego_terbuka" @checked(old() ? old('nego_terbuka') : true)>
+                    <label for="nego_terbuka" style="margin-bottom:0;">Fee bisa dinego</label>
+                </div>
+                <div style="font-size: var(--fs-xs); color: var(--text-muted);">Matikan bila fee proyek ini tetap dan tidak bisa ditawar</div>
+            </div>
         </div>
 
         <div class="form-row">

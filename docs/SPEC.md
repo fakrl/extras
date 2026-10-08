@@ -2043,3 +2043,48 @@ Temuan dari `welcome.blade.php`: bagian **Cast** dan **Portofolio** memakai marq
 | CB.1 batas jumlah di controller (Cast 12, Portofolio 8), konstanta bernama | `HomeController::CAST_MAKS = 12`, `PORTO_MAKS = 8` (dipakai di `limit()`/`take()`), `CAST_MUAT = 6`, `PORTO_MUAT = 4`. Kurasi/urutan tidak diubah, aturan BH "Cast minimal 4 atau bagian disembunyikan" tetap | [ ] |
 | CB.1 statis bila muat, marquee bila lebih, tanpa `$putaran`, satu set duplikat | Controller kirim `$castStatis`/`$portoStatis` (jumlah <= muat). Statis: `.baris-statis` (flex rata tengah, kartu boleh menyusut di desktop, wrap di mobile), tanpa `.marquee`/`data-marquee`, tanpa duplikat. Lebih: marquee, `@foreach (range(0, 1))` = tepat satu set duplikat (`data-dup aria-hidden tabindex=-1`), durasi = jumlah kartu × 5 s (Cast) / 9 s (Portofolio). `$putaran`, `$putaranP`, `@for` dihapus; `cast-no` hanya di kartu asli; hover/fokus/sentuh, reduced-motion, gradien tepi tidak diubah | [ ] |
 | CB.2 test + overflow + SQLite & MySQL berurutan + screenshot 3 skenario data | 628 → **634 passed** SQLite lalu MySQL `jbtb_test` (berurutan, driver dicek `mysql`). `CbLandingTanpaDuplikatTest` (+6): konstanta, kosong dan 3 Extras tersembunyi, 4 dan 6 statis tanpa duplikat dan tiap @username sekali, 7 = 14 kartu satu set dup, 20 Extras maksimal 12, Portofolio 2/4 statis, 5 marquee, 15 maksimal 8. `BhBerandaCastTest`, `BhPortofolioTest`, `BrOverflowMobileTest` hijau. Screenshot aplikasi asli (artisan serve, SQLite sementara + `DemoLengkapSeeder`, Edge/Playwright, 1366 dan 390, overflow 0 px): `cb-{sedikit,sedikit3,pas,banyak}-{cast,porto}-{1366,390}.png` di scratchpad sesi. "Sedikit" = 4 Extras + 2 portofolio; 3 Extras = bagian Cast tersembunyi (aturan BH minimal 4), screenshot `sedikit3` hanya Portofolio. Banyak = 16 diset, 12 tampil + set dup; Portofolio 11 diset, 8 tampil | [ ] |
+
+---
+
+# Bagian CC: Nego fee opsional per proyek (8 Oktober 2026)
+
+> **FEATURE FREEZE tetap berlaku.** Perubahan kecil dan aditif (satu kolom, satu toggle, satu guard, satu label), bukan modul baru. Menyentuh alur nego/pembayaran: **subagent WAJIB**. Commit, **jangan push** sebelum Fakrul cek.
+
+Keputusan Fakrul: tidak semua proyek bisa dinego. Admin memilih **saat membuat proyek** apakah fee terbuka untuk nego atau tetap, dan lowongan menampilkan keterangannya ("Terbuka untuk nego fee" / "Fee tetap"). Default **terbuka** supaya semua proyek lama dan perilaku sekarang tidak berubah.
+
+## CC.1: Data dan form
+
+1. **Migrasi aditif:** `casting_projects.nego_terbuka` boolean, `default(true)`, not null. Tambah ke `$fillable`/casts `CastingProject`. Tidak ada tabel lain.
+2. **Form buat dan edit proyek** (`admin/projects/create|edit`): saklar **"Fee bisa dinego"**, default **aktif**, dengan teks bantu satu baris ("Matikan bila fee proyek ini tetap dan tidak bisa ditawar"). Validasi di `store()` dan `update()` (`nullable|boolean`, `$request->boolean(...)` seperti `is_urgent`).
+3. **Kunci perubahan:** saklar hanya bisa diubah selama **belum ada negosiasi berjalan** pada proyek itu (tidak ada `fee_negotiations` untuk aplikasi proyek ini). Setelah ada penawaran pertama, saklar dinonaktifkan di form edit dengan keterangan "Sudah ada penawaran, tidak bisa diubah", dan `update()` mengabaikan perubahan nilainya (guard server, bukan hanya `disabled` di HTML).
+4. Pengajuan brief Client (`ProjectRequestController`): tidak ada isian ini; proyek dibuat dengan default `true`. Admin boleh mengubahnya di edit sebelum penawaran pertama.
+5. `DemoLengkapSeeder`: jadikan **satu** proyek demo berstatus `nego_terbuka = false` supaya dua perilaku bisa diuji, sisanya `true`. Perbarui `docs/AKUN-DEMO.md` (catat proyek mana).
+
+## CC.2: Perilaku saat nego ditutup ("Fee tetap")
+
+Admin tetap mengajukan penawaran fee awal ke tiap kandidat (nominal bisa beda per Extras/grade). Bedanya, penawaran itu **final**: Extras hanya bisa **Terima** atau **Tolak/batalkan**.
+
+1. **Guard server:** `Extras\FeeNegotiationController::counter()` menolak (`back()->with('error', 'Fee proyek ini tetap dan tidak bisa ditawar.')`, tanpa membuat baris `fee_negotiations`) bila `! $application->castingProject->nego_terbuka`. Sama untuk `Admin\FeeNegotiationController::counter()` (pertahanan berlapis).
+2. **UI Extras** (halaman nego Extras): bila nego ditutup, sembunyikan form counter; tampilkan teks "Penawaran ini final, tidak bisa ditawar. Terima atau tolak." Tombol Terima dan Batalkan yang sudah ada tetap.
+3. **UI Admin** (halaman nego Admin): bila ditutup, label "Fee tetap" di dekat judul dan teks bantu pada form penawaran awal ("Penawaran ini final, Extras hanya bisa menerima atau menolak").
+4. Alur status tidak berubah (`direview_admin → nego_fee → deal`, dan `ditolak`/`dibatalkan` seperti sekarang). Tidak ada status baru. Terima oleh Extras tetap menghasilkan `deal` dan fee terkunci.
+
+## CC.3: Label di lowongan
+
+1. Tampilkan lencana kecil **di samping badge Urgent / info proyek** pada: daftar lowongan Extras, detail lowongan Extras, dan halaman publik `/event/{token}`: `badge-info` "Terbuka untuk nego fee" bila `nego_terbuka`, `badge-netral` "Fee tetap" bila tidak. Pakai satu komponen/partial kecil agar tiga tempat konsisten.
+2. Di admin: tampilkan di tab **Info** detail proyek saja. **Jangan** tambah kolom/badge di daftar Proyek (tabel sudah dirapikan).
+3. **Jangan tampilkan nominal apa pun** di label (budget Client dan margin tidak boleh bocor ke Extras/publik, lihat batas D6-bis).
+
+## CC.4: Test dan penutup
+
+1. Test: default proyek baru `nego_terbuka = true`; saklar tersimpan saat buat dan edit; edit ditolak diam-diam (nilai tidak berubah) setelah ada `fee_negotiations`; counter Extras ditolak dan tidak membuat baris pada proyek `nego_terbuka = false`, tetap berhasil pada `true`; counter Admin ditolak pada proyek tetap; Terima oleh Extras pada proyek tetap menghasilkan `deal`; label "Terbuka untuk nego fee" / "Fee tetap" muncul di daftar lowongan, detail lowongan, dan `/event/{token}`, dan tidak muncul di daftar Proyek Admin; halaman publik tidak memuat nominal.
+2. `BrOverflowMobileTest` hijau. SQLite lalu MySQL `jbtb_test` **berurutan** (catat driver). Screenshot aplikasi asli (1366 dan 390 px): form buat proyek (saklar), lowongan dengan dua label, halaman nego Extras pada proyek tetap (tanpa form counter).
+3. Isi kolom Bukti. Dokumen manager (BAB-3 RF-17, PRD-LITE) diperbarui oleh manager, bukan Claude Code.
+
+| Item | Bukti | QA |
+|---|---|---|
+| CC.1 migrasi `nego_terbuka` (default true) + saklar di form buat/edit + kunci setelah ada penawaran | Migrasi `2026_10_08_000001_add_nego_terbuka_to_casting_projects_table` (boolean, default true). `CastingProject`: `$fillable`, cast, `$attributes` default true, `sudahAdaPenawaran()`. Form buat/edit: saklar "Fee bisa dinego" + teks bantu; edit disabled + "Sudah ada penawaran, tidak bisa diubah". `store()`/`update()` validasi `nullable|boolean`; `update()` melewati kolom bila sudah ada `fee_negotiations` (guard server). Brief Client tidak berubah (default true) | [ ] |
+| CC.1 seeder demo: satu proyek `nego_terbuka = false`, `AKUN-DEMO.md` diperbarui | `DemoLengkapSeeder`: P6 "Bank Digital" `nego_terbuka = false`, sisanya default true. `docs/AKUN-DEMO.md` bagian P6 diperbarui | [ ] |
+| CC.2 guard counter (Extras dan Admin) + UI tanpa form counter + teks "final" | `counter()` di `Extras\FeeNegotiationController` dan `Admin\FeeNegotiationController` redirect `with('error', 'Fee proyek ini tetap dan tidak bisa ditawar.')` tanpa baris baru. UI Extras: form counter diganti "Penawaran ini final, tidak bisa ditawar. Terima atau tolak." (Terima/Batalkan tetap). UI Admin: badge "Fee tetap" di header + teks bantu di form penawaran awal + form counter disembunyikan. Tanpa status baru | [ ] |
+| CC.3 label "Terbuka untuk nego fee" / "Fee tetap" di lowongan, detail, event publik (satu partial) | Partial `partials/label-nego` (`badge-info` / `badge-netral`, tanpa nominal) dipakai di `extras/projects/index`, `extras/projects/show` (sekalian badge Butuh Dadakan), `public/event` (CSS badge ditambah). Admin: baris "Fee" di tab Info `admin/projects/show`; daftar Proyek tidak diubah | [ ] |
+| CC.4 test + SQLite & MySQL berurutan + screenshot aplikasi asli | 634 → **639 passed** SQLite lalu MySQL `jbtb_test` (berurutan, kolom `nego_terbuka` terverifikasi di jbtb_test). `CcNegoTerbukaTest` (+5): default dan saklar buat/edit, edit diabaikan setelah ada penawaran, counter Extras ditolak (tetap) dan sukses (terbuka), counter Admin ditolak + Terima Extras jadi `deal`, label di lowongan/detail/event dan tidak di daftar Proyek Admin, event tanpa "Rp". `BrOverflowMobileTest` hijau. Screenshot **dilewati** (tidak dikerjakan di sesi ini) | [ ] |

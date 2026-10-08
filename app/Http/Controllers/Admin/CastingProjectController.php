@@ -118,6 +118,7 @@ class CastingProjectController extends Controller
             'deadline' => ['required', 'date'],
             'kuota' => ['required', 'integer', 'min:1'],
             'is_urgent' => ['nullable', 'boolean'],
+            'nego_terbuka' => ['nullable', 'boolean'],
             'tanggal_shooting' => ['required', 'array', 'min:1'],
             'tanggal_shooting.*' => ['required', 'date'],
             'kelas' => ['required', 'array', 'min:1'],
@@ -153,6 +154,7 @@ class CastingProjectController extends Controller
             'deadline' => $data['deadline'],
             'kuota' => $data['kuota'],
             'is_urgent' => $request->boolean('is_urgent'),
+            'nego_terbuka' => $request->boolean('nego_terbuka'),
             'status' => 'dibuka',
             'client_request_status' => 'disetujui',
         ]);
@@ -208,6 +210,7 @@ class CastingProjectController extends Controller
             'deadline' => ['required', 'date'],
             'kuota' => ['required', 'integer', 'min:1'],
             'is_urgent' => ['nullable', 'boolean'],
+            'nego_terbuka' => ['nullable', 'boolean'],
             'tanggal_shooting' => ['required', 'array', 'min:1'],
             'tanggal_shooting.*' => ['required', 'date'],
             'kelas' => ['required', 'array', 'min:1'],
@@ -261,6 +264,10 @@ class CastingProjectController extends Controller
             'kuota' => $data['kuota'],
             'is_urgent' => $request->boolean('is_urgent'),
         ];
+
+        if (! $castingProject->sudahAdaPenawaran()) {
+            $updateData['nego_terbuka'] = $request->boolean('nego_terbuka');
+        }
 
         if ($request->hasFile('poster_path')) {
             if ($castingProject->poster_path) {
