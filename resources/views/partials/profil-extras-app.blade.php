@@ -15,6 +15,9 @@
             <button type="submit" class="btn btn-sm" aria-pressed="false"><i class="ti ti-star" aria-hidden="true"></i> Jadikan Favorit</button>
         @endif
     </form>
+    @if ($profile->user?->nomorWaInternasional())
+        <div style="padding: 10px 16px; border-bottom: 1px solid var(--border-color);">@include('partials.tombol-wa', ['user' => $profile->user, 'pesanWa' => null])</div>
+    @endif
 @endif
 @include('partials.profil-extras-editorial', [
     'mode' => $mode,

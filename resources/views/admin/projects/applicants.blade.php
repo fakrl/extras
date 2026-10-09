@@ -132,6 +132,7 @@
         'lihat' => $ex->user ? ['href' => route('admin.extras.profil', $ex->user), 'data-profil-modal' => true, 'data-aksi-dialog' => 'detail-'.$app->id, 'data-aksi-label' => 'Detail & aksi'] : ['onclick' => "document.getElementById('detail-{$app->id}').showModal()"],
         'aksi' => $aksi,
         'favorit' => true,
+        'wa' => true,
         'peringatan' => $app->bentrok_jadwal_flag ? 'Bentrok jadwal' : null,
         'attrs' => [
             'id' => 'app-'.$app->id,

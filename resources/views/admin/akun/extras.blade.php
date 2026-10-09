@@ -124,7 +124,10 @@
                             </form>
                         @endif
                     </td>
-                    <td><button type="button" class="btn btn-sm" onclick="document.getElementById('kelola-{{ $ex->id }}').showModal()">Kelola</button></td>
+                    <td style="white-space: nowrap;">
+                        @include('partials.tombol-wa', ['user' => $ex, 'pesanWa' => null])
+                        <button type="button" class="btn btn-sm" onclick="document.getElementById('kelola-{{ $ex->id }}').showModal()">Kelola</button>
+                    </td>
                 </tr>
             @empty
                 <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px 0;">Tidak ada Extras yang cocok.</td></tr>
@@ -145,6 +148,7 @@
                 'lihat' => $ex->extrasProfile ? ['href' => route('admin.extras.profil', $ex), 'data-profil-modal' => true, 'data-aksi-dialog' => 'kelola-'.$ex->id, 'data-aksi-label' => 'Kelola'] : ['onclick' => "document.getElementById('kelola-{$ex->id}').showModal()"],
                 'aksi' => ['label' => 'Kelola', 'onclick' => "document.getElementById('kelola-{$ex->id}').showModal()"],
                 'favorit' => true,
+                'wa' => true,
                 'peringatan' => $cancelCount ? $cancelCount.'x batal mendadak' : null,
             ])
         @empty

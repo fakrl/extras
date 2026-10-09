@@ -1,4 +1,4 @@
-{{-- BA.4: kartu Extras. Param: profile, user?, aplikasi?, badge? [label, class], highlight?, check? [name, class, form], lihat [href (+ data-profil-modal, data-aksi-*)|onclick], aksi? [label, href|onclick|post (+method, confirm)], sub?, peringatan?, attrs?, favorit? (bintang Admin/SA) --}}
+{{-- BA.4: kartu Extras. Param: profile, user?, aplikasi?, badge? [label, class], highlight?, check? [name, class, form], lihat [href (+ data-profil-modal, data-aksi-*)|onclick], aksi? [label, href|onclick|post (+method, confirm)], sub?, peringatan?, attrs?, favorit? (bintang Admin/SA), wa? + pesanWa? (tombol WA Admin/SA) --}}
 @php
     $aplikasi ??= null;
     $favorit = ($favorit ?? false) && $profile && auth()->user()?->bisaSebagaiAdmin();
@@ -18,6 +18,8 @@
     $selesai = $profile?->proyek_selesai_count;
     $lihatTag = isset($lihat['href']) ? 'a' : 'button';
     $lihatAttr = isset($lihat['href']) ? $lihat : ['type' => 'button'] + $lihat;
+    $bisaAdmin = auth()->user()?->bisaSebagaiAdmin();
+    $tombolWa = ($wa ?? false) && $bisaAdmin && $user?->nomorWaInternasional();
 @endphp
 <article {{ (new \Illuminate\View\ComponentAttributeBag($attrs ?? []))->class(['xcard', 'is-highlight' => $highlight ?? false, 'has-ring' => $persen !== null]) }}>
     <div class="xcard-ph" style="--h: {{ crc32((string) $nama) % 360 }};">
@@ -90,5 +92,10 @@
                 <button type="button" class="btn btn-brand" onclick="{{ $aksi['onclick'] }}">{{ $aksi['label'] }}</button>
             @endif
         </div>
+        @if ($tombolWa)
+            <div class="xcard-btns xcard-btns-2">
+                @include('partials.tombol-wa', ['user' => $user, 'pesanWa' => $pesanWa ?? null])
+            </div>
+        @endif
     </div>
 </article>

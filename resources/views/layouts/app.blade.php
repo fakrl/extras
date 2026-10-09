@@ -360,6 +360,7 @@
         .xtag-grup { font-size: var(--fs-xs); color: var(--text-muted); font-weight: 600; margin: 8px 0 4px; }
         .xcard-btns { display: flex; gap: 8px; margin-top: auto; padding-top: 8px; }
         .xcard-btns > *, .xcard-btns form .btn { flex: 1; min-width: 0; width: 100%; }
+        .xcard-btns-2 { margin-top: 0; }
         .xcard-btns .btn { padding: 0 8px; font-weight: 600; font-size: var(--fs-sm); line-height: 1.2; text-align: center; }
         .btn-outline-brand { border-color: var(--accent); color: var(--accent-strong); }
         .xfilter { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: var(--space-3); }

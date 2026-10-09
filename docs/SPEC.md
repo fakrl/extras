@@ -2068,6 +2068,7 @@ Admin tetap mengajukan penawaran fee awal ke tiap kandidat (nominal bisa beda pe
 2. **UI Extras** (halaman nego Extras): bila nego ditutup, sembunyikan form counter; tampilkan teks "Penawaran ini final, tidak bisa ditawar. Terima atau tolak." Tombol Terima dan Batalkan yang sudah ada tetap.
 3. **UI Admin** (halaman nego Admin): bila ditutup, label "Fee tetap" di dekat judul dan teks bantu pada form penawaran awal ("Penawaran ini final, Extras hanya bisa menerima atau menolak").
 4. Alur status tidak berubah (`direview_admin → nego_fee → deal`, dan `ditolak`/`dibatalkan` seperti sekarang). Tidak ada status baru. Terima oleh Extras tetap menghasilkan `deal` dan fee terkunci.
+5. **Tahap tidak di-skip, hanya berganti kata.** Pada proyek `nego_terbuka = false`, langkah "Nego Fee" tetap ada (Admin mengajukan penawaran, Extras menerima), tapi teksnya menyesuaikan: label tahap di step-bar partisipasi (dashboard Extras, "Tahapan" dashboard Admin/`AdminRingkasan`, detail pendaftaran) tampil **"Penawaran Fee"** bukan "Nego Fee"; teks tindakan Admin untuk `direview_admin` menjadi "Sudah di-grade, ajukan penawaran fee" (bukan "ajukan fee awal"); teks "Extras counter … balas" tidak pernah muncul karena counter tidak mungkin. Teks "Menunggu balasan Extras" tetap. Pada proyek nego terbuka semua teks seperti sekarang. Satu helper kecil (mis. `CastingProject::labelTahapFee()`) dipakai di semua tempat, jangan menyebar `if` di view.
 
 ## CC.3: Label di lowongan
 
@@ -2088,3 +2089,81 @@ Admin tetap mengajukan penawaran fee awal ke tiap kandidat (nominal bisa beda pe
 | CC.2 guard counter (Extras dan Admin) + UI tanpa form counter + teks "final" | `counter()` di `Extras\FeeNegotiationController` dan `Admin\FeeNegotiationController` redirect `with('error', 'Fee proyek ini tetap dan tidak bisa ditawar.')` tanpa baris baru. UI Extras: form counter diganti "Penawaran ini final, tidak bisa ditawar. Terima atau tolak." (Terima/Batalkan tetap). UI Admin: badge "Fee tetap" di header + teks bantu di form penawaran awal + form counter disembunyikan. Tanpa status baru | [ ] |
 | CC.3 label "Terbuka untuk nego fee" / "Fee tetap" di lowongan, detail, event publik (satu partial) | Partial `partials/label-nego` (`badge-info` / `badge-netral`, tanpa nominal) dipakai di `extras/projects/index`, `extras/projects/show` (sekalian badge Butuh Dadakan), `public/event` (CSS badge ditambah). Admin: baris "Fee" di tab Info `admin/projects/show`; daftar Proyek tidak diubah | [ ] |
 | CC.4 test + SQLite & MySQL berurutan + screenshot aplikasi asli | 634 → **639 passed** SQLite lalu MySQL `jbtb_test` (berurutan, kolom `nego_terbuka` terverifikasi di jbtb_test). `CcNegoTerbukaTest` (+5): default dan saklar buat/edit, edit diabaikan setelah ada penawaran, counter Extras ditolak (tetap) dan sukses (terbuka), counter Admin ditolak + Terima Extras jadi `deal`, label di lowongan/detail/event dan tidak di daftar Proyek Admin, event tanpa "Rp". `BrOverflowMobileTest` hijau. Screenshot **dilewati** (tidak dikerjakan di sesi ini) | [ ] |
+
+---
+
+# Bagian CD: Tombol "Hubungi via WA" untuk Admin (9 Oktober 2026)
+
+> **FEATURE FREEZE tetap berlaku.** Tautan saja, tanpa alur atau status baru. Dikerjakan **sebelum** CE dan boleh dirilis sendiri. Commit, **jangan push** sebelum Fakrul cek.
+
+Admin sering melobi Extras lewat WhatsApp pribadinya. Tambahkan tombol yang membuka chat WA dengan pesan pembuka terisi.
+
+1. **Helper tunggal** (mis. `User::tautanWa(string $pesan): ?string`): `https://wa.me/{nomor_wa normalisasi 62…}?text={urlencode(pesan)}`; `null` bila `nomor_wa` kosong (tombol tidak dirender). Pakai `User::normalisasiWa` yang sudah ada, jangan menulis ulang normalisasi.
+2. **Tombol "Hubungi via WA"** (ikon `ti-brand-whatsapp` + teks, `btn btn-sm`, `target="_blank" rel="noopener"`) di: popup profil Extras (Admin/SA), kartu dan baris daftar di Kelola Akun ▸ Extras, dan kartu pendaftar di Lineup. **Hanya tampil untuk `bisaSebagaiAdmin()`**; tidak pernah untuk Client, Korlap, Extras, publik, dan tidak ada `nomor_wa` yang tertulis di HTML halaman publik atau halaman Client.
+3. **Pesan pembuka umum:** "Halo {nama}, saya {nama Admin} dari JBTB Casting. Ada kabar soal casting, apakah kamu sedang available?" (nama = `name` Extras). Tidak memuat nama Client, budget, atau nominal apa pun.
+4. Tombol ini dipakai ulang oleh CE (pesan undangan khusus), jadi helper menerima pesan sebagai parameter.
+5. Test: tombol tampil untuk Admin dan SA, tidak ada untuk Client/Korlap/Extras/publik; nomor tidak ada di HTML selain tombol Admin; Extras tanpa `nomor_wa` tidak punya tombol; tautan berformat `wa.me/62…`; teks pesan ter-encode. SQLite lalu MySQL berurutan. Isi Bukti, commit, jangan push.
+
+| Item | Bukti | QA |
+|---|---|---|
+| CD.1 helper `tautanWa` + tombol di popup, Kelola Akun, Lineup (Admin/SA saja) | `User::tautanWa(string $pesan): ?string` (pakai `normalisasiWa`, `https://wa.me/62…?text=` di-`rawurlencode`, `null` bila `nomor_wa` kosong). Partial `partials/tombol-wa` (ikon `ti-brand-whatsapp`, `btn btn-sm`, `target="_blank" rel="noopener"`, hanya `bisaSebagaiAdmin()`, pesan default umum, param `pesanWa` untuk CE) dipakai di popup profil (`partials/profil-extras-app`, blok admin), kartu (`partials/extras-card` param `wa`/`pesanWa`, ditambah baris tombol `.xcard-btns-2`) dan baris daftar Kelola Akun ▸ Extras, serta kartu Lineup. Nomor tidak dirender di halaman Client/Korlap/Extras/publik | [ ] |
+| CD.2 test + SQLite & MySQL berurutan | 644 passed SQLite lalu MySQL `jbtb_test` (berurutan, 639 → 644). `CdHubungiWaTest` (+5): format `wa.me/62…` dan encode, tombol tampil untuk Admin dan SA di Kelola Akun (kartu dan daftar), popup profil, Lineup; pesan tanpa Client/nominal; tidak ada tombol/nomor untuk Client, Korlap, Extras, publik; Extras tanpa `nomor_wa` tanpa tombol. `BrOverflowMobileTest` hijau | [ ] |
+
+---
+
+# Bagian CE: Undang Extras ke proyek (9 Oktober 2026)
+
+> **FEATURE FREEZE tetap berlaku (Fakrul memutuskan fitur ini masuk).** Ini perubahan terbesar sejak freeze: menambah satu status pada mesin status. **Subagent WAJIB.** Satu migrasi (nilai enum + satu kolom). Kerjakan **setelah CD**. Commit, **jangan push** sebelum Fakrul cek.
+
+Keputusan Fakrul: sebelum/di luar pendaftaran terbuka, Admin dapat memilih Extras (mis. dari Favorit, cari lewat tag) dan **mengundangnya ke proyek tertentu**. Ada dua aksi terpisah: (1) **Undang ke proyek ini** (tercatat di sistem) dan (2) **Hubungi via WA** (lobi manual, tombol CD). Extras menyetujui atau menolak undangan di aplikasi; Admin dapat membatalkan undangan.
+
+## CE.1: Data
+
+1. **Migrasi:** tambah nilai `diundang` pada enum `project_applications.status_partisipasi` (pola `BM.3`: tambah nilai baru dulu, aman di MySQL; jangan hapus nilai lain) dan kolom `project_applications.diundang_at` timestamp nullable. Kolom itu **tetap terisi setelah diterima** sebagai penanda "berasal dari undangan". Tidak ada tabel baru.
+2. `ProjectApplication`: tambah `'diundang'` ke `LABELS` ("Diundang") dan `BADGES` (`badge-info`). **Jangan** tambahkan ke `STATUS_AKTIF`, `STATUS_PASTI`, `STATUS_LOLOS_KE_ATAS`, maupun `STATUS_PROSES` (itu menandai alur setelah Extras setuju). Kuota: `diundang` otomatis **memegang slot** karena hitungan kuota menghitung semua status selain `ditolak`/`dibatalkan` (jangan ubah rumusnya).
+
+## CE.2: Alur
+
+```
+Admin undang  ->  diundang  --Extras terima-->  diajukan  (lanjut alur normal: grade, penawaran/nego, Client, kontrak, ...)
+                     |--Extras tolak-->  ditolak
+                     |--Admin batalkan--> dibatalkan
+```
+
+1. **Aksi "Undang ke proyek…"** (Admin/SA, `bisaSebagaiAdmin()`): dari popup profil Extras dan kartu/baris di Kelola Akun ▸ Extras, membuka `<dialog>` kecil: pilih proyek (hanya yang belum selesai; proyek `ditutup` **boleh**, itu justru kasus utamanya) dan peran (`casting_project_class`, bila proyek punya peran). Tombol "Undang". Membuat baris `project_applications` berstatus `diundang`, `diundang_at = now()`, `casting_project_class_id` sesuai pilihan.
+2. **Validasi saat mengundang (server), aturan lama tidak boleh ditembus:** (a) Extras sudah punya baris di proyek itu (status apa pun) → tolak, tampilkan statusnya; (b) Extras berstatus `melanggar` atau akunnya nonaktif → tolak; (c) kuota peran penuh → tolak (pakai `sisaKuota` dan `lockForUpdate` di `DB::transaction` seperti apply); (d) bentrok dengan keterlibatan `lolos`/`kontrak_ditandatangani` di proyek lain → tolak (BK.4); bentrok dengan yang masih proses → izinkan dengan peringatan konfirmasi Admin; (e) proyek berstatus Selesai (lewat tahap shooting) → tolak.
+3. **Notifikasi:** Extras dapat notif in-app (`InAppNotification`, jenis `undangan_proyek`, tautan relatif ke halaman undangan) berisi nama proyek, peran, dan nama Admin pengundang. **Tidak** mengirim WA otomatis (lobi lewat WA adalah aksi Admin sendiri, supaya Extras tidak menerima dua pesan WA). Admin PIC dapat notif saat Extras menerima/menolak.
+4. **Sisi Extras:** undangan muncul di dashboard sebagai kartu tindakan "Undangan proyek {nama} ({peran}): Terima / Tolak" dan di halaman pendaftaran proyek itu (banner dengan dua tombol, dibungkus `<x-confirm-form>`). Extras **tetap melihat undangan walau lowongan ditutup**. Dashboard dan "Pendaftaran saya" menampilkan badge "Diundang".
+5. **Terima:** cek ulang bentrok (BK.4, aturan sama dengan apply: blok bila bentrok pasti, konfirmasi bila masih proses); sukses → status `diajukan` (menyatu dengan alur normal dan Admin lanjut grade/penawaran seperti pendaftar biasa). Jika setelah itu proyek `nego_terbuka` atau tetap (CC) berlaku seperti biasa.
+6. **Tolak:** status `ditolak`, `alasan_tolak = 'Menolak undangan'` (opsional alasan singkat dari Extras). **Tidak membuat baris `cancellations`** (menolak undangan bukan pembatalan; jangan memicu hitungan "melanggar": aturan sebenarnya di `ProjectApplication::batalkan()` ialah `is_mendadak` = kurang dari 2 hari sebelum shooting terdekat, hanya oleh Extras, 3× → `melanggar`; undangan tidak pernah lewat `batalkan()`).
+7. **Admin batalkan undangan** (selama `diundang`): tombol "Batalkan undangan" (`<x-confirm-form>`) di Lineup/detail pendaftar; status `dibatalkan`; **tanpa baris `cancellations`**; Extras dapat notif "Undangan dibatalkan"; slot kuota terbuka lagi.
+8. **Tombol WA khusus undangan** (memakai helper CD): pada baris `diundang` di Lineup dan kartu undangan, "Hubungi via WA" dengan pesan: "Halo {nama}, saya {Admin} dari JBTB Casting. Kami mengundang kamu untuk proyek {kode} {nama proyek}{ (peran X)}. Mohon cek dan konfirmasi (terima/tolak) di: {url halaman undangan}." URL = tautan absolut halaman undangan Extras (butuh login). Tanpa nominal/budget/nama Client.
+9. **Tidak ada kedaluwarsa otomatis** pada tahap ini; Admin membatalkan manual. Re-undang Extras yang sudah punya baris (ditolak/dibatalkan) **tidak didukung** (aturan 2a); catat sebagai keterbatasan.
+
+## CE.3: Dampak ke komponen yang sudah ada (jangan sampai terlewat)
+
+1. **`AdminRingkasan::langkah()` memakai `match` tanpa `default`**: nilai `diundang` akan melempar `UnhandledMatchError`. Tambahkan cabang `'diundang' => ['Menunggu persetujuan Extras', false, $a->diundang_at ?? $a->updated_at, 'Lihat', $lineup]`. Periksa semua `match`/`switch` lain atas `status_partisipasi` (grep) dan pemetaan `TAHAP` di `AdminRingkasan`, step-bar Extras, dan `CastingProject::tahap()`/label bila ada.
+2. **Client tidak pernah melihat `diundang`:** `Client\ReviewController::STATUS_TERLIHAT` tidak diubah (jangan menambahkan). Tes bahwa kandidat berstatus `diundang` tidak muncul di Greenlight maupun riwayat Client.
+3. **Lineup Admin:** baris `diundang` ditampilkan dengan badge "Diundang", **tanpa** aksi grade/penawaran/ajukan ke Client/bulk (bulk Set Grade/Tolak mengabaikan atau menolak baris `diundang`), hanya "Batalkan undangan" dan "Hubungi via WA". Tambahkan "Diundang" ke filter Status (grup Aktif).
+4. **Perhitungan "Perlu tindakan (n)"** di daftar Proyek: `diundang` **tidak** dihitung (Admin menunggu, bukan bertindak).
+5. **Kuota dan "pendaftar / kuota"** di daftar Proyek menghitung `diundang` (memegang slot); tidak perlu label khusus.
+6. **Bentrok jadwal:** `diundang` **tidak** menandai `bentrok_jadwal_flag` pada proyek lain (belum komitmen); pengecekan terjadi saat mengundang dan saat menerima.
+7. **ActivityLog:** `INVITE_EXTRAS`, `INVITE_ACCEPT`, `INVITE_DECLINE`, `INVITE_CANCEL` (tambahkan ke `actionLabel`).
+8. Kerjakan `docs/AKUN-DEMO.md` dan `DemoLengkapSeeder`: satu proyek demo dengan satu Extras berstatus `diundang`.
+
+## CE.4: Test dan penutup
+
+1. Test: undang sukses → baris `diundang` + `diundang_at` + notif Extras; ditolak untuk: sudah punya baris, melanggar, nonaktif, kuota penuh, bentrok pasti, proyek selesai; bentrok masih-proses butuh konfirmasi; terima → `diajukan` (bentrok baru dicek ulang); tolak → `ditolak` **tanpa** `cancellations`; batal Admin → `dibatalkan` **tanpa** `cancellations`, slot terbuka; Extras lain/Client/Korlap tidak boleh menerima/menolak/membatalkan (403); `diundang` tidak muncul di Greenlight Client; `AdminRingkasan` tidak error untuk `diundang`; bulk Lineup tidak mengubah baris `diundang`; "Perlu tindakan" tidak menghitung `diundang`; Extras melihat undangan di proyek `ditutup`; notif Admin PIC saat terima/tolak; pesan WA undangan tanpa nominal/Client.
+2. `BrOverflowMobileTest` hijau, SQLite lalu MySQL `jbtb_test` berurutan (catat driver dan pastikan kolom/enum baru ada di `jbtb_test`).
+3. Screenshot **aplikasi asli** (1366 dan 390 px): dialog undang, kartu undangan di dashboard Extras, baris `diundang` di Lineup, tombol WA. **Jangan dilewati** seperti CC.4.
+4. Dokumen manager (`BAB-3-DRAFT` RF baru, `DATABASE-SCHEMA` enum + kolom, `PRD-LITE`) diperbarui oleh manager, bukan Claude Code.
+
+| Item | Bukti | QA |
+|---|---|---|
+| CE.1 migrasi enum `diundang` + `diundang_at`, `LABELS`/`BADGES`, konstanta status tidak berubah | | [ ] |
+| CE.2 aksi Undang (dialog proyek + peran) + validasi 2a–2e | | [ ] |
+| CE.2 sisi Extras: notif, kartu tindakan, banner, Terima/Tolak (tanpa `cancellations`) | | [ ] |
+| CE.2 Admin batalkan undangan (tanpa `cancellations`) + tombol WA undangan | | [ ] |
+| CE.3 `AdminRingkasan` + semua `match`/`switch` status, Client tidak melihat, Lineup/bulk/filter, "Perlu tindakan" | | [ ] |
+| CE.3 ActivityLog + seeder demo + `AKUN-DEMO.md` | | [ ] |
+| CE.4 test + SQLite & MySQL berurutan + screenshot aplikasi asli | | [ ] |
