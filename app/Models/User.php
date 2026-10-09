@@ -80,6 +80,14 @@ class User extends Authenticatable
         return self::normalisasiWa($this->nomor_wa);
     }
 
+    // CD.1: tautan chat wa.me berisi pesan pembuka; null kalau nomor_wa kosong/tidak valid.
+    public function tautanWa(string $pesan): ?string
+    {
+        $nomor = $this->nomorWaInternasional();
+
+        return $nomor ? "https://wa.me/{$nomor}?text=".rawurlencode($pesan) : null;
+    }
+
     public function diblokir(): bool
     {
         return $this->status !== 'aktif'
