@@ -15,9 +15,10 @@
             <button type="submit" class="btn btn-sm" aria-pressed="false"><i class="ti ti-star" aria-hidden="true"></i> Jadikan Favorit</button>
         @endif
     </form>
-    @if ($profile->user?->nomorWaInternasional())
-        <div style="padding: 10px 16px; border-bottom: 1px solid var(--border-color);">@include('partials.tombol-wa', ['user' => $profile->user, 'pesanWa' => null])</div>
-    @endif
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--border-color);">
+        @include('partials.tombol-wa', ['user' => $profile->user, 'pesanWa' => null])
+        @include('partials.tombol-undang', ['user' => $profile->user])
+    </div>
 @endif
 @include('partials.profil-extras-editorial', [
     'mode' => $mode,

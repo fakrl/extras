@@ -313,6 +313,17 @@ class CastingProject extends Model
         };
     }
 
+    /** CE: tujuan undangan = proyek disetujui yang belum selesai (lowongan ditutup tetap boleh). */
+    public function scopeUntukUndangan($query)
+    {
+        return $query->where(fn ($q) => $q->where(fn ($t) => $t->diTahap('mendatang'))->orWhere(fn ($t) => $t->diTahap('berjalan')));
+    }
+
+    public function bisaDiundang(): bool
+    {
+        return in_array($this->tahap(), ['mendatang', 'berjalan'], true);
+    }
+
     /** BH.3: portofolio beranda cuma untuk proyek yang tahapnya selesai. */
     public function bisaPortofolio(): bool
     {

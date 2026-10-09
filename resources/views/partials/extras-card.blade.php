@@ -1,4 +1,4 @@
-{{-- BA.4: kartu Extras. Param: profile, user?, aplikasi?, badge? [label, class], highlight?, check? [name, class, form], lihat [href (+ data-profil-modal, data-aksi-*)|onclick], aksi? [label, href|onclick|post (+method, confirm)], sub?, peringatan?, attrs?, favorit? (bintang Admin/SA), wa? + pesanWa? (tombol WA Admin/SA) --}}
+{{-- BA.4: kartu Extras. Param: profile, user?, aplikasi?, badge? [label, class], highlight?, check? [name, class, form], lihat [href (+ data-profil-modal, data-aksi-*)|onclick], aksi? [label, href|onclick|post (+method, confirm)], sub?, peringatan?, attrs?, favorit? (bintang Admin/SA), wa? + pesanWa? (tombol WA Admin/SA), undang? (tombol Undang ke proyek, Admin/SA) --}}
 @php
     $aplikasi ??= null;
     $favorit = ($favorit ?? false) && $profile && auth()->user()?->bisaSebagaiAdmin();
@@ -19,6 +19,7 @@
     $lihatTag = isset($lihat['href']) ? 'a' : 'button';
     $lihatAttr = isset($lihat['href']) ? $lihat : ['type' => 'button'] + $lihat;
     $bisaAdmin = auth()->user()?->bisaSebagaiAdmin();
+    $tombolUndang = ($undang ?? false) && $bisaAdmin && $user?->extrasProfile;
     $tombolWa = ($wa ?? false) && $bisaAdmin && $user?->nomorWaInternasional();
 @endphp
 <article {{ (new \Illuminate\View\ComponentAttributeBag($attrs ?? []))->class(['xcard', 'is-highlight' => $highlight ?? false, 'has-ring' => $persen !== null]) }}>
@@ -92,9 +93,14 @@
                 <button type="button" class="btn btn-brand" onclick="{{ $aksi['onclick'] }}">{{ $aksi['label'] }}</button>
             @endif
         </div>
-        @if ($tombolWa)
+        @if ($tombolWa || $tombolUndang)
             <div class="xcard-btns xcard-btns-2">
-                @include('partials.tombol-wa', ['user' => $user, 'pesanWa' => $pesanWa ?? null])
+                @if ($tombolWa)
+                    @include('partials.tombol-wa', ['user' => $user, 'pesanWa' => $pesanWa ?? null])
+                @endif
+                @if ($tombolUndang)
+                    @include('partials.tombol-undang', ['user' => $user])
+                @endif
             </div>
         @endif
     </div>

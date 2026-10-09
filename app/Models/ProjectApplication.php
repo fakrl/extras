@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Log;
 #[Fillable([
     'casting_project_id', 'extras_id', 'casting_project_class_id', 'status_partisipasi',
     'grade', 'fee_final', 'bentrok_jadwal_flag', 'alasan_tolak',
-    'karakter_override', 'scene_override', 'jam_callingan_override', 'tipe_continuity_override',
+    'karakter_override', 'scene_override', 'jam_callingan_override', 'tipe_continuity_override', 'diundang_at',
 ])]
 class ProjectApplication extends Model
 {
@@ -34,6 +34,7 @@ class ProjectApplication extends Model
     const STATUS_PROSES = ['diajukan', 'direview_admin', 'nego_fee', 'deal', 'diajukan_ke_client'];
 
     const LABELS = [
+        'diundang' => 'Diundang',
         'diajukan' => 'Diajukan',
         'direview_admin' => 'Direview Admin',
         'nego_fee' => 'Nego Fee',
@@ -47,6 +48,7 @@ class ProjectApplication extends Model
     ];
 
     const BADGES = [
+        'diundang' => 'badge-info',
         'diajukan' => 'badge-netral',
         'direview_admin' => 'badge-info',
         'nego_fee' => 'badge-pending',
@@ -177,6 +179,7 @@ class ProjectApplication extends Model
         return [
             'bentrok_jadwal_flag' => 'boolean',
             'fee_final' => 'decimal:2',
+            'diundang_at' => 'datetime',
         ];
     }
 
@@ -487,6 +490,84 @@ class ProjectApplication extends Model
     }
 
     /**
+     * CE: undangan Admin ke Extras. Bukan pembatalan: tidak lewat batalkan() dan tidak
+     * membuat baris cancellations. Perubahan status cuma berlaku selagi masih `diundang`
+     * (update bersyarat, aman terhadap klik ganda); false = undangan sudah dijawab/dibatalkan.
+     */
+    private function ubahDariUndangan(array $nilai): bool
+    {
+        if (! self::whereKey($this->id)->where('status_partisipasi', 'diundang')->update($nilai)) {
+            return false;
+        }
+        $this->refresh();
+
+        return true;
+    }
+
+    public function kabariUndangan(User $admin): void
+    {
+        $this->loadMissing('extras.user', 'castingProject', 'castingProjectClass');
+        $peran = $this->castingProjectClass?->nama_kelas;
+
+        $this->extras->user->kabari(
+            'Undangan Proyek',
+            "{$admin->name} mengundang kamu ke proyek {$this->castingProject->namaKode()}".($peran ? " (peran {$peran})" : '').'. Terima atau tolak di aplikasi.',
+            route('extras.projects.show', $this->castingProject),
+            jenis: 'undangan_proyek',
+        );
+    }
+
+    /** CE.2.5: terima -> `diajukan`, lanjut alur normal. $bentrok = pendaftaran lain yang masih proses & tanggalnya sama. */
+    public function terimaUndangan(Collection $bentrok): bool
+    {
+        $nilai = ['status_partisipasi' => 'diajukan', 'bentrok_jadwal_flag' => $bentrok->isNotEmpty()];
+        if (! $this->ubahDariUndangan($nilai)) {
+            return false;
+        }
+        self::whereKey($bentrok->modelKeys())->update(['bentrok_jadwal_flag' => true]);
+        $this->kabariBalasanUndangan('Undangan Diterima', 'menerima');
+
+        return true;
+    }
+
+    /** CE.2.6: tolak -> `ditolak`, tanpa cancellations. */
+    public function tolakUndangan(?string $alasan = null): bool
+    {
+        if (! $this->ubahDariUndangan(['status_partisipasi' => 'ditolak', 'alasan_tolak' => 'Menolak undangan'.($alasan ? ": {$alasan}" : '')])) {
+            return false;
+        }
+        $this->kabariBalasanUndangan('Undangan Ditolak', 'menolak');
+
+        return true;
+    }
+
+    /** CE.2.7: Admin batalkan -> `dibatalkan`, tanpa cancellations; slot kuota terbuka lagi. */
+    public function batalkanUndangan(): bool
+    {
+        if (! $this->ubahDariUndangan(['status_partisipasi' => 'dibatalkan'])) {
+            return false;
+        }
+        $this->loadMissing('extras.user', 'castingProject');
+        $this->extras->user->kabari('Undangan Dibatalkan', "Undangan ke proyek {$this->castingProject->namaKode()} dibatalkan Admin.", route('extras.projects.show', $this->castingProject), jenis: 'undangan_proyek');
+
+        return true;
+    }
+
+    private function kabariBalasanUndangan(string $judul, string $kata): void
+    {
+        $this->loadMissing('extras.user', 'castingProject.admin');
+        $this->castingProject->admin?->kabari($judul, "{$this->extras->user->name} {$kata} undangan proyek {$this->castingProject->namaKode()}.", route('admin.projects.applicants', $this->castingProject), jenis: 'undangan_balasan');
+    }
+
+    /** CE.2.8: pesan WA undangan untuk Admin (tanpa nominal/Client). */
+    public function pesanWaUndangan(User $admin): string
+    {
+        $peran = $this->castingProjectClass?->nama_kelas;
+
+        return "Halo {$this->extras->user->name}, saya {$admin->name} dari JBTB Casting. Kami mengundang kamu untuk proyek {$this->castingProject->namaKode()}".($peran ? " (peran {$peran})" : '').'. Mohon cek dan konfirmasi (terima/tolak) di: '.route('extras.projects.show', $this->castingProject);
+    }
+
+    /**
      * RF-35: catatan/sanksi lapangan dari Korlap (atau Admin Default sebagai
      * dirinya sendiri, sub-role Korlap bukan satu-satunya penulis). Murni
      * informasional, tidak menyentuh status_partisipasi.
@@ -612,7 +693,7 @@ class ProjectApplication extends Model
     {
         abort_if(
             in_array($this->status_partisipasi, [
-                'deal', 'ditolak', 'diajukan_ke_client', 'lolos',
+                'diundang', 'deal', 'ditolak', 'diajukan_ke_client', 'lolos',
                 'kontrak_ditandatangani', 'selesai_produksi', 'dibatalkan',
             ], true),
             422,

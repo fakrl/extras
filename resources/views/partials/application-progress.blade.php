@@ -14,7 +14,9 @@
     $isStopped = in_array($app->status_partisipasi, ['ditolak', 'dibatalkan']);
 @endphp
 
-@if ($isStopped)
+@if ($app->status_partisipasi === 'diundang')
+    <div class="alert-info" style="margin: 0;"><i class="ti ti-mail"></i> Menunggu jawabanmu atas undangan ini.</div>
+@elseif ($isStopped)
     <div class="step-bar-stopped">
         <i class="ti ti-circle-x"></i>
         <div>

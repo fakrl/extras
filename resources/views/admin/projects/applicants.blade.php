@@ -24,7 +24,7 @@
 </div>
 
 @php
-    $statusAktif = ['diajukan', 'direview_admin', 'nego_fee', 'deal', 'diajukan_ke_client', 'lolos', 'kontrak_ditandatangani'];
+    $statusAktif = ['diundang', 'diajukan', 'direview_admin', 'nego_fee', 'deal', 'diajukan_ke_client', 'lolos', 'kontrak_ditandatangani'];
     $statusSelesai = ['ditolak', 'selesai_produksi', 'dibatalkan'];
     $tagNamaDicari = $tagDicari->pluck('nama', 'id');
 @endphp
@@ -114,7 +114,9 @@
     @php
         $ex = $app->extras;
         $alias = $ex->user->username ?? 'kandidat';
+        $diundang = $app->status_partisipasi === 'diundang';
         $aksi = match (true) {
+            $diundang => ['label' => 'Batalkan undangan', 'post' => route('admin.undangan.batal', $app), 'confirm' => "Batalkan undangan untuk @{$alias}?"],
             in_array($app->status_partisipasi, ['diajukan', 'direview_admin'], true) => ['label' => 'Mulai Nego', 'href' => route('admin.negotiations.show', $app)],
             $app->status_partisipasi === 'nego_fee' => ['label' => 'Lanjut Nego', 'href' => route('admin.negotiations.show', $app)],
             $app->status_partisipasi === 'deal' => ['label' => 'Ajukan ke Client', 'post' => route('admin.negotiations.ajukan-ke-client', $app), 'confirm' => "Ajukan @{$alias} ke Client?"],
@@ -127,12 +129,13 @@
         'profile' => $ex,
         'aplikasi' => $app,
         'badge' => ($tab ?? '') === 'client' ? ($klienStatusLabel[$app->status_partisipasi] ?? null) : null,
-        'check' => ($tab ?? '') !== 'client' ? ['name' => 'ids[]', 'class' => 'bulk-check', 'form' => 'bulk-form'] : null,
+        'check' => ($tab ?? '') !== 'client' && ! $diundang ? ['name' => 'ids[]', 'class' => 'bulk-check', 'form' => 'bulk-form'] : null,
         'sub' => implode(' · ', array_filter([$ex->user->name ?? null, $app->grade ? 'Grade '.$app->grade : null])),
-        'lihat' => $ex->user ? ['href' => route('admin.extras.profil', $ex->user), 'data-profil-modal' => true, 'data-aksi-dialog' => 'detail-'.$app->id, 'data-aksi-label' => 'Detail & aksi'] : ['onclick' => "document.getElementById('detail-{$app->id}').showModal()"],
+        'lihat' => $ex->user ? ['href' => route('admin.extras.profil', $ex->user), 'data-profil-modal' => true] + ($diundang ? [] : ['data-aksi-dialog' => 'detail-'.$app->id, 'data-aksi-label' => 'Detail & aksi']) : ['onclick' => "document.getElementById('detail-{$app->id}').showModal()"],
         'aksi' => $aksi,
         'favorit' => true,
         'wa' => true,
+        'pesanWa' => $diundang ? $app->pesanWaUndangan(auth()->user()) : null,
         'peringatan' => $app->bentrok_jadwal_flag ? 'Bentrok jadwal' : null,
         'attrs' => [
             'id' => 'app-'.$app->id,
@@ -148,6 +151,7 @@
 </div>
 
 @foreach ($applicants as $app)
+    @continue($app->status_partisipasi === 'diundang')
     @php
         $ex = $app->extras;
         $alias = $ex->user->username ?? 'kandidat';

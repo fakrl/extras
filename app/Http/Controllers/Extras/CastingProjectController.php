@@ -40,8 +40,10 @@ class CastingProjectController extends Controller
         $tagSaya = $this->tagSaya($request);
         $bentrok = $request->user()->extrasProfile?->pendaftaranBentrok($castingProject->shootingDates->pluck('tanggal'))
             ->where('casting_project_id', '!=', $castingProject->id) ?? collect();
+        $undangan = $request->user()->extrasProfile?->applications()->with('castingProjectClass')
+            ->where('casting_project_id', $castingProject->id)->where('status_partisipasi', 'diundang')->first();
 
-        return view('extras.projects.show', compact('castingProject', 'tagSaya', 'bentrok'));
+        return view('extras.projects.show', compact('castingProject', 'tagSaya', 'bentrok', 'undangan'));
     }
 
     private function tagSaya(Request $request): array

@@ -15,7 +15,10 @@
         foreach ($bentrokPer[$app->id]->filter->isPasti() as $lawan) {
             $tindakan->push(['badge' => 'badge-tolak', 'label' => 'Jadwal bentrok', 'teks' => 'Jadwal bentrok: <em>'.e($lawan->castingProject->nama_produksi)."</em> sudah pasti, <em>{$nama}</em> tanggal sama. Batalkan <em>{$nama}</em>?"] + $lompat);
         }
-        if ($app->status_partisipasi === 'nego_fee') {
+        if ($app->status_partisipasi === 'diundang') {
+            $peran = $app->castingProjectClass?->nama_kelas;
+            $tindakan->push(['badge' => 'badge-info', 'label' => 'Undangan proyek', 'teks' => "Undangan proyek <em>{$nama}</em>".($peran ? ' ('.e($peran).')' : ''), 'undangan' => $app] + $lompat);
+        } elseif ($app->status_partisipasi === 'nego_fee') {
             $tindakan->push(['badge' => 'badge-pending', 'label' => 'Nego fee', 'teks' => "Negosiasi fee <em>{$nama}</em> menunggu balasanmu"] + $lompat);
         } elseif ($app->status_partisipasi === 'lolos' && ! $extrasProfile->nik_hash) {
             $tindakan->push(['badge' => 'badge-pending', 'label' => 'Lengkapi KTP', 'teks' => "Lengkapi KTP untuk <em>{$nama}</em>, wajib sebelum TTD kontrak"] + $lompat);
@@ -71,7 +74,9 @@
                         <div class="dash-sub" style="margin-top: 4px;">{!! $t['teks'] !!}</div>
                     @endisset
                 </div>
-                @isset($t['dialog'])
+                @isset($t['undangan'])
+                    @include('partials.undangan-aksi', ['app' => $t['undangan']])
+                @elseif (isset($t['dialog']))
                     <button type="button" class="btn btn-sm btn-brand" onclick="document.getElementById('{{ $t['dialog'] }}').showModal()"><i class="ti ti-camera"></i> {{ $t['tombol'] }}</button>
                 @elseif (isset($t['url']))
                     <a href="{{ $t['url'] }}" class="btn btn-sm btn-brand">{{ $t['tombol'] }}</a>
@@ -91,7 +96,9 @@
                 <div style="font-size: 14.5px; font-weight: 600;">{{ $app->castingProject->nama_produksi }}</div>
                 <x-status-badge :model="$app" style="margin-top: 4px; display: inline-block;" />
             </div>
-            @if ($app->status_partisipasi === 'nego_fee')
+            @if ($app->status_partisipasi === 'diundang')
+                <a href="{{ route('extras.projects.show', $app->castingProject) }}" class="btn btn-brand">Lihat Undangan</a>
+            @elseif ($app->status_partisipasi === 'nego_fee')
                 <a href="{{ route('extras.negotiations.show', $app) }}" class="btn btn-brand">Lanjut Nego Fee</a>
             @elseif ($app->status_partisipasi === 'lolos' && ! $extrasProfile->nik_hash)
                 <a href="{{ route('extras.kontrak.lengkapi-ktp', $app) }}" class="btn btn-brand">Lengkapi KTP</a>

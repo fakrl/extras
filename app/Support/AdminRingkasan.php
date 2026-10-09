@@ -106,6 +106,7 @@ class AdminRingkasan
                 ? ['Extras counter '.$rp($nego->nominal).' — balas', true, $nego->created_at, 'Balas nego', route('admin.negotiations.show', $a, false)]
                 : ['Menunggu balasan Extras', false, $nego?->created_at ?? $a->updated_at, 'Lihat nego', route('admin.negotiations.show', $a, false)],
             'deal' => ['Siap diajukan ke Client', true, $a->updated_at, 'Ajukan', $lineup],
+            'diundang' => ['Menunggu persetujuan Extras', false, $a->diundang_at ?? $a->updated_at, 'Lihat', $lineup],
             'diajukan_ke_client' => ['Menunggu keputusan Client', false, $a->updated_at, 'Lihat', $lineup],
             'lolos' => match (true) {
                 ! $kontrak => ['Menunggu Extras lengkapi nama asli & NIK', false, $a->updated_at, 'Lihat', $lineup],
