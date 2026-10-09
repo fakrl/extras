@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\FeeNegotiationController as AdminFeeNegotiationController;
 use App\Http\Controllers\Admin\KeuanganProyekController;
 use App\Http\Controllers\Admin\TagController;
+use App\Http\Controllers\Admin\UndanganController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\WorkHistoryController;
 use App\Http\Controllers\Auth\GoogleController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\Extras\CastingProjectController as ExtrasCastingProject
 use App\Http\Controllers\Extras\DashboardController as ExtrasDashboardController;
 use App\Http\Controllers\Extras\FeeNegotiationController as ExtrasFeeNegotiationController;
 use App\Http\Controllers\Extras\ProfileController;
+use App\Http\Controllers\Extras\UndanganController as ExtrasUndanganController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\NotificationController;
@@ -140,6 +142,9 @@ Route::middleware(['auth', 'role:extras'])->prefix('extras')->group(function () 
     Route::post('/lowongan/{castingProject}/daftar', [ExtrasCastingProjectController::class, 'apply'])
         ->middleware('throttle:5,1')->name('extras.projects.apply');
 
+    Route::post('/undangan/{application}/terima', [ExtrasUndanganController::class, 'terima'])->name('extras.undangan.terima');
+    Route::post('/undangan/{application}/tolak', [ExtrasUndanganController::class, 'tolak'])->name('extras.undangan.tolak');
+
     Route::get('/nego/{application}', [ExtrasFeeNegotiationController::class, 'show'])->name('extras.negotiations.show');
     Route::post('/nego/{application}/terima', [ExtrasFeeNegotiationController::class, 'terima'])->name('extras.negotiations.terima');
     Route::post('/nego/{application}/counter', [ExtrasFeeNegotiationController::class, 'counter'])->name('extras.negotiations.counter');
@@ -183,6 +188,9 @@ Route::middleware(['auth', 'role:admin,korlap,super_admin'])
                 ->name('admin.extras.beranda');
             Route::patch('/extras/{user}/favorit', [UserManagementController::class, 'toggleFavorit'])
                 ->name('admin.extras.favorit');
+            Route::get('/extras/{user}/undang', [UndanganController::class, 'form'])->name('admin.undangan.form');
+            Route::post('/extras/{user}/undang', [UndanganController::class, 'store'])->name('admin.undangan.store');
+            Route::post('/applications/{application}/batalkan-undangan', [UndanganController::class, 'batal'])->name('admin.undangan.batal');
             Route::post('/users/prune-abandoned', [UserManagementController::class, 'pruneAbandoned'])
                 ->name('admin.users.prune');
 

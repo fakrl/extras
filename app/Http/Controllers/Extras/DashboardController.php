@@ -21,7 +21,7 @@ class DashboardController extends Controller
 
         $pendaftaranSaya = $extrasProfile
             ? ProjectApplication::where('extras_id', $extrasProfile->id)
-                ->with(['castingProject.shootingDates', 'payment:id,project_application_id,status'])
+                ->with(['castingProject.shootingDates', 'castingProjectClass', 'payment:id,project_application_id,status'])
                 ->latest()
                 ->get()
                 ->unique('casting_project_id')

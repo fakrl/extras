@@ -25,6 +25,10 @@ class ActivityLog extends Model
 
     public const ACTION_LABELS = [
         'APPLY_PROJECT' => 'Daftar lowongan',
+        'INVITE_EXTRAS' => 'Undang Extras ke proyek',
+        'INVITE_ACCEPT' => 'Terima undangan proyek',
+        'INVITE_DECLINE' => 'Tolak undangan proyek',
+        'INVITE_CANCEL' => 'Batalkan undangan proyek',
         'APPROVE_PROJECT_REQUEST' => 'ACC pengajuan proyek',
         'REJECT_PROJECT_REQUEST' => 'Tolak pengajuan proyek',
         'SUBMIT_PROJECT_REQUEST' => 'Ajukan proyek',

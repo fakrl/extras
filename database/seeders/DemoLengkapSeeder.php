@@ -255,6 +255,8 @@ class DemoLengkapSeeder extends Seeder
         $this->kontrak($pdf, $aisyah, $rina, true, -2);
         $this->bayar($aisyah, 'belum_dibayar', -2, $rina);
         $this->daftar($p2, $mhs, 'nadia_pu', 'ditolak', -5)->update(['alasan_tolak' => 'Tinggi tidak sesuai kriteria.']);
+        $this->daftar($p2, $mhs, 'sari_mei', 'diundang', -1)->update(['diundang_at' => now()->subDay()]);
+        $this->log($rina, 'INVITE_EXTRAS', "Admin Rina mengundang @sari_mei ke proyek '{$p2->nama_produksi}'", $this->app($p2, 'sari_mei'), -1);
         $fajar = $this->daftar($p2, $kantor, 'fajar_n', 'dibatalkan', -6);
         $this->deal($fajar, 200000, -5);
         $fajar->cancellations()->create(['dibatalkan_oleh' => 'extras', 'alasan' => 'Bentrok jadwal kerja.', 'is_mendadak' => false, 'created_at' => now()->subDays(3)]);

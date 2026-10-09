@@ -64,6 +64,10 @@ class ApplicantController extends Controller
 
     private function terapkanGrade(ProjectApplication $application, string $grade): ?string
     {
+        if ($application->status_partisipasi === 'diundang') {
+            return 'Kandidat yang masih diundang belum bisa dinilai.';
+        }
+
         /** @var ExtrasProfile $profile */
         $profile = $application->extras;
 

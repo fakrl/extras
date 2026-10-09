@@ -36,7 +36,17 @@
     @endif
 </div>
 
-@if (! $castingProject->menerimaPendaftaran())
+@if ($undangan)
+<div class="card" style="margin-bottom: 16px; border-color: var(--accent);">
+    <span class="badge badge-info">Diundang</span>
+    <div style="font-size: 14px; font-weight: 500; margin: 8px 0 4px;">Kamu diundang ke proyek ini @if ($undangan->castingProjectClass)sebagai {{ $undangan->castingProjectClass->nama_kelas }}@endif</div>
+    <p style="margin: 0 0 12px; font-size: 13.5px; color: var(--text-secondary);">Terima kalau kamu bisa ikut, atau tolak kalau tidak. Setelah diterima, Admin akan mereview profilmu seperti pendaftar lain.</p>
+    @if (session('konfirmasi_bentrok'))
+        <div class="alert-danger" style="margin: 0 0 12px;"><span class="badge badge-tolak">Bentrok jadwal</span> {{ session('konfirmasi_bentrok') }} Klik Terima lagi untuk tetap menerima.</div>
+    @endif
+    @include('partials.undangan-aksi', ['app' => $undangan, 'alasan' => true, 'konfirmasi' => session()->has('konfirmasi_bentrok')])
+</div>
+@elseif (! $castingProject->menerimaPendaftaran())
 <div class="alert-info">Proyek ini sudah tidak menerima pendaftaran (ditutup, kuota penuh, atau lewat deadline).</div>
 @else
 <form method="POST" action="{{ route('extras.projects.apply', $castingProject) }}">

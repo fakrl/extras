@@ -126,6 +126,7 @@
                     </td>
                     <td style="white-space: nowrap;">
                         @include('partials.tombol-wa', ['user' => $ex, 'pesanWa' => null])
+                        @include('partials.tombol-undang', ['user' => $ex])
                         <button type="button" class="btn btn-sm" onclick="document.getElementById('kelola-{{ $ex->id }}').showModal()">Kelola</button>
                     </td>
                 </tr>
@@ -149,6 +150,7 @@
                 'aksi' => ['label' => 'Kelola', 'onclick' => "document.getElementById('kelola-{$ex->id}').showModal()"],
                 'favorit' => true,
                 'wa' => true,
+                'undang' => true,
                 'peringatan' => $cancelCount ? $cancelCount.'x batal mendadak' : null,
             ])
         @empty

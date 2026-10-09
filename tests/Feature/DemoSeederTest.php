@@ -44,7 +44,7 @@ class DemoSeederTest extends TestCase
         $p = fn (string $awalan) => CastingProject::where('nama_produksi', 'like', $awalan.'%')->firstOrFail();
 
         $this->assertEquals(
-            ['deal' => 1, 'dibatalkan' => 1, 'diajukan' => 1, 'diajukan_ke_client' => 2, 'direview_admin' => 1, 'ditolak' => 1, 'kontrak_ditandatangani' => 1, 'lolos' => 1, 'nego_fee' => 2],
+            ['deal' => 1, 'dibatalkan' => 1, 'diajukan' => 1, 'diundang' => 1, 'diajukan_ke_client' => 2, 'direview_admin' => 1, 'ditolak' => 1, 'kontrak_ditandatangani' => 1, 'lolos' => 1, 'nego_fee' => 2],
             ProjectApplication::where('casting_project_id', $p('Iklan "Minuman')->id)
                 ->selectRaw('status_partisipasi, count(*) c')->groupBy('status_partisipasi')->orderBy('status_partisipasi')->pluck('c', 'status_partisipasi')->all()
         );
