@@ -100,6 +100,7 @@ Semua tabel punya `created_at`/`updated_at` kecuali dinyatakan lain. `cascade` =
 | share_token | string(32) null, unique | tautan pendaftaran publik `/event/{token}` |
 | tampil_portofolio, portofolio_judul, portofolio_jenis, portofolio_tahun | | kurasi portofolio di landing |
 | tampilkan_nama_client | bool | |
+| nego_terbuka | bool, default true | fee dapat dinegosiasikan; false = penawaran Admin final (Extras hanya terima/tolak). Dikunci setelah ada penawaran pertama |
 
 ### 4. `casting_project_classes`
 `casting_project_id` (FK, cascade), `nama_kelas`, `kriteria` (text), `budget_client` (decimal), `kuota_kelas`, `jam_callsheet`, `jam_callingan`, `keterangan_scene`, `tipe_continuity` (`continuity`/`free`). Kuota antrian dihitung per peran dari semua aplikasi selain `ditolak`/`dibatalkan`.
@@ -113,7 +114,8 @@ Semua tabel punya `created_at`/`updated_at` kecuali dinyatakan lain. `cascade` =
 | casting_project_id | FK, cascade | |
 | extras_id | FK → extras_profiles, cascade | unique `(casting_project_id, extras_id)` |
 | casting_project_class_id | FK null, nullOnDelete | peran yang dilamar |
-| status_partisipasi | enum | `diajukan`, `direview_admin`, `nego_fee`, `deal`, `diajukan_ke_client`, `lolos`, `kontrak_ditandatangani`, `selesai_produksi`, `ditolak`, `dibatalkan` |
+| status_partisipasi | enum | `diundang`, `diajukan`, `direview_admin`, `nego_fee`, `deal`, `diajukan_ke_client`, `lolos`, `kontrak_ditandatangani`, `selesai_produksi`, `ditolak`, `dibatalkan`. `diundang` = diundang Admin, belum menerima (memegang slot kuota, tidak terlihat Client) |
+| diundang_at | timestamp null | waktu undangan; tetap terisi setelah diterima sebagai penanda asal undangan |
 | grade | enum A/B/C null | |
 | fee_final | decimal(12,2) null | terkunci saat `deal` |
 | karakter_override, scene_override, jam_callingan_override, tipe_continuity_override | | breakdown per kandidat |
@@ -130,7 +132,7 @@ Semua tabel punya `created_at`/`updated_at` kecuali dinyatakan lain. `cascade` =
 `project_application_id` (FK, **unique**, cascade), `pdf_path`, `ttd_admin_signature_path`, `ttd_extras_signature_path`, `signed_at`, `voided_at` (kontrak dibatalkan bila aplikasi `dibatalkan`).
 
 ### 10. `payments`
-`project_application_id` (FK, **unique**, cascade), `status` (`belum_dibayar`, `ditransfer`, `dikonfirmasi_diterima`, `disengketakan`), `bukti_transfer_path`, `ditransfer_at`, `dikonfirmasi_at`, `alasan_sengketa`. Nominal pokok = `fee_final` aplikasi; total = pokok + add-on.
+`project_application_id` (FK, **unique**, cascade), `status` (`belum_dibayar`, `ditransfer`, `dikonfirmasi_diterima`, `disengketakan`), `bukti_transfer_path`, `ditransfer_at`, `dikonfirmasi_at`, `alasan_sengketa`, `catatan_penyelesaian` (tanggapan Admin saat sengketa diselesaikan; status kembali `ditransfer`, `alasan_sengketa` tetap sebagai riwayat). Nominal pokok = `fee_final` aplikasi; total = pokok + add-on.
 
 ### 11. `payment_addons`
 `addable_type` + `addable_id` (polimorfik → `payments` atau `staff_payrolls`), `label`, `nominal`, `created_by` (FK → users).
@@ -145,7 +147,7 @@ Semua tabel punya `created_at`/`updated_at` kecuali dinyatakan lain. `cascade` =
 `admin_project_assignment_id` (FK, **unique**, cascade), `nominal_pokok`, `pdf_slip_path`, `generated_at`, `status_bayar` (`belum`/`sudah`), `dibayar_at`.
 
 ### 15. `cancellations`
-`project_application_id` (FK, cascade), `dibatalkan_oleh` (`admin`/`extras`), `alasan`, `is_mendadak`. Sesuai keputusan D23, semua pembatalan dihitung batal mendadak; 3× → status Extras `melanggar`.
+`project_application_id` (FK, cascade), `dibatalkan_oleh` (`admin`/`extras`), `alasan`, `is_mendadak`. `is_mendadak` bernilai true bila pembatalan terjadi kurang dari 2 hari sebelum tanggal shooting terdekat (tanpa tanggal mendatang dianggap tidak mendadak). Hanya pembatalan oleh Extras yang dihitung; 3× mendadak → status Extras `melanggar` (akun diblokir login). D23: pembatalan karena bentrok jadwal tidak diberi pengecualian dari aturan ini.
 
 ### 16. `field_notes`
 `project_application_id` (FK, cascade), `korlap_id` (FK → users), `jenis` (`catatan`/`sanksi`), `isi`.

@@ -111,7 +111,7 @@
     <text x="60" y="258" class="t-sm t-mut">Modul bisnis</text>
 
     <g class="t-sm" text-anchor="middle">
-      <rect x="60"  y="350" width="216" height="56" rx="8" fill="#fff" stroke="#9aa7bd"/><text x="168" y="374" class="t-b">KeuanganService</text><text x="168" y="392" class="t-mut">satu sumber angka uang</text>
+      <rect x="60"  y="350" width="216" height="56" rx="8" fill="#fff" stroke="#9aa7bd"/><text x="168" y="374" class="t-b">KeuanganService</text><text x="168" y="392" class="t-mut">honor staf &amp; rincian invoice</text>
       <rect x="292" y="350" width="216" height="56" rx="8" fill="#fff" stroke="#9aa7bd"/><text x="400" y="374" class="t-b">PdfGeneratorService</text><text x="400" y="392" class="t-mut">DomPDF: kontrak, slip, invoice</text>
       <rect x="524" y="350" width="216" height="56" rx="8" fill="#fff" stroke="#9aa7bd"/><text x="632" y="374" class="t-b">Notifikasi</text><text x="632" y="392" class="t-mut">in-app + WA + email (queued)</text>
     </g>
@@ -163,7 +163,7 @@
     <text x="40" y="34" class="t-md t-b">Jalur 1 — status_partisipasi</text>
 
     <g class="t-sm t-b" text-anchor="middle">
-      <rect x="40"   y="52" width="100" height="48" rx="9" fill="#e8eefc" stroke="#7b93d6"/><text x="90"  y="80">Diajukan</text>
+      <rect x="40"   y="52" width="100" height="48" rx="9" fill="#e8eefc" stroke="#7b93d6"/><text x="90"  y="74">Diajukan</text><text x="90" y="90" style="font-weight:400;font-size:10px;fill:#5b667a">atau Diundang</text>
       <rect x="180"  y="52" width="100" height="48" rx="9" fill="#e8eefc" stroke="#7b93d6"/><text x="230" y="73">Direview</text><text x="230" y="89">Admin</text>
       <rect x="320"  y="52" width="100" height="48" rx="9" fill="#fff1d6" stroke="#d9a23a"/><text x="370" y="80">Nego Fee</text>
       <rect x="460"  y="52" width="100" height="48" rx="9" fill="#e3f6ea" stroke="#6fb88b"/><text x="510" y="80">Deal</text>
@@ -261,7 +261,9 @@
     <tr><td>Polling + notifikasi, bukan WebSocket</td><td>Pengalaman buruk sebelumnya, infrastruktur ekstra tidak sepadan</td><td>Tidak benar-benar real-time</td></tr>
     <tr><td>WA self-hosted</td><td>Gratis, kontrol penuh, nomor khusus sistem</td><td>Risiko nomor diblokir; makanya hanya kanal pelengkap</td></tr>
     <tr><td>Enkripsi atribut + blind index</td><td>NIK/rekening terenkripsi, duplikat tetap bisa dicek lewat HMAC</td><td>Kunci <code>NIK_HASH_KEY</code> tidak boleh dirotasi tanpa re-hash</td></tr>
-    <tr><td>Satu sumber hitung uang</td><td><code>KeuanganService</code> mencegah angka beda antar halaman</td><td>Semua tampilan uang wajib lewat service</td></tr>
+    <tr><td>Keuangan = pencatatan, bukan analisis</td><td>Kebutuhan dospem hanya penggajian staf dan riwayat kerja; margin, piutang, saldo, proyeksi adalah ranah internal JBTB dan bergantung aturan bisnis yang belum final</td><td>Tidak ada dasbor keuangan analitik; perlu dicatat sebagai penyimpangan dari proposal (RF-30)</td></tr>
+    <tr><td>Nego fee opsional per proyek</td><td>Tidak semua proyek bisa ditawar; fee tetap = penawaran final, tahap tidak di-skip sehingga rekam jejak persetujuan tetap ada</td><td>Dua perilaku harus dijaga konsisten; saklar dikunci setelah penawaran pertama</td></tr>
+    <tr><td>Undangan Admin = satu status baru</td><td>Admin dapat memilih Extras langsung; terima kembali ke alur normal (<code>diajukan</code>), tanpa cabang baru setelahnya</td><td>Satu nilai enum baru yang tersebar ke dashboard, kuota, dan visibilitas Client; menolak undangan tidak boleh dihitung pembatalan</td></tr>
     <tr><td>Aksi GET tidak mengubah data</td><td>Kontrak/payment dibuat pada transisi status, aman dari tautan atau prefetch</td><td>Logika transisi harus disiplin</td></tr>
   </table>
   <p class="sub" style="margin-top:14px"><span class="tag w">Kelemahan jujur</span> Belum pakai Laravel Policy formal (otorisasi manual per controller), validasi masih inline, belum ada CAPTCHA, <code>composer audit</code> belum rutin, dan repo masih public.</p>
