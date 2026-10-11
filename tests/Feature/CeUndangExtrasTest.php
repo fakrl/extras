@@ -352,11 +352,42 @@ class CeUndangExtrasTest extends TestCase
         $pesan = rawurldecode(html_entity_decode($m[1]));
 
         $this->assertStringContainsString('saya Rina Admin dari JBTB Casting', $pesan);
-        $this->assertStringContainsString('proyek Film CE ('.$p->kode_proyek.') (peran Warga)', $pesan);
+        $this->assertStringContainsString('proyek '.$p->kode_proyek.' Film CE (peran Warga).', $pesan);
         $this->assertStringContainsString(route('extras.projects.show', $p), $pesan);
         $this->assertStringNotContainsString('PH Rahasia', $pesan);
         $this->assertStringNotContainsString('777', $pesan);
         $this->assertStringNotContainsString('Rp', $pesan);
+    }
+
+    public function test_tautan_wa_undangan_membuka_halaman_undangan_setelah_login(): void
+    {
+        $e = $this->extras();
+        $e->user->update(['password' => bcrypt('rahasia123')]);
+        $p = $this->proyek('Tertutup', [10], 3, ['status' => 'ditutup']);
+        $this->diundang($e, $p);
+        $url = route('extras.projects.show', $p);
+
+        $this->get($url)->assertRedirect(route('login'));
+        $this->post(route('login'), ['email' => $e->user->email, 'password' => 'rahasia123'])->assertRedirect(parse_url($url, PHP_URL_PATH));
+        $this->get($url)->assertOk()->assertSee('Kamu diundang ke proyek ini');
+        $this->post(route('logout'));
+
+        // RF-03 tetap: URL intended di luar halaman lowongan Extras diabaikan.
+        $this->get(route('admin.dashboard'))->assertRedirect(route('login'));
+        $this->post(route('login'), ['email' => $e->user->email, 'password' => 'rahasia123'])->assertRedirect($e->user->dashboardUrl());
+    }
+
+    public function test_diundang_belum_dihitung_sedang_di_proyek(): void
+    {
+        $e = $this->extras();
+        $a = $this->diundang($e, $this->proyek());
+
+        $this->assertSame('Aktif', $e->statusTampil());
+        $this->actingAs($this->admin)->get(route('admin.akun.extras', ['sedang_aktif' => 1]))->assertDontSee('@budi_ce');
+
+        $a->update(['status_partisipasi' => 'diajukan']);
+        $this->assertSame('Sedang di proyek', $e->statusTampil());
+        $this->actingAs($this->admin)->get(route('admin.akun.extras', ['sedang_aktif' => 1]))->assertSee('@budi_ce');
     }
 
     public function test_extras_lihat_undangan_di_proyek_ditutup_dan_dashboard(): void

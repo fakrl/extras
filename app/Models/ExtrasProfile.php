@@ -181,14 +181,14 @@ class ExtrasProfile extends Model
             ->with('castingProject')->get()->each->siapkanKontrakDanPembayaran();
     }
 
-    /** BH.1: badge profil. "Sedang di proyek" = definisi filter BD.4 Manajemen Akun. */
+    /** BH.1: badge profil. "Sedang di proyek" = definisi filter BD.4 Manajemen Akun; `diundang` belum dihitung (Extras belum menerima). */
     public function statusTampil(): string
     {
         if (($this->user?->status ?? 'aktif') !== 'aktif' || $this->status === 'tidak_aktif') {
             return 'Tidak aktif';
         }
 
-        return $this->applications()->whereNotIn('status_partisipasi', ['ditolak', 'dibatalkan', 'selesai_produksi'])->exists()
+        return $this->applications()->whereNotIn('status_partisipasi', ['diundang', 'ditolak', 'dibatalkan', 'selesai_produksi'])->exists()
             ? 'Sedang di proyek' : 'Aktif';
     }
 

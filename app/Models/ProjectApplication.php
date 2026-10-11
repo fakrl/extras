@@ -564,7 +564,7 @@ class ProjectApplication extends Model
     {
         $peran = $this->castingProjectClass?->nama_kelas;
 
-        return "Halo {$this->extras->user->name}, saya {$admin->name} dari JBTB Casting. Kami mengundang kamu untuk proyek {$this->castingProject->namaKode()}".($peran ? " (peran {$peran})" : '').'. Mohon cek dan konfirmasi (terima/tolak) di: '.route('extras.projects.show', $this->castingProject);
+        return "Halo {$this->extras->user->name}, saya {$admin->name} dari JBTB Casting. Kami mengundang kamu untuk proyek {$this->castingProject->kode_proyek} {$this->castingProject->nama_produksi}".($peran ? " (peran {$peran})" : '').'. Mohon cek dan konfirmasi (terima/tolak) di: '.route('extras.projects.show', $this->castingProject);
     }
 
     /**
