@@ -15,7 +15,7 @@ Sistem ini melibatkan lima aktor: dua aktor eksternal (Client dan Extras) serta 
 
 | Aktor | Deskripsi Peran | Cara Masuk Sistem |
 |---|---|---|
-| Super Admin | Pemilik/pimpinan agensi. Memantau seluruh operasional melalui dashboard (ringkasan perlu tindakan, status proyek, arus uang per periode, kalender), mengelola seluruh akun (Admin, Korlap, Client), menyetujui atau menolak pengajuan proyek dari Client, menugaskan Admin pada proyek, menetapkan honor staf, serta melihat log aktivitas. Dapat memasuki mode pemantauan: sebagai Admin atau Korlap dengan aksi penuh (setiap aksi tercatat atas nama Super Admin), dan sebagai Client atau Extras dengan tampilan lihat-saja. | Akun tunggal terproteksi, dibuat saat inisialisasi sistem |
+| Super Admin | Pemilik/pimpinan agensi. Memantau seluruh operasional melalui dashboard (ringkasan perlu tindakan, status proyek, honor staf dan invoice yang belum selesai, kalender), mengelola seluruh akun (Admin, Korlap, Client), menyetujui atau menolak pengajuan proyek dari Client, menugaskan Admin pada proyek, menetapkan honor staf, serta melihat log aktivitas. Dapat memasuki mode pemantauan: sebagai Admin atau Korlap dengan aksi penuh (setiap aksi tercatat atas nama Super Admin), dan sebagai Client atau Extras dengan tampilan lihat-saja. | Akun tunggal terproteksi, dibuat saat inisialisasi sistem |
 | Admin | Menjalankan operasional inti: membuat dan mengelola proyek casting, menyeleksi kandidat, menetapkan grade, menjalankan negosiasi fee, mengajukan kandidat kepada Client, mengelola kontrak, invoice, pembayaran Extras, keuangan proyek (cashflow), serta kelola akun Extras. Dapat berjumlah lebih dari satu; setiap proyek memiliki satu Admin PIC. | Dibuat oleh Super Admin |
 | Koordinator Lapangan (Korlap) | Mengawasi Extras di lokasi produksi: mencatat kehadiran, memvalidasi atau menolak foto absensi Extras, serta mencatat catatan atau sanksi lapangan. Melihat riwayat kerja dan status honor miliknya sendiri. Tidak memiliki akses keuangan maupun pengelolaan akun. | Dibuat oleh Super Admin, ditugaskan per proyek |
 | Client | Mewakili Production House (PH). Mengajukan kebutuhan proyek (brief) untuk disetujui Super Admin, melakukan Greenlight (lock atau tolak) terhadap kandidat yang diajukan Admin, melengkapi jadwal shooting, melihat dan menandatangani invoice, serta mengunduh riwayat pilihannya. Seorang Client dapat memiliki lebih dari satu proyek dengan satu akun. | Dibuat oleh Super Admin dengan kata sandi sementara dan wajib ganti kata sandi pada login pertama; registrasi publik Client ditutup |
@@ -50,7 +50,7 @@ Modul Profil Extras
 |---|---|---|
 | RF-06 | Extras melengkapi profil: usia, gender, tinggi dan berat badan, ukuran baju, bahasa, rate card, riwayat pengalaman, tautan portofolio, foto utama, empat foto tambahan, dan video profil | Extras |
 | RF-07 | Sistem menandai status Extras (Aktif/Tidak Aktif/Melanggar) berdasarkan riwayat pembatalan | Sistem |
-| RF-08 | Pembatalan sebanyak tiga kali mengubah status Extras otomatis menjadi "Melanggar"; seluruh pembatalan dihitung sebagai pembatalan mendadak (keputusan D23) | Sistem |
+| RF-08 | Pembatalan keikutsertaan oleh Extras yang dilakukan kurang dari dua hari sebelum tanggal shooting terdekat dihitung sebagai pembatalan mendadak; tiga pembatalan mendadak mengubah status Extras otomatis menjadi "Melanggar" dan akunnya tidak dapat masuk ke sistem. Pembatalan karena bentrok jadwal tidak mendapat pengecualian (keputusan D23); menolak atau dibatalkannya undangan proyek bukan pembatalan dan tidak dihitung | Sistem |
 | RF-64 | Extras memberi tag ciri dengan teks bebas (disarankan lewat autocomplete dan dinormalisasi otomatis); Admin merapikan tag melalui dialog "Rapikan tag" (pindah grup, gabung, hapus) | Extras/Admin |
 | RF-65 | Extras menentukan izin tampil profil pada beranda publik; penayangan tetap memerlukan persetujuan Admin | Extras/Admin |
 
@@ -83,7 +83,9 @@ Modul Pendaftaran dan Seleksi
 | RF-13 | Sistem menegakkan aturan bentrok jadwal: pendaftaran ditolak bila bentrok dengan keterlibatan berstatus Lolos atau Kontrak Ditandatangani; bila bentrok dengan proses yang belum pasti, Extras diberi peringatan dan dapat melanjutkan dengan konfirmasi; penandatanganan kontrak ditolak bila bentrok dengan kontrak lain | Sistem |
 | RF-14 | Admin memfilter pendaftar (tag, grade, status, favorit) dan melihat profil lengkap | Admin |
 | RF-15 | Admin menetapkan Grade (A/B/C) sebagai penilaian kualitas yang independen dari fee | Admin |
-| RF-68 | Kuota peran bersifat antrian: setiap pendaftar yang tidak ditolak atau dibatalkan menempati slot; pendaftaran diblokir saat penuh dan slot terbuka kembali saat ada penolakan atau pembatalan | Sistem |
+| RF-68 | Kuota peran bersifat antrian: setiap pendaftar (termasuk yang sedang diundang) yang tidak ditolak atau dibatalkan menempati slot; pendaftaran diblokir saat penuh dan slot terbuka kembali saat ada penolakan atau pembatalan | Sistem |
+| RF-74 | Admin mengundang Extras ke proyek tertentu (termasuk proyek yang lowongannya belum dibuka) beserta perannya; undangan menempati slot kuota dan divalidasi dengan aturan yang sama seperti pendaftaran (bentrok jadwal, kuota, akun melanggar atau nonaktif, pendaftaran ganda). Extras menerima undangan (masuk alur normal sebagai pendaftar) atau menolaknya; Admin dapat membatalkan undangan. Penolakan dan pembatalan undangan bukan pembatalan keikutsertaan sehingga tidak dihitung pada aturan pembatalan mendadak. Kandidat berstatus diundang tidak terlihat oleh Client | Admin/Extras |
+| RF-75 | Admin dan Super Admin dapat membuka percakapan WhatsApp dengan Extras melalui tombol yang memuat pesan pembuka terisi (umum atau undangan proyek); nomor WhatsApp hanya terlihat oleh Admin dan Super Admin | Admin/Super Admin |
 
 Modul Negosiasi Fee
 
@@ -92,7 +94,8 @@ Negosiasi fee dilakukan saat Admin menyeleksi kandidat, sebelum kandidat diajuka
 | Kode | Kebutuhan | Aktor |
 |---|---|---|
 | RF-16 | Admin mengajukan penawaran fee awal berdasarkan rate card dan budget peran | Admin |
-| RF-17 | Extras menerima penawaran atau mengajukan counter, tanpa batas jumlah putaran | Extras |
+| RF-17 | Extras menerima penawaran atau, bila proyek terbuka untuk negosiasi, mengajukan counter tanpa batas jumlah putaran. Pada proyek berfee tetap, penawaran Admin bersifat final dan Extras hanya dapat menerima atau menolak | Extras |
+| RF-77 | Admin menentukan saat membuat proyek apakah fee dapat dinegosiasikan; pilihan ini dapat diubah hanya sebelum penawaran pertama diajukan, dan lowongan menampilkan keterangan "Terbuka untuk nego fee" atau "Fee tetap" tanpa menampilkan nominal | Admin |
 | RF-18 | Admin menerima counter, mengajukan counter balik, atau menghentikan negosiasi dengan alasan | Admin |
 | RF-19 | Sistem mencatat setiap putaran (pengaju, nominal, waktu, catatan) sebagai riwayat | Sistem |
 | RF-20 | Saat disepakati, status menjadi "Deal" dan fee terkunci pada nominal tersebut | Sistem |
@@ -104,7 +107,7 @@ Modul Greenlight Client
 | RF-21 | Admin mengajukan kandidat berstatus Deal kepada Client | Admin |
 | RF-22 | Sistem menampilkan peringatan bentrok jadwal kepada Admin saat kandidat akan diajukan | Sistem |
 | RF-23 | Client meninjau kandidat dalam tampilan grid dengan filter demografis dan tag, memberi grade, lalu melakukan lock (Lolos) atau tolak, secara individual maupun massal | Client |
-| RF-24 | Sistem mencatat status pendaftar secara berjenjang: Diajukan, Direview Admin, Nego Fee, Deal, Diajukan ke Client, Lolos, Kontrak Ditandatangani, Selesai Produksi, dengan cabang Ditolak dan Dibatalkan; status pembayaran dicatat terpisah: Belum Dibayar, Ditransfer (dengan bukti), Dikonfirmasi Diterima, dengan cabang Disengketakan | Sistem |
+| RF-24 | Sistem mencatat status pendaftar secara berjenjang: (Diundang, bila berasal dari undangan Admin, lalu) Diajukan, Direview Admin, Nego Fee, Deal, Diajukan ke Client, Lolos, Kontrak Ditandatangani, Selesai Produksi, dengan cabang Ditolak dan Dibatalkan; status pembayaran dicatat terpisah: Belum Dibayar, Ditransfer (dengan bukti), Dikonfirmasi Diterima, dengan cabang Disengketakan | Sistem |
 | RF-69 | Setiap keputusan Client (lock maupun tolak) memicu notifikasi kepada Admin PIC proyek berisi nama Client, kandidat, proyek, dan tautan langsung ke halaman terkait | Sistem |
 | RF-70 | Admin melihat, secara hanya-baca, daftar Client beserta proyek dan status kandidat yang diajukan (Menunggu, Lock, Ditolak) | Admin |
 
@@ -121,9 +124,10 @@ Modul Pembayaran dan Keuangan
 | Kode | Kebutuhan | Aktor |
 |---|---|---|
 | RF-28 | Admin menandai "Sudah Ditransfer" beserta bukti transfer; "perlu ditransfer" didefinisikan sebagai kontrak sudah ditandatangani lengkap dan belum dibayar | Admin |
-| RF-29 | Extras mengonfirmasi penerimaan honor atau mengajukan sengketa beralasan | Extras |
-| RF-30 | Sistem menampilkan keuangan per proyek dengan satu sumber perhitungan: Masuk (invoice lunas), Piutang (invoice belum lunas), Keluar (honor Extras, honor staf, biaya lain-lain), Saldo, dan Proyeksi; ringkasan per periode tersedia pada dashboard Super Admin | Admin/Super Admin |
-| RF-31 | Sistem membuat invoice penagihan kepada Client, ditandatangani canvas oleh Admin dan Client, dengan opsi dokumen kustom; Admin menandai lunas | Admin/Client |
+| RF-29 | Extras mengonfirmasi penerimaan honor atau mengajukan sengketa beralasan; pengajuan sengketa memicu notifikasi kepada Admin PIC proyek | Extras |
+| RF-76 | Admin atau Super Admin menyelesaikan sengketa pembayaran dengan catatan tanggapan dan, bila perlu, bukti transfer baru; pembayaran kembali ke status Ditransfer agar Extras dapat mengonfirmasi atau melaporkan kembali, dan alasan sengketa tetap tersimpan sebagai riwayat | Admin/Super Admin |
+| RF-30 | Sistem mencatat keuangan per proyek pada tab Keuangan dalam empat blok tanpa perhitungan gabungan: invoice (nominal dan status lunas), honor Extras (nominal dan status pembayaran), honor staf (nominal dan status), dan biaya lain-lain. Sistem tidak menghitung margin, piutang, saldo, maupun proyeksi, karena analisis keuangan merupakan ranah internal PT. JBTB (penyimpangan dari proposal yang semula memuat margin; keputusan 4 Oktober 2026) | Admin |
+| RF-31 | Sistem membuat invoice penagihan kepada Client (nominal diisi Admin dengan usulan awal dari rincian peran), ditandatangani canvas oleh Admin dan Client, dengan opsi dokumen kustom; Admin menandai lunas | Admin/Client |
 | RF-32 | Admin menambahkan komponen tambahan (add-on) pada pembayaran, berupa label bebas dan nominal manual | Admin |
 | RF-71 | Admin mencatat biaya lain-lain proyek sebagai komponen pengeluaran cashflow | Admin |
 
@@ -161,7 +165,7 @@ Modul Dashboard dan Laporan
 | Kode | Kebutuhan | Aktor |
 |---|---|---|
 | RF-39 | Dashboard sesuai kebutuhan tiap peran, termasuk kalender jadwal bergaya mobile dan tahapan partisipasi kandidat | Semua |
-| RF-50 | Dashboard Super Admin berisi ringkasan "perlu tindakan", status proyek, arus uang periode, dan kalender; pemantauan per peran melalui RF-62 | Super Admin |
+| RF-50 | Dashboard Super Admin berisi ringkasan "perlu tindakan" (termasuk honor staf belum dibayar dan invoice belum lunas), status proyek, dan kalender; pemantauan per peran melalui RF-62 | Super Admin |
 | RF-51 | Admin melihat rekap Extras (sering dipilih, sering batal) pada satu halaman Kelola Akun Extras dengan opsi pengurutan | Admin |
 | RF-52 | Admin dan Client mengekspor data ke Excel (rekap Extras sesuai filter; riwayat pilihan Client, juga PDF) | Admin/Client |
 
@@ -213,6 +217,8 @@ Gagasan berikut muncul selama bimbingan dan pengembangan, dinilai bernilai, teta
 | Pemindaian QR untuk check-in absensi | Memerlukan konfirmasi alur dengan mitra |
 | Pembaruan real-time (WebSocket) | Pengalaman penggunaan sebelumnya kurang stabil; polling dan notifikasi dinilai cukup |
 | Tanda tangan elektronik tersertifikasi (PSrE) dan API Dukcapil | Biaya dan ketergantungan pihak ketiga |
+| Analisis keuangan proyek (margin, proyeksi, piutang, grafik arus uang) | Di luar fokus sistem seleksi dan kesepakatan fee; ranah internal PT. JBTB, dan bergantung pada aturan bisnis yang belum final |
+| Undangan Extras kedaluwarsa otomatis dan undangan ulang pada proyek yang sama | Belum ada aturan bisnis yang disepakati |
 
 3.2 Metode Pengembangan
 

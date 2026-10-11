@@ -8,7 +8,7 @@ Ganti proses rekrutmen dan pembayaran Extras/figuran PT. JBTB Casting Creative G
 
 1. **Transparansi fee** — kesepakatan fee Admin dan Extras tercatat (nego bertingkat), tidak bisa dibantah.
 2. **Transparansi honor staf** — slip honor jelas per proyek.
-3. **Keuangan proyek terlihat** — Masuk, Piutang, Keluar, Saldo, Proyeksi dari satu sumber hitung.
+3. **Pencatatan keuangan proyek rapi** — invoice, honor Extras, honor staf, biaya lain-lain tercatat per proyek tanpa perhitungan analitik.
 
 ## User: 5 Role
 
@@ -25,11 +25,11 @@ Ganti proses rekrutmen dan pembayaran Extras/figuran PT. JBTB Casting Creative G
 1. **Autentikasi RBAC 5 role** + login Google (aktif bila config diisi) + wajib ganti password sementara.
 2. **Profil Extras** — data diri, tag bebas, pengalaman, foto utama + 4 foto tambahan, video, izin tampil di beranda publik.
 3. **Proyek casting** — peran + budget + kuota per peran, tanggal shooting jamak, lampiran, kode `JBTB-tahun-nomor`, tautan publik `/event/{token}`, pengajuan brief Client (ACC Super Admin).
-4. **Pendaftaran & seleksi** — kuota antrian, aturan bentrok jadwal (blokir hanya bila bentrok dengan Lolos/Kontrak), filter tag/grade/favorit, grade A/B/C, Favorit ⭐ internal.
-5. **Nego fee in-app** — multi-round tercatat sampai Deal, sebelum diajukan ke Client.
+4. **Pendaftaran & seleksi** — kuota antrian, aturan bentrok jadwal (blokir hanya bila bentrok dengan Lolos/Kontrak), filter tag/grade/favorit, grade A/B/C, Favorit ⭐ internal. **Undang Extras** langsung ke proyek (status `diundang`, Extras terima/tolak, Admin dapat membatalkan; tidak dihitung pembatalan) + tombol "Hubungi via WA" untuk Admin.
+5. **Nego fee in-app** — multi-round tercatat sampai Deal, sebelum diajukan ke Client. **Opsional per proyek:** "Terbuka untuk nego fee" atau "Fee tetap" (penawaran final, Extras terima/tolak); keterangan tampil di lowongan tanpa nominal.
 6. **Greenlight Client** — grid kandidat, filter, lock/tolak (individual/massal), notifikasi ke Admin PIC.
 7. **Kontrak digital** — PDF otomatis saat Lolos, TTD canvas, void otomatis bila batal.
-8. **Pembayaran & keuangan** — bukti transfer manual (bukan payment gateway), sengketa, add-on, biaya lain-lain, invoice + TTD + tandai lunas, cashflow per proyek dan per periode.
+8. **Pembayaran & keuangan = pencatatan** — honor Extras: bukti transfer manual (bukan payment gateway), add-on, sengketa yang dapat diselesaikan Admin (notifikasi, tanggapan, bukti baru, kembali ke Ditransfer); invoice sebagai dokumen (nominal manual, TTD, tandai lunas); biaya lain-lain. Tab Keuangan proyek = empat blok catatan. **Tidak ada** margin, piutang, saldo, proyeksi (analisis = urusan internal JBTB).
 9. **Staf** — akun Admin/Korlap, penugasan, honor per-event, slip PDF, riwayat kerja.
 10. **Lapangan** — absensi (Admin/Korlap catat, Extras selfie, Korlap validasi), catatan/sanksi.
 11. **Notifikasi** — in-app (lonceng) utama; WhatsApp via `whatsapp-web.js` self-hosted sebagai pelengkap (queue); pengingat terjadwal (H-3, input jadwal, H-1, akun mangkrak).
@@ -48,7 +48,7 @@ Ganti proses rekrutmen dan pembayaran Extras/figuran PT. JBTB Casting Creative G
 
 ```
 Client ajukan brief → Super Admin ACC (atau SA/Admin buat proyek langsung)
-Extras daftar peran → Admin review + grade → NEGO FEE → Deal
+Extras daftar peran (atau Admin mengundang → Extras terima) → Admin review + grade → NEGO FEE / penawaran final → Deal
    → Admin ajukan ke Client → Client lock → Lolos (kontrak + payment dibuat)
    → Extras lengkapi KTP → TTD canvas (Admin + Extras)
    → hari H: absensi → Admin transfer + bukti → Extras konfirmasi → Selesai

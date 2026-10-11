@@ -84,6 +84,9 @@ Sistem memisahkan secara ketat antara **Status Partisipasi Talent** dan **Status
 ```mermaid
 stateDiagram-v2
     [*] --> mendaftar: Extras Melamar Proyek
+    [*] --> diundang: Admin Mengundang Extras
+    diundang --> mendaftar: Extras Menerima
+    diundang --> ditolak: Extras Menolak / Admin Membatalkan
     mendaftar --> direview_admin: Admin Screening
     direview_admin --> nego_fee: Ajukan Fee Awal
     direview_admin --> ditolak: Seleksi Gagal
@@ -148,9 +151,9 @@ Role resmi dipangkas dari 7 menjadi **5 Role**:
 * **Evaluasi Lapangan (Korlap) = Kinerja & Sikap di Lokasi (Attitude):**
   * Korlap **tidak mengubah** Grade visual A/B/C.
   * Korlap mengisi evaluasi lapangan pasca-syuting berupa:
-    1. Status Kehadiran & Ketepatan Waktu (Otomatis dari jam absen vs callingan).
-    2. Rating Sikap / Kedisiplinan di Set (Skala 1–5 bintang).
-    3. Catatan lapangan kualitatif (opsional).
+    1. Status kehadiran per tanggal shooting (dicatat atau divalidasi Korlap).
+    2. Catatan lapangan dan sanksi kualitatif.
+  * *Rating sikap 1–5 dan skor otomatis dari jam absen vs callingan dicoret dari cakupan implementasi (feature freeze 30 September 2026) dan dicatat sebagai pengembangan lanjutan di Bab 3 §3.1.5.*
 
 ### 5.3 Callsheet, Rundown, dan Jam Callingan
 * Sistem **BUKAN** generator callsheet produksi film.
@@ -180,6 +183,8 @@ Role resmi dipangkas dari 7 menjadi **5 Role**:
 ---
 
 ## 6. Tabel Database Inti (11 Core Conceptual Tables)
+
+> **Catatan (1 Oktober 2026):** bagian ini adalah **model konseptual** untuk ERD dan Class Diagram. Implementasi final berjumlah **31 tabel** (23 bisnis + 8 framework); rincian kolom, tabel pendukung (tag, lampiran, biaya, penugasan staf, log aktivitas), dan tabel yang telah digabung ada di `DATABASE-SCHEMA.md`, yang menjadi acuan jika berbeda dengan daftar di bawah. Sejak 4 Oktober 2026 analisis keuangan (margin, proyeksi) tidak lagi ada: keuangan hanya dicatat.
 
 Untuk keperluan penulisan **Bab 3 Skripsi (ERD Konseptual & Class Diagram)**, sistem berpusat pada 11 tabel utama:
 
@@ -217,7 +222,7 @@ erDiagram
 ---
 
 ## 7. Audit Trail & Sistem Log Terintegrasi
-Setiap perubahan status kritis pada data dicatat ke dalam tabel log audit (`notifications_log` dan log transisi status), mencakup:
+Setiap perubahan status kritis pada data dicatat ke dalam tabel log audit `activity_logs` (tabel `notifications_log` sudah dihapus; status pengiriman WA/email kini tersimpan di kolom `data` tabel `notifications`), mencakup:
 * Aktor pelaksana (`user_id` & `role`).
 * Aksi yang dieksekusi (e.g., `DEAL_FEE`, `APPROVE_ABSENSI`, `UPLOAD_BUKTI_BAYAR`).
 * Timestamp waktu eksekusi presisi Asia/Jakarta.
