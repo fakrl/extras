@@ -48,7 +48,7 @@ class FilterAkun
             })
             ->when($f['sedang_aktif'], fn ($q) => $q->where(fn ($w) => $w
                 ->where(fn ($e) => $e->where('role', User::ROLE_EXTRAS)
-                    ->whereHas('extrasProfile.applications', fn ($a) => $a->whereNotIn('status_partisipasi', ['ditolak', 'dibatalkan', 'selesai_produksi'])))
+                    ->whereHas('extrasProfile.applications', fn ($a) => $a->whereNotIn('status_partisipasi', ['diundang', 'ditolak', 'dibatalkan', 'selesai_produksi'])))
                 ->orWhere(fn ($s) => $s->whereIn('role', [User::ROLE_ADMIN, User::ROLE_KORLAP])
                     ->whereHas('adminProjectAssignments', fn ($a) => $a->where('status_log', 'berjalan')))
                 ->orWhere(fn ($c) => $c->where('role', User::ROLE_CLIENT)

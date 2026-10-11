@@ -19,7 +19,7 @@ class AdminManagementController extends Controller
 {
     /**
      * BD.4: Manajemen Akun, satu daftar semua akun + filter popover.
-     * "Sedang aktif di proyek": Extras punya aplikasi selain ditolak/dibatalkan/selesai_produksi,
+     * "Sedang aktif di proyek": Extras punya aplikasi selain diundang/ditolak/dibatalkan/selesai_produksi,
      * Admin/Korlap punya penugasan status_log berjalan, Client ter-assign ke proyek mendatang/berjalan.
      */
     public function akun(Request $request)

@@ -78,7 +78,13 @@ class LoginController extends Controller
             }
         }
 
-        // SENGAJA bukan redirect()->intended(), RF-03 mensyaratkan tiap role
+        // CE.2.8: tautan WA undangan (/extras/lowongan/{id}) dibuka sebelum login: Extras dibalikkan ke halaman itu.
+        $tujuan = parse_url((string) $request->session()->pull('url.intended'), PHP_URL_PATH);
+        if (Auth::user()->isExtras() && $tujuan && preg_match('#^/extras/lowongan/\d+$#', $tujuan)) {
+            return redirect($tujuan);
+        }
+
+        // Selain itu SENGAJA bukan redirect()->intended(), RF-03 mensyaratkan tiap role
         // selalu diarahkan ke dashboard masing-masing setelah login, terlepas
         // dari URL apa yang sempat dicoba diakses sebelum login (mis. Extras
         // yang tadinya nyasar ke /admin/dashboard dan kena redirect ke /login,
