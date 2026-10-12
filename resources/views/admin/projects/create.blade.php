@@ -12,8 +12,8 @@
 
         <div class="form-row">
             <div>
-                <label>Nama Produksi <span class="wajib" aria-hidden="true">*</span></label>
-                <input type="text" name="nama_produksi" value="{{ old('nama_produksi') }}" required>
+                <label for="nama_produksi">Nama Produksi <span class="wajib" aria-hidden="true">*</span></label>
+                <input type="text" name="nama_produksi" id="nama_produksi" value="{{ old('nama_produksi') }}" required>
             </div>
         </div>
 
@@ -22,19 +22,19 @@
 
         <div class="form-row">
             <div>
-                <label>Link Grup Koordinasi <span style="color: var(--text-muted); font-weight: 400;">(WA/Telegram, dapat diisi menyusul)</span></label>
-                <input type="url" name="link_grup" value="{{ old('link_grup') }}" placeholder="https://chat.whatsapp.com/... atau https://t.me/...">
+                <label for="link_grup">Link Grup Koordinasi <span style="color: var(--text-muted); font-weight: 400;">(WA/Telegram, dapat diisi menyusul)</span></label>
+                <input type="url" name="link_grup" id="link_grup" value="{{ old('link_grup') }}" placeholder="https://chat.whatsapp.com/... atau https://t.me/...">
             </div>
         </div>
 
         <div class="form-row">
             <div>
-                <label>Deadline Pendaftaran <span class="wajib" aria-hidden="true">*</span></label>
-                <input type="date" name="deadline" value="{{ old('deadline') }}" required>
+                <label for="deadline">Deadline Pendaftaran <span class="wajib" aria-hidden="true">*</span></label>
+                <input type="date" name="deadline" id="deadline" value="{{ old('deadline') }}" required>
             </div>
             <div>
-                <label>Kuota Total <span class="wajib" aria-hidden="true">*</span></label>
-                <input type="number" name="kuota" value="{{ old('kuota') }}" min="1" required>
+                <label for="kuota">Kuota Total <span class="wajib" aria-hidden="true">*</span></label>
+                <input type="number" name="kuota" id="kuota" value="{{ old('kuota') }}" min="1" required>
             </div>
             <div style="display: flex; align-items: center; padding-top: 22px;">
                 <div class="form-check">
@@ -53,8 +53,8 @@
 
         <div class="form-row">
             <div>
-                <label>Poster Produksi <span style="color: var(--text-muted); font-weight: 400;">(maks. 2MB)</span></label>
-                <input type="file" name="poster_path" accept="image/jpeg,image/png,image/webp">
+                <label for="poster_path">Poster Produksi <span style="color: var(--text-muted); font-weight: 400;">(maks. 2MB)</span></label>
+                <input type="file" name="poster_path" id="poster_path" accept="image/jpeg,image/png,image/webp">
             </div>
         </div>
 
@@ -66,7 +66,7 @@
             @foreach (old('tanggal_shooting', ['']) as $tgl)
                 <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; align-items: center;">
                     <input type="date" name="tanggal_shooting[]" class="input-inline" value="{{ $tgl }}" required>
-                    <button type="button" class="btn-icon-danger btn-remove-row" title="Hapus" style="display:none">&times;</button>
+                    <button type="button" class="btn-icon-danger btn-remove-row" title="Hapus tanggal" aria-label="Hapus tanggal" style="display:none">&times;</button>
                 </div>
             @endforeach
         </div>
@@ -74,7 +74,7 @@
 
         <hr>
         <div style="font-size: 14px; font-weight: 500; margin-bottom: 8px;">
-            Karakter yang Dibutuhkan & Breakdown <span style="color: var(--text-muted); font-weight: 400; font-size: 12.5px;">(minimal satu karakter)</span>
+            Peran yang Dibutuhkan & Breakdown <span style="color: var(--text-muted); font-weight: 400; font-size: 12.5px;">(minimal satu peran)</span>
         </div>
         <div id="kelas-wrap">
             @php $kelasRows = old('kelas') ?: [[]]; @endphp
@@ -82,9 +82,12 @@
                 @include('admin.projects._kelas-row', ['i' => $i, 'k' => $k, 'kunci' => false])
             @endforeach
         </div>
-        <button type="button" id="btn-add-kelas" class="btn btn-sm" style="margin-bottom: 24px;">+ Tambah Karakter</button>
+        <button type="button" id="btn-add-kelas" class="btn btn-sm" style="margin-bottom: 24px;">+ Tambah Peran</button>
 
-        <button type="submit" class="btn btn-brand" style="width: 100%;">Simpan Proyek Casting</button>
+        <div style="display: flex; gap: 8px;">
+            <a href="{{ route('admin.projects.index') }}" class="btn">Batal</a>
+            <button type="submit" class="btn btn-brand" style="flex: 1;">Simpan Proyek Casting</button>
+        </div>
     </form>
     @if (auth()->user()->isSuperAdmin())
         @include('partials.client-baru-modal')
@@ -101,7 +104,7 @@
             var row = document.createElement('div');
             row.style.cssText = 'display:flex; gap:8px; margin-bottom:8px; align-items:center;';
             row.innerHTML = '<input type="date" name="tanggal_shooting[]" class="input-inline" required>' +
-                '<button type="button" class="btn-icon-danger btn-remove-row">&times;</button>';
+                '<button type="button" class="btn-icon-danger btn-remove-row" aria-label="Hapus tanggal" title="Hapus tanggal">&times;</button>';
             tanggalWrap.appendChild(row);
             updateRemoveButtons(tanggalWrap, '.btn-remove-row');
         });
@@ -122,18 +125,18 @@
             row.style.cssText = 'border:1px solid var(--border-color); border-radius:10px; padding:12px; margin-bottom:10px;';
             row.innerHTML =
                 '<div class="form-row" style="align-items:flex-end;">' +
-                '<div><label>Nama Karakter <span class="wajib" aria-hidden="true">*</span></label>' +
+                '<div><label>Nama Peran <span class="wajib" aria-hidden="true">*</span></label>' +
                 '<input type="text" name="kelas[' + kelasIndex + '][nama_kelas]" required></div>' +
                 '<div><label>Budget Client (Rp) <span class="wajib" aria-hidden="true">*</span></label>' +
                 '<input type="number" name="kelas[' + kelasIndex + '][budget_client]" min="0" required></div>' +
-                '<div><label>Kuota Kelas <span class="wajib" aria-hidden="true">*</span></label>' +
+                '<div><label>Kuota Peran <span class="wajib" aria-hidden="true">*</span></label>' +
                 '<input type="number" name="kelas[' + kelasIndex + '][kuota_kelas]" min="1" required></div>' +
-                '<div style="flex:0;"><button type="button" class="btn-icon-danger btn-remove-kelas">&times;</button></div>' +
+                '<div style="flex:0;"><button type="button" class="btn-icon-danger btn-remove-kelas" aria-label="Hapus peran" title="Hapus peran">&times;</button></div>' +
                 '</div>' +
                 '<div class="form-row" style="margin-top:8px;">' +
                 '<div><label>Jam Callsheet Client</label><input type="time" name="kelas[' + kelasIndex + '][jam_callsheet]"></div>' +
-                '<div><label>Jam Callingan Extras</label><input type="time" name="kelas[' + kelasIndex + '][jam_callingan]"></div>' +
-                '<div><label>Tipe Kontinuitas</label><select name="kelas[' + kelasIndex + '][tipe_continuity]"><option value="free">Bebas (Single Day)</option><option value="continuity">Continuity (Multi-day)</option></select></div>' +
+                '<div><label>Jam Panggil Extras</label><input type="time" name="kelas[' + kelasIndex + '][jam_callingan]"></div>' +
+                '<div><label>Tipe Kontinuitas</label><select name="kelas[' + kelasIndex + '][tipe_continuity]"><option value="free">Sehari (bebas)</option><option value="continuity">Berlanjut (beberapa hari)</option></select></div>' +
                 '</div>' +
                 '<div style="margin-top:8px;"><label>Keterangan Scene</label><input type="text" name="kelas[' + kelasIndex + '][keterangan_scene]" placeholder="Scene 12-14 di warung kopi..."></div>' +
                 '<div style="margin-top:8px;"><label>Kriteria yang dibutuhkan</label>' +

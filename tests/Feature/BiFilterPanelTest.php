@@ -78,7 +78,7 @@ class BiFilterPanelTest extends TestCase
         $r = $this->actingAs($this->sa)->get(route('admin.projects.index', ['per' => 12, 'tahap' => 'berjalan', 'tanpa_client' => 1]))->assertOk();
 
         $this->cekPanel($r, 1);
-        $r->assertSee('Client belum diisi')->assertDontSee('Tahap: Berjalan')
+        $r->assertSee('Tanpa PIC/Client')->assertDontSee('Tahap: Berjalan')
             ->assertSee(e(route('admin.projects.index', ['per' => 12])).'"', false);
 
         $this->assertStringNotContainsString('fpanel-n', $this->form($this->get(route('admin.projects.index'))));

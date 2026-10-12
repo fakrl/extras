@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['round', 'diajukan_oleh', 'nominal', 'aksi', 'catatan'])]
 class FeeNegotiation extends Model
 {
-    const LABELS = ['tawar' => 'Penawaran', 'counter' => 'Counter', 'terima' => 'Diterima', 'tolak' => 'Ditolak'];
+    const LABELS = ['tawar' => 'Penawaran', 'counter' => 'Tawar Balik', 'terima' => 'Diterima', 'tolak' => 'Ditolak'];
 
     const BADGES = ['tawar' => 'badge-pending', 'counter' => 'badge-pending', 'terima' => 'badge-aktif', 'tolak' => 'badge-tolak'];
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CastingProject;
 use App\Models\ClientReview;
 use App\Models\EventShootingDate;
+use App\Models\Invoice;
 use App\Models\ProjectApplication;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -26,13 +27,22 @@ class DashboardController extends Controller
         $reject = ClientReview::where('client_id', $klienId)->where('keputusan', 'reject')->count();
 
         $chartKeputusan = [
-            'labels' => ['Approve', 'Reject'],
+            'labels' => ['Dipilih', 'Ditolak'],
             'data' => [$approve, $reject],
         ];
 
+        // CL-11: berjalan = lowongan masih dibuka atau shooting sedang berlangsung.
         $proyekBerjalan = CastingProject::whereIn('id', $proyekIds)
-            ->where('status', 'dibuka')
-            ->get(['id', 'nama_produksi', 'deadline', 'created_at']);
+            ->where(fn ($q) => $q->where('status', 'dibuka')->orWhere(fn ($t) => $t->diTahap('berjalan')))
+            ->get();
+
+        // CL-10: tugas Client sendiri, bukan tugas tim JBTB.
+        $invoiceMenungguTtd = Invoice::whereIn('casting_project_id', $proyekIds)
+            ->whereNotNull('ttd_admin_signature_path')->whereNull('ttd_client_signature_path')
+            ->with('castingProject:id,nama_produksi')->get();
+        $jadwalKosong = EventShootingDate::whereIn('casting_project_id', $proyekIds)
+            ->whereDate('tanggal', '>=', today())->whereNull('lokasi')
+            ->with('castingProject:id,nama_produksi')->get()->groupBy('casting_project_id');
 
         $pengajuan = CastingProject::query()->milikClient(Auth::user())->whereNotNull('brief_catatan')
             ->latest()
@@ -59,7 +69,7 @@ class DashboardController extends Controller
 
         return view('client.dashboard', compact(
             'perluDireview', 'chartKeputusan', 'proyekBerjalan', 'pengajuan', 'karakterPendaftar',
-            'jadwalBulanIni'
+            'jadwalBulanIni', 'invoiceMenungguTtd', 'jadwalKosong'
         ));
     }
 }

@@ -59,7 +59,7 @@ class DashboardController extends Controller
             'jumlah' => StaffPayroll::where('status_bayar', '!=', 'sudah')->count(),
             'total' => $this->keuanganService->totalHonorStafBelumDiproses(),
         ];
-        $tanpaClient = CastingProject::whereNull('client_id')->count();
+        $tanpaClient = CastingProject::tanpaPicClient()->count();
         $invoiceBelumLunas = Invoice::where('status_bayar', '!=', 'lunas')
             ->with('castingProject.classes')->latest()->get()
             ->each(fn (Invoice $i) => $i->nilai = (float) ($i->nominal ?? $this->keuanganService->nilaiInvoice($i->castingProject)));
@@ -92,7 +92,7 @@ class DashboardController extends Controller
                 $e->url_absensi = route('admin.attendance.index', ['project' => $e->casting_project_id, 'tanggal' => $e->id]);
             });
 
-        $akunPerRole = User::selectRaw('role, count(*) as jumlah')->groupBy('role')->pluck('jumlah', 'role');
+        $akunPerRole = User::where('status', 'aktif')->selectRaw('role, count(*) as jumlah')->groupBy('role')->pluck('jumlah', 'role');
         $clientBelumGantiPassword = User::where('role', 'client')->where('wajib_ganti_password', true)->count();
 
         return view('super-admin.dashboard', compact(

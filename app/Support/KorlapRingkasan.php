@@ -61,7 +61,7 @@ class KorlapRingkasan
     {
         return EventShootingDate::whereDate('tanggal', '>', today())
             ->when($korlapId, fn ($q) => $q->whereHas('castingProject.adminAssignments', self::penugasan($korlapId)))
-            ->orderBy('tanggal')->first();
+            ->with('castingProject:id,nama_produksi')->orderBy('tanggal')->first();
     }
 
     public static function menungguValidasi(int $limit = 10, ?int $korlapId = null): Collection

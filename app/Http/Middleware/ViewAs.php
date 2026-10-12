@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\ActivityLog;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
@@ -32,6 +33,13 @@ class ViewAs
         $mode = $request->session()->get('sa_mode');
 
         if (! $sa?->isSuperAdmin() || $sa->status === 'nonaktif' || ! in_array($mode, self::MODES, true)) {
+            return $this->reset($request, $next);
+        }
+
+        // SA-12/13: membuka halaman Super Admin (GET) = keluar mode otomatis, supaya menu & banner tidak campur.
+        if ($request->isMethod('GET') && $request->is('super-admin', 'super-admin/*') && ! $request->routeIs('super-admin.mode.*', 'super-admin.search')) {
+            ActivityLog::record('SA_MODE_KELUAR', "Super Admin {$sa->name} keluar dari Monitoring sebagai ".(User::LABELS[$mode] ?? $mode).' (membuka halaman Super Admin)', null, ['mode' => $mode]);
+
             return $this->reset($request, $next);
         }
 

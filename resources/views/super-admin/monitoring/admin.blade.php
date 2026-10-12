@@ -5,7 +5,7 @@
 @include('super-admin.monitoring._gaya')
 
 @section('content')
-@include('super-admin.monitoring._kepala', ['mode' => 'admin', 'teks' => 'Pratinjau pekerjaan Admin, lihat saja. Klik kartu untuk masuk mode Admin langsung ke halaman terkait.'])
+@include('super-admin.monitoring._kepala', ['mode' => 'admin', 'teks' => 'Pratinjau pekerjaan Admin, lihat saja. Klik kartu untuk masuk mode Admin langsung ke halaman terkait. Di mode Admin, aksi yang Anda lakukan nyata dan tercatat atas nama Anda.'])
 
 <div class="mon-kartu">
     @foreach ($ringkasan as $key => $r)
@@ -32,7 +32,7 @@
                         <tr>
                             <td><a href="{{ route('super-admin.admins.show', $a) }}" style="font-weight: 600;">{{ $a->name }}</a></td>
                             <td>{{ $a->proyek_aktif }}</td>
-                            <td>@if ($a->menunggu)<span class="badge badge-pending">{{ $a->menunggu }}</span>@else<span class="dash-sub">0</span>@endif</td>
+                            <td>@if ($a->menunggu)<span class="badge badge-netral">{{ $a->menunggu }}</span>@else<span class="dash-sub">0</span>@endif</td>
                             <td>
                                 @if ($a->aktivitasTerakhir)
                                     {{ \App\Models\ActivityLog::actionLabel($a->aktivitasTerakhir->action) }}

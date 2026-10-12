@@ -106,7 +106,7 @@ class BkJadwalBentrokTest extends TestCase
             ->assertSee('href="#pendaftaran-'.$b->id.'"', false)
             ->assertSee('Bentrok jadwal dengan Film A')->assertSee('Bentrok jadwal dengan Iklan B')
             ->assertSee('id="dialog-batal-bentrok-'.$b->id.'"', false)
-            ->assertSee('Pembatalan ini dihitung sebagai batal mendadak.')
+            ->assertSee('dihitung batal mendadak')
             ->getContent();
         $this->assertStringNotContainsString('id="dialog-batal-bentrok-'.$a->id.'"', $html);
     }

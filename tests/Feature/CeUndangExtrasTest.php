@@ -413,7 +413,7 @@ class CeUndangExtrasTest extends TestCase
 
     public function test_tombol_undang_dan_dialog_hanya_untuk_admin(): void
     {
-        $e = $this->extras();
+        $e = $this->extras('budi_ce', ['foto_profil_path' => 'f.jpg', 'usia' => 25, 'gender' => 'pria', 'tinggi_badan' => 170]);
         $this->actingAs($this->admin)->get(route('admin.akun.extras'))->assertOk()
             ->assertSee('Undang ke proyek…')->assertSee(route('admin.undangan.form', $e->user), false)->assertSee('id="undang-dialog"', false);
         $this->actingAs($this->admin)->get(route('admin.extras.profil', [$e->user, 'partial' => 1]))->assertSee('Undang ke proyek…');

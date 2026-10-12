@@ -122,8 +122,8 @@ class CaSelesaikanSengketaTest extends TestCase
     {
         $this->lapor();
         $sa = User::factory()->create(['role' => 'super_admin']);
-        $this->actingAs($sa)->get(route('payments.show', $this->aplikasi))->assertSee('Selesaikan dan kembalikan ke Extras');
-        $this->actingAs($this->extrasUser)->get(route('payments.show', $this->aplikasi))->assertDontSee('Selesaikan dan kembalikan ke Extras');
+        $this->actingAs($sa)->get(route('payments.show', $this->aplikasi))->assertSee('Kirim Tanggapan & Selesaikan Sengketa', false);
+        $this->actingAs($this->extrasUser)->get(route('payments.show', $this->aplikasi))->assertDontSee('Kirim Tanggapan &amp; Selesaikan Sengketa');
         $this->selesaikan($sa)->assertSessionHas('status');
         $this->assertSame('ditransfer', $this->aplikasi->payment->fresh()->status);
     }

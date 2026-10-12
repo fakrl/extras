@@ -18,29 +18,41 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        $proyekAktif = CastingProject::where('status', 'dibuka')->count();
-        $totalPendaftar = ProjectApplication::count();
-        $perluDinego = ProjectApplication::where('status_partisipasi', 'nego_fee')->count();
+        // AD-09: default hanya proyek milik Admin ini (PIC); toggle "Semua" untuk lihat seluruh proyek.
+        $semua = request()->boolean('semua');
+        $pic = ! $semua && $user->isAdmin() ? $user->id : null;
+        $proyekPic = fn ($q) => $q->when($pic, fn ($q) => $q->where('admin_id', $pic));
+        $lamaranPic = fn ($q) => $q->when($pic, fn ($q) => $q->whereHas('castingProject', fn ($p) => $p->where('admin_id', $pic)));
+        $bayarPic = fn ($q) => $q->when($pic, fn ($q) => $q->whereHas('projectApplication.castingProject', fn ($p) => $p->where('admin_id', $pic)));
+
+        $proyekAktif = CastingProject::where('status', 'dibuka')->tap($proyekPic)->count();
+        $totalPendaftar = ProjectApplication::query()->tap($lamaranPic)->count();
+        $perluDinego = ProjectApplication::where('status_partisipasi', 'nego_fee')->tap($lamaranPic)->count();
 
         $statusPembayaran = Payment::selectRaw('status, count(*) as total')
+            ->tap($bayarPic)
             ->groupBy('status')
             ->pluck('total', 'status');
 
         $chartStatusPembayaran = [
             'labels' => ['Perlu Ditransfer', 'Ditransfer', 'Dikonfirmasi Diterima', 'Menunggu Kontrak'],
             'data' => [
-                $perluDitransfer = Payment::perluDitransfer()->count(),
+                $perluDitransfer = Payment::perluDitransfer()->tap($bayarPic)->count(),
                 (int) ($statusPembayaran['ditransfer'] ?? 0),
                 (int) ($statusPembayaran['dikonfirmasi_diterima'] ?? 0),
                 (int) ($statusPembayaran['belum_dibayar'] ?? 0) - $perluDitransfer,
             ],
         ];
 
-        $pembayaranSengketa = Payment::where('status', 'disengketakan')->count();
-        $ringkasan = AdminRingkasan::untuk();
-        $tahapan = AdminRingkasan::tahapan();
+        $sengketa = Payment::where('status', 'disengketakan')->tap($bayarPic)->get();
+        $pembayaranSengketa = $sengketa->count();
+        $linkSengketa = $pembayaranSengketa === 1
+            ? route('payments.show', $sengketa->first()->project_application_id)
+            : route('admin.projects.index', ['bayar' => 'sengketa']);
+        $ringkasan = AdminRingkasan::untuk($pic);
+        $tahapan = AdminRingkasan::tahapan($pic);
 
-        $urgentProjects = CastingProject::where('status', 'dibuka')
+        $urgentProjects = CastingProject::where('status', 'dibuka')->tap($proyekPic)
             ->with(['shootingDates', 'applications', 'client'])
             ->get()
             ->filter(fn ($p) => $p->isUrgent())
@@ -75,6 +87,8 @@ class DashboardController extends Controller
             'urgentProjects',
             'jadwalBulanIni',
             'pembayaranSengketa',
+            'linkSengketa',
+            'semua',
             'ringkasan',
             'tahapan'
         ));

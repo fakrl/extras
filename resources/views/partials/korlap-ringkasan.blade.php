@@ -39,7 +39,7 @@
                 <div class="dash-sub" style="padding: 8px 0;">
                     Tidak ada shooting {{ strtolower($judul) }}.
                     @if ($loop->first && $terdekat)
-                        Shooting terdekat: <strong>{{ $terdekat->tanggal->translatedFormat('l, d M Y') }}</strong>.
+                        Shooting terdekat: <strong>{{ $terdekat->castingProject?->nama_produksi }}</strong>, {{ $terdekat->tanggal->translatedFormat('l, d M Y') }}.
                     @endif
                 </div>
             @endforelse
@@ -48,7 +48,7 @@
 
     <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0;">
         <div class="card" style="margin: 0;">
-            <div class="card-title">Menunggu validasi @if ($menunggu->isNotEmpty())<span class="badge badge-pending" style="margin-left: 8px;">{{ $menunggu->count() }}</span>@endif</div>
+            <div class="card-title">Menunggu validasi @if ($menunggu->isNotEmpty())<span class="badge badge-netral" style="margin-left: 8px;">{{ $menunggu->count() }}</span>@endif</div>
             @forelse ($menunggu as $a)
                 <{{ $tag }} {!! $klik($absensi($a->projectApplication?->casting_project_id, $a->event_shooting_date_id).'#app-'.$a->project_application_id) !!} class="dash-row mon-row" style="justify-content: flex-start; flex-wrap: nowrap;">
                     @if ($a->foto_path)

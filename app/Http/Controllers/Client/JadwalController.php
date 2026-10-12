@@ -29,7 +29,7 @@ class JadwalController extends Controller
     {
         $this->guardProject($project);
 
-        $project->load(['shootingDates', 'shootingDates.attendances']);
+        $project->load(['shootingDates', 'shootingDates.attendances.projectApplication.extras.user:id,username']);
 
         return view('client.jadwal.show', compact('project'));
     }

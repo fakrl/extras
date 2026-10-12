@@ -86,6 +86,8 @@ class DashboardController extends Controller
                 ->get()
             : collect();
 
-        return view('extras.dashboard', compact('extrasProfile', 'pendaftaranAktif', 'riwayatPendaftaran', 'bentrokPer', 'aktivitasSaya', 'jadwalBulanIni', 'castingCallTerbuka', 'riwayatAbsensi'));
+        $jumlahBatalMendadak = $extrasProfile?->batalMendadak()->count() ?? 0;
+
+        return view('extras.dashboard', compact('jumlahBatalMendadak', 'extrasProfile', 'pendaftaranAktif', 'riwayatPendaftaran', 'bentrokPer', 'aktivitasSaya', 'jadwalBulanIni', 'castingCallTerbuka', 'riwayatAbsensi'));
     }
 }

@@ -13,7 +13,7 @@ th { background: #f0f0f0; }
 </head>
 <body>
 <h2>Riwayat Keputusan: {{ $castingProject->nama_produksi }}</h2>
-<p>Diekspor {{ now()->format('d M Y') }}</p>
+<p>Diekspor {{ now()->translatedFormat('d M Y') }}</p>
 <table>
     <thead>
         <tr><th>Alias</th><th>Keputusan</th><th>Tanggal</th></tr>
@@ -22,8 +22,8 @@ th { background: #f0f0f0; }
         @foreach ($reviews as $review)
         <tr>
             <td>{{ $review->projectApplication->extras->user->username ?? '-' }}</td>
-            <td>{{ ucfirst($review->keputusan) }}</td>
-            <td>{{ $review->created_at->format('d M Y') }}</td>
+            <td>{{ $review->label() }}</td>
+            <td>{{ $review->created_at->translatedFormat('d M Y') }}</td>
         </tr>
         @endforeach
     </tbody>

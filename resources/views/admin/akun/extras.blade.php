@@ -31,9 +31,9 @@
                 Ditemukan <strong>{{ $mangkrakCount }}</strong> akun extras yang terdaftar lebih dari 30 hari lalu dengan profil tidak lengkap dan 0 riwayat apply proyek.
             </div>
         </div>
-        <form method="POST" action="{{ route('admin.users.prune') }}" onsubmit="return confirm('Yakin ingin menghapus {{ $mangkrakCount }} akun extras mangkrak (>30 hari tanpa kelengkapan profil & pendaftaran)?')">
+        <form method="POST" action="{{ route('admin.users.prune') }}" onsubmit="return confirm('Hapus permanen {{ $mangkrakCount }} akun extras mangkrak (lebih dari 30 hari, profil tidak lengkap, belum pernah mendaftar)? Tindakan ini tidak bisa dibatalkan.')">
             @csrf
-            <button type="submit" class="btn btn-sm btn-danger-outline">Bersihkan {{ $mangkrakCount }} Akun Mangkrak</button>
+            <button type="submit" class="btn btn-danger-outline">Bersihkan {{ $mangkrakCount }} Akun Mangkrak</button>
         </form>
     </div>
 @endif
@@ -70,14 +70,12 @@
                     <x-filter-panel.grup label="" name="tag[]" :opsi="$tags->mapWithKeys(fn ($t) => [$t->id => '#'.$t->nama])->all()" :nilai="$f['tag']" multi />
                 </details>
             @endforeach
-            @if ($tagRapikan->isNotEmpty())<button type="button" class="fpanel-rapikan" data-rapikan-tag>Rapikan tag ({{ $tagRapikan->count() }})</button>@endif
+            <button type="button" class="fpanel-rapikan" data-rapikan-tag>Kelola tag{{ $tagRapikan->isNotEmpty() ? ' ('.$tagRapikan->count().' perlu dirapikan)' : '' }}</button>
             <p class="xfilter-note">Menampilkan yang punya <strong>semua</strong> tag terpilih</p>
         </div>
     </x-filter-panel>
 </form>
-@if ($tagRapikan->isNotEmpty())
     @include('admin.tags.rapikan', ['tags' => $tagRapikan])
-@endif
 
 <div data-live-target>
 <div class="akx-info">

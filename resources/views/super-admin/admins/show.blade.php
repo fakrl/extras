@@ -8,7 +8,7 @@
     <h2 style="margin: 8px 0;">{{ $user->name }}</h2>
     <div style="color: var(--text-muted); font-size: 13px;">
         {{ $user->email ?? ($user->username ? '@'.$user->username : '') }} • <x-status-badge :model="$user" />
-        <span class="badge {{ $user->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">{{ $user->status }}</span>
+        <span class="badge {{ $user->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">{{ ucfirst($user->status) }}</span>
     </div>
 </div>
 
@@ -28,11 +28,11 @@
         <tr><td style="padding: 4px 0; color: var(--text-muted);">Perusahaan/PH</td><td>{{ $user->nama_perusahaan }}</td></tr>
         @endif
         <tr><td style="padding: 4px 0; color: var(--text-muted);">Role</td><td>{{ $user->label() }}</td></tr>
-        <tr><td style="padding: 4px 0; color: var(--text-muted);">Status</td><td><span class="badge {{ $user->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">{{ $user->status }}</span></td></tr>
+        <tr><td style="padding: 4px 0; color: var(--text-muted);">Status</td><td><span class="badge {{ $user->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">{{ ucfirst($user->status) }}</span></td></tr>
         @if ($user->honor_nominal)
         <tr><td style="padding: 4px 0; color: var(--text-muted);">Honor/Event</td><td>Rp {{ number_format($user->honor_nominal, 0, ',', '.') }}</td></tr>
         @endif
-        <tr><td style="padding: 4px 0; color: var(--text-muted);">Bergabung</td><td>{{ $user->created_at->format('d M Y') }}</td></tr>
+        <tr><td style="padding: 4px 0; color: var(--text-muted);">Bergabung</td><td>{{ $user->created_at->translatedFormat('d M Y') }}</td></tr>
     </table>
     </div>
 </div>
@@ -87,8 +87,8 @@
                 @foreach ($assignments as $a)
                 <tr style="border-bottom: 1px solid var(--border-color);">
                     <td style="padding: 8px 0;"><a href="{{ route('admin.projects.applicants', $a->castingProject) }}" style="color: var(--accent);">{{ $a->castingProject->nama_produksi }}</a></td>
-                    <td style="padding: 8px 0;"><span class="badge {{ $a->status_log === 'berjalan' ? 'badge-warning' : 'badge-aktif' }}">{{ $a->status_log }}</span></td>
-                    <td style="padding: 8px 0;">{{ $a->created_at->format('d M') }}</td>
+                    <td style="padding: 8px 0;"><span class="badge {{ $a->status_log === 'berjalan' ? 'badge-info' : 'badge-aktif' }}">{{ ucfirst($a->status_log) }}</span></td>
+                    <td style="padding: 8px 0;">{{ $a->created_at->translatedFormat('d M') }}</td>
                     <td style="padding: 8px 0;">@if ($a->payroll) Rp {{ number_format($a->payroll->nominalTotal(), 0, ',', '.') }} @else - @endif</td>
                 </tr>
                 @endforeach
@@ -119,8 +119,8 @@
                 @foreach ($clientProjects as $p)
                 <tr style="border-bottom: 1px solid var(--border-color);">
                     <td style="padding: 8px 0;"><a href="{{ route('admin.projects.show', $p) }}" style="color: var(--accent);">{{ $p->nama_produksi }}</a></td>
-                    <td style="padding: 8px 0;"><span class="badge badge-pending">{{ $p->status }}</span></td>
-                    <td style="padding: 8px 0;">{{ $p->deadline?->format('d M Y') ?? '-' }}</td>
+                    <td style="padding: 8px 0;"><x-status-badge :model="$p" /></td>
+                    <td style="padding: 8px 0;">{{ $p->deadline?->translatedFormat('d M Y') ?? '-' }}</td>
                 </tr>
                 @endforeach
             </tbody>
@@ -201,7 +201,7 @@
                 <tbody>
                     @foreach ($staffReimbursements as $sr)
                         <tr style="border-bottom: 1px solid var(--border-color);">
-                            <td style="padding: 8px 0;">{{ $sr->tanggal ? $sr->tanggal->format('d M Y') : '-' }}</td>
+                            <td style="padding: 8px 0;">{{ $sr->tanggal ? $sr->tanggal->translatedFormat('d M Y') : '-' }}</td>
                             <td style="padding: 8px 0;">{{ $sr->proyek }}</td>
                             <td style="padding: 8px 0; font-weight: 500;">{{ $sr->label }}</td>
                             <td style="padding: 8px 0; text-align: right; font-weight: 600; color: var(--accent-strong);">
@@ -236,7 +236,7 @@
         <tbody>
             @foreach ($userActivities as $act)
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                    <td style="padding: 8px 0; color: var(--text-muted); font-size: 12px; white-space: nowrap;">{{ $act->created_at->format('d M Y H:i') }}</td>
+                    <td style="padding: 8px 0; color: var(--text-muted); font-size: 12px; white-space: nowrap;">{{ $act->created_at->translatedFormat('d M Y H:i') }}</td>
                     <td style="padding: 8px 0;"><span class="badge badge-netral" title="{{ $act->action }}">{{ \App\Models\ActivityLog::actionLabel($act->action) }}</span></td>
                     <td style="padding: 8px 0;">{{ $act->description }}</td>
                 </tr>
@@ -271,7 +271,7 @@
                         ->filter(fn ($_, $k) => array_key_exists($k, $n->data));
                 @endphp
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                    <td style="padding: 8px 0; color: var(--text-muted); font-size: 12px; white-space: nowrap;">{{ $n->created_at->format('d M Y H:i') }}</td>
+                    <td style="padding: 8px 0; color: var(--text-muted); font-size: 12px; white-space: nowrap;">{{ $n->created_at->translatedFormat('d M Y H:i') }}</td>
                     <td style="padding: 8px 0;"><strong>{{ $n->data['judul'] ?? '-' }}</strong><div style="color: var(--text-muted);">{{ $n->data['pesan'] ?? '' }}</div></td>
                     <td style="padding: 8px 0; white-space: nowrap;">
                         @forelse ($kanal as $k => [$ikon, $nama])

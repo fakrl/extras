@@ -9,7 +9,7 @@
                 <span class="step-bar-circle">{{ $t['jumlah'] }}</span>
                 <span class="step-bar-label">{{ $t['label'] }}</span>
                 @if ($t['perlu'])
-                    <span class="tahap-perlu">{{ $t['perlu'] }} perlu kamu</span>
+                    <span class="tahap-perlu">{{ $t['perlu'] }} {{ $monitor ? 'perlu tindakan' : 'perlu kamu' }}</span>
                 @endif
             </button>
             @if (! $loop->last)
@@ -44,7 +44,7 @@
                 </div>
             </div>
         @empty
-            <p class="dash-sub tahap-kosong">Nggak ada kandidat di tahap ini.</p>
+            <p class="dash-sub tahap-kosong">Belum ada kandidat di tahap ini.</p>
         @endforelse
         @if ($monitor)
             <button type="submit" form="mon-masuk" name="ke" value="{{ $t['url'] }}" class="tahap-semua">Lihat semua di tahap ini &rarr;</button>

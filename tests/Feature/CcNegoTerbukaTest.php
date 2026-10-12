@@ -69,7 +69,7 @@ class CcNegoTerbukaTest extends TestCase
         $this->assertSame(1, $tetap->feeNegotiations()->count());
 
         $this->actingAs($tetap->extras->user)->get(route('extras.negotiations.show', $tetap))
-            ->assertSee('Penawaran ini final')->assertDontSee('Ajukan Counter');
+            ->assertSee('Penawaran ini final')->assertDontSee('Ajukan Tawar Balik');
 
         $buka = $this->aplikasi(true);
         $this->actingAs($buka->extras->user)->post(route('extras.negotiations.counter', $buka), ['nominal' => 200000]);

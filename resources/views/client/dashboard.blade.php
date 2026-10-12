@@ -9,8 +9,8 @@
 
 @php
     $statusPengajuan = ['draft' => ['Draft', 'badge-netral'], 'menunggu_acc' => ['Menunggu ACC tim JBTB', 'badge-pending'], 'disetujui' => ['Disetujui', 'badge-aktif'], 'ditolak' => ['Ditolak', 'badge-tolak']];
-    $pengajuanPerlu = $pengajuan->whereIn('client_request_status', ['menunggu_acc', 'ditolak']);
-    $jumlahTindakan = $pengajuanPerlu->count() + ($perluDireview ? 1 : 0) + (auth()->user()->email ? 0 : 1);
+    $pengajuanPerlu = $pengajuan->where('client_request_status', 'ditolak');
+    $jumlahTindakan = $pengajuanPerlu->count() + ($perluDireview ? 1 : 0) + $invoiceMenungguTtd->count() + $jadwalKosong->count() + (auth()->user()->email ? 0 : 1);
 @endphp
 
 <div class="dash-tiga">
@@ -23,7 +23,7 @@
         <div class="card-title">
             <i class="ti ti-clipboard-list"></i> Perlu Tindakan
             @if ($jumlahTindakan)
-                <span class="badge badge-pending" style="margin-left: 8px;">{{ $jumlahTindakan }}</span>
+                <span class="badge badge-netral" style="margin-left: 8px;">{{ $jumlahTindakan }}</span>
             @endif
         </div>
         <div class="dash-aman" role="status" @if ($jumlahTindakan) hidden @endif><i class="ti ti-circle-check"></i> Semua aman &mdash; tidak ada yang perlu ditindak.</div>
@@ -39,6 +39,28 @@
             </a>
         @endif
 
+        @foreach ($invoiceMenungguTtd as $inv)
+            <a href="{{ route('invoices.show', $inv->casting_project_id) }}" class="dash-row">
+                <div>
+                    <span class="badge badge-info">Tanda tangan invoice</span>
+                    <strong>{{ $inv->castingProject?->nama_produksi }}</strong>
+                    <div class="dash-sub">Invoice sudah ditandatangani JBTB, menunggu tanda tangan Anda</div>
+                </div>
+                <span class="dash-sub">Buka &rarr;</span>
+            </a>
+        @endforeach
+
+        @foreach ($jadwalKosong as $projectId => $daftarJadwal)
+            <a href="{{ route('client.jadwal.show', $projectId) }}" class="dash-row">
+                <div>
+                    <span class="badge badge-info">Isi jadwal</span>
+                    <strong>{{ $daftarJadwal->first()->castingProject?->nama_produksi }}</strong>
+                    <div class="dash-sub">{{ $daftarJadwal->count() }} tanggal shooting belum ada lokasinya</div>
+                </div>
+                <span class="dash-sub">Buka &rarr;</span>
+            </a>
+        @endforeach
+
         @foreach ($pengajuanPerlu as $req)
             @php [$labelReq, $badgeReq] = $statusPengajuan[$req->client_request_status]; @endphp
             <div class="dash-row">
@@ -48,11 +70,11 @@
                     @if ($req->client_request_status === 'ditolak' && $req->alasan_tolak)
                         <div class="dash-sub" style="color: var(--danger);">Alasan: {{ $req->alasan_tolak }}</div>
                     @else
-                        <div class="dash-sub">Diajukan {{ $req->created_at->format('d M Y') }}</div>
+                        <div class="dash-sub">Diajukan {{ $req->created_at->translatedFormat('d M Y') }}</div>
                     @endif
                 </div>
                 @if ($req->client_request_status === 'ditolak')
-                    <a href="{{ route('client.projects.request') }}" class="btn btn-sm">Ajukan Ulang</a>
+                    <a href="{{ route('client.projects.request') }}" class="btn">Ajukan Ulang</a>
                 @endif
             </div>
         @endforeach
@@ -65,7 +87,7 @@
                     <div class="dash-sub">Email buat notifikasi &amp; lupa password.</div>
                 </div>
                 <span style="display: flex; gap: 8px;">
-                    <a href="{{ route('client.profil') }}" class="btn btn-sm btn-brand">Lengkapi</a>
+                    <a href="{{ route('client.profil') }}" class="btn btn-brand">Lengkapi</a>
                     <button type="button" class="btn btn-sm" onclick="try { localStorage.setItem('tutup_lengkapi_profil', '1'); } catch (e) {} tutupLengkapiProfil();">Tutup</button>
                 </span>
             </div>
@@ -107,7 +129,7 @@
             @php [$labelReq, $badgeReq] = $statusPengajuan[$req->client_request_status] ?? [$req->client_request_status, 'badge-netral']; @endphp
             <div class="dash-row">
                 <div>
-                    {{ $req->nama_produksi }} <span class="dash-sub">· {{ $req->created_at->format('d M Y') }}</span>
+                    {{ $req->nama_produksi }} <span class="dash-sub">· {{ $req->created_at->translatedFormat('d M Y') }}</span>
                     @if ($req->client_request_status === 'ditolak' && $req->alasan_tolak)
                         <div style="font-size: var(--fs-sm); color: var(--danger); margin-top: 4px;">Alasan: {{ $req->alasan_tolak }}</div>
                     @endif
@@ -126,9 +148,12 @@
     <div class="card">
         <div class="card-title">Proyek Berjalan</div>
         @forelse ($proyekBerjalan as $p)
+            @php $tahapP = $p->tahap(); @endphp
             <div class="dash-row">
-                <span>{{ $p->nama_produksi }} <span class="kode-proyek">{{ $p->kode_proyek }}</span></span>
-                <span class="dash-sub">Deadline: {{ \Carbon\Carbon::parse($p->deadline)->format('d M Y') }}</span>
+                <span>{{ $p->nama_produksi }} <span class="kode-proyek">{{ $p->kode_proyek }}</span>
+                    @if ($tahapP)<span class="badge {{ \App\Models\CastingProject::TAHAP_BADGES[$tahapP] }}">{{ \App\Models\CastingProject::TAHAP[$tahapP] }}</span>@endif
+                </span>
+                <span class="dash-sub">Batas pendaftaran: {{ \Carbon\Carbon::parse($p->deadline)->translatedFormat('d M Y') }}</span>
             </div>
         @empty
             <p style="color: var(--text-muted); font-size: 13px;">Tidak ada proyek yang sedang berjalan.</p>
@@ -137,11 +162,11 @@
 </div>
 
 <div class="card">
-    <div class="card-title">Karakter &amp; Pendaftar</div>
+    <div class="card-title">Peran &amp; Pendaftar</div>
     <div class="table-container">
     <table>
         <thead>
-            <tr><th>Proyek</th><th>Karakter</th><th>Pendaftar</th></tr>
+            <tr><th>Proyek</th><th>Peran</th><th>Pendaftar</th></tr>
         </thead>
         <tbody>
             @forelse ($karakterPendaftar as $item)
