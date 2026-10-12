@@ -16,7 +16,7 @@ class DashboardController extends Controller
     {
         $klienId = Auth::id();
 
-        $proyekIds = CastingProject::query()->milikClient(Auth::user())->pluck('id');
+        $proyekIds = CastingProject::query()->milikClient(Auth::user())->where('client_request_status', 'disetujui')->pluck('id');
 
         $perluDireview = ProjectApplication::where('status_partisipasi', 'diajukan_ke_client')
             ->whereIn('casting_project_id', $proyekIds)
@@ -40,9 +40,7 @@ class DashboardController extends Controller
             ->get(['id', 'nama_produksi', 'client_request_status', 'alasan_tolak', 'created_at']);
 
         $karakterPendaftar = ProjectApplication::whereIn('casting_project_id', $proyekIds)
-            ->whereIn('status_partisipasi', [
-                'diajukan_ke_client', 'lolos', 'kontrak_ditandatangani', 'selesai_produksi', 'ditolak',
-            ])
+            ->terlihatClient()
             ->with('castingProjectClass:id,nama_kelas', 'castingProject:id,nama_produksi')
             ->get()
             ->groupBy(fn ($app) => $app->casting_project_id.'|'.($app->castingProjectClass->id ?? 0))

@@ -140,9 +140,9 @@ class FeeNegotiationFlowTest extends TestCase
         $this->actingAs($extras)->post(route('extras.negotiations.terima', $application), ['nominal' => 200000]);
 
         $this->actingAs($admin)->post(route('admin.negotiations.counter', $application), ['nominal' => 300000])
-            ->assertStatus(422);
+            ->assertSessionHas('error');
         $this->actingAs($extras)->post(route('extras.negotiations.counter', $application), ['nominal' => 300000])
-            ->assertStatus(422);
+            ->assertSessionHas('error');
 
         $this->assertSame(2, $application->feeNegotiations()->count());
     }
@@ -163,7 +163,7 @@ class FeeNegotiationFlowTest extends TestCase
         $this->assertSame('Tidak sesuai kriteria', $application->feeNegotiations()->where('aksi', 'tolak')->first()->catatan);
 
         $this->actingAs($extras)->post(route('extras.negotiations.counter', $application), ['nominal' => 999999])
-            ->assertStatus(422);
+            ->assertSessionHas('error');
     }
 
     public function test_ajukan_ke_client_gagal_kalau_belum_deal(): void

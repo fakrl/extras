@@ -25,7 +25,9 @@ class FeeNegotiationController extends Controller
     public function terima(Request $request, ProjectApplication $application): RedirectResponse
     {
         $this->pastikanMilikSendiri($request, $application);
-        $application->pastikanMasihBisaNego();
+        if ($alasan = $application->alasanTidakBisaMenjawab('extras')) {
+            return back()->with('error', $alasan);
+        }
 
         $nominalTerakhir = $application->feeNegotiations()->reorder('round', 'desc')->value('nominal');
 
@@ -45,7 +47,9 @@ class FeeNegotiationController extends Controller
             return back()->with('error', 'Fee proyek ini tetap dan tidak bisa ditawar.');
         }
 
-        $application->pastikanMasihBisaNego();
+        if ($alasan = $application->alasanTidakBisaMenjawab('extras')) {
+            return back()->with('error', $alasan);
+        }
 
         $data = $request->validate([
             'nominal' => ['required', 'numeric', 'min:0'],
@@ -55,6 +59,32 @@ class FeeNegotiationController extends Controller
         $application->counterFee('extras', $data['nominal'], $data['catatan'] ?? null);
 
         return back()->with('status', 'Counter fee terkirim ke Admin.');
+    }
+
+    /**
+     * EX-05: proyek fee tetap tidak bisa ditawar, Extras yang tidak setuju cukup menolak penawaran.
+     */
+    public function tolak(Request $request, ProjectApplication $application): RedirectResponse
+    {
+        $this->pastikanMilikSendiri($request, $application);
+        if ($application->castingProject->nego_terbuka) {
+            return back()->with('error', 'Fee proyek ini bisa dinego, ajukan counter atau batalkan pendaftaran.');
+        }
+        if (! $application->masihBisaNego() || ! $application->feeNegotiations()->exists()) {
+            return back()->with('error', 'Tidak ada penawaran yang bisa ditolak.');
+        }
+
+        $data = $request->validate(['alasan' => ['nullable', 'string', 'max:500']]);
+
+        $application->tolakNegosiasi('extras', $data['alasan'] ?? null);
+        $application->castingProject->admin?->kabari(
+            'Penawaran Fee Ditolak',
+            "{$request->user()->name} menolak penawaran fee di proyek {$application->castingProject->namaKode()}.",
+            route('admin.negotiations.show', $application),
+            jenis: 'nego_fee',
+        );
+
+        return back()->with('status', 'Penawaran ditolak. Pendaftaran ini tidak dilanjutkan.');
     }
 
     /**
@@ -71,7 +101,7 @@ class FeeNegotiationController extends Controller
         try {
             $application->batalkan('extras', $data['alasan']);
         } catch (\LogicException $e) {
-            return back()->with('status', $e->getMessage());
+            return back()->with('error', $e->getMessage());
         }
 
         return back()->with('status', 'Pendaftaran dibatalkan.');

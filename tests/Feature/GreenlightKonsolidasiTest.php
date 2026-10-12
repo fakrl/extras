@@ -52,7 +52,8 @@ class GreenlightKonsolidasiTest extends TestCase
 
         $this->buatApplication($project, 'diajukan_ke_client');
         $this->buatApplication($project, 'lolos');
-        $this->buatApplication($project, 'ditolak');
+        $tolak = $this->buatApplication($project, 'ditolak');
+        ClientReview::create(['project_application_id' => $tolak->id, 'client_id' => $klien->id, 'keputusan' => 'reject']);
 
         $response = $this->actingAs($klien)->get(route('client.reviews.index'));
         $response->assertOk();
@@ -76,6 +77,7 @@ class GreenlightKonsolidasiTest extends TestCase
         $appPending = $this->buatApplication($project, 'diajukan_ke_client');
         $appLolos = $this->buatApplication($project, 'lolos');
         $appTolak = $this->buatApplication($project, 'ditolak');
+        ClientReview::create(['project_application_id' => $appTolak->id, 'client_id' => $klien->id, 'keputusan' => 'reject']);
 
         $response = $this->actingAs($klien)->get(route('client.reviews.show', $project));
         $response->assertOk();

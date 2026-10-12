@@ -15,7 +15,7 @@ class KorlapRingkasan
     public static function peserta(CastingProject $project, EventShootingDate $shootingDate): Collection
     {
         return $project->applications()
-            ->whereIn('status_partisipasi', ProjectApplication::STATUS_AKTIF)
+            ->whereIn('status_partisipasi', ProjectApplication::STATUS_LOLOS_KE_ATAS)
             ->with(['extras.user', 'castingProjectClass', 'attendances.divalidasiOleh'])
             ->get()
             ->each(fn ($a) => $a->setRelation('absen', $a->attendances->firstWhere('event_shooting_date_id', $shootingDate->id)))

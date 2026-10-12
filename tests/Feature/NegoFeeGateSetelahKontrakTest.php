@@ -58,7 +58,7 @@ class NegoFeeGateSetelahKontrakTest extends TestCase
 
         $response = $this->actingAs($admin)->post("/admin/applications/{$application->id}/nego/counter", ['nominal' => 999999]);
 
-        $response->assertStatus(422);
+        $response->assertSessionHas('error');
         $this->assertEquals(200000, $application->fresh()->fee_final);
     }
 
@@ -70,7 +70,7 @@ class NegoFeeGateSetelahKontrakTest extends TestCase
 
         $response = $this->actingAs($admin)->post("/admin/applications/{$application->id}/nego/terima", ['nominal' => 999999]);
 
-        $response->assertStatus(422);
+        $response->assertSessionHas('error');
         $this->assertEquals(200000, $application->fresh()->fee_final);
     }
 
@@ -82,7 +82,7 @@ class NegoFeeGateSetelahKontrakTest extends TestCase
 
         $response = $this->actingAs($admin)->post("/admin/applications/{$application->id}/nego/tolak");
 
-        $response->assertStatus(422);
+        $response->assertSessionHas('error');
         $this->assertSame($status, $application->fresh()->status_partisipasi);
     }
 
@@ -95,7 +95,7 @@ class NegoFeeGateSetelahKontrakTest extends TestCase
         $response = $this->actingAs($application->extras->user)
             ->post("/extras/nego/{$application->id}/counter", ['nominal' => 999999]);
 
-        $response->assertStatus(422);
+        $response->assertSessionHas('error');
         $this->assertEquals(200000, $application->fresh()->fee_final);
     }
 
@@ -108,7 +108,7 @@ class NegoFeeGateSetelahKontrakTest extends TestCase
         $response = $this->actingAs($application->extras->user)
             ->post("/extras/nego/{$application->id}/terima");
 
-        $response->assertStatus(422);
+        $response->assertSessionHas('error');
         $this->assertEquals(200000, $application->fresh()->fee_final);
     }
 
@@ -127,7 +127,7 @@ class NegoFeeGateSetelahKontrakTest extends TestCase
 
         $response = $this->actingAs($admin)->post("/admin/applications/{$application->id}/nego/counter", ['nominal' => 999999]);
 
-        $response->assertStatus(422);
+        $response->assertSessionHas('error');
     }
 
     public static function statusYangMasihBolehNego(): array
@@ -167,7 +167,7 @@ class NegoFeeGateSetelahKontrakTest extends TestCase
         $response = $this->actingAs($admin)
             ->post("/admin/applications/{$application->id}/nego/ajukan", ['nominal' => 999999]);
 
-        $response->assertSessionHas('status', 'Fee awal sudah pernah diajukan untuk pendaftar ini.');
+        $response->assertSessionHas('error', 'Fee awal sudah pernah diajukan untuk pendaftar ini.');
         $this->assertEquals(200000, $application->fresh()->fee_final);
     }
 }

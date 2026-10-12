@@ -170,6 +170,19 @@ class CastingProject extends Model
         return $query->where('casting_projects.client_id', $user->id);
     }
 
+    /** KR-01: Korlap hanya proyek penugasannya; Admin/Super Admin semua. */
+    public function bolehDiurusOleh(User $user): bool
+    {
+        return ! $user->isKorlap() || $this->adminAssignments()->where('user_id', $user->id)->exists();
+    }
+
+    public function scopeDiurusOleh($query, User $user)
+    {
+        return $user->isKorlap()
+            ? $query->whereHas('adminAssignments', fn ($a) => $a->where('user_id', $user->id))
+            : $query;
+    }
+
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
@@ -207,7 +220,7 @@ class CastingProject extends Model
     /** RF-11: lowongan yang masih menerima pendaftaran, deadline terdekat dulu. */
     public static function lowonganTerbuka(): Collection
     {
-        return static::where('status', 'dibuka')
+        return static::where('status', 'dibuka')->where('client_request_status', 'disetujui')
             ->with('client:id,name,nama_perusahaan')
             ->withCount(['applications as terisi' => fn ($q) => $q->whereIn('status_partisipasi', ['lolos', 'kontrak_ditandatangani', 'selesai_produksi'])])
             ->with(['classes' => fn ($q) => $q->withTerisi()->with('categories:id,nama'), 'shootingDates'])
@@ -220,6 +233,7 @@ class CastingProject extends Model
     public function menerimaPendaftaran(): bool
     {
         return $this->status === 'dibuka'
+            && $this->client_request_status === 'disetujui'
             && ! $this->deadline->isBefore(today())
             && ! $this->kuotaPenuh();
     }

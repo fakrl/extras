@@ -41,7 +41,7 @@
 @if (in_array($user->role, ['admin', 'korlap']))
     @php
         $totalProyek = $assignments->count();
-        $selesai = $assignments->where('status_log', 'selesai_produksi')->count();
+        $selesai = $assignments->where('status_log', 'selesai')->count();
         $berjalan = $totalProyek - $selesai;
     @endphp
     <div class="card" style="margin-bottom: 16px;">
