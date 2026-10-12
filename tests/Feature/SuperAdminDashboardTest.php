@@ -112,6 +112,8 @@ class SuperAdminDashboardTest extends TestCase
     {
         $a = $this->proyek([], 'menunggu_acc', ['nama_produksi' => 'Iklan Kopi', 'status' => 'ditutup']);
         $b = $this->proyek([], 'menunggu_acc', ['status' => 'ditutup']);
+        $a->classes()->create(['nama_kelas' => 'Ibu-ibu', 'budget_client' => 1, 'kuota_kelas' => 1]);
+        $a->shootingDates()->create(['tanggal' => today()->addDays(5)]);
 
         $this->actingAs($this->sa)->get(route('super-admin.dashboard'))
             ->assertSee('Iklan Kopi')

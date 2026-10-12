@@ -19,6 +19,11 @@
         <label>Email</label>
         <input type="email" name="email" value="{{ old('email', $user->email) }}" placeholder="Untuk notifikasi & lupa password">
 
+        @if ($user->password)
+            <label for="profil-password">Kata sandi saat ini (wajib kalau mengganti email)</label>
+            <input type="password" name="current_password" id="profil-password" autocomplete="current-password">
+        @endif
+
         <label>Nomor WA</label>
         <input type="tel" name="nomor_wa" value="{{ old('nomor_wa', $user->nomor_wa) }}" maxlength="20" placeholder="08xxxxxxxxxx">
 

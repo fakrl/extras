@@ -83,6 +83,7 @@
                     <div style="margin-top: 6px;">Kuota: <strong>{{ $req->kuota }} orang</strong> &bull; Deadline: <strong>{{ $req->deadline?->translatedFormat('d M Y') ?? '-' }}</strong></div>
                     <div style="margin-top: 4px; white-space: pre-line;">{{ $req->brief_catatan ?: '-' }}</div>
                 </details>
+                <a href="{{ route('admin.projects.edit', $req) }}" style="font-size: 13px;">Lengkapi peran dan tanggal</a>
             </div>
             <div style="display: flex; gap: 12px; flex-shrink: 0;">
                 <form method="POST" action="{{ route('super-admin.projects.acc', $req) }}" style="display: inline-block;">
