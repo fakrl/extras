@@ -15,7 +15,7 @@ class WajibGantiPassword
             && in_array('auth', $request->route()?->gatherMiddleware() ?? [], true)
             && ! $request->routeIs('ubah-password', 'ubah-password.update', 'ubah-password.validate', 'logout')) {
             return redirect()->route('ubah-password')
-                ->with('error', 'Demi keamanan, ganti password sementara kamu dulu sebelum lanjut.');
+                ->with('info', 'Demi keamanan, ganti kata sandi sementara Anda dulu sebelum lanjut.');
         }
 
         return $next($request);
