@@ -5,7 +5,7 @@
 
 @section('content')
 @if ($mode === 'client')
-    <p style="margin: 0 0 10px;"><a href="{{ route('client.reviews.index') }}" style="color: var(--accent); font-size: 13px;">&larr; Kembali ke Greenlight</a></p>
+    <p style="margin: 0 0 10px;"><a href="{{ route('client.reviews.index') }}" style="color: var(--accent); font-size: 13px;">&larr; Kembali ke Pilih Kandidat</a></p>
 @endif
 @include('partials.profil-extras-app')
 

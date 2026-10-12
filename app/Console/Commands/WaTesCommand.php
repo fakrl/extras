@@ -14,7 +14,7 @@ class WaTesCommand extends Command
 
     public function handle(WhatsAppService $whatsapp): int
     {
-        $pesan = $this->argument('pesan') ?? 'Tes WhatsApp dari '.config('app.name').' ('.now()->format('d M Y H:i').').';
+        $pesan = $this->argument('pesan') ?? 'Tes WhatsApp dari '.config('app.name').' ('.now()->translatedFormat('d M Y H:i').').';
 
         try {
             $res = $whatsapp->kirimLangsung($this->argument('nomor'), $pesan);

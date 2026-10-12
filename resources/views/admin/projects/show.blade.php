@@ -128,7 +128,7 @@
         <div class="card-title">Peran</div>
         <div class="table-container">
             <table>
-                <thead><tr><th>Peran</th><th>Kuota</th><th>Budget Client</th><th>Callingan</th><th>Tag dicari</th></tr></thead>
+                <thead><tr><th>Peran</th><th>Kuota</th><th>Budget Client</th><th>Jam panggil</th><th>Tag dicari</th></tr></thead>
                 <tbody>
                     @forelse ($p->classes as $k)
                         <tr>

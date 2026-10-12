@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'Greenlight: ' . $castingProject->nama_produksi)
+@section('title', 'Pilih Kandidat: ' . $castingProject->nama_produksi)
 
 @section('content')
 <div style="margin-bottom: 12px;">
-    <a href="{{ route('client.reviews.index') }}" style="font-size: 13px; color: var(--text-secondary); text-decoration: none;">&larr; Kembali ke Greenlight</a>
+    <a href="{{ route('client.reviews.index') }}" style="font-size: 13px; color: var(--text-secondary); text-decoration: none;">&larr; Kembali ke Pilih Kandidat</a>
 </div>
 
 <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">

@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Greenlight')
+@section('title', 'Pilih Kandidat')
 
 @section('content')
-<div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">Greenlight</div>
+<div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">Pilih Kandidat</div>
 <p style="color: var(--text-secondary); margin: 0 0 16px; font-size: 13.5px;">
     Daftar proyek casting. Pilih proyek untuk melihat dan meninjau kandidat.
 </p>
