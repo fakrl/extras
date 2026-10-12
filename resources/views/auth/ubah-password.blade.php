@@ -12,10 +12,9 @@
 
             @if (auth()->user()->password)
             <div style="margin-bottom:16px;">
-                <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:500;">Kata Sandi Saat Ini <span class="wajib" aria-hidden="true">*</span></label>
-                <input type="password" name="current_password" id="current-password-field" required
-                    class="{{ $errors->has('current_password') ? 'input-error' : '' }}"
-                    style="width:100%; padding:9px 12px; border-radius:7px; border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary); font-size:14px;">
+                <label for="current-password-field">Kata Sandi Saat Ini <span class="wajib" aria-hidden="true">*</span></label>
+                <input type="password" name="current_password" id="current-password-field" required autocomplete="current-password"
+                    class="{{ $errors->has('current_password') ? 'input-error' : '' }}" style="margin-bottom:0;">
                 <span id="cp-hint" style="font-size:12px; margin-top:4px; display:block;"></span>
                 @error('current_password')
                     <span style="color:var(--danger); font-size:12px; margin-top:4px; display:block;">{{ $message }}</span>
@@ -26,22 +25,21 @@
             @endif
 
             <div style="margin-bottom:16px;">
-                <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:500;">Kata Sandi Baru <span class="wajib" aria-hidden="true">*</span></label>
-                <input type="password" name="new_password" required
-                    class="{{ $errors->has('new_password') ? 'input-error' : '' }}"
-                    style="width:100%; padding:9px 12px; border-radius:7px; border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary); font-size:14px;">
+                <label for="new-password-field">Kata Sandi Baru <span class="wajib" aria-hidden="true">*</span></label>
+                <input type="password" name="new_password" id="new-password-field" required minlength="8" autocomplete="new-password" aria-describedby="new-password-hint"
+                    class="{{ $errors->has('new_password') ? 'input-error' : '' }}" style="margin-bottom:0;">
+                <span id="new-password-hint" class="field-hint" style="display:block; margin:4px 0 0;">Minimal 8 karakter.</span>
                 @error('new_password')
                     <span style="color:var(--danger); font-size:12px; margin-top:4px; display:block;">{{ $message }}</span>
                 @enderror
             </div>
 
             <div style="margin-bottom:20px;">
-                <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:500;">Konfirmasi Kata Sandi Baru <span class="wajib" aria-hidden="true">*</span></label>
-                <input type="password" name="new_password_confirmation" required
-                    style="width:100%; padding:9px 12px; border-radius:7px; border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary); font-size:14px;">
+                <label for="new-password-confirm-field">Konfirmasi Kata Sandi Baru <span class="wajib" aria-hidden="true">*</span></label>
+                <input type="password" name="new_password_confirmation" id="new-password-confirm-field" required autocomplete="new-password" style="margin-bottom:0;">
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width:100%; min-height:40px;">Simpan Kata Sandi</button>
+            <button type="submit" class="btn btn-brand" style="width:100%;">Simpan Kata Sandi</button>
         </form>
     </div>
     @include('partials.google-akun')
@@ -72,7 +70,7 @@
                     hint.textContent = '';
                 } else {
                     hint.style.color = 'var(--danger)';
-                    hint.textContent = 'Password saat ini tidak cocok';
+                    hint.textContent = 'Kata sandi saat ini tidak cocok';
                 }
             });
         }, 500);

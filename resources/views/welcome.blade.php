@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="id" data-theme="light">
 <head>
-    <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme-v2') || 'light');</script>
     <meta charset="utf-8">
+    <script>try { document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme-v2') || 'light'); } catch (e) {}</script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="dark light">
+    <meta name="theme-color" content="#f1f0e9">
+    <link rel="icon" href="{{ asset('images/logo-jbtb.jpg') }}" type="image/jpeg">
     <title>JBTB Casting — Agensi Extras & Talent Jakarta</title>
     <link rel="canonical" href="{{ url('/') }}">
     @include('partials.og-meta', [
@@ -31,8 +33,8 @@
         :root[data-theme="light"] {
             --hp-bg:       #f1f0e9;
             --hp-fg:       #171a16;
-            --hp-muted:    rgba(23, 26, 22, 0.55);
-            --hp-accent:   #76a51b;
+            --hp-muted:    #52564e;
+            --hp-accent:   #486610;
             --hp-accent-on:#ffffff;
             --hp-line:     rgba(23, 26, 22, 0.16);
             --hp-card:     #e6e4da;
@@ -41,13 +43,7 @@
         *, *::before, *::after { box-sizing: border-box; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--hp-bg); color: var(--hp-fg); }
 
-        @property --spot-size { syntax: "<length-percentage>"; inherits: true; initial-value: 0%; }
-
-        .film-grain {
-            position: fixed; inset: 0; z-index: 1; pointer-events: none;
-            opacity: 0.04; mix-blend-mode: overlay;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-        }
+        a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--hp-accent); outline-offset: 2px; }
 
         .film-strip-divider {
             height: 18px;
@@ -59,7 +55,7 @@
         }
 
         .section-eyebrow {
-            display: block; font-size: 11px; font-weight: 700; letter-spacing: 3px;
+            display: block; font-size: var(--fs-xs); font-weight: 700; letter-spacing: 3px;
             text-transform: uppercase; color: var(--hp-accent); margin-bottom: 10px;
         }
 
@@ -74,19 +70,19 @@
         .hp-nav-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; color: var(--hp-fg); }
         .hp-logo { width: 34px; height: 34px; border-radius: 8px; object-fit: contain; display: block; flex-shrink: 0; }
         .hp-nav-menu { list-style: none; margin: 0; padding: 0; display: flex; gap: 2px; align-items: center; flex: 1; justify-content: center; }
-        .hp-nav-menu a { display: block; font-size: 13.5px; color: var(--hp-muted); text-decoration: none; padding: 6px 11px; border-radius: 7px; }
+        .hp-nav-menu a { display: flex; align-items: center; min-height: 44px; font-size: 13.5px; color: var(--hp-muted); text-decoration: none; padding: 0 11px; border-radius: 7px; }
         .hp-nav-menu a:hover { color: var(--hp-fg); background: var(--hp-card); }
-        .hp-menu-toggle { display: none; width: 34px; height: 34px; border-radius: 8px; border: none; cursor: pointer; background: var(--hp-card); color: var(--hp-fg); align-items: center; justify-content: center; font-size: 18px; }
+        .hp-menu-toggle { display: none; width: 44px; height: 44px; border-radius: 8px; border: none; cursor: pointer; background: var(--hp-card); color: var(--hp-fg); align-items: center; justify-content: center; font-size: 18px; }
         .hp-nav-actions { display: flex; gap: 8px; align-items: center; }
-        .theme-toggle-btn { width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer; background: var(--hp-card); color: var(--hp-muted); display: flex; align-items: center; justify-content: center; font-size: 15px; }
-        .avatar-badge { width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer; background: var(--hp-accent); color: var(--hp-accent-on); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+        .theme-toggle-btn { width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer; background: var(--hp-card); color: var(--hp-muted); display: flex; align-items: center; justify-content: center; font-size: 15px; }
+        .avatar-badge { width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer; background: var(--hp-accent); color: var(--hp-accent-on); font-size: var(--fs-xs); font-weight: 700; display: flex; align-items: center; justify-content: center; }
         .avatar-badge-img { object-fit: cover; padding: 0; }
         .navbar-user-menu { position: relative; list-style: none; }
         .navbar-user-menu > summary { list-style: none; cursor: pointer; }
         .navbar-user-menu > summary::-webkit-details-marker { display: none; }
         .navbar-user-menu-dropdown { display: none; position: absolute; right: 0; top: calc(100% + 8px); z-index: 200; background: var(--hp-card); border: 1px solid var(--hp-line); border-radius: 10px; min-width: 160px; padding: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.25); }
         .navbar-user-menu[open] .navbar-user-menu-dropdown { display: block; }
-        .navbar-user-menu-dropdown a, .navbar-user-menu-dropdown button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 9px 12px; border-radius: 7px; font-size: 13.5px; font-weight: 500; color: var(--hp-fg); text-decoration: none; background: none; border: none; cursor: pointer; }
+        .navbar-user-menu-dropdown a, .navbar-user-menu-dropdown button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 0 12px; min-height: 44px; border-radius: 7px; font-size: 13.5px; font-weight: 500; color: var(--hp-fg); text-decoration: none; background: none; border: none; cursor: pointer; }
         .navbar-user-menu-dropdown a:hover, .navbar-user-menu-dropdown button:hover { background: var(--hp-bg); }
         .btn-brand { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 20px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; background: var(--hp-accent); color: var(--hp-accent-on); border: none; }
         .btn-brand:hover { filter: brightness(1.08); }
@@ -104,18 +100,10 @@
                     var(--hp-bg) 0%,
                     color-mix(in srgb, var(--hp-bg) 82%, transparent) 52%,
                     color-mix(in srgb, var(--hp-bg) 50%, transparent) 100%),
-                url('/images/homepage-hero-bg.png');
+                url('/images/homepage-hero-bg.webp');
             background-size: cover;
             background-position: center;
         }
-        .hero-spotlight {
-            position: absolute; inset: 0; pointer-events: none;
-            transition: --spot-size 0.3s ease-out;
-            mask-image: radial-gradient(circle at var(--spot-x,50%) var(--spot-y,50%), black var(--spot-size,0%), transparent calc(var(--spot-size,0%) + 15%));
-            background: radial-gradient(circle at var(--spot-x,50%) var(--spot-y,50%), rgba(183,255,60,0.07), transparent 60%);
-        }
-        .hero:hover .hero-spotlight { --spot-size: 35%; }
-        @media (prefers-reduced-motion: reduce) { .hero-spotlight { transition: none; } }
         .hero-inner { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto; width: 100%; padding: 96px 32px 88px; }
         .hero-headline {
             font-family: Georgia, 'Times New Roman', serif;
@@ -127,7 +115,7 @@
             color: var(--hp-fg);
         }
         .hero-h-indent { display: inline-block; margin-left: 10vw; }
-        .hero-h-italic { font-style: italic; opacity: 0.45; }
+        .hero-h-italic { font-style: italic; color: var(--hp-muted); }
         .hero-h-accent { color: var(--hp-accent); }
         .hero-cta { font-size: 14px; font-weight: 600; color: var(--hp-muted); text-decoration: none; border-bottom: 1px solid var(--hp-line); padding-bottom: 3px; transition: color .2s, border-color .2s; }
         .hero-cta:hover { color: var(--hp-accent); border-color: var(--hp-accent); }
@@ -147,7 +135,7 @@
             @keyframes marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
             .marquee-track { animation: marquee-scroll var(--marquee-durasi, 40s) linear infinite; }
             .marquee.is-rev .marquee-track { animation-direction: reverse; }
-            .marquee:hover .marquee-track, .marquee:focus-within .marquee-track, .marquee.is-paused .marquee-track { animation-play-state: paused; }
+            .marquee:hover .marquee-track, .marquee:focus-within .marquee-track, .marquee.is-paused .marquee-track, .marquee.is-jeda .marquee-track { animation-play-state: paused; }
         }
         @media (prefers-reduced-motion: reduce) {
             .marquee { overflow-x: auto; scroll-snap-type: x proximity; }
@@ -164,6 +152,9 @@
         @media (max-width: 767px) { .baris-statis .cast-card { flex-basis: 160px; } .baris-statis .porto-card { flex-basis: 280px; } }
         .hp-sec-head { max-width: 1100px; margin: 0 auto 2.5rem; padding: 0 32px; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px 24px; flex-wrap: wrap; }
         .hp-sec-title { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2.2rem, 5.5vw, 3.75rem); font-weight: 400; line-height: 1; letter-spacing: -0.04em; margin: 0; color: var(--hp-fg); }
+        .marquee-jeda { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid var(--hp-line); border-radius: 8px; background: transparent; color: var(--hp-fg); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .marquee-jeda:hover { background: var(--hp-card); }
+        @media (prefers-reduced-motion: reduce) { .marquee-jeda { display: none; } }
         .hp-sec-note { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--hp-muted); }
 
         /* ── Cast (BH.2) ── */
@@ -229,8 +220,8 @@
         .lowongan-summary-title { font-size: 15px; font-weight: 600; color: var(--hp-fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .lowongan-summary-meta { font-size: 12.5px; color: var(--hp-muted); margin-top: 3px; }
         .lowongan-summary-badges { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
-        .badge-dibuka { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; background: var(--hp-accent); color: var(--hp-accent-on); padding: 2px 8px; border-radius: 3px; }
-        .badge-urgent { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; background: #ef4444; color: #fff; padding: 2px 8px; border-radius: 3px; }
+        .badge-dibuka { display: inline-block; font-size: var(--fs-xs); font-weight: 700; letter-spacing: 0.5px; background: var(--hp-accent); color: var(--hp-accent-on); padding: 2px 8px; border-radius: 3px; }
+        .lowongan-summary-badges .badge-urgent { padding: 2px 8px; border-radius: 3px; letter-spacing: 0.5px; }
         .lowongan-chevron { font-size: 18px; color: var(--hp-muted); flex-shrink: 0; transition: transform .2s; line-height: 1; }
         .lowongan-item[open] .lowongan-chevron { transform: rotate(45deg); }
         @media (prefers-reduced-motion: reduce) { .lowongan-chevron { transition: none; } }
@@ -244,7 +235,7 @@
         .contact-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: grid; grid-template-columns: 1fr 2fr; gap: 56px; align-items: start; }
         .contact-left-title { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 400; line-height: 1.1; letter-spacing: -0.02em; margin: 8px 0 0; color: var(--hp-fg); }
         .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px 40px; }
-        .contact-block strong { display: block; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--hp-muted); margin-bottom: 8px; }
+        .contact-block strong { display: block; font-size: var(--fs-xs); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--hp-muted); margin-bottom: 8px; }
         .contact-block p { font-size: 14px; color: var(--hp-fg); margin: 0; line-height: 1.6; }
         .contact-block a { font-size: 14px; color: var(--hp-fg); text-decoration: none; border-bottom: 1px solid var(--hp-line); }
         .contact-block a:hover { color: var(--hp-accent); border-color: var(--hp-accent); }
@@ -267,7 +258,7 @@
         .footer-cta-headline { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2.2rem, 7vw, 6rem); line-height: 0.9; letter-spacing: -0.03em; font-weight: 400; margin: 10px 0 32px; color: var(--hp-fg); }
         .footer-cta-accent { color: var(--hp-accent); }
         .footer-cta-contact { font-size: 13.5px; color: var(--hp-muted); line-height: 2.2; }
-        .footer-cta-contact strong { display: block; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--hp-muted); margin-bottom: 4px; opacity: 0.7; }
+        .footer-cta-contact strong { display: block; font-size: var(--fs-xs); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--hp-muted); margin-bottom: 4px; }
 
         /* ── Footer (AK.10 enhanced) ── */
         footer { border-top: 1px solid var(--hp-line); padding: 24px 32px; }
@@ -275,10 +266,10 @@
         .footer-brand { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 600; color: var(--hp-fg); text-decoration: none; }
         .footer-brand img { width: 26px; height: 26px; border-radius: 6px; object-fit: contain; }
         .footer-nav { display: flex; gap: 20px; }
-        .footer-nav a { font-size: 13px; color: var(--hp-muted); text-decoration: none; white-space: nowrap; }
+        .footer-nav a { display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; color: var(--hp-muted); text-decoration: none; white-space: nowrap; }
         .footer-nav a:hover { color: var(--hp-fg); }
         .footer-legal { display: flex; gap: 16px; align-items: center; font-size: 13px; color: var(--hp-muted); }
-        .footer-legal a { color: var(--hp-muted); text-decoration: none; }
+        .footer-legal a { display: inline-flex; align-items: center; min-height: 44px; color: var(--hp-muted); text-decoration: none; }
         .footer-legal a:hover { color: var(--hp-fg); }
 
         /* ── Dialog / Modal ── */
@@ -290,7 +281,7 @@
         .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
         .modal-text { font-size: 13.5px; color: var(--hp-muted); margin: 0 0 18px; line-height: 1.6; }
         .cta-row { display: flex; gap: 12px; flex-wrap: wrap; }
-        .modal-dismiss { display: block; width: 100%; text-align: center; margin-top: 12px; background: none; border: none; color: var(--hp-muted); font-size: 13px; cursor: pointer; }
+        .modal-dismiss { display: block; width: 100%; min-height: 44px; text-align: center; margin-top: 8px; background: none; border: none; color: var(--hp-muted); font-size: 14px; cursor: pointer; }
 
         /* ── Responsive ── */
         @media (max-width: 768px) {
@@ -320,29 +311,28 @@
     </style>
 </head>
 <body>
-    <div class="film-grain" aria-hidden="true"></div>
-
     {{-- Navbar --}}
-    <nav class="hp-nav">
+    <nav class="hp-nav" aria-label="Menu utama">
         <div class="hp-nav-brand">
             <img src="{{ asset('images/logo-jbtb.jpg') }}" alt="Logo JBTB" class="hp-logo">
-            SIM Casting JBTB
+            JBTB Casting
         </div>
         <ul class="hp-nav-menu" id="hp-nav-menu">
-            <li><a href="#">Beranda</a></li>
+            <li><a href="{{ route('home') }}">Beranda</a></li>
             <li><a href="#tentang">Tentang Kami</a></li>
+            <li><a href="#layanan">Layanan</a></li>
             <li><a href="#lowongan">Lowongan</a></li>
         </ul>
         <div class="hp-nav-actions">
-            <button type="button" class="hp-menu-toggle" id="menu-toggle" aria-label="Buka menu">
+            <button type="button" class="hp-menu-toggle" id="menu-toggle" aria-label="Buka menu" aria-controls="hp-nav-menu" aria-expanded="false">
                 <i class="ti ti-menu-2"></i>
             </button>
-            <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Ganti tema">
+            <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Ganti tema" aria-pressed="false">
                 <i class="ti ti-moon" id="theme-icon"></i>
             </button>
             @auth
                 <details class="navbar-user-menu" id="navbar-user-menu">
-                    <summary class="avatar-badge-summary">
+                    <summary class="avatar-badge-summary" aria-label="Menu akun">
                         @if (auth()->user()->extrasProfile?->foto_profil_path)
                             <img src="{{ route('extras.media.foto', auth()->user()->extrasProfile) }}" class="avatar-badge avatar-badge-img" alt="Foto profil">
                         @else
@@ -358,14 +348,14 @@
                     </div>
                 </details>
             @else
-                <a href="{{ route('login') }}" class="btn-brand" style="min-height: 36px; font-size: 13px; padding: 0 16px;">Masuk / Daftar</a>
+                <a href="{{ route('login') }}" class="btn-brand" style="font-size: 13px; padding: 0 16px;">Masuk</a>
             @endauth
         </div>
     </nav>
 
+    <main>
     {{-- Hero (AK.1 + AK.6) --}}
     <div class="hero">
-        <div class="hero-spotlight" aria-hidden="true"></div>
         <div class="hero-inner">
             <span class="section-eyebrow">Sistem Manajemen Casting Extras</span>
             <h1 class="hero-headline">
@@ -386,6 +376,7 @@
                 <h2 class="hp-sec-title" id="cast-judul">Kenalan dengan cast</h2>
             </div>
             <span class="hp-sec-note">Extras JBTB</span>
+            @unless ($castStatis)<button type="button" class="marquee-jeda" data-marquee-jeda aria-pressed="false"><i class="ti ti-player-pause" aria-hidden="true"></i> <span>Jeda animasi</span></button>@endunless
         </div>
         <div @class(['marquee' => ! $castStatis]) @unless ($castStatis) data-marquee style="--marquee-durasi: {{ $castExtras->count() * 5 }}s;" @endunless>
             <div @class(['marquee-track' => ! $castStatis, 'baris-statis' => $castStatis])>
@@ -449,7 +440,7 @@
     </div>
 
     {{-- Services (AK.3) --}}
-    <div class="services-section">
+    <div class="services-section" id="layanan">
         <div class="services-inner">
             <div>
                 <span class="section-eyebrow">Yang Kami Lakukan</span>
@@ -507,17 +498,17 @@
                                     @if ($proyek->poster_path)
                                         <img src="{{ Storage::url($proyek->poster_path) }}" alt="">
                                     @else
-                                        <div class="lowongan-thumb-mono">{{ strtoupper(substr($proyek->client ? $proyek->namaClient() : 'J', 0, 1)) }}</div>
+                                        <div class="lowongan-thumb-mono">{{ strtoupper(mb_substr($proyek->tampilkan_nama_client && $proyek->client ? $proyek->namaClient() : $proyek->nama_produksi, 0, 1)) }}</div>
                                     @endif
                                 </div>
                                 <div class="lowongan-summary-info">
                                     <div class="lowongan-summary-title">{{ $proyek->nama_produksi }}</div>
-                                    <div class="lowongan-summary-meta">Deadline {{ $proyek->deadline->format('d M Y') }}</div>
+                                    <div class="lowongan-summary-meta">Deadline {{ $proyek->deadline->translatedFormat('d M Y') }}</div>
                                 </div>
                                 <div class="lowongan-summary-badges">
-                                    <span class="badge-dibuka">DIBUKA</span>
+                                    <span class="badge-dibuka">Dibuka</span>
                                     @if ($proyek->isUrgent())
-                                        <span class="badge-urgent">URGENT</span>
+                                        <span class="badge badge-urgent">Butuh Dadakan</span>
                                     @endif
                                 </div>
                                 <span class="lowongan-chevron" aria-hidden="true">+</span>
@@ -571,6 +562,7 @@
                 <h2 class="hp-sec-title" id="porto-judul">Pernah dikerjakan</h2>
             </div>
             <span class="hp-sec-note">Produksi yang kami cast</span>
+            @unless ($portoStatis)<button type="button" class="marquee-jeda" data-marquee-jeda aria-pressed="false"><i class="ti ti-player-pause" aria-hidden="true"></i> <span>Jeda animasi</span></button>@endunless
         </div>
         <div @class(['marquee is-rev' => ! $portoStatis]) @unless ($portoStatis) data-marquee style="--marquee-durasi: {{ $portofolio->count() * 9 }}s;" @endunless>
             <div @class(['marquee-track' => ! $portoStatis, 'baris-statis' => $portoStatis])>
@@ -623,8 +615,12 @@
         </div>
     </div>
 
-    {{-- Contact Section (AK.10) --}}
-    <section class="contact-section">
+    {{-- Contact Section (AK.10): WA/email tampil hanya bila JBTB_WA / JBTB_EMAIL diisi --}}
+    @php
+        $kontakWa = config('app.kontak.wa');
+        $kontakEmail = config('app.kontak.email');
+    @endphp
+    <section class="contact-section" aria-label="Hubungi kami">
         <div class="contact-inner">
             <div>
                 <span class="section-eyebrow">Hubungi Kami</span>
@@ -635,37 +631,40 @@
                     <strong>Alamat</strong>
                     <p>Pamulang, Tangerang Selatan,<br>Banten, Indonesia</p>
                 </div>
+                @if ($kontakWa)
                 <div class="contact-block">
                     <strong>WhatsApp</strong>
-                    {{-- TODO: isi kontak asli --}}
-                    <p style="color: var(--hp-muted); font-style: italic;">Isi nomor WhatsApp di sini</p>
+                    <a href="https://wa.me/{{ preg_replace('/^0/', '62', preg_replace('/\D/', '', $kontakWa)) }}" target="_blank" rel="noopener">{{ $kontakWa }}</a>
                 </div>
+                @endif
                 <div class="contact-block">
                     <strong>Instagram</strong>
                     <a href="https://instagram.com/jbtb.casting" target="_blank" rel="noopener">@jbtb.casting</a>
                 </div>
+                @if ($kontakEmail)
                 <div class="contact-block">
                     <strong>Email</strong>
-                    {{-- TODO: isi email asli --}}
-                    <p style="color: var(--hp-muted); font-style: italic;">Isi email di sini</p>
+                    <a href="mailto:{{ $kontakEmail }}">{{ $kontakEmail }}</a>
                 </div>
+                @endif
             </div>
         </div>
     </section>
+    </main>
 
     <footer>
         <div class="footer-inner">
-            <a href="/" class="footer-brand">
-                <img src="{{ asset('images/logo.png') }}" alt="JBTB" onerror="this.style.display='none'">
+            <a href="{{ route('home') }}" class="footer-brand">
+                <img src="{{ asset('images/logo-jbtb.jpg') }}" alt="" width="26" height="26">
                 JBTB Casting
             </a>
-            <nav class="footer-nav">
+            <nav class="footer-nav" aria-label="Tautan footer">
                 <a href="#layanan">Layanan</a>
                 <a href="#lowongan">Lowongan</a>
                 @guest<a href="{{ route('register') }}">Daftar</a>@endguest
             </nav>
             <div class="footer-legal">
-                <span>&copy; {{ date('Y') }} JBTB</span>
+                <span>&copy; {{ date('Y') }} JBTB Casting</span>
                 <a href="{{ route('privacy-policy') }}">Privasi</a>
             </div>
         </div>
@@ -686,11 +685,20 @@
         <script>
         (function () {
             var dlg = document.getElementById('welcome-modal');
-            if (!dlg || localStorage.getItem('homepage_modal_dismissed')) return;
-            dlg.showModal();
-            requestAnimationFrame(function () { dlg.classList.add('is-open'); });
+            try { if (!dlg || localStorage.getItem('homepage_modal_dismissed')) return; } catch (e) {}
+            var tampil = false, timer;
+            function buka() {
+                if (tampil) return;
+                tampil = true; clearTimeout(timer);
+                window.removeEventListener('scroll', onScroll);
+                dlg.showModal();
+                requestAnimationFrame(function () { dlg.classList.add('is-open'); });
+            }
+            function onScroll() { if (window.scrollY > 600) buka(); }
+            window.addEventListener('scroll', onScroll, { passive: true });
+            timer = setTimeout(buka, 15000);
             function dismiss() {
-                localStorage.setItem('homepage_modal_dismissed', '1');
+                try { localStorage.setItem('homepage_modal_dismissed', '1'); } catch (e) {}
                 dlg.classList.remove('is-open'); dlg.classList.add('is-closing');
                 setTimeout(function () { dlg.close(); }, 250);
             }
@@ -701,43 +709,44 @@
     @endguest
 
     <script>
-    (function () {
-        var hero = document.querySelector('.hero');
-        if (!hero) return;
-        var spotlight = hero.querySelector('.hero-spotlight');
-        if (!spotlight) return;
-        var rect = hero.getBoundingClientRect();
-        new ResizeObserver(function () { rect = hero.getBoundingClientRect(); }).observe(hero);
-        hero.addEventListener('pointermove', function (e) {
-            spotlight.style.setProperty('--spot-x', ((e.clientX - rect.left) / rect.width * 100).toFixed(1) + '%');
-            spotlight.style.setProperty('--spot-y', ((e.clientY - rect.top) / rect.height * 100).toFixed(1) + '%');
-        });
-    })();
-
     document.querySelectorAll('[data-marquee]').forEach(function (m) {
         var t;
         m.addEventListener('touchstart', function () { clearTimeout(t); m.classList.add('is-paused'); }, { passive: true });
         m.addEventListener('touchend', function () { t = setTimeout(function () { m.classList.remove('is-paused'); }, 2500); });
     });
+    document.querySelectorAll('[data-marquee-jeda]').forEach(function (b) {
+        b.addEventListener('click', function () {
+            var jeda = b.getAttribute('aria-pressed') !== 'true';
+            b.closest('section').querySelector('[data-marquee]').classList.toggle('is-jeda', jeda);
+            b.setAttribute('aria-pressed', jeda);
+            b.querySelector('span').textContent = jeda ? 'Putar animasi' : 'Jeda animasi';
+            b.querySelector('i').className = jeda ? 'ti ti-player-play' : 'ti ti-player-pause';
+        });
+    });
     </script>
     <script>
     (function () {
         var icon = document.getElementById('theme-icon');
-        var current = document.documentElement.getAttribute('data-theme');
-        icon.className = current === 'dark' ? 'ti ti-sun' : 'ti ti-moon';
+        var tema = document.getElementById('theme-toggle');
+        function ikon(t) { icon.className = t === 'dark' ? 'ti ti-sun' : 'ti ti-moon'; tema.setAttribute('aria-pressed', t === 'dark'); }
+        ikon(document.documentElement.getAttribute('data-theme'));
 
-        document.getElementById('theme-toggle').addEventListener('click', function () {
+        tema.addEventListener('click', function () {
             var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', next);
-            localStorage.setItem('jbtb-theme-v2', next);
-            icon.className = next === 'dark' ? 'ti ti-sun' : 'ti ti-moon';
+            try { localStorage.setItem('jbtb-theme-v2', next); } catch (e) {}
+            ikon(next);
         });
 
         var menuToggle = document.getElementById('menu-toggle');
         var navMenu = document.getElementById('hp-nav-menu');
         if (menuToggle && navMenu) {
-            menuToggle.addEventListener('click', function () { navMenu.classList.toggle('open'); });
-            navMenu.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', function () { navMenu.classList.remove('open'); }); });
+            function menu(buka) { navMenu.classList.toggle('open', buka); menuToggle.setAttribute('aria-expanded', buka); }
+            menuToggle.addEventListener('click', function () { menu(!navMenu.classList.contains('open')); });
+            navMenu.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', function () { menu(false); }); });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && navMenu.classList.contains('open')) { menu(false); menuToggle.focus(); }
+            });
         }
         var userMenu = document.getElementById('navbar-user-menu');
         if (userMenu) {

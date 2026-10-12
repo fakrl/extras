@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="color-scheme" content="dark light">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <script>try { if (localStorage.getItem('jbtb-sidebar') === 'ringkas') document.documentElement.classList.add('sb-ringkas'); } catch (e) {}</script>
+    <script>try { document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme-v2') || 'light'); if (localStorage.getItem('jbtb-sidebar') === 'ringkas') document.documentElement.classList.add('sb-ringkas'); } catch (e) {}</script>
     <title>@yield('title', 'SIM Casting JBTB')</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
@@ -27,9 +27,6 @@
             flex-direction: column;
             gap: 4px;
             transition: width .2s ease, padding .2s ease;
-        }
-        [data-theme="dark"] .sidebar {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cpath d='M0 10L10 0L20 10L10 20Z' stroke='rgba(16%2C185%2C129%2C0.05)' stroke-width='1' fill='none'/%3E%3C/svg%3E");
         }
         .sidebar-brand {
             display: flex; align-items: center; gap: 10px;
@@ -153,8 +150,10 @@
             cursor: pointer;
         }
         .btn:hover { background: var(--bg-card-hover); }
-        .btn-brand { background: var(--accent); border-color: var(--accent); color: var(--accent-on); }
-        .btn-brand:hover { filter: brightness(1.08); color: var(--accent-on); }
+        .btn-brand, .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-on); }
+        .btn-brand:hover, .btn-primary:hover { filter: brightness(1.08); color: var(--accent-on); }
+        .btn-danger { background: var(--danger-solid); border-color: var(--danger-solid); color: #fff; }
+        .btn-danger:hover { background: var(--danger-solid); filter: brightness(1.1); color: #fff; }
         .btn-danger-outline { color: var(--danger); border-color: var(--danger); background: transparent; }
 
         .tag-grup { font-size: var(--fs-xs); color: var(--text-secondary); font-weight: 600; margin: 10px 0 6px; }
@@ -174,13 +173,7 @@
         .tag-panel { position: absolute; z-index: 45; left: 0; right: 0; top: calc(100% + 4px); max-height: min(340px, 55vh); overflow-y: auto; padding: 4px 12px 12px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: 0 10px 28px rgba(0,0,0,.18); }
         .tag-panel[hidden], .tag-panel [hidden] { display: none; }
         .tag-panel-kosong { margin: 10px 0 0; font-size: var(--fs-sm); color: var(--text-muted); }
-        .badge { display: inline-flex; padding: 3px 10px; border-radius: var(--radius-sm); border: 1px solid transparent; font-size: var(--fs-xs); font-weight: 500; }
-        .badge-aktif { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.35); color: var(--accent-strong); }
-        .badge-pending { background: rgba(234,179,8,0.15); border-color: rgba(234,179,8,0.35); color: var(--warning); }
-        .badge-tolak { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.35); color: var(--danger); }
         .kode-proyek { font-family: ui-monospace, Consolas, monospace; font-size: var(--fs-xs); font-weight: 500; color: var(--text-muted); white-space: nowrap; }
-        .badge-netral { background: rgba(148,163,184,0.18); border-color: rgba(148,163,184,0.4); color: var(--text-secondary); }
-        .badge-info { background: rgba(29,78,216,0.12); border-color: rgba(29,78,216,0.35); color: var(--info); }
 
         /* Grid util ringan: pengganti Bootstrap row/col, dipakai form multi-kolom */
         .form-row { display: flex; gap: 14px; flex-wrap: wrap; }
@@ -242,7 +235,7 @@
         .tahap-tab.is-active { background: var(--bg-nav-active); }
         .tahap-tab .step-bar-circle { width: 32px; height: 32px; font-size: 13px; }
         .tahap-bar .step-bar-line { margin-top: 20px; }
-        .tahap-perlu { margin-top: 4px; padding: 1px 7px; border-radius: 999px; background: var(--danger); color: #fff; font-size: 10.5px; font-weight: 700; white-space: nowrap; }
+        .tahap-perlu { margin-top: 4px; padding: 1px 7px; border-radius: 999px; background: var(--danger-solid); color: #fff; font-size: var(--fs-xs); font-weight: 700; white-space: nowrap; }
         .tahap-panel { margin-top: 12px; }
         .tahap-row { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color); font-size: 13.5px; }
         .tahap-foto { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; display: flex; align-items: center; justify-content: center; background: var(--bg-nav-active); color: var(--text-secondary); font-size: 12px; font-weight: 700; }
@@ -253,7 +246,7 @@
         .tahap-row.is-perlu .tahap-aksi::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--danger); margin-right: 6px; vertical-align: 1px; }
         .tahap-kanan { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
         .tahap-kosong { margin: 6px 0; padding: 14px 0; text-align: center; }
-        .tahap-semua { display: inline-block; margin-top: 10px; font-size: 12.5px; color: var(--accent); font-weight: 600; text-decoration: none; }
+        .tahap-semua { display: inline-block; margin-top: 10px; font-size: 12.5px; color: var(--accent-strong); font-weight: 600; text-decoration: none; }
         button.tahap-semua { background: none; border: none; padding: 0; font-family: inherit; cursor: pointer; }
         @media (max-width: 600px) {
             .tahap-row { grid-template-columns: 36px minmax(0, 1fr); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
@@ -682,6 +675,17 @@
             .topbar { padding: 10px 16px; gap: 8px; }
             .topbar-actions { gap: 8px; }
         }
+        /* DS-09: target sentuh >= 44px di layar kecil, tanpa ubah view */
+        @media (max-width: 860px) {
+            .theme-toggle-btn, .avatar-badge { width: 44px; height: 44px; }
+            .btn-sm, .btn-ikon, .btn-icon-danger, .tag-chip, .fpanel .tag-chip, .fchip, .per-halaman select, .xcard-btns-2 .btn { min-height: 44px; }
+            .btn-ikon, .btn-icon-danger { width: 44px; height: 44px; }
+            .tag-input-chip { min-height: 44px; }
+            .tag-input-chip button { width: 44px; height: 44px; }
+            .pagination .page-link { min-width: 44px; min-height: 44px; }
+            .navbar-user-menu-dropdown a, .navbar-user-menu-dropdown button { min-height: 44px; }
+            input[type="checkbox"], input[type="radio"] { width: 22px; height: 22px; }
+        }
         @media (prefers-reduced-motion: reduce) {
             .sidebar, .nav-laci .sidebar, .nav-buka .nav-laci .sidebar, .sidebar-toggle i { transition: none; }
         }
@@ -694,7 +698,7 @@
     <style>
         .notif-badge {
             position:absolute; top:-4px; right:-4px;
-            background:var(--danger); color:#fff;
+            background:var(--danger-solid); color:#fff;
             font-size: var(--fs-xs); font-weight:700; min-width:16px; height:16px;
             border-radius:8px; display:flex; align-items:center; justify-content:center;
             padding:0 3px; pointer-events:none;
@@ -737,11 +741,11 @@
                 </div>
                 <div class="topbar-actions">
                     @auth
-                        <button type="button" class="theme-toggle-btn" id="theme-toggle" data-theme-toggle aria-label="Ganti tema">
+                        <button type="button" class="theme-toggle-btn" id="theme-toggle" data-theme-toggle aria-label="Ganti tema" aria-pressed="false">
                             <i class="ti ti-sun"></i>
                         </button>
                         <div class="notif-bell-wrap" style="position:relative;">
-                            <button type="button" class="theme-toggle-btn" id="notif-bell-btn" aria-label="Notifikasi" style="position:relative;">
+                            <button type="button" class="theme-toggle-btn" id="notif-bell-btn" aria-label="Notifikasi" aria-haspopup="true" aria-expanded="false" aria-controls="notif-dropdown" style="position:relative;">
                                 <i class="ti ti-bell"></i>
                                 @if(auth()->user()->unreadNotifications->count() > 0)
                                     <span class="notif-badge">{{ auth()->user()->unreadNotifications->count() }}</span>
@@ -753,7 +757,7 @@
                                     @if(auth()->user()->unreadNotifications->count() > 0)
                                         <form method="POST" action="{{ route('notifications.read-all') }}" style="margin:0;">
                                             @csrf
-                                            <button type="submit" style="font-size: var(--fs-xs);color:var(--accent-strong);background:none;border:none;cursor:pointer;padding:0;min-height:auto;">Tandai semua dibaca</button>
+                                            <button type="submit" style="font-size: var(--fs-sm);color:var(--accent-strong);background:none;border:none;cursor:pointer;padding:0 8px;min-height:44px;">Tandai semua dibaca</button>
                                         </form>
                                     @endif
                                 </div>
@@ -775,7 +779,7 @@
                             </div>
                         </div>
                         <details class="navbar-user-menu" id="topbar-user-menu">
-                            <summary class="avatar-badge-summary">
+                            <summary class="avatar-badge-summary" aria-label="Menu akun">
                                 @if (auth()->user()->isExtras() && auth()->user()->extrasProfile?->foto_profil_path)
                                     <img src="{{ route('extras.media.foto', auth()->user()->extrasProfile) }}" class="avatar-badge avatar-badge-img" alt="Foto profil">
                                 @else
@@ -838,17 +842,17 @@
 
     <script>
         (function () {
-            var saved = localStorage.getItem('jbtb-theme-v2') || 'light';
-            document.documentElement.setAttribute('data-theme', saved);
-
             document.addEventListener('DOMContentLoaded', function () {
-                var ikon = function (t) { document.querySelectorAll('[data-theme-toggle] i').forEach(function (i) { i.className = t === 'dark' ? 'ti ti-sun' : 'ti ti-moon'; }); };
-                ikon(saved);
+                var ikon = function (t) {
+                    document.querySelectorAll('[data-theme-toggle]').forEach(function (b) { b.setAttribute('aria-pressed', t === 'dark'); });
+                    document.querySelectorAll('[data-theme-toggle] i').forEach(function (i) { i.className = t === 'dark' ? 'ti ti-sun' : 'ti ti-moon'; });
+                };
+                ikon(document.documentElement.getAttribute('data-theme'));
                 document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
                     btn.addEventListener('click', function () {
                         var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
                         document.documentElement.setAttribute('data-theme', next);
-                        localStorage.setItem('jbtb-theme-v2', next);
+                        try { localStorage.setItem('jbtb-theme-v2', next); } catch (e) {}
                         ikon(next);
                     });
                 });
@@ -925,12 +929,18 @@
             var bellBtn = document.getElementById('notif-bell-btn');
             var notifDrop = document.getElementById('notif-dropdown');
             if (bellBtn && notifDrop) {
+                function atur(buka) {
+                    notifDrop.style.display = buka ? 'block' : 'none';
+                    bellBtn.setAttribute('aria-expanded', buka);
+                }
                 bellBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    notifDrop.style.display = notifDrop.style.display === 'none' ? 'block' : 'none';
+                    atur(notifDrop.style.display === 'none');
                 });
-                document.addEventListener('click', function() {
-                    if (notifDrop) notifDrop.style.display = 'none';
+                notifDrop.addEventListener('click', function(e) { e.stopPropagation(); });
+                document.addEventListener('click', function() { atur(false); });
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && notifDrop.style.display !== 'none') { atur(false); bellBtn.focus(); }
                 });
             }
         })();
