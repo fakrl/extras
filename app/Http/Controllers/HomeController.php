@@ -17,8 +17,8 @@ class HomeController extends Controller
 
     public function index()
     {
-        $allTerbuka = CastingProject::where('status', 'dibuka')
-            ->select(['id', 'nama_produksi', 'client_id', 'deadline', 'kuota', 'is_urgent', 'status', 'poster_path'])
+        $allTerbuka = CastingProject::where('status', 'dibuka')->where('client_request_status', 'disetujui')
+            ->select(['id', 'nama_produksi', 'client_id', 'deadline', 'kuota', 'is_urgent', 'status', 'client_request_status', 'poster_path'])
             ->orderBy('deadline')
             ->with(['client:id,name,nama_perusahaan', 'classes:id,casting_project_id,nama_kelas,kuota_kelas', 'shootingDates:id,casting_project_id,tanggal'])
             ->get()

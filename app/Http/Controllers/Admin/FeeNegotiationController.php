@@ -24,7 +24,7 @@ class FeeNegotiationController extends Controller
     public function ajukanAwal(Request $request, ProjectApplication $application): RedirectResponse
     {
         if ($application->feeNegotiations()->exists()) {
-            return back()->with('status', 'Fee awal sudah pernah diajukan untuk pendaftar ini.');
+            return back()->with('error', 'Fee awal sudah pernah diajukan untuk pendaftar ini.');
         }
 
         $data = $request->validate([
@@ -35,7 +35,7 @@ class FeeNegotiationController extends Controller
         try {
             $application->ajukanFeeAwal($data['nominal'], $data['catatan'] ?? null);
         } catch (\LogicException $e) {
-            return back()->with('status', $e->getMessage());
+            return back()->with('error', $e->getMessage());
         }
 
         return back()->with('status', 'Penawaran fee awal terkirim ke Extras.');
@@ -50,12 +50,14 @@ class FeeNegotiationController extends Controller
             return back()->with('error', 'Fee proyek ini tetap dan tidak bisa ditawar.');
         }
 
+        if ($alasan = $application->alasanTidakBisaMenjawab('admin')) {
+            return back()->with('error', $alasan);
+        }
+
         $data = $request->validate([
             'nominal' => ['required', 'numeric', 'min:0'],
             'catatan' => ['nullable', 'string', 'max:500'],
         ]);
-
-        $application->pastikanMasihBisaNego();
 
         $application->counterFee('admin', $data['nominal'], $data['catatan'] ?? null);
 
@@ -64,11 +66,13 @@ class FeeNegotiationController extends Controller
 
     public function terima(Request $request, ProjectApplication $application): RedirectResponse
     {
+        if ($alasan = $application->alasanTidakBisaMenjawab('admin')) {
+            return back()->with('error', $alasan);
+        }
+
         $data = $request->validate([
             'nominal' => ['required', 'numeric', 'min:0'],
         ]);
-
-        $application->pastikanMasihBisaNego();
 
         $application->terimaFee('admin', $data['nominal']);
 
@@ -80,7 +84,9 @@ class FeeNegotiationController extends Controller
      */
     public function tolak(Request $request, ProjectApplication $application): RedirectResponse
     {
-        $application->pastikanMasihBisaNego();
+        if (! $application->masihBisaNego()) {
+            return back()->with('error', 'Negosiasi untuk pendaftar ini sudah tidak aktif.');
+        }
 
         $data = $request->validate([
             'alasan' => ['required', 'string', 'max:500'],
@@ -101,7 +107,7 @@ class FeeNegotiationController extends Controller
         try {
             $adaBentrok = $application->ajukanKeClient();
         } catch (\LogicException $e) {
-            return back()->with('status', $e->getMessage());
+            return back()->with('error', $e->getMessage());
         }
 
         $pesan = $adaBentrok
@@ -123,7 +129,7 @@ class FeeNegotiationController extends Controller
         try {
             $application->batalkan('admin', $data['alasan']);
         } catch (\LogicException $e) {
-            return back()->with('status', $e->getMessage());
+            return back()->with('error', $e->getMessage());
         }
 
         return back()->with('status', 'Aplikasi dibatalkan.');

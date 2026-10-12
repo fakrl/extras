@@ -94,9 +94,9 @@
             Tanggal Shooting <span class="wajib" aria-hidden="true">*</span> <span style="color: var(--text-muted); font-weight: 400; font-size: 12.5px;">(bisa lebih dari satu, tidak harus berurutan)</span>
         </div>
         <div id="tanggal-wrap">
-            @foreach ($castingProject->shootingDates as $tanggal)
+            @foreach (old('tanggal_shooting', $castingProject->shootingDates->map(fn ($t) => $t->tanggal->format('Y-m-d'))->all()) as $tgl)
                 <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; align-items: center;">
-                    <input type="date" name="tanggal_shooting[]" class="input-inline" value="{{ $tanggal->tanggal->format('Y-m-d') }}" required>
+                    <input type="date" name="tanggal_shooting[]" class="input-inline" value="{{ $tgl }}" required>
                     <button type="button" class="btn-icon-danger btn-remove-row" title="Hapus" style="display:none">&times;</button>
                 </div>
             @endforeach
@@ -108,56 +108,11 @@
             Karakter yang Dibutuhkan <span style="color: var(--text-muted); font-weight: 400; font-size: 12.5px;">(minimal satu karakter)</span>
         </div>
         <div id="kelas-wrap">
-            @foreach ($castingProject->classes as $kelas)
-                <div class="kelas-row" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; margin-bottom: 10px;">
-                    <input type="hidden" name="kelas[{{ $loop->index }}][id]" value="{{ $kelas->id }}">
-                    <div class="form-row" style="align-items: flex-end;">
-                        <div>
-                            <label>Nama Karakter <span class="wajib" aria-hidden="true">*</span></label>
-                            <input type="text" name="kelas[{{ $loop->index }}][nama_kelas]" value="{{ $kelas->nama_kelas }}" placeholder="misal: Ibu-ibu 29-50th" required>
-                        </div>
-                        <div>
-                            <label>Budget Client (Rp) <span class="wajib" aria-hidden="true">*</span></label>
-                            <input type="number" name="kelas[{{ $loop->index }}][budget_client]" value="{{ $kelas->budget_client }}" min="0" required>
-                        </div>
-                        <div>
-                            <label>Kuota Kelas <span class="wajib" aria-hidden="true">*</span></label>
-                            <input type="number" name="kelas[{{ $loop->index }}][kuota_kelas]" value="{{ $kelas->kuota_kelas }}" min="1" required>
-                        </div>
-                        <div style="flex: 0;">
-                            <button type="button" class="btn-icon-danger btn-remove-kelas" @if ($applicantsCount > 0) style="display:none" title="Kelas ini tidak bisa dihapus, proyek sudah punya pendaftar" @endif>&times;</button>
-                        </div>
-                    </div>
-                    <div class="form-row" style="margin-top: 8px;">
-                        <div>
-                            <label>Jam Callsheet Client <span style="color: var(--text-muted); font-weight: 400;">(waktu rundown PH)</span></label>
-                            <input type="time" name="kelas[{{ $loop->index }}][jam_callsheet]" value="{{ $kelas->jam_callsheet }}">
-                        </div>
-                        <div>
-                            <label>Jam Callingan Extras <span style="color: var(--text-muted); font-weight: 400;">(otomatis -1 jam jika kosong)</span></label>
-                            <input type="time" name="kelas[{{ $loop->index }}][jam_callingan]" value="{{ $kelas->jam_callingan }}">
-                        </div>
-                        <div>
-                            <label>Tipe Kontinuitas</label>
-                            <select name="kelas[{{ $loop->index }}][tipe_continuity]">
-                                <option value="free" @selected(($kelas->tipe_continuity ?? 'free') === 'free')>Bebas (Single Day)</option>
-                                <option value="continuity" @selected(($kelas->tipe_continuity ?? '') === 'continuity')>Continuity (Multi-day)</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div style="margin-top: 8px;">
-                        <label>Keterangan Scene <span style="color: var(--text-muted); font-weight: 400;">(misal: Scene 12-14 warung kopi)</span></label>
-                        <input type="text" name="kelas[{{ $loop->index }}][keterangan_scene]" value="{{ $kelas->keterangan_scene }}" placeholder="Scene 12-14 di warung kopi...">
-                    </div>
-                    <div style="margin-top: 8px;">
-                        <label>Kriteria yang dibutuhkan</label>
-                        <textarea name="kelas[{{ $loop->index }}][kriteria]" rows="2" placeholder="Contoh: wanita 25-35 th, ekspresi natural" maxlength="500">{{ $kelas->kriteria }}</textarea>
-                    </div>
-                    <div style="margin-top: 8px;">
-                        <label>Tag yang dicari <span style="color: var(--text-muted); font-weight: 400;">(dipakai untuk % cocok)</span></label>
-                        @include('partials.tag-input', ['name' => 'kelas['.$loop->index.'][tag_nama]', 'selected' => $kelas->categories])
-                    </div>
-                </div>
+            @php
+                $kelasRows = old('kelas') ?: $castingProject->classes->map(fn ($k) => $k->only(['id', 'nama_kelas', 'budget_client', 'kuota_kelas', 'jam_callsheet', 'jam_callingan', 'tipe_continuity', 'keterangan_scene', 'kriteria']) + ['tag_nama' => $k->categories->pluck('nama')->all()])->all();
+            @endphp
+            @foreach ($kelasRows as $i => $k)
+                @include('admin.projects._kelas-row', ['i' => $i, 'k' => $k, 'kunci' => $applicantsCount > 0])
             @endforeach
         </div>
         <button type="button" id="btn-add-kelas" class="btn btn-sm" style="margin-bottom: 24px;">+ Tambah Karakter</button>
@@ -221,7 +176,7 @@
 
         var kelasWrap = document.getElementById('kelas-wrap');
         updateRemoveButtons(kelasWrap, '.btn-remove-kelas');
-        var kelasIndex = {{ $castingProject->classes->count() }};
+        var kelasIndex = {{ collect($kelasRows)->keys()->max() + 1 }};
         document.getElementById('btn-add-kelas').addEventListener('click', function () {
             var row = document.createElement('div');
             row.className = 'kelas-row';

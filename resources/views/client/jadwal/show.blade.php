@@ -48,12 +48,12 @@
                 Daftar Panggilan
                 <span style="color: var(--text-muted); font-weight: 400; font-size: 12px;">(nama karakter/kategori + jam panggil)</span>
             </div>
-            <div class="panggilan-wrap" id="panggilan-{{ $date->id }}">
+            <div class="panggilan-wrap" id="panggilan-{{ $date->id }}" data-next="{{ count($date->panggilan ?: [1]) }}">
                 @php $panggilanList = $date->panggilan ?: [['nama' => '', 'jam' => '']]; @endphp
-                @foreach ($panggilanList as $p)
+                @foreach ($panggilanList as $i => $p)
                     <div style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
-                        <input type="text" name="panggilan[][nama]" value="{{ $p['nama'] ?? '' }}" placeholder="Nama karakter / kategori" style="flex:2;">
-                        <input type="text" name="panggilan[][jam]" value="{{ $p['jam'] ?? '' }}" placeholder="06:30" style="flex:1; max-width:100px;">
+                        <input type="text" name="panggilan[{{ $i }}][nama]" value="{{ $p['nama'] ?? '' }}" placeholder="Nama karakter / kategori" style="flex:2;">
+                        <input type="text" name="panggilan[{{ $i }}][jam]" value="{{ $p['jam'] ?? '' }}" placeholder="06:30" style="flex:1; max-width:100px;">
                         <button type="button" class="btn-icon-danger btn-rm-panggilan" style="display:none;">&times;</button>
                     </div>
                 @endforeach
@@ -114,10 +114,11 @@
         updateRmButtons(wrap);
 
         btn.addEventListener('click', function () {
+            var n = wrap.dataset.next = (parseInt(wrap.dataset.next, 10) || 0) + 1;
             var row = document.createElement('div');
             row.style.cssText = 'display:flex; gap:8px; margin-bottom:8px; align-items:center;';
-            row.innerHTML = '<input type="text" name="panggilan[][nama]" placeholder="Nama karakter / kategori" style="flex:2;">' +
-                '<input type="text" name="panggilan[][jam]" placeholder="06:30" style="flex:1; max-width:100px;">' +
+            row.innerHTML = '<input type="text" name="panggilan[' + n + '][nama]" placeholder="Nama karakter / kategori" style="flex:2;">' +
+                '<input type="text" name="panggilan[' + n + '][jam]" placeholder="06:30" style="flex:1; max-width:100px;">' +
                 '<button type="button" class="btn-icon-danger btn-rm-panggilan">&times;</button>';
             wrap.appendChild(row);
             updateRmButtons(wrap);

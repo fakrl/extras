@@ -28,7 +28,7 @@ class InvoiceController extends Controller
         $user = $request->user();
         abort_unless($user->isClient(), 403);
 
-        $projects = CastingProject::query()->milikClient($user)->orderByDesc('id')->get();
+        $projects = CastingProject::query()->milikClient($user)->where('client_request_status', 'disetujui')->orderByDesc('id')->get();
 
         return view('invoices.index-client', compact('projects'));
     }
@@ -53,12 +53,20 @@ class InvoiceController extends Controller
         $data = $request->validate(['signature' => ['required', 'string']]);
 
         $role = $request->user()->isClient() ? 'client' : 'admin';
-        $filename = "invoices/signatures/{$castingProject->id}-{$role}-".Str::random(8).'.png';
-
-        $base64 = preg_replace('#^data:image/\w+;base64,#', '', $data['signature']);
-        Storage::disk('local')->put($filename, base64_decode($base64));
-
         $invoice = $castingProject->invoices()->firstOrCreate([]);
+
+        if ($invoice->{$role === 'client' ? 'ttd_client_signature_path' : 'ttd_admin_signature_path'} || $invoice->isLunas()) {
+            return back()->with('error', 'Invoice ini sudah ditandatangani atau sudah lunas, tanda tangan tidak bisa diganti.');
+        }
+
+        $png = preg_match('#^data:image/png;base64,([A-Za-z0-9+/=\s]+)$#', $data['signature'], $m) ? base64_decode($m[1], true) : false;
+        if ($png === false || strlen($png) < 50 || ! str_starts_with($png, "\x89PNG")) {
+            return back()->with('error', 'Tanda tangan tidak valid atau masih kosong. Coba tanda tangan lagi.');
+        }
+
+        $filename = "invoices/signatures/{$castingProject->id}-{$role}-".Str::random(8).'.png';
+        Storage::disk('local')->put($filename, $png);
+
         $invoice->update([
             $role === 'client' ? 'ttd_client_signature_path' : 'ttd_admin_signature_path' => $filename,
         ]);
@@ -137,6 +145,7 @@ class InvoiceController extends Controller
 
         if ($user->isClient()) {
             abort_unless($castingProject->milikClient($user), 403);
+            abort_unless($castingProject->client_request_status === 'disetujui', 404);
         }
     }
 }

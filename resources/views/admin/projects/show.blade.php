@@ -283,9 +283,13 @@
                             </td>
                             <td>
                                 @unless ($payroll->isDibayar())
-                                    <x-confirm-form :action="route('admin.payrolls.tandai-dibayar', $payroll)" method="PATCH" message="Tandai honor staf ini sudah dibayarkan?">
-                                        <button type="submit" class="btn btn-sm btn-brand">Tandai Dibayar</button>
-                                    </x-confirm-form>
+                                    @if ($payroll->assignment?->user_id === auth()->id() && ! auth()->user()->isSuperAdmin())
+                                        <span style="font-size: var(--fs-xs); color: var(--text-muted);">Honor sendiri, dibayar oleh Super Admin.</span>
+                                    @else
+                                        <x-confirm-form :action="route('admin.payrolls.tandai-dibayar', $payroll)" method="PATCH" message="Tandai honor {{ $staf?->name }} sebesar {{ $rp($payroll->nominalTotal()) }} sudah dibayarkan?">
+                                            <button type="submit" class="btn btn-sm btn-brand">Tandai Dibayar</button>
+                                        </x-confirm-form>
+                                    @endif
                                 @endunless
                             </td>
                         </tr>

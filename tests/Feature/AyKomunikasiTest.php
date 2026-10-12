@@ -84,6 +84,9 @@ class AyKomunikasiTest extends TestCase
             'kuota' => 5,
         ]);
         $lama->shootingDates()->create(['tanggal' => today()->subMonth()]);
+        foreach ([$project, $lama] as $p) {
+            $p->adminAssignments()->create(['user_id' => $korlap->id, 'assigned_by' => $admin->id, 'status_log' => 'berjalan']);
+        }
 
         $this->actingAs($korlap)->get(route('admin.attendance.index'))
             ->assertOk()

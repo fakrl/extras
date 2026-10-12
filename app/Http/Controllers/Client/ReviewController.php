@@ -20,14 +20,10 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ReviewController extends Controller
 {
-    private const STATUS_TERLIHAT = ['diajukan_ke_client', 'lolos', 'kontrak_ditandatangani', 'selesai_produksi', 'ditolak'];
-
     public function index(Request $request)
     {
-        $proyek = CastingProject::query()->milikClient($request->user())
-            ->with(['applications' => function ($q) {
-                $q->whereIn('status_partisipasi', self::STATUS_TERLIHAT);
-            }])
+        $proyek = CastingProject::query()->milikClient($request->user())->where('client_request_status', 'disetujui')
+            ->with(['applications' => fn ($q) => $q->terlihatClient()])
             ->get()
             ->map(function ($p) {
                 $apps = $p->applications;
@@ -112,6 +108,7 @@ class ReviewController extends Controller
     public function show(Request $request, CastingProject $castingProject): Response
     {
         abort_unless($castingProject->milikClient($request->user()), 403);
+        abort_unless($castingProject->client_request_status === 'disetujui', 404);
 
         $statusFilter = $request->query('status');
         $genderFilter = $request->query('gender');
@@ -119,7 +116,7 @@ class ReviewController extends Controller
         $usiaMax = $request->query('usia_max');
 
         $query = ProjectApplication::where('casting_project_id', $castingProject->id)
-            ->whereIn('status_partisipasi', self::STATUS_TERLIHAT)
+            ->terlihatClient()
             ->with([
                 'extras' => fn ($q) => $q->select('id', 'user_id', 'usia', 'gender', 'tinggi_badan', 'berat_badan', 'ukuran_baju', 'riwayat_pengalaman', 'bahasa', 'foto_profil_path', 'video_profil_path')->withProyekSelesai(),
                 'extras.user:id,username',
@@ -164,7 +161,7 @@ class ReviewController extends Controller
     {
         $profile = $user->extrasProfile;
         abort_unless($profile && $profile->applications()
-            ->whereIn('status_partisipasi', self::STATUS_TERLIHAT)
+            ->terlihatClient()
             ->whereHas('castingProject', fn ($q) => $q->milikClient($request->user()))
             ->exists(), 403);
         $profile->load('user', 'categories');

@@ -196,6 +196,7 @@ class SuperAdminAdminManagementTest extends TestCase
             'name' => 'Nama Baru',
             'email' => 'baru@example.com',
             'role' => 'korlap',
+            'konfirmasi_role' => 1,
         ]);
 
         $response->assertRedirect(route('super-admin.akun.index'));

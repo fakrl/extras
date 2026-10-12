@@ -34,7 +34,7 @@ class ProfileController extends Controller
         // di puluhan tempat, arahkan ke form lengkapi profil dulu.
         if (! $profile) {
             return redirect()->route('extras.profile.edit')
-                ->with('status', 'Lengkapi profil kamu dulu sebelum bisa melihat tampilan profil.');
+                ->with('error', 'Lengkapi profil kamu dulu sebelum bisa melihat tampilan profil.');
         }
 
         $profile->generateShareToken();
@@ -401,7 +401,8 @@ class ProfileController extends Controller
 
         $bolehLihat = $user->id === $extrasProfile->user_id
             || $user->isAnyAdmin()
-            || $user->isClient();
+            || ($user->isClient() && $extrasProfile->applications()->terlihatClient()
+                ->whereHas('castingProject', fn ($q) => $q->milikClient($user))->exists());
 
         abort_unless($bolehLihat, 403, 'Anda tidak memiliki akses ke media ini.');
     }

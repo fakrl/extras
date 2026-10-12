@@ -34,7 +34,7 @@ class PaymentAddonTest extends TestCase
         return $application;
     }
 
-    public function test_extras_bisa_tambah_addon_untuk_aplikasi_sendiri(): void
+    public function test_extras_tidak_bisa_tambah_addon_untuk_aplikasi_sendiri(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $extrasUser = User::factory()->create(['role' => 'extras']);
@@ -46,12 +46,8 @@ class PaymentAddonTest extends TestCase
             'nominal' => 50000,
         ]);
 
-        $response->assertRedirect();
-        $this->assertDatabaseHas('payment_addons', [
-            'addable_id' => $application->payment->id,
-            'label' => 'Reimburse transport',
-            'created_by' => $extrasUser->id,
-        ]);
+        $response->assertForbidden();
+        $this->assertDatabaseMissing('payment_addons', ['addable_id' => $application->payment->id]);
     }
 
     public function test_extras_tidak_bisa_tambah_addon_aplikasi_extras_lain(): void
@@ -120,7 +116,7 @@ class PaymentAddonTest extends TestCase
             'nominal' => 50000,
         ]);
 
-        $response->assertSessionHas('error');
+        $response->assertForbidden();
         $this->assertDatabaseMissing('payment_addons', ['addable_id' => $application->payment->id]);
     }
 }

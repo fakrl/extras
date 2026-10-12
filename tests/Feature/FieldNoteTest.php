@@ -23,7 +23,7 @@ class FieldNoteTest extends TestCase
         return ProjectApplication::create([
             'casting_project_id' => $project->id,
             'extras_id' => $extras->id,
-            'status_partisipasi' => 'deal',
+            'status_partisipasi' => 'lolos',
         ]);
     }
 
@@ -31,6 +31,7 @@ class FieldNoteTest extends TestCase
     {
         $korlap = User::factory()->create(['role' => 'korlap']);
         $application = $this->buatAplikasi();
+        $application->castingProject->adminAssignments()->create(['user_id' => $korlap->id, 'assigned_by' => $korlap->id, 'status_log' => 'berjalan']);
 
         $response = $this->actingAs($korlap)->post(route('admin.applications.catatan', $application), [
             'jenis' => 'catatan',

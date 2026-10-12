@@ -149,6 +149,7 @@ class OperationalModulesTest extends TestCase
             'kuota' => 5,
         ]);
         $shootingDate = $project->shootingDates()->create(['tanggal' => today()]);
+        $project->adminAssignments()->create(['user_id' => $korlap->id, 'assigned_by' => $admin->id, 'status_log' => 'berjalan']);
 
         $application = ProjectApplication::create([
             'casting_project_id' => $project->id,
