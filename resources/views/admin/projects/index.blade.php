@@ -118,9 +118,11 @@
                     @if ($dibuka && $project->share_token)
                         <button type="button" class="btn btn-sm btn-ikon" data-copy-link="{{ url('/event/'.$project->share_token) }}" title="Salin link pendaftaran" aria-label="Salin link pendaftaran"><i class="ti ti-link" aria-hidden="true"></i></button>
                     @endif
+ @if ($project->client_request_status === 'disetujui')
                     <x-confirm-form :action="route('admin.projects.toggle-status', $project)" method="PATCH" :message="$dibuka ? 'Tutup lowongan '.$project->nama_produksi.'? Extras tidak bisa mendaftar lagi.' : 'Buka lagi lowongan '.$project->nama_produksi.'?'">
                         <button type="submit" class="btn btn-sm btn-ikon" title="{{ $dibuka ? 'Tutup lowongan' : 'Buka lagi lowongan' }}" aria-label="{{ $dibuka ? 'Tutup lowongan' : 'Buka lagi lowongan' }}"><i class="ti {{ $dibuka ? 'ti-lock' : 'ti-lock-open' }}" aria-hidden="true"></i></button>
                     </x-confirm-form>
+                    @endif
                 </div></td>
             </tr>
         @endforeach

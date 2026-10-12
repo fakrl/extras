@@ -119,7 +119,7 @@ class ApplicantController extends Controller
         try {
             $application->tolakDini($data['alasan_tolak']);
         } catch (\LogicException $e) {
-            return $redirect->with('status', $e->getMessage());
+            return $redirect->with('error', $e->getMessage());
         }
 
         return $redirect->with('status', 'Kandidat ditolak. Slot ini bisa diisi pendaftar lain.');
@@ -131,6 +131,11 @@ class ApplicantController extends Controller
      */
     public function tambahCatatan(Request $request, ProjectApplication $application): RedirectResponse
     {
+        abort_unless($application->castingProject->bolehDiurusOleh($request->user()), 403, 'Proyek ini bukan penugasan Anda.');
+        if ($request->user()->isKorlap() && ! in_array($application->status_partisipasi, ProjectApplication::STATUS_LOLOS_KE_ATAS, true)) {
+            return back()->with('error', 'Catatan lapangan hanya untuk kandidat yang sudah lolos.');
+        }
+
         $data = $request->validate([
             'jenis' => ['required', 'in:catatan,sanksi'],
             'isi' => ['required', 'string', 'max:1000'],

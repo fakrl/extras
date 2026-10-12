@@ -229,6 +229,13 @@ class ProjectApplication extends Model
         return $query->where(fn ($q) => $q->whereIn('status_partisipasi', ['diajukan_ke_client', ...self::STATUS_LOLOS_KE_ATAS])->orWhereHas('clientReviews'));
     }
 
+    /** CL-03: yang terlihat Client; `ditolak` hanya bila ditolak lewat review Client (bukan tolak dini Admin). */
+    public function scopeTerlihatClient($query)
+    {
+        return $query->where(fn ($q) => $q->whereIn('status_partisipasi', ['diajukan_ke_client', ...self::STATUS_LOLOS_KE_ATAS])
+            ->orWhere(fn ($t) => $t->where('status_partisipasi', 'ditolak')->whereHas('clientReviews')));
+    }
+
     /** BR.2: status dari sisi Client (menunggu|lock|ditolak); butuh reviewClientTerakhir ter-load. */
     public function sisiClient(): string
     {
@@ -689,16 +696,30 @@ class ProjectApplication extends Model
         }
     }
 
-    public function pastikanMasihBisaNego(): void
+    public function masihBisaNego(): bool
     {
-        abort_if(
-            in_array($this->status_partisipasi, [
-                'diundang', 'deal', 'ditolak', 'diajukan_ke_client', 'lolos',
-                'kontrak_ditandatangani', 'selesai_produksi', 'dibatalkan',
-            ], true),
-            422,
-            'Negosiasi untuk pendaftar ini sudah tidak aktif.'
-        );
+        return in_array($this->status_partisipasi, ['diajukan', 'direview_admin', 'nego_fee'], true);
+    }
+
+    /** Penawaran (tawar/counter) terakhir yang menunggu balasan; null kalau tidak ada. */
+    public function penawaranTerakhir(): ?FeeNegotiation
+    {
+        return $this->feeNegotiations()->reorder('round', 'desc')->first();
+    }
+
+    /** Pesan error kalau $siapa (admin|extras) tidak boleh menjawab penawaran sekarang; null kalau boleh. */
+    public function alasanTidakBisaMenjawab(string $siapa): ?string
+    {
+        if (! $this->masihBisaNego()) {
+            return 'Negosiasi untuk pendaftar ini sudah tidak aktif.';
+        }
+
+        $terakhir = $this->penawaranTerakhir();
+        if ($terakhir && in_array($terakhir->aksi, ['tawar', 'counter'], true) && $terakhir->diajukan_oleh === $siapa) {
+            return 'Penawaran terakhir datang dari pihak Anda sendiri, tunggu balasan dulu.';
+        }
+
+        return null;
     }
 
     public function bolehDilihatOleh(User $user): bool

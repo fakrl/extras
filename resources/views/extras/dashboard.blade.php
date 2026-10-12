@@ -179,6 +179,7 @@
                 </div>
 
                 {{-- Status Absensi & Tombol Selfie --}}
+                @if ($shootingDates->contains(fn ($d) => $d->tanggal->isToday()))
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; background: var(--bg-card); border: 1px dashed var(--border-color); border-radius: 8px; padding: 10px 12px;">
                     <div>
                         <div style="font-size: 12.5px; font-weight: 600;"><i class="ti ti-camera"></i> Absensi Lapangan Hybrid</div>
@@ -198,28 +199,14 @@
                             Buka kamera dan ambil foto selfie kamu di lokasi syuting. Tanggal dan waktu pengiriman akan tercatat otomatis dan divalidasi oleh Korlap di lapangan.
                         </p>
 
-                        @if ($shootingDates->count() > 1)
-                            <div style="margin-bottom: 12px;">
-                                <label>Pilih Tanggal Shooting <span class="wajib" aria-hidden="true">*</span></label>
-                                <select name="event_shooting_date_id" required style="width: 100%;">
-                                    @foreach ($shootingDates as $sd)
-                                        <option value="{{ $sd->id }}" @selected($sd->tanggal->isToday())>
-                                            {{ $sd->tanggal->translatedFormat('l, d F Y') }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        @elseif ($shootingDates->isNotEmpty())
-                            <input type="hidden" name="event_shooting_date_id" value="{{ $shootingDates->first()->id }}">
-                            <div style="font-size: 12px; margin-bottom: 12px; color: var(--text-secondary);">
-                                Tanggal Shooting: <strong>{{ $shootingDates->first()->tanggal->translatedFormat('l, d F Y') }}</strong>
-                            </div>
-                        @endif
+                        <div style="font-size: 12px; margin-bottom: 12px; color: var(--text-secondary);">
+                            Absen untuk hari ini: <strong>{{ today()->translatedFormat('l, d F Y') }}</strong>
+                        </div>
 
                         <div style="margin-bottom: 16px;">
                             <label>Foto Selfie di Lokasi (Kamera Saja) <span class="wajib" aria-hidden="true">*</span></label>
                             <input type="file" name="foto" accept="image/*" capture="user" required style="width: 100%;">
-                            <span style="font-size: var(--fs-xs); color: var(--text-muted); display: block; margin-top: 4px;">Hanya kamera langsung (tidak bisa pilih dari galeri).</span>
+                            <span style="font-size: var(--fs-xs); color: var(--text-muted); display: block; margin-top: 4px;">Ambil foto langsung di lokasi.</span>
                         </div>
 
                         <div style="display: flex; gap: 8px; justify-content: flex-end;">
@@ -228,6 +215,7 @@
                         </div>
                     </form>
                 </dialog>
+                @endif
 
                 @php $jadwalTerisi = $shootingDates->where('lokasi', '!=', null); @endphp
                 @if ($jadwalTerisi->isNotEmpty())

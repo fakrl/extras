@@ -21,7 +21,7 @@
         <p style="margin: 0 0 4px; font-size: 12.5px; color: var(--text-muted);">Komponen tambahan:</p>
         <ul style="margin: 0; padding-left: 18px; font-size: 13.5px;">
             @foreach ($application->payment->addons as $addon)
-                <li>{{ $addon->label }}: Rp {{ number_format($addon->nominal, 0, ',', '.') }}</li>
+                <li>{{ $addon->label }}: Rp {{ number_format($addon->nominal, 0, ',', '.') }}@if ($addon->creator) <span style="color: var(--text-muted);">(Ditambah oleh {{ $addon->creator->name }})</span>@endif</li>
             @endforeach
         </ul>
     @endif
@@ -54,7 +54,7 @@
     </div>
 @endif
 
-@if ((auth()->user()->bisaSebagaiAdmin() || auth()->user()->isExtras()) && $application->payment->status !== 'dikonfirmasi_diterima')
+@if (auth()->user()->bisaSebagaiAdmin() && $application->payment->status === 'belum_dibayar')
     <form method="POST" action="{{ route('payments.addon', $application) }}" style="display: flex; gap: 8px; margin-bottom: 14px;">
         @csrf
         <input type="text" name="label" class="input-inline" placeholder="Label (misal: Reimburse transport) *" required>

@@ -336,7 +336,7 @@ class CeUndangExtrasTest extends TestCase
         $this->assertNull($a->grade);
 
         $this->actingAs($this->admin)->post(route('admin.negotiations.ajukan', $a), ['nominal' => 100000]);
-        $this->actingAs($this->admin)->post(route('admin.negotiations.counter', $a), ['nominal' => 100000])->assertStatus(422);
+        $this->actingAs($this->admin)->post(route('admin.negotiations.counter', $a), ['nominal' => 100000])->assertSessionHas('error');
         $this->assertSame('diundang', $a->fresh()->status_partisipasi);
         $this->assertSame(0, $a->feeNegotiations()->count());
     }

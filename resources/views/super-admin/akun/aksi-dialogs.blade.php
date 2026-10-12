@@ -22,7 +22,7 @@
                 <label>Email @unless ($u->isClient())<span class="wajib" aria-hidden="true">*</span>@endunless</label>
                 <input type="email" name="email" value="{{ $u->email }}" @required(! $u->isClient())>
                 <label>Role <span class="wajib" aria-hidden="true">*</span></label>
-                <select name="role" required>
+                <select name="role" required data-awal="{{ $u->role }}" onchange="var b=this.closest('form').querySelector('.konfirmasi-role');var beda=this.value!==this.dataset.awal;b.hidden=!beda;b.querySelector('input').required=beda;">
                     @foreach (['admin', 'korlap', 'client', 'extras'] as $r)
                         <option value="{{ $r }}" @selected($u->role === $r)>{{ \App\Models\User::LABELS[$r] }}</option>
                     @endforeach
@@ -30,6 +30,10 @@
                         <option value="super_admin" @selected($u->role === 'super_admin')>Super Admin</option>
                     @endif
                 </select>
+                <label class="konfirmasi-role" hidden style="display: block; margin-top: 8px; font-size: var(--fs-sm);">
+                    <input type="checkbox" name="konfirmasi_role" value="1" style="width: auto;">
+                    Saya paham: mengganti role langsung mengubah menu dan hak akses akun ini, dan data yang terkait role lama tidak ikut pindah.
+                </label>
                 <div class="akun-dialog-btn">
                     <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
                     <button type="submit" class="btn btn-sm btn-brand">Simpan</button>

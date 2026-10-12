@@ -18,23 +18,18 @@ class AttendanceSelfieController extends Controller
             403
         );
 
-        abort_unless(
-            in_array($application->status_partisipasi, ProjectApplication::STATUS_AKTIF),
-            403,
-            'Proyek tidak sedang aktif.'
-        );
+        if (! in_array($application->status_partisipasi, ProjectApplication::STATUS_LOLOS_KE_ATAS, true)) {
+            return back()->with('error', 'Absen selfie hanya untuk proyek yang sudah kamu lolos.');
+        }
 
         $request->validate([
             'foto' => ['required', 'image', 'max:5120'],
-            'event_shooting_date_id' => ['nullable', 'integer'],
         ]);
 
-        $shootingDateId = $request->input('event_shooting_date_id')
-            ?? $application->castingProject->shootingDates()->whereDate('tanggal', today())->value('id')
-            ?? $application->castingProject->shootingDates()->first()?->id;
+        $shootingDateId = $application->castingProject->shootingDates()->whereDate('tanggal', today())->value('id');
 
-        if (! $shootingDateId || ! $application->castingProject->shootingDates()->whereKey($shootingDateId)->exists()) {
-            return back()->with('error', 'Tidak ada jadwal shooting untuk proyek ini.');
+        if (! $shootingDateId) {
+            return back()->with('error', 'Hari ini bukan jadwal shooting proyek ini, absen selfie belum bisa dikirim.');
         }
 
         $existing = Attendance::where('project_application_id', $application->id)

@@ -25,10 +25,13 @@ class AttendanceController extends Controller
     public function index(Request $request)
     {
         $today = now()->toDateString();
+        $user = $request->user();
 
         // Default proyek: yang punya shooting date paling dekat dengan hari ini
-        $projects = CastingProject::whereHas('shootingDates', fn ($q) => $q->where('tanggal', '>=', now()->subDay()->toDateString()))
-            ->when($request->query('project'), fn ($q, $id) => $q->orWhere('id', $id))
+        $projects = CastingProject::where(fn ($w) => $w
+            ->whereHas('shootingDates', fn ($q) => $q->where('tanggal', '>=', now()->subDay()->toDateString()))
+            ->when($request->query('project'), fn ($q, $id) => $q->orWhere('id', $id)))
+            ->diurusOleh($user)
             ->orderByDesc('id')
             ->with('client:id,name,nama_perusahaan')
             ->get(['id', 'nama_produksi', 'client_id', 'created_at']);
@@ -46,6 +49,7 @@ class AttendanceController extends Controller
         $castingProject = $defaultProjectId
             ? CastingProject::with('shootingDates')->find($defaultProjectId)
             : null;
+        abort_if($castingProject && ! $castingProject->bolehDiurusOleh($user), 403, 'Proyek ini bukan penugasan Anda.');
 
         $shootingDate = null;
         $applicants = collect();
@@ -67,6 +71,7 @@ class AttendanceController extends Controller
         $rekap = $shootingDate ? KorlapRingkasan::rekap($applicants) : null;
 
         $jadwalBulanIni = EventShootingDate::whereBetween('tanggal', [now()->startOfMonth(), now()->endOfMonth()])
+            ->whereHas('castingProject', fn ($q) => $q->diurusOleh($user))
             ->with('castingProject:id,nama_produksi')
             ->get()
             ->map(fn ($e) => tap($e, fn ($e) => $e->nama_produksi = $e->castingProject?->nama_produksi));
@@ -74,8 +79,15 @@ class AttendanceController extends Controller
         return view('admin.attendance.index', compact('projects', 'castingProject', 'shootingDate', 'applicants', 'rekap', 'today', 'jadwalBulanIni'));
     }
 
+    private function pastikanBolehProyek(Request $request, CastingProject $project): void
+    {
+        abort_unless($project->bolehDiurusOleh($request->user()), 403, 'Proyek ini bukan penugasan Anda.');
+    }
+
     public function store(Request $request, ProjectApplication $application): RedirectResponse
     {
+        $this->pastikanBolehProyek($request, $application->castingProject);
+
         $data = $request->validate([
             'event_shooting_date_id' => ['required', 'integer'],
             'status' => ['required', 'in:hadir,tidak_hadir'],
@@ -86,6 +98,14 @@ class AttendanceController extends Controller
         $shootingDate = $application->castingProject->shootingDates()->find($data['event_shooting_date_id']);
         if (! ($shootingDate)) {
             return back()->with('error', 'Tanggal shooting tidak valid untuk proyek ini.');
+        }
+
+        if (! in_array($application->status_partisipasi, ProjectApplication::STATUS_LOLOS_KE_ATAS, true)) {
+            return back()->with('error', 'Absensi hanya untuk kandidat yang sudah lolos.');
+        }
+
+        if ($shootingDate->tanggal->toDateString() > today()->toDateString()) {
+            return back()->with('error', 'Tanggal shooting ini belum tiba, absensi belum bisa dicatat.');
         }
 
         $fotoPath = $request->hasFile('foto')
@@ -155,6 +175,8 @@ class AttendanceController extends Controller
 
     public function validasi(Request $request, Attendance $attendance): RedirectResponse
     {
+        $this->pastikanBolehProyek($request, $attendance->projectApplication->castingProject);
+
         if ($attendance->status_validasi === 'tervalidasi') {
             return back()->with('error', 'Sudah divalidasi.');
         }
@@ -177,6 +199,8 @@ class AttendanceController extends Controller
 
     public function tolakValidasi(Request $request, Attendance $attendance): RedirectResponse
     {
+        $this->pastikanBolehProyek($request, $attendance->projectApplication->castingProject);
+
         $data = $request->validate(['alasan' => ['required', 'string', 'max:500']]);
 
         $attendance->update([
@@ -196,8 +220,9 @@ class AttendanceController extends Controller
         return back()->withFragment('app-'.$attendance->project_application_id)->with('status', 'Validasi kehadiran ditolak (Status: Tidak Hadir).');
     }
 
-    public function fotoStream(Attendance $attendance): StreamedResponse
+    public function fotoStream(Request $request, Attendance $attendance): StreamedResponse
     {
+        $this->pastikanBolehProyek($request, $attendance->projectApplication->castingProject);
         abort_unless($attendance->foto_path && Storage::disk('local')->exists($attendance->foto_path), 404);
 
         return Storage::disk('local')->response($attendance->foto_path);

@@ -102,7 +102,13 @@ class AdminManagementController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'required_unless:role,client', 'email', 'unique:users,email,'.$user->id],
             'role' => ['required', 'in:'.implode(',', $allowedRoles)],
+            'konfirmasi_role' => ['nullable', 'boolean'],
         ]);
+
+        $roleLama = $user->role;
+        if ($data['role'] !== $roleLama && ! $request->boolean('konfirmasi_role')) {
+            return back()->with('error', 'Mengganti role perlu konfirmasi: centang pernyataan dampak di dialog edit akun.');
+        }
 
         $user->update([
             'name' => $data['name'],
@@ -114,7 +120,8 @@ class AdminManagementController extends Controller
             ExtrasProfile::firstOrCreate(['user_id' => $user->id]);
         }
 
-        ActivityLog::record('UPDATE_USER', "Super Admin mengubah data akun {$user->name} (Role: {$user->role}).", $user);
+        $keteranganRole = $roleLama !== $user->role ? "Role: {$roleLama} → {$user->role}" : "Role: {$user->role}";
+        ActivityLog::record('UPDATE_USER', "Super Admin mengubah data akun {$user->name} ({$keteranganRole}).", $user, $roleLama !== $user->role ? ['role_lama' => $roleLama, 'role_baru' => $user->role] : []);
 
         return redirect()->back(fallback: route('super-admin.akun.index'))->with('status', "Data akun {$user->name} berhasil diperbarui.");
     }

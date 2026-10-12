@@ -130,7 +130,7 @@ class BkJadwalBentrokTest extends TestCase
         $b = $this->daftar($this->proyek('Iklan B', [1]), 'diajukan');
 
         $this->actingAs($this->extras)->post(route('extras.negotiations.batalkan', $b), ['alasan' => 'x'])
-            ->assertSessionHas('status', 'Hanya aplikasi berstatus Deal, Lolos, atau Kontrak Ditandatangani yang bisa dibatalkan.');
+            ->assertSessionHas('error', 'Hanya aplikasi berstatus Deal, Lolos, atau Kontrak Ditandatangani yang bisa dibatalkan.');
         $this->assertSame('diajukan', $b->fresh()->status_partisipasi);
     }
 
@@ -179,7 +179,7 @@ class BkJadwalBentrokTest extends TestCase
             ->assertSee('Jadwal bentrok: <em>Iklan B</em> sudah pasti, <em>Film A</em> tanggal sama. Batalkan <em>Film A</em>?', false);
     }
 
-    public function test_client_tambah_tanggal_baru_bentrok_dikabari_edit_tanggal_lama_tidak(): void
+    public function test_client_tidak_bisa_tambah_tanggal_baru_dan_edit_tanggal_lama_tidak_mengabari(): void
     {
         $client = User::factory()->create(['role' => 'client']);
         $pa = $this->proyek('Film A', [3]);
@@ -190,8 +190,7 @@ class BkJadwalBentrokTest extends TestCase
         $this->actingAs($client)->post(route('client.jadwal.store', $pa), ['tanggal' => now()->addDays(3)->toDateString(), 'lokasi' => 'Studio'])->assertRedirect();
         $this->assertSame(0, $this->extras->notifications()->count());
 
-        $this->actingAs($client)->post(route('client.jadwal.store', $pa), ['tanggal' => now()->addDays(7)->toDateString()])->assertRedirect();
-        $this->assertTrue($b->fresh()->bentrok_jadwal_flag);
-        $this->assertSame(1, $this->extras->notifications()->count());
+        $this->actingAs($client)->post(route('client.jadwal.store', $pa), ['tanggal' => now()->addDays(7)->toDateString()])->assertSessionHas('error');
+        $this->assertSame(0, $this->extras->notifications()->count());
     }
 }

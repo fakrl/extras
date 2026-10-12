@@ -20,6 +20,7 @@ class BaProfilFixTest extends TestCase
                 'name' => $target->name,
                 'email' => $target->email,
                 'role' => 'extras',
+                'konfirmasi_role' => 1,
             ])->assertRedirect();
 
         $this->assertNotNull($target->fresh()->extrasProfile);
