@@ -225,7 +225,7 @@
         <input type="text" name="name" value="{{ old('name') }}" required>
         <label>Email <span class="wajib" aria-hidden="true">*</span></label>
         <input type="email" name="email" value="{{ old('email') }}" required>
-        <x-password-input name="password" label="Password" :minlength="8" />
+        <p class="muted" style="margin:0 0 10px;font-size:var(--fs-xs);">Kata sandi sementara dibuat otomatis dan ditampilkan sekali setelah akun dibuat. Staf wajib menggantinya saat login pertama.</p>
         <label>Role <span class="wajib" aria-hidden="true">*</span></label>
         <select name="role" required>
             <option value="admin" @selected(old('role') === 'admin')>Admin (operasional proyek penuh)</option>

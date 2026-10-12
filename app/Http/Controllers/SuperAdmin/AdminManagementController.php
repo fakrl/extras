@@ -168,15 +168,16 @@ class AdminManagementController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
-            'password' => ['required', 'min:8'],
             'role' => ['required', 'in:'.implode(',', $allowedRoles)],
             'honor_nominal' => ['nullable', 'numeric', 'min:0'],
         ]);
 
+        $password = self::passwordSementara();
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
-            'password' => Hash::make($data['password']),
+            'password' => $password,
+            'wajib_ganti_password' => true,
             'role' => $data['role'],
             'status' => 'aktif',
             'honor_nominal' => $data['role'] === 'super_admin' ? null : ($data['honor_nominal'] ?? null),
@@ -184,7 +185,8 @@ class AdminManagementController extends Controller
 
         ActivityLog::record('CREATE_USER', "{$request->user()->name} membuat akun staf {$user->name} ({$user->label()}).", $user);
 
-        return redirect()->route('super-admin.akun.index')->with('status', 'Akun Admin berhasil ditambahkan.');
+        return redirect()->route('super-admin.akun.index')->with('status', 'Akun Admin berhasil ditambahkan.')
+            ->with('kredensial', $this->kredensial($user, $password));
     }
 
     /**
