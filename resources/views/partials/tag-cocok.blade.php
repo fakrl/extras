@@ -26,5 +26,5 @@
         @endforeach
     </div>
 @empty
-    <div class="xrow-muted" style="font-size: var(--fs-sm);">Belum pilih tag.</div>
+    <div class="xrow-muted" style="font-size: var(--fs-sm);">Tidak ada tag.</div>
 @endforelse

@@ -23,20 +23,20 @@
 
 <form method="GET" action="{{ route('admin.attendance.index') }}" class="form-row" style="margin-bottom: 8px;">
     <div>
-        <label>Proyek</label>
-        <select name="project" onchange="this.form.submit()">
+        <label for="pilih-proyek">Proyek</label>
+        <select name="project" id="pilih-proyek" onchange="this.form.submit()">
             @foreach ($projects as $p)
-                <option value="{{ $p->id }}" @selected($castingProject?->id === $p->id)>{{ $p->kode_proyek }} · {{ $p->nama_produksi }} ({{ $p->namaClient() }})</option>
+                <option value="{{ $p->id }}" @selected($castingProject?->id === $p->id)>{{ $p->kode_proyek }} · {{ $p->nama_produksi }} {{ $p->client ? "({$p->namaClient()})" : "" }}</option>
             @endforeach
         </select>
     </div>
     @if ($castingProject && $castingProject->shootingDates->isNotEmpty())
         <div>
-            <label>Tanggal Shooting</label>
-            <select name="tanggal" onchange="this.form.submit()">
+            <label for="pilih-tanggal">Tanggal Shooting</label>
+            <select name="tanggal" id="pilih-tanggal" onchange="this.form.submit()">
                 @foreach ($castingProject->shootingDates as $tgl)
                     <option value="{{ $tgl->id }}" @selected($shootingDate?->id === $tgl->id)>
-                        {{ $tgl->tanggal->format('d M Y') }}{{ $tgl->tanggal->toDateString() === $today ? ' (Hari Ini)' : '' }}
+                        {{ $tgl->tanggal->translatedFormat('d M Y') }}{{ match ($tgl->tanggal->toDateString()) { $today => ' (Hari Ini)', now()->subDay()->toDateString() => ' (Kemarin)', now()->addDay()->toDateString() => ' (Besok)', default => '' } }}
                     </option>
                 @endforeach
             </select>
@@ -81,7 +81,7 @@
                         <div style="font-size: 12.5px; color: var(--text-secondary); margin-top: 2px;">
                             Peran: <strong>{{ $karakter ?: ($app->castingProjectClass->nama_kelas ?? 'Umum') }}</strong>
                             @if ($callingan)
-                                · Callingan: <strong style="color: var(--danger, #d9534f);">{{ $callingan }} WIB</strong>
+                                · Jam panggil: <span class="badge badge-urgent">{{ $callingan }} WIB</span>
                             @endif
                             @if ($scene)
                                 · Scene: <em>{{ $scene }}</em>
@@ -90,15 +90,17 @@
 
                         <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; align-items: center;">
                             @if ($absen)
-                                <span class="badge {{ $absen->status === 'hadir' ? 'badge-aktif' : 'badge-tolak' }}">
-                                    {{ $absen->status === 'hadir' ? 'Hadir' : 'Tidak Hadir' }}
-                                </span>
                                 @if ($absen->status_validasi === 'menunggu')
-                                    <span class="badge badge-pending">Menunggu Validasi Korlap</span>
-                                @elseif ($absen->status_validasi === 'tervalidasi')
-                                    <span class="badge badge-aktif">Tervalidasi ({{ $absen->divalidasiOleh?->name ?? 'Staf' }})</span>
+                                    <span class="badge badge-pending">Selfie menunggu validasi</span>
+                                @else
+                                    <span class="badge {{ $absen->status === 'hadir' ? 'badge-aktif' : 'badge-tolak' }}">
+                                        {{ $absen->status === 'hadir' ? 'Hadir' : 'Tidak Hadir' }}
+                                    </span>
+                                    @if ($absen->status_validasi === 'tervalidasi')
+                                        <span style="font-size: var(--fs-xs); color: var(--text-muted);">divalidasi {{ $absen->divalidasiOleh?->name ?? 'staf' }}</span>
+                                    @endif
                                 @endif
-                                <span style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $absen->created_at->format('H:i') }} WIB</span>
+                                <span style="font-size: var(--fs-xs); color: var(--text-muted);">dicatat {{ $absen->created_at->format('H:i') }} WIB</span>
                             @else
                                 <span class="badge badge-pending">Belum diabsen</span>
                             @endif
@@ -110,9 +112,9 @@
                 @if ($absen && $absen->foto_path)
                     <div style="text-align: center; font-size: var(--fs-xs);">
                         <a href="{{ route('admin.absensi.foto', $absen) }}" target="_blank" style="display: block;">
-                            <img src="{{ route('admin.absensi.foto', $absen) }}" alt="Selfie" style="width: 52px; height: 52px; border-radius: 8px; object-fit: cover; border: 2px solid var(--accent, #3b82f6);">
+                            <img src="{{ route('admin.absensi.foto', $absen) }}" alt="Selfie" style="width: 120px; height: 120px; border-radius: 8px; object-fit: cover; border: 2px solid var(--accent, #3b82f6);">
                         </a>
-                        <span style="color: var(--text-muted);">Foto Onsite</span>
+                        <span style="color: var(--text-muted);">Selfie Extras</span>
                     </div>
                 @endif
 
@@ -123,35 +125,40 @@
                             @csrf
                             <button class="btn btn-brand" title="Setujui selfie kehadiran extras"><i class="ti ti-check"></i> Setujui Hadir</button>
                         </form>
-                        <button type="button" class="btn btn-danger-outline" style="margin-left: 12px;" onclick="document.getElementById('tolak-dialog-{{ $absen->id }}').showModal()"><i class="ti ti-x"></i> Tolak</button>
+                        <button type="button" class="btn btn-danger-outline" style="margin-left: 12px;" onclick="document.getElementById('tolak-dialog-{{ $absen->id }}').showModal()"><i class="ti ti-x"></i> Tolak (tidak hadir)</button>
                         <dialog id="tolak-dialog-{{ $absen->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
                             <form method="POST" action="{{ route('admin.absensi.tolak', $absen) }}" style="padding: 18px;">
                                 @csrf
-                                <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Tolak kehadiran?</div>
-                                <label style="font-size: 12.5px;">Alasan penolakan <span class="wajib" aria-hidden="true">*</span></label>
-                                <textarea name="alasan" rows="3" required placeholder="Tulis alasan penolakan..." style="width: 100%; margin-bottom: 12px;"></textarea>
+                                <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Tolak selfie ini? Extras akan dicatat tidak hadir.</div>
+                                <label for="alasan-{{ $absen->id }}" style="font-size: 12.5px;">Alasan penolakan <span class="wajib" aria-hidden="true">*</span></label>
+                                <textarea name="alasan" id="alasan-{{ $absen->id }}" rows="3" required placeholder="Tulis alasan penolakan..." style="width: 100%; margin-bottom: 12px;"></textarea>
                                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
                                     <button type="button" class="btn" onclick="this.closest('dialog').close()">Batal</button>
-                                    <button type="submit" class="btn btn-danger-outline">Tolak</button>
+                                    <button type="submit" class="btn btn-danger-outline">Tolak (tidak hadir)</button>
                                 </div>
                             </form>
                         </dialog>
                     @else
-                        <form method="POST" action="{{ route('admin.attendance.store', $app) }}">
-                            @csrf
-                            <input type="hidden" name="event_shooting_date_id" value="{{ $shootingDate->id }}">
-                            <input type="hidden" name="status" value="hadir">
-                            <button class="btn btn-brand">Hadir</button>
-                        </form>
-                        <x-confirm-form action="{{ route('admin.attendance.store', $app) }}" message="Tandai {{ $app->extras->user->username ?? 'extras ini' }} Tidak Hadir? Ini memengaruhi perhitungan honor." style="margin-left: 12px;">
-                            <input type="hidden" name="event_shooting_date_id" value="{{ $shootingDate->id }}">
-                            <input type="hidden" name="status" value="tidak_hadir">
-                            <button type="submit" class="btn btn-danger-outline">Tidak Hadir</button>
-                        </x-confirm-form>
+                        @if ($absen)
+                            <button type="button" class="btn" onclick="this.nextElementSibling.hidden = false; this.hidden = true;">Ubah status</button>
+                        @endif
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;" @if ($absen) hidden @endif>
+                            <form method="POST" action="{{ route('admin.attendance.store', $app) }}">
+                                @csrf
+                                <input type="hidden" name="event_shooting_date_id" value="{{ $shootingDate->id }}">
+                                <input type="hidden" name="status" value="hadir">
+                                <button class="btn btn-brand">Hadir</button>
+                            </form>
+                            <x-confirm-form action="{{ route('admin.attendance.store', $app) }}" message="Tandai {{ $app->extras->user->username ?? 'extras ini' }} Tidak Hadir? Ini memengaruhi perhitungan honor.">
+                                <input type="hidden" name="event_shooting_date_id" value="{{ $shootingDate->id }}">
+                                <input type="hidden" name="status" value="tidak_hadir">
+                                <button type="submit" class="btn btn-danger-outline">Tidak Hadir</button>
+                            </x-confirm-form>
+                        </div>
                     @endif
 
                     <button type="button" class="btn" style="margin-left: 12px;" onclick="document.getElementById('foto-dialog-{{ $app->id }}').showModal()" title="Foto onsite langsung oleh Korlap">
-                        <i class="ti ti-camera"></i> Foto Korlap
+                        <i class="ti ti-camera"></i> Foto Lokasi
                     </button>
                     <button type="button" class="btn" onclick="document.getElementById('catatan-dialog-{{ $app->id }}').showModal()">Catatan</button>
                 </div>
@@ -164,7 +171,7 @@
                 @csrf
                 <input type="hidden" name="event_shooting_date_id" value="{{ $shootingDate->id }}">
                 <input type="hidden" name="status" value="hadir">
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Ambil Foto On-Site: {{ $app->extras->user->username ?? 'Extras' }}</div>
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Foto Lokasi: {{ $app->extras->user->username ?? 'Extras' }}</div>
                 <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Foto extras di lokasi syuting sebagai bukti kehadiran untuk Client / PH. Maks. 10MB.</p>
                 <input type="file" name="foto" accept="image/*" capture="environment" required style="width: 100%; margin-bottom: 12px;">
                 <textarea name="catatan" rows="2" placeholder="Catatan kehadiran..." style="width: 100%; margin-bottom: 12px;"></textarea>
@@ -180,11 +187,14 @@
             <form method="POST" action="{{ route('admin.applications.catatan', $app) }}" style="padding: 18px;">
                 @csrf
                 <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Catatan Lapangan: {{ $app->extras->user->username ?? 'kandidat' }}</div>
-                <select name="jenis" required style="width: 100%; margin-bottom: 10px;">
+                <label for="jenis-{{ $app->id }}">Jenis</label>
+                <select name="jenis" id="jenis-{{ $app->id }}" required style="width: 100%; margin-bottom: 4px;">
                     <option value="catatan">Catatan</option>
                     <option value="sanksi">Sanksi</option>
                 </select>
-                <textarea name="isi" rows="3" required placeholder="Isi catatan/sanksi" style="width: 100%; margin-bottom: 12px;"></textarea>
+                <p style="font-size: var(--fs-xs); color: var(--text-muted); margin: 0 0 10px;">Catatan: info biasa. Sanksi: teguran yang tercatat di riwayat Extras dan bisa dilihat Admin; tidak mengubah status pendaftaran.</p>
+                <label for="isi-{{ $app->id }}">Isi <span class="wajib" aria-hidden="true">*</span></label>
+                <textarea name="isi" id="isi-{{ $app->id }}" rows="3" required style="width: 100%; margin-bottom: 12px;"></textarea>
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
                     <button type="button" class="btn" onclick="this.closest('dialog').close()">Batal</button>
                     <button type="submit" class="btn btn-brand">Simpan</button>
@@ -202,7 +212,7 @@
         <div class="card-title">
             <i class="ti ti-clipboard-list"></i> Perlu Tindakan
             @if ($rekap['menunggu'])
-                <span class="badge badge-pending" style="margin-left: 8px;">{{ $rekap['menunggu'] }}</span>
+                <span class="badge badge-netral" style="margin-left: 8px;">{{ $rekap['menunggu'] }}</span>
             @endif
         </div>
         <div style="font-size: var(--fs-md); font-weight: 600; margin-bottom: 6px;">{{ $rekap['hadir'] }}/{{ $rekap['total'] }} hadir · {{ $rekap['menunggu'] }} menunggu</div>

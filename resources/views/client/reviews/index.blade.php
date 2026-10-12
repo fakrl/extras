@@ -15,8 +15,8 @@
             <tr>
                 <th>Proyek</th>
                 <th>Menunggu</th>
-                <th>Approved</th>
-                <th>Rejected</th>
+                <th>Dipilih</th>
+                <th>Ditolak</th>
                 <th>Total</th>
                 <th></th>
             </tr>
@@ -25,7 +25,7 @@
             @forelse ($proyek as $item)
                 <tr>
                     <td>{{ $item['proyek']->nama_produksi }}</td>
-                    <td><span class="badge badge-pending">{{ $item['menunggu'] }}</span></td>
+                    <td><span class="badge badge-netral">{{ $item['menunggu'] }}</span></td>
                     <td><span class="badge badge-aktif">{{ $item['approved'] }}</span></td>
                     <td><span class="badge badge-tolak">{{ $item['rejected'] }}</span></td>
                     <td>{{ $item['total'] }}</td>
@@ -36,7 +36,7 @@
             @empty
                 <tr>
                     <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px 0;">
-                        Belum ada proyek yang kamu handle.
+                        Belum ada proyek yang Anda tangani.
                     </td>
                 </tr>
             @endforelse

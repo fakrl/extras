@@ -18,16 +18,16 @@
     <x-per-halaman :pilihan="\App\Support\PerHalaman::KARTU" :nilai="$projects->perPage()" />
     <x-filter-panel :filter="[
         $periode ? [['dari', 'sampai'], 'Periode: '.$periode[0]->translatedFormat($periode[0]->year === $periode[1]->year ? 'd M' : 'd M Y').'–'.$periode[1]->translatedFormat('d M Y')] : null,
-        $bayar ? ['bayar', $bayar === 'staf' ? 'Honor staf belum dibayar' : 'Honor Extras belum ditransfer'] : null,
+        $bayar ? ['bayar', ['staf' => 'Honor staf belum dibayar', 'sengketa' => 'Pembayaran disengketakan'][$bayar] ?? 'Honor Extras belum ditransfer'] : null,
         request('status') ? ['status', 'Lowongan: '.(\App\Models\CastingProject::LABELS[request('status')] ?? request('status'))] : null,
         request()->boolean('urgent') ? ['urgent', 'Urgent'] : null,
-        request()->boolean('tanpa_client') ? ['tanpa_client', 'Client belum diisi'] : null,
+        request()->boolean('tanpa_client') ? ['tanpa_client', 'Tanpa PIC/Client'] : null,
         $peserta ? ['peserta', 'Ada kandidat '.(\App\Models\ProjectApplication::LABELS[$peserta] ?? $peserta)] : null,
     ]">
         <x-filter-panel.grup label="Lowongan" name="status" :opsi="['' => 'Semua'] + \App\Models\CastingProject::LABELS" :nilai="request('status')" />
-        <x-filter-panel.grup label="Honor" name="bayar" :opsi="['' => 'Semua', 'staf' => 'Staf belum dibayar', 'extras' => 'Extras belum ditransfer']" :nilai="$bayar" />
+        <x-filter-panel.grup label="Honor" name="bayar" :opsi="['' => 'Semua', 'staf' => 'Staf belum dibayar', 'extras' => 'Extras belum ditransfer', 'sengketa' => 'Disengketakan']" :nilai="$bayar" />
         <label class="fswitch">Urgent <input type="checkbox" name="urgent" value="1" @checked(request()->boolean('urgent'))></label>
-        <label class="fswitch">Client belum diisi <input type="checkbox" name="tanpa_client" value="1" @checked(request()->boolean('tanpa_client'))></label>
+        <label class="fswitch">Tanpa PIC/Client <input type="checkbox" name="tanpa_client" value="1" @checked(request()->boolean('tanpa_client'))></label>
         <div>
             <div class="fpanel-label">Periode shooting</div>
             <div class="fpanel-dua">
@@ -76,8 +76,8 @@
                     <a href="{{ route('admin.projects.show', $project) }}" class="tp-link">{{ $project->nama_produksi }}</a>
                     <div class="tp-kode">
                         <span class="kode-proyek">{{ $project->kode_proyek }}</span>
-                        @if ($project->isUrgent())
-                            <span class="badge badge-tolak">Urgent</span>
+                        @if ($project->isUrgent() && $project->status === 'dibuka')
+                            <span class="badge badge-urgent">Urgent</span>
                         @endif
                     </div>
                 </td>
@@ -102,9 +102,10 @@
                     @if ($kuota > 0)
                         <div class="tp-bar"><i style="width: {{ min(100, round($project->applications_count / $kuota * 100)) }}%;"></i></div>
                     @endif
-                    @if ($ditolak || $tutup || $adaPerlu)
+                    @if ($ditolak || $tutup || $adaPerlu || $project->client_request_status === 'menunggu_acc')
                     <span class="tp-badges">
-                        @if ($ditolak)<span class="badge badge-tolak">Ditolak</span>@endif
+                        @if ($ditolak)<span class="badge badge-tolak">Pengajuan ditolak</span>@endif
+                        @if ($project->client_request_status === 'menunggu_acc')<span class="badge badge-pending">Menunggu ACC</span>@endif
                         @if ($tutup)<span class="badge badge-netral">Lowongan ditutup</span>@endif
                         @if ($adaPerlu)
                             <a href="{{ route('admin.projects.show', [$project, 'tab' => 'pendaftar']) }}" class="badge badge-pending tp-perlu" title="Pendaftar yang menunggu tindakan Admin">Perlu tindakan ({{ $perluTindakan }})</a>
@@ -112,15 +113,15 @@
                     </span>
                     @endif
                 </td>
-                <td class="tp-aksi"><div class="tp-aksi-isi">
-                    <a href="{{ route('admin.projects.applicants', [$project, 'status' => $peserta]) }}" class="btn btn-sm btn-ikon" title="Lineup" aria-label="Lineup"><i class="ti ti-users-group" aria-hidden="true"></i></a>
-                    <a href="{{ route('admin.projects.edit', $project) }}" class="btn btn-sm btn-ikon" title="Edit proyek" aria-label="Edit proyek"><i class="ti ti-pencil" aria-hidden="true"></i></a>
+                <td class="tp-aksi"><div class="tp-aksi-isi" style="flex-wrap: wrap;">
+                    <a href="{{ route('admin.projects.applicants', [$project, 'status' => $peserta]) }}" class="btn btn-sm" title="Lineup" aria-label="Lineup"><i class="ti ti-users-group" aria-hidden="true"></i> Lineup</a>
+                    <a href="{{ route('admin.projects.edit', $project) }}" class="btn btn-sm" title="Edit proyek" aria-label="Edit proyek"><i class="ti ti-pencil" aria-hidden="true"></i> Edit</a>
                     @if ($dibuka && $project->share_token)
-                        <button type="button" class="btn btn-sm btn-ikon" data-copy-link="{{ url('/event/'.$project->share_token) }}" title="Salin link pendaftaran" aria-label="Salin link pendaftaran"><i class="ti ti-link" aria-hidden="true"></i></button>
+                        <button type="button" class="btn btn-sm" title="Salin link pendaftaran" aria-label="Salin link pendaftaran" data-copy-link="{{ url('/event/'.$project->share_token) }}"><i class="ti ti-link" aria-hidden="true"></i> Salin link</button>
                     @endif
  @if ($project->client_request_status === 'disetujui')
                     <x-confirm-form :action="route('admin.projects.toggle-status', $project)" method="PATCH" :message="$dibuka ? 'Tutup lowongan '.$project->nama_produksi.'? Extras tidak bisa mendaftar lagi.' : 'Buka lagi lowongan '.$project->nama_produksi.'?'">
-                        <button type="submit" class="btn btn-sm btn-ikon" title="{{ $dibuka ? 'Tutup lowongan' : 'Buka lagi lowongan' }}" aria-label="{{ $dibuka ? 'Tutup lowongan' : 'Buka lagi lowongan' }}"><i class="ti {{ $dibuka ? 'ti-lock' : 'ti-lock-open' }}" aria-hidden="true"></i></button>
+                        <button type="submit" class="btn btn-sm" title="{{ $dibuka ? 'Tutup lowongan' : 'Buka lagi lowongan' }}" aria-label="{{ $dibuka ? 'Tutup lowongan' : 'Buka lagi lowongan' }}"><i class="ti {{ $dibuka ? 'ti-lock-open' : 'ti-lock' }}" aria-hidden="true"></i> {{ $dibuka ? 'Tutup' : 'Buka' }}</button>
                     </x-confirm-form>
                     @endif
                 </div></td>

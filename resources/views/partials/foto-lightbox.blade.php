@@ -1,5 +1,5 @@
 @if (count($fotos) === 0)
-    <p style="color:var(--text-muted); font-size:12px;">Gallery masih kosong.</p>
+    <p style="color:var(--text-muted); font-size:12px;">Galeri masih kosong.</p>
 @else
 <style>
 .lightbox-thumbs { display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; }

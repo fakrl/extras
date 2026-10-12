@@ -71,6 +71,16 @@ class ProjectApplication extends Model
         return self::BADGES[$this->status_partisipasi] ?? 'badge-netral';
     }
 
+    /** CL-09: istilah untuk Client (Pilih/Tolak), warna tetap dari BADGES. */
+    public function labelClient(): string
+    {
+        return match ($this->status_partisipasi) {
+            'diajukan_ke_client' => 'Menunggu keputusan',
+            'lolos', 'kontrak_ditandatangani', 'selesai_produksi' => 'Dipilih',
+            default => $this->label(),
+        };
+    }
+
     public function isPasti(): bool
     {
         return in_array($this->status_partisipasi, self::STATUS_PASTI, true);
@@ -425,6 +435,16 @@ class ProjectApplication extends Model
         return $adaBentrok;
     }
 
+    /** EX-10: < H-2 dari tanggal shooting terdekat; tanpa tanggal mendatang dianggap tidak mendadak. */
+    public function batalMendadak(): bool
+    {
+        $tanggalTerdekat = $this->castingProject->shootingDates()
+            ->where('tanggal', '>=', now()->toDateString())
+            ->min('tanggal');
+
+        return $tanggalTerdekat && now()->startOfDay()->diffInDays($tanggalTerdekat) < 2;
+    }
+
     /**
      * RF-33/34: Admin atau Extras membatalkan aplikasi berstatus Deal, Lolos,
      * atau Kontrak Ditandatangani (diperluas SPEC.md Bagian C, 31 Agu 2026,
@@ -448,13 +468,7 @@ class ProjectApplication extends Model
             throw new \LogicException('Hanya aplikasi berstatus Deal, Lolos, atau Kontrak Ditandatangani yang bisa dibatalkan.');
         }
 
-        $tanggalTerdekat = $this->castingProject->shootingDates()
-            ->where('tanggal', '>=', now()->toDateString())
-            ->min('tanggal');
-
-        // Tidak ada tanggal shooting mendatang yang tercatat -> anggap tidak
-        // mendadak (tidak ada risiko jadwal yang bisa dinilai).
-        $isMendadak = $tanggalTerdekat && now()->startOfDay()->diffInDays($tanggalTerdekat) < 2;
+        $isMendadak = $this->batalMendadak();
 
         $cancellation = $this->cancellations()->create([
             'dibatalkan_oleh' => $olehSiapa,
@@ -518,7 +532,7 @@ class ProjectApplication extends Model
 
         $this->extras->user->kabari(
             'Undangan Proyek',
-            "{$admin->name} mengundang kamu ke proyek {$this->castingProject->namaKode()}".($peran ? " (peran {$peran})" : '').'. Terima atau tolak di aplikasi.',
+            "{$admin->name} mengundang kamu ke proyek {$this->castingProject->nama_produksi}".($peran ? " (peran {$peran})" : '').'. Terima atau tolak di aplikasi.',
             route('extras.projects.show', $this->castingProject),
             jenis: 'undangan_proyek',
         );
@@ -555,7 +569,7 @@ class ProjectApplication extends Model
             return false;
         }
         $this->loadMissing('extras.user', 'castingProject');
-        $this->extras->user->kabari('Undangan Dibatalkan', "Undangan ke proyek {$this->castingProject->namaKode()} dibatalkan Admin.", route('extras.projects.show', $this->castingProject), jenis: 'undangan_proyek');
+        $this->extras->user->kabari('Undangan Dibatalkan', "Undangan ke proyek {$this->castingProject->nama_produksi} dibatalkan Admin.", route('extras.projects.show', $this->castingProject), jenis: 'undangan_proyek');
 
         return true;
     }

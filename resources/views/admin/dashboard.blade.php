@@ -1,13 +1,19 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard Admin')
+@section('title', auth()->user()->bisaSebagaiAdmin() && auth()->user()->modeSa() !== 'korlap' ? 'Dashboard Admin' : 'Dashboard Korlap')
 
 @include('super-admin.monitoring._gaya')
 
 @section('content')
 @php $tampilAdmin = auth()->user()->bisaSebagaiAdmin() && auth()->user()->modeSa() !== 'korlap'; @endphp
 @if ($tampilAdmin)
-    @php $tindakan = array_filter($ringkasan, fn ($r) => $r['jumlah'] > 0); $jumlahTindakan = $urgentProjects->count() + ($pembayaranSengketa ? 1 : 0) + count($tindakan); @endphp
+    @php $tindakan = array_filter($ringkasan, fn ($r) => $r['jumlah'] > 0); $jumlahTindakan = $urgentProjects->count() + $pembayaranSengketa + array_sum(array_column($tindakan, 'jumlah')); @endphp
+    @if (auth()->user()->isAdmin())
+        <div class="xfilter" role="group" aria-label="Cakupan dashboard" style="margin-bottom: 12px;">
+            <a href="{{ route('admin.dashboard') }}" class="btn btn-sm {{ $semua ? '' : 'btn-brand' }}" @if (! $semua) aria-current="true" @endif>Proyek saya</a>
+            <a href="{{ route('admin.dashboard', ['semua' => 1]) }}" class="btn btn-sm {{ $semua ? 'btn-brand' : '' }}" @if ($semua) aria-current="true" @endif>Semua proyek</a>
+        </div>
+    @endif
     <div class="dash-tiga">
         <div class="card">
             <div class="card-title">Jadwal Shooting Bulan Ini</div>
@@ -18,7 +24,7 @@
             <div class="card-title">
                 <i class="ti ti-clipboard-list"></i> Perlu Tindakan
                 @if ($jumlahTindakan)
-                    <span class="badge badge-pending" style="margin-left: 8px;">{{ $jumlahTindakan }}</span>
+                    <span class="badge badge-netral" style="margin-left: 8px;">{{ $jumlahTindakan }}</span>
                 @endif
             </div>
 
@@ -30,9 +36,9 @@
                 @foreach ($urgentProjects as $p)
                     <a href="{{ route('admin.projects.show', $p) }}" class="dash-row">
                         <div>
-                            <span class="badge badge-tolak">Urgent</span>
+                            <span class="badge badge-urgent">Urgent</span>
                             <strong>{{ $p->nama_produksi }}</strong>
-                            <div class="dash-sub">{{ $p->namaClient() }} &bull; {{ $p->rentangShooting() }}</div>
+                            <div class="dash-sub">{{ collect([$p->client ? $p->namaClient() : null, $p->rentangShooting()])->filter(fn ($x) => $x && $x !== "-")->implode(" • ") }}</div>
                         </div>
                         <span class="dash-sub">Buka &rarr;</span>
                     </a>
@@ -41,7 +47,7 @@
             @endif
 
             @if ($pembayaranSengketa > 0)
-                <a href="{{ route('admin.projects.index') }}" class="dash-row">
+                <a href="{{ $linkSengketa }}" class="dash-row">
                     <div>
                         <span class="badge badge-pending">Pembayaran Bermasalah</span>
                         <strong>{{ $pembayaranSengketa }} kasus</strong>
@@ -75,14 +81,14 @@
                     <div class="metric-value">{{ $totalPendaftar }}</div>
                 </a>
                 <a href="{{ route('admin.projects.index', ['peserta' => 'nego_fee']) }}" class="metric-card" style="grid-column: span 2;">
-                    <div class="metric-label">Perlu Dinego</div>
+                    <div class="metric-label">Sedang nego</div>
                     <div class="metric-value">{{ $perluDinego }}</div>
                 </a>
             </div>
             <a href="{{ route('admin.projects.index') }}" class="dash-row"><span><i class="ti ti-folder"></i> Kelola Proyek</span><span class="dash-sub">&rarr;</span></a>
             <a href="{{ route('admin.akun.extras') }}" class="dash-row"><span><i class="ti ti-users"></i> Kelola Akun Extras &amp; Rekap</span><span class="dash-sub">&rarr;</span></a>
             <a href="{{ route('admin.attendance.index') }}" class="dash-row"><span><i class="ti ti-camera"></i> Absensi Lapangan</span><span class="dash-sub">&rarr;</span></a>
-            <a href="{{ route('admin.work-history') }}" class="dash-row"><span><i class="ti ti-wallet"></i> Riwayat Kerja & Status Gaji Saya</span><span class="dash-sub">&rarr;</span></a>
+            <a href="{{ route('admin.work-history') }}" class="dash-row"><span><i class="ti ti-wallet"></i> Riwayat & Honor Saya</span><span class="dash-sub">&rarr;</span></a>
         </div>
     </div>
 
@@ -99,7 +105,7 @@
 @elseif (auth()->user()->bisaSebagaiKorlap())
     <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
         <a href="{{ route('admin.attendance.index') }}" class="btn btn-brand"><i class="ti ti-camera"></i> Absensi Lapangan</a>
-        <a href="{{ route('admin.work-history') }}" class="btn">Riwayat Kerja & Status Gaji Saya</a>
+        <a href="{{ route('admin.work-history') }}" class="btn">Riwayat & Honor Saya</a>
     </div>
     @if ($punyaTugas)
         @include('partials.korlap-ringkasan', ['masuk' => false])
@@ -110,7 +116,7 @@
     <div class="alert-info">
         Akses kamu sebagai {{ auth()->user()->role }} terbatas ke pencatatan penugasan & riwayat kerja.
     </div>
-    <a href="{{ route('admin.work-history') }}" class="btn">Riwayat Kerja & Status Gaji Saya</a>
+    <a href="{{ route('admin.work-history') }}" class="btn">Riwayat & Honor Saya</a>
 @endif
 @endsection
 

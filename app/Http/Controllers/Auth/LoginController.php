@@ -48,12 +48,15 @@ class LoginController extends Controller
         }
 
         if (Auth::user()->diblokir()) {
+            $melanggar = Auth::user()->extrasProfile?->status === 'melanggar';
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
             return back()->withErrors([
-                'email' => 'Akun Anda dinonaktifkan. Hubungi admin untuk info lebih lanjut.',
+                'email' => $melanggar
+                    ? 'Akun Anda ditandai melanggar karena 3 kali batal mendadak (kurang dari 2 hari sebelum syuting). Hubungi admin JBTB bila ingin meminta peninjauan.'
+                    : 'Akun Anda dinonaktifkan. Hubungi admin untuk info lebih lanjut.',
             ])->onlyInput('email');
         }
 

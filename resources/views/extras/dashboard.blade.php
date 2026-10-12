@@ -13,7 +13,7 @@
         $nama = e($app->castingProject->nama_produksi);
         $lompat = ['app' => $app->id];
         foreach ($bentrokPer[$app->id]->filter->isPasti() as $lawan) {
-            $tindakan->push(['badge' => 'badge-tolak', 'label' => 'Jadwal bentrok', 'teks' => 'Jadwal bentrok: <em>'.e($lawan->castingProject->nama_produksi)."</em> sudah pasti, <em>{$nama}</em> tanggal sama. Batalkan <em>{$nama}</em>?"] + $lompat);
+            $tindakan->push(['badge' => 'badge-urgent', 'label' => 'Jadwal bentrok', 'teks' => 'Jadwal bentrok: <em>'.e($lawan->castingProject->nama_produksi)."</em> sudah pasti, <em>{$nama}</em> tanggal sama. Batalkan <em>{$nama}</em>?"] + $lompat);
         }
         if ($app->status_partisipasi === 'diundang') {
             $peran = $app->castingProjectClass?->nama_kelas;
@@ -29,7 +29,7 @@
             $tindakan->push(['badge' => 'badge-info', 'label' => 'Konfirmasi bayar', 'teks' => "Honor <em>{$nama}</em> sudah ditransfer, konfirmasi penerimaannya"] + $lompat);
         }
         if (in_array($app->status_partisipasi, \App\Models\ProjectApplication::STATUS_LOLOS_KE_ATAS) && $app->castingProject->shootingDates->contains(fn ($d) => $d->tanggal->isToday()) && ! $sudahAbsenHariIni->contains($app->id)) {
-            $tindakan->push(['badge' => 'badge-tolak', 'label' => 'Absen hari ini', 'teks' => $nama, 'tombol' => 'Absen Selfie', 'dialog' => 'dialog-absen-'.$app->id]);
+            $tindakan->push(['badge' => 'badge-urgent', 'label' => 'Absen hari ini', 'teks' => $nama, 'tombol' => 'Absen Selfie', 'dialog' => 'dialog-absen-'.$app->id]);
         }
     }
 @endphp
@@ -77,9 +77,9 @@
                 @isset($t['undangan'])
                     @include('partials.undangan-aksi', ['app' => $t['undangan']])
                 @elseif (isset($t['dialog']))
-                    <button type="button" class="btn btn-sm btn-brand" onclick="document.getElementById('{{ $t['dialog'] }}').showModal()"><i class="ti ti-camera"></i> {{ $t['tombol'] }}</button>
+                    <button type="button" class="btn btn-brand" onclick="document.getElementById('{{ $t['dialog'] }}').showModal()"><i class="ti ti-camera"></i> {{ $t['tombol'] }}</button>
                 @elseif (isset($t['url']))
-                    <a href="{{ $t['url'] }}" class="btn btn-sm btn-brand">{{ $t['tombol'] }}</a>
+                    <a href="{{ $t['url'] }}" class="btn btn-brand">{{ $t['tombol'] }}</a>
                 @endisset
             </div>
         @endforeach
@@ -115,10 +115,10 @@
         @if ($bentrokPer[$app->id]->isNotEmpty())
             <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: -6px 0 12px;">
                 @foreach ($bentrokPer[$app->id] as $lawan)
-                    <span class="badge badge-tolak">Bentrok jadwal dengan {{ $lawan->castingProject->nama_produksi }}</span>
+                    <span class="badge badge-urgent">Bentrok jadwal dengan {{ $lawan->castingProject->nama_produksi }}</span>
                 @endforeach
                 @if ($bentrokPasti->isNotEmpty())
-                    <button type="button" class="btn btn-sm btn-danger-outline" onclick="document.getElementById('dialog-batal-bentrok-{{ $app->id }}').showModal()">Batalkan {{ $app->castingProject->nama_produksi }}</button>
+                    <button type="button" class="btn btn-danger-outline" onclick="document.getElementById('dialog-batal-bentrok-{{ $app->id }}').showModal()">Batalkan {{ $app->castingProject->nama_produksi }}</button>
                 @endif
             </div>
             @if ($bentrokPasti->isNotEmpty())
@@ -128,10 +128,12 @@
                         <input type="hidden" name="alasan" value="Bentrok jadwal">
                         <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Batalkan {{ $app->castingProject->nama_produksi }}?</div>
                         <p style="font-size: 13px; margin: 0 0 8px; line-height: 1.5;">Jadwalnya bentrok dengan {{ $bentrokPasti->map(fn ($b) => $b->castingProject->nama_produksi)->join(', ') }} yang sudah pasti. Alasan: Bentrok jadwal.</p>
-                        <p style="font-size: 13px; margin: 0 0 14px; line-height: 1.5; font-weight: 600; color: var(--danger, #d9534f);">Pembatalan ini dihitung sebagai batal mendadak.</p>
+                        <p style="font-size: 13px; margin: 0 0 14px; line-height: 1.5; font-weight: 600; color: var(--danger);">
+                            {{ $app->batalMendadak() ? 'Syuting kurang dari 2 hari lagi, jadi ini dihitung batal mendadak ('.$jumlahBatalMendadak.' dari 3 sebelum akunmu ditandai melanggar).' : 'Syuting masih lebih dari 2 hari lagi, jadi tidak dihitung batal mendadak.' }}
+                        </p>
                         <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                            <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
-                            <button type="submit" class="btn btn-sm btn-danger-outline">Ya, batalkan</button>
+                            <button type="button" class="btn" onclick="this.closest('dialog').close()">Tutup</button>
+                            <button type="submit" class="btn btn-danger-outline">Ya, batalkan</button>
                         </div>
                     </form>
                 </dialog>
@@ -140,24 +142,28 @@
 
         @include('partials.application-progress', ['app' => $app])
 
+        @if (in_array($app->status_partisipasi, ['lolos', 'kontrak_ditandatangani']))
+            <div style="margin-top: 12px;">@include('partials.batal-dialog', ['app' => $app])</div>
+        @endif
+
         @if (in_array($app->status_partisipasi, \App\Models\ProjectApplication::STATUS_LOLOS_KE_ATAS))
             @php
                 $callingan = $app->jam_callingan ?: $app->castingProjectClass?->jam_callingan;
                 $karakter = $app->karakter;
                 $scene = $app->keterangan_scene ?: $app->castingProjectClass?->keterangan_scene;
-                $continuity = ($app->tipe_continuity ?: $app->castingProjectClass?->tipe_continuity) === 'continuity' ? 'Continuity (Multi-day)' : 'Bebas (Single Day)';
+                $continuity = ($app->tipe_continuity ?: $app->castingProjectClass?->tipe_continuity) === 'continuity' ? 'Berlanjut (beberapa hari)' : 'Sehari saja';
                 $shootingDates = $app->castingProject->shootingDates->sortBy('tanggal');
             @endphp
 
             <div style="margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 12px;">
                 <div style="font-size: 13px; font-weight: 600; color: var(--accent-strong); margin-bottom: 8px;">
-                    <i class="ti ti-clock"></i> Callingan & Info On-Site
+                    <i class="ti ti-clock"></i> Jam Kumpul & Info Lokasi
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; font-size: 12.5px; background: var(--bg-secondary, rgba(0,0,0,.03)); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
                     @if ($callingan)
                         <div>
-                            <div style="color: var(--text-muted); font-size: var(--fs-xs); text-transform: uppercase;">Jam Callingan</div>
-                            <div style="font-size: 16px; font-weight: 700; color: var(--danger, #d9534f);">{{ $callingan }} WIB</div>
+                            <div style="color: var(--text-muted); font-size: var(--fs-xs); text-transform: uppercase;">Jam Kumpul</div>
+                            <div style="margin-top: 2px;"><span class="badge badge-urgent" style="font-size: 16px; font-weight: 700;">{{ $callingan }} WIB</span></div>
                             <div style="font-size: var(--fs-xs); color: var(--text-muted);">(Wajib tiba di lokasi)</div>
                         </div>
                     @endif
@@ -182,11 +188,11 @@
                 @if ($shootingDates->contains(fn ($d) => $d->tanggal->isToday()))
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; background: var(--bg-card); border: 1px dashed var(--border-color); border-radius: 8px; padding: 10px 12px;">
                     <div>
-                        <div style="font-size: 12.5px; font-weight: 600;"><i class="ti ti-camera"></i> Absensi Lapangan Hybrid</div>
+                        <div style="font-size: 12.5px; font-weight: 600;"><i class="ti ti-camera"></i> Absen di Lokasi</div>
                         <div style="font-size: var(--fs-xs); color: var(--text-muted);">Ambil selfie langsung di lokasi syuting menggunakan kamera ponsel.</div>
                     </div>
                     <button type="button" class="btn btn-brand" onclick="document.getElementById('dialog-absen-{{ $app->id }}').showModal()">
-                        <i class="ti ti-camera"></i> Absen Selfie On-Site
+                        <i class="ti ti-camera"></i> Absen Selfie di Lokasi
                     </button>
                 </div>
 
@@ -204,9 +210,9 @@
                         </div>
 
                         <div style="margin-bottom: 16px;">
-                            <label>Foto Selfie di Lokasi (Kamera Saja) <span class="wajib" aria-hidden="true">*</span></label>
+                            <label>Foto Selfie di Lokasi <span class="wajib" aria-hidden="true">*</span></label>
                             <input type="file" name="foto" accept="image/*" capture="user" required style="width: 100%;">
-                            <span style="font-size: var(--fs-xs); color: var(--text-muted); display: block; margin-top: 4px;">Ambil foto langsung di lokasi.</span>
+                            <span style="font-size: var(--fs-xs); color: var(--text-muted); display: block; margin-top: 4px;">Ambil foto langsung di lokasi. Di sebagian ponsel kamera akan terbuka otomatis.</span>
                         </div>
 
                         <div style="display: flex; gap: 8px; justify-content: flex-end;">
@@ -246,7 +252,7 @@
         <div style="font-size: 14px; font-weight: 600; margin-bottom: 16px;">Cara Kerja buat Calon Extras</div>
         <div class="step-bar-wrap">
             <div class="step-bar">
-                @foreach (['Daftar akun', 'Lengkapi profil', 'Apply proyek casting terbuka', 'Seleksi Admin & Client', 'Tanda tangan kontrak digital', 'Kerja & dibayar'] as $i => $step)
+                @foreach (['Daftar akun', 'Isi profil', 'Daftar lowongan', 'Seleksi', 'Tanda tangan', 'Kerja & dibayar'] as $i => $step)
                     <div class="step-bar-item">
                         <div class="step-bar-circle">{{ $i + 1 }}</div>
                         <div class="step-bar-label">{{ $step }}</div>
@@ -287,7 +293,7 @@
 <div class="exd-kanan">
 <div class="card" data-dash="casting-call">
     <div class="card-header-row" style="margin-bottom: 4px;">
-        <div class="card-title" style="margin: 0;"><i class="ti ti-microphone"></i> Casting Call Terbuka</div>
+        <div class="card-title" style="margin: 0;"><i class="ti ti-microphone"></i> Lowongan Terbuka</div>
         <a href="{{ route('extras.projects.index') }}" style="font-size: 12.5px; color: var(--accent);">Lihat semua &rarr;</a>
     </div>
     @forelse ($castingCallTerbuka as $project)
@@ -296,7 +302,7 @@
             <div style="min-width: 0; flex: 1;">
                 <div style="font-weight: 600;">
                     {{ $project->nama_produksi }}
-                    @if ($project->isUrgent()) <span class="badge badge-tolak">Dadakan</span> @endif
+                    @if ($project->isUrgent()) <span class="badge badge-urgent">Dadakan</span> @endif
                 </div>
                 @if ($peran)
                     <div style="margin-top: 4px; font-size: 13px;">
@@ -314,7 +320,7 @@
                     · Deadline {{ $project->deadline->translatedFormat('d M Y') }}
                 </div>
             </div>
-            <a href="{{ route('extras.projects.show', $project) }}" class="btn btn-sm btn-brand">Daftar</a>
+            <a href="{{ route('extras.projects.show', $project) }}" class="btn btn-brand">Daftar</a>
         </div>
     @empty
         <div class="dash-sub" style="text-align: center; padding: 12px 0;">Belum ada lowongan terbuka. Nanti kami kabari kalau ada yang baru.</div>
@@ -330,12 +336,12 @@
             @if ($extrasProfile?->grade_saat_ini)
                 <span class="badge badge-aktif" style="font-weight: 600; font-size: 12px;">Grade {{ $extrasProfile->grade_saat_ini }}</span>
             @else
-                <span class="badge badge-pending" style="font-size: var(--fs-xs);">Grade: Belum Dinilai</span>
+                <span class="badge badge-netral" style="font-size: var(--fs-xs);">Grade: Belum Dinilai</span>
             @endif
         </div>
     </div>
     <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4;">
-        Klasifikasi Grade (A/B/C) ditentukan oleh Admin Casting berdasarkan penampilan/look fisik talenta dan divalidasi oleh Client. Riwayat aktivitas dan perubahan status akun Anda tercatat secara transparan di bawah ini.
+        Klasifikasi Grade (A/B/C) ditentukan oleh Admin Casting berdasarkan penampilan/look fisik talenta dan divalidasi oleh Client. Riwayat aktivitas dan perubahan status akun kamu tercatat secara transparan di bawah ini.
     </p>
 
     @if ($aktivitasSaya->isNotEmpty())
@@ -371,7 +377,7 @@
     @foreach ($riwayatAbsensi as $absen)
         @php
             $namaProyek = $absen->projectApplication->castingProject->nama_produksi ?? '-';
-            $tanggal = $absen->eventShootingDate->tanggal->format('d M Y') ?? '-';
+            $tanggal = $absen->eventShootingDate->tanggal->translatedFormat('d M Y') ?? '-';
         @endphp
         <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--border-color); font-size: 12.5px; gap: 8px;">
             <div>
@@ -395,10 +401,12 @@
 </div>
 @endif
 
+@if ($jadwalBulanIni->isNotEmpty())
 <div class="card" data-dash="jadwal">
     <div class="card-title">Jadwal Shooting Bulan Ini</div>
     <x-jadwal-calendar :events="$jadwalBulanIni" :compact="true" />
 </div>
+@endif
 </div>
 </div>
 @endsection

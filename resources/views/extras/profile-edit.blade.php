@@ -34,15 +34,13 @@
 <div class="card" style="max-width: 560px; margin: 0 auto;">
     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
         <div style="font-size: 17px; font-weight: 600;">Lengkapi Profil Kamu</div>
-        <a href="{{ route('extras.profile.show') }}" class="btn btn-sm">Lihat Profil</a>
+        <a href="{{ route('extras.profile.show') }}" class="btn">Lihat Profil</a>
     </div>
     <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 20px; line-height: 1.5;">
         Data profil talenta untuk penilaian Admin dan Client. Isi sesuai kondisi saat ini (dapat diubah sewaktu-waktu).
     </p>
 
-    @if (session('status'))
-        <div class="alert-success">{{ session('status') }}</div>
-    @endif
+    <p class="wajib-ket"><span class="wajib">*</span> wajib diisi untuk bisa mendaftar ke lowongan</p>
 
     {{-- ===== Foto (BJ.2: utama + galeri satu section) ===== --}}
     @php
@@ -127,8 +125,6 @@
     <form method="POST" action="{{ route('extras.profile.update') }}">
         @csrf
         @method('PUT')
-        <p class="wajib-ket"><span class="wajib">*</span> wajib diisi</p>
-
         <div class="profile-section">
             <div class="profile-section-title">Nama & Kontak</div>
 
@@ -152,20 +148,26 @@
                    @class(['input-error' => $errors->has('nomor_wa')])>
             @error('nomor_wa')<span class="field-error">{{ $message }}</span>@enderror
             <p class="field-hint">Buat notifikasi WhatsApp (apply, hasil seleksi, kontrak, pengingat jadwal).</p>
+
+            @if ($profile->rekeningTersamar())
+                <label>Rekening Penerima Honor</label>
+                <p style="margin: 0;">{{ $profile->rekeningTersamar() }}</p>
+                <p class="field-hint">Rekening tersimpan. Untuk mengganti, kamu akan diminta lagi saat lolos di proyek berikutnya.</p>
+            @endif
         </div>
 
         <div class="profile-section">
             <div class="profile-section-title">Data Diri & Ciri Fisik</div>
             <p class="field-hint" style="margin-top: -4px;">Membantu Client mencocokkan kamu dengan kebutuhan peran.</p>
 
-            <label>Usia</label>
-            <input type="number" name="usia" value="{{ old('usia', $profile->usia) }}"
+            <label for="usia">Usia <span class="wajib" aria-hidden="true">*</span></label>
+            <input type="number" name="usia" id="usia" value="{{ old('usia', $profile->usia) }}"
                    placeholder="Contoh: 28" inputmode="numeric" min="1" max="120"
                    @class(['input-error' => $errors->has('usia')])>
             @error('usia')<span class="field-error">{{ $message }}</span>@enderror
 
-            <label>Jenis Kelamin</label>
-            <select name="gender" @class(['input-error' => $errors->has('gender')])>
+            <label for="gender">Jenis Kelamin <span class="wajib" aria-hidden="true">*</span></label>
+            <select name="gender" id="gender"@class(['input-error' => $errors->has('gender')])>
                 <option value="">Pilih salah satu</option>
                 <option value="pria" @selected(old('gender', $profile->gender) === 'pria')>Laki-laki</option>
                 <option value="wanita" @selected(old('gender', $profile->gender) === 'wanita')>Perempuan</option>
@@ -174,7 +176,7 @@
 
             <div class="form-row">
                 <div style="min-width: 130px;">
-                    <label for="tinggi_badan">Tinggi Badan (cm)</label>
+                    <label for="tinggi_badan">Tinggi Badan (cm) <span class="wajib" aria-hidden="true">*</span></label>
                     <input type="number" name="tinggi_badan" id="tinggi_badan" value="{{ old('tinggi_badan', $profile->tinggi_badan) }}"
                            placeholder="Contoh: 165" inputmode="numeric"
                            @class(['input-error' => $errors->has('tinggi_badan')])>

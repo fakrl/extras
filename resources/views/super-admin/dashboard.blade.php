@@ -66,9 +66,9 @@
 
 <div class="card dash-perlu {{ $jumlahTindakan ? '' : 'is-aman' }}">
     <div class="card-title">
-        <i class="ti ti-clipboard-list"></i> Perlu Tindakan
+        <i class="ti ti-clipboard-list"></i> Perlu Tindakan <span class="dash-sub" style="font-weight: 400;">(semua periode)</span>
         @if ($jumlahTindakan)
-            <span class="badge badge-pending" style="margin-left: 8px;">{{ $jumlahTindakan }}</span>
+            <span class="badge badge-netral" style="margin-left: 8px;">{{ $jumlahTindakan }}</span>
         @endif
     </div>
 
@@ -80,7 +80,7 @@
                 <div class="dash-sub">{{ $req->namaClient() }} &bull; {{ $req->client?->name }}</div>
                 <details style="margin-top: 6px; font-size: 13px;">
                     <summary style="cursor: pointer; color: var(--accent);">Lihat brief, kuota, deadline</summary>
-                    <div style="margin-top: 6px;">Kuota: <strong>{{ $req->kuota }} orang</strong> &bull; Deadline: <strong>{{ $req->deadline?->format('d M Y') ?? '-' }}</strong></div>
+                    <div style="margin-top: 6px;">Kuota: <strong>{{ $req->kuota }} orang</strong> &bull; Deadline: <strong>{{ $req->deadline?->translatedFormat('d M Y') ?? '-' }}</strong></div>
                     <div style="margin-top: 4px; white-space: pre-line;">{{ $req->brief_catatan ?: '-' }}</div>
                 </details>
             </div>
@@ -109,7 +109,7 @@
     @foreach ($sengketa as $p)
         <a href="{{ route('payments.show', $p->project_application_id) }}" class="dash-row">
             <div>
-                <span class="badge badge-tolak">Pembayaran disengketakan</span>
+                <span class="badge badge-pending">Pembayaran disengketakan</span>
                 <strong>{{ $p->projectApplication?->extras?->user?->name ?? 'Extras' }}</strong>
                 <div class="dash-sub">{{ $p->projectApplication?->castingProject?->nama_produksi }} &bull; {{ \Illuminate\Support\Str::limit($p->alasan_sengketa, 80) }}</div>
             </div>
@@ -131,9 +131,9 @@
     @if ($tanpaClient)
         <a href="{{ route('admin.projects.index', ['tanpa_client' => 1]) }}" class="dash-row">
             <div>
-                <span class="badge badge-pending">Client belum diisi</span>
+                <span class="badge badge-pending">PIC/Client belum diisi</span>
                 <strong>{{ $tanpaClient }} proyek</strong>
-                <div class="dash-sub">Pilih akun Client di form edit proyek</div>
+                <div class="dash-sub">Pilih Admin PIC dan akun Client di form edit proyek</div>
             </div>
             <span class="dash-sub">Buka &rarr;</span>
         </a>
@@ -191,11 +191,11 @@
     <div class="sa-akun">
         <div class="sa-role-grid">
             @foreach ($namaRole as $role => $label)
-                <a href="{{ route('super-admin.akun.index', ['role' => $role]) }}" class="dash-pill">{{ $label }} <strong>{{ $akunPerRole[$role] ?? 0 }}</strong></a>
+                <a href="{{ route('super-admin.akun.index', ['role' => $role, 'status' => 'aktif']) }}" class="dash-pill" @if ($role === 'super_admin') title="Termasuk akun Anda sendiri, yang tidak tampil di daftar" @endif>{{ $label }} <strong>{{ $akunPerRole[$role] ?? 0 }}</strong>@if ($role === 'super_admin') <span class="dash-sub">(termasuk Anda)</span>@endif</a>
             @endforeach
         </div>
         @if ($clientBelumGantiPassword)
-            <a href="{{ route('super-admin.admins.index', ['role' => 'client']) }}" class="dash-row">
+            <a href="{{ route('super-admin.akun.index', ['role' => 'client', 'ganti_password' => 1]) }}" class="dash-row">
                 <div><span class="badge badge-pending">Perlu tindakan</span> {{ $clientBelumGantiPassword }} akun Client baru belum ganti password</div>
                 <span class="dash-sub">Buka &rarr;</span>
             </a>
@@ -208,7 +208,7 @@
 </div>
 
 <div class="card">
-    <div class="card-title">Yang perlu dicatat</div>
+    <div class="card-title">Total saat ini <span class="dash-sub" style="font-weight: 400;">(semua periode, tidak ikut filter)</span></div>
     <div class="sa-stat-grid">
         <div class="metric-card" style="border: 1px solid var(--border-color);">
             <div class="metric-label">Honor staf belum dibayar</div>

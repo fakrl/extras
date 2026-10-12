@@ -4,9 +4,9 @@
 
 @section('content')
 <p style="color: var(--text-secondary); margin: -8px 0 20px; font-size: 13.5px;">
-    Client: {{ $castingProject->namaClient() }} · Deadline: {{ $castingProject->deadline->format('d M Y') }}
+    Client: {{ $castingProject->namaClient() }} · Deadline: {{ $castingProject->deadline->translatedFormat('d M Y') }}
     @if ($castingProject->isUrgent())
-        <span class="badge badge-tolak">Butuh Dadakan</span>
+        <span class="badge badge-urgent">Butuh Dadakan</span>
     @endif
     @include('partials.label-nego', ['project' => $castingProject])
 </p>
@@ -17,9 +17,9 @@
         @foreach ($castingProject->shootingDates as $date)
             @php($kena = $bentrok->filter(fn ($b) => $b->tanggalBentrok->contains($date->tanggal->toDateString())))
             <li style="margin-bottom: 4px;">
-                {{ $date->tanggal->format('d M Y') }}
+                {{ $date->tanggal->translatedFormat('d M Y') }}
                 @if ($kena->isNotEmpty())
-                    <span class="badge badge-tolak">Bentrok dengan jadwalmu</span>
+                    <span class="badge badge-urgent">Bentrok dengan jadwalmu</span>
                     <span style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $kena->map(fn ($b) => $b->castingProject->nama_produksi.' ('.($b->isPasti() ? 'sudah pasti' : 'masih diproses').')')->join(', ') }}</span>
                 @endif
             </li>
@@ -28,7 +28,7 @@
 </div>
 
 <div class="card" style="margin-bottom: 16px;">
-    <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Karakter yang Dibutuhkan</div>
+    <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Peran yang Dibutuhkan</div>
     @if ($castingProject->classes->isEmpty())
         <p style="margin: 0; font-size: 13.5px; color: var(--text-muted);">Belum ada rincian peran.</p>
     @else
@@ -42,7 +42,7 @@
     <div style="font-size: 14px; font-weight: 500; margin: 8px 0 4px;">Kamu diundang ke proyek ini @if ($undangan->castingProjectClass)sebagai {{ $undangan->castingProjectClass->nama_kelas }}@endif</div>
     <p style="margin: 0 0 12px; font-size: 13.5px; color: var(--text-secondary);">Terima kalau kamu bisa ikut, atau tolak kalau tidak. Setelah diterima, Admin akan mereview profilmu seperti pendaftar lain.</p>
     @if (session('konfirmasi_bentrok'))
-        <div class="alert-danger" style="margin: 0 0 12px;"><span class="badge badge-tolak">Bentrok jadwal</span> {{ session('konfirmasi_bentrok') }} Klik Terima lagi untuk tetap menerima.</div>
+        <div class="alert-danger" style="margin: 0 0 12px;"><span class="badge badge-urgent">Bentrok jadwal</span> {{ session('konfirmasi_bentrok') }} Klik Terima lagi untuk tetap menerima.</div>
     @endif
     @include('partials.undangan-aksi', ['app' => $undangan, 'alasan' => true, 'konfirmasi' => session()->has('konfirmasi_bentrok')])
 </div>
@@ -53,7 +53,7 @@
     @csrf
     @if ($castingProject->classes->isNotEmpty())
         <div class="card" style="margin-bottom: 16px;">
-            <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Pilih Karakter yang Kamu Daftar</div>
+            <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Pilih Peran yang Kamu Daftar</div>
             @foreach ($castingProject->classes as $class)
                 @php($penuh = $class->sisaKuota() === 0)
                 <label style="display: block; margin-bottom: 8px;{{ $penuh ? ' color: var(--text-muted);' : '' }}">
@@ -77,11 +77,11 @@
             @if (old('casting_project_class_id'))
                 <input type="hidden" name="casting_project_class_id" value="{{ old('casting_project_class_id') }}">
             @endif
-            <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;"><span class="badge badge-tolak">Bentrok jadwal</span></div>
+            <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;"><span class="badge badge-urgent">Bentrok jadwal</span></div>
             <p style="font-size: 13px; margin: 0 0 14px; line-height: 1.5;">{{ session('konfirmasi_bentrok') }}</p>
             <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
-                <button type="submit" class="btn btn-sm btn-brand">Tetap daftar</button>
+                <button type="button" class="btn" onclick="this.closest('dialog').close()">Batal</button>
+                <button type="submit" class="btn btn-brand">Tetap daftar</button>
             </div>
         </form>
     </dialog>

@@ -173,7 +173,7 @@ class AdminManagementController extends Controller
             'honor_nominal' => ['nullable', 'numeric', 'min:0'],
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
@@ -181,6 +181,8 @@ class AdminManagementController extends Controller
             'status' => 'aktif',
             'honor_nominal' => $data['role'] === 'super_admin' ? null : ($data['honor_nominal'] ?? null),
         ]);
+
+        ActivityLog::record('CREATE_USER', "{$request->user()->name} membuat akun staf {$user->name} ({$user->label()}).", $user);
 
         return redirect()->route('super-admin.akun.index')->with('status', 'Akun Admin berhasil ditambahkan.');
     }
@@ -230,6 +232,8 @@ class AdminManagementController extends Controller
         $user->save();
         $user->delete();
 
+        ActivityLog::record('DELETE_USER', "Super Admin mengarsipkan akun {$user->name}.", $user);
+
         return back()->with('status', 'Akun berhasil dinonaktifkan/diarsipkan. Data histori tetap tersimpan aman.');
     }
 
@@ -244,6 +248,8 @@ class AdminManagementController extends Controller
         $user->restore();
         $user->status = 'aktif';
         $user->save();
+
+        ActivityLog::record('RESTORE_USER', "Super Admin memulihkan akun {$user->name}.", $user);
 
         return back()->with('status', 'Akun berhasil diaktifkan kembali.');
     }

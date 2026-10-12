@@ -107,10 +107,10 @@
 }
 </style>
 
-<div class="pe {{ $publik ? 'pe-publik' : 'pe-app' }}" data-username="{{ $username }}" data-status="{{ $status }}" data-status-class="{{ $statusClass }}">
+<div class="pe {{ $publik ? 'pe-publik' : 'pe-app' }}" data-username="{{ $username }}" @unless ($mode === 'client') data-status="{{ $status }}" data-status-class="{{ $statusClass }}" @endunless>
     <section class="pe-sec pe-pad">
         <div class="pe-head">
-            <p class="pe-num">Profil Talent / #{{ str_pad($profile->id, 3, '0', STR_PAD_LEFT) }}</p>
+            <p class="pe-num">Profil Talent{!! $mode === 'client' ? '' : e(' / #'.str_pad($profile->id, 3, '0', STR_PAD_LEFT)) !!}</p>
             @if ($mode === 'pemilik')
                 <div class="pe-actions">
                     <button type="button" id="btn-share" class="pe-act"><i class="ti ti-share"></i> Bagikan</button>
@@ -125,7 +125,7 @@
                 @else
                     <i class="ti ti-photo-off" aria-hidden="true"></i>
                 @endif
-                <span class="pe-badge {{ $status === 'Tidak aktif' ? 'is-off' : '' }}">{{ $status }}</span>
+                @unless ($mode === 'client')<span class="pe-badge {{ $status === 'Tidak aktif' ? 'is-off' : '' }}">{{ $status }}</span>@endunless
             </div>
             <div>
                 <p class="pe-label">Extras{{ $usiaTag->isNotEmpty() ? ' · '.$usiaTag->implode(' · ') : '' }}</p>
@@ -201,7 +201,7 @@
 
     <section class="pe-sec pe-grid2">
         <div class="pe-pad">
-            <p class="pe-num">03 / Showreel</p>
+            <p class="pe-num">03 / Video</p>
             @if ($publik)
                 <div class="pe-box"><i class="ti ti-lock" aria-hidden="true"></i><p class="pe-serif" style="font-size: 24px; margin: 0;">Video profil</p><p class="pe-label">Tersedia untuk Client &amp; Admin</p></div>
             @elseif ($videoUrl)
@@ -230,7 +230,7 @@
     <section class="pe-sec pe-pad">
         <div class="pe-gal-head">
             <div>
-                <p class="pe-num">05 / Gallery</p>
+                <p class="pe-num">05 / Galeri</p>
                 <h2 class="pe-gal-title pe-serif">Foto tambahan</h2>
             </div>
             <span class="pe-label" style="margin: 0;">{{ count($fotos) }} / 4 foto</span>

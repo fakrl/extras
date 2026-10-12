@@ -51,17 +51,24 @@
 </div>
 @include('partials.client-baru-modal')
 
+<div class="xfilter" role="group" aria-label="Pintasan jenis akun" style="margin-bottom: 8px;">
+    @foreach (['' => 'Semua', 'admin' => 'Admin', 'korlap' => 'Korlap', 'client' => 'Client', 'extras' => 'Extras', 'super_admin' => 'Super Admin'] as $r => $nama)
+        <a href="{{ route('super-admin.akun.index', $r === '' ? [] : ['role' => $r]) }}" class="btn btn-sm {{ (string) $f['role'] === (string) $r ? 'btn-brand' : '' }}" @if ((string) $f['role'] === (string) $r) aria-current="true" @endif>{{ $nama }}</a>
+    @endforeach
+</div>
+
 @php
     $tagNama = $tagGroups->flatten()->pluck('nama', 'id');
     $roleOpsi = ['' => 'Semua'] + \Illuminate\Support\Arr::except(\App\Models\User::LABELS, 'super_admin') + ['super_admin' => 'Super Admin'];
 @endphp
 <form method="GET" action="{{ route('super-admin.akun.index') }}" class="xtoolbar" id="live-form" data-live>
-    <input type="search" name="q" value="{{ $f['q'] }}" class="xtoolbar-cari" placeholder="Cari nama, username, email, WA…" aria-label="Cari akun">
+    <input type="search" name="q" value="{{ $f['q'] }}" class="xtoolbar-cari" placeholder="Cari akun…" aria-label="Cari nama, username, email, atau WA">
     <x-per-halaman :pilihan="$perPilihan" :nilai="$users->perPage()" />
     <x-filter-panel :filter="[
         $f['role'] ? ['role', 'Role: '.\App\Models\User::LABELS[$f['role']]] : null,
         $f['status'] ? ['status', 'Status: '.ucfirst($f['status'])] : null,
         $f['sedang_aktif'] ? ['sedang_aktif', 'Sedang aktif di proyek'] : null,
+        $f['ganti_password'] ? ['ganti_password', 'Belum ganti password'] : null,
         $f['akan_dihapus'] ? ['akan_dihapus', 'Akan dihapus'] : null,
         $f['favorit'] ? ['favorit', '⭐ Favorit'] : null,
         $f['urut'] ? ['urut', 'Urut: Favorit dulu'] : null,
@@ -71,6 +78,7 @@
         <x-filter-panel.grup label="Role" name="role" :opsi="$roleOpsi" :nilai="$f['role']" baris />
         <x-filter-panel.grup label="Status" name="status" :opsi="['' => 'Semua', 'aktif' => 'Aktif', 'nonaktif' => 'Nonaktif', 'dihapus' => 'Dihapus']" :nilai="$f['status']" />
         <label class="fswitch">Sedang aktif di proyek <input type="checkbox" name="sedang_aktif" value="1" @checked($f['sedang_aktif'])></label>
+        <label class="fswitch">Belum ganti password <input type="checkbox" name="ganti_password" value="1" @checked($f['ganti_password'])></label>
         @if (in_array($f['role'], [null, 'extras'], true))
             <div class="fpanel-sub">
                 <div class="fpanel-judul">Khusus Extras</div>
@@ -85,15 +93,13 @@
                         <x-filter-panel.grup label="" name="tag[]" :opsi="$tags->mapWithKeys(fn ($t) => [$t->id => '#'.$t->nama])->all()" :nilai="$f['tag']" multi />
                     </details>
                 @endforeach
-                @if ($tagRapikan->isNotEmpty())<button type="button" class="fpanel-rapikan" data-rapikan-tag>Rapikan tag ({{ $tagRapikan->count() }})</button>@endif
+                <button type="button" class="fpanel-rapikan" data-rapikan-tag>Kelola tag{{ $tagRapikan->isNotEmpty() ? ' ('.$tagRapikan->count().' perlu dirapikan)' : '' }}</button>
                 <p class="xfilter-note">Menampilkan yang punya <strong>semua</strong> tag terpilih</p>
             </div>
         @endif
     </x-filter-panel>
 </form>
-@if ($tagRapikan->isNotEmpty())
     @include('admin.tags.rapikan', ['tags' => $tagRapikan])
-@endif
 
 <div data-live-target>
 {{-- Form bulk berdiri sendiri, checkbox terhubung lewat atribut form (AY.1: tanpa form bersarang). --}}
@@ -102,12 +108,12 @@
 </form>
 <div id="bulk-toolbar">
     <span id="bulk-count" style="font-size: var(--fs-sm); font-weight: 600;"></span>
-    <select name="action" form="bulk-form" aria-label="Aksi massal">
+    <select name="action" id="bulk-aksi" form="bulk-form" aria-label="Aksi massal" onchange="document.getElementById('bulk-terapkan').disabled = !this.value">
         <option value="">Pilih aksi massal</option>
         <option value="nonaktifkan">Nonaktifkan terpilih</option>
         <option value="aktifkan">Aktifkan terpilih</option>
     </select>
-    <button type="submit" form="bulk-form" class="btn btn-sm btn-brand">Terapkan</button>
+    <button type="submit" id="bulk-terapkan" form="bulk-form" class="btn btn-sm btn-brand" disabled onclick="var s = document.getElementById('bulk-aksi'); var n = document.querySelectorAll('.bulk-cb:checked').length; return !!s.value && n > 0 && confirm((s.value === 'nonaktifkan' ? 'Nonaktifkan ' : 'Aktifkan ') + n + ' akun terpilih?' + (s.value === 'nonaktifkan' ? ' Mereka tidak bisa login sampai diaktifkan lagi.' : ''));">Terapkan</button>
 </div>
 
 <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; font-size: var(--fs-xs); color: var(--text-muted);">
@@ -208,7 +214,13 @@
 <dialog id="add-admin-dialog" class="akun-dialog">
     <form method="POST" action="{{ route('super-admin.admins.store') }}">
         @csrf
+        <input type="hidden" name="_dialog" value="add-admin">
         <div class="akun-dialog-judul">Tambah akun staf</div>
+        @if (old('_dialog') === 'add-admin' && $errors->any())
+            <div class="alert-danger" role="alert">
+                @foreach ($errors->all() as $e)<div>{{ $e }}</div>@endforeach
+            </div>
+        @endif
         <label>Nama <span class="wajib" aria-hidden="true">*</span></label>
         <input type="text" name="name" value="{{ old('name') }}" required>
         <label>Email <span class="wajib" aria-hidden="true">*</span></label>
@@ -235,6 +247,14 @@
 @push('scripts')
 <script>
 (function () {
+    @if (old('_dialog') === 'add-admin' && $errors->any())
+    document.getElementById('add-admin-dialog').showModal();
+    @endif
+    // SA-08: kebab ditutup begitu dialog dibuka
+    document.addEventListener('click', function (e) {
+        var b = e.target.closest('.akun-kebab-isi button[onclick]');
+        if (b) b.closest('details').removeAttribute('open');
+    });
     // delegasi di document: daftar bisa diganti live search (AJAX) tanpa kehilangan listener
     function sync() {
         var toolbar = document.getElementById('bulk-toolbar');

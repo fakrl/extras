@@ -11,7 +11,7 @@ class FeeNegotiationController extends Controller
 {
     public function show(ProjectApplication $application)
     {
-        $application->load('feeNegotiations', 'extras', 'castingProject.classes');
+        $application->load('feeNegotiations', 'extras.user', 'castingProject.classes', 'castingProjectClass');
 
         return view('admin.negotiations.show', compact('application'));
     }
@@ -28,7 +28,7 @@ class FeeNegotiationController extends Controller
         }
 
         $data = $request->validate([
-            'nominal' => ['required', 'numeric', 'min:0'],
+            'nominal' => ['required', 'numeric', 'min:1'],
             'catatan' => ['nullable', 'string', 'max:500'],
         ]);
 
@@ -55,13 +55,13 @@ class FeeNegotiationController extends Controller
         }
 
         $data = $request->validate([
-            'nominal' => ['required', 'numeric', 'min:0'],
+            'nominal' => ['required', 'numeric', 'min:1'],
             'catatan' => ['nullable', 'string', 'max:500'],
         ]);
 
         $application->counterFee('admin', $data['nominal'], $data['catatan'] ?? null);
 
-        return back()->with('status', 'Counter fee terkirim.');
+        return back()->with('status', 'Tawaran balik terkirim.');
     }
 
     public function terima(Request $request, ProjectApplication $application): RedirectResponse
@@ -71,7 +71,7 @@ class FeeNegotiationController extends Controller
         }
 
         $data = $request->validate([
-            'nominal' => ['required', 'numeric', 'min:0'],
+            'nominal' => ['required', 'numeric', 'min:1'],
         ]);
 
         $application->terimaFee('admin', $data['nominal']);

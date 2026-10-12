@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Casting Call')
+@section('title', 'Lowongan Casting')
 
 @section('content')
-<div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">Casting Call</div>
+<div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">Lowongan Casting</div>
 <p style="color: var(--text-secondary); margin: 0 0 16px; font-size: 13.5px;">Daftar proyek casting yang sedang mencari Extras.</p>
 
 <div style="position: relative; margin-bottom: 16px;">
@@ -23,11 +23,11 @@
             <div style="font-size: 15px; font-weight: 600;">
                 {{ $project->nama_produksi }}
                 @if ($project->isUrgent())
-                    <span class="badge badge-tolak">Butuh Dadakan</span>
+                    <span class="badge badge-urgent">Butuh Dadakan</span>
                 @endif
                 @include('partials.label-nego', ['project' => $project])
             </div>
-            <span style="color: var(--text-muted); font-size: 13px;">Deadline: {{ $project->deadline->format('d M Y') }}</span>
+            <span style="color: var(--text-muted); font-size: 13px;">Deadline: {{ $project->deadline->translatedFormat('d M Y') }}</span>
         </div>
         <p style="margin: 8px 0 4px; font-size: 13.5px;">Client: {{ $project->namaClient() }}</p>
         <p style="margin: 0 0 12px; font-size: 12.5px; color: var(--text-muted);">
@@ -36,15 +36,15 @@
         @if ($project->classes->isNotEmpty())
             <div style="margin-bottom: 14px;">@include('partials.peran-lowongan', ['classes' => $project->classes])</div>
         @endif
-        <a href="{{ route('extras.projects.show', $project) }}" class="btn btn-brand btn-sm">Lihat Detail & Daftar</a>
+        <a href="{{ route('extras.projects.show', $project) }}" class="btn btn-brand">Lihat Detail & Daftar</a>
     </div>
 @empty
-    <p style="color: var(--text-muted);">Belum ada casting call yang dibuka saat ini.</p>
+    <p style="color: var(--text-muted);">Belum ada lowongan yang dibuka saat ini.</p>
 @endforelse
 
 @if ($selesai->isNotEmpty())
     <div style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin: 24px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border-color);">Sudah Selesai</div>
-    @foreach ($selesai as $project)
+    @foreach ($selesai->take(5) as $project)
         <div class="card casting-card-item" style="margin-bottom: 14px; opacity: 0.7;" data-search="{{ strtolower($project->nama_produksi . ' ' . $project->namaClient()) }}">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div style="font-size: 15px; font-weight: 600;">{{ $project->nama_produksi }}</div>
@@ -54,9 +54,12 @@
             <p style="margin: 0 0 12px; font-size: 12.5px; color: var(--text-muted);">
                 Kuota terisi: {{ $project->terisi }}/{{ $project->kuota }}
             </p>
-            <a href="{{ route('extras.projects.show', $project) }}" class="btn btn-sm">Lihat Detail</a>
+            <a href="{{ route('extras.projects.show', $project) }}" class="btn">Lihat Detail</a>
         </div>
     @endforeach
+    @if ($selesai->count() > 5)
+        <p style="color: var(--text-muted); font-size: 12.5px;">Menampilkan 5 dari {{ $selesai->count() }} lowongan yang sudah selesai.</p>
+    @endif
 @endif
 </div>
 

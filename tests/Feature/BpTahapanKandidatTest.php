@@ -74,7 +74,7 @@ class BpTahapanKandidatTest extends TestCase
         $this->isiData();
         $t = AdminRingkasan::tahapan();
 
-        $this->assertSame(['Ajuan', 'Nego Fee', 'Dipilih Client', 'Kontrak', 'Selesai'], array_column($t, 'label'));
+        $this->assertSame(['Ajuan', 'Nego Fee', 'Dipilih Client', 'Kontrak', 'Pembayaran'], array_column($t, 'label'));
         $this->assertSame([1, 4, 1, 2, 2], array_column($t, 'jumlah'));
         $this->assertSame([1, 3, 0, 1, 1], array_column($t, 'perlu'));
 
@@ -142,7 +142,7 @@ class BpTahapanKandidatTest extends TestCase
     public function test_tahap_kosong(): void
     {
         $this->actingAs($this->admin)->get(route('admin.dashboard'))->assertOk()
-            ->assertSee('Nggak ada kandidat di tahap ini.');
+            ->assertSee('Belum ada kandidat di tahap ini.');
     }
 
     public function test_pratinjau_monitoring_pakai_tahapan_sama(): void
@@ -150,7 +150,7 @@ class BpTahapanKandidatTest extends TestCase
         $this->isiData();
         $sa = User::factory()->create(['role' => 'super_admin']);
 
-        $res = $this->actingAs($sa)->get(route('super-admin.monitoring.admin'))->assertOk()->assertSee('3 perlu kamu');
+        $res = $this->actingAs($sa)->get(route('super-admin.monitoring.admin'))->assertOk()->assertSee('3 perlu tindakan');
         $this->assertSame(array_column(AdminRingkasan::tahapan(), 'perlu'), array_column($res->viewData('tahapan'), 'perlu'));
     }
 }
