@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Daftar Extras | SIM Casting JBTB')
+@section('title', 'Daftar Extras | JBTB Casting')
 
 @section('content')
 <h1 class="auth-title">Daftar sebagai Extras</h1>
@@ -18,19 +18,19 @@
 
 <form method="POST" action="{{ route('register') }}">
     @csrf
-    <label>Nama Lengkap <span class="wajib" aria-hidden="true">*</span></label>
-    <input type="text" name="name" value="{{ old('name') }}" required>
+    <label for="reg-name">Nama Lengkap <span class="wajib" aria-hidden="true">*</span></label>
+    <input type="text" id="reg-name" name="name" value="{{ old('name') }}" required autocomplete="name">
 
-    <label>Email <span class="wajib" aria-hidden="true">*</span></label>
-    <input type="email" name="email" value="{{ old('email') }}" required>
+    <label for="reg-email">Email <span class="wajib" aria-hidden="true">*</span></label>
+    <input type="email" id="reg-email" name="email" value="{{ old('email') }}" required autocomplete="email">
 
-    <x-password-input name="password" label="Password" :minlength="8" />
-    <x-password-input name="password_confirmation" label="Konfirmasi Password" :minlength="8" />
+    <x-password-input name="password" label="Kata Sandi" :minlength="8" hint="Minimal 8 karakter." autocomplete="new-password" />
+    <x-password-input name="password_confirmation" label="Konfirmasi Kata Sandi" :minlength="8" autocomplete="new-password" />
 
     <div class="checkbox-row">
-        <input type="checkbox" name="setuju_privasi" id="setuju_privasi" required>
         <label for="setuju_privasi">
-            Saya sudah membaca dan menyetujui <a href="{{ route('privacy-policy') }}" target="_blank">Kebijakan Privasi</a>. <span class="wajib" aria-hidden="true">*</span>
+            <input type="checkbox" name="setuju_privasi" id="setuju_privasi" required>
+            <span>Saya sudah membaca dan menyetujui <a href="{{ route('privacy-policy') }}" target="_blank">Kebijakan Privasi</a>. <span class="wajib" aria-hidden="true">*</span></span>
         </label>
     </div>
 

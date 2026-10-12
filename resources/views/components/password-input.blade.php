@@ -1,4 +1,4 @@
-@props(['name' => 'password', 'label' => 'Password', 'required' => true, 'minlength' => null])
+@props(['name' => 'password', 'label' => 'Kata Sandi', 'required' => true, 'minlength' => null, 'hint' => null])
 
 @php
     $inputId = 'pwd-' . $name;
@@ -13,13 +13,17 @@
             name="{{ $name }}"
             @if ($required) required @endif
             @if ($minlength) minlength="{{ $minlength }}" @endif
+            @if ($hint) aria-describedby="{{ $inputId }}-hint" @endif
             {{ $attributes }}
         >
-        <button type="button" class="password-toggle" onclick="togglePasswordField(this)" tabindex="-1" aria-label="Tampilkan/sembunyikan password">
-            <i class="ti ti-eye"></i>
+        <button type="button" class="password-toggle" onclick="togglePasswordField(this)" aria-label="Tampilkan kata sandi" aria-pressed="false">
+            <i class="ti ti-eye" aria-hidden="true"></i>
         </button>
     </div>
 </div>
+@if ($hint)
+    <p class="field-hint" id="{{ $inputId }}-hint">{{ $hint }}</p>
+@endif
 
 @once
     @push('scripts')
@@ -30,6 +34,8 @@
             var isHidden = input.type === 'password';
             input.type = isHidden ? 'text' : 'password';
             icon.className = isHidden ? 'ti ti-eye-off' : 'ti ti-eye';
+            btn.setAttribute('aria-pressed', isHidden);
+            btn.setAttribute('aria-label', isHidden ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
         }
     </script>
     @endpush

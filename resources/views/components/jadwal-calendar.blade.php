@@ -55,7 +55,8 @@ button.cal-day { border: none; margin: 0; padding: 0; font: inherit; color: inhe
 .cal-info strong, .cal-meta { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cal-meta { color: var(--text-secondary); font-size: 12px; }
 .cal-aksi { display: flex; gap: 4px; flex-shrink: 0; }
-.cal-aksi .btn { min-height: 28px; padding: 0 8px; font-size: 11.5px; }
+.cal-aksi .btn { min-height: 32px; padding: 0 8px; font-size: var(--fs-xs); }
+@media (max-width: 860px) { .cal-aksi .btn { min-height: 44px; } }
 </style>
 @endpush
 @endonce
