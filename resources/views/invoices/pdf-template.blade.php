@@ -16,19 +16,17 @@
     <p>No. Proyek: {{ $castingProject->kode_proyek }}<br>Produksi: {{ $castingProject->nama_produksi }}<br>Client: {{ $castingProject->namaClient() }}</p>
 
     <table>
-        <thead><tr><th>Kelas</th><th>Kuota</th><th>Budget per Orang</th><th>Subtotal</th></tr></thead>
+        <thead><tr><th>Kelas</th><th>Kuota</th></tr></thead>
         <tbody>
             @foreach ($rincian->rows as $row)
                 <tr>
                     <td>{{ $row->nama_kelas }}</td>
                     <td>{{ $row->kuota_kelas }}</td>
-                    <td>Rp {{ number_format($row->budget_client, 0, ',', '.') }}</td>
-                    <td>Rp {{ number_format($row->subtotal, 0, ',', '.') }}</td>
                 </tr>
             @endforeach
             <tr>
-                <td colspan="3" style="text-align:right; font-weight:bold;">Total</td>
-                <td style="font-weight:bold;">Rp {{ number_format($rincian->total, 0, ',', '.') }}</td>
+                <td style="text-align:right; font-weight:bold;">Nominal Invoice</td>
+                <td style="font-weight:bold;">Rp {{ number_format((float) ($invoice->nominal ?? $rincian->total), 0, ',', '.') }}</td>
             </tr>
         </tbody>
     </table>

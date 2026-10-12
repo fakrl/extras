@@ -27,9 +27,10 @@ class UserManagementController extends Controller
             ->paginate(PerHalaman::dari($request, $perPilihan))
             ->withQueryString();
         $tagGroups = ExtrasCategory::perGrup();
-        $mangkrakCount = User::mangkrak()->count();
+        $mangkrakDaftar = User::mangkrak()->orderBy('created_at')->get(['id', 'name', 'username', 'email', 'created_at']);
+        $mangkrakCount = $mangkrakDaftar->count();
 
-        return view('admin.akun.extras', compact('extras', 'f', 'daftar', 'perPilihan', 'tagGroups', 'mangkrakCount') + ['tagRapikan' => ExtrasCategory::perluDirapikan()->withCount('extrasProfiles')->orderBy('nama')->get()]);
+        return view('admin.akun.extras', compact('extras', 'f', 'daftar', 'perPilihan', 'tagGroups', 'mangkrakCount', 'mangkrakDaftar') + ['tagRapikan' => ExtrasCategory::perluDirapikan()->withCount('extrasProfiles')->orderBy('nama')->get()]);
     }
 
     /** RF-52: ekspor sesuai filter yang aktif di Kelola Akun ▸ Extras. */

@@ -85,6 +85,8 @@ class OperationalModulesTest extends TestCase
         $this->assertSame('ditutup', $project->status);
 
         // Super Admin ACC proyek
+        $project->classes()->create(['nama_kelas' => 'Talent Muda', 'budget_client' => 400000, 'kuota_kelas' => 8]);
+        $project->shootingDates()->create(['tanggal' => today()->addDays(12)]);
         $accResponse = $this->actingAs($superAdmin)->post(route('super-admin.projects.acc', $project));
         $accResponse->assertRedirect();
 
