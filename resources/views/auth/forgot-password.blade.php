@@ -1,10 +1,10 @@
 @extends('layouts.auth')
 
-@section('title', 'Lupa Password | SIM Casting JBTB')
+@section('title', 'Lupa Kata Sandi | JBTB Casting')
 
 @section('content')
-<h1 class="auth-title">Lupa Password</h1>
-<p class="auth-subtitle">Masukkan email atau username akunmu, kami kirim link untuk atur ulang password.</p>
+<h1 class="auth-title">Lupa Kata Sandi</h1>
+<p class="auth-subtitle">Masukkan email atau username akunmu, kami kirim link untuk atur ulang kata sandi.</p>
 
 @if (session('status'))
     <div class="alert-success">{{ session('status') }}</div>
@@ -20,8 +20,8 @@
 
 <form method="POST" action="{{ route('password.email') }}">
     @csrf
-    <label>Email atau username <span class="wajib" aria-hidden="true">*</span></label>
-    <input type="text" name="email" value="{{ old('email') }}" required autofocus>
+    <label for="forgot-email">Email atau username <span class="wajib" aria-hidden="true">*</span></label>
+    <input type="text" id="forgot-email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username">
 
     <button type="submit" class="btn-brand">Kirim Link Reset</button>
 </form>

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="id" data-theme="light">
 <head>
-    <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme-v2') || 'light');</script>
     <meta charset="utf-8">
+    <script>try { document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme-v2') || 'light'); } catch (e) {}</script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="dark light">
-    <title>{{ $valid ? $project->nama_produksi : 'Pendaftaran Ditutup' }} | SIM Casting JBTB</title>
+    <title>{{ $valid ? $project->nama_produksi : 'Pendaftaran Ditutup' }} | JBTB Casting</title>
     @if ($valid)
         @include('partials.og-meta', [
             'ogTitle' => $project->nama_produksi,
@@ -19,14 +19,21 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
     @include('partials.theme-style')
     <style>
-        .wrap { max-width: 560px; margin: 0 auto; padding: 48px 24px 80px; }
-        .top-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        a { color: var(--accent-strong); }
+        :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .pub-top, .pub-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 20px; border-bottom: 1px solid var(--border-color); }
+        .pub-foot { border-bottom: none; border-top: 1px solid var(--border-color); font-size: var(--fs-xs); color: var(--text-muted); flex-wrap: wrap; }
+        .pub-brand { display: flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 700; font-size: 15px; color: var(--text-primary) !important; text-decoration: none; }
         .logo {
-            width: 48px; height: 48px; border-radius: 12px; background: var(--accent); color: var(--accent-on);
-            display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 22px;
+            width: 32px; height: 32px; border-radius: 8px; background: var(--accent); color: var(--accent-on);
+            display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px;
         }
+        .pub-nav { display: flex; align-items: center; gap: 4px; }
+        .pub-nav a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 10px; font-size: 13px; text-decoration: none; }
+        .pub-foot a { display: inline-flex; align-items: center; min-height: 44px; }
+        .wrap { max-width: 560px; margin: 0 auto; padding: 32px 24px 64px; }
         .theme-toggle-btn {
-            width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
+            width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer;
             background: var(--bg-card-hover); color: var(--accent-strong);
             display: flex; align-items: center; justify-content: center; font-size: 16px;
         }
@@ -46,29 +53,29 @@
         .btn-brand:hover { filter: brightness(1.08); }
         .btn-outline { background: transparent; color: var(--text-primary); border: 1px solid var(--border-color); }
         .btn-outline:hover { background: var(--bg-card); }
-        .badge { display: inline-flex; padding: 3px 10px; border-radius: var(--radius-sm); border: 1px solid transparent; font-size: var(--fs-xs); font-weight: 500; }
-        .badge-info { background: rgba(29,78,216,0.12); border-color: rgba(29,78,216,0.35); color: var(--info); }
-        .badge-netral { background: rgba(148,163,184,0.18); border-color: rgba(148,163,184,0.4); color: var(--text-secondary); }
         p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
     </style>
 </head>
 <body>
-    <div class="wrap">
-        <div class="top-row">
-            <div class="logo">J</div>
-            <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Ganti tema">
-                <i class="ti ti-moon" id="theme-icon"></i>
+    <header class="pub-top">
+        <a href="{{ route('home') }}" class="pub-brand"><span class="logo" aria-hidden="true">J</span> JBTB Casting</a>
+        <nav class="pub-nav" aria-label="Menu">
+            <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Ganti tema" aria-pressed="false">
+                <i class="ti ti-moon" id="theme-icon" aria-hidden="true"></i>
             </button>
-        </div>
+            <a href="{{ route('home') }}"><i class="ti ti-arrow-left" aria-hidden="true"></i> Beranda</a>
+        </nav>
+    </header>
+    <main class="wrap">
 
         @if (! $valid)
             <h1>Pendaftaran sudah tidak dibuka</h1>
             <p>Link ini sudah tidak menerima pendaftaran. Kuota mungkin sudah penuh, batas waktu terlewati, atau proyek telah ditutup.</p>
-            <a href="{{ route('home') }}" class="btn-outline">Ke Beranda SIM Casting JBTB</a>
+            <a href="{{ route('home') }}" class="btn-outline">Ke Beranda dan lihat lowongan lain</a>
         @else
             <h1>{{ $project->nama_produksi }}</h1>
             <p style="margin: 0 0 8px;">@include('partials.label-nego', ['project' => $project])</p>
-            <p class="meta">Deadline pendaftaran: {{ $project->deadline->format('d M Y') }} · Kuota: {{ $project->kuota }} orang</p>
+            <p class="meta">Deadline pendaftaran: {{ $project->deadline->translatedFormat('d M Y') }} · Kuota: {{ $project->kuota }} orang</p>
             {{-- lokasi disembunyikan sebelum lolos (AZ.1, keputusan akhir D17) --}}
 
             <div class="card">
@@ -89,19 +96,25 @@
                 </div>
             @endif
         @endif
-    </div>
+    </main>
+
+    <footer class="pub-foot">
+        <span>&copy; {{ date('Y') }} JBTB Casting</span>
+        <a href="{{ route('privacy-policy') }}">Kebijakan Privasi</a>
+    </footer>
 
     <script>
         (function () {
             var icon = document.getElementById('theme-icon');
-            var current = document.documentElement.getAttribute('data-theme');
-            icon.className = current === 'dark' ? 'ti ti-sun' : 'ti ti-moon';
+            var tema = document.getElementById('theme-toggle');
+            function ikon(t) { icon.className = t === 'dark' ? 'ti ti-sun' : 'ti ti-moon'; tema.setAttribute('aria-pressed', t === 'dark'); }
+            ikon(document.documentElement.getAttribute('data-theme'));
 
-            document.getElementById('theme-toggle').addEventListener('click', function () {
+            tema.addEventListener('click', function () {
                 var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
                 document.documentElement.setAttribute('data-theme', next);
-                localStorage.setItem('jbtb-theme-v2', next);
-                icon.className = next === 'dark' ? 'ti ti-sun' : 'ti ti-moon';
+                try { localStorage.setItem('jbtb-theme-v2', next); } catch (e) {}
+                ikon(next);
             });
         })();
     </script>
