@@ -95,7 +95,7 @@ class FeeNegotiationController extends Controller
         $this->pastikanMilikSendiri($request, $application);
 
         $data = $request->validate([
-            'alasan' => ['required', 'string'],
+            'alasan' => ['required', 'string', 'max:500'],
         ]);
 
         try {

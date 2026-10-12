@@ -81,6 +81,8 @@
                     <th style="text-align: left; padding: 8px 0;">Status</th>
                     <th style="text-align: left; padding: 8px 0;">Mulai</th>
                     <th style="text-align: left; padding: 8px 0;">Honor</th>
+                    <th style="text-align: left; padding: 8px 0;">Status Bayar</th>
+                    <th style="text-align: left; padding: 8px 0;">Slip</th>
                 </tr>
             </thead>
             <tbody>
@@ -90,6 +92,8 @@
                     <td style="padding: 8px 0;"><span class="badge {{ $a->status_log === 'berjalan' ? 'badge-info' : 'badge-aktif' }}">{{ ucfirst($a->status_log) }}</span></td>
                     <td style="padding: 8px 0;">{{ $a->created_at->translatedFormat('d M') }}</td>
                     <td style="padding: 8px 0;">@if ($a->payroll) Rp {{ number_format($a->payroll->nominalTotal(), 0, ',', '.') }} @else - @endif</td>
+                    <td style="padding: 8px 0;">@if ($a->payroll) <span class="badge {{ $a->payroll->isDibayar() ? 'badge-aktif' : 'badge-netral' }}">{{ $a->payroll->isDibayar() ? 'Dibayar' : 'Belum diproses' }}</span> @else - @endif</td>
+                    <td style="padding: 8px 0;">@if ($a->payroll?->pdf_slip_path) <a href="{{ route('admin.payrolls.slip', $a->payroll) }}" class="btn btn-sm">Unduh Slip</a> @else - @endif</td>
                 </tr>
                 @endforeach
             </tbody>
