@@ -159,6 +159,22 @@ class SuperAdminAdminManagementTest extends TestCase
         $this->assertNull($newUser->honor_nominal);
     }
 
+    public function test_tambah_staf_pakai_password_sementara_wajib_ganti_dan_kredensial(): void
+    {
+        $sa = User::factory()->create(['role' => 'super_admin']);
+
+        $this->actingAs($sa)->post(route('super-admin.admins.store'), [
+            'name' => 'Staf Baru',
+            'email' => 'staf-baru@example.com',
+            'role' => 'admin',
+        ])->assertRedirect(route('super-admin.akun.index'))
+            ->assertSessionHas('kredensial', fn ($k) => $k['username'] === 'staf-baru@example.com' && strlen($k['password']) >= 8);
+
+        $staf = User::where('email', 'staf-baru@example.com')->first();
+        $this->assertTrue((bool) $staf->wajib_ganti_password);
+        $this->assertDatabaseHas('activity_logs', ['action' => 'CREATE_USER']);
+    }
+
     public function test_akun_super_admin_biasa_gagal_bikin_super_admin_baru(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin', 'is_protected' => false]);
