@@ -3,10 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Notifications\InAppNotification;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 
 class NotificationController extends Controller
 {
+    public function index(): View
+    {
+        return view('notifikasi', ['notifs' => auth()->user()->notifications()->paginate(20)]);
+    }
+
     public function readAll(): RedirectResponse
     {
         auth()->user()->unreadNotifications->markAsRead();

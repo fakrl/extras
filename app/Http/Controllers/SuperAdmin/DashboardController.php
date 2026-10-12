@@ -108,6 +108,9 @@ class DashboardController extends Controller
         if ($castingProject->client_request_status !== 'menunggu_acc') {
             return back()->with('error', 'Pengajuan ini sudah diproses sebelumnya.');
         }
+        if (! $castingProject->classes()->exists() || ! $castingProject->shootingDates()->exists()) {
+            return back()->with('error', 'Lengkapi peran dan tanggal dulu.');
+        }
         $castingProject->update([
             'client_request_status' => 'disetujui',
             'status' => 'dibuka',

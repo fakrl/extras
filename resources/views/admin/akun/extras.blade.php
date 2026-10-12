@@ -14,6 +14,14 @@
     .akx-nama small { display: block; color: var(--text-muted); font-size: var(--fs-xs); overflow-wrap: anywhere; }
     .akx-fav { margin: 0; }
     .akx-fav button { background: none; border: 0; cursor: pointer; font-size: 18px; width: 40px; height: 40px; color: var(--text-muted); padding: 0; }
+    @media (max-width: 640px) {
+        .akx-tabel, .akx-tabel tbody, .akx-tabel tr, .akx-tabel td { display: block; width: 100%; }
+        .akx-tabel thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+        .akx-tabel tr { padding: 12px 14px; border-bottom: 1px solid var(--border-color); }
+        .akx-tabel td { border: 0; padding: 4px 0; white-space: normal !important; }
+        .akx-tabel td[data-label]::before { content: attr(data-label) ": "; color: var(--text-muted); font-size: var(--fs-xs); }
+        .akx-tabel td:last-child { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 8px; }
+    }
 </style>
 @endpush
 
@@ -31,11 +39,24 @@
                 Ditemukan <strong>{{ $mangkrakCount }}</strong> akun extras yang terdaftar lebih dari 30 hari lalu dengan profil tidak lengkap dan 0 riwayat apply proyek.
             </div>
         </div>
-        <form method="POST" action="{{ route('admin.users.prune') }}" onsubmit="return confirm('Hapus permanen {{ $mangkrakCount }} akun extras mangkrak (lebih dari 30 hari, profil tidak lengkap, belum pernah mendaftar)? Tindakan ini tidak bisa dibatalkan.')">
-            @csrf
-            <button type="submit" class="btn btn-danger-outline">Bersihkan {{ $mangkrakCount }} Akun Mangkrak</button>
-        </form>
+        <button type="button" class="btn btn-danger-outline" onclick="document.getElementById('dialog-prune').showModal()">Bersihkan {{ $mangkrakCount }} Akun Mangkrak</button>
     </div>
+    <dialog id="dialog-prune" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 460px; width: 90%;">
+        <form method="POST" action="{{ route('admin.users.prune') }}" style="padding: 18px;">
+            @csrf
+            <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Hapus {{ $mangkrakCount }} akun mangkrak secara permanen?</div>
+            <p style="font-size: 13px; margin: 0 0 8px;">Akun ini terdaftar lebih dari 30 hari lalu, profil tidak lengkap, dan belum pernah mendaftar proyek. Penghapusan <strong>permanen, tidak bisa dibatalkan</strong>.</p>
+            <ul style="max-height: 200px; overflow-y: auto; margin: 0 0 12px; padding-left: 18px; font-size: 12.5px;">
+                @foreach ($mangkrakDaftar as $m)
+                    <li>{{ $m->name }} <span style="color: var(--text-muted);">({{ $m->email ?: $m->username }}, daftar {{ $m->created_at->translatedFormat('d M Y') }})</span></li>
+                @endforeach
+            </ul>
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
+                <button type="submit" class="btn btn-sm btn-danger-outline">Hapus Permanen {{ $mangkrakCount }} Akun</button>
+            </div>
+        </form>
+    </dialog>
 @endif
 
 <form method="GET" action="{{ route('admin.akun.extras') }}" class="xtoolbar" id="live-form" data-live>
@@ -86,7 +107,7 @@
 @if ($daftar)
     <div class="card" style="padding: 0;">
     <div class="table-container">
-    <table>
+    <table class="akx-tabel">
         <thead><tr><th>Extras</th><th>Status</th><th>Grade</th><th>Tag</th><th>Terpilih</th><th>Batal mendadak</th><th><span class="sr-only">Favorit</span></th><th></th></tr></thead>
         <tbody>
             @forelse ($extras as $ex)
@@ -109,11 +130,11 @@
                             </div>
                         </div>
                     </td>
-                    <td><span class="badge {{ $ex->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">{{ ucfirst($ex->status) }}</span></td>
-                    <td>{{ $p?->grade_saat_ini ?? '–' }}</td>
-                    <td>{{ $p?->categories->take(3)->map(fn ($t) => '#'.$t->nama)->implode(' ') ?: '–' }}@if (($p?->categories->count() ?? 0) > 3) +{{ $p->categories->count() - 3 }}@endif</td>
-                    <td>{{ $p->terpilih_count ?? 0 }}</td>
-                    <td>{{ $p->cancel_count ?? 0 }}</td>
+                    <td data-label="Status"><span class="badge {{ $ex->status === 'aktif' ? 'badge-aktif' : 'badge-tolak' }}">{{ ucfirst($ex->status) }}</span></td>
+                    <td data-label="Grade">{{ $p?->grade_saat_ini ?? '–' }}</td>
+                    <td data-label="Tag">{{ $p?->categories->take(3)->map(fn ($t) => '#'.$t->nama)->implode(' ') ?: '–' }}@if (($p?->categories->count() ?? 0) > 3) +{{ $p->categories->count() - 3 }}@endif</td>
+                    <td data-label="Terpilih">{{ $p->terpilih_count ?? 0 }}</td>
+                    <td data-label="Batal mendadak">{{ $p->cancel_count ?? 0 }}</td>
                     <td>
                         @if ($p)
                             <form method="POST" action="{{ route('admin.extras.favorit', $ex) }}" class="akx-fav" id="fav-{{ $p->id }}">
