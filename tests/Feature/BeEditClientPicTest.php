@@ -57,9 +57,9 @@ class BeEditClientPicTest extends TestCase
             ->assertSessionHasErrors(['client_id' => 'Pilih akun Client proyek ini dulu (proyek lama belum punya Client).']);
 
         $this->actingAs($sa)->get(route('super-admin.dashboard'))
-            ->assertSee('Client belum diisi')->assertSee(route('admin.projects.index', ['tanpa_client' => 1]), false);
+            ->assertSee('PIC/Client belum diisi')->assertSee(route('admin.projects.index', ['tanpa_client' => 1]), false);
 
         $this->actingAs($sa)->get(route('admin.projects.index', ['tanpa_client' => 1]))
-            ->assertSee('Proyek Yatim')->assertSee('Client belum diisi')->assertDontSee('Proyek Lengkap');
+            ->assertSee('Proyek Yatim')->assertSee('Tanpa PIC/Client')->assertDontSee('Proyek Lengkap');
     }
 }

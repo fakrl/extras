@@ -74,7 +74,7 @@ class PaymentController extends Controller
         $application->loadMissing('extras.user', 'castingProject');
         $extrasUser = $application->extras->user;
         $judulPay = 'Pembayaran Ditransfer';
-        $pesanPay = "Honor kamu untuk proyek {$application->castingProject->namaKode()} sudah ditransfer. Silakan konfirmasi penerimaan.";
+        $pesanPay = "Honor kamu untuk proyek {$application->castingProject->nama_produksi} sudah ditransfer. Silakan konfirmasi penerimaan.";
         try {
             $extrasUser->notify(new InAppNotification($judulPay, $pesanPay, route('payments.show', $application)));
         } catch (\Throwable) {
@@ -213,7 +213,7 @@ class PaymentController extends Controller
         $application->loadMissing('extras.user');
         $application->extras->user->kabari(
             'Admin Menanggapi Laporanmu',
-            "Admin menanggapi laporan pembayaran di proyek {$application->castingProject->namaKode()}. Silakan cek dan konfirmasi.",
+            "Admin menanggapi laporan pembayaran di proyek {$application->castingProject->nama_produksi}. Silakan cek dan konfirmasi.",
             route('payments.show', $application),
             jenis: 'sengketa_ditanggapi',
         );

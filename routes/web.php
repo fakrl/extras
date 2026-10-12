@@ -115,6 +115,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/ubah-password', [UbahPasswordController::class, 'update'])->name('ubah-password.update');
     Route::post('/validate-current-password', [UbahPasswordController::class, 'validateCurrentPassword'])->name('ubah-password.validate');
     Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
+    Route::get('/notifications/{id}/baca', [NotificationController::class, 'baca'])->name('notifications.baca');
     Route::get('/tag/cari', [TagController::class, 'cari'])->name('tag.cari');
 });
 

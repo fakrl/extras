@@ -21,6 +21,7 @@ class FilterAkun
             'role' => array_key_exists($request->query('role'), User::LABELS) ? $request->query('role') : null,
             'status' => in_array($request->query('status'), ['aktif', 'nonaktif', 'dihapus'], true) ? $request->query('status') : null,
             'sedang_aktif' => $request->boolean('sedang_aktif'),
+            'ganti_password' => $request->boolean('ganti_password'),
             'akan_dihapus' => $request->boolean('akan_dihapus'),
             'favorit' => $request->boolean('favorit'),
             'urut' => array_key_exists($u = (string) $request->query('urut'), self::URUT) && $u !== '' ? $u : null,
@@ -55,6 +56,7 @@ class FilterAkun
                     ->whereHas('proyekClient', fn ($p) => $p
                         ->where(fn ($t) => $t->diTahap('mendatang'))
                         ->orWhere(fn ($t) => $t->diTahap('berjalan'))))))
+            ->when($f['ganti_password'], fn ($q) => $q->where('wajib_ganti_password', true))
             ->when($f['akan_dihapus'], fn ($q) => $q->akanDihapus())
             ->when($f['favorit'], fn ($q) => $q->whereHas('extrasProfile', fn ($p) => $p->where('apresiasi', true)))
             ->when($f['urut'] === 'favorit', fn ($q) => $q->orderByDesc(ExtrasProfile::select('apresiasi')->whereColumn('extras_profiles.user_id', 'users.id')))

@@ -42,10 +42,10 @@
     @if ($application->contract && $application->contract->isVoided())
         <div class="watermark">
             TIDAK BERLAKU<br>
-            Dibatalkan: {{ $application->contract->voided_at->format('d M Y H:i') }}
+            Dibatalkan: {{ $application->contract->voided_at->translatedFormat('d M Y H:i') }}
         </div>
         <div class="void-banner">
-            TIDAK BERLAKU - Pendaftaran Dibatalkan pada {{ $application->contract->voided_at->format('d M Y H:i') }}
+            TIDAK BERLAKU - Pendaftaran Dibatalkan pada {{ $application->contract->voided_at->translatedFormat('d M Y H:i') }}
         </div>
     @endif
 

@@ -28,9 +28,22 @@ class InvoiceController extends Controller
         $user = $request->user();
         abort_unless($user->isClient(), 403);
 
-        $projects = CastingProject::query()->milikClient($user)->where('client_request_status', 'disetujui')->orderByDesc('id')->get();
+        $projects = CastingProject::query()->milikClient($user)->where('client_request_status', 'disetujui')->with('invoices', 'classes')->orderByDesc('id')->get();
 
-        return view('invoices.index-client', compact('projects'));
+        // CL-06: status & nominal tagihan, bukan status rekrutmen.
+        $tagihan = $projects->mapWithKeys(function ($p) {
+            $inv = $p->invoices->first();
+            [$label, $badge] = match (true) {
+                ! $inv => ['Belum ada invoice', 'badge-netral'],
+                $inv->isLunas() => ['Lunas', 'badge-aktif'],
+                ! $inv->ttd_client_signature_path => ['Belum TTD', 'badge-pending'],
+                default => ['Menunggu bayar', 'badge-info'],
+            };
+
+            return [$p->id => ['label' => $label, 'badge' => $badge, 'nominal' => $inv ? (float) ($inv->nominal ?? $this->keuangan->nilaiInvoice($p)) : null]];
+        });
+
+        return view('invoices.index-client', compact('projects', 'tagihan'));
     }
 
     public function show(Request $request, CastingProject $castingProject)

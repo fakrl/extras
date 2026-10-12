@@ -405,10 +405,10 @@ class DemoLengkapSeeder extends Seeder
 
     private function akun(string $role, string $nama, string $username, string $email, Carbon $at, array $extra = []): User
     {
-        return $this->u[$username] = User::create([
+        return $this->u[$username] = User::create($extra + [
             'role' => $role, 'name' => $nama, 'username' => $username, 'email' => $email,
             'password' => $this->password, 'status' => 'aktif', 'email_verified_at' => $at, 'created_at' => $at,
-        ] + $extra);
+        ]);
     }
 
     private function project(string $nama, User $pic, int $dibuat, array $extra = []): CastingProject

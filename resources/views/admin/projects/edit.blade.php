@@ -13,7 +13,7 @@
 
 @if ($castingProject->brief_catatan && $castingProject->classes->isEmpty())
     <div style="background: #fef9c3; border: 1px solid #ca8a04; color: #713f12; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
-        <strong>Proyek dari Client — Breakdown belum lengkap.</strong> Kelas karakter &amp; jadwal syuting belum diisi. Lengkapi di bagian bawah halaman ini sebelum mulai buka pendaftaran.
+        <strong>Proyek dari Client — Breakdown belum lengkap.</strong> Peran &amp; jadwal syuting belum diisi. Lengkapi di bagian bawah halaman ini sebelum mulai buka pendaftaran.
     </div>
 @endif
 
@@ -22,7 +22,7 @@
 
     @if ($applicantsCount > 0)
         <div class="alert-info">
-            Proyek ini sudah ada {{ $applicantsCount }} pendaftar. Mengubah budget/kuota kelas TIDAK mengubah fee yang sudah di-nego dengan pendaftar. Kelas yang sudah ada tidak bisa dihapus, hanya bisa diubah atau ditambah kelas baru.
+            Proyek ini sudah ada {{ $applicantsCount }} pendaftar. Mengubah budget/kuota peran TIDAK mengubah fee yang sudah di-nego dengan pendaftar. Peran yang sudah ada tidak bisa dihapus, hanya bisa diubah atau ditambah kelas baru.
         </div>
     @endif
 
@@ -35,8 +35,8 @@
 
         <div class="form-row">
             <div>
-                <label>Nama Produksi <span class="wajib" aria-hidden="true">*</span></label>
-                <input type="text" name="nama_produksi" value="{{ old('nama_produksi', $castingProject->nama_produksi) }}" required>
+                <label for="nama_produksi">Nama Produksi <span class="wajib" aria-hidden="true">*</span></label>
+                <input type="text" name="nama_produksi" id="nama_produksi" value="{{ old('nama_produksi', $castingProject->nama_produksi) }}" required>
             </div>
         </div>
 
@@ -47,32 +47,32 @@
 
         <div class="form-row">
             <div>
-                <label>Link Grup Koordinasi <span style="color: var(--text-muted); font-weight: 400;">(WA/Telegram, dapat diisi menyusul)</span></label>
-                <input type="url" name="link_grup" value="{{ old('link_grup', $castingProject->link_grup) }}" placeholder="https://chat.whatsapp.com/... atau https://t.me/...">
+                <label for="link_grup">Link Grup Koordinasi <span style="color: var(--text-muted); font-weight: 400;">(WA/Telegram, dapat diisi menyusul)</span></label>
+                <input type="url" name="link_grup" id="link_grup" value="{{ old('link_grup', $castingProject->link_grup) }}" placeholder="https://chat.whatsapp.com/... atau https://t.me/...">
             </div>
         </div>
 
         <div class="form-row">
             <div>
-                <label>Poster Produksi <span style="color: var(--text-muted); font-weight: 400;">(maks. 2MB)</span></label>
+                <label for="poster_path">Poster Produksi <span style="color: var(--text-muted); font-weight: 400;">(maks. 2MB)</span></label>
                 @if ($castingProject->poster_path)
                     <div style="margin-bottom: 8px;">
                         <img src="{{ Storage::url($castingProject->poster_path) }}" alt="Poster" style="height: 80px; border-radius: 6px; object-fit: cover;">
                         <span style="font-size: 12px; color: var(--text-muted); margin-left: 8px;">Upload baru untuk mengganti</span>
                     </div>
                 @endif
-                <input type="file" name="poster_path" accept="image/jpeg,image/png,image/webp">
+                <input type="file" name="poster_path" id="poster_path" accept="image/jpeg,image/png,image/webp">
             </div>
         </div>
 
         <div class="form-row">
             <div>
-                <label>Deadline Pendaftaran <span class="wajib" aria-hidden="true">*</span></label>
-                <input type="date" name="deadline" value="{{ old('deadline', $castingProject->deadline->format('Y-m-d')) }}" required>
+                <label for="deadline">Deadline Pendaftaran <span class="wajib" aria-hidden="true">*</span></label>
+                <input type="date" name="deadline" id="deadline" value="{{ old('deadline', $castingProject->deadline->format('Y-m-d')) }}" required>
             </div>
             <div>
-                <label>Kuota Total <span class="wajib" aria-hidden="true">*</span></label>
-                <input type="number" name="kuota" value="{{ old('kuota', $castingProject->kuota) }}" min="1" required>
+                <label for="kuota">Kuota Total <span class="wajib" aria-hidden="true">*</span></label>
+                <input type="number" name="kuota" id="kuota" value="{{ old('kuota', $castingProject->kuota) }}" min="1" required>
             </div>
             <div style="display: flex; align-items: center; padding-top: 22px;">
                 <div class="form-check">
@@ -97,7 +97,7 @@
             @foreach (old('tanggal_shooting', $castingProject->shootingDates->map(fn ($t) => $t->tanggal->format('Y-m-d'))->all()) as $tgl)
                 <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; align-items: center;">
                     <input type="date" name="tanggal_shooting[]" class="input-inline" value="{{ $tgl }}" required>
-                    <button type="button" class="btn-icon-danger btn-remove-row" title="Hapus" style="display:none">&times;</button>
+                    <button type="button" class="btn-icon-danger btn-remove-row" title="Hapus tanggal" aria-label="Hapus tanggal" style="display:none">&times;</button>
                 </div>
             @endforeach
         </div>
@@ -105,7 +105,7 @@
 
         <hr>
         <div style="font-size: 14px; font-weight: 500; margin-bottom: 8px;">
-            Karakter yang Dibutuhkan <span style="color: var(--text-muted); font-weight: 400; font-size: 12.5px;">(minimal satu karakter)</span>
+            Peran yang Dibutuhkan <span style="color: var(--text-muted); font-weight: 400; font-size: 12.5px;">(minimal satu peran)</span>
         </div>
         <div id="kelas-wrap">
             @php
@@ -115,9 +115,12 @@
                 @include('admin.projects._kelas-row', ['i' => $i, 'k' => $k, 'kunci' => $applicantsCount > 0])
             @endforeach
         </div>
-        <button type="button" id="btn-add-kelas" class="btn btn-sm" style="margin-bottom: 24px;">+ Tambah Karakter</button>
+        <button type="button" id="btn-add-kelas" class="btn btn-sm" style="margin-bottom: 24px;">+ Tambah Peran</button>
 
-        <button type="submit" class="btn btn-brand" style="width: 100%;">Simpan Perubahan</button>
+        <div style="display: flex; gap: 8px;">
+            <a href="{{ route('admin.projects.show', $castingProject) }}" class="btn">Batal</a>
+            <button type="submit" class="btn btn-brand" style="flex: 1;">Simpan Perubahan</button>
+        </div>
     </form>
     @if (auth()->user()->isSuperAdmin())
         @include('partials.client-baru-modal')
@@ -162,7 +165,7 @@
             var row = document.createElement('div');
             row.style.cssText = 'display:flex; gap:8px; margin-bottom:8px; align-items:center;';
             row.innerHTML = '<input type="date" name="tanggal_shooting[]" class="input-inline" required>' +
-                '<button type="button" class="btn-icon-danger btn-remove-row">&times;</button>';
+                '<button type="button" class="btn-icon-danger btn-remove-row" aria-label="Hapus tanggal" title="Hapus tanggal">&times;</button>';
             tanggalWrap.appendChild(row);
             updateRemoveButtons(tanggalWrap, '.btn-remove-row');
         });
@@ -183,18 +186,18 @@
             row.style.cssText = 'border:1px solid var(--border-color); border-radius:10px; padding:12px; margin-bottom:10px;';
             row.innerHTML =
                 '<div class="form-row" style="align-items:flex-end;">' +
-                '<div><label>Nama Karakter <span class="wajib" aria-hidden="true">*</span></label>' +
+                '<div><label>Nama Peran <span class="wajib" aria-hidden="true">*</span></label>' +
                 '<input type="text" name="kelas[' + kelasIndex + '][nama_kelas]" required></div>' +
                 '<div><label>Budget Client (Rp) <span class="wajib" aria-hidden="true">*</span></label>' +
                 '<input type="number" name="kelas[' + kelasIndex + '][budget_client]" min="0" required></div>' +
-                '<div><label>Kuota Kelas <span class="wajib" aria-hidden="true">*</span></label>' +
+                '<div><label>Kuota Peran <span class="wajib" aria-hidden="true">*</span></label>' +
                 '<input type="number" name="kelas[' + kelasIndex + '][kuota_kelas]" min="1" required></div>' +
-                '<div style="flex:0;"><button type="button" class="btn-icon-danger btn-remove-kelas">&times;</button></div>' +
+                '<div style="flex:0;"><button type="button" class="btn-icon-danger btn-remove-kelas" aria-label="Hapus peran" title="Hapus peran">&times;</button></div>' +
                 '</div>' +
                 '<div class="form-row" style="margin-top:8px;">' +
                 '<div><label>Jam Callsheet Client</label><input type="time" name="kelas[' + kelasIndex + '][jam_callsheet]"></div>' +
-                '<div><label>Jam Callingan Extras</label><input type="time" name="kelas[' + kelasIndex + '][jam_callingan]"></div>' +
-                '<div><label>Tipe Kontinuitas</label><select name="kelas[' + kelasIndex + '][tipe_continuity]"><option value="free">Bebas (Single Day)</option><option value="continuity">Continuity (Multi-day)</option></select></div>' +
+                '<div><label>Jam Panggil Extras</label><input type="time" name="kelas[' + kelasIndex + '][jam_callingan]"></div>' +
+                '<div><label>Tipe Kontinuitas</label><select name="kelas[' + kelasIndex + '][tipe_continuity]"><option value="free">Sehari (bebas)</option><option value="continuity">Berlanjut (beberapa hari)</option></select></div>' +
                 '</div>' +
                 '<div style="margin-top:8px;"><label>Keterangan Scene</label><input type="text" name="kelas[' + kelasIndex + '][keterangan_scene]" placeholder="Scene 12-14 di warung kopi..."></div>' +
                 '<div style="margin-top:8px;"><label>Kriteria yang dibutuhkan</label>' +

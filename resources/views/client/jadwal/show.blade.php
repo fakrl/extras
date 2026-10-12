@@ -8,7 +8,7 @@
 </div>
 
 <div style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">{{ $project->nama_produksi }}</div>
-<div style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Input jadwal per tanggal shooting</div>
+<div style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Isi jadwal per tanggal shooting</div>
 
 @if (session('success'))
     <div class="alert-success" style="margin-bottom: 16px;">{{ session('success') }}</div>
@@ -26,16 +26,16 @@
 
             <div class="form-row">
                 <div>
-                    <label>Lokasi</label>
-                    <input type="text" name="lokasi" value="{{ old('lokasi_' . $date->id, $date->lokasi) }}" placeholder="Nama studio / lokasi shooting">
+                    <label for="lokasi-{{ $date->id }}">Lokasi</label>
+                    <input type="text" name="lokasi" id="lokasi-{{ $date->id }}" value="{{ old('lokasi_' . $date->id, $date->lokasi) }}" placeholder="Nama studio / lokasi shooting">
                 </div>
                 <div>
-                    <label>Jam Mulai</label>
-                    <input type="time" name="jam_mulai" value="{{ old('jam_mulai_' . $date->id, $date->jam_mulai ? substr($date->jam_mulai, 0, 5) : '') }}">
+                    <label for="jm-{{ $date->id }}">Jam Mulai</label>
+                    <input type="time" name="jam_mulai" id="jm-{{ $date->id }}" value="{{ old('jam_mulai_' . $date->id, $date->jam_mulai ? substr($date->jam_mulai, 0, 5) : '') }}">
                 </div>
                 <div>
-                    <label>Jam Selesai</label>
-                    <input type="time" name="jam_selesai" value="{{ old('jam_selesai_' . $date->id, $date->jam_selesai ? substr($date->jam_selesai, 0, 5) : '') }}">
+                    <label for="js-{{ $date->id }}">Jam Selesai</label>
+                    <input type="time" name="jam_selesai" id="js-{{ $date->id }}" value="{{ old('jam_selesai_' . $date->id, $date->jam_selesai ? substr($date->jam_selesai, 0, 5) : '') }}">
                 </div>
             </div>
 
@@ -53,7 +53,7 @@
                 @foreach ($panggilanList as $i => $p)
                     <div style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
                         <input type="text" name="panggilan[{{ $i }}][nama]" value="{{ $p['nama'] ?? '' }}" placeholder="Nama karakter / kategori" style="flex:2;">
-                        <input type="text" name="panggilan[{{ $i }}][jam]" value="{{ $p['jam'] ?? '' }}" placeholder="06:30" style="flex:1; max-width:100px;">
+                        <input type="time" name="panggilan[{{ $i }}][jam]" value="{{ $p["jam"] ?? "" }}" aria-label="Jam panggil" style="flex:1; max-width:130px;">
                         <button type="button" class="btn-icon-danger btn-rm-panggilan" style="display:none;">&times;</button>
                     </div>
                 @endforeach
@@ -76,13 +76,14 @@
                                     <img src="{{ route('client.absensi.foto', $absen) }}" alt="Foto absensi"
                                          style="width: 72px; height: 72px; object-fit: cover; border-radius: 6px; border: 2px solid {{ $absen->status_validasi === 'tervalidasi' ? 'var(--accent)' : 'var(--border-color)' }};">
                                 </a>
-                                <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 2px;">
+                                <div style="font-size: var(--fs-xs); color: var(--text-secondary); margin-top: 2px;">{{ $absen->projectApplication?->extras?->user?->username }}</div>
+                                <div style="font-size: var(--fs-xs); color: var(--text-muted);">
                                     @if ($absen->status_validasi === 'tervalidasi' && $absen->status === 'hadir')
                                         <span style="color: var(--accent);">✓ Hadir</span>
                                     @elseif ($absen->status_validasi === 'tervalidasi' && $absen->status === 'tidak_hadir')
-                                        <span style="color: var(--danger, #d9534f);">✗ Absen</span>
+                                        <span style="color: var(--danger, #d9534f);">Tidak hadir</span>
                                     @else
-                                        <span>Pending</span>
+                                        <span>Belum divalidasi</span>
                                     @endif
                                 </div>
                             </div>
@@ -118,7 +119,7 @@
             var row = document.createElement('div');
             row.style.cssText = 'display:flex; gap:8px; margin-bottom:8px; align-items:center;';
             row.innerHTML = '<input type="text" name="panggilan[' + n + '][nama]" placeholder="Nama karakter / kategori" style="flex:2;">' +
-                '<input type="text" name="panggilan[' + n + '][jam]" placeholder="06:30" style="flex:1; max-width:100px;">' +
+                '<input type="time" name="panggilan[' + n + '][jam]" aria-label="Jam panggil" style="flex:1; max-width:130px;">' +
                 '<button type="button" class="btn-icon-danger btn-rm-panggilan">&times;</button>';
             wrap.appendChild(row);
             updateRmButtons(wrap);

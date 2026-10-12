@@ -9,7 +9,7 @@
         'kontrak_ditandatangani' => 5,
         'selesai_produksi'       => 6,
     ];
-    $stepLabels = ['Ajuan/Antrian', 'Deal Nego Fee', 'Dipilih Client', 'Kontrak', 'Selesai'];
+    $stepLabels = ['Diajukan', 'Nego fee', 'Dipilih', 'Kontrak', 'Selesai'];
     if ($app->status_partisipasi === 'diajukan_ke_client') {
         $stepLabels[2] = 'Menunggu Client';
     }

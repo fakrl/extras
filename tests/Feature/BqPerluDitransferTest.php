@@ -38,7 +38,7 @@ class BqPerluDitransferTest extends TestCase
         $this->assertSame($jumlah, $selesai['daftar']->where('teks', 'Honor belum ditransfer')->count());
 
         $admin = User::where('username', 'admin_rina')->firstOrFail();
-        $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()
+        $this->actingAs($admin)->get(route('admin.dashboard', ['semua' => 1]))->assertOk()
             ->assertViewHas('ringkasan', fn ($r) => $r['bayar']['jumlah'] === $jumlah)
             ->assertViewHas('tahapan', fn ($t) => $t['selesai']['perlu'] === $jumlah);
 

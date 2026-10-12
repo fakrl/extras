@@ -3,7 +3,12 @@
 @section('title', 'Pembayaran')
 
 @section('content')
-<p style="color: var(--text-secondary); margin: -8px 0 20px; font-size: 13.5px;">
+@php $admin = auth()->user()->bisaSebagaiAdmin(); @endphp
+<p style="margin: -8px 0 8px;"><a href="{{ $admin ? route('admin.projects.applicants', $application->castingProject) : route('extras.dashboard') }}" style="color: var(--accent); font-size: 13px;">&larr; {{ $admin ? 'Kembali ke pendaftar' : 'Kembali ke dashboard' }}</a></p>
+<p style="color: var(--text-secondary); margin: 0 0 20px; font-size: 13.5px;">
+    @if ($admin)
+        Extras: <strong>{{ $application->extras->user->name }}</strong> ·
+    @endif
     Proyek: {{ $application->castingProject->nama_produksi }} ·
     Fee: Rp {{ number_format($application->fee_final, 0, ',', '.') }}
 </p>
@@ -29,11 +34,21 @@
 
 @php $totalHonor = $application->fee_final + $application->payment->addons->sum('nominal'); @endphp
 
-@if (auth()->user()->bisaSebagaiAdmin())
+@if ($admin)
     <div class="card" style="margin-bottom: 14px;">
         <div style="font-size: 14px; font-weight: 500; margin-bottom: 8px;">Rekening Tujuan Transfer</div>
-        <p style="margin: 0 0 4px;">{{ $application->extras->rekening ?: 'Extras belum mengisi nomor rekening.' }}</p>
+        <p style="margin: 0 0 4px;">
+            <span id="rekening-teks">{{ $application->extras->rekening ?: 'Extras belum mengisi nomor rekening.' }}</span>
+            @if ($application->extras->rekening)
+                <button type="button" class="btn btn-sm" style="margin-left: 8px;" onclick="navigator.clipboard.writeText(document.getElementById('rekening-teks').textContent.trim()); this.textContent='Tersalin'"><i class="ti ti-copy"></i> Salin</button>
+            @endif
+        </p>
         <p style="margin: 0; font-weight: 600;">Total dibayar: Rp {{ number_format($totalHonor, 0, ',', '.') }}</p>
+    </div>
+@else
+    <div class="card" style="margin-bottom: 14px;">
+        <p style="margin: 0 0 4px; font-weight: 600;">Total honor: Rp {{ number_format($totalHonor, 0, ',', '.') }}</p>
+        <p style="margin: 0; font-size: 13.5px; color: var(--text-secondary);">Rekening tujuan: {{ $application->extras->rekeningTersamar() ?? 'belum diisi' }}</p>
     </div>
 @endif
 
@@ -47,15 +62,15 @@
     </div>
 @endif
 
-@if (auth()->user()->role === 'extras' && in_array($application->payment->status, ['ditransfer', 'disengketakan', 'dikonfirmasi_diterima'], true) && $application->payment->bukti_transfer_path)
+@if (in_array($application->payment->status, ['ditransfer', 'disengketakan', 'dikonfirmasi_diterima'], true) && $application->payment->bukti_transfer_path)
     <div class="card" style="margin-bottom: 14px;">
         <p style="margin: 0 0 4px;"><a href="{{ route('payments.bukti', $application) }}" target="_blank">Lihat Bukti Transfer</a></p>
-        <p style="margin: 0; color: var(--text-secondary); font-size: var(--fs-sm);">Ditransfer pada: {{ $application->payment->ditransfer_at?->format('d M Y H:i') }}</p>
+        <p style="margin: 0; color: var(--text-secondary); font-size: var(--fs-sm);">Ditransfer pada: {{ $application->payment->ditransfer_at?->translatedFormat('d M Y H:i') }}</p>
     </div>
 @endif
 
 @if (auth()->user()->bisaSebagaiAdmin() && $application->payment->status === 'belum_dibayar')
-    <form method="POST" action="{{ route('payments.addon', $application) }}" style="display: flex; gap: 8px; margin-bottom: 14px;">
+    <form method="POST" action="{{ route('payments.addon', $application) }}" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;">
         @csrf
         <input type="text" name="label" class="input-inline" placeholder="Label (misal: Reimburse transport) *" required>
         <input type="number" name="nominal" class="input-inline" placeholder="Nominal *" required>
@@ -68,22 +83,22 @@
         <button type="submit" class="btn btn-brand">Konfirmasi Sudah Terima (Rp {{ number_format($totalHonor, 0, ',', '.') }})</button>
     </x-confirm-form>
     <div style="margin-top: 12px;">
-        <button onclick="var f=document.getElementById('form-sengketa');f.style.display=f.style.display==='none'?'block':'none'" class="btn btn-sm" style="background: var(--warning, #eab308); color: #000;">
+        <button type="button" onclick="var f=document.getElementById('form-sengketa');f.style.display=f.style.display==='none'?'block':'none'" class="btn">
             Laporkan Masalah
         </button>
         <div id="form-sengketa" style="display:none; margin-top: 10px;">
-            <form method="POST" action="{{ route('payments.sengketa', $application) }}">
-                @csrf
-                <textarea name="alasan" rows="3" placeholder="Jelaskan masalahnya (maks 500 karakter)" maxlength="500" required style="width: 100%; margin-bottom: 8px; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); resize: vertical;"></textarea>
-                <button type="submit" class="btn btn-sm" style="background: var(--danger, #ef4444); color: #fff;">Kirim Laporan</button>
-            </form>
+            <x-confirm-form action="{{ route('payments.sengketa', $application) }}" message="Kirim laporan masalah pembayaran ini? Admin akan menanggapi.">
+                <textarea name="alasan" rows="3" placeholder="Jelaskan masalahnya (maks 500 karakter) *" maxlength="500" required style="width: 100%; margin-bottom: 8px; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); resize: vertical;"></textarea>
+                <p style="font-size: 12.5px; color: var(--text-muted); margin: 0 0 8px;">Admin akan menanggapi laporan ini dan memberi kabar lewat notifikasi.</p>
+                <button type="submit" class="btn btn-brand">Kirim Laporan</button>
+            </x-confirm-form>
         </div>
     </div>
 @endif
 
 @if ($application->payment->status === 'disengketakan')
-    <div style="background: rgba(234, 179, 8, 0.1); border: 1px solid var(--warning, #eab308); border-radius: 8px; padding: 12px 16px; margin-top: 12px;">
-        <div style="font-weight: 600; color: var(--warning, #eab308); margin-bottom: 4px;"><i class="ti ti-alert-circle"></i> Pembayaran Sedang Disengketakan</div>
+    <div style="background: color-mix(in srgb, var(--warning) 12%, var(--bg-card)); border: 1px solid var(--warning); border-radius: 8px; padding: 12px 16px; margin-top: 12px;">
+        <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 4px;"><i class="ti ti-alert-circle"></i> Pembayaran Sedang Disengketakan</div>
         <div style="font-size: 13px; color: var(--text-secondary);">{{ $application->payment->alasan_sengketa }}</div>
     </div>
     @if (auth()->user()->bisaSebagaiAdmin())
@@ -93,7 +108,7 @@
                 <textarea name="catatan" rows="3" maxlength="500" required style="width: 100%; margin-bottom: 8px; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); resize: vertical;"></textarea>
                 <label>Bukti transfer baru, bila transfer ulang atau koreksi</label>
                 <input type="file" name="bukti_transfer" accept=".jpg,.jpeg,.png,.pdf" style="margin-bottom: 10px;">
-                <button type="submit" class="btn btn-brand">Selesaikan dan kembalikan ke Extras</button>
+                <button type="submit" class="btn btn-brand">Kirim Tanggapan & Selesaikan Sengketa</button>
             </x-confirm-form>
         </div>
     @endif

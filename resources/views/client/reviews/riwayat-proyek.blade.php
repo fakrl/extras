@@ -12,7 +12,7 @@
 <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px; margin-bottom:14px;">
     <div>
         <div style="font-size:16px; font-weight:600; margin-bottom:2px;">{{ $castingProject->nama_produksi }}</div>
-        <p style="color:var(--text-secondary); margin:0; font-size:13.5px;">Kandidat yang kamu review di proyek ini.</p>
+        <p style="color:var(--text-secondary); margin:0; font-size:13.5px;">Kandidat yang Anda review di proyek ini.</p>
     </div>
     <div style="display:flex; gap:8px; flex-wrap:wrap;">
         <a href="{{ route('client.riwayat.export.xlsx', $castingProject) }}" class="btn btn-sm">Ekspor ke Excel</a>
@@ -24,8 +24,8 @@
     <label style="margin:0; font-size:12.5px; color:var(--text-secondary);">Keputusan:</label>
     <select id="filter-keputusan" style="width:auto; min-height:unset; margin-bottom:0; padding:4px 8px; font-size:12.5px;">
         <option value="">Semua</option>
-        <option value="approve">Approve</option>
-        <option value="reject">Reject</option>
+        <option value="approve">Dipilih</option>
+        <option value="reject">Ditolak</option>
     </select>
 </div>
 
@@ -51,7 +51,7 @@
                     data-video="{{ $videoUrl }}"
                     data-photos="{{ $photos }}"
                     data-usia="{{ $extras?->usia ?? '' }}"
-                    data-gender="{{ $extras?->gender ?? '' }}"
+                    data-gender="{{ $extras?->genderLabel() ?? '' }}"
                     data-tinggi="{{ $extras?->tinggi_badan ?? '' }}"
                     data-ukuran-baju="{{ $extras?->ukuran_baju ?? '' }}"
                     data-warna-kulit="{{ $extras?->warnaKulit() }}"
@@ -60,11 +60,11 @@
                     <td>{{ $extras?->user?->username ?? '-' }}</td>
                     <td>
                         <span class="badge {{ $review->keputusan === 'approve' ? 'badge-aktif' : 'badge-tolak' }}">
-                            {{ ucfirst($review->keputusan) }}
+                            {{ $review->label() }}
                         </span>
                     </td>
                     <td style="color:var(--text-secondary); font-size:13px;">
-                        {{ $review->created_at->format('d M Y') }}
+                        {{ $review->created_at->translatedFormat('d M Y') }}
                     </td>
                     <td>
                         <button type="button" class="btn btn-sm btn-icon btn-lihat-profil" title="Lihat Profil" aria-label="Lihat Profil">

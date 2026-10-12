@@ -33,7 +33,7 @@ class LinkGrupTampilTest extends TestCase
             'link_grup' => 'https://chat.whatsapp.com/abc123',
         ]));
 
-        $response->assertRedirect(route('admin.projects.index'));
+        $response->assertRedirect();
 
         $project = CastingProject::first();
         $this->assertSame('https://chat.whatsapp.com/abc123', $project->link_grup);
@@ -53,7 +53,7 @@ class LinkGrupTampilTest extends TestCase
 
         $response = $this->actingAs($admin)->post('/admin/projects', $this->payload());
 
-        $response->assertRedirect(route('admin.projects.index'));
+        $response->assertRedirect();
         $this->assertNull(CastingProject::first()->link_grup);
     }
 

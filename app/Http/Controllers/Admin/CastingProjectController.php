@@ -27,7 +27,7 @@ class CastingProjectController extends Controller
     {
         $peserta = $request->query('peserta');
         $tahap = array_key_exists((string) $request->query('tahap'), CastingProject::TAHAP) ? $request->query('tahap') : null;
-        $bayar = in_array($request->query('bayar'), ['staf', 'extras'], true) ? $request->query('bayar') : null;
+        $bayar = in_array($request->query('bayar'), ['staf', 'extras', 'sengketa'], true) ? $request->query('bayar') : null;
         $cari = trim((string) $request->query('q'));
         $tgl = fn (string $k) => rescue(fn () => Carbon::createFromFormat('!Y-m-d', (string) $request->query($k)), null, false) ?: null;
         $periode = ($dari = $tgl('dari')) && ($sampai = $tgl('sampai')) ? [min($dari, $sampai), max($dari, $sampai)] : null;
@@ -35,10 +35,11 @@ class CastingProjectController extends Controller
         $saring = fn ($q) => $q
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($peserta, fn ($q) => $q->whereHas('applications', fn ($a) => $a->where('status_partisipasi', $peserta)))
-            ->when($request->boolean('tanpa_client'), fn ($q) => $q->whereNull('client_id'))
+            ->when($request->boolean('tanpa_client'), fn ($q) => $q->tanpaPicClient())
             ->when($periode, fn ($q) => $q->shootingDalam(...$periode))
             ->when($bayar === 'staf', fn ($q) => $q->whereHas('payrolls', fn ($p) => $p->where('status_bayar', '!=', 'sudah')))
             ->when($bayar === 'extras', fn ($q) => $q->whereHas('payments', fn ($p) => $p->perluDitransfer()))
+            ->when($bayar === 'sengketa', fn ($q) => $q->whereHas('payments', fn ($p) => $p->where('status', 'disengketakan')))
             ->when($cari !== '', fn ($q) => $q->where(fn ($w) => $w->where('nama_produksi', 'like', "%{$cari}%")
                 ->orWhereHas('client', fn ($c) => $c->where('name', 'like', "%{$cari}%")->orWhere('nama_perusahaan', 'like', "%{$cari}%"))
                 ->orWhere(fn ($k) => $k->cariKode($cari))))
@@ -84,7 +85,7 @@ class CastingProjectController extends Controller
 
         $usulanInvoice = null;
         if ($tab === 'keuangan') {
-            $castingProject->load(['invoices', 'expenses.pembuat', 'payments.addons', 'payments.projectApplication.extras.user', 'payrolls.addons', 'payrolls.assignment.user']);
+            $castingProject->load(['invoices', 'expenses.pembuat', 'payments.addons', 'payments.projectApplication.extras.user', 'payments.projectApplication.castingProjectClass', 'payrolls.addons', 'payrolls.assignment.user']);
             $usulanInvoice = $keuangan->nilaiInvoice($castingProject);
         }
 
@@ -115,7 +116,7 @@ class CastingProjectController extends Controller
             'client_id' => ['required', 'integer', $this->akunAktif(User::ROLE_CLIENT)],
             'poster_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'link_grup' => ['nullable', 'url'],
-            'deadline' => ['required', 'date'],
+            'deadline' => $this->aturanDeadline($request, true),
             'kuota' => ['required', 'integer', 'min:1'],
             'is_urgent' => ['nullable', 'boolean'],
             'nego_terbuka' => ['nullable', 'boolean'],
@@ -172,7 +173,7 @@ class CastingProjectController extends Controller
 
         ActivityLog::record('CREATE_PROJECT', "Proyek '{$project->nama_produksi}' dibuat oleh {$user->name} ({$user->label()})", $project);
 
-        return redirect()->route('admin.projects.index')->with('status', 'Proyek casting berhasil dibuat.');
+        return redirect()->route('admin.projects.show', $project)->with('status', 'Proyek casting berhasil dibuat.');
     }
 
     /**
@@ -207,7 +208,7 @@ class CastingProjectController extends Controller
             'client_id' => ['required', 'integer', $this->akunAktif(User::ROLE_CLIENT)],
             'poster_path' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'link_grup' => ['nullable', 'url'],
-            'deadline' => ['required', 'date'],
+            'deadline' => $this->aturanDeadline($request, false),
             'kuota' => ['required', 'integer', 'min:1'],
             'is_urgent' => ['nullable', 'boolean'],
             'nego_terbuka' => ['nullable', 'boolean'],
@@ -308,6 +309,22 @@ class CastingProjectController extends Controller
         return redirect()->route('admin.projects.index')->with('status', 'Proyek casting berhasil diperbarui.');
     }
 
+    /** AD-30: deadline tidak di masa lalu (saat buat baru) dan tidak lewat tanggal shooting pertama. */
+    private function aturanDeadline(Request $request, bool $baru): array
+    {
+        return array_filter([
+            'required',
+            'date',
+            $baru ? 'after_or_equal:today' : null,
+            function ($atribut, $nilai, $gagal) use ($request) {
+                $pertama = collect($request->input('tanggal_shooting', []))->filter()->min();
+                if ($pertama && $nilai > $pertama) {
+                    $gagal('Deadline pendaftaran tidak boleh lewat tanggal shooting pertama ('.Carbon::parse($pertama)->translatedFormat('d F Y').').');
+                }
+            },
+        ]);
+    }
+
     private function akunAktif(string $role): Exists
     {
         return Rule::exists('users', 'id')->where('role', $role)->where('status', 'aktif')->whereNull('deleted_at');
@@ -379,7 +396,7 @@ class CastingProjectController extends Controller
             'status' => $castingProject->status === 'dibuka' ? 'ditutup' : 'dibuka',
         ]);
 
-        return back()->with('status', 'Status proyek diperbarui.');
+        return back()->with('status', "Lowongan {$castingProject->nama_produksi} ".($castingProject->status === 'dibuka' ? 'dibuka.' : 'ditutup.'));
     }
 
     /**

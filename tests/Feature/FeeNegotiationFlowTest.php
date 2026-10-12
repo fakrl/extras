@@ -264,8 +264,8 @@ class FeeNegotiationFlowTest extends TestCase
 
         $this->assertCount(1, $exportA->collection());
         $this->assertCount(1, $exportB->collection());
-        $this->assertSame('Approve', $exportA->collection()->first()['keputusan']);
-        $this->assertSame('Reject', $exportB->collection()->first()['keputusan']);
+        $this->assertSame('Dipilih', $exportA->collection()->first()['keputusan']);
+        $this->assertSame('Ditolak', $exportB->collection()->first()['keputusan']);
     }
 
     public function test_riwayat_level1_hanya_proyek_milik_client(): void

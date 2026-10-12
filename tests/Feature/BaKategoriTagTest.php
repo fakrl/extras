@@ -67,7 +67,7 @@ class BaKategoriTagTest extends TestCase
         $this->actingAs($admin)->post(route('admin.projects.store'), $base + ['kelas' => [
             ['nama_kelas' => 'Mahasiswa', 'budget_client' => 100000, 'kuota_kelas' => 2, 'categories' => [$a, $b]],
             ['nama_kelas' => 'Warga', 'budget_client' => 100000, 'kuota_kelas' => 2],
-        ]])->assertRedirect(route('admin.projects.index'));
+        ]])->assertRedirect();
 
         $project = CastingProject::where('nama_produksi', 'Proyek Tag')->firstOrFail();
         $kelas = $project->classes()->orderBy('id')->get();

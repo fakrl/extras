@@ -50,7 +50,7 @@ class BjDashboardExtrasTest extends TestCase
             ->assertSee('Belum ada lowongan terbuka. Nanti kami kabari kalau ada yang baru.')
             ->getContent();
 
-        $this->urutan($html, ['pendaftaran', 'casting-call', 'status-talenta', 'jadwal']);
+        $this->urutan($html, ['pendaftaran', 'casting-call', 'status-talenta']);
     }
 
     public function test_dengan_tindakan_perlu_tindakan_paling_atas_dan_urutan_1_sampai_6(): void
@@ -60,7 +60,7 @@ class BjDashboardExtrasTest extends TestCase
         $html = $this->actingAs($this->extras(false))->get(route('extras.dashboard'))->assertOk()
             ->assertSee('Profil belum lengkap')->getContent();
 
-        $this->urutan($html, ['perlu-tindakan', 'pendaftaran', 'casting-call', 'status-talenta', 'jadwal']);
+        $this->urutan($html, ['perlu-tindakan', 'pendaftaran', 'casting-call', 'status-talenta']);
     }
 
     public function test_maks_5_lowongan_paling_cocok_dulu_dengan_badge(): void

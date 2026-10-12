@@ -33,7 +33,7 @@ class FeeNegotiationController extends Controller
 
         $application->terimaFee('extras', $nominalTerakhir);
 
-        return back()->with('status', 'Fee Deal! Kamu akan diajukan ke Client.');
+        return back()->with('status', 'Fee disepakati! Kamu akan diajukan ke Client.');
     }
 
     /**
@@ -52,13 +52,13 @@ class FeeNegotiationController extends Controller
         }
 
         $data = $request->validate([
-            'nominal' => ['required', 'numeric', 'min:0'],
+            'nominal' => ['required', 'numeric', 'min:1'],
             'catatan' => ['nullable', 'string', 'max:500'],
         ]);
 
         $application->counterFee('extras', $data['nominal'], $data['catatan'] ?? null);
 
-        return back()->with('status', 'Counter fee terkirim ke Admin.');
+        return back()->with('status', 'Tawaran balik terkirim ke Admin.');
     }
 
     /**

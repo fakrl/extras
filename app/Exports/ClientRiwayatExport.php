@@ -15,18 +15,21 @@ class ClientRiwayatExport implements FromCollection, WithHeadings
     {
         return ClientReview::where('client_id', $this->klienId)
             ->whereHas('projectApplication', fn ($q) => $q->where('casting_project_id', $this->castingProjectId))
-            ->with(['projectApplication.extras:id,user_id', 'projectApplication.extras.user:id,username'])
+            ->with(['projectApplication.extras:id,user_id', 'projectApplication.extras.user:id,username', 'projectApplication.castingProjectClass:id,nama_kelas'])
             ->latest()
             ->get()
             ->map(fn ($r) => [
                 'alias' => $r->projectApplication->extras->user->username ?? '-',
-                'keputusan' => ucfirst($r->keputusan),
-                'tanggal' => $r->created_at->format('d M Y'),
+                'peran' => $r->projectApplication->castingProjectClass?->nama_kelas ?? '-',
+                'grade' => $r->grade_client ?? '-',
+                'keputusan' => $r->label(),
+                'status' => $r->projectApplication->labelClient(),
+                'tanggal' => $r->created_at->translatedFormat('d M Y'),
             ]);
     }
 
     public function headings(): array
     {
-        return ['Alias', 'Keputusan', 'Tanggal'];
+        return ['Alias', 'Peran', 'Grade Anda', 'Keputusan', 'Status', 'Tanggal'];
     }
 }

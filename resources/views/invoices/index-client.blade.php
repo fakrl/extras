@@ -11,9 +11,9 @@
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px;">
             <div>
                 <div style="font-size: 14.5px; font-weight: 600;">{{ $project->nama_produksi }} <span class="kode-proyek">{{ $project->kode_proyek }}</span></div>
-                <div style="font-size: 12.5px; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">{{ $project->namaClient() }} · Status: <x-status-badge :model="$project" /></div>
+                <div style="font-size: 12.5px; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">{{ $project->namaClient() }} · Tagihan: <span class="badge {{ $tagihan[$project->id]["badge"] }}">{{ $tagihan[$project->id]["label"] }}</span>@if ($tagihan[$project->id]["nominal"] !== null) · <strong>Rp {{ number_format($tagihan[$project->id]["nominal"], 0, ",", ".") }}</strong>@endif</div>
             </div>
-            <a href="{{ route('invoices.show', $project) }}" class="btn btn-sm btn-brand">Lihat Invoice</a>
+            <a href="{{ route('invoices.show', $project) }}" class="btn btn-brand">Lihat Invoice</a>
         </div>
     </div>
 @empty

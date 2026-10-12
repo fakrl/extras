@@ -221,9 +221,9 @@ class AuditAGuardTest extends TestCase
         $p->shootingDates()->create(['tanggal' => today()->addDays(5)]);
         $app = $this->aplikasi($p, 'lolos');
 
-        $this->actingAs($app->extras->user)->get(route('extras.dashboard'))->assertOk()->assertDontSee('Absen Selfie On-Site');
+        $this->actingAs($app->extras->user)->get(route('extras.dashboard'))->assertOk()->assertDontSee('Absen Selfie di Lokasi');
         $p->shootingDates()->create(['tanggal' => today()]);
-        $this->actingAs($app->extras->user)->get(route('extras.dashboard'))->assertSee('Absen Selfie On-Site')
+        $this->actingAs($app->extras->user)->get(route('extras.dashboard'))->assertSee('Absen Selfie di Lokasi')
             ->assertSee('Ambil foto langsung di lokasi')->assertDontSee('Hanya kamera langsung');
     }
 
@@ -524,7 +524,7 @@ class AuditAGuardTest extends TestCase
         $this->assertSame(2, substr_count($html, 'is-done'));
 
         $lolos = view('partials.application-progress', ['app' => $this->aplikasi($p, 'lolos')])->render();
-        $this->assertStringContainsString('Dipilih Client', $lolos);
+        $this->assertStringContainsString('Dipilih', $lolos);
         $this->assertSame(3, substr_count($lolos, 'is-done'));
     }
 }

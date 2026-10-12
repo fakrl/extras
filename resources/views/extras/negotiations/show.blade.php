@@ -9,27 +9,23 @@
 
 <div class="card" style="margin-bottom: 16px;">
     <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Riwayat Tawar-Menawar</div>
-    <div class="table-container">
-    <table>
-        <thead><tr><th>Ronde</th><th>Diajukan Oleh</th><th>Nominal</th><th>Aksi</th><th>Catatan / Alasan</th></tr></thead>
-        <tbody>
-            @foreach ($application->feeNegotiations as $nego)
-                <tr>
-                    <td>{{ $nego->round }}</td>
-                    <td style="font-weight: 500;">{{ $nego->diajukan_oleh === 'admin' ? 'Admin' : 'Kamu' }}</td>
-                    <td style="font-weight: 600; color: var(--accent-strong);">Rp {{ number_format($nego->nominal, 0, ',', '.') }}</td>
-                    <td><x-status-badge :model="$nego" /></td>
-                    <td style="color: var(--text-secondary); font-size: 12.5px;">{{ $nego->catatan ?: '-' }}</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-    </div>
+    @foreach ($application->feeNegotiations as $nego)
+        <div style="padding: 10px 0; border-top: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span style="font-size: 12.5px; color: var(--text-muted);">Ronde {{ $nego->round }} · {{ $nego->diajukan_oleh === 'admin' ? 'Admin' : 'Kamu' }}</span>
+                <x-status-badge :model="$nego" />
+            </div>
+            <div style="font-weight: 600; color: var(--accent-strong); margin-top: 4px;">Rp {{ number_format($nego->nominal, 0, ',', '.') }}</div>
+            @if ($nego->catatan)
+                <div style="color: var(--text-secondary); font-size: 12.5px; margin-top: 2px;">{{ $nego->catatan }}</div>
+            @endif
+        </div>
+    @endforeach
 </div>
 
 @if ($application->status_partisipasi === 'deal')
-    <div class="alert-success">Fee sudah Deal di Rp {{ number_format($application->fee_final, 0, ',', '.') }}. Tunggu kabar selanjutnya dari Admin.</div>
-    <button type="button" class="btn btn-sm btn-danger-outline" style="margin-top: 8px;" onclick="document.getElementById('batalkan-dialog').showModal()">Batalkan Keikutsertaan</button>
+    <div class="alert-success">Fee sudah disepakati di Rp {{ number_format($application->fee_final, 0, ',', '.') }}. Tunggu kabar selanjutnya dari Admin.</div>
+    <button type="button" class="btn btn-danger-outline" style="margin-top: 8px;" onclick="document.getElementById('batalkan-dialog').showModal()">Batalkan Keikutsertaan</button>
 
     <dialog id="batalkan-dialog" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
         <form method="POST" action="{{ route('extras.negotiations.batalkan', $application) }}" style="padding: 18px;">
@@ -37,8 +33,8 @@
             <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Batalkan keikutsertaan di proyek ini?</div>
             <textarea name="alasan" rows="3" required placeholder="Alasan pembatalan" style="width: 100%; margin-bottom: 12px;"></textarea>
             <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
-                <button type="submit" class="btn btn-sm btn-danger-outline">Batalkan</button>
+                <button type="button" class="btn" onclick="this.closest('dialog').close()">Batal</button>
+                <button type="submit" class="btn btn-danger-outline">Batalkan</button>
             </div>
         </form>
     </dialog>
@@ -57,11 +53,13 @@
             </x-confirm-form>
 
             @if ($application->castingProject->nego_terbuka)
-            <form method="POST" action="{{ route('extras.negotiations.counter', $application) }}" style="display: flex; gap: 8px; flex-wrap: wrap; flex: 1;">
+            <form method="POST" action="{{ route('extras.negotiations.counter', $application) }}" style="display: flex; gap: 8px; flex-wrap: wrap; flex: 1;"
+                  onsubmit="var n=Number(this.nominal.value); return confirm('Ajukan tawaran balik Rp '+n.toLocaleString('id-ID')+'? Admin akan menerima atau menawar lagi.');">
                 @csrf
-                <input type="number" name="nominal" class="input-inline" placeholder="Nominal counter (Rp) *" required style="min-width: 150px;">
-                <input type="text" name="catatan" class="input-inline" placeholder="Alasan counter (misal: butuh transport)" style="flex: 1; min-width: 200px;">
-                <button class="btn">Ajukan Counter</button>
+                <input type="number" name="nominal" class="input-inline" min="1" step="1000" placeholder="Nominal tawaran (Rp) *" required style="min-width: 150px;" oninput="this.form.querySelector('[data-pratinjau]').textContent = this.value ? 'Rp ' + Number(this.value).toLocaleString('id-ID') : ''">
+                <input type="text" name="catatan" class="input-inline" placeholder="Alasan (misal: butuh transport)" style="flex: 1; min-width: 200px;">
+                <div data-pratinjau style="width: 100%; font-weight: 600; color: var(--accent-strong);" aria-live="polite"></div>
+                <button class="btn">Ajukan Tawar Balik</button>
             </form>
             @else
             <p style="margin: 0; flex: 1; font-size: 13.5px; color: var(--text-secondary);">Penawaran ini final, tidak bisa ditawar. Terima atau tolak.</p>

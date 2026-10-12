@@ -5,7 +5,7 @@
 @section('content')
 <div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">Riwayat Keputusan</div>
 <p style="color: var(--text-secondary); margin: 0 0 16px; font-size: 13.5px;">
-    Proyek yang pernah kamu review kandidatnya.
+    Proyek yang pernah Anda review kandidatnya.
 </p>
 
 <div class="card">
@@ -14,8 +14,8 @@
         <thead>
             <tr>
                 <th>Proyek</th>
-                <th>Approve</th>
-                <th>Reject</th>
+                <th>Dipilih</th>
+                <th>Ditolak</th>
                 <th>Review Terakhir</th>
                 <th></th>
             </tr>
@@ -31,7 +31,7 @@
                         <span class="badge badge-tolak">{{ $item['jumlah_reject'] }}</span>
                     </td>
                     <td style="color:var(--text-secondary); font-size:13px;">
-                        {{ \Carbon\Carbon::parse($item['tanggal_terakhir'])->format('d M Y') }}
+                        {{ \Carbon\Carbon::parse($item['tanggal_terakhir'])->translatedFormat('d M Y') }}
                     </td>
                     <td>
                         <a href="{{ route('client.riwayat.show', $item['proyek']) }}" class="btn btn-sm">Lihat Kandidat</a>

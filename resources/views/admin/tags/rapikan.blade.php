@@ -10,7 +10,7 @@
         <ul class="rt-list">
             @foreach ($tags as $t)
                 <li>
-                    <div class="rt-nama">#{{ $t->nama }} <span class="badge {{ $t->grup ? 'badge-netral' : 'badge-pending' }}">{{ $t->grup ?? 'Lainnya' }}</span> <span class="rt-meta">{{ $t->extras_profiles_count }} Extras</span></div>
+                    <div class="rt-nama">#{{ $t->nama }} <span class="badge {{ 'badge-netral' }}">{{ $t->grup ?? 'Lainnya' }}</span> <span class="rt-meta">{{ $t->extras_profiles_count }} Extras</span></div>
                     <div class="rt-aksi">
                         <form method="POST" action="{{ route('admin.tags.update', $t) }}" data-rt>
                             @csrf @method('PATCH')

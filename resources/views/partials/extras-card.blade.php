@@ -13,13 +13,13 @@
     $fisik = array_filter([
         $profile?->usia ? $profile->usia.' th' : null,
         $profile?->tinggi_badan ? $profile->tinggi_badan.' cm' : null,
-        $profile?->gender ? ucfirst($profile->gender) : null,
+        $profile?->genderLabel(),
     ]);
     $selesai = $profile?->proyek_selesai_count;
     $lihatTag = isset($lihat['href']) ? 'a' : 'button';
     $lihatAttr = isset($lihat['href']) ? $lihat : ['type' => 'button'] + $lihat;
     $bisaAdmin = auth()->user()?->bisaSebagaiAdmin();
-    $tombolUndang = ($undang ?? false) && $bisaAdmin && $user?->extrasProfile;
+    $tombolUndang = ($undang ?? false) && $bisaAdmin && $user?->extrasProfile && ! $user->diblokir() && $user->extrasProfile->profilLengkap();
     $tombolWa = ($wa ?? false) && $bisaAdmin && $user?->nomorWaInternasional();
 @endphp
 <article {{ (new \Illuminate\View\ComponentAttributeBag($attrs ?? []))->class(['xcard', 'is-highlight' => $highlight ?? false, 'has-ring' => $persen !== null]) }}>

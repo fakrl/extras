@@ -22,7 +22,7 @@ class ContractController extends Controller
     {
         abort_unless($application->bolehDilihatOleh($request->user()), 403);
 
-        $application->load('contract', 'extras', 'castingProject');
+        $application->load('contract', 'extras.user', 'castingProject.shootingDates', 'castingProjectClass');
 
         return view('contracts.show', compact('application'));
     }

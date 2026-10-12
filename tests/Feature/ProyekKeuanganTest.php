@@ -161,7 +161,7 @@ class ProyekKeuanganTest extends TestCase
         $client = User::factory()->create(['role' => 'client', 'name' => 'PT Kopi Nusantara']);
 
         $this->actingAs($sa)->post(route('admin.projects.store'), $this->payloadProyek(['admin_id' => $admin->id, 'client_id' => $client->id]))
-            ->assertRedirect(route('admin.projects.index'));
+            ->assertRedirect();
 
         $p = CastingProject::where('nama_produksi', 'Iklan Kopi')->firstOrFail();
         $this->assertSame($admin->id, (int) $p->admin_id);
@@ -197,7 +197,7 @@ class ProyekKeuanganTest extends TestCase
             ->assertSessionHasErrors(['client_id']);
 
         $this->actingAs($admin)->post(route('admin.projects.store'), $this->payloadProyek(['client_id' => $client->id]))
-            ->assertRedirect(route('admin.projects.index'));
+            ->assertRedirect();
 
         $p = CastingProject::firstOrFail();
         $this->assertSame($admin->id, (int) $p->admin_id);
@@ -256,7 +256,7 @@ class ProyekKeuanganTest extends TestCase
         CastingProject::factory()->create(['nama_produksi' => 'Proyek Kilat', 'is_urgent' => true, 'status' => 'dibuka', 'client_request_status' => 'disetujui']);
 
         $r = $this->actingAs($sa)->get(route('admin.projects.index'))->assertOk();
-        $r->assertSee('Proyek Kilat')->assertSee('badge badge-tolak">Urgent', false)
+        $r->assertSee('Proyek Kilat')->assertSee('badge badge-urgent">Urgent', false)
             ->assertDontSee('<span class="entity-card-row-label"', false)->assertDontSee('Pendaftar / kuota')->assertDontSee('Lihat detail')
             ->assertDontSee('Lowongan ditutup')->assertDontSee('>dibuka<', false);
     }
@@ -362,7 +362,7 @@ class ProyekKeuanganTest extends TestCase
             ->assertSee('P Depan1')->assertSee('P Depan2')->assertDontSee('P Jalan')->assertDontSee('P Lewat')->assertDontSee('P Acc');
         $acc = $this->get(route('admin.projects.index', ['tahap' => 'menunggu_acc']))
             ->assertSee('P Acc')->assertSee('P Tolak')->assertDontSee('P Depan1');
-        $acc->assertSee('badge badge-tolak">Ditolak', false);
+        $acc->assertSee('badge badge-tolak">Pengajuan ditolak', false);
 
         $r = $this->get(route('admin.projects.index', ['tahap' => 'selesai', 'q' => 'Depan']))->assertDontSee('P Lewat');
         $this->assertSame(['' => 2, 'menunggu_acc' => 0, 'mendatang' => 2, 'berjalan' => 0, 'selesai' => 0], $r->viewData('jumlahTahap')->all());

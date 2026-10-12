@@ -6,7 +6,7 @@
 
 @section('content')
 <p style="font-size: 13.5px; color: var(--text-secondary); margin: -8px 0 14px;">
-    Pilih akun {{ $label }}. Halaman tampil dengan data akun itu, <strong>lihat saja</strong>: semua aksi (simpan, kirim, TTD) ditolak.
+    Pilih akun {{ $label }} (hanya akun aktif). Halaman tampil dengan data akun itu, <strong>lihat saja</strong>: semua aksi (simpan, kirim, TTD) ditolak.
 </p>
 <form method="GET" action="{{ route('super-admin.mode.pilih', $mode) }}" class="xtoolbar" id="live-form" data-live>
     <input type="search" name="q" value="{{ $q }}" class="xtoolbar-cari" placeholder="Cari nama, username, email…" aria-label="Cari akun">
