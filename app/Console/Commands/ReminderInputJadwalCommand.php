@@ -23,7 +23,7 @@ class ReminderInputJadwalCommand extends Command
         foreach ($dates as $date) {
             $project = $date->castingProject;
             $user = $project->client;
-            $tgl = $date->tanggal->format('d M Y');
+            $tgl = $date->tanggal->translatedFormat('d M Y');
 
             $user?->kabari(
                 'Jadwal Shooting Belum Lengkap',

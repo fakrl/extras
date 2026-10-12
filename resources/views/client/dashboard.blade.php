@@ -31,7 +31,7 @@
         @if ($perluDireview)
             <a href="{{ route('client.reviews.index') }}" class="dash-row">
                 <div>
-                    <span class="badge badge-pending">Menunggu Greenlight</span>
+                    <span class="badge badge-pending">Menunggu Dipilih</span>
                     <strong>{{ $perluDireview }} kandidat</strong>
                     <div class="dash-sub">Pilih kandidat yang lolos</div>
                 </div>
@@ -110,7 +110,7 @@
     @endunless
 
     <div class="card">
-        <div class="card-title">Keputusan Greenlight Saya</div>
+        <div class="card-title">Keputusan Pemilihan Saya</div>
         <div class="dash-metrik" style="margin-bottom: 12px;">
             <a href="{{ route('client.reviews.index') }}" class="metric-card" style="grid-column: span 2;">
                 <div class="metric-label">Perlu Direview</div>
@@ -118,7 +118,7 @@
             </a>
         </div>
         <div class="chart-box"><canvas id="chartKeputusan"></canvas></div>
-        <a href="{{ route('client.reviews.index') }}" class="btn btn-brand" style="width: 100%; margin-top: 12px;">Buka Greenlight</a>
+        <a href="{{ route('client.reviews.index') }}" class="btn btn-brand" style="width: 100%; margin-top: 12px;">Buka Pemilihan Kandidat</a>
     </div>
 </div>
 

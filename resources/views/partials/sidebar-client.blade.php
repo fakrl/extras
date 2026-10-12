@@ -12,7 +12,7 @@
     <i class="ti ti-folder-plus"></i> Ajukan Proyek
 </a>
 <a href="{{ url('/client/reviews') }}" class="sidebar-link {{ str_starts_with($route, 'client/reviews') ? 'active' : '' }}">
-    <i class="ti ti-clipboard-check"></i> Greenlight
+    <i class="ti ti-clipboard-check"></i> Pilih Kandidat
 </a>
 <a href="{{ url('/client/jadwal') }}" class="sidebar-link {{ str_starts_with($route, 'client/jadwal') ? 'active' : '' }}">
     <i class="ti ti-calendar-event"></i> Jadwal
