@@ -23,7 +23,7 @@ class CastingProjectController extends Controller
         $peran = fn ($q) => $q->withTerisi()->with('categories:id,nama');
         $aktif = CastingProject::lowonganTerbuka();
 
-        $selesai = CastingProject::where('status', 'ditutup')
+        $selesai = CastingProject::where('status', 'ditutup')->where('client_request_status', 'disetujui')
             ->withCount(['applications as terisi' => fn ($q) => $q->whereIn('status_partisipasi', ['lolos', 'kontrak_ditandatangani', 'selesai_produksi'])])
             ->with(['classes' => $peran, 'shootingDates'])
             ->orderByDesc('deadline')
@@ -36,6 +36,7 @@ class CastingProjectController extends Controller
 
     public function show(Request $request, CastingProject $castingProject)
     {
+        abort_unless($castingProject->client_request_status === 'disetujui', 404);
         $castingProject->load(['classes' => fn ($q) => $q->withTerisi()->with('categories:id,nama'), 'shootingDates']);
         $tagSaya = $this->tagSaya($request);
         $bentrok = $request->user()->extrasProfile?->pendaftaranBentrok($castingProject->shootingDates->pluck('tanggal'))

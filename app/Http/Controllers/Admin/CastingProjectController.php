@@ -371,6 +371,10 @@ class CastingProjectController extends Controller
 
     public function toggleStatus(CastingProject $castingProject): RedirectResponse
     {
+        if ($castingProject->client_request_status !== 'disetujui') {
+            return back()->with('error', 'Lowongan hanya bisa dibuka/ditutup untuk proyek yang sudah di-ACC Owner.');
+        }
+
         $castingProject->update([
             'status' => $castingProject->status === 'dibuka' ? 'ditutup' : 'dibuka',
         ]);
@@ -387,7 +391,6 @@ class CastingProjectController extends Controller
         $tab = $request->query('tab');
         $statuses = array_values(array_intersect((array) $request->query('status', []), array_keys(ProjectApplication::LABELS)));
 
-        $klienStatuses = ['diajukan_ke_client', 'lolos', 'ditolak'];
         $tagIds = array_map('intval', array_filter((array) $request->query('tag', []), 'is_numeric'));
         $urut = in_array($request->query('urut'), ['cocok', 'favorit'], true) ? $request->query('urut') : null;
         $favorit = $request->boolean('favorit');
@@ -399,7 +402,7 @@ class CastingProjectController extends Controller
                 'extras.user', 'extras.categories',
                 'castingProjectClass.categories', 'fieldNotes.korlap', 'contract', 'payment',
             ])
-            ->when($tab === 'client', fn ($q) => $q->whereIn('status_partisipasi', $klienStatuses))
+            ->when($tab === 'client', fn ($q) => $q->diajukanKeClient())
             ->when($tab !== 'client' && $grade === 'belum', fn ($q) => $q->whereNull('grade'))
             ->when($tab !== 'client' && in_array($grade, ['A', 'B', 'C'], true), fn ($q) => $q->where('grade', $grade))
             ->when($tab !== 'client' && $statuses, fn ($q) => $q->whereIn('status_partisipasi', $statuses))

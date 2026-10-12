@@ -44,11 +44,12 @@ class KeuanganProyekController extends Controller
             return back()->with('error', 'Invoice ini sudah ditandai lunas.');
         }
 
-        $invoice->update(['nominal' => $data['nominal'], 'status_bayar' => 'lunas', 'dibayar_at' => now()]);
+        $nominal = $invoice->nominal ?? $data['nominal'];
+        $invoice->update(['nominal' => $nominal, 'status_bayar' => 'lunas', 'dibayar_at' => now()]);
 
         ActivityLog::record(
             'INVOICE_PAID',
-            "Invoice proyek '{$castingProject->nama_produksi}' ditandai lunas (Rp ".number_format($data['nominal'], 0, ',', '.').')',
+            "Invoice proyek '{$castingProject->nama_produksi}' ditandai lunas (Rp ".number_format($nominal, 0, ',', '.').')',
             $invoice
         );
 
@@ -97,8 +98,12 @@ class KeuanganProyekController extends Controller
     /**
      * SPEC AV.3: tandai honor staf sudah dibayarkan.
      */
-    public function tandaiDibayar(StaffPayroll $staffPayroll): RedirectResponse
+    public function tandaiDibayar(Request $request, StaffPayroll $staffPayroll): RedirectResponse
     {
+        if (! $request->user()->isSuperAdmin() && $staffPayroll->assignment?->user_id === $request->user()->id) {
+            return back()->with('error', 'Honor milik sendiri tidak bisa ditandai dibayar oleh Anda. Minta Super Admin.');
+        }
+
         if ($staffPayroll->isDibayar()) {
             return back()->with('error', 'Honor staf ini sudah ditandai dibayar.');
         }

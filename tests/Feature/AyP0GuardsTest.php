@@ -178,6 +178,7 @@ class AyP0GuardsTest extends TestCase
         $extras = ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $application = $this->buatAplikasi($admin, $extras, 'lolos');
         $shootingDate = $application->castingProject->shootingDates()->create(['tanggal' => today()]);
+        $application->castingProject->adminAssignments()->create(['user_id' => $korlap->id, 'assigned_by' => $admin->id, 'status_log' => 'berjalan']);
 
         $this->actingAs($extrasUser)->post(route('extras.absensi.selfie', $application), [
             'event_shooting_date_id' => $shootingDate->id,

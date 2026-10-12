@@ -5,11 +5,14 @@
         'nego_fee'               => 2,
         'deal'                   => 2,
         'diajukan_ke_client'         => 3,
-        'lolos'                  => 3,
-        'kontrak_ditandatangani' => 4,
-        'selesai_produksi'       => 5,
+        'lolos'                  => 4,
+        'kontrak_ditandatangani' => 5,
+        'selesai_produksi'       => 6,
     ];
     $stepLabels = ['Ajuan/Antrian', 'Deal Nego Fee', 'Dipilih Client', 'Kontrak', 'Selesai'];
+    if ($app->status_partisipasi === 'diajukan_ke_client') {
+        $stepLabels[2] = 'Menunggu Client';
+    }
     $currentStep = $stepMap[$app->status_partisipasi] ?? 0;
     $isStopped = in_array($app->status_partisipasi, ['ditolak', 'dibatalkan']);
 @endphp

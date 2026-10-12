@@ -148,6 +148,7 @@ Route::middleware(['auth', 'role:extras'])->prefix('extras')->group(function () 
     Route::get('/nego/{application}', [ExtrasFeeNegotiationController::class, 'show'])->name('extras.negotiations.show');
     Route::post('/nego/{application}/terima', [ExtrasFeeNegotiationController::class, 'terima'])->name('extras.negotiations.terima');
     Route::post('/nego/{application}/counter', [ExtrasFeeNegotiationController::class, 'counter'])->name('extras.negotiations.counter');
+    Route::post('/nego/{application}/tolak', [ExtrasFeeNegotiationController::class, 'tolak'])->name('extras.negotiations.tolak');
     Route::post('/nego/{application}/batalkan', [ExtrasFeeNegotiationController::class, 'batalkan'])->name('extras.negotiations.batalkan');
 
     Route::get('/kontrak/{application}/lengkapi-ktp', [ProfileController::class, 'lengkapiKtp'])->name('extras.kontrak.lengkapi-ktp');

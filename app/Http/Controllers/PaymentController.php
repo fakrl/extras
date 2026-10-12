@@ -31,7 +31,7 @@ class PaymentController extends Controller
         abort_unless($application->bolehDilihatOleh($request->user()), 403);
         $this->guardStatusLolos($application);
 
-        $application->load('payment.addons', 'extras', 'castingProject');
+        $application->load('payment.addons.creator', 'extras', 'castingProject');
 
         return view('payments.show', compact('application'));
     }
@@ -112,15 +112,15 @@ class PaymentController extends Controller
 
     /**
      * RF-32: add-on/reimburse manual pada catatan pembayaran Extras.
-     * Admin Default (siapa pun) atau Extras pemilik aplikasi bisa menambahkan.
+     * Hanya Admin/Super Admin, dan hanya sebelum honor ditransfer.
      */
     public function addAddon(Request $request, ProjectApplication $application): RedirectResponse
     {
-        abort_unless($application->bolehDilihatOleh($request->user()), 403);
+        abort_unless($request->user()->bisaSebagaiAdmin(), 403);
         $this->guardStatusLolos($application);
 
-        if ($application->payment->status === 'dikonfirmasi_diterima') {
-            return back()->with('error', 'Pembayaran sudah selesai, tidak bisa menambah komponen lagi.');
+        if ($application->payment?->status !== 'belum_dibayar') {
+            return back()->with('error', 'Komponen tambahan hanya bisa ditambah sebelum honor ditransfer.');
         }
 
         $data = $request->validate([

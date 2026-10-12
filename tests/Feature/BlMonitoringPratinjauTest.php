@@ -100,7 +100,7 @@ class BlMonitoringPratinjauTest extends TestCase
         $this->isiData();
 
         $pratinjau = $this->actingAs($this->sa)->get(route('super-admin.monitoring.korlap'))->assertOk()
-            ->assertSee('Studio 5')->assertSee('0/2 hadir')->assertSee('1 menunggu validasi')
+            ->assertSee('Studio 5')->assertSee('0/1 hadir')->assertSee('1 menunggu validasi')
             ->assertSee('Telat datang 30 menit')->assertSee('Masuk mode Korlap');
         $sd = $pratinjau->viewData('hari')['Hari ini']->first();
         $absensi = $this->actingAs($this->sa)->get(route('admin.attendance.index', ['project' => $this->proyek->id, 'tanggal' => $sd->id]))->assertOk();

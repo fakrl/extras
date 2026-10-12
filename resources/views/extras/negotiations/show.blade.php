@@ -18,7 +18,7 @@
                     <td>{{ $nego->round }}</td>
                     <td style="font-weight: 500;">{{ $nego->diajukan_oleh === 'admin' ? 'Admin' : 'Kamu' }}</td>
                     <td style="font-weight: 600; color: var(--accent-strong);">Rp {{ number_format($nego->nominal, 0, ',', '.') }}</td>
-                    <td style="text-transform: capitalize;"><span class="badge {{ $nego->aksi === 'terima' ? 'badge-aktif' : ($nego->aksi === 'tolak' ? 'badge-tolak' : 'badge-pending') }}">{{ $nego->aksi }}</span></td>
+                    <td><x-status-badge :model="$nego" /></td>
                     <td style="color: var(--text-secondary); font-size: 12.5px;">{{ $nego->catatan ?: '-' }}</td>
                 </tr>
             @endforeach
@@ -44,6 +44,10 @@
     </dialog>
 @elseif ($application->status_partisipasi === 'ditolak')
     <div class="alert-info">Negosiasi untuk pendaftaran ini sudah dihentikan.</div>
+@elseif (! $application->masihBisaNego())
+    <div class="alert-info">Negosiasi untuk pendaftaran ini sudah selesai ({{ $application->label() }}).@if ($application->fee_final) Fee final Rp {{ number_format($application->fee_final, 0, ',', '.') }}.@endif</div>
+@elseif ($application->feeNegotiations->isNotEmpty() && $application->feeNegotiations->last()->diajukan_oleh === 'extras' && $application->feeNegotiations->last()->aksi === 'counter')
+    <div class="alert-info">Menunggu balasan Admin sejak {{ $application->feeNegotiations->last()->created_at->translatedFormat('d M Y H:i') }}.</div>
 @elseif ($application->feeNegotiations->isNotEmpty())
     <div class="card" style="padding: 16px;">
         <div style="font-weight: 600; margin-bottom: 10px;">Tanggapan Kamu:</div>
@@ -61,6 +65,10 @@
             </form>
             @else
             <p style="margin: 0; flex: 1; font-size: 13.5px; color: var(--text-secondary);">Penawaran ini final, tidak bisa ditawar. Terima atau tolak.</p>
+            <x-confirm-form action="{{ route('extras.negotiations.tolak', $application) }}" message="Tolak penawaran Rp {{ number_format($application->feeNegotiations->last()->nominal, 0, ',', '.') }}? Pendaftaran ini tidak akan dilanjutkan.">
+                <input type="text" name="alasan" class="input-inline" placeholder="Alasan penolakan" maxlength="500" style="margin-bottom: 8px;">
+                <button type="submit" class="btn btn-danger-outline">Tolak Penawaran</button>
+            </x-confirm-form>
             @endif
         </div>
     </div>
