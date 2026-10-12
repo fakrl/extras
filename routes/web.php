@@ -168,6 +168,7 @@ Route::middleware(['auth', 'role:admin,korlap,super_admin'])
 
         // RF-43/RF-44: Riwayat Kerja & Status Gaji
         Route::get('/riwayat-kerja', [WorkHistoryController::class, 'index'])->name('admin.work-history');
+        Route::get('/payrolls/{staffPayroll}/slip', [WorkHistoryController::class, 'slip'])->name('admin.payrolls.slip');
 
         // Operasional Proyek: Admin & Super Admin (Godmode)
         Route::middleware('role:admin,super_admin')->group(function () {

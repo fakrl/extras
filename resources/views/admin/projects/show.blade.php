@@ -282,6 +282,9 @@
                                 @endif
                             </td>
                             <td>
+                                @if ($payroll->pdf_slip_path)
+                                    <a href="{{ route('admin.payrolls.slip', $payroll) }}" class="btn btn-sm">Unduh Slip</a>
+                                @endif
                                 @unless ($payroll->isDibayar())
                                     @if ($payroll->assignment?->user_id === auth()->id() && ! auth()->user()->isSuperAdmin())
                                         <span style="font-size: var(--fs-xs); color: var(--text-muted);">Honor sendiri, dibayar oleh Super Admin.</span>
@@ -299,6 +302,60 @@
                 </tbody>
             </table>
         </div>
+
+        @if (auth()->user()->isSuperAdmin() && ! auth()->user()->modeSa())
+            <div style="margin-top: 16px; font-weight: 600; font-size: var(--fs-sm);">Penugasan Staf</div>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>Staf</th><th>Penugasan</th><th>Komponen Tambahan</th></tr></thead>
+                    <tbody>
+                        @forelse ($p->adminAssignments as $a)
+                            @php $gaji = $p->payrolls->firstWhere('admin_project_assignment_id', $a->id); @endphp
+                            <tr>
+                                <td>{{ $a->user?->name ?? '-' }}<div style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $a->user?->label() }}</div></td>
+                                <td>
+                                    @if ($a->status_log === 'selesai')
+                                        <span class="badge badge-aktif">Selesai</span>
+                                    @else
+                                        <span class="badge badge-info">Berjalan</span>
+                                        <x-confirm-form :action="route('super-admin.assignments.complete', $a)" message="Tandai penugasan {{ $a->user?->name }} selesai? Slip honor {{ $rp($a->user?->honor_nominal ?? 0) }} akan dibuat.">
+                                            <button type="submit" class="btn btn-sm btn-brand" style="margin-top: 6px;">Tandai Selesai</button>
+                                        </x-confirm-form>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if ($gaji)
+                                        @foreach ($gaji->addons as $addon)
+                                            <div style="font-size: var(--fs-xs);">{{ $addon->label }}: {{ $rp($addon->nominal) }}</div>
+                                        @endforeach
+                                        <x-confirm-form :action="route('super-admin.payrolls.addon', $gaji)" message="Tambah komponen honor untuk {{ $a->user?->name }}?" style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
+                                            <input type="text" name="label" placeholder="Label" maxlength="255" required style="margin: 0; flex: 1; min-width: 120px;">
+                                            <input type="number" name="nominal" placeholder="Rp" min="0" required style="margin: 0; width: 110px;">
+                                            <button type="submit" class="btn btn-sm">Tambah</button>
+                                        </x-confirm-form>
+                                    @else
+                                        <span style="color: var(--text-muted); font-size: var(--fs-xs);">Tersedia setelah ditandai selesai.</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Belum ada staf ditugaskan.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            @if ($stafTersedia->isNotEmpty())
+                <x-confirm-form :action="route('super-admin.assignments.assign', $p)" message="Tugaskan staf terpilih ke proyek ini?" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+                    <select name="user_id" required style="margin: 0; flex: 1; min-width: 180px;">
+                        <option value="">Pilih Admin/Korlap</option>
+                        @foreach ($stafTersedia as $u)
+                            <option value="{{ $u->id }}">{{ $u->name }} ({{ $u->label() }})</option>
+                        @endforeach
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-brand">Tugaskan</button>
+                </x-confirm-form>
+            @endif
+        @endif
     </div>
 
     <div class="card cf-seksi">

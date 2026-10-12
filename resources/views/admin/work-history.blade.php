@@ -17,6 +17,9 @@
     <div style="font-size: 15px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
         <i class="ti ti-briefcase" style="color: var(--accent);"></i> Riwayat Honor Pokok Penugasan Proyek
     </div>
+    <div style="margin-bottom: 12px; font-size: 13.5px;">
+        Total Diterima (sudah dibayar): <strong>Rp {{ number_format($assignments->filter(fn ($a) => $a->payroll?->isDibayar())->sum(fn ($a) => $a->payroll->nominalTotal()), 0, ',', '.') }}</strong>
+    </div>
     <div class="table-container">
     <table>
         <thead>
@@ -66,10 +69,10 @@
                     <td>
                         @if ($a->payroll)
                             @if ($a->payroll->isDibayar())
-                                <span class="badge badge-aktif">Sudah dibayar</span>
+                                <span class="badge badge-aktif">Dibayar</span>
                                 <div style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $a->payroll->dibayar_at?->translatedFormat('d M Y') }}</div>
                             @else
-                                <span class="badge badge-netral">Belum dibayar</span>
+                                <span class="badge badge-netral">Belum diproses</span>
                             @endif
                         @else
                             -
@@ -77,7 +80,7 @@
                     </td>
                     <td>
                         @if ($a->payroll?->pdf_slip_path)
-                            <span style="color: var(--text-muted);">Slip dicatat, belum bisa diunduh di sini</span>
+                            <a href="{{ route('admin.payrolls.slip', $a->payroll) }}" class="btn btn-sm">Unduh Slip</a>
                         @else
                             <span style="color: var(--text-muted);">-</span>
                         @endif

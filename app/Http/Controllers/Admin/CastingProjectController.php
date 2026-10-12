@@ -89,7 +89,12 @@ class CastingProjectController extends Controller
             $usulanInvoice = $keuangan->nilaiInvoice($castingProject);
         }
 
-        return view('admin.projects.show', compact('castingProject', 'tab', 'pendaftar', 'usulanInvoice'));
+        $stafTersedia = $tab === 'keuangan' && $request->user()->isSuperAdmin()
+            ? User::whereIn('role', [User::ROLE_ADMIN, User::ROLE_KORLAP])->where('status', 'aktif')
+                ->whereNotIn('id', $castingProject->adminAssignments->pluck('user_id'))->orderBy('name')->get()
+            : collect();
+
+        return view('admin.projects.show', compact('castingProject', 'tab', 'pendaftar', 'usulanInvoice', 'stafTersedia'));
     }
 
     public function create()
