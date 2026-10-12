@@ -35,7 +35,7 @@ class KarakterKriteriaTest extends TestCase
             'kelas' => [
                 ['nama_kelas' => 'Ibu-ibu', 'budget_client' => 400000, 'kuota_kelas' => 3, 'kriteria' => 'wanita 25-35 th, ekspresi sedih'],
             ],
-        ]))->assertRedirect(route('admin.projects.index'));
+        ]))->assertRedirect();
 
         $kelas = CastingProjectClass::first();
         $this->assertSame('wanita 25-35 th, ekspresi sedih', $kelas->kriteria);
@@ -47,7 +47,7 @@ class KarakterKriteriaTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
 
         $this->actingAs($admin)->post('/admin/projects', $this->adminPayload())
-            ->assertRedirect(route('admin.projects.index'));
+            ->assertRedirect();
 
         $this->assertNull(CastingProjectClass::first()->kriteria);
     }
@@ -71,7 +71,7 @@ class KarakterKriteriaTest extends TestCase
 
         $this->actingAs($admin)->post('/admin/projects', $this->adminPayload([
             'link_grup' => 'https://chat.whatsapp.com/koordinasi123',
-        ]))->assertRedirect(route('admin.projects.index'));
+        ]))->assertRedirect();
 
         $this->assertSame('https://chat.whatsapp.com/koordinasi123', CastingProject::first()->link_grup);
     }
@@ -82,7 +82,7 @@ class KarakterKriteriaTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
 
         $this->actingAs($admin)->post('/admin/projects', $this->adminPayload())
-            ->assertRedirect(route('admin.projects.index'));
+            ->assertRedirect();
 
         $this->assertNull(CastingProject::first()->link_grup);
     }

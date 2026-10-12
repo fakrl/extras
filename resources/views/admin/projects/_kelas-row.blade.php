@@ -5,7 +5,7 @@
     @endif
     <div class="form-row" style="align-items: flex-end;">
         <div>
-            <label>Nama Karakter <span class="wajib" aria-hidden="true">*</span></label>
+            <label>Nama Peran <span class="wajib" aria-hidden="true">*</span></label>
             <input type="text" name="kelas[{{ $i }}][nama_kelas]" value="{{ $k['nama_kelas'] ?? '' }}" placeholder="misal: Ibu-ibu 29-50th" required>
         </div>
         <div>
@@ -13,11 +13,11 @@
             <input type="number" name="kelas[{{ $i }}][budget_client]" value="{{ $k['budget_client'] ?? '' }}" min="0" required>
         </div>
         <div>
-            <label>Kuota Kelas <span class="wajib" aria-hidden="true">*</span></label>
+            <label>Kuota Peran <span class="wajib" aria-hidden="true">*</span></label>
             <input type="number" name="kelas[{{ $i }}][kuota_kelas]" value="{{ $k['kuota_kelas'] ?? '' }}" min="1" required>
         </div>
         <div style="flex: 0;">
-            <button type="button" class="btn-icon-danger btn-remove-kelas" style="display:none" @if (! empty($kunci) && ! empty($k['id'])) title="Kelas ini tidak bisa dihapus, proyek sudah punya pendaftar" @endif>&times;</button>
+            <button type="button" class="btn-icon-danger btn-remove-kelas" aria-label="Hapus peran" style="display:none" @if (! empty($kunci) && ! empty($k['id'])) title="Kelas ini tidak bisa dihapus, proyek sudah punya pendaftar" @endif>&times;</button>
         </div>
     </div>
     <div class="form-row" style="margin-top: 8px;">
@@ -26,14 +26,14 @@
             <input type="time" name="kelas[{{ $i }}][jam_callsheet]" value="{{ $k['jam_callsheet'] ?? '' }}">
         </div>
         <div>
-            <label>Jam Callingan Extras <span style="color: var(--text-muted); font-weight: 400;">(otomatis -1 jam jika kosong)</span></label>
+            <label>Jam Panggil Extras <span style="color: var(--text-muted); font-weight: 400;">(otomatis -1 jam jika kosong)</span></label>
             <input type="time" name="kelas[{{ $i }}][jam_callingan]" value="{{ $k['jam_callingan'] ?? '' }}">
         </div>
         <div>
             <label>Tipe Kontinuitas</label>
             <select name="kelas[{{ $i }}][tipe_continuity]">
-                <option value="free" @selected(($k['tipe_continuity'] ?? 'free') === 'free')>Bebas (Single Day)</option>
-                <option value="continuity" @selected(($k['tipe_continuity'] ?? '') === 'continuity')>Continuity (Multi-day)</option>
+                <option value="free" @selected(($k['tipe_continuity'] ?? 'free') === 'free')>Sehari (bebas)</option>
+                <option value="continuity" @selected(($k['tipe_continuity'] ?? '') === 'continuity')>Berlanjut (beberapa hari)</option>
             </select>
         </div>
     </div>

@@ -125,6 +125,17 @@ class ExtrasProfile extends Model
             ->whereHas('user', fn ($u) => $u->where('status', 'aktif')->whereNotNull('username'));
     }
 
+    public function genderLabel(): ?string
+    {
+        return ['pria' => 'Laki-laki', 'wanita' => 'Perempuan'][strtolower((string) $this->gender)] ?? ($this->gender ? ucfirst($this->gender) : null);
+    }
+
+    /** EX-16/17: rekening milik sendiri, hanya 4 karakter terakhir yang terlihat. */
+    public function rekeningTersamar(): ?string
+    {
+        return $this->rekening ? '•••• '.substr($this->rekening, -4) : null;
+    }
+
     public function profilLengkap(): bool
     {
         return $this->foto_profil_path && $this->usia && $this->gender && $this->tinggi_badan;

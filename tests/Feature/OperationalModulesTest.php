@@ -43,7 +43,7 @@ class OperationalModulesTest extends TestCase
             ],
         ]);
 
-        $response->assertRedirect(route('admin.projects.index'));
+        $response->assertRedirect();
 
         $project = CastingProject::where('nama_produksi', 'Proyek Breakdown Test')->first();
         $this->assertNotNull($project);

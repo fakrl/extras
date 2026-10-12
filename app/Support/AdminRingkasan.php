@@ -42,7 +42,7 @@ class AdminRingkasan
             ],
             'tanpa_pic' => [
                 'label' => 'Proyek tanpa PIC/Client',
-                'jumlah' => CastingProject::where(fn ($q) => $q->whereNull('client_id')->orWhereNull('admin_id'))
+                'jumlah' => CastingProject::tanpaPicClient()
                     ->when($adminId, fn ($q) => $q->where('admin_id', $adminId))->count(),
                 'url' => $url(['tanpa_client' => 1]),
             ],
@@ -54,7 +54,7 @@ class AdminRingkasan
         'nego' => ['label' => 'Nego Fee', 'status' => ['nego_fee', 'deal'], 'filter' => ['peserta' => 'nego_fee']],
         'client' => ['label' => 'Dipilih Client', 'status' => ['diajukan_ke_client'], 'filter' => ['peserta' => 'diajukan_ke_client']],
         'kontrak' => ['label' => 'Kontrak', 'status' => ['lolos'], 'filter' => ['peserta' => 'lolos']],
-        'selesai' => ['label' => 'Selesai', 'status' => ['kontrak_ditandatangani'], 'filter' => ['bayar' => 'extras']],
+        'selesai' => ['label' => 'Pembayaran', 'status' => ['kontrak_ditandatangani'], 'filter' => ['bayar' => 'extras']],
     ];
 
     /** BP: step-bar tahapan kandidat + daftar siapa & aksi berikutnya, urut paling lama menunggu. */

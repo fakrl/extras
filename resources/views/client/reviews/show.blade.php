@@ -10,7 +10,7 @@
 <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
     <div>
         <div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">{{ $castingProject->nama_produksi }}</div>
-        <p style="color: var(--text-secondary); margin: 0; font-size: 13.5px;">Semua kandidat di proyek ini (pending dan sudah diputus).</p>
+        <p style="color: var(--text-secondary); margin: 0; font-size: 13.5px;">Semua kandidat di proyek ini (menunggu keputusan Anda dan yang sudah diputus).</p>
         @if ($castingProject->link_grup)
             <a href="{{ $castingProject->link_grup }}" target="_blank" style="font-size: 12.5px;">Link Grup Koordinasi</a>
         @endif
@@ -22,7 +22,7 @@
 </div>
 
 <div class="xfilter" aria-label="Filter status">
-    @foreach (['' => 'Semua', 'menunggu' => 'Menunggu', 'approved' => 'Approved', 'rejected' => 'Rejected'] as $val => $label)
+    @foreach (['' => 'Semua', 'menunggu' => 'Menunggu', 'approved' => 'Dipilih', 'rejected' => 'Ditolak'] as $val => $label)
         <a href="{{ route('client.reviews.show', array_filter(['castingProject' => $castingProject->id, 'status' => $val ?: null])) }}"
            class="btn btn-sm {{ ($statusFilter ?? '') === $val ? 'btn-brand' : '' }}">{{ $label }}</a>
     @endforeach
@@ -75,7 +75,7 @@
 @endif
 
 <label style="margin: 0 0 10px; display: inline-flex; align-items: center; gap: 8px; min-height: 36px; cursor: pointer;">
-    <input type="checkbox" id="check-all-outer"> Pilih Semua Pending
+    <input type="checkbox" id="check-all-outer"> Pilih semua yang menunggu
 </label>
 <div id="gl-kosong" class="card" style="display: none; text-align: center; color: var(--text-muted); padding: 24px; margin-bottom: 14px;">Tidak ada kandidat yang cocok dengan filter.</div>
 
@@ -89,14 +89,7 @@
             @php
                 $review = $app->clientReviews->first();
                 $isPending = $app->status_partisipasi === 'diajukan_ke_client';
-                $badge = match ($app->status_partisipasi) {
-                    'diajukan_ke_client' => ['Menunggu', 'badge-pending'],
-                    'lolos' => ['Approved · Kontrak', $app->badgeClass()],
-                    'kontrak_ditandatangani' => ['Approved · Syuting', $app->badgeClass()],
-                    'selesai_produksi' => ['Selesai', $app->badgeClass()],
-                    'ditolak' => ['Rejected', 'badge-tolak'],
-                    default => [$app->label(), $app->badgeClass()],
-                };
+                $badge = [$app->labelClient(), $app->badgeClass()];
                 $riwayatApprove = \App\Models\ClientReview::where('client_id', auth()->id())
                     ->whereHas('projectApplication', fn($q) => $q->where('extras_id', $app->extras->id))
                     ->where('keputusan', 'approve')
@@ -124,7 +117,7 @@
                     'data-foto' => $app->extras->foto_profil_path ? route('extras.media.foto', $app->extras) : '',
                     'data-video' => $app->extras->video_profil_path ? route('extras.media.video', $app->extras) : '',
                     'data-usia' => $app->extras->usia ?? '',
-                    'data-gender' => $app->extras->gender ?? '',
+                    'data-gender' => $app->extras->genderLabel() ?? '',
                     'data-tinggi' => $app->extras->tinggi_badan ?? '',
                     'data-ukuran-baju' => $app->extras->ukuran_baju ?? '',
                     'data-warna-kulit' => $app->extras->warnaKulit() ?? '',
@@ -137,7 +130,7 @@
                     'data-status-class' => $badge[1],
                     'data-review-keputusan' => $review?->keputusan ?? '',
                     'data-review-grade' => $review?->grade_client ?? '',
-                    'data-review-tgl' => $review ? $review->created_at->format('d M Y') : '',
+                    'data-review-tgl' => $review ? $review->created_at->translatedFormat('d M Y') : '',
                     'data-riwayat-approve' => $riwayatApprove,
                     'data-riwayat-reject' => $riwayatReject,
                     'data-fotos' => json_encode($app->extras->fotoTambahan()->keys()->map(fn ($slot) => route('extras.media.foto-tambahan', [$app->extras, $slot]))->values()),
@@ -152,7 +145,7 @@
     </div>
 
     <div style="margin: 12px 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-        <button type="button" id="btn-bulk-reject" class="btn btn-danger-outline">Reject Terpilih</button>
+        <button type="button" id="btn-bulk-reject" class="btn btn-danger-outline">Tolak Terpilih</button>
     </div>
 </form>
 
@@ -182,7 +175,7 @@
             <video id="mk-video" controls style="width: 100%; border-radius: 10px; background: #000; aspect-ratio: 16/9;"></video>
         </div>
 
-        <div class="xsec">Karakter dilamar</div>
+        <div class="xsec">Peran dilamar</div>
         <div id="mk-karakter" style="font-size: var(--fs-base); font-weight: 600;"></div>
         <div id="mk-kriteria" style="color: var(--text-secondary); font-size: var(--fs-sm); margin-top: 4px;"></div>
 
@@ -221,7 +214,7 @@
     document.getElementById('btn-bulk-reject')?.addEventListener('click', function () {
         var jumlah = Array.from(document.querySelectorAll('.app-checkbox')).filter(function (cb) { return cb.checked; }).length;
         if (!jumlah) { alert('Centang minimal 1 kandidat.'); return; }
-        if (!confirm('Reject ' + jumlah + ' kandidat terpilih? Kandidat yang direject tidak bisa diajukan ulang ke proyek ini.')) return;
+        if (!confirm('Tolak ' + jumlah + ' kandidat terpilih? Kandidat yang ditolak tidak bisa diajukan ulang ke proyek ini.')) return;
         this.disabled = true;
         this.textContent = 'Memproses…';
         document.getElementById('hidden-grade-client').value = '';
@@ -318,7 +311,7 @@
         document.getElementById('mk-karakter').textContent = kartu.dataset.karakter || '-';
         document.getElementById('mk-kriteria').textContent = kartu.dataset.kriteria || '';
         document.getElementById('mk-riwayat').textContent =
-            'Approve: ' + (kartu.dataset.riwayatApprove || '0') + ', Reject: ' + (kartu.dataset.riwayatReject || '0');
+            'Pernah dipilih ' + (kartu.dataset.riwayatApprove || '0') + ' kali, ditolak ' + (kartu.dataset.riwayatReject || '0') + ' kali';
 
         var formArea = document.getElementById('mk-form-area');
         formArea.innerHTML = '';
@@ -326,7 +319,7 @@
         if (kartu.dataset.isPending === '1') {
             formArea.className = 'xmodal-foot';
             formArea.innerHTML =
-                '<label for="mk-grade-select" style="flex-basis: 100%; margin: 0; font-weight: 600;">Grade Client (wajib untuk Approve)</label>' +
+                '<label for="mk-grade-select" style="flex-basis: 100%; margin: 0; font-weight: 600;">Grade Anda (wajib untuk memilih)</label>' +
                 '<select id="mk-grade-select" style="flex-basis: 100%; margin-bottom: 0;">' +
                 '<option value="">Pilih Grade</option>' +
                 '<option value="A">A</option>' +
@@ -334,15 +327,15 @@
                 '<option value="C">C</option>' +
                 '</select>' +
                 '<div style="flex-basis: 100%; font-size: var(--fs-xs); color: var(--text-muted);">A = terbaik/paling sesuai, B = sesuai, C = cukup (cadangan).</div>' +
-                '<button type="button" class="btn btn-danger-outline" onclick="submitSingle(' + appId + ', \'reject\')">Reject</button>' +
-                '<button type="button" class="btn btn-brand" onclick="submitSingle(' + appId + ', \'approve\')">Approve</button>';
+                '<button type="button" class="btn btn-danger-outline" onclick="submitSingle(' + appId + ', \'reject\')">Tolak</button>' +
+                '<button type="button" class="btn btn-brand" onclick="submitSingle(' + appId + ', \'approve\')">Pilih</button>';
         } else if (kartu.dataset.reviewKeputusan) {
             var kep = kartu.dataset.reviewKeputusan;
             var grClient = kartu.dataset.reviewGrade ? ' (Grade ' + kartu.dataset.reviewGrade + ')' : '';
             formArea.className = 'xmodal-foot';
             formArea.innerHTML =
                 '<div style="font-size: 13px; color: var(--text-secondary);">' +
-                'Keputusan: <strong>' + kep.charAt(0).toUpperCase() + kep.slice(1) + grClient + '</strong><br>' +
+                'Keputusan: <strong>' + (kep === 'approve' ? 'Dipilih' : 'Ditolak') + grClient + '</strong><br>' +
                 '<span style="font-size: var(--fs-xs);">' + (kartu.dataset.reviewTgl || '') + '</span></div>';
         }
 
@@ -395,9 +388,10 @@
     window.submitSingle = function (appId, keputusan) {
         if (keputusan === 'approve') {
             var grade = document.getElementById('mk-grade-select')?.value;
-            if (!grade) { alert('Pilih Grade Client dulu sebelum Approve.'); return; }
+            if (!grade) { alert('Pilih grade dulu sebelum memilih kandidat.'); return; }
             document.getElementById('hidden-grade-client').value = grade;
         } else {
+            if (!confirm('Tolak kandidat ini? Kandidat yang ditolak tidak bisa diajukan ulang ke proyek ini.')) return;
             document.getElementById('hidden-grade-client').value = '';
         }
         document.querySelectorAll('.app-checkbox').forEach(function (cb) { cb.checked = false; });

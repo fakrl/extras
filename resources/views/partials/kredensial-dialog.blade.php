@@ -9,7 +9,9 @@
         <textarea id="kredensial-teks" readonly rows="6" style="width: 100%; font-family: monospace; font-size: var(--fs-sm); margin-bottom: 12px;">{{ $teksKredensial }}</textarea>
         <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;">
             <button type="button" class="btn" onclick="this.closest('dialog').close()">Tutup</button>
-            <a class="btn" target="_blank" rel="noopener" href="https://wa.me/{{ $k['nomor_wa'] }}?text={{ rawurlencode($teksKredensial) }}"><i class="ti ti-brand-whatsapp"></i> Kirim via WA</a>
+            @if (! empty($k["nomor_wa"]))
+            <a class="btn" target="_blank" rel="noopener" href="https://wa.me/{{ $k["nomor_wa"] }}?text={{ rawurlencode($teksKredensial) }}"><i class="ti ti-brand-whatsapp"></i> Kirim via WA</a>
+            @endif
             <button type="button" class="btn btn-brand" id="kredensial-salin">Salin semua</button>
         </div>
     </div>

@@ -19,13 +19,13 @@
         <p style="margin: 0; font-size: 13.5px; color: var(--text-secondary);">Invoice dibuat otomatis setelah ada kandidat yang dipilih Client.</p>
     </div>
 @else
-{{-- Model 1: Format Resmi JBTB --}}
+{{-- Invoice resmi JBTB --}}
 <div class="card" style="margin-bottom: 16px;">
     <div style="font-size: 14.5px; font-weight: 600; margin-bottom: 10px;">
-        <i class="ti ti-file-text"></i> Model 1: Invoice Resmi JBTB (Digital PDF)
+        <i class="ti ti-file-text"></i> Invoice Resmi JBTB (PDF)
     </div>
     <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px;">
-        Invoice resmi ter-generate otomatis dengan kalkulasi kelas karakter, fee, dan tanda tangan digital sah dari kedua belah pihak.
+        Invoice resmi dibuat otomatis berisi rincian peran, fee, dan tanda tangan digital dari kedua belah pihak.
     </p>
 
     <div style="display: flex; gap: 14px; margin-bottom: 14px; flex-wrap: wrap;">
@@ -63,10 +63,10 @@
     @endif
 </div>
 
-{{-- Model 2: Template Dokumen / Voucher Khusus Client PH --}}
+{{-- Dokumen khusus PH --}}
 <div class="card" style="margin-bottom: 16px;">
     <div style="font-size: 14.5px; font-weight: 600; margin-bottom: 10px;">
-        <i class="ti ti-upload"></i> Model 2: Template / Voucher Dokumen Khusus PH
+        <i class="ti ti-upload"></i> Dokumen Khusus Production House (PH)
     </div>
     <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px;">
         Jika Production House memiliki format template invoice, voucher talent, atau purchase order (PO) sendiri, upload atau download dokumennya di sini.
@@ -84,7 +84,7 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('invoices.upload-custom', $castingProject) }}" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+    <form method="POST" action="{{ route('invoices.upload-custom', $castingProject) }}" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;" @if ($invoice->custom_doc_path) onsubmit="return confirm('Dokumen PH yang sudah ada akan diganti dengan file baru dan tidak bisa dikembalikan. Lanjutkan?')" @endif>
         @csrf
         <div style="flex: 1; min-width: 220px;">
             <label style="font-size: 12px; margin-bottom: 4px; display: block;">Upload Dokumen PH (PDF, DOCX, XLSX, max 10MB) <span class="wajib" aria-hidden="true">*</span></label>
@@ -134,7 +134,7 @@
         </form>
     </div>
 @else
-    <div class="alert-success">Kamu sudah menandatangani invoice ini.</div>
+    <div class="alert-success">Anda sudah menandatangani invoice ini.</div>
 @endif
 @endif
 @endsection

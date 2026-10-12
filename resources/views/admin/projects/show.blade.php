@@ -51,8 +51,8 @@
                 'Staf lain' => $stafLain->map(fn ($a) => $a->user?->name)->filter()->implode(', ') ?: '-',
                 'Deadline daftar' => $p->deadline?->translatedFormat('d M Y') ?? '-',
                 'Kuota total' => $p->kuota.' orang',
-                'Lowongan' => ucfirst($p->status),
-                'Pengajuan' => ucfirst(str_replace('_', ' ', $p->client_request_status)),
+                'Lowongan' => $p->label(),
+                'Pengajuan' => ['draft' => 'Draf', 'menunggu_acc' => 'Menunggu ACC', 'disetujui' => 'Disetujui', 'ditolak' => 'Ditolak'][$p->client_request_status] ?? $p->client_request_status,
                 'Urgent' => $p->is_urgent ? 'Ya' : 'Tidak',
                 'Fee' => $p->nego_terbuka ? 'Terbuka untuk nego fee' : 'Fee tetap',
             ] as $label => $value)
@@ -220,7 +220,7 @@
                                 <span class="badge badge-aktif">Lunas</span>
                                 <div style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $inv->dibayar_at?->translatedFormat('d M Y H:i') }}</div>
                             @else
-                                <span class="badge badge-pending">Belum</span>
+                                <span class="badge badge-info">Belum lunas</span>
                             @endif
                         </td>
                         <td>
@@ -239,7 +239,7 @@
 
     <div class="card cf-seksi">
         <div class="card-title">Honor Extras</div>
-        <p style="font-size: var(--fs-xs); color: var(--text-muted); margin: 0 0 8px;">{{ $p->payments->whereNotNull('ditransfer_at')->count() }} dari {{ $p->payments->count() }} sudah ditransfer</p>
+        <p style="font-size: var(--fs-xs); color: var(--text-muted); margin: 0 0 8px;">{{ $p->payments->whereNotNull('ditransfer_at')->count() }} dari {{ $p->payments->count() }} sudah ditransfer · Total {{ $rp($p->payments->sum(fn ($x) => $x->nominalTotal())) }}</p>
         <div class="table-container">
             <table>
                 <thead><tr><th>Extras</th><th>Peran</th><th>Nominal (pokok + add-on)</th><th>Status</th><th></th></tr></thead>
@@ -248,7 +248,7 @@
                         @php $app = $pay->projectApplication; @endphp
                         <tr>
                             <td>{{ $app?->extras?->user?->username ? '@'.$app->extras->user->username : ($app?->extras?->user?->name ?? '-') }}</td>
-                            <td>{{ $app?->karakter ?: '-' }}</td>
+                            <td>{{ $app?->castingProjectClass?->nama_kelas ?: ($app?->karakter ?: '-') }}</td>
                             <td>{{ $rp($pay->nominalTotal()) }}</td>
                             <td><x-status-badge :model="$pay" /></td>
                             <td>@if ($app)<a href="{{ route('payments.show', $app) }}" class="btn btn-sm {{ $pay->bisaDitransfer() ? 'btn-brand' : '' }}">{{ $pay->bisaDitransfer() ? 'Transfer' : 'Lihat' }}</a>@endif</td>
@@ -262,10 +262,10 @@
     </div>
 
     <div class="card cf-seksi">
-        <div class="card-title">Honor Staf</div>
+        <div class="card-title">Honor Staf <span style="font-weight: 400; font-size: var(--fs-xs); color: var(--text-muted);">· Total {{ $rp($p->payrolls->sum(fn ($x) => $x->nominalTotal())) }}</span></div>
         <div class="table-container">
             <table>
-                <thead><tr><th>Staf</th><th>Role</th><th>Nominal</th><th>Status</th><th></th></tr></thead>
+                <thead><tr><th>Staf</th><th>Peran</th><th>Nominal</th><th>Status</th><th></th></tr></thead>
                 <tbody>
                     @forelse ($p->payrolls as $payroll)
                         @php $staf = $payroll->assignment?->user; @endphp
@@ -278,7 +278,7 @@
                                     <span class="badge badge-aktif">Sudah Dibayar</span>
                                     <div style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $payroll->dibayar_at?->translatedFormat('d M Y H:i') }}</div>
                                 @else
-                                    <span class="badge badge-pending">Belum Dibayar</span>
+                                    <span class="badge badge-netral">Belum Dibayar</span>
                                 @endif
                             </td>
                             <td>
@@ -302,7 +302,7 @@
     </div>
 
     <div class="card cf-seksi">
-        <div class="card-title">Biaya Lain-lain</div>
+        <div class="card-title">Biaya Lain-lain <span style="font-weight: 400; font-size: var(--fs-xs); color: var(--text-muted);">· Total {{ $rp($p->expenses->sum("nominal")) }}</span></div>
         <div class="table-container">
             <table>
                 <thead><tr><th>Tanggal</th><th>Keterangan</th><th>Nominal</th><th>Dicatat</th><th></th></tr></thead>

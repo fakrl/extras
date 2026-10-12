@@ -4,8 +4,8 @@
 @section('title', ['admin' => 'Profil Extras — '.$profile->user->name, 'client' => 'Profil @'.$profile->user->username][$mode] ?? 'Profil Saya')
 
 @section('content')
-@if (session('status'))
-    <div class="alert-success">{{ session('status') }}</div>
+@if ($mode === 'client')
+    <p style="margin: 0 0 10px;"><a href="{{ route('client.reviews.index') }}" style="color: var(--accent); font-size: 13px;">&larr; Kembali ke Greenlight</a></p>
 @endif
 @include('partials.profil-extras-app')
 

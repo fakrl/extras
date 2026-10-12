@@ -6,7 +6,7 @@
 <div style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Jadwal Shooting</div>
 
 @if ($projects->isEmpty())
-    <div class="card" style="color: var(--text-muted);">Belum ada proyek yang ditugaskan ke kamu.</div>
+    <div class="card" style="color: var(--text-muted);">Belum ada proyek yang ditugaskan kepada Anda.</div>
 @else
     @foreach ($projects as $project)
         <div class="card" style="margin-bottom: 14px;">

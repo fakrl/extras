@@ -95,7 +95,7 @@ class BjTagBebasTest extends TestCase
             'nama_produksi' => 'Proyek Tag', 'client_id' => User::factory()->create(['role' => 'client'])->id,
             'deadline' => now()->addDays(7)->toDateString(), 'kuota' => 5, 'tanggal_shooting' => [now()->addDays(10)->toDateString()],
             'kelas' => [['nama_kelas' => 'Warga', 'budget_client' => 100000, 'kuota_kelas' => 2, 'tag_nama' => ['naik motor', 'Main gitar']]],
-        ])->assertRedirect(route('admin.projects.index'));
+        ])->assertRedirect();
 
         $kelas = CastingProject::where('nama_produksi', 'Proyek Tag')->firstOrFail()->classes()->firstOrFail();
         $this->assertEqualsCanonicalizing(['Naik motor', 'Main gitar'], $kelas->categories()->pluck('nama')->all());

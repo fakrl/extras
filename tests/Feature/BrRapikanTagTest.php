@@ -39,7 +39,7 @@ class BrRapikanTagTest extends TestCase
 
         foreach ([['admin', 'admin.akun.extras', []], ['super_admin', 'super-admin.akun.index', ['role' => 'extras']]] as [$role, $route, $q]) {
             $res = $this->actingAs(User::factory()->create(['role' => $role]))->get(route($route, $q))->assertOk()
-                ->assertSee('Rapikan tag (2)')
+                ->assertSee('Kelola tag (2 perlu dirapikan)')
                 ->assertSee('<dialog id="rapikan-tag"', false)
                 ->assertDontSee('Kelola Tag')
                 ->assertDontSee(route('admin.tags.update', $t['rapi']), false)
@@ -52,13 +52,13 @@ class BrRapikanTagTest extends TestCase
         }
     }
 
-    public function test_kosong_link_tidak_muncul(): void
+    public function test_kosong_tanpa_hitungan_perlu_dirapikan(): void
     {
         ExtrasCategory::create(['nama' => 'Berhijab', 'grup' => 'Tipe']);
 
         $this->actingAs(User::factory()->create(['role' => 'admin']))->get(route('admin.akun.extras'))->assertOk()
-            ->assertDontSee('Rapikan tag (')
-            ->assertDontSee('data-rapikan-tag', false);
+            ->assertDontSee('perlu dirapikan')
+            ->assertSee('data-rapikan-tag', false);
     }
 
     public function test_aksi_dialog_json_pakai_logika_lama_dan_tercatat(): void

@@ -16,7 +16,7 @@
         Nama: {{ $assignment->user->name }}<br>
         Peran: {{ $assignment->user->role }}<br>
         Proyek: {{ $assignment->castingProject->nama_produksi }}<br>
-        Status: Selesai pada {{ $assignment->completed_at->format('d M Y') }}
+        Status: Selesai pada {{ $assignment->completed_at->translatedFormat('d M Y') }}
     </p>
 
     <table>

@@ -51,42 +51,27 @@
 @if ($myRequests->isNotEmpty())
     <div class="card">
         <div class="card-title">Riwayat Pengajuan Permintaan Proyek Anda</div>
-        <div class="table-container">
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
-                        <th style="padding: 10px 8px;">Judul Produksi</th>
-                        <th style="padding: 10px 8px;">PH</th>
-                        <th style="padding: 10px 8px;">Kuota</th>
-                        <th style="padding: 10px 8px;">Deadline</th>
-                        <th style="padding: 10px 8px;">Status Pengajuan</th>
-                        <th style="padding: 10px 8px;">Tanggal Diajukan</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($myRequests as $req)
-                        <tr style="border-bottom: 1px solid var(--border-color);">
-                            <td style="padding: 10px 8px; font-weight: 600;">{{ $req->nama_produksi }}</td>
-                            <td style="padding: 10px 8px;">{{ $req->namaClient() }}</td>
-                            <td style="padding: 10px 8px;">{{ $req->kuota }} orang</td>
-                            <td style="padding: 10px 8px;">{{ $req->deadline?->format('d/m/Y') }}</td>
-                            <td style="padding: 10px 8px;">
-                                @if ($req->client_request_status === 'disetujui')
-                                    <span class="badge badge-aktif">Disetujui tim JBTB</span>
-                                @elseif ($req->client_request_status === 'ditolak')
-                                    <span class="badge badge-tolak">Ditolak</span>
-                                @else
-                                    <span class="badge badge-pending">Menunggu ACC</span>
-                                @endif
-                            </td>
-                            <td style="padding: 10px 8px; font-size: 12.5px; color: var(--text-muted);">
-                                {{ $req->created_at->format('d/m/Y H:i') }}
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+        @foreach ($myRequests as $req)
+            <div style="padding: 12px 0; border-top: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap;">
+                    <div style="font-weight: 600;">{{ $req->nama_produksi }}</div>
+                    @if ($req->client_request_status === 'disetujui')
+                        <span class="badge badge-aktif">Disetujui tim JBTB</span>
+                    @elseif ($req->client_request_status === 'ditolak')
+                        <span class="badge badge-tolak">Ditolak</span>
+                    @else
+                        <span class="badge badge-pending">Menunggu ACC</span>
+                    @endif
+                </div>
+                <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">
+                    {{ $req->namaClient() }} · {{ $req->kuota }} orang · Batas pendaftaran {{ $req->deadline?->translatedFormat('d M Y') }}
+                </div>
+                <div style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">Diajukan {{ $req->created_at->translatedFormat('d M Y H:i') }}</div>
+                @if ($req->client_request_status === 'ditolak' && $req->alasan_tolak)
+                    <div style="font-size: 13px; color: var(--danger); margin-top: 4px;">Alasan: {{ $req->alasan_tolak }}</div>
+                @endif
+            </div>
+        @endforeach
     </div>
 @endif
 @endsection

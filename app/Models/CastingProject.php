@@ -267,10 +267,17 @@ class CastingProject extends Model
 
     const TAHAP_BADGES = [
         'menunggu_acc' => 'badge-pending',
-        'mendatang' => 'badge-info',
-        'berjalan' => 'badge-aktif',
-        'selesai' => 'badge-netral',
+        'mendatang' => 'badge-netral',
+        'berjalan' => 'badge-info',
+        'selesai' => 'badge-aktif',
     ];
+
+    /** AD-08: satu definisi "tanpa PIC/Client"; pengajuan Client yang belum disetujui tidak dihitung. */
+    public function scopeTanpaPicClient($query)
+    {
+        return $query->whereNotIn('client_request_status', ['draft', 'menunggu_acc', 'ditolak'])
+            ->where(fn ($q) => $q->whereNull('client_id')->orWhereNull('admin_id'));
+    }
 
     /**
      * BD.2: tahap proyek dari tanggal shooting (bukan status lowongan dibuka/ditutup).
