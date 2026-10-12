@@ -772,7 +772,7 @@
                                 @endforelse
                                 @if(auth()->user()->notifications->count() > 5)
                                     <div style="padding:8px 14px;text-align:center;">
-                                        <span style="font-size:12px;color:var(--text-muted);">+{{ auth()->user()->notifications->count() - 5 }} notifikasi lainnya</span>
+                                        <a href="{{ route('notifications.index') }}" style="font-size:12px;">+{{ auth()->user()->notifications->count() - 5 }} notifikasi lainnya</a>
                                     </div>
                                 @endif
                             </div>
