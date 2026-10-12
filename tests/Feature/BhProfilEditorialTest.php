@@ -40,7 +40,8 @@ class BhProfilEditorialTest extends TestCase
     public function test_mode_publik_tanpa_data_internal(): void
     {
         $this->get(route('public.extras.profile', $this->profile->fresh()->share_token))->assertOk()
-            ->assertSee('Profil Talent / #')
+            ->assertSee('Profil Talent')
+            ->assertDontSee('Profil Talent / #')
             ->assertSee('Ajak casting lewat JBTB')
             ->assertSee('25–29 tahun')
             ->assertDontSee('27 tahun')
@@ -92,14 +93,14 @@ class BhProfilEditorialTest extends TestCase
     public function test_gallery_kosong_dan_badge_status(): void
     {
         $url = route('public.extras.profile', $this->profile->fresh()->share_token);
-        $this->get($url)->assertSee('Belum ada foto')->assertSee('>Aktif<', false);
+        $this->get($url)->assertSee('Belum ada foto')->assertDontSee('>Aktif<', false)->assertDontSee('#'.str_pad($this->profile->id, 3, '0', STR_PAD_LEFT));
 
         $project = CastingProject::create(['admin_id' => User::factory()->create(['role' => 'admin'])->id, 'nama_produksi' => 'X', 'deadline' => now()->addWeek(), 'kuota' => 5, 'status' => 'dibuka']);
         ProjectApplication::create(['casting_project_id' => $project->id, 'extras_id' => $this->profile->id, 'status_partisipasi' => 'deal']);
-        $this->get($url)->assertSee('Sedang di proyek');
+        $this->get($url)->assertDontSee('Sedang di proyek');
 
         $this->profile->user->update(['status' => 'nonaktif']);
-        $this->get($url)->assertSee('Tidak aktif');
+        $this->get($url)->assertDontSee('Tidak aktif');
     }
 
     public function test_gallery_berisi_pakai_route_sesuai_mode(): void

@@ -78,11 +78,17 @@ return [
     |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
+    'locale' => env('APP_LOCALE', 'id'),
 
-    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
+    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'id'),
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
+
+    // Kontak publik di landing; item kosong disembunyikan
+    'kontak' => [
+        'wa' => env('JBTB_WA'),
+        'email' => env('JBTB_EMAIL'),
+    ],
 
     /*
     |--------------------------------------------------------------------------

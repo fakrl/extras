@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Masuk | SIM Casting JBTB')
+@section('title', 'Masuk | JBTB Casting')
 
 @section('content')
 <h1 class="auth-title">Masuk</h1>
@@ -22,18 +22,18 @@
 
 <form method="POST" action="{{ route('login') }}">
     @csrf
-    <label>Email atau Username <span class="wajib" aria-hidden="true">*</span></label>
-    <input type="text" name="email" value="{{ old('email') }}" required autofocus
+    <label for="login-email">Email atau Username <span class="wajib" aria-hidden="true">*</span></label>
+    <input type="text" id="login-email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"
            placeholder="email@contoh.com atau username">
 
-    <x-password-input name="password" label="Password" />
+    <x-password-input name="password" label="Kata Sandi" autocomplete="current-password" />
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin: -8px 0 16px;">
-        <label style="display: flex; align-items: center; gap: 6px; margin-bottom: 0; font-weight: 400;">
-            <input type="checkbox" name="remember" style="width: auto; min-height: auto; margin-bottom: 0;">
+    <div class="auth-opsi">
+        <label for="login-remember">
+            <input type="checkbox" id="login-remember" name="remember">
             Ingat saya
         </label>
-        <a href="{{ route('password.request') }}" style="font-size: 13px;">Lupa password?</a>
+        <a href="{{ route('password.request') }}">Lupa kata sandi?</a>
     </div>
 
     <button type="submit" class="btn-brand">Masuk</button>
@@ -43,7 +43,7 @@
 <p class="auth-footer">
     Belum punya akun Extras? <a href="{{ route('register') }}">Daftar di sini</a>
 </p>
-<p class="auth-footer" style="margin-top: 8px; font-size: 12px;">
+<p class="auth-footer" style="margin-top: 8px; font-size: var(--fs-xs);">
     <a href="{{ route('privacy-policy') }}">Kebijakan Privasi</a>
 </p>
 @endsection

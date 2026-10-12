@@ -4,7 +4,7 @@
     $reset = \App\Support\FilterAktif::reset(request());
 @endphp
 <details class="fpanel" data-k="fpanel">
-    <summary class="btn btn-sm" aria-label="Filter" data-live-sync="fpanel-btn"><i class="ti ti-adjustments-horizontal"></i> Filter @if ($chips)<span class="fpanel-n">{{ count($chips) }}</span>@endif</summary>
+    <summary class="btn btn-sm" data-live-sync="fpanel-btn"><i class="ti ti-adjustments-horizontal"></i> Filter @if ($chips)<span class="fpanel-n">{{ count($chips) }}</span>@endif</summary>
     <div class="fpanel-isi" role="group" aria-label="Pilihan filter">
         <div class="fpanel-body">{{ $slot }}</div>
         <div class="fpanel-foot" data-live-sync="fpanel-foot">

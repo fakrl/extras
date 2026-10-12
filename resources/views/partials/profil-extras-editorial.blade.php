@@ -107,10 +107,10 @@
 }
 </style>
 
-<div class="pe {{ $publik ? 'pe-publik' : 'pe-app' }}" data-username="{{ $username }}" data-status="{{ $status }}" data-status-class="{{ $statusClass }}">
+<div class="pe {{ $publik ? 'pe-publik' : 'pe-app' }}" data-username="{{ $username }}" @unless ($publik) data-status="{{ $status }}" data-status-class="{{ $statusClass }}" @endunless>
     <section class="pe-sec pe-pad">
         <div class="pe-head">
-            <p class="pe-num">Profil Talent / #{{ str_pad($profile->id, 3, '0', STR_PAD_LEFT) }}</p>
+            <p class="pe-num">Profil Talent{{ $publik ? '' : ' / #'.str_pad($profile->id, 3, '0', STR_PAD_LEFT) }}</p>
             @if ($mode === 'pemilik')
                 <div class="pe-actions">
                     <button type="button" id="btn-share" class="pe-act"><i class="ti ti-share"></i> Bagikan</button>
@@ -125,7 +125,7 @@
                 @else
                     <i class="ti ti-photo-off" aria-hidden="true"></i>
                 @endif
-                <span class="pe-badge {{ $status === 'Tidak aktif' ? 'is-off' : '' }}">{{ $status }}</span>
+                @unless ($publik)<span class="pe-badge {{ $status === 'Tidak aktif' ? 'is-off' : '' }}">{{ $status }}</span>@endunless
             </div>
             <div>
                 <p class="pe-label">Extras{{ $usiaTag->isNotEmpty() ? ' · '.$usiaTag->implode(' · ') : '' }}</p>

@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Daftar dengan Google | SIM Casting JBTB')
+@section('title', 'Daftar dengan Google | JBTB Casting')
 
 @section('content')
 <h1 class="auth-title">Satu langkah lagi</h1>
@@ -17,9 +17,9 @@
 <form method="POST" action="{{ route('google.daftar') }}">
     @csrf
     <div class="checkbox-row">
-        <input type="checkbox" name="setuju_privasi" id="setuju_privasi" required>
         <label for="setuju_privasi">
-            Saya sudah membaca dan menyetujui <a href="{{ route('privacy-policy') }}" target="_blank">Kebijakan Privasi</a>. <span class="wajib" aria-hidden="true">*</span>
+            <input type="checkbox" name="setuju_privasi" id="setuju_privasi" required>
+            <span>Saya sudah membaca dan menyetujui <a href="{{ route('privacy-policy') }}" target="_blank">Kebijakan Privasi</a>. <span class="wajib" aria-hidden="true">*</span></span>
         </label>
     </div>
 
