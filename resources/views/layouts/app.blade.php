@@ -762,12 +762,11 @@
                                     @endif
                                 </div>
                                 @forelse(auth()->user()->notifications->take(5) as $notif)
-                                    @php($notifUrl = \App\Notifications\InAppNotification::relatif($notif->data['url'] ?? null))
-                                    <{{ $notifUrl ? 'a' : 'div' }} @if($notifUrl) href="{{ $notifUrl }}" @endif style="display:block;color:inherit;text-decoration:none;padding:10px 14px;border-bottom:1px solid var(--border-color);{{ $notif->read_at ? '' : 'background:var(--bg-nav-active);' }}">
+                                    <a href="{{ route('notifications.baca', $notif->id) }}" style="display:block;color:inherit;text-decoration:none;padding:10px 14px;border-bottom:1px solid var(--border-color);{{ $notif->read_at ? '' : 'background:var(--bg-nav-active);' }}">
                                         <div style="font-size:13px;font-weight:{{ $notif->read_at ? '400' : '600' }};margin-bottom:2px;">{{ $notif->data['judul'] ?? '' }}</div>
                                         <div style="font-size:12px;color:var(--text-secondary);line-height:1.4;">{{ mb_substr($notif->data['pesan'] ?? '', 0, 100) }}</div>
                                         <div style="font-size: var(--fs-xs);color:var(--text-muted);margin-top:3px;">{{ $notif->created_at->diffForHumans() }}</div>
-                                    </{{ $notifUrl ? 'a' : 'div' }}>
+                                    </a>
                                 @empty
                                     <div style="padding:16px 14px;font-size:13px;color:var(--text-muted);text-align:center;">Tidak ada notifikasi.</div>
                                 @endforelse
@@ -788,12 +787,14 @@
                             </summary>
                             <div class="navbar-user-menu-dropdown">
                                 @if (auth()->user()->role === 'extras')
-                                    <a href="{{ route('extras.profile.edit') }}"><i class="ti ti-user"></i> Profil Saya</a>
+                                    <a href="{{ route('extras.profile.edit') }}"><i class="ti ti-user"></i> Edit Profil</a>
                                 @endif
-                                <a href="{{ route('ubah-password') }}"><i class="ti ti-lock"></i> Ubah Kata Sandi</a>
+                                @unless (isset($saMonitoring) && $saMonitoring['target'])
+                                    <a href="{{ route('ubah-password') }}"><i class="ti ti-lock"></i> Ubah Kata Sandi</a>
+                                @endunless
                                 <form method="POST" action="{{ route('logout') }}" data-sa-allow>
                                     @csrf
-                                    <button type="submit"><i class="ti ti-logout"></i> Keluar</button>
+                                    <button type="submit"><i class="ti ti-logout"></i> {{ isset($saMonitoring) ? 'Keluar (logout akun)' : 'Keluar' }}</button>
                                 </form>
                             </div>
                         </details>
@@ -808,6 +809,8 @@
                             <i class="ti ti-eye"></i> <strong>Super Admin</strong> · sebagai {{ \App\Models\User::LABELS[$saMonitoring['mode']] }}
                             @if ($saMonitoring['target'])
                                 ({{ $saMonitoring['target']->name }}) · <strong>Mode lihat saja</strong>
+                            @else
+                                · <strong>Aksi nyata, tercatat atas nama Anda</strong>
                             @endif
                         </span>
                         <form method="POST" action="{{ route('super-admin.mode.keluar') }}" data-sa-allow>
@@ -821,6 +824,9 @@
                 @endisset
                 @if (session('status'))
                     <div class="alert-success">{{ session('status') }}</div>
+                @endif
+                @if (session('info'))
+                    <div class="alert-info">{{ session('info') }}</div>
                 @endif
                 @if (session('error'))
                     <div class="alert-danger">{{ session('error') }} @if (session('bentrok_link')) <a href="{{ session('bentrok_link') }}" style="color: inherit; font-weight: 600;">Lihat pendaftaran yang bentrok &rarr;</a> @endif</div>

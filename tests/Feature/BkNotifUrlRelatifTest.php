@@ -27,15 +27,18 @@ class BkNotifUrlRelatifTest extends TestCase
     public function test_notif_lama_absolut_dirender_relatif(): void
     {
         $user = User::factory()->create(['role' => 'admin']);
-        $user->notifications()->create([
+        $notif = $user->notifications()->create([
             'id' => (string) \Illuminate\Support\Str::uuid(),
             'type' => InAppNotification::class,
             'data' => ['judul' => 'Lama', 'pesan' => 'x', 'url' => 'https://ferris-hardy-judo.ngrok-free.dev/admin/dashboard'],
         ]);
 
+        // item notif lewat route baca (tandai dibaca), lalu dialihkan ke URL relatif
         $this->actingAs($user)->get(route('admin.dashboard'))
             ->assertOk()
-            // link item notif (bukan link sidebar yang memang ikut APP_URL)
-            ->assertSee('href="/admin/dashboard"', false)->assertDontSee('href="https://ferris-hardy-judo.ngrok-free.dev/admin/dashboard"  style', false);
+            ->assertSee(route('notifications.baca', $notif->id), false)
+            ->assertDontSee('href="https://ferris-hardy-judo.ngrok-free.dev/admin/dashboard"  style', false);
+        $this->get(route('notifications.baca', $notif->id))->assertRedirect('/admin/dashboard');
+        $this->assertNotNull($notif->fresh()->read_at);
     }
 }
