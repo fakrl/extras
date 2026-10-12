@@ -270,7 +270,7 @@ class AuditAGuardTest extends TestCase
 
         $sd->refresh();
         $this->assertSame('Studio A', $sd->lokasi);
-        $this->assertSame([['nama' => 'Ibu-ibu', 'jam' => '06:30'], ['nama' => 'Bapak', 'jam' => '07:00']], $sd->panggilan);
+        $this->assertEquals([['nama' => 'Ibu-ibu', 'jam' => '06:30'], ['nama' => 'Bapak', 'jam' => '07:00']], $sd->panggilan);
     }
 
     public function test_client_tidak_bisa_membuat_tanggal_baru(): void
