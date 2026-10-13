@@ -6,13 +6,14 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="color-scheme" content="dark light">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <script>try { document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme-v2') || 'light'); if (localStorage.getItem('jbtb-sidebar') === 'ringkas') document.documentElement.classList.add('sb-ringkas'); } catch (e) {}</script>
+    <script>document.documentElement.classList.add('no-anim'); try { document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme-v2') || 'light'); if (localStorage.getItem('jbtb-sidebar') === 'ringkas') document.documentElement.classList.add('sb-ringkas'); } catch (e) {}</script>
     <title>@yield('title', 'SIM Casting JBTB')</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
     @include('partials.theme-style')
     <style>
         body { transition: background 0.2s ease, color 0.2s ease; }
+        .no-anim, .no-anim * { transition: none !important; }
         a { color: inherit; text-decoration: none; }
 
         .app-shell { display: flex; min-height: 100vh; }
@@ -616,7 +617,10 @@
             display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap;
             background: rgba(234,179,8,0.14); border: 1px solid rgba(234,179,8,0.45); color: var(--text-primary);
             padding: 10px 14px; border-radius: var(--radius-md); margin-bottom: 16px; font-size: var(--fs-base);
+            position: sticky; top: 8px; z-index: 250; background-color: var(--bg-card);
+            background-image: linear-gradient(rgba(234,179,8,0.14), rgba(234,179,8,0.14));
         }
+        .sa-gembok { margin-right: 4px; }
         .sa-mode-banner form { margin: 0; }
         .sa-lihat-saja form :disabled:not([type="hidden"]), .sa-lihat-saja [aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
         .sa-lock-note { margin: -8px 0 16px; font-size: var(--fs-sm); color: var(--text-secondary); }
@@ -849,6 +853,7 @@
     <script>
         (function () {
             document.addEventListener('DOMContentLoaded', function () {
+                requestAnimationFrame(function () { requestAnimationFrame(function () { document.documentElement.classList.remove('no-anim'); }); });
                 var ikon = function (t) {
                     document.querySelectorAll('[data-theme-toggle]').forEach(function (b) { b.setAttribute('aria-pressed', t === 'dark'); });
                     document.querySelectorAll('[data-theme-toggle] i').forEach(function (i) { i.className = t === 'dark' ? 'ti ti-sun' : 'ti ti-moon'; });
@@ -982,6 +987,10 @@
                         if (el.disabled) return;
                         el.disabled = true;
                         el.title = 'Mode lihat saja';
+                        if (el.tagName === 'BUTTON') {
+                            el.setAttribute('aria-label', (el.textContent.trim() || el.getAttribute('aria-label') || 'Aksi') + ' (terkunci, mode lihat saja)');
+                            el.insertAdjacentHTML('afterbegin', '<i class="ti ti-lock sa-gembok" aria-hidden="true"></i>');
+                        }
                         if (el.type === 'file' && el.id) document.querySelectorAll('label[for="' + el.id + '"]').forEach(function (l) { l.setAttribute('aria-disabled', 'true'); });
                     });
                     var note = document.querySelector('[data-sa-lock]');

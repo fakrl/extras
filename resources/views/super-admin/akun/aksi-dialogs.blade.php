@@ -56,11 +56,11 @@
         <dialog id="hapus-dialog-{{ $u->id }}" class="akun-dialog">
             <form method="POST" action="{{ route('super-admin.admins.destroy', $u) }}">
                 @csrf @method('DELETE')
-                <div class="akun-dialog-judul">Hapus {{ $u->name }}?</div>
-                <p class="akun-dialog-teks">Akun diarsipkan, histori tetap aman. Bisa di-restore dari filter status "Dihapus".</p>
+                <div class="akun-dialog-judul">Arsipkan {{ $u->name }}?</div>
+                <p class="akun-dialog-teks">Akun diarsipkan dan tidak bisa login. Histori tetap aman. Bisa dipulihkan lewat filter status "Dihapus" lalu Restore.</p>
                 <div class="akun-dialog-btn">
                     <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
-                    <button type="submit" class="btn btn-sm btn-danger-outline">Hapus</button>
+                    <button type="submit" class="btn btn-sm btn-danger-outline">Arsipkan</button>
                 </div>
             </form>
         </dialog>

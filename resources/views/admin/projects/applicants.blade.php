@@ -6,6 +6,19 @@
 <style>
     #bulk-toolbar { display: none; position: sticky; top: 10px; z-index: 30; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: var(--space-3); padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
     #bulk-toolbar select { width: auto; margin: 0; min-height: 36px; }
+    .xgrid.is-daftar { grid-template-columns: 1fr; gap: 8px; }
+    .is-daftar .xcard { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 4px 12px; padding: 8px 12px; }
+    .is-daftar .xcard-ph { display: contents; }
+    .is-daftar .xcard-ph-btn { order: 1; width: 52px; height: 52px; flex: none; border-radius: 10px; overflow: hidden; background: linear-gradient(160deg, hsl(var(--h) 24% 72%), hsl(var(--h) 20% 40%)); }
+    .is-daftar .xcard-inisial { font-size: 18px; }
+    .is-daftar .xcard-ck { order: 0; position: static; flex: none; }
+    .is-daftar .xcard .xcard-st { order: 3; position: static; box-shadow: none; }
+    .is-daftar .xcard-fav { order: 4; position: static; }
+    .is-daftar .xcard-fav button { width: 44px; height: 44px; background: none; color: var(--text-muted); }
+    .is-daftar .xcard-body { order: 2; padding: 0; flex: 1 1 140px; min-width: 0; gap: 2px; }
+    .is-daftar .xcard-ring, .is-daftar .xcard-sub, .is-daftar .xcard-tags, .is-daftar .xcard-btns-2, .is-daftar .xcard-btns .btn-outline-brand, .is-daftar .xcard-line:has(.ti-ruler-2), .is-daftar .xcard-line:has(.ti-movie) { display: none; }
+    .is-daftar .xcard-btns { margin: 0; padding: 4px 0 0; }
+    .is-daftar .xcard-btns .btn { white-space: nowrap; padding: 0 12px; }
 </style>
 @endpush
 
@@ -18,9 +31,17 @@
     @endif
 </p>
 
+@php
+    $daftar = request('tampil') === 'daftar';
+    $tampilQ = $daftar ? ['tampil' => 'daftar'] : [];
+@endphp
 <div class="xfilter">
-    <a href="{{ route('admin.projects.applicants', $castingProject) }}" class="btn btn-sm {{ ($tab ?? '') !== 'client' ? 'btn-brand' : '' }}">Lineup</a>
-    <a href="{{ route('admin.projects.applicants', [$castingProject, 'tab' => 'client']) }}" class="btn btn-sm {{ ($tab ?? '') === 'client' ? 'btn-brand' : '' }}">Sudah ke Client</a>
+    <a href="{{ route('admin.projects.applicants', [$castingProject] + $tampilQ) }}" class="btn btn-sm {{ ($tab ?? '') !== 'client' ? 'btn-brand' : '' }}">Lineup</a>
+    <a href="{{ route('admin.projects.applicants', [$castingProject, 'tab' => 'client'] + $tampilQ) }}" class="btn btn-sm {{ ($tab ?? '') === 'client' ? 'btn-brand' : '' }}">Sudah ke Client</a>
+    <span style="margin-left: auto; display: inline-flex; gap: 4px;" role="group" aria-label="Tampilan">
+        <a href="{{ request()->fullUrlWithQuery(['tampil' => null, 'page' => null]) }}" class="btn btn-sm {{ $daftar ? '' : 'btn-brand' }}" @unless ($daftar) aria-current="true" @endunless><i class="ti ti-layout-grid" aria-hidden="true"></i> Kartu</a>
+        <a href="{{ request()->fullUrlWithQuery(['tampil' => 'daftar', 'page' => null]) }}" class="btn btn-sm {{ $daftar ? 'btn-brand' : '' }}" @if ($daftar) aria-current="true" @endif><i class="ti ti-list" aria-hidden="true"></i> Daftar</a>
+    </span>
 </div>
 
 @php
@@ -104,7 +125,7 @@
     $bisaCatatan = $isAdmin || auth()->user()->bisaSebagaiKorlap();
 @endphp
 
-<div class="xgrid">
+<div class="xgrid {{ $daftar ? 'is-daftar' : '' }}">
 @forelse ($applicants as $app)
     @php
         $ex = $app->extras;
