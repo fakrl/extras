@@ -16,7 +16,7 @@ User Extras termasuk orang tua/non-teknis. Ini bukan preferensi estetika, ini re
 - **Primary:** hijau `#15803D`
 - **Dark/hero:** `#0B1A12`
 - **Nilai accent aktual kode** (`theme-style.blade.php`, dicek ulang AY.3.6 28 Sept 2026 — dokumentasi lama menyebut `#22c55e`/`#4ade80` untuk mode gelap, itu SUDAH TIDAK SESUAI kode): mode terang `--accent: #15803d` / `--accent-strong: #0b5e2c`; mode gelap `--accent: #0f9a4c` / `--accent-strong: #22b862`.
-- **Konten (body, dashboard):** dark/light toggle tetap dipertahankan (keputusan final 28 Agu 2026, Fakrul) — user pilih sendiri via tombol di topbar, preferensi disimpan `localStorage`. "Semua umur" dipenuhi lewat kontras warna yang cukup di KEDUA tema, bukan dengan memaksa satu tema. Palet dark direvisi 28 Agu jadi netral (`resources/views/partials/theme-style.blade.php`) — bukan hijau tua di semua permukaan, biar nggak terasa gelap/pekat berlebihan. **Direvisi lagi 30 Agu 2026 (Opsi B dari 3 mockup)** — alasan: warna netral versi 28 Agu masih kebawa tint hijau (kurang kontras brand vs netral), `--accent-strong` mode terang identik sama `--accent` (nggak ada sinyal depth buat hover), dan `--warning` ganti hue total antar mode. Value baru: bg/text/border lebih dalam & sedikit lebih netral (bg-page dark `#0b1310`, light `#eef2ea`), `--accent-strong` mode terang jadi `#0b5e2c` (beda shade dari `--accent` `#15803d`), `--warning` konsisten amber di kedua mode (`#f59e0b` dark, `#d97706` light, sebelumnya kuning-emas vs coklat kusam). `--accent`/`--accent-strong` mode GELAP tidak berubah (`#22c55e`/`#4ade80`, sudah benar).
+- **Konten (body, dashboard):** dark/light toggle tetap dipertahankan (keputusan final 28 Agu 2026, Fakrul) — user pilih sendiri via tombol di topbar, preferensi disimpan `localStorage`. "Semua umur" dipenuhi lewat kontras warna yang cukup di KEDUA tema, bukan dengan memaksa satu tema. Palet dark direvisi 28 Agu jadi netral (`resources/views/partials/theme-style.blade.php`) — bukan hijau tua di semua permukaan, biar nggak terasa gelap/pekat berlebihan. **Direvisi lagi 30 Agu 2026 (Opsi B dari 3 mockup)** — alasan: warna netral versi 28 Agu masih kebawa tint hijau (kurang kontras brand vs netral), `--accent-strong` mode terang identik sama `--accent` (nggak ada sinyal depth buat hover), dan `--warning` ganti hue total antar mode. Value baru: bg/text/border lebih dalam & sedikit lebih netral (bg-page dark `#0b1310`, light `#eef2ea`), `--accent-strong` mode terang jadi `#0b5e2c` (beda shade dari `--accent` `#15803d`), `--warning` konsisten amber di kedua mode (`#f59e0b` dark, `#d97706` light, sebelumnya kuning-emas vs coklat kusam). `--accent`/`--accent-strong` mode GELAP: nilai aktual kode `#0f9a4c`/`#22b862` (lihat butir "Nilai accent aktual" di atas; `#22c55e`/`#4ade80` adalah nilai lama).
 - ⚠️ **Perhatian:** hijau brand dan hijau "status sukses" mirip. Kalau dipakai berdampingan (misal badge sukses di atas elemen brand hijau) dan bikin bingung, pisahkan shade (misal brand pakai `#15803D`, status sukses pakai `#22C55E` atau sejenis).
 - Font: **Inter**.
 - Logo JBTB: skema ijo-hitam.
@@ -64,19 +64,82 @@ Semua aksi yang butuh network (submit form, nego fee, upload bukti transfer) HAR
 
 ### Status Badge (konsisten di semua role, AY.3.3/3.6 — 28 Sept 2026)
 
-**Aturan wajib: status selalu teks + warna, JANGAN cuma warna doang** (buta warna / layar redup nggak bisa bedain kalau cuma warna). Pakai `<x-status-badge :model="$x" />` yang otomatis manggil `label()`/`badgeClass()` dari model (`ProjectApplication`, `Payment`, `User`, `CastingProject` — lihat konstanta `LABELS`/`BADGES` di masing-masing model, satu sumber kebenaran, jangan bikin map label duplikat di view).
+**Aturan wajib: status selalu teks + warna, JANGAN cuma warna doang** (buta warna / layar redup nggak bisa bedain kalau cuma warna). Label dan kelas diambil dari model, satu sumber kebenaran, jangan bikin map label duplikat di view: `ProjectApplication::label()` / `badgeClass()` (konstanta `LABELS`/`BADGES`), `labelClient()` untuk Client, `FeeNegotiation::label()` / `badgeClass()`, `CastingProject::TAHAP_BADGES`. Komponen `<x-status-badge>` TIDAK ada (belum pernah dibuat); badge ditulis `<span class="badge {{ $x->badgeClass() }}">{{ $x->label() }}</span>`. Definisi CSS semua kelas badge: `partials/theme-style.blade.php` (satu sumber; jangan definisi ulang di layout/halaman).
 
-5 varian badge semantik (bukan cuma 3 lagi):
+#### Palet badge aktual (dicek terhadap kode, 13 Oktober 2026)
 
-| Kelas | Warna | Arti | Contoh status |
+6 kelas semantik. Badge = latar tint transparan + border tipis + teks berwarna token (kecuali `badge-urgent`, solid). `.badge-warning` hanya alias `.badge-pending` (jangan dipakai di kode baru).
+
+| Kelas | Warna | Arti dan kapan dipakai | Kapan TIDAK dipakai | Contoh status |
+|---|---|---|---|---|
+| `.badge-netral` | Abu (teks `--text-secondary`) | Belum mulai / antre / informasi biasa; role user; counter; "Belum Dinilai" | Jangan untuk hal yang butuh tindakan atau sudah gagal | `diajukan`, tahap `mendatang`, role (semua), "Belum Dibayar", counter |
+| `.badge-info` | Biru (`--info`) | Sedang diproses pihak lain / sedang berjalan | Jangan untuk selesai (hijau) atau perlu tindakan kamu (kuning) | `diundang`, `direview_admin`, `diajukan_ke_client`, tahap `berjalan` |
+| `.badge-aktif` | Hijau (`--accent-strong`) | Beres / sukses / aktif | Jangan untuk sekadar "sedang diproses" dan jangan di atas blok hijau brand tanpa pemisah | `deal`, `lolos`, `kontrak_ditandatangani`, `selesai_produksi`, tahap `selesai`, nego `terima`, lowongan `dibuka` |
+| `.badge-pending` | Kuning/amber (`--warning`) | Menunggu TINDAKAN seseorang (bukan sekadar antre) | Jangan untuk penghitung atau info; jangan untuk antre pasif (itu netral/info) | `nego_fee`, tahap `menunggu_acc`, nego `tawar`/`counter` |
+| `.badge-tolak` | Merah (`--danger`) | Gagal / batal / ditolak / melanggar. Satu-satunya pemakaian merah untuk status | Jangan untuk urgensi (itu `badge-urgent`) dan jangan untuk "peringatan biasa" | `ditolak`, `dibatalkan`, akun nonaktif/dihapus, nego `tolak` |
+| `.badge-urgent` | Oranye solid (`--urgent` / teks `--urgent-on`), tebal, ≥12 px | Mendesak yang masih bisa ditindak: Dadakan, Bentrok jadwal, Absen hari ini, Jam panggil | Jangan untuk proyek yang sudah ditutup/selesai dan jangan jadi pengganti merah (gagal) | "Dadakan", "Bentrok", "Absen hari ini" |
+
+Role (`User`) SELALU `.badge-netral` — bukan kuning, biar tidak keliru dianggap "menunggu tindakan". Lowongan ditutup tidak berbadge Dadakan.
+
+Warna teks badge per tema (token `theme-style`): terang aktif `#0b5e2c`, pending `#92400e`, tolak `#b91c1c`, netral `#435449`, info `#1d4ed8`, urgent `#ffffff` di `#c2410c`; gelap aktif `#22b862`, pending `#f59e0b`, tolak `#fa7a7f`, netral `#9db3a2`, info `#60a5fa`, urgent `#1a0f05` di `#fb923c`.
+
+**Kontras terhitung** (rumus WCAG 2.x: L = 0,2126 R + 0,7152 G + 0,0722 B dengan kanal sRGB dilinearkan; rasio = (L1 + 0,05) / (L2 + 0,05); target teks ≥ 4,5:1). Latar badge = tint rgba dicampur di atas latar kartu (terang `#ffffff`, gelap `#1c1e1e`) atau halaman (terang `#eef2ea`, gelap `#17181a`). Dihitung sendiri 13 Okt 2026:
+
+| Badge | Terang: kartu / halaman | Gelap: kartu / halaman |
+|---|---|---|
+| `badge-aktif` | 6,95 / 6,22 | 4,97 / 5,32 |
+| `badge-pending` | 6,45 / 5,77 | 5,78 / 6,18 |
+| `badge-tolak` | 5,55 / 4,91 | 5,76 / 6,15 |
+| `badge-netral` | 6,95 / 6,26 | 5,45 / 5,85 |
+| `badge-info` | 5,57 / 4,93 | 6,11 / 6,51 |
+| `badge-urgent` (solid) | 5,18 | 8,33 |
+
+Teks umum (rasio): terang primary di kartu 17,94, secondary 8,07, muted 5,65 (di halaman 4,98); gelap secondary 7,50, muted 5,67. Tombol `.btn-brand`: terang `#ffffff` di `#15803d` 5,02; gelap `#04140a` di `#0f9a4c` 5,18. Terendah di tabel badge = 4,91 (tolak di halaman terang), masih lolos; jangan menggelapkan latar tint atau meringankan teks tanpa menghitung ulang.
+
+#### Glosarium istilah pengguna (CG.1.2)
+
+Sapaan: Extras = "kamu"; Client dan halaman publik = "Anda". Admin/Korlap/Super Admin: bahasa operasional netral. Jangan ubah nama route/kolom/enum, hanya teks yang tampil. Ambil label status dari model (di atas), bukan ditulis ulang.
+
+| Pakai | Jangan pakai | Audiens / catatan |
+|---|---|---|
+| Pilih / Tolak, Dipilih / Ditolak | Approve / Reject | Client (`labelClient()`: `diajukan_ke_client` tampil "Menunggu keputusan"; `lolos`/`kontrak_ditandatangani`/`selesai_produksi` tampil "Dipilih") |
+| Pilih Kandidat | Greenlight | Menu, judul, dashboard Client |
+| Menunggu Client | (kode status mentah) | Extras, di bilah langkah (`application-progress`) |
+| Jam panggil | Callingan | Admin, Client, Korlap (jadwal dan absensi) |
+| Absen di Lokasi | Check-in | Tombol Extras di hari shooting |
+| Absensi Lapangan | Absensi on-set | Menu Admin/Korlap, dashboard Admin |
+| Kata Sandi | Password | Semua form, label, dan tombol mata. Sisa "Reset password" di kebab Manajemen Akun SA adalah label internal, ganti bila file itu disentuh |
+| Dadakan / Butuh Dadakan | Urgent | Judul lowongan dan toggle Admin: "Butuh Dadakan"; badge: "Dadakan" |
+| Arsipkan | Hapus (untuk soft-delete akun) | SA/Admin. Dialog: akun diarsipkan, tidak bisa login, histori aman, bisa dipulihkan lewat filter "Dihapus" lalu Restore. "Hapus Permanen" hanya untuk akun mangkrak, selalu dengan jumlah + daftar + kata "permanen" |
+| Batalkan | Cancel | Extras: "Batalkan keikutsertaan" |
+| Lowongan, Pendaftar, Lineup | Job, Applicant | Semua |
+
+Buang dari teks Client: Lock, Draft, Continuity, Greenlight. Pesan ke Extras memakai nama produksi, bukan kode internal "(JBTB-…)". Tanggal berbulan memakai `translatedFormat` (locale `id`), bukan `format('d M Y')`.
+
+#### Palet landing vs aplikasi
+
+Landing (`welcome.blade.php`) SENGAJA berbeda dari aplikasi: nuansa editorial (judul serif `Georgia, 'Times New Roman'`, aksen lime tua) untuk calon Extras/Client yang belum login. Aplikasi (semua layout `layouts/app`, auth, `public/event`, error) memakai token `theme-style` (aksen `#15803d`, font Inter) dan TIDAK boleh meminjam gaya landing. Token landing (variabel `--hp-*`, dua tema, definisi di `<style>` `welcome.blade.php`):
+
+| Token | Gelap | Terang | Kontras terhitung |
 |---|---|---|---|
-| `.badge-netral` | Abu | Menunggu diproses / belum mulai; role user | `diajukan`, `belum_dibayar`, role (semua) |
-| `.badge-info` | Biru (`var(--info)`) | Sedang diproses | `direview_admin`, `diajukan_ke_cd`, `direview_cd`, `ditransfer` |
-| `.badge-aktif` | Hijau | Beres / sukses | `deal`, `lolos`, `kontrak_ditandatangani`, `selesai_produksi`, `dikonfirmasi_diterima`, project `dibuka` |
-| `.badge-pending` | Kuning | Menunggu TINDAKAN (bukan sekadar antre) | `nego_fee`, `disengketakan` |
-| `.badge-tolak` | Merah | Gagal / batal | `ditolak`, `dibatalkan` |
+| `--hp-bg` | `#111311` | `#f1f0e9` | (latar) |
+| `--hp-fg` | `#f2f1eb` | `#171a16` | gelap 16,49; terang 15,37 (di bg) |
+| `--hp-muted` | `rgba(242,241,235,.55)` (≈ `#8d8d89`) | `#52564e` | gelap 5,60 bg / 5,42 kartu; terang 6,56 bg / 5,88 kartu |
+| `--hp-accent` | `#b7ff3c` | `#486610` | gelap 15,45 bg / 14,19 kartu; terang 5,77 bg / 5,17 kartu |
+| `--hp-accent-on` (teks di atas aksen) | `#111311` | `#ffffff` | gelap 15,45; terang 6,60 |
+| `--hp-line` | `rgba(255,255,255,.13)` | `rgba(23,26,22,.16)` | dekoratif (garis), tidak membawa teks |
+| `--hp-card` | `#1a1c1a` | `#e6e4da` | (latar kartu) |
 
-Role (`User`) SELALU `.badge-netral` — bukan kuning, biar tidak keliru dianggap "menunggu tindakan".
+Aturan: (1) landing boleh berbeda palet/tipografi, tetapi kontras teks tetap ≥ 4,5:1 di kedua tema (hitung ulang bila token diubah; jangan memakai `opacity` untuk meredupkan teks, pakai token muted); (2) target sentuh 44 px dan `:focus-visible` tetap berlaku; (3) badge dan label status di landing memakai kelas badge aplikasi (mis. Dadakan = `badge-urgent`) dan istilah glosarium di atas; (4) elemen yang sama fungsinya dengan aplikasi (tombol masuk/daftar, tema) tetap terbaca sama maknanya; (5) halaman lain (event, privasi, auth, error) ikut palet aplikasi, bukan landing; (6) jangan menambah efek dekoratif (film grain, spotlight) yang sudah dihapus.
+
+#### CSP gambar dan target sentuh
+
+- CSP (`app/Http/Middleware/SecurityHeaders.php`): `img-src 'self' data: blob:`. Gambar eksternal (CDN gambar, hotlink) DIBLOKIR; simpan di storage lokal. Teks `data:` dan `blob:` dipakai untuk pratinjau unggahan. Menambah sumber gambar baru = ubah middleware itu sekaligus, bukan tempel `<img src="https://…">`.
+- Target sentuh: ≥ 44 × 44 px untuk semua kontrol di layar ≤ 860 px (DS-09, `layouts/app`: `.btn-sm`, `.btn-ikon`, chip, tema/lonceng/avatar, tombol paginasi, checkbox/radio 22 px dengan area klik label). Di landing dan halaman publik: menu, tema, avatar, footer link ≥ 44 px. Kontrol baru wajib lolos aturan ini tanpa perlu dikoreksi belakangan.
+
+#### Mode lihat Super Admin (SA-15/SA-16)
+
+Banner `.sa-mode-banner` menempel (sticky) di atas konten saat mode Admin/Korlap/Client/Extras. Tombol/form yang terkunci mode lihat otomatis diberi ikon gembok (`ti ti-lock`) dan `aria-label` "(terkunci, mode lihat saja)"; penegakan sebenarnya tetap di middleware `ViewAs`, bukan di skrip.
 
 ## Yang HARUS Dibedakan per Role (jangan reuse layout mentah)
 
