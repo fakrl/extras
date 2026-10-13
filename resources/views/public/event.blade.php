@@ -71,7 +71,13 @@
         @if (! $valid)
             <h1>Pendaftaran sudah tidak dibuka</h1>
             <p>Link ini sudah tidak menerima pendaftaran. Kuota mungkin sudah penuh, batas waktu terlewati, atau proyek telah ditutup.</p>
-            <a href="{{ route('home') }}" class="btn-outline">Ke Beranda dan lihat lowongan lain</a>
+            <div class="cta-row">
+                <a href="{{ route('home') }}#lowongan" class="btn-brand">Lihat lowongan lain</a>
+                @guest
+                    <a href="{{ route('login') }}" class="btn-outline">Masuk</a>
+                    <a href="{{ route('register') }}" class="btn-outline">Daftar</a>
+                @endguest
+            </div>
         @else
             <h1>{{ $project->nama_produksi }}</h1>
             <p style="margin: 0 0 8px;">@include('partials.label-nego', ['project' => $project])</p>
