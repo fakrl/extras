@@ -15,5 +15,5 @@
         <button type="submit" class="akun-menu-item"><i class="ti ti-key"></i> Reset password</button>
     </form>
     <button type="button" class="akun-menu-item" onclick="{{ $buka('toggle-dialog') }}"><i class="ti ti-power"></i> {{ $u->status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }}</button>
-    <button type="button" class="akun-menu-item is-danger" onclick="{{ $buka('hapus-dialog') }}"><i class="ti ti-trash"></i> Hapus</button>
+    <button type="button" class="akun-menu-item is-danger" onclick="{{ $buka('hapus-dialog') }}"><i class="ti ti-archive"></i> Arsipkan</button>
 @endif
