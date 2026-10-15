@@ -12,7 +12,7 @@
     @include('partials.og-meta', [
         'noindex' => false,
         'ogTitle' => 'JBTB Casting — Agensi Extras & Talent Jakarta',
-        'ogDesc' => 'JBTB Casting menyediakan extras & talent untuk film, series, dan iklan. Daftar jadi Extras atau ajukan kebutuhan casting produksi Anda.',
+        'ogDesc' => 'Daftar jadi extras, lamar casting yang sedang buka, kontrak dan honor tercatat jelas di satu tempat di JBTB Casting.',
         'ogImage' => asset('images/hero-clapboard.jpg'),
     ])
 
@@ -117,8 +117,6 @@
         .hero-h-indent { display: inline-block; margin-left: 10vw; }
         .hero-h-italic { font-style: italic; color: var(--hp-muted); }
         .hero-h-accent { color: var(--hp-accent); }
-        .hero-cta { font-size: 14px; font-weight: 600; color: var(--hp-muted); text-decoration: none; border-bottom: 1px solid var(--hp-line); padding-bottom: 3px; transition: color .2s, border-color .2s; }
-        .hero-cta:hover { color: var(--hp-accent); border-color: var(--hp-accent); }
         @media (max-width: 767px) {
             .hero { min-height: 480px; background-position: 68% center; }
             .hero-inner { padding: 64px 20px 56px; }
@@ -172,30 +170,16 @@
         @media (prefers-reduced-motion: reduce) { .cast-photo, .cast-view { transition: none; } .cast-card:hover .cast-photo { transform: none; } }
         @media (max-width: 767px) { .cast-card { flex-basis: 160px; } }
 
-        /* ── About ── */
-        .about-section { padding-block: 7rem; border-top: 1px solid var(--hp-line); }
-        .about-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; flex-direction: column; gap: 40px; }
-        .history-facts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
         .section-title { font-size: 18px; font-weight: 700; margin: 0 0 16px; color: var(--hp-fg); }
         .section-body { font-size: 14px; color: var(--hp-muted); line-height: 1.75; margin: 0; }
-        .quick-facts { background: var(--hp-card); border: 1px solid var(--hp-line); border-radius: 12px; padding: 18px 22px; }
-        .quick-facts dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 0; }
-        .quick-facts dt { font-size: 12px; color: var(--hp-muted); font-weight: 600; white-space: nowrap; padding-top: 2px; }
-        .quick-facts dd { font-size: 13px; color: var(--hp-fg); margin: 0; }
-        .vm-section { display: flex; gap: 32px; }
-        .vm-block { flex: 1; }
-        .vm-title { font-size: 17px; font-weight: 700; margin: 0 0 12px; color: var(--hp-fg); }
-        .vm-body { font-size: 14px; color: var(--hp-muted); margin: 0; line-height: 1.8; }
-        .vm-list { margin: 0; padding-left: 20px; font-size: 14px; color: var(--hp-muted); line-height: 2.2; }
 
-        /* ── Services (AK.3) ── */
+        /* ── Cara Kerja (CK.2.3) ── */
         .services-section { padding-block: 7rem; border-top: 1px solid var(--hp-line); }
         .services-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: grid; grid-template-columns: 1fr 2fr; gap: 56px; align-items: start; }
         .services-left-title { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 400; line-height: 1.1; letter-spacing: -0.02em; margin: 8px 0 0; color: var(--hp-fg); }
         .services-list { border-top: 1px solid var(--hp-line); }
         .services-item { display: flex; gap: 20px; align-items: flex-start; padding: 20px 0; border-bottom: 1px solid var(--hp-line); }
         .services-num { font-family: Georgia, 'Times New Roman', serif; font-size: 13px; color: var(--hp-muted); flex-shrink: 0; padding-top: 2px; letter-spacing: 1px; min-width: 28px; }
-        .services-body strong { font-size: 14px; font-weight: 600; color: var(--hp-fg); display: block; margin-bottom: 4px; }
         .services-body p { font-size: 13.5px; color: var(--hp-muted); margin: 0; line-height: 1.65; }
 
         /* ── Lowongan list ala loker (AK.9) ── */
@@ -252,14 +236,6 @@
         @media (prefers-reduced-motion: reduce) { .porto-img img { transition: none; } .porto-card:hover .porto-img img { transform: none; } }
         @media (max-width: 767px) { .porto-card { flex-basis: 280px; } }
 
-        /* ── Footer CTA (AK.4) ── */
-        .footer-cta { padding-block: 8rem; border-top: 1px solid var(--hp-line); }
-        .footer-cta-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: end; }
-        .footer-cta-headline { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2.2rem, 7vw, 6rem); line-height: 0.9; letter-spacing: -0.03em; font-weight: 400; margin: 10px 0 32px; color: var(--hp-fg); }
-        .footer-cta-accent { color: var(--hp-accent); }
-        .footer-cta-contact { font-size: 13.5px; color: var(--hp-muted); line-height: 2.2; }
-        .footer-cta-contact strong { display: block; font-size: var(--fs-xs); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--hp-muted); margin-bottom: 4px; }
-
         /* ── Footer (AK.10 enhanced) ── */
         footer { border-top: 1px solid var(--hp-line); padding: 24px 32px; }
         .footer-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto auto; gap: 24px; align-items: center; }
@@ -272,16 +248,7 @@
         .footer-legal a { display: inline-flex; align-items: center; min-height: 44px; color: var(--hp-muted); text-decoration: none; }
         .footer-legal a:hover { color: var(--hp-fg); }
 
-        /* ── Dialog / Modal ── */
-        dialog { border: none; border-radius: 16px; padding: 0; max-width: 360px; width: 90%; background: var(--hp-card); color: var(--hp-fg); opacity: 0; transform: translateY(8px); transition: opacity .25s ease, transform .25s ease; }
-        dialog.is-open { opacity: 1; transform: none; }
-        dialog.is-closing { opacity: 0; transform: translateY(-140px) scale(0.75); transition: opacity .25s ease, transform .25s ease; }
-        dialog::backdrop { background: rgba(0,0,0,0.55); }
-        .modal-body { padding: 24px; }
-        .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
-        .modal-text { font-size: 13.5px; color: var(--hp-muted); margin: 0 0 18px; line-height: 1.6; }
         .cta-row { display: flex; gap: 12px; flex-wrap: wrap; }
-        .modal-dismiss { display: block; width: 100%; min-height: 44px; text-align: center; margin-top: 8px; background: none; border: none; color: var(--hp-muted); font-size: 14px; cursor: pointer; }
 
         /* ── Responsive ── */
         @media (max-width: 768px) {
@@ -290,17 +257,12 @@
             .hp-nav-menu.open { display: flex; }
             .hp-nav-menu a { padding: 10px 20px; border-radius: 0; width: 100%; }
             .hp-menu-toggle { display: flex; }
-            .about-section .about-inner,
             .services-inner,
             .lowongan-inner,
-            .footer-cta-inner,
             .hp-sec-head,
             .footer-inner { padding-left: 20px; padding-right: 20px; }
-            .about-section, .cast-section, .services-section, .lowongan-section, .porto-section, .footer-cta { padding-block: 5rem; }
-            .history-facts-row { grid-template-columns: 1fr; }
-            .vm-section { flex-direction: column; gap: 20px; }
+            .cast-section, .services-section, .lowongan-section, .porto-section { padding-block: 5rem; }
             .services-inner { grid-template-columns: 1fr; gap: 28px; }
-            .footer-cta-inner { grid-template-columns: 1fr; gap: 40px; }
             .contact-inner { grid-template-columns: 1fr; gap: 32px; }
             .contact-grid { grid-template-columns: 1fr; gap: 24px; }
             .lowongan-detail { padding-left: 0; }
@@ -319,9 +281,9 @@
         </div>
         <ul class="hp-nav-menu" id="hp-nav-menu">
             <li><a href="{{ route('home') }}">Beranda</a></li>
-            <li><a href="#tentang">Tentang Kami</a></li>
-            <li><a href="#layanan">Layanan</a></li>
             <li><a href="#lowongan">Lowongan</a></li>
+            <li><a href="#cara-kerja">Cara Kerja</a></li>
+            <li><a href="#faq">FAQ</a></li>
         </ul>
         <div class="hp-nav-actions">
             <button type="button" class="hp-menu-toggle" id="menu-toggle" aria-label="Buka menu" aria-controls="hp-nav-menu" aria-expanded="false">
@@ -359,121 +321,45 @@
         <div class="hero-inner">
             <span class="section-eyebrow">Sistem Manajemen Casting Extras</span>
             <h1 class="hero-headline">
-                Talenta<br>
-                <span class="hero-h-indent hero-h-italic">yang</span><br>
-                <span class="hero-h-accent">dipercaya.</span>
+                Casting extras<br>
+                <span class="hero-h-indent hero-h-italic">film &amp; iklan</span><br>
+                <span class="hero-h-accent">yang dipercaya.</span>
             </h1>
-            <a href="#lowongan" class="hero-cta">Lihat proyek terbuka &#x2197;</a>
-        </div>
-    </div>
-
-    {{-- Cast (BH.2): cuma Extras yang izin + disetujui Admin, minimal 4. CB: <= CAST_MUAT statis, lebih = marquee satu set duplikat --}}
-    @if ($castExtras->isNotEmpty())
-    <section class="cast-section" id="cast" aria-labelledby="cast-judul">
-        <div class="hp-sec-head">
-            <div>
-                <span class="section-eyebrow">Cast</span>
-                <h2 class="hp-sec-title" id="cast-judul">Kenalan dengan cast</h2>
-            </div>
-            <span class="hp-sec-note">Extras JBTB</span>
-            @unless ($castStatis)<button type="button" class="marquee-jeda" data-marquee-jeda aria-pressed="false"><i class="ti ti-player-pause" aria-hidden="true"></i> <span>Jeda animasi</span></button>@endunless
-        </div>
-        <div @class(['marquee' => ! $castStatis]) @unless ($castStatis) data-marquee style="--marquee-durasi: {{ $castExtras->count() * 5 }}s;" @endunless>
-            <div @class(['marquee-track' => ! $castStatis, 'baris-statis' => $castStatis])>
-                @foreach (range(0, $castStatis ? 0 : 1) as $r)
-                    @foreach ($castExtras as $i => $ex)
-                        <a href="{{ route('public.extras.profile', $ex->share_token) }}" class="cast-card"
-                           @if ($r) data-dup aria-hidden="true" tabindex="-1" @endif>
-                            <div class="cast-photo-wrap">
-                                <img src="{{ route('public.extras.foto', $ex->share_token) }}" alt="{{ $r ? '' : 'Foto @'.$ex->user->username }}" class="cast-photo" loading="lazy">
-                                @unless ($r)<span class="cast-no" aria-hidden="true">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</span>@endunless
-                                <span class="cast-view" aria-hidden="true">Lihat &#x2197;</span>
-                            </div>
-                            <div class="cast-name">{{ '@'.$ex->user->username }}</div>
-                            <div class="cast-tag">{{ $ex->categories->first()?->nama ?? 'Extras' }}</div>
-                        </a>
-                    @endforeach
-                @endforeach
-            </div>
-        </div>
-    </section>
-
-    <div class="film-strip-divider" aria-hidden="true"></div>
-    @endif
-
-    {{-- About --}}
-    <div class="about-section" id="tentang">
-        <div class="about-inner">
-            <div class="history-facts-row">
-                <div>
-                    <div class="section-title">Tentang PT. JBTB Casting Creative Group</div>
-                    <p class="section-body">PT. JBTB Casting Creative Group adalah perusahaan talent agency dan casting management yang berfokus pada penyediaan extras/pemeran figuran untuk kebutuhan produksi film, iklan, dan konten kreatif di Indonesia. Resmi berdiri sejak 2020 dengan badan hukum PT dan NIB terdaftar OSS. Berkantor pusat di Pamulang, Tangerang Selatan, dengan tim inti 5 orang profesional, JBTB aktif mengelola 50–80 extras dan menangani 4–5 proyek per bulan.</p>
-                </div>
-                <div class="quick-facts">
-                    <dl>
-                        <dt>Nama Perusahaan</dt><dd>PT. JBTB Casting Creative Group</dd>
-                        <dt>Tahun Berdiri</dt><dd>2020</dd>
-                        <dt>Bidang Usaha</dt><dd>Talent Agency &amp; Casting Management</dd>
-                        <dt>Domisili</dt><dd>Pamulang, Tangerang Selatan, Banten</dd>
-                        <dt>Legalitas</dt><dd>PT &amp; NIB terdaftar OSS Kemenves RI</dd>
-                        <dt>Karyawan</dt><dd>5 orang (tim inti)</dd>
-                        <dt>Skala Operasional</dt><dd>50–80 extras aktif, 4–5 proyek/bulan</dd>
-                    </dl>
-                </div>
-            </div>
-            <div class="vm-section">
-                <div class="vm-block">
-                    <div class="vm-title">Visi</div>
-                    <p class="vm-body">Menjadi platform casting digital terdepan di Indonesia yang transparan, profesional, dan terintegrasi bagi seluruh ekosistem film, periklanan, dan segala yang berhubungan dengan manajemen talent di industri entertainment.</p>
-                </div>
-                <div class="vm-block">
-                    <div class="vm-title">Misi</div>
-                    <ol class="vm-list">
-                        <li>Menyediakan sistem manajemen talent yang rapi, aman, dan mudah digunakan.</li>
-                        <li>Menjadi sarana resmi open casting yang kredibel bagi seluruh pelaku industri kreatif.</li>
-                        <li>Mempercepat proses seleksi melalui fitur filter dan rekomendasi otomatis.</li>
-                        <li>Membantu talent mengembangkan karir profesional di industri hiburan Indonesia.</li>
-                    </ol>
-                </div>
+            <p class="section-body" style="max-width: 440px; margin: -16px 0 32px;">Daftar jadi extras, lamar casting yang sedang buka, kontrak dan honor tercatat jelas di satu tempat.</p>
+            <div class="cta-row">
+                @guest
+                    <a href="{{ route('register') }}" class="btn-brand">Daftar jadi Extras</a>
+                    <a href="#lowongan" class="btn-outline">Lihat lowongan</a>
+                @else
+                    @if (auth()->user()->role === 'extras')
+                        <a href="#lowongan" class="btn-brand">Lihat lowongan</a>
+                    @else
+                        <a href="/dashboard" class="btn-brand">Buka Dashboard</a>
+                    @endif
+                @endguest
             </div>
         </div>
     </div>
 
-    {{-- Services (AK.3) --}}
-    <div class="services-section" id="layanan">
+    {{-- Cara Kerja (CK.2.3): 3 langkah ringkas, menggantikan Services --}}
+    <div class="services-section" id="cara-kerja">
         <div class="services-inner">
             <div>
-                <span class="section-eyebrow">Yang Kami Lakukan</span>
-                <div class="services-left-title">Kenapa<br>JBTB?</div>
+                <span class="section-eyebrow">Cara Kerja</span>
+                <div class="services-left-title">3 Langkah<br>Mudah</div>
             </div>
             <div class="services-list">
                 <div class="services-item">
-                    <div class="services-num">01</div>
-                    <div class="services-body">
-                        <strong>Seleksi Visual Terstruktur</strong>
-                        <p>Profil lengkap extras disajikan dengan foto, video, dan riwayat proyek — client bisa review kandidat tanpa bocor kontak langsung.</p>
-                    </div>
+                    <div class="services-num"><i class="ti ti-user-plus" aria-hidden="true" style="font-size: 20px; color: var(--hp-accent);"></i></div>
+                    <div class="services-body"><p>Daftar &amp; lengkapi profil: foto, tinggi badan, kategori.</p></div>
                 </div>
                 <div class="services-item">
-                    <div class="services-num">02</div>
-                    <div class="services-body">
-                        <strong>Negosiasi Fee Transparan</strong>
-                        <p>Sistem nego fee multi-ronde ala InDrive, semua ronde tercatat — tidak ada celah sengketa "deal-nya berapa" setelah proyek selesai.</p>
-                    </div>
+                    <div class="services-num"><i class="ti ti-camera" aria-hidden="true" style="font-size: 20px; color: var(--hp-accent);"></i></div>
+                    <div class="services-body"><p>Lamar casting yang sedang buka.</p></div>
                 </div>
                 <div class="services-item">
-                    <div class="services-num">03</div>
-                    <div class="services-body">
-                        <strong>Kontrak &amp; Pembayaran Terdokumentasi</strong>
-                        <p>Tanda tangan digital langsung di browser, bukti transfer terupload, status pembayaran bisa dicek extras kapan saja.</p>
-                    </div>
-                </div>
-                <div class="services-item">
-                    <div class="services-num">04</div>
-                    <div class="services-body">
-                        <strong>Absensi On-Set Berbasis Foto</strong>
-                        <p>Korlap validasi kehadiran extras langsung dari lapangan — data absensi terhubung ke rekap honor, tidak bisa dimanipulasi.</p>
-                    </div>
+                    <div class="services-num"><i class="ti ti-signature" aria-hidden="true" style="font-size: 20px; color: var(--hp-accent);"></i></div>
+                    <div class="services-body"><p>Terpilih? Tanda tangan kontrak dan pantau honormu.</p></div>
                 </div>
             </div>
         </div>
@@ -552,6 +438,39 @@
         </div>
     </div>
 
+    {{-- Cast (BH.2): cuma Extras yang izin + disetujui Admin, minimal 4. CB: <= CAST_MUAT statis, lebih = marquee satu set duplikat --}}
+    @if ($castExtras->isNotEmpty())
+    <div class="film-strip-divider" aria-hidden="true"></div>
+    <section class="cast-section" id="cast" aria-labelledby="cast-judul">
+        <div class="hp-sec-head">
+            <div>
+                <span class="section-eyebrow">Cast</span>
+                <h2 class="hp-sec-title" id="cast-judul">Kenalan dengan cast</h2>
+            </div>
+            <span class="hp-sec-note">Extras JBTB</span>
+            @unless ($castStatis)<button type="button" class="marquee-jeda" data-marquee-jeda aria-pressed="false"><i class="ti ti-player-pause" aria-hidden="true"></i> <span>Jeda animasi</span></button>@endunless
+        </div>
+        <div @class(['marquee' => ! $castStatis]) @unless ($castStatis) data-marquee style="--marquee-durasi: {{ $castExtras->count() * 5 }}s;" @endunless>
+            <div @class(['marquee-track' => ! $castStatis, 'baris-statis' => $castStatis])>
+                @foreach (range(0, $castStatis ? 0 : 1) as $r)
+                    @foreach ($castExtras as $i => $ex)
+                        <a href="{{ route('public.extras.profile', $ex->share_token) }}" class="cast-card"
+                           @if ($r) data-dup aria-hidden="true" tabindex="-1" @endif>
+                            <div class="cast-photo-wrap">
+                                <img src="{{ route('public.extras.foto', $ex->share_token) }}" alt="{{ $r ? '' : 'Foto @'.$ex->user->username }}" class="cast-photo" loading="lazy">
+                                @unless ($r)<span class="cast-no" aria-hidden="true">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</span>@endunless
+                                <span class="cast-view" aria-hidden="true">Lihat &#x2197;</span>
+                            </div>
+                            <div class="cast-name">{{ '@'.$ex->user->username }}</div>
+                            <div class="cast-tag">{{ $ex->categories->first()?->nama ?? 'Extras' }}</div>
+                        </a>
+                    @endforeach
+                @endforeach
+            </div>
+        </div>
+    </section>
+    @endif
+
     {{-- Portofolio (BH.3): cuma proyek selesai yang dicentang Admin/SA --}}
     @if ($portofolio->isNotEmpty())
     <div class="film-strip-divider" aria-hidden="true"></div>
@@ -587,30 +506,48 @@
     </section>
     @endif
 
-    {{-- Footer CTA (AK.4) --}}
-    <div class="footer-cta">
-        <div class="footer-cta-inner">
-            <div>
-                <span class="section-eyebrow">Mulai Sekarang</span>
-                <div class="footer-cta-headline">
-                    Bergabung<br>
-                    <span class="footer-cta-accent">sebagai Extras.</span>
-                </div>
-                @guest
-                    <a href="{{ route('register') }}" class="btn-brand">Daftar Gratis</a>
-                @else
-                    <a href="/dashboard" class="btn-outline">Buka Dashboard</a>
-                @endguest
-            </div>
-            <div class="footer-cta-right">
-                <div class="footer-cta-contact">
-                    <strong>Lokasi</strong>
-                    Pamulang, Tangerang Selatan, Banten
-                </div>
-                <div class="footer-cta-contact" style="margin-top: 24px;">
-                    <strong>Ikuti Kami</strong>
-                    @jbtb.casting (Instagram)
-                </div>
+    {{-- FAQ (CK.2.6): reuse struktur accordion lowongan-item/lowongan-summary --}}
+    <div class="lowongan-section" id="faq" aria-label="Pertanyaan umum">
+        <div class="lowongan-inner">
+            <span class="section-eyebrow">Sering Ditanyakan</span>
+            <div class="section-title">FAQ</div>
+            <div class="lowongan-list">
+                <details class="lowongan-item">
+                    <summary class="lowongan-summary">
+                        <span style="flex: 1; font-size: 15px; font-weight: 600; color: var(--hp-fg);">Daftarnya bayar?</span>
+                        <span class="lowongan-chevron" aria-hidden="true">+</span>
+                    </summary>
+                    <div class="lowongan-detail" style="padding-left: 0;">
+                        <p class="section-body" style="margin: 0;">Gratis.</p>
+                    </div>
+                </details>
+                <details class="lowongan-item">
+                    <summary class="lowongan-summary">
+                        <span style="flex: 1; font-size: 15px; font-weight: 600; color: var(--hp-fg);">Kapan honor dibayar?</span>
+                        <span class="lowongan-chevron" aria-hidden="true">+</span>
+                    </summary>
+                    <div class="lowongan-detail" style="padding-left: 0;">
+                        <p class="section-body" style="margin: 0;">Setelah kontrak ditandatangani dan produksi berjalan; status transfer bisa kamu cek dan konfirmasi di aplikasi.</p>
+                    </div>
+                </details>
+                <details class="lowongan-item">
+                    <summary class="lowongan-summary">
+                        <span style="flex: 1; font-size: 15px; font-weight: 600; color: var(--hp-fg);">Kalau batal ikut gimana?</span>
+                        <span class="lowongan-chevron" aria-hidden="true">+</span>
+                    </summary>
+                    <div class="lowongan-detail" style="padding-left: 0;">
+                        <p class="section-body" style="margin: 0;">Batal kurang dari 2 hari sebelum shooting dihitung batal mendadak; 3 kali batal mendadak membuat akun dinonaktifkan.</p>
+                    </div>
+                </details>
+                <details class="lowongan-item">
+                    <summary class="lowongan-summary">
+                        <span style="flex: 1; font-size: 15px; font-weight: 600; color: var(--hp-fg);">Data KTP dan rekening aman?</span>
+                        <span class="lowongan-chevron" aria-hidden="true">+</span>
+                    </summary>
+                    <div class="lowongan-detail" style="padding-left: 0;">
+                        <p class="section-body" style="margin: 0;">Disimpan terenkripsi dan hanya dipakai untuk kontrak dan pembayaran; tidak terlihat oleh Client.</p>
+                    </div>
+                </details>
             </div>
         </div>
     </div>
@@ -624,7 +561,7 @@
         <div class="contact-inner">
             <div>
                 <span class="section-eyebrow">Hubungi Kami</span>
-                <div class="contact-left-title">Siap<br>bekerjasama?</div>
+                <div class="contact-left-title">Production house?<br>Hubungi kami</div>
             </div>
             <div class="contact-grid">
                 <div class="contact-block">
@@ -659,54 +596,17 @@
                 JBTB Casting
             </a>
             <nav class="footer-nav" aria-label="Tautan footer">
-                <a href="#layanan">Layanan</a>
                 <a href="#lowongan">Lowongan</a>
-                @guest<a href="{{ route('register') }}">Daftar</a>@endguest
+                <a href="#cara-kerja">Cara Kerja</a>
+                <a href="#faq">FAQ</a>
+                <a href="{{ route('privacy-policy') }}">Privasi</a>
             </nav>
             <div class="footer-legal">
                 <span>&copy; {{ date('Y') }} JBTB Casting</span>
-                <a href="{{ route('privacy-policy') }}">Privasi</a>
             </div>
         </div>
+        <div style="max-width: 1100px; margin: 12px auto 0; padding: 0 32px; font-size: 12px; color: var(--hp-muted);">PT. JBTB Casting Creative Group &middot; NIB terdaftar OSS</div>
     </footer>
-
-    @guest
-        <dialog id="welcome-modal">
-            <div class="modal-body">
-                <div class="modal-title">Yuk gabung jadi Extras!</div>
-                <p class="modal-text">Daftar akun gratis buat mulai apply proyek casting yang lagi buka pendaftaran.</p>
-                <div class="cta-row">
-                    <a href="{{ route('register') }}" class="btn-brand">Daftar</a>
-                    <a href="{{ route('login') }}" class="btn-outline">Masuk</a>
-                </div>
-                <button type="button" class="modal-dismiss" id="welcome-modal-dismiss">Nanti dulu</button>
-            </div>
-        </dialog>
-        <script>
-        (function () {
-            var dlg = document.getElementById('welcome-modal');
-            try { if (!dlg || localStorage.getItem('homepage_modal_dismissed')) return; } catch (e) {}
-            var tampil = false, timer;
-            function buka() {
-                if (tampil) return;
-                tampil = true; clearTimeout(timer);
-                window.removeEventListener('scroll', onScroll);
-                dlg.showModal();
-                requestAnimationFrame(function () { dlg.classList.add('is-open'); });
-            }
-            function onScroll() { if (window.scrollY > 600) buka(); }
-            window.addEventListener('scroll', onScroll, { passive: true });
-            timer = setTimeout(buka, 15000);
-            function dismiss() {
-                try { localStorage.setItem('homepage_modal_dismissed', '1'); } catch (e) {}
-                dlg.classList.remove('is-open'); dlg.classList.add('is-closing');
-                setTimeout(function () { dlg.close(); }, 250);
-            }
-            document.getElementById('welcome-modal-dismiss').addEventListener('click', dismiss);
-            dlg.addEventListener('cancel', function (e) { e.preventDefault(); dismiss(); });
-        })();
-        </script>
-    @endguest
 
     <script>
     document.querySelectorAll('[data-marquee]').forEach(function (m) {

@@ -18,7 +18,7 @@ class AuditBFondasiTest extends TestCase
             ->assertDontSee('Isi nomor WhatsApp')
             ->assertDontSee('Isi email')
             ->assertDontSee('>WhatsApp<', false)
-            ->assertSee('id="layanan"', false)
+            ->assertSee('id="cara-kerja"', false)
             ->assertSee('<main>', false);
     }
 
