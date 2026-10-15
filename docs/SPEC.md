@@ -2361,3 +2361,102 @@ Ini CF.7; dilaporkan "belum lengkap", padahal route dan model-nya sudah ada. Dos
 | CJ.3 AD-32: Admin boleh membuat akun Client (alur sama dengan SA: password sementara, `wajib_ganti_password`, ActivityLog); subagent wajib | boleh | |
 | CJ.4 EX-08: undangan ditolak tampil "Undangan kamu tolak" (abu-abu), tanpa status baru | ya | |
 | CJ.5 AD-41 log aktivitas untuk Admin / SA-27 halaman Pengaturan SA | tidak, catat sebagai pengembangan lanjutan di Bab 3 | |
+
+---
+
+# Bagian CK: Landing page ringkas, jelaskan web-nya bukan profil perusahaan (16 Oktober 2026)
+
+> **FEATURE FREEZE tetap berlaku.** Hanya `resources/views/welcome.blade.php` (+ CSS-nya di file yang sama) dan test landing. Tidak ada route, kolom, atau controller baru; data `$castExtras`, `$portofolio`, `$proyekTerbuka`, `$adaLebih` dan aturan CB (statis/marquee) **tidak diubah**. Prinsip: **hapus dulu, baru tambah**. Commit, **jangan push**.
+
+Keputusan Fakrul (referensi pola Goers Crew): landing menjelaskan **web ini untuk apa dan cara pakainya**, satu ajakan utama (daftar jadi Extras). Info company profile (tahun berdiri, domisili, karyawan, skala operasional, visi, misi) dan daftar "Kenapa JBTB?" yang berisi istilah teknis dibuang.
+
+## CK.1: Yang dihapus
+1. Blok **About** `#tentang` seluruhnya: paragraf profil, `quick-facts` (nama perusahaan, tahun berdiri, bidang usaha, domisili, legalitas, karyawan, skala), dan `vm-section` (Visi, Misi).
+2. Blok **Services** `#layanan` ("Kenapa JBTB?", 4 butir termasuk "ala InDrive", "multi-ronde").
+3. Blok **footer-cta** ("Bergabung sebagai Extras" + Lokasi + Ikuti Kami) karena menduplikasi hero dan blok kontak (PB-13).
+4. **Modal "Yuk gabung jadi Extras!"** (`#welcome-modal` + skripnya): ajakan yang sama sudah ada di hero; landing harus tenang.
+5. CSS yang hanya dipakai blok di atas (`about-*`, `history-facts-row`, `quick-facts`, `vm-*`, `services-*`, `footer-cta*`, modal). Pastikan tidak dipakai di tempat lain (grep) sebelum dihapus.
+
+## CK.2: Susunan baru (urutan tetap)
+1. **Navbar:** Lowongan (`#lowongan`), Cara Kerja (`#cara-kerja`), FAQ (`#faq`); tombol Masuk / avatar tetap. Hapus "Tentang Kami" dan "Layanan". Menu nav sama dengan footer (PB-15).
+2. **Hero:** headline brand boleh dipertahankan, tapi `h1` harus memuat kata kunci yang menjelaskan (mis. "Casting extras film & iklan"; PB-33). Tambah **satu kalimat** di bawahnya: "Daftar jadi extras, lamar casting yang sedang buka, kontrak dan honor tercatat jelas di satu tempat." Dua tombol: **Daftar jadi Extras** (utama, tamu) dan **Lihat lowongan** (sekunder, `#lowongan`). Login: Extras → "Lihat lowongan", role lain → "Buka Dashboard".
+3. **Cara kerja** `#cara-kerja` (menggantikan Services): 3 langkah, masing-masing ikon + judul + maksimal satu baris:
+   1. Daftar & lengkapi profil: foto, tinggi badan, kategori.
+   2. Lamar casting yang sedang buka.
+   3. Terpilih? Tanda tangan kontrak dan pantau honormu.
+   Tanpa istilah teknis (nego multi-ronde, InDrive, Korlap, dsb.).
+4. **Lowongan** `#lowongan`: blok yang ada sekarang, tidak diubah selain posisi.
+5. **Cast** lalu **Portofolio**: blok yang ada sekarang (bukti sosial), tidak diubah selain posisi (setelah Lowongan).
+6. **FAQ** `#faq`: 4 butir `<details>`, jawaban 1–2 kalimat, isinya **harus sesuai kode**:
+   1. *Daftarnya bayar?* Gratis.
+   2. *Kapan honor dibayar?* Setelah kontrak ditandatangani dan produksi berjalan; status transfer bisa kamu cek dan konfirmasi di aplikasi. (Jangan menjanjikan jumlah hari.)
+   3. *Kalau batal ikut gimana?* Batal kurang dari 2 hari sebelum shooting dihitung batal mendadak; 3 kali batal mendadak membuat akun dinonaktifkan. (Sumber: `ProjectApplication::batalkan()`.)
+   4. *Data KTP dan rekening aman?* Disimpan terenkripsi dan hanya dipakai untuk kontrak dan pembayaran; tidak terlihat oleh Client.
+7. **Kontak** (blok `contact-section` yang ada, satu-satunya blok kontak): judul diganti "Production house? Hubungi kami"; WA/email tetap hanya tampil bila `config('app.kontak.*')` terisi; Instagram dan alamat cukup sekali.
+8. **Footer:** tautan Lowongan, Cara Kerja, FAQ, Privasi; satu baris kecil "PT. JBTB Casting Creative Group · NIB terdaftar OSS" (pengganti blok About, menjaga kredibilitas).
+
+## CK.3: Batasan dan test
+1. Jangan menambah teks penjelas di luar yang tertulis di CK.2. Kalau satu blok butuh lebih dari dua kalimat untuk dipahami, laporkan di Bukti, jangan dipanjangkan.
+2. Kontras, target sentuh ≥44 px, `:focus-visible`, tombol jeda marquee, `<main>`/landmark, dan tema gelap/terang hasil CH **tetap lulus**. Meta description diperbarui agar sesuai kalimat hero.
+3. Test: sesuaikan test landing yang mencari teks lama (Tentang/Visi/Layanan/modal); tambah assert: tidak ada "Visi", "Misi", "Karyawan", "Tahun Berdiri", "InDrive", `welcome-modal`; ada `#cara-kerja`, `#faq` dengan 4 butir, `#lowongan`; tetap **tidak ada** `budget_client`, nama Client tersembunyi, NIK/rekening/WA Extras (test kebocoran yang ada tetap hijau); aturan CB cast/portofolio tetap hijau. `BrOverflowMobileTest` hijau.
+4. Screenshot **aplikasi asli** (SQLite sementara + `DemoLengkapSeeder`) 1366 dan 390 px, tema terang dan gelap, tamu dan login Extras; buka satu butir FAQ dan satu lowongan. Laporkan apa adanya.
+5. SQLite lalu MySQL `jbtb_test` berurutan (cetak driver). Isi Bukti, commit, **jangan push**. `BAB-3-DRAFT` (RF-55) diperbarui manager.
+
+| Item | Bukti | QA |
+|---|---|---|
+| CK.1 hapus About/Visi-Misi, Services, footer-cta, modal + CSS-nya | `resources/views/welcome.blade.php`: hapus `div#tentang` (about-section, quick-facts, vm-section), `div#layanan` lama ("Kenapa JBTB?" 4 butir), `footer-cta` (Bergabung+Lokasi+Ikuti Kami), `#welcome-modal` + skrip tampil/dismiss-nya. CSS dihapus: `.about-*`, `.history-facts-row`, `.quick-facts*`, `.vm-*`, `.footer-cta*`, `dialog`/`.modal-*` (grep `about-\|quick-facts\|vm-\|footer-cta\|welcome-modal\|modal-` di file ini: 0 hasil sesudah). `.cta-row` dipertahankan (dipakai ulang di tombol hero), `.hero-cta` lama (link tunggal) ikut dihapus karena diganti 2 tombol | [x] |
+| CK.2 nav, hero 1 kalimat + 2 tombol, Cara kerja 3 langkah, urutan Lowongan → Cast → Portofolio, FAQ 4 butir, kontak tunggal, footer | Nav & footer: `#lowongan`/`#cara-kerja`/`#faq` (ganti `#tentang`/`#layanan`). Hero: `h1` "Casting extras / film & iklan / yang dipercaya" + 1 kalimat ajakan + tombol **Daftar jadi Extras**+**Lihat lowongan** (tamu), **Lihat lowongan** (login Extras), **Buka Dashboard** (role lain). `#cara-kerja` reuse markup `.services-*` (3 item ikon Tabler + 1 baris teks, tanpa CSS baru). Urutan section: Hero→Cara Kerja→Lowongan→Cast→Portofolio→FAQ→Kontak→Footer (Cast & Portofolio dipindah setelah Lowongan, isi/logic `$castExtras`/`$portofolio`/`$castStatis`/`$portoStatis` tidak disentuh). FAQ 4 `<details>` reuse `.lowongan-item`/`.lowongan-summary`/`.lowongan-chevron` (tanpa CSS baru). Kontak judul diganti "Production house? Hubungi kami". Footer: tautan Lowongan/Cara Kerja/FAQ/Privasi + baris kecil "PT. JBTB Casting Creative Group · NIB terdaftar OSS". `ogDesc`/meta description diperbarui sesuai kalimat hero | [x] |
+| CK.3 test (hilang/ada/kebocoran/CB), a11y CH tetap, screenshot asli 1366/390 terang/gelap, SQLite lalu MySQL | Disesuaikan: `PublicEventLinkTest::test_homepage_cta_sesuai_status_login` (dulu `..._modal_counter_...`, hapus assert `welcome-modal` ada untuk tamu), `AuditBFondasiTest` (`id="layanan"` → `id="cara-kerja"`). Baru `CkLandingRingkasTest` (3 test): blok lama hilang (Visi/Misi/Karyawan/Tahun Berdiri/InDrive/welcome-modal/"Kenapa JBTB") dan blok baru ada (`#cara-kerja`/`#faq`/`#lowongan`); FAQ persis 4 `.lowongan-item` dengan 4 pertanyaan sesuai kode; nav+footer tautan baru + baris PT/NIB. Test kebocoran & CB tidak diubah dan tetap hijau: `PublicEventLinkTest` (nama Client/`budget_client`), `CbLandingTanpaDuplikatTest` (statis/marquee cast+porto), `BhPortofolioTest`, `BhBerandaCastTest` (NIK/nama asli/WA Extras tak bocor). `BrOverflowMobileTest` hijau. Screenshot aplikasi asli (server dev `php artisan serve` + SQLite sementara scratchpad + `DemoLengkapSeeder`, Edge headless via `puppeteer-core`, 1366 & 390 px, tema terang & gelap, tamu & login Extras `dimas_rk`, 1 butir FAQ + 1 Lowongan dibuka): urutan section sesuai CK.2, tanpa overflow, kontras/tema OK di kedua lebar. Test: **756 passed** SQLite (`DRIVER=sqlite DB=:memory:`) lalu **756 passed** MySQL (`DRIVER=mysql DB=jbtb_test`), berurutan; `php artisan migrate:fresh --force` di `jbtb_test` sukses. Pint lulus | [x] |
+
+---
+
+# Bagian CL: Profil Extras = satu halaman mode baca, ubah per bagian (mobile dulu) (16 Oktober 2026)
+
+> **FEATURE FREEZE tetap berlaku.** Tidak ada kolom/tabel/route baru, tidak ada field data baru. Yang berubah: tampilan `extras/profile-edit.blade.php` dan cara `ProfileController::update()` menyimpan (per bagian). **Subagent WAJIB** (controller + view + test, dan ada risiko data terhapus). Kerjakan **setelah CK**. Commit, **jangan push**.
+
+Referensi: profil Goers Crew (kartu per bagian, mode baca, tombol "Ubah" per bagian, info jelas tanpa paragraf). Target kita: sama rapinya, **lebih enak di HP**.
+
+## CL.1: Struktur halaman
+1. **Route tidak diganti.** `extras.profile.edit` (`/extras/profil/lengkapi`) menjadi halaman **Profil** utama (mode baca); menu "Profil"/avatar Extras menuju ke sini. `extras.profile.show` (`/extras/profil`, tampilan editorial) tetap ada sebagai tombol **"Lihat seperti Client"** di kepala halaman, bukan menu sendiri (menutup EX-25 "dua halaman Profil Saya"). Redirect setelah simpan kembali ke halaman Profil di anchor bagian yang disimpan, bukan ke `/extras/profil`. **Kecuali** alur return-to-intent event (B5, `intended_event_token`): tetap ke halaman proyek.
+2. **Kepala halaman:** foto utama kecil, nama panggung, dan status kelengkapan pakai `profilLengkap()` yang sudah ada: "Profil siap melamar ✓" atau "Belum bisa melamar: lengkapi {foto, usia, jenis kelamin, tinggi badan}" (yang kurang saja, masing-masing tautan ke bagiannya). Satu baris "Terakhir diperbarui {translatedFormat}" dari `updated_at` profil. Tanpa paragraf pembuka.
+3. **Kartu per bagian** (urutan tetap), masing-masing judul + tombol **Ubah** (≥44 px) + isi mode baca berupa pasangan label–nilai (grid 2 kolom di desktop, 1 kolom di ≤640 px). Nilai kosong ditulis "–", field wajib yang kosong diberi tanda "Wajib" kecil.
+   1. **Foto & Video** (upload AJAX yang sudah ada tetap, tidak lewat tombol Ubah).
+   2. **Data diri:** nama asli, nama panggung/username, usia, jenis kelamin, tinggi, berat, ukuran baju.
+   3. **Kontak:** nomor WhatsApp; rekening tersamar read-only (`rekeningTersamar()`) bila ada, tanpa tombol ubah (aturan lama tetap: diminta lagi saat lolos).
+   4. **Tentang kamu:** tag dan bahasa.
+   5. **Pengalaman.**
+   6. **Tautan & tarif:** tautan tambahan, tarif yang diharapkan.
+   7. **Privasi:** izin tampil di profil publik/beranda.
+4. **Mode ubah:** klik Ubah membuka form **hanya bagian itu** di tempat (kartu berubah jadi form), dengan tombol **Simpan** dan **Batal**. Satu bagian terbuka pada satu waktu. Di ≤640 px Simpan/Batal menempel di bawah layar (sticky) selama form terbuka. Batal menutup tanpa menyimpan. Pakai elemen bawaan (`<details>` atau toggle kecil), tanpa library.
+5. **Akun baru / profil belum lengkap:** bagian yang punya field wajib kosong (Data diri, Foto) **langsung terbuka** dalam mode ubah, supaya Extras baru tidak perlu mencari tombol Ubah.
+6. **Galat validasi:** halaman kembali dengan bagian yang gagal tetap terbuka (pakai `old('bagian')`) dan pesan di bawah field-nya.
+
+## CL.2: Simpan per bagian (bagian paling berisiko)
+1. Form tiap bagian mengirim `bagian` (`data_diri|kontak|tentang|pengalaman|tautan|privasi`). `update()` **memvalidasi dan menulis hanya field milik bagian itu**. Field bagian lain **tidak boleh berubah**.
+2. Perhatikan perilaku lama yang menghapus data bila field tidak dikirim, wajib dijaga per bagian: `tautan_tambahan` sekarang selalu ditimpa `[]` bila `tautan_*` tidak ada; `nomor_wa` ditimpa `null` dan `username` wajib di setiap simpan; `riwayat_pengalaman` hanya bila `pengalaman_judul` ada; tag hanya bila `categories_present`; izin hanya bila `izin_present`. `nama_asli` dan `username` wajib **hanya** saat menyimpan Data diri.
+3. Efek samping lama tetap jalan setelah simpan bagian apa pun: `siapkanKontrakLolos()`, pematian `tampil_di_beranda` bila izin dicabut, dan `pull('intended_event_token')`.
+4. Aturan kerahasiaan tetap: tautan tambahan dan nomor WA tidak pernah ke view Client; tidak ada field `status`/path file dari request.
+
+## CL.3: Enak di HP (tanpa mengubah data)
+1. Input: nomor WA `type="tel" autocomplete="tel"`; nama asli `autocomplete="name"`; usia/tinggi/berat `inputmode="numeric"`; semua input ≥16 px (cek tidak ada yang menimpa jadi 14 px).
+2. Jenis kelamin jadi dua tombol pilihan (radio bergaya segmen, ≥44 px), nilai tetap `pria`/`wanita`.
+3. Ukuran baju tetap teks bebas tapi dengan `<datalist>` S, M, L, XL, XXL (nilai lama yang bebas tetap sah).
+4. Tarif: tampilkan pratinjau "Rp 150.000" di bawah input saat mengetik.
+5. **Teks dipangkas:** hapus paragraf pembuka dan kalimat bantu yang hanya mengulang label. Sisakan maksimal satu baris bantu pendek bila benar-benar perlu (mis. "Dipakai di kontrak, tidak tampil ke publik" untuk nama asli; "Untuk notifikasi WhatsApp" untuk nomor WA; "Huruf, angka, _ dan - tanpa spasi" untuk username).
+6. **Tombol "Contoh foto"** di bagian Foto: membuka `<dialog>` berisi panduan singkat berupa daftar ikon + 1 baris (wajah jelas & cahaya terang; tanpa filter/kacamata hitam; close-up, setengah badan, **seluruh badan**; latar polos). Tanpa foto orang sungguhan kecuali disediakan JBTB. Slot galeri kosong boleh diberi petunjuk kecil "Seluruh badan" / "Setengah badan".
+
+## CL.4: Yang sengaja TIDAK diambil dari Goers
+Domisili + peta, agama, riwayat penyakit, pendidikan, preferensi lingkungan kerja, "bersedia dihubungi mendadak": **jangan ditambah** (field baru di tengah freeze + minimisasi data UU PDP). NIK dan rekening **tidak** ditampilkan polos (tetap tersamar). Tab di atas halaman tidak dipakai (5 tab meluber di 390 px); gantinya kartu bertumpuk + tautan dari status kelengkapan.
+
+## CL.5: Test dan penutup
+1. Test simpan per bagian: menyimpan tiap bagian **tidak mengubah** field bagian lain (khususnya tautan, nomor WA, pengalaman, tag, izin, username); `nama_asli`/`username` tidak diwajibkan saat menyimpan bagian selain Data diri; galat validasi membuka bagian yang benar; return-to-intent event tetap ke halaman proyek; `siapkanKontrakLolos()` tetap terpanggil; izin dicabut mematikan tampil di beranda.
+2. Test tampilan: akun baru → bagian Data diri dan Foto terbuka; profil lengkap → semua mode baca + "Profil siap melamar"; tombol "Lihat seperti Client" ada; nomor WA/tautan tidak muncul di view Client (test lama tetap hijau); `ExtrasBudgetVisibilityTest`, `BrOverflowMobileTest` hijau.
+3. Screenshot **aplikasi asli** 390 dan 1366 px: akun baru (bagian terbuka), profil lengkap (mode baca), satu bagian sedang diubah (sticky Simpan di HP), dialog Contoh foto, galat validasi. Laporkan apa adanya.
+4. SQLite lalu MySQL `jbtb_test` berurutan (cetak driver). Isi Bukti, commit, **jangan push**.
+
+| Item | Bukti | QA |
+|---|---|---|
+| CL.1 satu halaman Profil mode baca, kartu per bagian, status kelengkapan, "Lihat seperti Client", bagian terbuka untuk akun baru | | [ ] |
+| CL.2 `update()` per bagian tanpa menghapus bagian lain + efek samping lama tetap | | [ ] |
+| CL.3 input HP, gender segmen, datalist ukuran, pratinjau tarif, teks dipangkas, dialog Contoh foto | | [ ] |
+| CL.5 test, screenshot asli 390/1366, SQLite lalu MySQL | | [ ] |

@@ -171,15 +171,15 @@ class PublicEventLinkTest extends TestCase
         $loginResponse->assertRedirect($admin->dashboardUrl());
     }
 
-    // 8. Homepage: modal cuma untuk guest, counter benar, CTA "Ke Dashboard" kalau sudah login.
-    public function test_homepage_modal_counter_dan_cta_sesuai_status_login(): void
+    // 8. Homepage: tanpa modal (CK), counter benar, CTA "Ke Dashboard" kalau sudah login.
+    public function test_homepage_cta_sesuai_status_login(): void
     {
         $this->buatProyek();
         $this->buatProyek(['status' => 'ditutup']);
 
         $guestResponse = $this->get('/');
         $guestResponse->assertOk();
-        $guestResponse->assertSee('welcome-modal', false);
+        $guestResponse->assertDontSee('welcome-modal', false);
         $guestResponse->assertSee('Proyek Event Test'); // kartu lowongan terbuka muncul
         $guestResponse->assertSee('Daftar untuk Apply'); // CTA per kartu lowongan buat guest
 
