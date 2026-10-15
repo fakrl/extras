@@ -43,7 +43,7 @@ class BjBeratWarnaKulitTest extends TestCase
             ->assertDontSee('name="warna_kulit"', false)
             ->assertSee('<label for="ukuran_baju">Ukuran Baju</label>', false);
 
-        $base = ['nama_asli' => 'Nama', 'username' => 'user_'.$p->user_id];
+        $base = ['bagian' => 'data_diri', 'nama_asli' => 'Nama', 'username' => 'user_'.$p->user_id];
         $this->actingAs($p->user)->put('/extras/profil', $base + ['berat_badan' => 300])->assertSessionHasErrors('berat_badan');
         $this->actingAs($p->user)->put('/extras/profil', $base + ['berat_badan' => 55])->assertSessionHasNoErrors();
         $this->assertSame(55, $p->fresh()->berat_badan);

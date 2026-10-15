@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Lengkapi Profil')
+@section('title', 'Profil')
 
 @push('styles')
 <style>
@@ -27,28 +27,96 @@
     .foto-wajib { position: absolute; left: 6px; top: 6px; padding: 2px 8px; border-radius: 999px; background: var(--accent); color: var(--accent-on); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
     .foto-hapus { position: absolute; right: 4px; top: 4px; margin: 0; }
     .foto-hapus button { width: 36px; height: 36px; border-radius: 999px; border: 0; background: rgba(0,0,0,.6); color: #fff; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+    /* CL.1: kepala halaman (status kelengkapan) */
+    .profil-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+    .profil-head-id { display: flex; gap: 12px; align-items: center; min-width: 0; }
+    .profil-head-foto, .profil-head-foto-kosong { width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0; }
+    .profil-head-foto { object-fit: cover; background: var(--bg-nav-active); }
+    .profil-head-foto-kosong { background: var(--bg-nav-active); display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 22px; }
+    .profil-head-nama { font-weight: 600; font-size: 16px; word-break: break-word; }
+    .profil-status { font-size: 13px; margin-top: 4px; }
+    .profil-status.is-lengkap { color: var(--accent-strong); font-weight: 600; }
+    .profil-status.is-kurang { color: var(--danger); }
+    .profil-status a { color: inherit; text-decoration: underline; }
+    .profil-updated { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    /* CL.1: kartu per bagian, mode baca <-> mode ubah lewat <details> */
+    .bagian-card { border: 1px solid var(--border-color); border-radius: var(--radius-lg); margin-bottom: 12px; }
+    .bagian-head { list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 44px; padding: 14px 16px; cursor: pointer; }
+    .bagian-head::-webkit-details-marker { display: none; }
+    .bagian-title { font-size: 14px; font-weight: 600; }
+    .bagian-aksi { font-size: 13px; font-weight: 600; color: var(--accent-strong); flex-shrink: 0; }
+    .bagian-aksi::after { content: 'Ubah'; }
+    .bagian-card[open] .bagian-aksi::after { content: 'Tutup'; }
+    .bagian-baca { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; padding: 0 16px 16px; }
+    .bagian-card[open] .bagian-baca { display: none; }
+    .bagian-form { display: none; padding: 16px; border-top: 1px solid var(--border-color); }
+    .bagian-card[open] .bagian-form { display: block; }
+    .baca-item { min-width: 0; }
+    .baca-item.full { grid-column: 1 / -1; }
+    .baca-label { font-size: 12px; color: var(--text-muted); margin-bottom: 2px; }
+    .baca-value { font-size: 14px; color: var(--text-primary); font-weight: 500; word-break: break-word; }
+    .baca-value.is-kosong { color: var(--text-muted); font-weight: 400; font-style: italic; }
+    .baca-wajib { color: var(--danger); font-weight: 600; font-size: 11px; margin-left: 4px; }
+    .bagian-sub { font-size: 13px; font-weight: 600; margin: 14px 0 8px; }
+    .bagian-sub:first-child { margin-top: 0; }
+    .bagian-foot { display: flex; gap: 8px; margin-top: 4px; }
+    @media (max-width: 640px) {
+        .bagian-baca { grid-template-columns: 1fr; }
+        .bagian-foot { position: sticky; bottom: 0; background: var(--bg-card); margin: 12px -16px 0; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border-color); }
+    }
+
+    /* CL.3: jenis kelamin jadi 2 tombol segmen */
+    .gender-segmen { display: flex; gap: 8px; margin-bottom: 14px; }
+    .gender-opsi { flex: 1; }
+    .gender-opsi input { position: absolute; opacity: 0; pointer-events: none; }
+    .gender-opsi label { display: flex; align-items: center; justify-content: center; min-height: 44px; margin: 0; border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; font-weight: 500; color: var(--text-primary); background: var(--bg-card); }
+    .gender-opsi input:checked + label { background: var(--accent); border-color: var(--accent); color: var(--accent-on); }
+    .gender-opsi input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
 </style>
 @endpush
 
 @section('content')
+@php
+    $bukaBagian = old('bagian') ?: ($dataDiriBelumLengkap ? 'data_diri' : null);
+    $belum = fn ($v) => $v === null || $v === '' || $v === [];
+@endphp
 <div class="card" style="max-width: 560px; margin: 0 auto;">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
-        <div style="font-size: 17px; font-weight: 600;">Lengkapi Profil Kamu</div>
-        <a href="{{ route('extras.profile.show') }}" class="btn">Lihat Profil</a>
+    <div class="profil-head">
+        <div class="profil-head-id">
+            @if ($profile->exists && $profile->foto_profil_path)
+                <img src="{{ route('extras.media.foto', $profile) }}" class="profil-head-foto" alt="">
+            @else
+                <span class="profil-head-foto-kosong"><i class="ti ti-user" aria-hidden="true"></i></span>
+            @endif
+            <div>
+                <div class="profil-head-nama">{{ $profile->user->username ? '@'.$profile->user->username : '(belum ada nama panggung)' }}</div>
+                @if ($profile->profilLengkap())
+                    <div class="profil-status is-lengkap">Profil siap melamar <i class="ti ti-circle-check" aria-hidden="true"></i></div>
+                @else
+                    <div class="profil-status is-kurang">Belum bisa melamar: lengkapi
+                        @foreach ($kurangDaftar as $i => $item)
+                            <a href="#{{ $item['anchor'] }}">{{ $item['label'] }}</a>{{ $loop->last ? '' : ', ' }}
+                        @endforeach
+                    </div>
+                @endif
+                @if ($profile->updated_at)
+                    <div class="profil-updated">Terakhir diperbarui {{ $profile->updated_at->translatedFormat('d M Y, H:i') }}</div>
+                @endif
+            </div>
+        </div>
+        <a href="{{ route('extras.profile.show') }}" class="btn">Lihat seperti Client</a>
     </div>
-    <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 20px; line-height: 1.5;">
-        Data profil talenta untuk penilaian Admin dan Client. Isi sesuai kondisi saat ini (dapat diubah sewaktu-waktu).
-    </p>
 
-    <p class="wajib-ket"><span class="wajib">*</span> wajib diisi untuk bisa mendaftar ke lowongan</p>
-
-    {{-- ===== Foto (BJ.2: utama + galeri satu section) ===== --}}
+    {{-- ===== 1. Foto & Video (upload AJAX, tidak lewat tombol Ubah) ===== --}}
     @php
         $jumlahGaleri = count(array_filter($fotoTambahan));
         $slotKosong = array_keys(array_filter($fotoTambahan, fn ($f) => ! $f));
     @endphp
-    <div class="profile-section">
+    <div class="profile-section" id="bagian-foto">
         <div class="profile-section-title">Foto</div>
+        <button type="button" class="btn btn-sm" style="margin-bottom: 12px;" onclick="document.getElementById('dialog-contoh-foto').showModal()">Contoh foto</button>
         <p id="foto-hint" @class(['foto-hint', 'is-kosong' => ! $jumlahGaleri])>💡 Profil dengan 3+ foto (close-up, setengah badan, seluruh badan) lebih sering dipilih Client.</p>
 
         <div class="foto-grid">
@@ -91,6 +159,21 @@
         <p class="field-hint" style="margin: 8px 0 0;">Ketuk foto untuk ganti. Foto utama = yang pertama dilihat Client, pakai wajah yang jelas &amp; terang. Maks 4 foto galeri, JPG/PNG maks 5MB.</p>
     </div>
 
+    <dialog class="xmodal" id="dialog-contoh-foto" aria-label="Contoh foto yang bagus" onclick="if (event.target === this) this.close()">
+        <div class="xmodal-body">
+            <div class="xmodal-head">
+                <div class="xmodal-name" style="font-size: 16px;">Contoh foto yang bagus</div>
+                <button type="button" class="xmodal-x" style="position: static; flex-shrink: 0; background: var(--bg-card-hover); color: var(--text-primary);" aria-label="Tutup" onclick="this.closest('dialog').close()"><i class="ti ti-x" aria-hidden="true"></i></button>
+            </div>
+            <ul style="list-style: none; padding: 0; margin: 14px 0 0; display: flex; flex-direction: column; gap: 12px; font-size: 13.5px;">
+                <li style="display: flex; gap: 10px; align-items: flex-start;"><i class="ti ti-sun" style="font-size: 20px; color: var(--accent-strong);" aria-hidden="true"></i> Wajah jelas &amp; cahaya terang</li>
+                <li style="display: flex; gap: 10px; align-items: flex-start;"><i class="ti ti-forbid-2" style="font-size: 20px; color: var(--accent-strong);" aria-hidden="true"></i> Tanpa filter/kacamata hitam</li>
+                <li style="display: flex; gap: 10px; align-items: flex-start;"><i class="ti ti-crop" style="font-size: 20px; color: var(--accent-strong);" aria-hidden="true"></i> Close-up, setengah badan, dan seluruh badan</li>
+                <li style="display: flex; gap: 10px; align-items: flex-start;"><i class="ti ti-square" style="font-size: 20px; color: var(--accent-strong);" aria-hidden="true"></i> Latar polos</li>
+            </ul>
+        </div>
+    </dialog>
+
     {{-- ===== Video Perkenalan ===== --}}
     <div class="profile-section">
         <div class="profile-section-title">Video Perkenalan</div>
@@ -122,61 +205,78 @@
         <p class="field-hint" style="margin-top: 8px;">Format MP4/MOV, maksimal 50MB.</p>
     </div>
 
-    <form method="POST" action="{{ route('extras.profile.update') }}">
-        @csrf
-        @method('PUT')
-        <div class="profile-section">
-            <div class="profile-section-title">Nama & Kontak</div>
+    {{-- ===== 2. Data Diri ===== --}}
+    <details id="bagian-data_diri" class="bagian-card" @if ($bukaBagian === 'data_diri') open @endif>
+        <summary class="bagian-head"><span class="bagian-title">Data Diri</span><span class="bagian-aksi"></span></summary>
+        <div class="bagian-baca">
+            <div class="baca-item">
+                <div class="baca-label">Nama Asli</div>
+                <div class="baca-value @if ($belum($profile->nama_asli)) is-kosong @endif">{{ $profile->nama_asli ?: '–' }}@if ($belum($profile->nama_asli))<span class="baca-wajib">Wajib</span>@endif</div>
+            </div>
+            <div class="baca-item">
+                <div class="baca-label">Nama Panggung</div>
+                <div class="baca-value @if ($belum($profile->user->username)) is-kosong @endif">{{ $profile->user->username ? '@'.$profile->user->username : '–' }}@if ($belum($profile->user->username))<span class="baca-wajib">Wajib</span>@endif</div>
+            </div>
+            <div class="baca-item">
+                <div class="baca-label">Usia</div>
+                <div class="baca-value @if ($belum($profile->usia)) is-kosong @endif">{{ $profile->usia ? $profile->usia.' th' : '–' }}@if ($belum($profile->usia))<span class="baca-wajib">Wajib</span>@endif</div>
+            </div>
+            <div class="baca-item">
+                <div class="baca-label">Jenis Kelamin</div>
+                <div class="baca-value @if ($belum($profile->gender)) is-kosong @endif">{{ $profile->genderLabel() ?: '–' }}@if ($belum($profile->gender))<span class="baca-wajib">Wajib</span>@endif</div>
+            </div>
+            <div class="baca-item">
+                <div class="baca-label">Tinggi Badan</div>
+                <div class="baca-value @if ($belum($profile->tinggi_badan)) is-kosong @endif">{{ $profile->tinggi_badan ? $profile->tinggi_badan.' cm' : '–' }}@if ($belum($profile->tinggi_badan))<span class="baca-wajib">Wajib</span>@endif</div>
+            </div>
+            <div class="baca-item">
+                <div class="baca-label">Berat Badan</div>
+                <div class="baca-value @if ($belum($profile->berat_badan)) is-kosong @endif">{{ $profile->berat_badan ? $profile->berat_badan.' kg' : '–' }}</div>
+            </div>
+            <div class="baca-item">
+                <div class="baca-label">Ukuran Baju</div>
+                <div class="baca-value @if ($belum($profile->ukuran_baju)) is-kosong @endif">{{ $profile->ukuran_baju ?: '–' }}</div>
+            </div>
+        </div>
+        <form method="POST" action="{{ route('extras.profile.update') }}" class="bagian-form">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="bagian" value="data_diri">
 
-            <label>Nama Asli (sesuai KTP) <span class="wajib" aria-hidden="true">*</span></label>
-            <input type="text" name="nama_asli" value="{{ old('nama_asli', $profile->nama_asli) }}" required
-                   placeholder="Contoh: Rina Wulandari" inputmode="text"
+            <label for="nama_asli">Nama Asli (sesuai KTP) <span class="wajib" aria-hidden="true">*</span></label>
+            <input type="text" name="nama_asli" id="nama_asli" value="{{ old('nama_asli', $profile->nama_asli) }}" required
+                   autocomplete="name" placeholder="Contoh: Rina Wulandari"
                    @class(['input-error' => $errors->has('nama_asli')])>
             @error('nama_asli')<span class="field-error">{{ $message }}</span>@enderror
-            <p class="field-hint">Dipakai di dokumen kontrak resmi, bukan yang tampil ke publik.</p>
+            <p class="field-hint">Dipakai di kontrak, tidak tampil ke publik</p>
 
-            <label>Nama Panggung / Username <span class="wajib" aria-hidden="true">*</span></label>
-            <input type="text" name="username" value="{{ old('username', $profile->user->username) }}" required
+            <label for="username">Nama Panggung / Username <span class="wajib" aria-hidden="true">*</span></label>
+            <input type="text" name="username" id="username" value="{{ old('username', $profile->user->username) }}" required
                    placeholder="Contoh: rina_wulan" maxlength="50"
                    @class(['input-error' => $errors->has('username')])>
             @error('username')<span class="field-error">{{ $message }}</span>@enderror
-            <p class="field-hint">Nama panggung yang dilihat Client. Huruf, angka, garis bawah, dan strip saja (tanpa spasi). Bisa dipakai untuk masuk selain email.</p>
+            <p class="field-hint">Huruf, angka, _ dan - tanpa spasi</p>
 
-            <label>Nomor WhatsApp</label>
-            <input type="text" name="nomor_wa" value="{{ old('nomor_wa', $profile->user->nomor_wa) }}"
-                   placeholder="Contoh: 08123456789" inputmode="tel"
-                   @class(['input-error' => $errors->has('nomor_wa')])>
-            @error('nomor_wa')<span class="field-error">{{ $message }}</span>@enderror
-            <p class="field-hint">Buat notifikasi WhatsApp (apply, hasil seleksi, kontrak, pengingat jadwal).</p>
-
-            @if ($profile->rekeningTersamar())
-                <label>Rekening Penerima Honor</label>
-                <p style="margin: 0;">{{ $profile->rekeningTersamar() }}</p>
-                <p class="field-hint">Rekening tersimpan. Untuk mengganti, kamu akan diminta lagi saat lolos di proyek berikutnya.</p>
-            @endif
-        </div>
-
-        <div class="profile-section">
-            <div class="profile-section-title">Data Diri & Ciri Fisik</div>
-            <p class="field-hint" style="margin-top: -4px;">Membantu Client mencocokkan kamu dengan kebutuhan peran.</p>
-
-            <label for="usia">Usia <span class="wajib" aria-hidden="true">*</span></label>
+            <label for="usia">Usia</label>
             <input type="number" name="usia" id="usia" value="{{ old('usia', $profile->usia) }}"
                    placeholder="Contoh: 28" inputmode="numeric" min="1" max="120"
                    @class(['input-error' => $errors->has('usia')])>
             @error('usia')<span class="field-error">{{ $message }}</span>@enderror
 
-            <label for="gender">Jenis Kelamin <span class="wajib" aria-hidden="true">*</span></label>
-            <select name="gender" id="gender"@class(['input-error' => $errors->has('gender')])>
-                <option value="">Pilih salah satu</option>
-                <option value="pria" @selected(old('gender', $profile->gender) === 'pria')>Laki-laki</option>
-                <option value="wanita" @selected(old('gender', $profile->gender) === 'wanita')>Perempuan</option>
-            </select>
+            <label id="gender-label">Jenis Kelamin</label>
+            <div class="gender-segmen" role="radiogroup" aria-labelledby="gender-label">
+                @foreach (['pria' => 'Laki-laki', 'wanita' => 'Perempuan'] as $val => $label)
+                    <div class="gender-opsi">
+                        <input type="radio" name="gender" id="gender_{{ $val }}" value="{{ $val }}" @checked(old('gender', $profile->gender) === $val)>
+                        <label for="gender_{{ $val }}">{{ $label }}</label>
+                    </div>
+                @endforeach
+            </div>
             @error('gender')<span class="field-error">{{ $message }}</span>@enderror
 
             <div class="form-row">
                 <div style="min-width: 130px;">
-                    <label for="tinggi_badan">Tinggi Badan (cm) <span class="wajib" aria-hidden="true">*</span></label>
+                    <label for="tinggi_badan">Tinggi Badan (cm)</label>
                     <input type="number" name="tinggi_badan" id="tinggi_badan" value="{{ old('tinggi_badan', $profile->tinggi_badan) }}"
                            placeholder="Contoh: 165" inputmode="numeric"
                            @class(['input-error' => $errors->has('tinggi_badan')])>
@@ -193,23 +293,133 @@
 
             <label for="ukuran_baju">Ukuran Baju</label>
             <input type="text" name="ukuran_baju" id="ukuran_baju" value="{{ old('ukuran_baju', $profile->ukuran_baju) }}"
-                   placeholder="Contoh: M, L, XL"
+                   placeholder="Contoh: M, L, XL" list="ukuran-baju-opsi"
                    @class(['input-error' => $errors->has('ukuran_baju')])>
+            <datalist id="ukuran-baju-opsi">
+                <option value="S"><option value="M"><option value="L"><option value="XL"><option value="XXL">
+            </datalist>
             @error('ukuran_baju')<span class="field-error">{{ $message }}</span>@enderror
-            <p class="field-hint">Warna kulit pilih lewat tag di bagian "Tentang Kamu".</p>
-        </div>
 
-        <div class="profile-section">
-            <div class="profile-section-title">Tentang Kamu</div>
-            <p class="field-hint">Tulis tag yang menggambarkan kamu (usia tampilan, tipe, kemampuan). Pilih dari saran atau ketik sendiri. Dipakai Admin untuk mencocokkan peran.</p>
+            <div class="bagian-foot">
+                <button type="submit" class="btn btn-brand">Simpan</button>
+                <button type="button" class="btn" onclick="this.closest('details').open=false">Batal</button>
+            </div>
+        </form>
+    </details>
+
+    {{-- ===== 3. Kontak ===== --}}
+    <details id="bagian-kontak" class="bagian-card" @if ($bukaBagian === 'kontak') open @endif>
+        <summary class="bagian-head"><span class="bagian-title">Kontak</span><span class="bagian-aksi"></span></summary>
+        <div class="bagian-baca">
+            <div class="baca-item">
+                <div class="baca-label">Nomor WhatsApp</div>
+                <div class="baca-value @if ($belum($profile->user->nomor_wa)) is-kosong @endif">{{ $profile->user->nomor_wa ?: '–' }}</div>
+            </div>
+            @if ($profile->rekeningTersamar())
+                <div class="baca-item">
+                    <div class="baca-label">Rekening</div>
+                    <div class="baca-value">{{ $profile->rekeningTersamar() }}</div>
+                </div>
+            @endif
+        </div>
+        <form method="POST" action="{{ route('extras.profile.update') }}" class="bagian-form">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="bagian" value="kontak">
+
+            <label for="nomor_wa">Nomor WhatsApp</label>
+            <input type="tel" name="nomor_wa" id="nomor_wa" autocomplete="tel" value="{{ old('nomor_wa', $profile->user->nomor_wa) }}"
+                   placeholder="Contoh: 08123456789"
+                   @class(['input-error' => $errors->has('nomor_wa')])>
+            @error('nomor_wa')<span class="field-error">{{ $message }}</span>@enderror
+            <p class="field-hint">Untuk notifikasi WhatsApp</p>
+
+            @if ($profile->rekeningTersamar())
+                <p class="field-hint">Rekening {{ $profile->rekeningTersamar() }}. Untuk mengganti, kamu akan diminta lagi saat lolos di proyek berikutnya.</p>
+            @endif
+
+            <div class="bagian-foot">
+                <button type="submit" class="btn btn-brand">Simpan</button>
+                <button type="button" class="btn" onclick="this.closest('details').open=false">Batal</button>
+            </div>
+        </form>
+    </details>
+
+    {{-- ===== 4. Tentang Kamu ===== --}}
+    <details id="bagian-tentang" class="bagian-card" @if ($bukaBagian === 'tentang') open @endif>
+        <summary class="bagian-head"><span class="bagian-title">Tentang Kamu</span><span class="bagian-aksi"></span></summary>
+        <div class="bagian-baca">
+            <div class="baca-item full">
+                <div class="baca-label">Tag</div>
+                <div class="baca-value @if ($profile->categories->isEmpty()) is-kosong @endif">{{ $profile->categories->isNotEmpty() ? $profile->categories->pluck('nama')->map(fn ($n) => '#'.$n)->implode(' ') : '–' }}</div>
+            </div>
+            <div class="baca-item full">
+                <div class="baca-label">Bahasa</div>
+                <div class="baca-value @if ($belum($profile->bahasa)) is-kosong @endif">{{ $profile->bahasa ?: '–' }}</div>
+            </div>
+        </div>
+        <form method="POST" action="{{ route('extras.profile.update') }}" class="bagian-form">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="bagian" value="tentang">
+
             <input type="hidden" name="categories_present" value="1">
             @include('partials.tag-input', ['name' => 'tag_nama', 'selected' => old('categories_present') ? old('tag_nama', []) : $profile->categories])
             @error('tag_nama')<span class="field-error">{{ $message }}</span>@enderror
             @error('categories.*')<span class="field-error">{{ $message }}</span>@enderror
-        </div>
 
-        <div class="profile-section">
-            <div class="profile-section-title">Pengalaman</div>
+            <label>Bahasa yang Kamu Kuasai</label>
+            @php
+                $existingBahasa = old('bahasa') !== null
+                    ? array_values((array) old('bahasa'))
+                    : preg_split('/\s*,\s*/', (string) $profile->bahasa, -1, PREG_SPLIT_NO_EMPTY);
+            @endphp
+            <div id="bahasa-wrap" data-max="10">
+                @forelse ($existingBahasa as $i => $bahasa)
+                    <div class="tautan-row">
+                        <label for="bahasa_{{ $i }}" class="sr-only">Bahasa</label>
+                        <input type="text" name="bahasa[]" id="bahasa_{{ $i }}" value="{{ $bahasa }}" placeholder="Contoh: Indonesia" maxlength="40" @class(['input-inline', 'input-error' => $errors->has("bahasa.$i")])>
+                        <button type="button" class="btn-icon-danger btn-remove-row" aria-label="Hapus bahasa ini">&times;</button>
+                    </div>
+                @empty
+                    <div class="tautan-row">
+                        <label for="bahasa_0" class="sr-only">Bahasa</label>
+                        <input type="text" name="bahasa[]" id="bahasa_0" placeholder="Contoh: Indonesia" maxlength="40" class="input-inline">
+                        <button type="button" class="btn-icon-danger btn-remove-row" aria-label="Hapus bahasa ini">&times;</button>
+                    </div>
+                @endforelse
+            </div>
+            @error('bahasa')<span class="field-error">{{ $message }}</span>@enderror
+            @error('bahasa.*')<span class="field-error">{{ $message }}</span>@enderror
+            <button type="button" id="btn-add-bahasa" class="btn" style="margin-top: 4px;">+ Tambah bahasa</button>
+
+            <div class="bagian-foot">
+                <button type="submit" class="btn btn-brand">Simpan</button>
+                <button type="button" class="btn" onclick="this.closest('details').open=false">Batal</button>
+            </div>
+        </form>
+    </details>
+
+    {{-- ===== 5. Pengalaman ===== --}}
+    <details id="bagian-pengalaman" class="bagian-card" @if ($bukaBagian === 'pengalaman') open @endif>
+        <summary class="bagian-head"><span class="bagian-title">Pengalaman</span><span class="bagian-aksi"></span></summary>
+        @php $pengalamanUrut = $profile->pengalamanUrut(); @endphp
+        <div class="bagian-baca">
+            <div class="baca-item full">
+                @if (empty($pengalamanUrut))
+                    <div class="baca-value is-kosong">–</div>
+                @else
+                    @foreach ($pengalamanUrut as $pg)
+                        <div class="baca-value" style="margin-bottom: 6px;">{{ $pg['judul'] }}{{ empty($pg['tahun']) ? '' : ' ('.$pg['tahun'].')' }}{{ empty($pg['keterangan']) ? '' : ' - '.$pg['keterangan'] }}</div>
+                    @endforeach
+                @endif
+            </div>
+        </div>
+        <form method="POST" action="{{ route('extras.profile.update') }}" class="bagian-form">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="bagian" value="pengalaman">
+
             <p class="field-hint" style="margin-top: -4px;">Main film, iklan, video klip, teater, atau kerja lain yang relevan (maks 20). Kemampuan (naik motor, menari, dll) tambahkan sebagai tag di atas.</p>
 
             @php
@@ -221,7 +431,7 @@
                         'tahun' => old('pengalaman_tahun')[$i] ?? '',
                     ])->all();
                 } else {
-                    $existingPengalaman = $profile->pengalamanUrut();
+                    $existingPengalaman = $pengalamanUrut;
                 }
             @endphp
             <div id="pengalaman-wrap" data-max="20">
@@ -261,34 +471,38 @@
             @error('pengalaman_judul')<span class="field-error">{{ $message }}</span>@enderror
             <button type="button" id="btn-add-pengalaman" class="btn" style="margin: 4px 0 16px;">+ Tambah pengalaman</button>
 
-            <label>Bahasa yang Kamu Kuasai</label>
-            @php
-                $existingBahasa = old('bahasa') !== null
-                    ? array_values((array) old('bahasa'))
-                    : preg_split('/\s*,\s*/', (string) $profile->bahasa, -1, PREG_SPLIT_NO_EMPTY);
-            @endphp
-            <div id="bahasa-wrap" data-max="10">
-                @forelse ($existingBahasa as $i => $bahasa)
-                    <div class="tautan-row">
-                        <label for="bahasa_{{ $i }}" class="sr-only">Bahasa</label>
-                        <input type="text" name="bahasa[]" id="bahasa_{{ $i }}" value="{{ $bahasa }}" placeholder="Contoh: Indonesia" maxlength="40" @class(['input-inline', 'input-error' => $errors->has("bahasa.$i")])>
-                        <button type="button" class="btn-icon-danger btn-remove-row" aria-label="Hapus bahasa ini">&times;</button>
-                    </div>
-                @empty
-                    <div class="tautan-row">
-                        <label for="bahasa_0" class="sr-only">Bahasa</label>
-                        <input type="text" name="bahasa[]" id="bahasa_0" placeholder="Contoh: Indonesia" maxlength="40" class="input-inline">
-                        <button type="button" class="btn-icon-danger btn-remove-row" aria-label="Hapus bahasa ini">&times;</button>
-                    </div>
-                @endforelse
+            <div class="bagian-foot">
+                <button type="submit" class="btn btn-brand">Simpan</button>
+                <button type="button" class="btn" onclick="this.closest('details').open=false">Batal</button>
             </div>
-            @error('bahasa')<span class="field-error">{{ $message }}</span>@enderror
-            @error('bahasa.*')<span class="field-error">{{ $message }}</span>@enderror
-            <button type="button" id="btn-add-bahasa" class="btn" style="margin-top: 4px;">+ Tambah bahasa</button>
-        </div>
+        </form>
+    </details>
 
-        <div class="profile-section">
-            <div class="profile-section-title">Tautan Tambahan</div>
+    {{-- ===== 6. Tautan & Tarif ===== --}}
+    <details id="bagian-tautan" class="bagian-card" @if ($bukaBagian === 'tautan') open @endif>
+        <summary class="bagian-head"><span class="bagian-title">Tautan &amp; Tarif</span><span class="bagian-aksi"></span></summary>
+        <div class="bagian-baca">
+            <div class="baca-item full">
+                <div class="baca-label">Tautan Tambahan</div>
+                @if (empty($profile->tautan_tambahan))
+                    <div class="baca-value is-kosong">–</div>
+                @else
+                    @foreach ($profile->tautan_tambahan as $t)
+                        <div class="baca-value" style="margin-bottom: 4px;"><a href="{{ $t['url'] }}" target="_blank" rel="noopener">{{ $t['label'] }}</a></div>
+                    @endforeach
+                @endif
+            </div>
+            <div class="baca-item">
+                <div class="baca-label">Tarif</div>
+                <div class="baca-value @if ($belum($profile->rate_card)) is-kosong @endif">{{ $profile->rate_card ? 'Rp '.number_format($profile->rate_card, 0, ',', '.') : '–' }}</div>
+            </div>
+        </div>
+        <form method="POST" action="{{ route('extras.profile.update') }}" class="bagian-form">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="bagian" value="tautan">
+
+            <div class="bagian-sub">Tautan Tambahan</div>
             <p class="field-hint" style="margin-top: -4px;">Punya portofolio/showreel? Taruh link-nya di sini. Instagram, TikTok, atau tautan lain juga boleh.</p>
 
             @php
@@ -307,9 +521,10 @@
                         <label for="tautan_label_{{ $i }}" class="sr-only">Nama tautan</label>
                         <input type="text" name="tautan_label[]" id="tautan_label_{{ $i }}" value="{{ $tautan['label'] }}" placeholder="Nama (contoh: Instagram)" class="input-inline" style="flex: 0 0 130px;">
                         <label for="tautan_url_{{ $i }}" class="sr-only">URL tautan</label>
-                        <input type="url" name="tautan_url[]" id="tautan_url_{{ $i }}" value="{{ $tautan['url'] }}" placeholder="https://..." class="input-inline">
+                        <input type="url" name="tautan_url[]" id="tautan_url_{{ $i }}" value="{{ $tautan['url'] }}" placeholder="https://..." @class(['input-inline', 'input-error' => $errors->has("tautan_url.$i")])>
                         <button type="button" class="btn-icon-danger btn-remove-row" aria-label="Hapus tautan ini">&times;</button>
                     </div>
+                    @error("tautan_url.$i")<span class="field-error">{{ $message }}</span>@enderror
                 @empty
                     <div class="tautan-row">
                         <label for="tautan_label_0" class="sr-only">Nama tautan</label>
@@ -321,21 +536,37 @@
                 @endforelse
             </div>
             <button type="button" id="btn-add-tautan" class="btn" style="margin-top: 4px;">+ Tambah Tautan</button>
-        </div>
 
-        <div class="profile-section">
-            <div class="profile-section-title">Tarif</div>
-
-            <label>Tarif yang Kamu Harapkan (Rp)</label>
-            <input type="number" name="rate_card" value="{{ old('rate_card', $profile->rate_card) }}"
+            <div class="bagian-sub">Tarif</div>
+            <label for="rate_card">Tarif yang Kamu Harapkan (Rp)</label>
+            <input type="number" name="rate_card" id="rate_card" value="{{ old('rate_card', $profile->rate_card) }}"
                    placeholder="Contoh: 300000" inputmode="numeric" min="0"
+                   oninput="this.form.querySelector('[data-pratinjau]').textContent = this.value ? 'Rp ' + Number(this.value).toLocaleString('id-ID') : ''"
                    @class(['input-error' => $errors->has('rate_card')])>
+            <div data-pratinjau style="margin: -8px 0 14px; font-size: 12px; color: var(--text-muted);" aria-live="polite">{{ $profile->rate_card ? 'Rp '.number_format($profile->rate_card, 0, ',', '.') : '' }}</div>
             @error('rate_card')<span class="field-error">{{ $message }}</span>@enderror
-            <p class="field-hint">Tarif harapan awal. Nominal akhir akan didiskusikan bersama Admin.</p>
-        </div>
+            <p class="field-hint" style="margin-top: -8px;">Tarif harapan awal. Nominal akhir akan didiskusikan bersama Admin.</p>
 
-        <div class="profile-section">
-            <div class="profile-section-title">Tampil di Website</div>
+            <div class="bagian-foot">
+                <button type="submit" class="btn btn-brand">Simpan</button>
+                <button type="button" class="btn" onclick="this.closest('details').open=false">Batal</button>
+            </div>
+        </form>
+    </details>
+
+    {{-- ===== 7. Privasi ===== --}}
+    <details id="bagian-privasi" class="bagian-card" @if ($bukaBagian === 'privasi') open @endif>
+        <summary class="bagian-head"><span class="bagian-title">Privasi</span><span class="bagian-aksi"></span></summary>
+        <div class="bagian-baca">
+            <div class="baca-item full">
+                <div class="baca-label">Tampil di Website</div>
+                <div class="baca-value">{{ $profile->izin_tampil_publik ? 'Diizinkan' : 'Tidak diizinkan' }}</div>
+            </div>
+        </div>
+        <form method="POST" action="{{ route('extras.profile.update') }}" class="bagian-form">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="bagian" value="privasi">
             <input type="hidden" name="izin_present" value="1">
             <label style="display: flex; gap: 10px; align-items: flex-start; font-weight: 500;">
                 <input type="checkbox" name="izin_tampil_publik" value="1" style="width: auto; min-height: auto; margin: 3px 0 0;"
@@ -343,10 +574,13 @@
                 <span>Izinkan foto &amp; profil saya ditampilkan di website JBTB</span>
             </label>
             <p class="field-hint">Yang tampil hanya foto utama, username, dan tag usia. Nama asli, usia pasti, dan kontak tidak pernah ditampilkan. Admin JBTB yang memilih siapa yang tampil. Hapus centang kapan saja untuk langsung disembunyikan.</p>
-        </div>
 
-        <button type="submit" class="btn btn-brand" style="width: 100%; margin-top: 8px;">Simpan Profil</button>
-    </form>
+            <div class="bagian-foot">
+                <button type="submit" class="btn btn-brand">Simpan</button>
+                <button type="button" class="btn" onclick="this.closest('details').open=false">Batal</button>
+            </div>
+        </form>
+    </details>
 </div>
 @endsection
 
@@ -504,6 +738,21 @@
     daftarPlus('tautan-wrap', 'btn-add-tautan');
     daftarPlus('pengalaman-wrap', 'btn-add-pengalaman');
     daftarPlus('bahasa-wrap', 'btn-add-bahasa');
+
+    // CL.1.4: cuma satu bagian terbuka sekaligus.
+    var bagianList = document.querySelectorAll('.bagian-card');
+    bagianList.forEach(function (d) {
+        d.addEventListener('toggle', function () {
+            if (d.open) bagianList.forEach(function (lain) { if (lain !== d) lain.open = false; });
+        });
+    });
+
+    // CL.1.1: redirect pasca-simpan bawa anchor #bagian-xxx, buka kartunya.
+    var hashId = location.hash.slice(1);
+    if (hashId) {
+        var targetBagian = document.getElementById(hashId);
+        if (targetBagian && targetBagian.tagName === 'DETAILS') targetBagian.open = true;
+    }
 
     // Auto-scroll ke field error pertama
     document.addEventListener('DOMContentLoaded', function () {

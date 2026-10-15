@@ -31,6 +31,7 @@ class NamaAsliUsernameTest extends TestCase
     private function payloadProfil(array $override = []): array
     {
         return $override + [
+            'bagian' => 'data_diri',
             'nama_asli' => 'Rina Wulandari',
             'username' => 'rina_wulan',
         ];
@@ -43,7 +44,7 @@ class NamaAsliUsernameTest extends TestCase
         $extras = $this->buatExtras();
 
         $this->actingAs($extras->user)
-            ->put('/extras/profil', ['username' => 'rina_wulan'])
+            ->put('/extras/profil', ['bagian' => 'data_diri', 'username' => 'rina_wulan'])
             ->assertSessionHasErrors('nama_asli');
 
         $this->assertNull($extras->fresh()->nama_asli);
@@ -60,21 +61,19 @@ class NamaAsliUsernameTest extends TestCase
         $this->assertSame('Rina Wulandari', $extras->fresh()->nama_asli);
     }
 
-    public function test_field_existing_tetap_tersimpan_bareng_field_baru(): void
+    // CL.5.1: tiap bagian tersimpan independen, tidak saling menimpa field bagian lain.
+    public function test_field_bagian_lain_tetap_tersimpan_setelah_bagian_lain_disimpan(): void
     {
         $extras = $this->buatExtras();
 
-        $this->actingAs($extras->user)
-            ->put('/extras/profil', $this->payloadProfil([
-                'rate_card' => 300000,
-                'usia' => 28,
-                'nomor_wa' => '081234567890',
-            ]))
-            ->assertRedirect();
+        $this->actingAs($extras->user)->put('/extras/profil', $this->payloadProfil(['usia' => 28]))->assertRedirect();
+        $this->actingAs($extras->user)->put('/extras/profil', ['bagian' => 'tautan', 'rate_card' => 300000])->assertRedirect();
+        $this->actingAs($extras->user)->put('/extras/profil', ['bagian' => 'kontak', 'nomor_wa' => '081234567890'])->assertRedirect();
 
         $extras->refresh();
-        $this->assertEquals(300000, $extras->rate_card);
+        $this->assertSame('Rina Wulandari', $extras->nama_asli);
         $this->assertSame(28, (int) $extras->usia);
+        $this->assertEquals(300000, $extras->rate_card);
         $this->assertSame('6281234567890', $extras->user->fresh()->nomor_wa);
     }
 
@@ -85,7 +84,7 @@ class NamaAsliUsernameTest extends TestCase
         $this->actingAs($extras->user)
             ->get('/extras/profil/lengkapi')
             ->assertSee('Nama Asli (sesuai KTP)')
-            ->assertSee('Dipakai di dokumen kontrak resmi, bukan yang tampil ke publik.');
+            ->assertSee('Dipakai di kontrak, tidak tampil ke publik');
     }
 
     // ---------- D3: username ----------
@@ -118,7 +117,7 @@ class NamaAsliUsernameTest extends TestCase
         $extras = $this->buatExtras();
 
         $this->actingAs($extras->user)
-            ->put('/extras/profil', ['nama_asli' => 'Rina Wulandari'])
+            ->put('/extras/profil', ['bagian' => 'data_diri', 'nama_asli' => 'Rina Wulandari'])
             ->assertSessionHasErrors('username');
     }
 

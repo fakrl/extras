@@ -25,7 +25,7 @@ class BjBahasaTest extends TestCase
 
     private function simpan($bahasa)
     {
-        return $this->actingAs($this->user)->put('/extras/profil', ['nama_asli' => 'Rina', 'username' => 'rina', 'bahasa' => $bahasa]);
+        return $this->actingAs($this->user)->put('/extras/profil', ['bagian' => 'tentang', 'bahasa' => $bahasa]);
     }
 
     public function test_simpan_daftar_bahasa_dedupe_dan_tampil_chip(): void

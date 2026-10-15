@@ -26,7 +26,7 @@ class BjPengalamanTest extends TestCase
     private function simpan(array $judul, array $ket = [], array $tahun = [])
     {
         return $this->actingAs($this->user)->put('/extras/profil', [
-            'nama_asli' => 'Rina', 'username' => 'rina',
+            'bagian' => 'pengalaman',
             'pengalaman_judul' => $judul, 'pengalaman_keterangan' => $ket, 'pengalaman_tahun' => $tahun,
         ]);
     }
@@ -50,7 +50,8 @@ class BjPengalamanTest extends TestCase
         $profile->generateShareToken();
         $this->get(route('public.extras.profile', $profile->fresh()->share_token))->assertSee('Warga di FTV');
 
-        $this->actingAs($this->user)->put('/extras/profil', ['nama_asli' => 'Rina', 'username' => 'rina'])->assertRedirect();
+        // CL.5.1: menyimpan bagian Data Diri tidak ikut menghapus Pengalaman.
+        $this->actingAs($this->user)->put('/extras/profil', ['bagian' => 'data_diri', 'nama_asli' => 'Rina', 'username' => 'rina'])->assertRedirect();
         $this->assertCount(3, $profile->fresh()->riwayat_pengalaman);
     }
 
@@ -61,7 +62,7 @@ class BjPengalamanTest extends TestCase
         $this->assertNull($this->user->extrasProfile->fresh()->riwayat_pengalaman);
 
         $this->actingAs($this->user)->from(route('extras.profile.edit'))->followingRedirects()
-            ->put('/extras/profil', ['nama_asli' => 'Rina', 'username' => 'rina', 'pengalaman_judul' => ['Baris satu', ''], 'pengalaman_tahun' => ['1800', '']])
+            ->put('/extras/profil', ['bagian' => 'pengalaman', 'pengalaman_judul' => ['Baris satu', ''], 'pengalaman_tahun' => ['1800', '']])
             ->assertSee('value="Baris satu"', false);
     }
 }

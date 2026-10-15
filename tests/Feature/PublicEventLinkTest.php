@@ -58,7 +58,7 @@ class PublicEventLinkTest extends TestCase
         ])->assertRedirect('/extras/profil/lengkapi');
 
         $response = $this->put('/extras/profil', [
-            'alias' => 'Alias Baru',
+            'bagian' => 'data_diri',
             'nama_asli' => 'Nama Asli',
             'username' => 'aliasbaru',
         ]);
@@ -155,12 +155,13 @@ class PublicEventLinkTest extends TestCase
         ]);
 
         $response = $this->put('/extras/profil', [
-            'alias' => 'Alias Biasa',
+            'bagian' => 'data_diri',
             'nama_asli' => 'Nama Biasa',
             'username' => 'aliasbiasa',
         ]);
 
-        $response->assertRedirect('/extras/profil');
+        // CL.1.1: tanpa intent event, balik ke halaman Profil (bukan lagi /extras/profil), di anchor bagiannya.
+        $response->assertRedirect(route('extras.profile.edit').'#bagian-data_diri');
 
         Auth::logout();
 
