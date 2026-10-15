@@ -32,7 +32,7 @@ class BaKategoriTagTest extends TestCase
         $user = User::factory()->create(['role' => 'extras']);
         $profile = ExtrasProfile::create(['user_id' => $user->id]);
         $ids = ExtrasCategory::take(2)->pluck('id')->all();
-        $base = ['nama_asli' => 'Nama', 'username' => 'user_'.$user->id];
+        $base = ['bagian' => 'tentang'];
 
         $this->actingAs($user)->get(route('extras.profile.edit'))->assertOk()->assertSee('Tentang Kamu');
 

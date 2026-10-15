@@ -19,8 +19,7 @@ class ExtrasProfileUpdateTest extends TestCase
         ExtrasProfile::create(['user_id' => $user->id]);
 
         $this->actingAs($user)->put('/extras/profil', [
-            'nama_asli' => 'Nama Asli Test',
-            'username' => 'user_'.$user->id,
+            'bagian' => 'kontak',
             'nomor_wa' => $input,
         ])->assertRedirect();
 
@@ -44,27 +43,64 @@ class ExtrasProfileUpdateTest extends TestCase
         ExtrasProfile::create(['user_id' => $user->id]);
 
         $this->actingAs($user)->put('/extras/profil', [
-            'nama_asli' => 'Nama Asli Test',
-            'username' => 'user_'.$user->id,
+            'bagian' => 'kontak',
         ])->assertRedirect();
 
         $this->assertNull($user->refresh()->nomor_wa);
     }
 
-    public function test_field_profile_lain_tetap_tersimpan_bareng_nomor_wa(): void
+    // CL.5.1: menyimpan bagian Kontak tidak ikut mengubah bagian Tautan (rate_card), dan sebaliknya.
+    public function test_simpan_kontak_tidak_mengubah_tautan_dan_sebaliknya(): void
     {
         $user = User::factory()->create(['role' => 'extras']);
         $profile = ExtrasProfile::create(['user_id' => $user->id]);
 
-        $this->actingAs($user)->put('/extras/profil', [
-            'nama_asli' => 'Nama Asli Test',
-            'username' => 'user_'.$user->id,
-            'rate_card' => 300000,
-            'nomor_wa' => '081234567890',
-        ])->assertRedirect();
+        $this->actingAs($user)->put('/extras/profil', ['bagian' => 'tautan', 'rate_card' => 300000])->assertRedirect();
+        $this->actingAs($user)->put('/extras/profil', ['bagian' => 'kontak', 'nomor_wa' => '081234567890'])->assertRedirect();
 
         $profile->refresh();
         $this->assertEquals(300000, $profile->rate_card);
         $this->assertSame('6281234567890', $user->refresh()->nomor_wa);
+    }
+
+    // CL.1.5: akun baru/profil belum lengkap, bagian Data Diri auto-terbuka.
+    public function test_akun_baru_bagian_data_diri_otomatis_terbuka(): void
+    {
+        $user = User::factory()->create(['role' => 'extras']);
+
+        $html = $this->actingAs($user)->get(route('extras.profile.edit'))->getContent();
+
+        $this->assertMatchesRegularExpression('/<details id="bagian-data_diri"[^>]*\bopen\b[^>]*>/', $html);
+    }
+
+    // CL.5.2: profil lengkap -> "Profil siap melamar", tidak ada bagian otomatis terbuka, ada tombol "Lihat seperti Client".
+    public function test_profil_lengkap_siap_melamar_tanpa_bagian_otomatis_terbuka(): void
+    {
+        $profile = ExtrasProfile::factory()->create(['foto_profil_path' => 'extras/foto/dummy.jpg']);
+        $user = $profile->user;
+
+        $html = $this->actingAs($user)->get(route('extras.profile.edit'))->getContent();
+
+        $this->assertStringContainsString('Profil siap melamar', $html);
+        $this->assertDoesNotMatchRegularExpression('/<details id="bagian-data_diri"[^>]*\bopen\b[^>]*>/', $html);
+        $this->assertStringContainsString('Lihat seperti Client', $html);
+        $this->assertStringContainsString(route('extras.profile.show'), $html);
+    }
+
+    // CL.5.1: gagal validasi di satu bagian (tautan) tetap kembali ke halaman yang sama, dan bagian itu teridentifikasi lewat old('bagian').
+    public function test_bagian_tautan_gagal_validasi_tetap_teridentifikasi_terbuka(): void
+    {
+        $user = User::factory()->create(['role' => 'extras']);
+        ExtrasProfile::create(['user_id' => $user->id]);
+
+        $this->actingAs($user)->from(route('extras.profile.edit'))->put('/extras/profil', [
+            'bagian' => 'tautan',
+            'tautan_label' => ['Instagram'],
+            'tautan_url' => ['bukan-url-valid'],
+        ])->assertSessionHasErrors('tautan_url.0')->assertRedirect(route('extras.profile.edit'));
+
+        $html = $this->actingAs($user)->get(route('extras.profile.edit'))->getContent();
+
+        $this->assertMatchesRegularExpression('/<details id="bagian-tautan"[^>]*\bopen\b[^>]*>/', $html);
     }
 }

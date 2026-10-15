@@ -52,8 +52,8 @@ class ProfileController extends Controller
         // Sama kayak show(): akun yang extras_profiles-nya kosong (seharusnya
         // tidak terjadi lewat alur registrasi normal - lihat RegisterController
         // - tapi bisa kejadian di akun test/seed manual) butuh instance kosong
-        // biar form render, bukan crash. update() di bawah pakai updateOrCreate
-        // supaya baris extras_profiles otomatis kebuat begitu form ini disubmit.
+        // biar form render, bukan crash. update() di bawah bikin baris
+        // extras_profiles begitu bagian pertama disimpan (lihat profilAtauBaru()).
         $profile = $request->user()->extrasProfile;
         if (! $profile) {
             $profile = new ExtrasProfile;
@@ -64,10 +64,26 @@ class ProfileController extends Controller
             $profile->setRelation('user', $request->user());
         }
 
+        // CL.1.2: status kelengkapan pakai kriteria yang sama persis dengan
+        // profilLengkap(), cuma dipecah per field biar bisa ditautkan ke
+        // bagiannya masing-masing.
+        $kurangDaftar = collect([
+            'foto_profil_path' => ['label' => 'foto', 'anchor' => 'bagian-foto'],
+            'usia' => ['label' => 'usia', 'anchor' => 'bagian-data_diri'],
+            'gender' => ['label' => 'jenis kelamin', 'anchor' => 'bagian-data_diri'],
+            'tinggi_badan' => ['label' => 'tinggi badan', 'anchor' => 'bagian-data_diri'],
+        ])->filter(fn ($info, $field) => ! $profile->{$field})->values();
+
+        // CL.1.5: akun baru/profil belum lengkap, bagian Data Diri auto-terbuka.
+        $dataDiriBelumLengkap = ! $profile->nama_asli || ! $profile->user->username
+            || ! $profile->usia || ! $profile->gender || ! $profile->tinggi_badan;
+
         return view('extras.profile-edit', [
             'profile' => $profile,
             'fotoTambahan' => $this->fotoTambahanPerSlot($profile),
             'tagGroups' => ExtrasCategory::perGrup(),
+            'kurangDaftar' => $kurangDaftar,
+            'dataDiriBelumLengkap' => $dataDiriBelumLengkap,
         ]);
     }
 
@@ -91,95 +107,35 @@ class ProfileController extends Controller
         ];
     }
 
+    /**
+     * CL.2: profil sekarang mode baca + ubah per bagian, satu submit cuma
+     * menyimpan satu bagian (field `bagian` tersembunyi dari form). Validasi
+     * & penulisan kolom di-scope ketat ke bagian itu saja lewat method
+     * simpan*() di bawah, supaya bagian lain yang sedang tidak diubah tidak
+     * ikut tertimpa/terhapus.
+     */
     public function update(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'nama_asli' => ['required', 'string', 'max:255'],
-            // Identifier login alternatif: alpha_dash saja (tanpa spasi).
-            'username' => [
-                'required', 'string', 'alpha_dash', 'max:50',
-                Rule::unique('users', 'username')->ignore($request->user()->id),
-            ],
-            'usia' => ['nullable', 'integer', 'min:1', 'max:120'],
-            'gender' => ['nullable', 'string'],
-            'tinggi_badan' => ['nullable', 'integer'],
-            'berat_badan' => ['nullable', 'integer', 'min:20', 'max:250'],
-            'ukuran_baju' => ['nullable', 'string'],
-            'bahasa' => is_array($request->input('bahasa')) ? ['nullable', 'array', 'max:10'] : ['nullable', 'string'],
-            'bahasa.*' => ['nullable', 'string', 'max:40'],
-            // Tautan tambahan (sosmed/portofolio, jumlah bebas via tombol "+"):
-            // CLAUDE.md §5, hanya dilihat Extras & Admin, TIDAK PERNAH
-            // dikirim ke view Client.
-            'tautan_label' => ['nullable', 'array'],
-            'tautan_label.*' => ['nullable', 'string', 'max:100'],
-            'tautan_url' => ['nullable', 'array'],
-            'tautan_url.*' => ['nullable', 'url', 'max:500'],
-            'rate_card' => ['nullable', 'numeric', 'min:0'],
-            'nomor_wa' => ['nullable', 'string', 'max:20', new NomorWa],
-            'categories' => ['nullable', 'array'],
-            'categories.*' => ['integer', 'exists:extras_categories,id'],
-            'tag_nama' => ['nullable', 'array'],
-            'tag_nama.*' => ['nullable', 'string', 'max:100'],
-            'pengalaman_judul' => ['nullable', 'array', 'max:20'],
-            'pengalaman_judul.*' => ['nullable', 'required_with:pengalaman_keterangan.*,pengalaman_tahun.*', 'string', 'max:150'],
-            'pengalaman_keterangan' => ['nullable', 'array', 'max:20'],
-            'pengalaman_keterangan.*' => ['nullable', 'string', 'max:255'],
-            'pengalaman_tahun' => ['nullable', 'array', 'max:20'],
-            'pengalaman_tahun.*' => ['nullable', 'integer', 'min:1950', 'max:'.(now()->year + 1)],
-        ], [
-            'pengalaman_judul.*.required_with' => 'Judul pengalaman wajib diisi.',
-            'pengalaman_judul.max' => 'Maksimal 20 pengalaman.',
-            'bahasa.max' => 'Maksimal 10 bahasa.',
+        $request->validate([
+            'bagian' => ['required', Rule::in(['data_diri', 'kontak', 'tentang', 'pengalaman', 'tautan', 'privasi'])],
         ]);
-        $tagIds = $request->boolean('categories_present')
-            ? ExtrasCategory::idsDariInput($data['tag_nama'] ?? [], $data['categories'] ?? [], $request->user())
-            : null;
+        $bagian = $request->string('bagian')->value();
 
-        if (is_array($data['bahasa'] ?? null)) {
-            $data['bahasa'] = collect($data['bahasa'])->map(fn ($b) => trim((string) $b))->filter()
-                ->unique(fn ($b) => mb_strtolower($b))->implode(', ') ?: null;
-        }
+        $profile = match ($bagian) {
+            'data_diri' => $this->simpanDataDiri($request),
+            'kontak' => $this->simpanKontak($request),
+            'tentang' => $this->simpanTentang($request),
+            'pengalaman' => $this->simpanPengalaman($request),
+            'tautan' => $this->simpanTautan($request),
+            'privasi' => $this->simpanPrivasi($request),
+        };
 
-        $tautanTambahan = [];
-        foreach ($data['tautan_label'] ?? [] as $i => $label) {
-            $url = $data['tautan_url'][$i] ?? null;
-            if ($label && $url) {
-                $tautanTambahan[] = ['label' => $label, 'url' => $url];
-            }
-        }
-
-        $dataDisimpan = collect($data)->except(['tautan_label', 'tautan_url', 'nomor_wa', 'username', 'alias', 'categories', 'tag_nama', 'pengalaman_judul', 'pengalaman_keterangan', 'pengalaman_tahun'])->toArray();
-        $dataDisimpan['tautan_tambahan'] = $tautanTambahan;
-        if ($request->has('pengalaman_judul')) {
-            $dataDisimpan['riwayat_pengalaman'] = collect($data['pengalaman_judul'] ?? [])->filter()->map(fn ($judul, $i) => [
-                'judul' => $judul,
-                'keterangan' => $data['pengalaman_keterangan'][$i] ?? null,
-                'tahun' => isset($data['pengalaman_tahun'][$i]) ? (int) $data['pengalaman_tahun'][$i] : null,
-            ])->values()->all();
-        }
-        if ($request->boolean('izin_present')) {
-            $dataDisimpan['izin_tampil_publik'] = $request->boolean('izin_tampil_publik');
-        }
-
-        // SENGAJA tidak menerima 'status', 'foto_profil_path',
-        // atau 'video_profil_path' dari request ini, kolom-kolom itu tidak
-        // ada di $fillable ExtrasProfile, jadi mass-update() di bawah otomatis
-        // aman (lihat catatan di model).
-        $profile = $request->user()->extrasProfile()->updateOrCreate([], $dataDisimpan);
-        if ($tagIds !== null) {
-            $profile->categories()->sync($tagIds);
-        }
+        // Efek samping lama, tetap jalan setelah simpan bagian APA PUN (bukan
+        // cuma Data Diri/Privasi), persis seperti sebelum CL dipecah per bagian.
         if (! $profile->izin_tampil_publik && $profile->tampil_di_beranda) {
             $profile->forceFill(['tampil_di_beranda' => false, 'tampil_di_beranda_at' => null])->save();
         }
         $profile->siapkanKontrakLolos();
-
-        // nomor_wa & username ada di tabel users (reusable lintas role),
-        // BUKAN extras_profiles, simpan terpisah dari update() di atas.
-        $request->user()->update([
-            'nomor_wa' => $data['nomor_wa'] ?? null,
-            'username' => $data['username'],
-        ]);
 
         // SPEC.md Bagian B5: return-to-intent begitu lengkapi-profil (langkah
         // WAJIB pasca-registrasi, RF-06, TIDAK di-skip) selesai, kalau
@@ -198,10 +154,150 @@ class ProfileController extends Controller
                     ->with('status', 'Profil berhasil disimpan. Yuk lanjut apply ke proyek ini!');
             }
 
-            return redirect('/extras/profil')->with('status', 'Profil berhasil disimpan. Sayangnya proyek dari link yang kamu buka sudah tidak menerima pendaftaran.');
+            return redirect(route('extras.profile.edit').'#bagian-'.$bagian)->with('status', 'Profil berhasil disimpan. Sayangnya proyek dari link yang kamu buka sudah tidak menerima pendaftaran.');
         }
 
-        return redirect('/extras/profil')->with('status', 'Profil berhasil disimpan. Begini tampilannya buat Admin & Client:');
+        // CL.1.1: balik ke halaman Profil, di anchor bagian yang baru disimpan.
+        return redirect(route('extras.profile.edit').'#bagian-'.$bagian)->with('status', 'Profil berhasil disimpan.');
+    }
+
+    /** Baris extras_profiles dibuat begitu bagian pertama disimpan (dulu lewat updateOrCreate() di update()). */
+    private function profilAtauBaru(Request $request): ExtrasProfile
+    {
+        return $request->user()->extrasProfile ?: $request->user()->extrasProfile()->create([]);
+    }
+
+    private function simpanDataDiri(Request $request): ExtrasProfile
+    {
+        $data = $request->validate([
+            'nama_asli' => ['required', 'string', 'max:255'],
+            // Identifier login alternatif: alpha_dash saja (tanpa spasi).
+            'username' => [
+                'required', 'string', 'alpha_dash', 'max:50',
+                Rule::unique('users', 'username')->ignore($request->user()->id),
+            ],
+            'usia' => ['nullable', 'integer', 'min:1', 'max:120'],
+            'gender' => ['nullable', 'string'],
+            'tinggi_badan' => ['nullable', 'integer'],
+            'berat_badan' => ['nullable', 'integer', 'min:20', 'max:250'],
+            'ukuran_baju' => ['nullable', 'string'],
+        ]);
+
+        $profile = $this->profilAtauBaru($request);
+        $profile->update(collect($data)->except('username')->toArray());
+
+        // username ada di tabel users (reusable lintas role), BUKAN extras_profiles.
+        $request->user()->update(['username' => $data['username']]);
+
+        return $profile;
+    }
+
+    private function simpanKontak(Request $request): ExtrasProfile
+    {
+        $data = $request->validate([
+            'nomor_wa' => ['nullable', 'string', 'max:20', new NomorWa],
+        ]);
+
+        $request->user()->update(['nomor_wa' => $data['nomor_wa'] ?? null]);
+
+        return $this->profilAtauBaru($request);
+    }
+
+    private function simpanTentang(Request $request): ExtrasProfile
+    {
+        $data = $request->validate([
+            'bahasa' => is_array($request->input('bahasa')) ? ['nullable', 'array', 'max:10'] : ['nullable', 'string'],
+            'bahasa.*' => ['nullable', 'string', 'max:40'],
+            'categories' => ['nullable', 'array'],
+            'categories.*' => ['integer', 'exists:extras_categories,id'],
+            'tag_nama' => ['nullable', 'array'],
+            'tag_nama.*' => ['nullable', 'string', 'max:100'],
+        ], [
+            'bahasa.max' => 'Maksimal 10 bahasa.',
+        ]);
+
+        $tagIds = $request->boolean('categories_present')
+            ? ExtrasCategory::idsDariInput($data['tag_nama'] ?? [], $data['categories'] ?? [], $request->user())
+            : null;
+
+        if (is_array($data['bahasa'] ?? null)) {
+            $data['bahasa'] = collect($data['bahasa'])->map(fn ($b) => trim((string) $b))->filter()
+                ->unique(fn ($b) => mb_strtolower($b))->implode(', ') ?: null;
+        }
+
+        $profile = $this->profilAtauBaru($request);
+        $profile->update(['bahasa' => $data['bahasa'] ?? null]);
+        if ($tagIds !== null) {
+            $profile->categories()->sync($tagIds);
+        }
+
+        return $profile;
+    }
+
+    private function simpanPengalaman(Request $request): ExtrasProfile
+    {
+        $data = $request->validate([
+            'pengalaman_judul' => ['nullable', 'array', 'max:20'],
+            'pengalaman_judul.*' => ['nullable', 'required_with:pengalaman_keterangan.*,pengalaman_tahun.*', 'string', 'max:150'],
+            'pengalaman_keterangan' => ['nullable', 'array', 'max:20'],
+            'pengalaman_keterangan.*' => ['nullable', 'string', 'max:255'],
+            'pengalaman_tahun' => ['nullable', 'array', 'max:20'],
+            'pengalaman_tahun.*' => ['nullable', 'integer', 'min:1950', 'max:'.(now()->year + 1)],
+        ], [
+            'pengalaman_judul.*.required_with' => 'Judul pengalaman wajib diisi.',
+            'pengalaman_judul.max' => 'Maksimal 20 pengalaman.',
+        ]);
+
+        $profile = $this->profilAtauBaru($request);
+
+        // Perilaku lama: riwayat_pengalaman cuma ditulis kalau pengalaman_judul
+        // dikirim di request (array kosong pun sah, berarti sengaja dikosongkan).
+        if ($request->has('pengalaman_judul')) {
+            $profile->update(['riwayat_pengalaman' => collect($data['pengalaman_judul'] ?? [])->filter()->map(fn ($judul, $i) => [
+                'judul' => $judul,
+                'keterangan' => $data['pengalaman_keterangan'][$i] ?? null,
+                'tahun' => isset($data['pengalaman_tahun'][$i]) ? (int) $data['pengalaman_tahun'][$i] : null,
+            ])->values()->all()]);
+        }
+
+        return $profile;
+    }
+
+    private function simpanTautan(Request $request): ExtrasProfile
+    {
+        $data = $request->validate([
+            // Tautan tambahan (sosmed/portofolio, jumlah bebas via tombol "+"):
+            // CLAUDE.md §5, hanya dilihat Extras & Admin, TIDAK PERNAH
+            // dikirim ke view Client.
+            'tautan_label' => ['nullable', 'array'],
+            'tautan_label.*' => ['nullable', 'string', 'max:100'],
+            'tautan_url' => ['nullable', 'array'],
+            'tautan_url.*' => ['nullable', 'url', 'max:500'],
+            'rate_card' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        $tautanTambahan = [];
+        foreach ($data['tautan_label'] ?? [] as $i => $label) {
+            $url = $data['tautan_url'][$i] ?? null;
+            if ($label && $url) {
+                $tautanTambahan[] = ['label' => $label, 'url' => $url];
+            }
+        }
+
+        $profile = $this->profilAtauBaru($request);
+        $profile->update(['tautan_tambahan' => $tautanTambahan, 'rate_card' => $data['rate_card'] ?? null]);
+
+        return $profile;
+    }
+
+    private function simpanPrivasi(Request $request): ExtrasProfile
+    {
+        $profile = $this->profilAtauBaru($request);
+        if ($request->boolean('izin_present')) {
+            $profile->update(['izin_tampil_publik' => $request->boolean('izin_tampil_publik')]);
+        }
+
+        return $profile;
     }
 
     public function generateShareLink(Request $request): JsonResponse

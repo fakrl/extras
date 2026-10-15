@@ -32,7 +32,7 @@ class BjTagBebasTest extends TestCase
 
     private function simpan(array $tag)
     {
-        return $this->actingAs($this->user)->put('/extras/profil', ['nama_asli' => 'Rina', 'username' => 'rina', 'categories_present' => 1, 'tag_nama' => $tag]);
+        return $this->actingAs($this->user)->put('/extras/profil', ['bagian' => 'tentang', 'categories_present' => 1, 'tag_nama' => $tag]);
     }
 
     public function test_normalisasi(): void
@@ -60,8 +60,10 @@ class BjTagBebasTest extends TestCase
             ->assertSee('value="Bisa silat"', false)
             ->assertSee('data-tag-saran="Naik motor"', false)
             ->assertSee('aria-expanded="false" aria-controls="tagp-', false)
-            ->assertSee('role="group" aria-label="Saran tag" hidden>', false)
-            ->assertDontSee('<datalist', false);
+            ->assertSee('role="group" aria-label="Saran tag" hidden>', false);
+        // CL.3.3 menambah <datalist> S/M/L/XL/XXL untuk Ukuran Baju (bagian lain di halaman
+        // yang sama) - assertDontSee('<datalist') blanket lama dihapus, tag-input sendiri
+        // (partials/tag-input.blade.php) tetap tidak pakai datalist (custom combobox).
     }
 
     public function test_maks_15_tag(): void

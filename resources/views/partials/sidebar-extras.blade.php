@@ -9,6 +9,6 @@
 <a href="{{ url('/extras/dashboard') }}" class="sidebar-link is-utama {{ str_starts_with($route, 'extras/dashboard') ? 'active' : '' }}" aria-label="Beranda">
     <i class="ti ti-home"></i> Beranda
 </a>
-<a href="{{ url('/extras/profil') }}" class="sidebar-link {{ str_starts_with($route, 'extras/profil') ? 'active' : '' }}">
-    <i class="ti ti-user-circle"></i> Profil Saya
+<a href="{{ route('extras.profile.edit') }}" class="sidebar-link {{ str_starts_with($route, 'extras/profil') ? 'active' : '' }}">
+    <i class="ti ti-user-circle"></i> Profil
 </a>

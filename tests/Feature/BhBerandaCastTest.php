@@ -68,7 +68,7 @@ class BhBerandaCastTest extends TestCase
         $this->get('/')->assertSee('id="cast"', false);
 
         $user = $profiles[0]->user;
-        $this->actingAs($user)->put('/extras/profil', ['nama_asli' => 'X', 'username' => 'cast_a', 'izin_present' => 1])->assertRedirect();
+        $this->actingAs($user)->put('/extras/profil', ['bagian' => 'privasi', 'izin_present' => 1])->assertRedirect();
         $this->assertFalse($profiles[0]->fresh()->izin_tampil_publik);
         $this->assertFalse($profiles[0]->fresh()->tampil_di_beranda);
 
@@ -79,7 +79,8 @@ class BhBerandaCastTest extends TestCase
     public function test_form_tanpa_marker_tidak_mereset_izin(): void
     {
         $p = $this->extras('cast_a');
-        $this->actingAs($p->user)->put('/extras/profil', ['nama_asli' => 'X', 'username' => 'cast_a'])->assertRedirect();
+        // CL.5.1: menyimpan bagian Data Diri tidak ikut mereset izin tampil publik (bagian Privasi).
+        $this->actingAs($p->user)->put('/extras/profil', ['bagian' => 'data_diri', 'nama_asli' => 'X', 'username' => 'cast_a'])->assertRedirect();
         $this->assertTrue($p->fresh()->izin_tampil_publik);
         $this->assertTrue($p->fresh()->tampil_di_beranda);
 

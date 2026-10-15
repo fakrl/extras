@@ -54,7 +54,7 @@ class BoWaNormalisasiTest extends TestCase
         $user = User::factory()->create(['role' => 'extras']);
         ExtrasProfile::create(['user_id' => $user->id]);
 
-        $this->actingAs($user)->put('/extras/profil', ['nama_asli' => 'X', 'username' => 'user_x', 'nomor_wa' => '12-34'])
+        $this->actingAs($user)->put('/extras/profil', ['bagian' => 'kontak', 'nomor_wa' => '12-34'])
             ->assertSessionHasErrors(['nomor_wa' => 'Nomor WhatsApp tidak valid. Contoh: 0812-3456-7890 atau +62 812 3456 7890.']);
 
         $client = User::factory()->create(['role' => 'client']);
