@@ -103,4 +103,20 @@ class ExtrasProfileUpdateTest extends TestCase
 
         $this->assertMatchesRegularExpression('/<details id="bagian-tautan"[^>]*\bopen\b[^>]*>/', $html);
     }
+
+    public function test_galat_tautan_url_tampil_bahasa_indonesia(): void
+    {
+        app()->setLocale('id');
+
+        $user = User::factory()->create(['role' => 'extras']);
+        ExtrasProfile::create(['user_id' => $user->id]);
+
+        $response = $this->actingAs($user)->from(route('extras.profile.edit'))->put('/extras/profil', [
+            'bagian' => 'tautan',
+            'tautan_label' => ['Instagram'],
+            'tautan_url' => ['bukan-url-valid'],
+        ]);
+
+        $response->assertSessionHasErrors(['tautan_url.0' => 'URL tautan harus berupa URL yang valid.']);
+    }
 }
