@@ -1,4 +1,7 @@
-{{-- BR.5: dialog "Rapikan tag" (pengganti halaman Kelola Tag). Param: tags (perluDirapikan + extras_profiles_count). Pemicu: [data-rapikan-tag]. --}}
+{{-- BR.5: dialog "Rapikan tag" (pengganti halaman Kelola Tag). Param: tags (perluDirapikan + extras_profiles_count), routeNames opsional (CM.3.3: halaman /super-admin/akun pakai route super-admin.tags.* murni). Pemicu: [data-rapikan-tag]. --}}
+@php
+    $rtRoutes = $routeNames ?? ['update' => 'admin.tags.update', 'gabung' => 'admin.tags.gabung', 'destroy' => 'admin.tags.destroy'];
+@endphp
 <dialog id="rapikan-tag" class="rt" aria-labelledby="rt-judul" onclick="if (event.target === this) this.close()">
     <div class="rt-head">
         <strong id="rt-judul">Rapikan tag</strong>
@@ -12,7 +15,7 @@
                 <li>
                     <div class="rt-nama">#{{ $t->nama }} <span class="badge {{ 'badge-netral' }}">{{ $t->grup ?? 'Lainnya' }}</span> <span class="rt-meta">{{ $t->extras_profiles_count }} Extras</span></div>
                     <div class="rt-aksi">
-                        <form method="POST" action="{{ route('admin.tags.update', $t) }}" data-rt>
+                        <form method="POST" action="{{ route($rtRoutes['update'], $t) }}" data-rt>
                             @csrf @method('PATCH')
                             <select name="grup" aria-label="Pindah grup #{{ $t->nama }}" onchange="this.form.requestSubmit()">
                                 <option value="">Lainnya</option>
@@ -21,12 +24,12 @@
                                 @endforeach
                             </select>
                         </form>
-                        <form method="POST" action="{{ route('admin.tags.gabung', $t) }}" data-rt data-rt-hilang data-rt-konfirmasi="Gabung #{{ $t->nama }} ke tag tujuan? Semua Extras & peran pindah, lalu #{{ $t->nama }} dihapus.">
+                        <form method="POST" action="{{ route($rtRoutes['gabung'], $t) }}" data-rt data-rt-hilang data-rt-konfirmasi="Gabung #{{ $t->nama }} ke tag tujuan? Semua Extras & peran pindah, lalu #{{ $t->nama }} dihapus.">
                             @csrf
                             <input type="text" name="tujuan" list="rt-saran" data-rt-cari placeholder="Gabung ke…" aria-label="Gabung #{{ $t->nama }} ke" required autocomplete="off">
                             <button type="submit" class="btn btn-sm">Gabung</button>
                         </form>
-                        <form method="POST" action="{{ route('admin.tags.destroy', $t) }}" data-rt data-rt-hilang data-rt-konfirmasi="Hapus #{{ $t->nama }}? Dilepas dari {{ $t->extras_profiles_count }} Extras.">
+                        <form method="POST" action="{{ route($rtRoutes['destroy'], $t) }}" data-rt data-rt-hilang data-rt-konfirmasi="Hapus #{{ $t->nama }}? Dilepas dari {{ $t->extras_profiles_count }} Extras.">
                             @csrf @method('DELETE')
                             <button type="submit" class="btn btn-sm btn-danger-outline" aria-label="Hapus #{{ $t->nama }}"><i class="ti ti-trash"></i> Hapus</button>
                         </form>

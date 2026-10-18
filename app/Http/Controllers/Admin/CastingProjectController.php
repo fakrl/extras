@@ -25,6 +25,7 @@ class CastingProjectController extends Controller
 {
     public function index(Request $request)
     {
+        $semua = $request->boolean('semua');
         $peserta = $request->query('peserta');
         $tahap = array_key_exists((string) $request->query('tahap'), CastingProject::TAHAP) ? $request->query('tahap') : null;
         $bayar = in_array($request->query('bayar'), ['staf', 'extras', 'sengketa'], true) ? $request->query('bayar') : null;
@@ -32,7 +33,10 @@ class CastingProjectController extends Controller
         $tgl = fn (string $k) => rescue(fn () => Carbon::createFromFormat('!Y-m-d', (string) $request->query($k)), null, false) ?: null;
         $periode = ($dari = $tgl('dari')) && ($sampai = $tgl('sampai')) ? [min($dari, $sampai), max($dari, $sampai)] : null;
 
+        // CM.2.3: default hanya proyek yang dikelola Admin/Korlap. Super Admin tetap lihat-saja
+        // semua proyek (GET) seperti sebelumnya, karena di luar mode dia tidak "mengelola" proyek manapun.
         $saring = fn ($q) => $q
+            ->when(! $semua && ! $request->user()->isSuperAdmin(), fn ($q) => $q->dikelolaOleh($request->user()))
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($peserta, fn ($q) => $q->whereHas('applications', fn ($a) => $a->where('status_partisipasi', $peserta)))
             ->when($request->boolean('tanpa_client'), fn ($q) => $q->tanpaPicClient())
@@ -65,7 +69,7 @@ class CastingProjectController extends Controller
 
         $perlu = AdminRingkasan::perluPerProyek($projects->pluck('id')->all());
 
-        return view('admin.projects.index', compact('projects', 'perlu', 'peserta', 'tahap', 'bayar', 'cari', 'periode', 'jumlahTahap'));
+        return view('admin.projects.index', compact('projects', 'perlu', 'peserta', 'tahap', 'bayar', 'cari', 'periode', 'jumlahTahap', 'semua'));
     }
 
     /**
@@ -207,6 +211,8 @@ class CastingProjectController extends Controller
      */
     public function update(Request $request, CastingProject $castingProject): RedirectResponse
     {
+        $this->authorize('kelola', $castingProject);
+
         $data = $request->validate([
             'nama_produksi' => ['required', 'string', 'max:255'],
             'admin_id' => [$request->user()->isSuperAdmin() ? 'required' : 'nullable', 'integer', $this->akunAktif(User::ROLE_ADMIN)],
@@ -366,7 +372,7 @@ class CastingProjectController extends Controller
     /** BH.3: kurasi portofolio beranda, cuma proyek selesai. */
     public function updatePortofolio(Request $request, CastingProject $castingProject): RedirectResponse
     {
-        abort_unless($request->user()->bisaSebagaiAdmin(), 403);
+        $this->authorize('kelola', $castingProject);
         if (! $castingProject->bisaPortofolio()) {
             return back()->with('error', 'Portofolio cuma bisa diatur untuk proyek yang sudah selesai.');
         }
@@ -393,6 +399,8 @@ class CastingProjectController extends Controller
 
     public function toggleStatus(CastingProject $castingProject): RedirectResponse
     {
+        $this->authorize('kelola', $castingProject);
+
         if ($castingProject->client_request_status !== 'disetujui') {
             return back()->with('error', 'Lowongan hanya bisa dibuka/ditutup untuk proyek yang sudah di-ACC Owner.');
         }

@@ -275,7 +275,9 @@ Route::middleware(['auth', 'role:admin,super_admin'])->prefix('admin')->group(fu
         ->name('admin.expenses.destroy');
 });
 
-Route::middleware(['auth', 'role:admin,super_admin'])->prefix('super-admin')->group(function () {
+// CM.3.3: penggajian staf tetap tugas SA langsung, bukan dikelolaOleh - murni role:super_admin
+// supaya tidak ikut digerbang CheckRole sebagai "aksi admin" (SA tanpa mode tetap bisa).
+Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(function () {
     Route::patch('/payrolls/{staffPayroll}/tandai-dibayar', [KeuanganProyekController::class, 'tandaiDibayar'])
         ->name('super-admin.payrolls.tandai-dibayar');
 });
@@ -303,6 +305,11 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
     Route::patch('/admins/{user}/toggle-status', [AdminManagementController::class, 'toggleStatus'])->name('super-admin.admins.toggle-status');
     Route::patch('/admins/{user}/kategori', [UserManagementController::class, 'updateKategori'])->name('super-admin.admins.kategori');
     Route::patch('/admins/{user}/restore', [AdminManagementController::class, 'restore'])->name('super-admin.admins.restore');
+
+    // CM.3.3: dipakai dialog "Rapikan tag" di halaman /super-admin/akun (bukan proyek, data global tag).
+    Route::patch('/tag/{extrasCategory}', [TagController::class, 'update'])->name('super-admin.tags.update');
+    Route::post('/tag/{extrasCategory}/gabung', [TagController::class, 'gabung'])->name('super-admin.tags.gabung');
+    Route::delete('/tag/{extrasCategory}', [TagController::class, 'destroy'])->name('super-admin.tags.destroy');
     Route::delete('/admins/{user}', [AdminManagementController::class, 'destroy'])->name('super-admin.admins.destroy');
 
     Route::redirect('/casting-directors', '/super-admin/akun?role=client');

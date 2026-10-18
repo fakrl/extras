@@ -4,6 +4,7 @@
 
 @section('content')
 @php $admin = auth()->user()->bisaSebagaiAdmin(); @endphp
+@php $bolehKelola = auth()->user()->can('kelola', $application->castingProject); @endphp
 <p style="margin: -8px 0 8px;"><a href="{{ $admin ? route('admin.projects.applicants', $application->castingProject) : route('extras.dashboard') }}" style="color: var(--accent); font-size: 13px;">&larr; {{ $admin ? 'Kembali ke pendaftar' : 'Kembali ke dashboard' }}</a></p>
 <p style="color: var(--text-secondary); margin: 0 0 20px; font-size: 13.5px;">
     @if ($admin)
@@ -52,7 +53,7 @@
     </div>
 @endif
 
-@if (auth()->user()->bisaSebagaiAdmin() && $application->payment->status === 'belum_dibayar' && ! $application->payment->menungguKontrak())
+@if ($admin && $bolehKelola && $application->payment->status === 'belum_dibayar' && ! $application->payment->menungguKontrak())
     <div class="card" style="margin-bottom: 14px;">
         <x-confirm-form action="{{ route('payments.transfer', $application) }}" enctype="multipart/form-data" message="Tandai Rp {{ number_format($totalHonor, 0, ',', '.') }} sudah ditransfer ke {{ $application->extras->user->name }}? Aksi ini cuma bisa sekali.">
             <label>Unggah Bukti Transfer <span class="wajib" aria-hidden="true">*</span></label>
@@ -69,7 +70,7 @@
     </div>
 @endif
 
-@if (auth()->user()->bisaSebagaiAdmin() && $application->payment->status === 'belum_dibayar')
+@if ($admin && $bolehKelola && $application->payment->status === 'belum_dibayar')
     <form method="POST" action="{{ route('payments.addon', $application) }}" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;">
         @csrf
         <input type="text" name="label" class="input-inline" placeholder="Label (misal: Reimburse transport) *" required>
@@ -101,7 +102,7 @@
         <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 4px;"><i class="ti ti-alert-circle"></i> Pembayaran Sedang Disengketakan</div>
         <div style="font-size: 13px; color: var(--text-secondary);">{{ $application->payment->alasan_sengketa }}</div>
     </div>
-    @if (auth()->user()->bisaSebagaiAdmin())
+    @if ($admin && $bolehKelola)
         <div class="card" style="margin-top: 12px;">
             <x-confirm-form action="{{ route('payments.selesaikan-sengketa', $application) }}" enctype="multipart/form-data" message="Selesaikan sengketa dan kembalikan pembayaran ke {{ $application->extras->user->name }}?">
                 <label>Tanggapan untuk Extras <span class="wajib" aria-hidden="true">*</span></label>

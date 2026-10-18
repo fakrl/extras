@@ -25,8 +25,8 @@ class BhPortofolioTest extends TestCase
 
     public function test_proyek_belum_selesai_tidak_bisa_diset(): void
     {
-        $admin = User::factory()->create(['role' => 'admin']);
         $p = $this->proyek('Proyek Mendatang', 5);
+        $admin = $p->admin;
 
         $this->actingAs($admin)->get(route('admin.projects.show', $p))->assertOk()->assertDontSee('Portofolio di beranda');
         $this->actingAs($admin)->from('/x')->patch(route('admin.projects.portofolio', $p), ['tampil_portofolio' => 1])
@@ -37,9 +37,9 @@ class BhPortofolioTest extends TestCase
 
     public function test_tampil_hanya_kalau_dicentang_dan_client_disembunyikan_default(): void
     {
-        $admin = User::factory()->create(['role' => 'super_admin']);
         $a = $this->proyek('Film Alfa', -10);
         $b = $this->proyek('Film Beta', -20);
+        $admin = $a->admin;
 
         $this->get('/')->assertOk()->assertDontSee('id="portofolio"', false)->assertDontSee('Film Alfa');
 

@@ -26,11 +26,18 @@
         </div>
     </div>
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        @can('kelola', $p)
         <a href="{{ route('admin.projects.edit', $p) }}" class="btn btn-sm">Edit</a>
+        @endcan
         <a href="{{ route('admin.projects.applicants', $p) }}" class="btn btn-sm">Lineup</a>
         <a href="{{ route('invoices.show', $p) }}" class="btn btn-sm">Invoice</a>
     </div>
 </div>
+
+@php $bolehKelola = auth()->user()->can('kelola', $p); @endphp
+@unless ($bolehKelola)
+    <div role="status" style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-card); color: var(--text-secondary); font-size: var(--fs-sm); margin-bottom: 12px;"><i class="ti ti-eye"></i> Lihat saja, proyek ini dipegang {{ $p->admin?->name ?? 'belum ada PIC' }}.</div>
+@endunless
 
 <div class="xfilter" role="tablist" aria-label="Bagian detail proyek">
     @foreach (['info' => 'Info', 'pendaftar' => 'Pendaftar', 'keuangan' => 'Keuangan', 'lampiran' => 'Lampiran'] as $key => $label)
@@ -87,7 +94,7 @@
         </div>
     </div>
 
-    @if ($p->bisaPortofolio() && auth()->user()->bisaSebagaiAdmin())
+    @if ($p->bisaPortofolio() && $bolehKelola)
         <div class="card" style="margin-top: 14px;">
             <div class="card-title">Portofolio di beranda</div>
             <form method="POST" action="{{ route('admin.projects.portofolio', $p) }}">
@@ -207,12 +214,14 @@
                         <td>
                             @if ($lunas)
                                 {{ $rp($inv->nominal) }}
-                            @else
+                            @elseif ($bolehKelola)
                                 <form method="POST" action="{{ route('admin.projects.invoice-nominal', $p) }}" style="display: flex; gap: 6px; flex-wrap: wrap;">
                                     @csrf @method('PATCH')
                                     <input type="number" name="nominal" value="{{ old('nominal', $nominalInv) }}" min="0" step="1" required aria-label="Nominal invoice" style="width: 140px; margin: 0; min-height: 32px;">
                                     <button type="submit" class="btn btn-sm">Simpan Nominal</button>
                                 </form>
+                            @else
+                                {{ $rp($nominalInv) }}
                             @endif
                         </td>
                         <td>
@@ -224,12 +233,12 @@
                             @endif
                         </td>
                         <td>
-                            @unless ($lunas)
+                            @if (! $lunas && $bolehKelola)
                                 <x-confirm-form :action="route('admin.projects.invoice-lunas', $p)" method="PATCH" message="Tandai invoice ini lunas? Nominal tersimpan dan tidak bisa dibatalkan dari sini.">
                                     <input type="hidden" name="nominal" value="{{ $nominalInv }}">
                                     <button type="submit" class="btn btn-sm btn-brand">Tandai Lunas</button>
                                 </x-confirm-form>
-                            @endunless
+                            @endif
                         </td>
                     </tr>
                 </tbody>
@@ -251,7 +260,7 @@
                             <td>{{ $app?->castingProjectClass?->nama_kelas ?: ($app?->karakter ?: '-') }}</td>
                             <td>{{ $rp($pay->nominalTotal()) }}</td>
                             <td><x-status-badge :model="$pay" /></td>
-                            <td>@if ($app)<a href="{{ route('payments.show', $app) }}" class="btn btn-sm {{ $pay->bisaDitransfer() ? 'btn-brand' : '' }}">{{ $pay->bisaDitransfer() ? 'Transfer' : 'Lihat' }}</a>@endif</td>
+                            <td>@if ($app)<a href="{{ route('payments.show', $app) }}" class="btn btn-sm {{ $pay->bisaDitransfer() && $bolehKelola ? 'btn-brand' : '' }}">{{ $pay->bisaDitransfer() && $bolehKelola ? 'Transfer' : 'Lihat' }}</a>@endif</td>
                         </tr>
                     @empty
                         <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Belum ada honor Extras.</td></tr>
@@ -288,8 +297,8 @@
                                 @unless ($payroll->isDibayar())
                                     @if ($payroll->assignment?->user_id === auth()->id() && ! auth()->user()->isSuperAdmin())
                                         <span style="font-size: var(--fs-xs); color: var(--text-muted);">Honor sendiri, dibayar oleh Super Admin.</span>
-                                    @else
-                                        <x-confirm-form :action="route('admin.payrolls.tandai-dibayar', $payroll)" method="PATCH" message="Tandai honor {{ $staf?->name }} sebesar {{ $rp($payroll->nominalTotal()) }} sudah dibayarkan?">
+                                    @elseif ($bolehKelola || auth()->user()->isSuperAdmin())
+                                        <x-confirm-form :action="route(auth()->user()->isSuperAdmin() ? 'super-admin.payrolls.tandai-dibayar' : 'admin.payrolls.tandai-dibayar', $payroll)" method="PATCH" message="Tandai honor {{ $staf?->name }} sebesar {{ $rp($payroll->nominalTotal()) }} sudah dibayarkan?">
                                             <button type="submit" class="btn btn-sm btn-brand">Tandai Dibayar</button>
                                         </x-confirm-form>
                                     @endif
@@ -371,7 +380,7 @@
                             <td>{{ $rp($b->nominal) }}</td>
                             <td>{{ $b->pembuat?->name ?? '-' }}</td>
                             <td>
-                                @if (auth()->user()->isSuperAdmin() || (int) $b->created_by === auth()->id())
+                                @if ($bolehKelola && (auth()->user()->isSuperAdmin() || (int) $b->created_by === auth()->id()))
                                     <x-confirm-form :action="route('admin.expenses.destroy', $b)" method="DELETE" :message="'Hapus biaya '.$b->label.'?'">
                                         <button type="submit" class="btn btn-sm btn-danger-outline">Hapus</button>
                                     </x-confirm-form>
@@ -384,7 +393,7 @@
                 </tbody>
             </table>
         </div>
-        @if ($p->client_request_status === 'disetujui')
+        @if ($p->client_request_status === 'disetujui' && $bolehKelola)
             <form method="POST" action="{{ route('admin.projects.expenses.store', $p) }}" class="form-row" style="margin-top: 12px; align-items: flex-end;">
                 @csrf
                 <div><label for="biaya-label">Keterangan <span class="wajib" aria-hidden="true">*</span></label><input type="text" id="biaya-label" name="label" maxlength="255" required placeholder="mis. Konsumsi, transport" value="{{ old('label') }}"></div>

@@ -61,7 +61,7 @@ class InvoiceController extends Controller
 
     public function sign(Request $request, CastingProject $castingProject): RedirectResponse
     {
-        $this->pastikanBolehLihat($request, $castingProject);
+        $this->pastikanBolehTulis($request, $castingProject);
 
         $data = $request->validate(['signature' => ['required', 'string']]);
 
@@ -103,7 +103,7 @@ class InvoiceController extends Controller
 
     public function uploadCustomDoc(Request $request, CastingProject $castingProject): RedirectResponse
     {
-        $this->pastikanBolehLihat($request, $castingProject);
+        $this->pastikanBolehTulis($request, $castingProject);
 
         $request->validate([
             'custom_doc' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png,docx,xlsx', 'max:10240'],
@@ -159,6 +159,15 @@ class InvoiceController extends Controller
         if ($user->isClient()) {
             abort_unless($castingProject->milikClient($user), 403);
             abort_unless($castingProject->client_request_status === 'disetujui', 404);
+        }
+    }
+
+    private function pastikanBolehTulis(Request $request, CastingProject $castingProject): void
+    {
+        $this->pastikanBolehLihat($request, $castingProject);
+
+        if (! $request->user()->isClient()) {
+            $this->authorize('kelola', $castingProject);
         }
     }
 }

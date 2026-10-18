@@ -31,7 +31,7 @@ class ProjectAttachmentTest extends TestCase
     public function test_admin_upload_multi_file_tersimpan_di_disk_local_dan_tercatat(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $project = CastingProject::factory()->create();
+        $project = CastingProject::factory()->create(['admin_id' => $admin->id]);
 
         $this->actingAs($admin)->post(route('project-attachments.store', $project), [
             'files' => [
@@ -50,16 +50,17 @@ class ProjectAttachmentTest extends TestCase
         $this->assertDatabaseHas('activity_logs', ['action' => 'PROJECT_ATTACHMENT_UPLOADED', 'subject_type' => CastingProject::class, 'subject_id' => $project->id, 'user_id' => $admin->id]);
     }
 
-    public function test_super_admin_bisa_upload_dan_tab_lampiran_tampil(): void
+    // CM.3: godmode SA dicabut untuk aksi tulis, upload lampiran sebagai Admin kini wajib lewat mode Monitoring.
+    public function test_super_admin_mode_admin_bisa_upload_dan_tab_lampiran_tampil(): void
     {
         $sa = User::factory()->create(['role' => 'super_admin']);
         $project = CastingProject::factory()->create();
 
-        $this->actingAs($sa)->post(route('project-attachments.store', $project), [
+        $this->actingAs($sa)->withSession(['sa_mode' => 'admin'])->post(route('project-attachments.store', $project), [
             'files' => [UploadedFile::fake()->image('lokasi.jpg')],
         ])->assertSessionHasNoErrors();
 
-        $this->actingAs($sa)->get(route('admin.projects.show', [$project, 'tab' => 'lampiran']))
+        $this->actingAs($sa)->withSession(['sa_mode' => 'admin'])->get(route('admin.projects.show', [$project, 'tab' => 'lampiran']))
             ->assertOk()->assertSee('lokasi.jpg')->assertSee('Unggah Lampiran');
     }
 
@@ -103,31 +104,42 @@ class ProjectAttachmentTest extends TestCase
         $this->assertSame(1, $project->attachments()->count());
     }
 
+    // B3 (temuan reviewer): hapus lampiran = pengunggah sendiri atau Super Admin, BUKAN sekadar dikelolaOleh
+    // - supaya Admin PIC/ditugaskan tidak bisa hapus lampiran milik Client atau Admin lain.
     public function test_hapus_hanya_pengunggah_atau_super_admin(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $adminLain = User::factory()->create(['role' => 'admin']);
+        $pic = User::factory()->create(['role' => 'admin']);
         $sa = User::factory()->create(['role' => 'super_admin']);
-        $project = CastingProject::factory()->create();
+        $client = User::factory()->create(['role' => 'client']);
+        $project = CastingProject::factory()->create(['admin_id' => $pic->id, 'client_id' => $client->id]);
 
-        $file = $this->lampiran($project, $admin);
-        $this->actingAs($adminLain)->delete(route('project-attachments.destroy', $file))->assertForbidden();
-        $this->assertModelExists($file);
+        $fileClient = $this->lampiran($project, $client);
+        // Admin PIC/mengelola proyek ini TIDAK bisa hapus lampiran milik Client, meski dia dikelolaOleh.
+        $this->actingAs($pic)->delete(route('project-attachments.destroy', $fileClient))->assertForbidden();
+        $this->assertModelExists($fileClient);
 
-        $this->actingAs($sa)->delete(route('project-attachments.destroy', $file))->assertRedirect();
-        $this->assertModelMissing($file);
-        Storage::disk('local')->assertMissing($file->path);
+        $fileAdmin = $this->lampiran($project, $admin);
+        // Admin lain yang bukan pengunggah & bukan PIC juga tetap ditolak.
+        $this->actingAs($pic)->delete(route('project-attachments.destroy', $fileAdmin))->assertForbidden();
+        $this->assertModelExists($fileAdmin);
+
+        // SA selalu boleh hapus (tidak terikat mode - bukan bagian "proyek dikelola oleh" seperti aksi lain).
+        $this->actingAs($sa)->delete(route('project-attachments.destroy', $fileAdmin))->assertRedirect();
+        $this->assertModelMissing($fileAdmin);
+        Storage::disk('local')->assertMissing($fileAdmin->path);
         $this->assertDatabaseHas('activity_logs', ['action' => 'PROJECT_ATTACHMENT_DELETED', 'subject_id' => $project->id, 'user_id' => $sa->id]);
 
-        $file2 = $this->lampiran($project, $admin);
-        $this->actingAs($admin)->delete(route('project-attachments.destroy', $file2))->assertRedirect();
-        $this->assertModelMissing($file2);
+        // Pengunggah sendiri tetap boleh hapus uploadnya sendiri, meski sudah bukan PIC/ditugaskan proyek ini.
+        $fileOrangLuar = $this->lampiran($project, $admin);
+        $this->actingAs($admin)->delete(route('project-attachments.destroy', $fileOrangLuar))->assertRedirect();
+        $this->assertModelMissing($fileOrangLuar);
     }
 
     public function test_validasi_mimes_ukuran_dan_wajib_file(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $project = CastingProject::factory()->create();
+        $project = CastingProject::factory()->create(['admin_id' => $admin->id]);
         $url = route('project-attachments.store', $project);
 
         $this->actingAs($admin)->post($url, [])->assertSessionHasErrors('files');

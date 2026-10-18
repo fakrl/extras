@@ -5,6 +5,7 @@
 @php
     $isClient = auth()->user()->isClient();
     $sudahTtd = $isClient ? $invoice?->ttd_client_signature_path : $invoice?->ttd_admin_signature_path;
+    $bolehKelola = $isClient || auth()->user()->can('kelola', $castingProject);
 @endphp
 
 @section('content')
@@ -84,6 +85,7 @@
         </div>
     @endif
 
+    @if ($bolehKelola)
     <form method="POST" action="{{ route('invoices.upload-custom', $castingProject) }}" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;" @if ($invoice->custom_doc_path) onsubmit="return confirm('Dokumen PH yang sudah ada akan diganti dengan file baru dan tidak bisa dikembalikan. Lanjutkan?')" @endif>
         @csrf
         <div style="flex: 1; min-width: 220px;">
@@ -92,6 +94,7 @@
         </div>
         <button type="submit" class="btn btn-brand btn-sm">Upload Dokumen</button>
     </form>
+    @endif
 </div>
 
 {{-- Rincian Invoice --}}
@@ -122,7 +125,7 @@
 </div>
 
 {{-- Form Tanda Tangan Digital --}}
-@if (! $sudahTtd)
+@if (! $sudahTtd && $bolehKelola)
     <div class="card">
         <div style="font-size: 14.5px; font-weight: 600; margin-bottom: 10px;">
             Bubuhi Tanda Tangan Digital ({{ $isClient ? 'Client / PH' : 'Admin JBTB' }})
@@ -133,7 +136,7 @@
             <button type="submit" class="btn btn-brand" style="margin-top: 10px;">Simpan Tanda Tangan</button>
         </form>
     </div>
-@else
+@elseif ($sudahTtd)
     <div class="alert-success">Anda sudah menandatangani invoice ini.</div>
 @endif
 @endif

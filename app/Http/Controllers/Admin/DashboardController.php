@@ -18,12 +18,10 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // AD-09: default hanya proyek milik Admin ini (PIC); toggle "Semua" untuk lihat seluruh proyek.
-        $semua = request()->boolean('semua');
-        $pic = ! $semua && $user->isAdmin() ? $user->id : null;
-        $proyekPic = fn ($q) => $q->when($pic, fn ($q) => $q->where('admin_id', $pic));
-        $lamaranPic = fn ($q) => $q->when($pic, fn ($q) => $q->whereHas('castingProject', fn ($p) => $p->where('admin_id', $pic)));
-        $bayarPic = fn ($q) => $q->when($pic, fn ($q) => $q->whereHas('projectApplication.castingProject', fn ($p) => $p->where('admin_id', $pic)));
+        // CM.2.3: dashboard Admin/Korlap selalu hanya proyek yang dikelola, tanpa toggle "Semua".
+        $proyekPic = fn ($q) => $q->dikelolaOleh($user);
+        $lamaranPic = fn ($q) => $q->whereHas('castingProject', fn ($p) => $p->dikelolaOleh($user));
+        $bayarPic = fn ($q) => $q->whereHas('projectApplication.castingProject', fn ($p) => $p->dikelolaOleh($user));
 
         $proyekAktif = CastingProject::where('status', 'dibuka')->tap($proyekPic)->count();
         $totalPendaftar = ProjectApplication::query()->tap($lamaranPic)->count();
@@ -49,8 +47,8 @@ class DashboardController extends Controller
         $linkSengketa = $pembayaranSengketa === 1
             ? route('payments.show', $sengketa->first()->project_application_id)
             : route('admin.projects.index', ['bayar' => 'sengketa']);
-        $ringkasan = AdminRingkasan::untuk($pic);
-        $tahapan = AdminRingkasan::tahapan($pic);
+        $ringkasan = AdminRingkasan::untuk($user);
+        $tahapan = AdminRingkasan::tahapan($user);
 
         $urgentProjects = CastingProject::where('status', 'dibuka')->tap($proyekPic)
             ->with(['shootingDates', 'applications', 'client'])
@@ -58,7 +56,7 @@ class DashboardController extends Controller
             ->filter(fn ($p) => $p->isUrgent())
             ->values();
 
-        $proyekIds = $user->adminProjectAssignments()->pluck('casting_project_id');
+        $proyekIds = CastingProject::query()->dikelolaOleh($user)->pluck('id');
         $jadwalBulanIni = EventShootingDate::whereIn('casting_project_id', $proyekIds)
             ->whereBetween('tanggal', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])
             ->with('castingProject:id,nama_produksi')
@@ -88,7 +86,6 @@ class DashboardController extends Controller
             'jadwalBulanIni',
             'pembayaranSengketa',
             'linkSengketa',
-            'semua',
             'ringkasan',
             'tahapan'
         ));

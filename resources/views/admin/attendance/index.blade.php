@@ -54,6 +54,7 @@
     @php
         $perluValidasi = $applicants->filter(fn ($a) => $a->absen?->status_validasi === 'menunggu');
         $belumDiabsen = $applicants->filter(fn ($a) => ! $a->absen);
+        $bolehKelola = auth()->user()->can('kelola', $castingProject);
     @endphp
     <label for="search-extras">Cari Extras</label>
     <input type="search" id="search-extras" placeholder="Nama atau username..."
@@ -120,6 +121,7 @@
 
                 {{-- Action Buttons --}}
                 <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                    @if ($bolehKelola)
                     @if ($absen && $absen->status_validasi === 'menunggu')
                         <form method="POST" action="{{ route('admin.absensi.validasi', $absen) }}">
                             @csrf
@@ -161,6 +163,7 @@
                         <i class="ti ti-camera"></i> Foto Lokasi
                     </button>
                     <button type="button" class="btn" onclick="document.getElementById('catatan-dialog-{{ $app->id }}').showModal()">Catatan</button>
+                    @endif
                 </div>
             </div>
         </div>

@@ -21,7 +21,11 @@ class ProjectAttachmentController extends Controller
 
     public function store(Request $request, CastingProject $castingProject): RedirectResponse
     {
-        abort_unless(self::bolehAkses($request->user(), $castingProject), 403);
+        $user = $request->user();
+        abort_unless(self::bolehAkses($user, $castingProject), 403);
+        if (! $castingProject->milikClient($user)) {
+            $this->authorize('kelola', $castingProject);
+        }
 
         $data = $request->validate([
             'files' => ['required', 'array', 'min:1'],
@@ -45,8 +49,11 @@ class ProjectAttachmentController extends Controller
     {
         $user = $request->user();
         $project = $projectAttachment->castingProject;
-        abort_unless(self::bolehAkses($user, $project)
-            && ($user->isSuperAdmin() || (int) $projectAttachment->uploaded_by === $user->id), 403, 'Hanya pengunggah atau Super Admin yang bisa menghapus lampiran ini.');
+        // B3 (temuan reviewer): pengunggah sendiri selalu boleh hapus uploadnya, termasuk kalau
+        // sudah tidak mengelola proyek lagi. Selain pengunggah, cuma Super Admin - BUKAN sekadar
+        // dikelolaOleh, karena itu bikin Admin PIC bisa hapus lampiran yang diunggah Client/orang lain.
+        $bolehHapus = (int) $projectAttachment->uploaded_by === $user->id || $user->isSuperAdmin();
+        abort_unless(self::bolehAkses($user, $project) && $bolehHapus, 403, 'Hanya pengunggah atau Super Admin yang bisa menghapus lampiran ini.');
 
         Storage::disk('local')->delete($projectAttachment->path);
         $projectAttachment->delete();

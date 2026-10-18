@@ -8,12 +8,6 @@
 @php $tampilAdmin = auth()->user()->bisaSebagaiAdmin() && auth()->user()->modeSa() !== 'korlap'; @endphp
 @if ($tampilAdmin)
     @php $tindakan = array_filter($ringkasan, fn ($r) => $r['jumlah'] > 0); $jumlahTindakan = $urgentProjects->count() + $pembayaranSengketa + array_sum(array_column($tindakan, 'jumlah')); @endphp
-    @if (auth()->user()->isAdmin())
-        <div class="xfilter" role="group" aria-label="Cakupan dashboard" style="margin-bottom: 12px;">
-            <a href="{{ route('admin.dashboard') }}" class="btn btn-sm {{ $semua ? '' : 'btn-brand' }}" @if (! $semua) aria-current="true" @endif>Proyek saya</a>
-            <a href="{{ route('admin.dashboard', ['semua' => 1]) }}" class="btn btn-sm {{ $semua ? 'btn-brand' : '' }}" @if ($semua) aria-current="true" @endif>Semua proyek</a>
-        </div>
-    @endif
     <div class="dash-tiga">
         <div class="card">
             <div class="card-title">Jadwal Shooting Bulan Ini</div>

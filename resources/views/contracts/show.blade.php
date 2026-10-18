@@ -4,6 +4,7 @@
 
 @php
     $role = auth()->user()->role === 'extras' ? 'extras' : 'admin';
+    $bolehKelola = $role === 'extras' || auth()->user()->can('kelola', $application->castingProject);
     $sudahTtd = $role === 'extras'
         ? $application->contract?->ttd_extras_signature_path
         : $application->contract?->ttd_admin_signature_path;
@@ -61,6 +62,7 @@
                 <li>Tanggal syuting: {{ $application->castingProject->shootingDates->sortBy('tanggal')->map(fn ($d) => $d->tanggal->translatedFormat('d M Y'))->implode(', ') ?: '-' }}</li>
             </ul>
         </div>
+        @if ($bolehKelola)
         <x-confirm-form action="{{ route('contracts.sign', $application) }}" message="Simpan tanda tangan ini? Kontrak akan mengikat begitu kedua pihak sudah TTD dan tidak bisa diubah lagi.">
             <label style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px; font-weight: 500;">
                 <input type="checkbox" style="width: auto; min-height: auto; margin: 0;" onchange="this.closest('form').querySelector('[type=submit]').disabled = !this.checked">
@@ -69,6 +71,7 @@
             <x-signature-pad name="signature" />
             <button type="submit" class="btn btn-brand" style="margin-top: 10px;" disabled>Simpan Tanda Tangan</button>
         </x-confirm-form>
+        @endif
     @else
         <div class="alert-success">{{ $role === 'extras' ? 'Kamu' : 'Anda' }} sudah menandatangani kontrak ini.</div>
         @unless ($application->contract->isFullySigned())

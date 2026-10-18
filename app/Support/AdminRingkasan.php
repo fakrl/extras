@@ -6,14 +6,16 @@ use App\Models\CastingProject;
 use App\Models\Contract;
 use App\Models\Payment;
 use App\Models\ProjectApplication;
+use App\Models\User;
 
 // BL.1: satu sumber angka "perlu tindakan" Admin, dipakai dashboard Admin & pratinjau Monitoring SA.
+// CM.1.2: scoping proyek lewat CastingProject::dikelolaOleh(), bukan admin_id langsung.
 class AdminRingkasan
 {
-    public static function untuk(?int $adminId = null): array
+    public static function untuk(?User $admin = null): array
     {
-        $proyek = fn ($q) => $q->when($adminId, fn ($q) => $q->whereHas('castingProject', fn ($p) => $p->where('admin_id', $adminId)));
-        $lamaran = fn ($q) => $q->when($adminId, fn ($q) => $q->whereHas('projectApplication.castingProject', fn ($p) => $p->where('admin_id', $adminId)));
+        $proyek = fn ($q) => $q->when($admin, fn ($q) => $q->whereHas('castingProject', fn ($p) => $p->dikelolaOleh($admin)));
+        $lamaran = fn ($q) => $q->when($admin, fn ($q) => $q->whereHas('projectApplication.castingProject', fn ($p) => $p->dikelolaOleh($admin)));
         $url = fn (array $q) => route('admin.projects.index', $q, false);
 
         return [
@@ -43,7 +45,7 @@ class AdminRingkasan
             'tanpa_pic' => [
                 'label' => 'Proyek tanpa PIC/Client',
                 'jumlah' => CastingProject::tanpaPicClient()
-                    ->when($adminId, fn ($q) => $q->where('admin_id', $adminId))->count(),
+                    ->when($admin, fn ($q) => $q->dikelolaOleh($admin))->count(),
                 'url' => $url(['tanpa_client' => 1]),
             ],
         ];
@@ -58,10 +60,10 @@ class AdminRingkasan
     ];
 
     /** BP: step-bar tahapan kandidat + daftar siapa & aksi berikutnya, urut paling lama menunggu. */
-    public static function tahapan(?int $adminId = null, int $maks = 8): array
+    public static function tahapan(?User $admin = null, int $maks = 8): array
     {
         $apps = self::lamaranAktif()
-            ->when($adminId, fn ($q) => $q->whereHas('castingProject', fn ($p) => $p->where('admin_id', $adminId)))
+            ->when($admin, fn ($q) => $q->whereHas('castingProject', fn ($p) => $p->dikelolaOleh($admin)))
             ->get()->map(fn ($a) => self::langkah($a))->filter();
 
         return collect(self::TAHAP)->map(function ($t, $key) use ($apps, $maks) {

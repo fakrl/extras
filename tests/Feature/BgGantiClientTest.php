@@ -34,7 +34,8 @@ class BgGantiClientTest extends TestCase
         $this->actingAs($sa)->get(route('admin.projects.edit', $project))
             ->assertOk()->assertSee('data-client-lama="'.$lama->id.'"', false)->assertSee('data-client-lama-nama="@lama"', false);
 
-        $this->actingAs($sa)->patch(route('admin.projects.update', $project), [
+        // CM.3: godmode SA dicabut untuk aksi tulis, edit proyek kini wajib lewat mode Monitoring Admin.
+        $this->actingAs($sa)->withSession(['sa_mode' => 'admin'])->patch(route('admin.projects.update', $project), [
             'nama_produksi' => 'Proyek Pindah',
             'admin_id' => $project->admin_id,
             'client_id' => $baru->id,

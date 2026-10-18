@@ -137,7 +137,9 @@ class AuditCTest extends TestCase
 
     // AD-09
 
-    public function test_dashboard_admin_default_proyek_sendiri_dengan_toggle_semua(): void
+    // CM.2.3: toggle "Semua proyek" di dashboard Admin dihapus, dashboard sekarang SELALU hanya proyek yang dikelola
+    // (PIC/ditugaskan), ?semua=1 tidak lagi berpengaruh.
+    public function test_dashboard_admin_selalu_hanya_proyek_dikelola(): void
     {
         $saya = $this->user('admin');
         $lain = $this->user('admin');
@@ -146,8 +148,8 @@ class AuditCTest extends TestCase
         $this->proyek($lain, ['status' => 'dibuka']);
 
         $this->actingAs($saya)->get(route('admin.dashboard'))->assertOk()
-            ->assertViewHas('proyekAktif', 1)->assertSee('Proyek saya');
-        $this->actingAs($saya)->get(route('admin.dashboard', ['semua' => 1]))->assertOk()->assertViewHas('proyekAktif', 3);
+            ->assertViewHas('proyekAktif', 1)->assertDontSee('Semua proyek');
+        $this->actingAs($saya)->get(route('admin.dashboard', ['semua' => 1]))->assertOk()->assertViewHas('proyekAktif', 1);
     }
 
     // AD-06

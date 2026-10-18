@@ -90,7 +90,7 @@ class BatalkanAuthorizationTest extends TestCase
     public function test_admin_hit_batalkan_via_http_berhasil(): void
     {
         $application = $this->buatApplicationDeal();
-        $adminDefault = User::factory()->create(['role' => 'admin']);
+        $adminDefault = $application->castingProject->admin;
 
         $response = $this->actingAs($adminDefault)
             ->post(route('admin.negotiations.batalkan', $application), ['alasan' => 'Client reschedule']);

@@ -42,7 +42,7 @@ class PaymentController extends Controller
      */
     public function tandaiTransfer(Request $request, ProjectApplication $application): RedirectResponse
     {
-        abort_unless($request->user()->bisaSebagaiAdmin(), 403);
+        $this->authorize('kelola', $application->castingProject);
         $this->guardStatusLolos($application);
 
         if (! $application->payment) {
@@ -116,7 +116,7 @@ class PaymentController extends Controller
      */
     public function addAddon(Request $request, ProjectApplication $application): RedirectResponse
     {
-        abort_unless($request->user()->bisaSebagaiAdmin(), 403);
+        $this->authorize('kelola', $application->castingProject);
         $this->guardStatusLolos($application);
 
         if ($application->payment?->status !== 'belum_dibayar') {
@@ -154,7 +154,7 @@ class PaymentController extends Controller
         $isExtrasOwner = $request->user()->role === 'extras'
             && $application->extras_id === $request->user()->extrasProfile?->id;
 
-        abort_unless($isExtrasOwner || $request->user()->bisaSebagaiAdmin(), 403);
+        abort_unless($isExtrasOwner || $application->castingProject->dikelolaOleh($request->user()), 403, 'Proyek ini bukan tanggung jawab Anda.');
         $this->guardStatusLolos($application);
 
         if (! ($application->payment->status === 'ditransfer')) {
@@ -186,7 +186,7 @@ class PaymentController extends Controller
 
     public function selesaikanSengketa(Request $request, ProjectApplication $application): RedirectResponse
     {
-        abort_unless($request->user()->bisaSebagaiAdmin(), 403);
+        $this->authorize('kelola', $application->castingProject);
         $this->guardStatusLolos($application);
 
         if ($application->payment?->status !== 'disengketakan') {

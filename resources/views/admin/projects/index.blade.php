@@ -11,10 +11,16 @@
     <a href="{{ route('admin.projects.create') }}" class="btn btn-brand">+ Buat Proyek</a>
 </div>
 
+<div class="xfilter" role="group" aria-label="Cakupan daftar proyek" style="margin-bottom: 12px;">
+    <a href="{{ route('admin.projects.index', request()->except(['semua', 'page'])) }}" class="btn btn-sm {{ $semua ? '' : 'btn-brand' }}" @if (! $semua) aria-current="true" @endif>Proyek saya</a>
+    <a href="{{ route('admin.projects.index', ['semua' => 1] + request()->except(['semua', 'page'])) }}" class="btn btn-sm {{ $semua ? 'btn-brand' : '' }}" @if ($semua) aria-current="true" @endif>Semua proyek (lihat saja)</a>
+</div>
+
 <form method="GET" action="{{ route('admin.projects.index') }}" class="xtoolbar" role="search" id="live-form" data-live>
     <input type="search" name="q" value="{{ $cari }}" class="xtoolbar-cari" placeholder="Cari nama produksi atau client..." aria-label="Cari proyek">
     @if ($peserta)<input type="hidden" name="peserta" value="{{ $peserta }}">@endif
     @if ($tahap)<input type="hidden" name="tahap" value="{{ $tahap }}">@endif
+    @if ($semua)<input type="hidden" name="semua" value="1">@endif
     <x-per-halaman :pilihan="\App\Support\PerHalaman::KARTU" :nilai="$projects->perPage()" />
     <x-filter-panel :filter="[
         $periode ? [['dari', 'sampai'], 'Periode: '.$periode[0]->translatedFormat($periode[0]->year === $periode[1]->year ? 'd M' : 'd M Y').'–'.$periode[1]->translatedFormat('d M Y')] : null,
@@ -115,14 +121,18 @@
                 </td>
                 <td class="tp-aksi"><div class="tp-aksi-isi" style="flex-wrap: wrap;">
                     <a href="{{ route('admin.projects.applicants', [$project, 'status' => $peserta]) }}" class="btn btn-sm" title="Lineup" aria-label="Lineup"><i class="ti ti-users-group" aria-hidden="true"></i> Lineup</a>
+                    @can('kelola', $project)
                     <a href="{{ route('admin.projects.edit', $project) }}" class="btn btn-sm" title="Edit proyek" aria-label="Edit proyek"><i class="ti ti-pencil" aria-hidden="true"></i> Edit</a>
+                    @endcan
                     @if ($dibuka && $project->share_token)
                         <button type="button" class="btn btn-sm" title="Salin link pendaftaran" aria-label="Salin link pendaftaran" data-copy-link="{{ url('/event/'.$project->share_token) }}"><i class="ti ti-link" aria-hidden="true"></i> Salin link</button>
                     @endif
  @if ($project->client_request_status === 'disetujui')
+                    @can('kelola', $project)
                     <x-confirm-form :action="route('admin.projects.toggle-status', $project)" method="PATCH" :message="$dibuka ? 'Tutup lowongan '.$project->nama_produksi.'? Extras tidak bisa mendaftar lagi.' : 'Buka lagi lowongan '.$project->nama_produksi.'?'">
                         <button type="submit" class="btn btn-sm" title="{{ $dibuka ? 'Tutup lowongan' : 'Buka lagi lowongan' }}" aria-label="{{ $dibuka ? 'Tutup lowongan' : 'Buka lagi lowongan' }}"><i class="ti {{ $dibuka ? 'ti-lock-open' : 'ti-lock' }}" aria-hidden="true"></i> {{ $dibuka ? 'Tutup' : 'Buka' }}</button>
                     </x-confirm-form>
+                    @endcan
                     @endif
                 </div></td>
             </tr>

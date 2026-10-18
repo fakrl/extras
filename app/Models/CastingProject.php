@@ -170,17 +170,28 @@ class CastingProject extends Model
         return $query->where('casting_projects.client_id', $user->id);
     }
 
-    /** KR-01: Korlap hanya proyek penugasannya; Admin/Super Admin semua. */
-    public function bolehDiurusOleh(User $user): bool
+    /**
+     * CM.1: satu-satunya gerbang "proyek ini tanggung jawab siapa". Admin/Korlap
+     * benar bila PIC (admin_id) atau ditugaskan (admin_project_assignments).
+     * Super Admin benar HANYA saat mode Monitoring Admin/Korlap aktif (godmode dicabut).
+     */
+    public function dikelolaOleh(User $user): bool
     {
-        return ! $user->isKorlap() || $this->adminAssignments()->where('user_id', $user->id)->exists();
+        if ($user->isSuperAdmin()) {
+            return $user->modeSa() !== null;
+        }
+
+        return (int) $this->admin_id === $user->id || $this->adminAssignments()->where('user_id', $user->id)->exists();
     }
 
-    public function scopeDiurusOleh($query, User $user)
+    public function scopeDikelolaOleh($query, User $user)
     {
-        return $user->isKorlap()
-            ? $query->whereHas('adminAssignments', fn ($a) => $a->where('user_id', $user->id))
-            : $query;
+        if ($user->isSuperAdmin()) {
+            return $user->modeSa() !== null ? $query : $query->whereRaw('1 = 0');
+        }
+
+        return $query->where(fn ($w) => $w->where('casting_projects.admin_id', $user->id)
+            ->orWhereHas('adminAssignments', fn ($a) => $a->where('user_id', $user->id)));
     }
 
     public function invoices(): HasMany

@@ -23,6 +23,8 @@ class FeeNegotiationController extends Controller
      */
     public function ajukanAwal(Request $request, ProjectApplication $application): RedirectResponse
     {
+        $this->authorize('kelola', $application->castingProject);
+
         if ($application->feeNegotiations()->exists()) {
             return back()->with('error', 'Fee awal sudah pernah diajukan untuk pendaftar ini.');
         }
@@ -46,6 +48,8 @@ class FeeNegotiationController extends Controller
      */
     public function counter(Request $request, ProjectApplication $application): RedirectResponse
     {
+        $this->authorize('kelola', $application->castingProject);
+
         if (! $application->castingProject->nego_terbuka) {
             return back()->with('error', 'Fee proyek ini tetap dan tidak bisa ditawar.');
         }
@@ -66,6 +70,8 @@ class FeeNegotiationController extends Controller
 
     public function terima(Request $request, ProjectApplication $application): RedirectResponse
     {
+        $this->authorize('kelola', $application->castingProject);
+
         if ($alasan = $application->alasanTidakBisaMenjawab('admin')) {
             return back()->with('error', $alasan);
         }
@@ -84,6 +90,8 @@ class FeeNegotiationController extends Controller
      */
     public function tolak(Request $request, ProjectApplication $application): RedirectResponse
     {
+        $this->authorize('kelola', $application->castingProject);
+
         if (! $application->masihBisaNego()) {
             return back()->with('error', 'Negosiasi untuk pendaftar ini sudah tidak aktif.');
         }
@@ -104,6 +112,8 @@ class FeeNegotiationController extends Controller
      */
     public function ajukanKeClient(ProjectApplication $application): RedirectResponse
     {
+        $this->authorize('kelola', $application->castingProject);
+
         try {
             $adaBentrok = $application->ajukanKeClient();
         } catch (\LogicException $e) {
@@ -122,6 +132,8 @@ class FeeNegotiationController extends Controller
      */
     public function batalkan(Request $request, ProjectApplication $application): RedirectResponse
     {
+        $this->authorize('kelola', $application->castingProject);
+
         $data = $request->validate([
             'alasan' => ['required', 'string'],
         ]);
