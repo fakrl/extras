@@ -8,6 +8,7 @@ use App\Models\Attendance;
 use App\Models\CastingProject;
 use App\Models\EventShootingDate;
 use App\Models\ProjectApplication;
+use App\Models\User;
 use App\Support\KorlapRingkasan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,7 +32,7 @@ class AttendanceController extends Controller
         $projects = CastingProject::where(fn ($w) => $w
             ->whereHas('shootingDates', fn ($q) => $q->where('tanggal', '>=', now()->subDay()->toDateString()))
             ->when($request->query('project'), fn ($q, $id) => $q->orWhere('id', $id)))
-            ->diurusOleh($user)
+            ->dikelolaOleh($user)
             ->orderByDesc('id')
             ->with('client:id,name,nama_perusahaan')
             ->get(['id', 'nama_produksi', 'client_id', 'created_at']);
@@ -49,7 +50,9 @@ class AttendanceController extends Controller
         $castingProject = $defaultProjectId
             ? CastingProject::with('shootingDates')->find($defaultProjectId)
             : null;
-        abort_if($castingProject && ! $castingProject->bolehDiurusOleh($user), 403, 'Proyek ini bukan penugasan Anda.');
+        if ($castingProject) {
+            $this->pastikanBolehLihat($user, $castingProject);
+        }
 
         $shootingDate = null;
         $applicants = collect();
@@ -71,7 +74,7 @@ class AttendanceController extends Controller
         $rekap = $shootingDate ? KorlapRingkasan::rekap($applicants) : null;
 
         $jadwalBulanIni = EventShootingDate::whereBetween('tanggal', [now()->startOfMonth(), now()->endOfMonth()])
-            ->whereHas('castingProject', fn ($q) => $q->diurusOleh($user))
+            ->whereHas('castingProject', fn ($q) => $q->dikelolaOleh($user))
             ->with('castingProject:id,nama_produksi')
             ->get()
             ->map(fn ($e) => tap($e, fn ($e) => $e->nama_produksi = $e->castingProject?->nama_produksi));
@@ -81,7 +84,20 @@ class AttendanceController extends Controller
 
     private function pastikanBolehProyek(Request $request, CastingProject $project): void
     {
-        abort_unless($project->bolehDiurusOleh($request->user()), 403, 'Proyek ini bukan penugasan Anda.');
+        $this->authorize('kelola', $project);
+    }
+
+    /**
+     * GET lihat-saja: Korlap tetap terbatas penugasannya (KR-01), tapi Admin/Super
+     * Admin boleh melihat absensi proyek manapun (beda dari aksi tulis di CM.2.1).
+     */
+    private function pastikanBolehLihat(User $user, CastingProject $project): void
+    {
+        abort_unless(
+            ! $user->isKorlap() || $project->adminAssignments()->where('user_id', $user->id)->exists(),
+            403,
+            'Proyek ini bukan tanggung jawab Anda.'
+        );
     }
 
     public function store(Request $request, ProjectApplication $application): RedirectResponse
@@ -222,7 +238,7 @@ class AttendanceController extends Controller
 
     public function fotoStream(Request $request, Attendance $attendance): StreamedResponse
     {
-        $this->pastikanBolehProyek($request, $attendance->projectApplication->castingProject);
+        $this->pastikanBolehLihat($request->user(), $attendance->projectApplication->castingProject);
         abort_unless($attendance->foto_path && Storage::disk('local')->exists($attendance->foto_path), 404);
 
         return Storage::disk('local')->response($attendance->foto_path);

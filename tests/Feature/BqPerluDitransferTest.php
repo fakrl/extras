@@ -29,7 +29,7 @@ class BqPerluDitransferTest extends TestCase
         $this->seed([ExtrasCategorySeeder::class, DemoLengkapSeeder::class]);
 
         $jumlah = Payment::perluDitransfer()->count();
-        $this->assertSame(6, $jumlah);
+        $this->assertSame(5, $jumlah);
         $this->assertGreaterThan($jumlah, Payment::where('status', 'belum_dibayar')->count());
 
         $this->assertSame($jumlah, AdminRingkasan::untuk()['bayar']['jumlah']);
@@ -37,19 +37,23 @@ class BqPerluDitransferTest extends TestCase
         $this->assertSame($jumlah, $selesai['perlu']);
         $this->assertSame($jumlah, $selesai['daftar']->where('teks', 'Honor belum ditransfer')->count());
 
+        // CM.2.3: toggle "semua" di dashboard Admin dihapus, dashboard sekarang selalu scoped ke proyek
+        // yang dikelola admin ybs - bandingkan dengan AdminRingkasan::untuk($admin) yang sama (satu definisi).
         $admin = User::where('username', 'admin_rina')->firstOrFail();
-        $this->actingAs($admin)->get(route('admin.dashboard', ['semua' => 1]))->assertOk()
-            ->assertViewHas('ringkasan', fn ($r) => $r['bayar']['jumlah'] === $jumlah)
-            ->assertViewHas('tahapan', fn ($t) => $t['selesai']['perlu'] === $jumlah);
+        $jumlahRina = AdminRingkasan::untuk($admin)['bayar']['jumlah'];
+        $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()
+            ->assertViewHas('ringkasan', fn ($r) => $r['bayar']['jumlah'] === $jumlahRina)
+            ->assertViewHas('tahapan', fn ($t) => $t['selesai']['perlu'] === $jumlahRina);
 
         $sa = User::where('username', 'fakrul')->firstOrFail();
         $this->actingAs($sa)->get(route('super-admin.monitoring.admin'))->assertOk()
             ->assertViewHas('ringkasan', fn ($r) => $r['bayar']['jumlah'] === $jumlah)
             ->assertViewHas('tahapan', fn ($t) => $t['selesai']['perlu'] === $jumlah);
 
-        $harap = CastingProject::whereHas('payments', fn ($p) => $p->perluDitransfer())->pluck('id')->sort()->values()->all();
+        // CM.2.3: daftar Proyek Admin default hanya proyek yang dikelola (bukan semua proyek demo).
+        $harapRina = CastingProject::query()->dikelolaOleh($admin)->whereHas('payments', fn ($p) => $p->perluDitransfer())->pluck('id')->sort()->values()->all();
         $this->actingAs($admin)->get(route('admin.projects.index', ['bayar' => 'extras']))->assertOk()
-            ->assertViewHas('projects', fn ($p) => collect($p->items())->pluck('id')->sort()->values()->all() === $harap);
+            ->assertViewHas('projects', fn ($p) => collect($p->items())->pluck('id')->sort()->values()->all() === $harapRina);
 
         $menunggu = Payment::where('status', 'belum_dibayar')->whereHas('projectApplication', fn ($a) => $a->where('status_partisipasi', 'lolos'))->firstOrFail();
         $this->assertSame('Menunggu kontrak', $menunggu->label());

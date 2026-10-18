@@ -23,9 +23,19 @@ class CheckRole
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 
-        // Super Admin Godmode: otomatis lolos untuk semua rute internal admin dan korlap
+        // CM.3: godmode SA dicabut untuk aksi tulis. GET/HEAD tetap lolos (lihat-saja);
+        // non-GET hanya lolos kalau sedang mode Monitoring Admin/Korlap (session sa_mode).
         if ($user->role === 'super_admin' && (in_array('admin', $roles, true) || in_array('korlap', $roles, true))) {
-            return $next($request);
+            if (in_array($request->method(), ['GET', 'HEAD'], true)) {
+                return $next($request);
+            }
+
+            $mode = $request->hasSession() ? $request->session()->get('sa_mode') : null;
+            if (in_array($mode, $roles, true)) {
+                return $next($request);
+            }
+
+            abort(403, 'Proyek ini bukan tanggung jawab Anda. Masuk mode Monitoring dulu untuk bertindak sebagai Admin/Korlap.');
         }
 
         if (! in_array($user->role, $roles, true)) {

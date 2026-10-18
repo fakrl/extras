@@ -49,8 +49,8 @@ class FieldNoteTest extends TestCase
 
     public function test_admin_bisa_tambah_sanksi(): void
     {
-        $admin = User::factory()->create(['role' => 'admin']);
         $application = $this->buatAplikasi();
+        $admin = $application->castingProject->admin;
 
         $response = $this->actingAs($admin)->post(route('admin.applications.catatan', $application), [
             'jenis' => 'sanksi',

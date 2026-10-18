@@ -36,6 +36,9 @@ class ContractController extends Controller
     public function sign(Request $request, ProjectApplication $application): RedirectResponse
     {
         abort_unless($application->bolehDilihatOleh($request->user()), 403);
+        if ($request->user()->role !== 'extras') {
+            $this->authorize('kelola', $application->castingProject);
+        }
 
         $contract = $application->contract;
         $role = $request->user()->role === 'extras' ? 'extras' : 'admin';

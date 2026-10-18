@@ -118,13 +118,18 @@ class CaSelesaikanSengketaTest extends TestCase
         $this->assertSame('dikonfirmasi_diterima', $this->aplikasi->payment->fresh()->status);
     }
 
-    public function test_super_admin_godmode_bisa_menyelesaikan_dan_form_tampil(): void
+    // CM.3/CM.2.2: godmode SA dicabut untuk aksi tulis; SA di luar mode cuma lihat-saja, tombol/form
+    // aksi disembunyikan (bukan cuma 403 saat diklik), aksi beneran butuh mode Admin.
+    public function test_super_admin_lihat_saja_tanpa_form_sengketa_sebelum_mode_admin(): void
     {
         $this->lapor();
         $sa = User::factory()->create(['role' => 'super_admin']);
-        $this->actingAs($sa)->get(route('payments.show', $this->aplikasi))->assertSee('Kirim Tanggapan & Selesaikan Sengketa', false);
+        $this->actingAs($sa)->get(route('payments.show', $this->aplikasi))->assertDontSee('Kirim Tanggapan & Selesaikan Sengketa', false);
         $this->actingAs($this->extrasUser)->get(route('payments.show', $this->aplikasi))->assertDontSee('Kirim Tanggapan &amp; Selesaikan Sengketa');
-        $this->selesaikan($sa)->assertSessionHas('status');
+        $this->actingAs($sa)->post(route('payments.selesaikan-sengketa', $this->aplikasi), ['catatan' => 'Sudah dikoreksi'])->assertForbidden();
+
+        $this->actingAs($sa)->withSession(['sa_mode' => 'admin'])->get(route('payments.show', $this->aplikasi))->assertSee('Kirim Tanggapan & Selesaikan Sengketa', false);
+        $this->actingAs($sa)->withSession(['sa_mode' => 'admin'])->post(route('payments.selesaikan-sengketa', $this->aplikasi), ['catatan' => 'Sudah dikoreksi'])->assertSessionHas('status');
         $this->assertSame('ditransfer', $this->aplikasi->payment->fresh()->status);
     }
 }

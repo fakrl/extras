@@ -28,11 +28,13 @@ class BnFavoritTest extends TestCase
 
         foreach (['admin', 'super_admin'] as $role) {
             $aktor = User::factory()->create(['role' => $role]);
-            $this->actingAs($aktor)->from('/admin/akun/extras')->patch(route('admin.extras.favorit', $ex->user_id))
+            // CM.3: godmode SA dicabut untuk aksi tulis di rute admin/korlap, SA butuh mode Monitoring Admin.
+            $mode = $role === 'super_admin' ? ['sa_mode' => 'admin'] : [];
+            $this->actingAs($aktor)->withSession($mode)->from('/admin/akun/extras')->patch(route('admin.extras.favorit', $ex->user_id))
                 ->assertRedirect('/admin/akun/extras#fav-'.$ex->id);
             $this->assertTrue($ex->fresh()->apresiasi);
 
-            $this->actingAs($aktor)->patch(route('admin.extras.favorit', $ex->user_id));
+            $this->actingAs($aktor)->withSession($mode)->patch(route('admin.extras.favorit', $ex->user_id));
             $this->assertFalse($ex->fresh()->apresiasi);
         }
 

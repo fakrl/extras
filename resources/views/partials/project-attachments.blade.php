@@ -1,4 +1,7 @@
-@php $lampiran = $project->attachments()->with('pengunggah')->get(); @endphp
+@php
+    $lampiran = $project->attachments()->with('pengunggah')->get();
+    $bolehTulisLampiran = ! auth()->user()->isAnyAdmin() || auth()->user()->can('kelola', $project);
+@endphp
 <div class="card lampiran">
     <div class="card-title">Lampiran Proyek <span class="badge badge-netral">{{ $lampiran->count() }}</span></div>
 
@@ -13,6 +16,7 @@
             </div>
             <div class="lampiran-aksi">
                 <a href="{{ route('project-attachments.download', $f) }}" class="btn btn-sm">Unduh</a>
+                {{-- B3: hapus ikut logic ProjectAttachmentController::destroy - pengunggah sendiri atau SA, lepas dari status kelola proyek. --}}
                 @if (auth()->user()->isSuperAdmin() || (int) $f->uploaded_by === auth()->id())
                     <x-confirm-form :action="route('project-attachments.destroy', $f)" method="DELETE" :message="'Hapus lampiran '.$f->nama_asli.'?'">
                         <button type="submit" class="btn btn-sm btn-danger-outline">Hapus</button>
@@ -24,6 +28,7 @@
         <div style="color: var(--text-muted); font-size: var(--fs-sm); padding: 8px 0;">Belum ada lampiran.</div>
     @endforelse
 
+    @if ($bolehTulisLampiran)
     <form method="POST" action="{{ route('project-attachments.store', $project) }}" enctype="multipart/form-data" class="lampiran-form">
         @csrf
         <label for="lampiran-files">Unggah file (bisa pilih beberapa sekaligus) <span class="wajib" aria-hidden="true">*</span></label>
@@ -33,6 +38,7 @@
         <input type="text" id="lampiran-ket" name="keterangan" maxlength="255" value="{{ old('keterangan') }}" placeholder="mis. Brief final, rundown">
         <button type="submit" class="btn btn-brand">Unggah Lampiran</button>
     </form>
+    @endif
 </div>
 
 <style>

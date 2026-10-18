@@ -21,7 +21,7 @@ class MonitoringController extends Controller
             ->withCount(['castingProjects as proyek_aktif' => fn ($q) => $q->where('status', 'dibuka')])
             ->with('aktivitasTerakhir')->orderBy('name')->get()
             ->each(function (User $u) {
-                $r = AdminRingkasan::untuk($u->id);
+                $r = AdminRingkasan::untuk($u);
                 $u->menunggu = $r['nego']['jumlah'] + $r['kontrak']['jumlah'];
             });
 

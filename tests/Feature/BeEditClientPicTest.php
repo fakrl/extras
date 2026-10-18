@@ -35,7 +35,8 @@ class BeEditClientPicTest extends TestCase
         $this->actingAs($sa)->get(route('admin.projects.edit', $project))
             ->assertOk()->assertSee('data-cari-select="client_id"', false)->assertSee('client-baru-dialog');
 
-        $this->actingAs($sa)->patch(route('admin.projects.update', $project), $this->payload([
+        // CM.3: godmode SA dicabut untuk aksi tulis, edit proyek kini wajib lewat mode Monitoring Admin.
+        $this->actingAs($sa)->withSession(['sa_mode' => 'admin'])->patch(route('admin.projects.update', $project), $this->payload([
             'admin_id' => $adminBaru->id, 'client_id' => $baru->id,
         ]))->assertRedirect(route('admin.projects.index'));
 
@@ -53,7 +54,8 @@ class BeEditClientPicTest extends TestCase
         $project = CastingProject::factory()->create(['client_id' => null, 'nama_produksi' => 'Proyek Yatim']);
         CastingProject::factory()->create(['client_id' => User::factory()->create(['role' => 'client'])->id, 'nama_produksi' => 'Proyek Lengkap']);
 
-        $this->actingAs($sa)->patch(route('admin.projects.update', $project), $this->payload(['admin_id' => $project->admin_id]))
+        // CM.3: godmode SA dicabut untuk aksi tulis, edit proyek kini wajib lewat mode Monitoring Admin.
+        $this->actingAs($sa)->withSession(['sa_mode' => 'admin'])->patch(route('admin.projects.update', $project), $this->payload(['admin_id' => $project->admin_id]))
             ->assertSessionHasErrors(['client_id' => 'Pilih akun Client proyek ini dulu (proyek lama belum punya Client).']);
 
         $this->actingAs($sa)->get(route('super-admin.dashboard'))

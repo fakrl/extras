@@ -369,7 +369,7 @@ class AuditAGuardTest extends TestCase
         $this->actingAs($admin)->patch(route('admin.payrolls.tandai-dibayar', $milikLain))->assertSessionHas('status');
         $this->assertTrue($milikLain->fresh()->isDibayar());
 
-        $this->actingAs($this->user('super_admin'))->patch(route('admin.payrolls.tandai-dibayar', $milikSendiri))->assertSessionHas('status');
+        $this->actingAs($this->user('super_admin'))->patch(route('super-admin.payrolls.tandai-dibayar', $milikSendiri))->assertSessionHas('status');
         $this->assertTrue($milikSendiri->fresh()->isDibayar());
     }
 
@@ -397,8 +397,8 @@ class AuditAGuardTest extends TestCase
 
     public function test_admin_tidak_bisa_terima_atau_counter_tawarannya_sendiri(): void
     {
-        $admin = $this->user('admin');
         $app = $this->nego('nego_fee', 'admin');
+        $admin = $app->castingProject->admin;
 
         $this->actingAs($admin)->get(route('admin.negotiations.show', $app))
             ->assertSee('Menunggu balasan Extras sejak')->assertDontSee('Terima Rp')->assertSee('Penawaran')->assertDontSee('>nego_fee<', false);
@@ -411,16 +411,17 @@ class AuditAGuardTest extends TestCase
     public function test_admin_bisa_terima_counter_extras(): void
     {
         $app = $this->nego('nego_fee', 'extras', 'counter');
+        $admin = $app->castingProject->admin;
 
-        $this->actingAs($this->user('admin'))->get(route('admin.negotiations.show', $app))->assertSee('Terima Rp');
-        $this->actingAs($this->user('admin'))->post(route('admin.negotiations.terima', $app), ['nominal' => 250000])->assertSessionHas('status');
+        $this->actingAs($admin)->get(route('admin.negotiations.show', $app))->assertSee('Terima Rp');
+        $this->actingAs($admin)->post(route('admin.negotiations.terima', $app), ['nominal' => 250000])->assertSessionHas('status');
         $this->assertSame('deal', $app->fresh()->status_partisipasi);
     }
 
     public function test_aksi_nego_setelah_kontrak_tampil_fee_final_dan_pesan_bukan_422(): void
     {
-        $admin = $this->user('admin');
         $app = $this->nego('kontrak_ditandatangani', 'extras', 'counter');
+        $admin = $app->castingProject->admin;
 
         $this->actingAs($admin)->get(route('admin.negotiations.show', $app))->assertSee('Fee final Rp 200.000')->assertDontSee('Terima Rp')->assertDontSee('Hentikan Negosiasi');
         foreach ([['terima', ['nominal' => 1]], ['counter', ['nominal' => 1]], ['tolak', ['alasan' => 'x']]] as [$aksi, $data]) {
@@ -446,9 +447,10 @@ class AuditAGuardTest extends TestCase
 
     public function test_pesan_gagal_memakai_error_bukan_status(): void
     {
-        $app = $this->aplikasi($this->proyek(), 'lolos');
+        $p = $this->proyek();
+        $app = $this->aplikasi($p, 'lolos');
 
-        $this->actingAs($this->user('admin'))->patch(route('admin.applications.reject', $app), ['alasan_tolak' => 'x'])
+        $this->actingAs($p->admin)->patch(route('admin.applications.reject', $app), ['alasan_tolak' => 'x'])
             ->assertSessionHas('error')->assertSessionMissing('status');
         $diajukan = $this->aplikasi($this->proyek(), 'diajukan');
         $this->actingAs($diajukan->extras->user)->post(route('extras.negotiations.batalkan', $diajukan), ['alasan' => 'x'])

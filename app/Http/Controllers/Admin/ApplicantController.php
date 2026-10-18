@@ -20,6 +20,8 @@ class ApplicantController extends Controller
      */
     public function setGrade(Request $request, ProjectApplication $application): RedirectResponse
     {
+        $this->authorize('kelola', $application->castingProject);
+
         $data = $request->validate([
             'grade' => ['required', 'in:A,B,C'],
         ]);
@@ -35,6 +37,8 @@ class ApplicantController extends Controller
      */
     public function bulk(Request $request, CastingProject $castingProject): RedirectResponse
     {
+        $this->authorize('kelola', $castingProject);
+
         $data = $request->validate([
             'ids' => ['required', 'array', 'min:1'],
             'ids.*' => ['integer'],
@@ -111,6 +115,8 @@ class ApplicantController extends Controller
      */
     public function reject(Request $request, ProjectApplication $application): RedirectResponse
     {
+        $this->authorize('kelola', $application->castingProject);
+
         $data = $request->validate([
             'alasan_tolak' => ['required', 'string', 'max:1000'],
         ]);
@@ -131,7 +137,7 @@ class ApplicantController extends Controller
      */
     public function tambahCatatan(Request $request, ProjectApplication $application): RedirectResponse
     {
-        abort_unless($application->castingProject->bolehDiurusOleh($request->user()), 403, 'Proyek ini bukan penugasan Anda.');
+        $this->authorize('kelola', $application->castingProject);
         if ($request->user()->isKorlap() && ! in_array($application->status_partisipasi, ProjectApplication::STATUS_LOLOS_KE_ATAS, true)) {
             return back()->with('error', 'Catatan lapangan hanya untuk kandidat yang sudah lolos.');
         }
@@ -152,6 +158,8 @@ class ApplicantController extends Controller
      */
     public function toggleApresiasi(Request $request, ProjectApplication $application): RedirectResponse
     {
+        $this->authorize('kelola', $application->castingProject);
+
         $data = $request->validate([
             'apresiasi_catatan' => ['nullable', 'string', 'max:1000'],
             'apresiasi' => ['nullable', 'boolean'],
@@ -169,6 +177,8 @@ class ApplicantController extends Controller
      */
     public function updateBreakdown(Request $request, ProjectApplication $application): RedirectResponse
     {
+        $this->authorize('kelola', $application->castingProject);
+
         $data = $request->validate([
             'karakter' => ['nullable', 'string', 'max:255'],
             'karakter_override' => ['nullable', 'string', 'max:255'],

@@ -23,6 +23,7 @@
 @endpush
 
 @section('content')
+@php $bolehKelola = auth()->user()->can('kelola', $castingProject); @endphp
 <div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">Lineup: {{ $castingProject->nama_produksi }}</div>
 <p style="color: var(--text-secondary); margin: 0 0 20px; font-size: 13.5px;">
     Client: {{ $castingProject->namaClient() }} · {{ $applicants->total() }} pendaftar
@@ -30,6 +31,9 @@
         · <a href="{{ $castingProject->link_grup }}" target="_blank">Grup koordinasi</a>
     @endif
 </p>
+@unless ($bolehKelola)
+    <div role="status" style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-card); color: var(--text-secondary); font-size: var(--fs-sm); margin-bottom: 12px;"><i class="ti ti-eye"></i> Lihat saja, proyek ini dipegang {{ $castingProject->admin?->name ?? 'belum ada PIC' }}.</div>
+@endunless
 
 @php
     $daftar = request('tampil') === 'daftar';
@@ -88,7 +92,7 @@
 </form>
 
 <div data-live-target>
-@if (($tab ?? '') !== 'client')
+@if (($tab ?? '') !== 'client' && $bolehKelola)
     <form method="POST" action="{{ route('admin.projects.applicants.bulk', $castingProject) }}" id="bulk-form">
         @csrf
     </form>
@@ -131,7 +135,7 @@
         $ex = $app->extras;
         $alias = $ex->user->username ?? 'kandidat';
         $diundang = $app->status_partisipasi === 'diundang';
-        $aksi = match (true) {
+        $aksi = ! $bolehKelola ? null : match (true) {
             $diundang => ['label' => 'Batalkan undangan', 'post' => route('admin.undangan.batal', $app), 'confirm' => "Batalkan undangan untuk @{$alias}?"],
             $app->status_partisipasi === 'diajukan' => ['label' => 'Beri Grade', 'onclick' => "document.getElementById('detail-{$app->id}').showModal()"],
             $app->status_partisipasi === 'direview_admin' => ['label' => 'Mulai Nego', 'href' => route('admin.negotiations.show', $app)],
@@ -147,7 +151,7 @@
         'profile' => $ex,
         'aplikasi' => $app,
         'badge' => ($tab ?? '') === 'client' ? [$app->label(), $app->badgeClass()] : null,
-        'check' => ($tab ?? '') !== 'client' && ! $diundang ? ['name' => 'ids[]', 'class' => 'bulk-check', 'form' => 'bulk-form'] : null,
+        'check' => ($tab ?? '') !== 'client' && ! $diundang && $bolehKelola ? ['name' => 'ids[]', 'class' => 'bulk-check', 'form' => 'bulk-form'] : null,
         'sub' => implode(' · ', array_filter([$ex->user->name ?? null, $app->grade ? 'Grade '.$app->grade : null])),
         'lihat' => $ex->user ? ['href' => route('admin.extras.profil', $ex->user), 'data-profil-modal' => true] + ($diundang ? [] : ['data-aksi-dialog' => 'detail-'.$app->id, 'data-aksi-label' => 'Detail & aksi']) : ['onclick' => "document.getElementById('detail-{$app->id}').showModal()"],
         'aksi' => $aksi,
@@ -286,7 +290,7 @@
                     <select disabled style="width: 70px; margin-bottom: 0; opacity: 0.5;"><option>{{ $ex->grade_saat_ini }}</option></select>
                     <span style="font-size: var(--fs-xs); color: var(--text-muted);">Terkunci s.d. {{ $ex->grade_diberikan_at->addMonths(2)->translatedFormat('d F Y') }}</span>
                 </div>
-            @else
+            @elseif ($bolehKelola)
                 <x-confirm-form :action="route('admin.applications.grade', $app)" method="PATCH" message="Set grade untuk {{ $alias }}? Grade tidak bisa diubah selama 2 bulan, berlaku di semua proyek." style="display: flex; gap: 8px;">
                     <select name="grade" aria-label="Grade" style="width: 80px; margin-bottom: 0;">
                         <option value="A" @selected($app->grade === 'A')>A</option>
@@ -296,10 +300,16 @@
                     <button type="submit" class="btn">Set Grade</button>
                 </x-confirm-form>
                 <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 4px;">Setelah ditetapkan, grade terkunci 2 bulan dan berlaku di semua proyek.</div>
+            @else
+                <div style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $app->grade ? 'Grade '.$app->grade : 'Belum ada grade.' }}</div>
             @endif
 
             <div class="xsec">Aksi lain</div>
             <div class="xaksi">
+                @if ($ex->user)
+                    <a href="{{ route('admin.extras.profil', $ex->user) }}" class="btn" data-profil-modal><i class="ti ti-user"></i> Profil lengkap</a>
+                @endif
+                @if ($bolehKelola)
                 @if (in_array($app->status_partisipasi, ['direview_admin', 'nego_fee'], true))
                     <a href="{{ route('admin.negotiations.show', $app) }}" class="btn btn-brand">{{ $app->status_partisipasi === 'nego_fee' ? 'Lanjut Nego' : 'Mulai Nego' }}</a>
                 @endif
@@ -324,14 +334,12 @@
                         <button type="button" class="btn" onclick="document.getElementById('apresiasi-dialog-{{ $app->id }}').showModal()"><i class="ti ti-star"></i> Jadikan Favorit</button>
                     @endif
                 @endif
-                @if ($ex->user)
-                    <a href="{{ route('admin.extras.profil', $ex->user) }}" class="btn" data-profil-modal><i class="ti ti-user"></i> Profil lengkap</a>
-                @endif
                 @if (in_array($app->status_partisipasi, ['diajukan', 'direview_admin'], true))
                     <button type="button" class="btn btn-danger-outline" onclick="document.getElementById('reject-dialog-{{ $app->id }}').showModal()">Tolak</button>
                 @endif
                 @if ($app->status_partisipasi === 'deal')
                     <button type="button" class="btn btn-danger-outline" onclick="document.getElementById('batalkan-dialog-{{ $app->id }}').showModal()">Batalkan</button>
+                @endif
                 @endif
             </div>
         </div>

@@ -21,7 +21,7 @@ class UndanganController extends Controller
         abort_unless($user->isExtras() && $user->extrasProfile, 404);
         $profile = $user->extrasProfile;
 
-        $proyek = CastingProject::untukUndangan()->with(['classes' => fn ($q) => $q->withTerisi(), 'shootingDates'])->latest()->get();
+        $proyek = CastingProject::untukUndangan()->dikelolaOleh(request()->user())->with(['classes' => fn ($q) => $q->withTerisi(), 'shootingDates'])->latest()->get();
         $ada = $profile->applications()->pluck('status_partisipasi', 'casting_project_id');
         $bentrok = $proyek->mapWithKeys(fn ($p) => [$p->id => $profile->pendaftaranBentrok($p->shootingDates->pluck('tanggal'))]);
 
@@ -37,6 +37,7 @@ class UndanganController extends Controller
             'casting_project_class_id' => ['nullable', 'integer'],
         ]);
         $project = CastingProject::with('classes', 'shootingDates')->findOrFail($data['casting_project_id']);
+        $this->authorize('kelola', $project);
         $tolak = fn (string $pesan) => back()->with('error', $pesan);
 
         if (! $project->bisaDiundang()) {
@@ -95,6 +96,8 @@ class UndanganController extends Controller
 
     public function batal(Request $request, ProjectApplication $application): RedirectResponse
     {
+        $this->authorize('kelola', $application->castingProject);
+
         $redirect = back()->withFragment('app-'.$application->id);
         if (! $application->batalkanUndangan()) {
             return $redirect->with('error', 'Undangan ini sudah dijawab atau dibatalkan.');

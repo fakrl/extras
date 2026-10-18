@@ -37,17 +37,19 @@ class BrRapikanTagTest extends TestCase
         $t = $this->data();
         $this->assertEqualsCanonicalizing([$t['lainnya']->id, $t['typo']->id], ExtrasCategory::perluDirapikan()->pluck('id')->all());
 
-        foreach ([['admin', 'admin.akun.extras', []], ['super_admin', 'super-admin.akun.index', ['role' => 'extras']]] as [$role, $route, $q]) {
+        // CM.3.3: halaman /super-admin/akun murni tugas SA, pakai route super-admin.tags.* sendiri
+        // (bukan admin.tags.*) supaya tidak ikut digerbang CheckRole sebagai "aksi admin".
+        foreach ([['admin', 'admin.akun.extras', [], 'admin.tags'], ['super_admin', 'super-admin.akun.index', ['role' => 'extras'], 'super-admin.tags']] as [$role, $route, $q, $tagRoute]) {
             $res = $this->actingAs(User::factory()->create(['role' => $role]))->get(route($route, $q))->assertOk()
                 ->assertSee('Kelola tag (2 perlu dirapikan)')
                 ->assertSee('<dialog id="rapikan-tag"', false)
                 ->assertDontSee('Kelola Tag')
-                ->assertDontSee(route('admin.tags.update', $t['rapi']), false)
-                ->assertDontSee(route('admin.tags.update', $t['bawaan']), false);
+                ->assertDontSee(route("{$tagRoute}.update", $t['rapi']), false)
+                ->assertDontSee(route("{$tagRoute}.update", $t['bawaan']), false);
             foreach (['lainnya', 'typo'] as $k) {
-                $res->assertSee(route('admin.tags.update', $t[$k]), false)
-                    ->assertSee(route('admin.tags.gabung', $t[$k]), false)
-                    ->assertSee(route('admin.tags.destroy', $t[$k]), false);
+                $res->assertSee(route("{$tagRoute}.update", $t[$k]), false)
+                    ->assertSee(route("{$tagRoute}.gabung", $t[$k]), false)
+                    ->assertSee(route("{$tagRoute}.destroy", $t[$k]), false);
             }
         }
     }
@@ -99,5 +101,24 @@ class BrRapikanTagTest extends TestCase
         $this->assertNotNull($t['rapi']->fresh());
 
         $this->actingAs($admin)->get('/admin/tag')->assertRedirect('/admin/akun/extras');
+    }
+
+    /** CM.3.3 (temuan reviewer B2): SA tanpa mode tetap bisa rapikan tag & ubah kategori Extras lewat route super-admin.*, bukan 403. */
+    public function test_super_admin_tanpa_mode_bisa_rapikan_tag_dan_kategori(): void
+    {
+        $t = $this->data();
+        $sa = User::factory()->create(['role' => 'super_admin']);
+        $extras = $this->profil();
+
+        $this->actingAs($sa)->patch(route('super-admin.tags.update', $t['lainnya']), ['grup' => 'Tipe'])->assertSessionHas('status');
+        $this->assertSame('Tipe', $t['lainnya']->fresh()->grup);
+
+        $this->actingAs($sa)->post(route('super-admin.tags.gabung', $t['typo']), ['tujuan' => 'silat'])->assertSessionHas('status');
+        $this->assertNull(ExtrasCategory::find($t['typo']->id));
+
+        $this->actingAs($sa)->delete(route('super-admin.tags.destroy', $t['rapi']))->assertSessionHas('status');
+
+        $this->actingAs($sa)->patch(route('super-admin.admins.kategori', $extras->user), ['tag_nama' => ['Berhijab']])
+            ->assertRedirect();
     }
 }

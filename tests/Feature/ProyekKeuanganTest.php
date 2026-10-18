@@ -70,7 +70,7 @@ class ProyekKeuanganTest extends TestCase
     public function test_invoice_nominal_manual_dengan_usulan_dari_rincian(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $project = CastingProject::factory()->create();
+        $project = CastingProject::factory()->create(['admin_id' => $admin->id]);
         $project->classes()->create(['nama_kelas' => 'Warga', 'budget_client' => 150000, 'kuota_kelas' => 4]);
         $url = route('admin.projects.show', [$project, 'tab' => 'keuangan']);
 
@@ -94,7 +94,8 @@ class ProyekKeuanganTest extends TestCase
         $sa = User::factory()->create(['role' => 'super_admin']);
         $project = CastingProject::factory()->create();
 
-        $this->actingAs($sa)->patch(route('admin.projects.invoice-lunas', $project), ['nominal' => 1500000])
+        // CM.3: godmode SA dicabut untuk aksi tulis, tandai lunas kini wajib lewat mode Monitoring Admin.
+        $this->actingAs($sa)->withSession(['sa_mode' => 'admin'])->patch(route('admin.projects.invoice-lunas', $project), ['nominal' => 1500000])
             ->assertSessionHas('status');
         $invoice = $project->invoices()->first();
         $this->assertTrue($invoice->isLunas());
@@ -102,7 +103,7 @@ class ProyekKeuanganTest extends TestCase
         $this->assertNotNull($invoice->dibayar_at);
         $this->assertDatabaseHas('activity_logs', ['action' => 'INVOICE_PAID', 'user_id' => $sa->id]);
 
-        $this->actingAs($sa)->patch(route('admin.projects.invoice-lunas', $project), ['nominal' => 1])
+        $this->actingAs($sa)->withSession(['sa_mode' => 'admin'])->patch(route('admin.projects.invoice-lunas', $project), ['nominal' => 1])
             ->assertSessionHas('error');
         $this->assertEquals(1500000, $invoice->fresh()->nominal);
         $this->assertSame(1, ActivityLog::where('action', 'INVOICE_PAID')->count());
@@ -113,7 +114,7 @@ class ProyekKeuanganTest extends TestCase
         $adminA = User::factory()->create(['role' => 'admin']);
         $adminB = User::factory()->create(['role' => 'admin']);
         $sa = User::factory()->create(['role' => 'super_admin']);
-        $project = CastingProject::factory()->create(['client_request_status' => 'disetujui']);
+        $project = CastingProject::factory()->create(['client_request_status' => 'disetujui', 'admin_id' => $adminA->id]);
 
         $this->actingAs($adminA)->post(route('admin.projects.expenses.store', $project), ['label' => 'Transport', 'nominal' => 75000, 'tanggal' => today()->toDateString()])
             ->assertSessionHas('status');
@@ -124,7 +125,8 @@ class ProyekKeuanganTest extends TestCase
         $this->actingAs($adminB)->delete(route('admin.expenses.destroy', $biaya))->assertForbidden();
         $this->assertModelExists($biaya);
 
-        $this->actingAs($sa)->delete(route('admin.expenses.destroy', $biaya))->assertSessionHas('status');
+        // CM.3: godmode SA dicabut untuk aksi tulis, hapus biaya proyek orang lain butuh mode Admin.
+        $this->actingAs($sa)->withSession(['sa_mode' => 'admin'])->delete(route('admin.expenses.destroy', $biaya))->assertSessionHas('status');
         $this->assertModelMissing($biaya);
         $this->assertDatabaseHas('activity_logs', ['action' => 'PROJECT_EXPENSE_DELETED', 'user_id' => $sa->id]);
 
@@ -136,7 +138,7 @@ class ProyekKeuanganTest extends TestCase
     public function test_biaya_ditolak_untuk_proyek_menunggu_acc(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $project = CastingProject::factory()->create(['client_request_status' => 'menunggu_acc']);
+        $project = CastingProject::factory()->create(['client_request_status' => 'menunggu_acc', 'admin_id' => $admin->id]);
 
         $this->actingAs($admin)->post(route('admin.projects.expenses.store', $project), ['label' => 'X', 'nominal' => 1000, 'tanggal' => today()->toDateString()])
             ->assertSessionHas('error');
@@ -160,7 +162,8 @@ class ProyekKeuanganTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $client = User::factory()->create(['role' => 'client', 'name' => 'PT Kopi Nusantara']);
 
-        $this->actingAs($sa)->post(route('admin.projects.store'), $this->payloadProyek(['admin_id' => $admin->id, 'client_id' => $client->id]))
+        // CM.3: godmode SA dicabut untuk aksi tulis, buat proyek lewat form ini kini wajib lewat mode Monitoring Admin.
+        $this->actingAs($sa)->withSession(['sa_mode' => 'admin'])->post(route('admin.projects.store'), $this->payloadProyek(['admin_id' => $admin->id, 'client_id' => $client->id]))
             ->assertRedirect();
 
         $p = CastingProject::where('nama_produksi', 'Iklan Kopi')->firstOrFail();
@@ -170,7 +173,7 @@ class ProyekKeuanganTest extends TestCase
         $this->assertSame('dibuka', $p->status);
         $this->assertSame('disetujui', $p->client_request_status);
         $this->assertSame($client->id, $p->fresh()->client_id);
-        $this->assertDatabaseHas('activity_logs', ['action' => 'CREATE_PROJECT', 'description' => "Proyek 'Iklan Kopi' dibuat oleh Fakhrul (Super Admin)"]);
+        $this->assertDatabaseHas('activity_logs', ['action' => 'CREATE_PROJECT', 'description' => "Proyek 'Iklan Kopi' dibuat oleh Fakhrul (Super Admin) (sebagai Admin)"]);
     }
 
     public function test_validasi_role_pic_dan_client(): void
@@ -179,9 +182,10 @@ class ProyekKeuanganTest extends TestCase
         $extras = User::factory()->create(['role' => 'extras']);
         $nonaktif = User::factory()->create(['role' => 'client', 'status' => 'nonaktif']);
 
-        $this->actingAs($sa)->post(route('admin.projects.store'), $this->payloadProyek(['admin_id' => $extras->id, 'client_id' => $nonaktif->id]))
+        // CM.3: godmode SA dicabut untuk aksi tulis, buat proyek lewat form ini kini wajib lewat mode Monitoring Admin.
+        $this->actingAs($sa)->withSession(['sa_mode' => 'admin'])->post(route('admin.projects.store'), $this->payloadProyek(['admin_id' => $extras->id, 'client_id' => $nonaktif->id]))
             ->assertSessionHasErrors(['admin_id', 'client_id']);
-        $this->actingAs($sa)->post(route('admin.projects.store'), $this->payloadProyek())
+        $this->actingAs($sa)->withSession(['sa_mode' => 'admin'])->post(route('admin.projects.store'), $this->payloadProyek())
             ->assertSessionHasErrors(['admin_id', 'client_id']);
         $this->assertSame(0, CastingProject::count());
     }
@@ -293,13 +297,14 @@ class ProyekKeuanganTest extends TestCase
             ->assertSee('Perlu tindakan (1)')->assertSee('1 / 0')->assertDontSee('class="tp-bar"', false);
     }
 
+    // CM.2.2: tombol aksi (Edit/Tutup/Buka) hanya tampil untuk proyek yang dikelola - pakai Admin PIC, bukan SA godmode.
     public function test_kolom_tindakan_empat_ikon_tanpa_menu_titik_tiga(): void
     {
-        $sa = User::factory()->create(['role' => 'super_admin']);
-        $buka = CastingProject::factory()->create(['nama_produksi' => 'Pr Buka', 'status' => 'dibuka', 'share_token' => 'tok123', 'client_request_status' => 'disetujui']);
-        $tutup = CastingProject::factory()->create(['nama_produksi' => 'Pr Tutup', 'status' => 'ditutup', 'share_token' => 'tok456', 'client_request_status' => 'disetujui']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $buka = CastingProject::factory()->create(['nama_produksi' => 'Pr Buka', 'status' => 'dibuka', 'share_token' => 'tok123', 'client_request_status' => 'disetujui', 'admin_id' => $admin->id]);
+        $tutup = CastingProject::factory()->create(['nama_produksi' => 'Pr Tutup', 'status' => 'ditutup', 'share_token' => 'tok456', 'client_request_status' => 'disetujui', 'admin_id' => $admin->id]);
 
-        $r = $this->actingAs($sa)->get(route('admin.projects.index'))->assertOk();
+        $r = $this->actingAs($admin)->get(route('admin.projects.index'))->assertOk();
         foreach (['Lineup', 'Edit proyek', 'Salin link pendaftaran', 'Tutup lowongan', 'Buka lagi lowongan'] as $label) {
             $r->assertSee('title="'.$label.'" aria-label="'.$label.'"', false);
         }

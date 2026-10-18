@@ -2460,3 +2460,120 @@ Domisili + peta, agama, riwayat penyakit, pendidikan, preferensi lingkungan kerj
 | CL.2 `update()` per bagian tanpa menghapus bagian lain + efek samping lama tetap | Hidden field `bagian` (`data_diri\|kontak\|tentang\|pengalaman\|tautan\|privasi`), divalidasi `required\|in:...` di awal `update()` sebelum apa pun ditulis. 6 method privat `simpan{Bagian}()` + `profilAtauBaru()`, masing-masing validasi & tulis HANYA kolom miliknya. Perilaku hapus-jika-kosong lama dipertahankan tapi di-scope: `tautan_tambahan`→`[]` hanya di `simpanTautan`, `nomor_wa`→`null` hanya di `simpanKontak`, `riwayat_pengalaman` hanya kalau `pengalaman_judul` dikirim di `simpanPengalaman`, tag hanya kalau `categories_present` di `simpanTentang`, izin hanya kalau `izin_present` di `simpanPrivasi`. `nama_asli`/`username` wajib HANYA di `simpanDataDiri`. Efek samping lama (`siapkanKontrakLolos()`, mematikan `tampil_di_beranda`, `pull('intended_event_token')`) tetap jalan di `update()` induk untuk bagian apa pun. Dibuktikan BUKAN cuma lewat baca kode: `tests/Feature/ClSimpanPerBagianTest.php` (9 test baru dari tester, independen dari test developer) isi profil lengkap di 6 bagian sekaligus lalu submit satu bagian, assert 5 bagian lain byte-for-byte tidak berubah — termasuk `bagian` hilang/tidak valid → DB nihil berubah | [x] |
 | CL.3 input HP, gender segmen, datalist ukuran, pratinjau tarif, teks dipangkas, dialog Contoh foto | `autocomplete="tel"`/`type="tel"` (nomor WA), `autocomplete="name"` (nama asli), `inputmode="numeric"` (usia/tinggi/berat/tarif/tahun pengalaman), `<datalist id="ukuran-baju-opsi">` S/M/L/XL/XXL (input tetap teks bebas), gender jadi 2 tombol segmen (radio tersembunyi + label, value `pria`/`wanita` tidak berubah), pratinjau "Rp ..." live di `rate_card` (reuse pola `admin/negotiations/show.blade.php`), teks pembuka dipangkas jadi maks 1 baris bantu per field, tombol "Contoh foto" buka `<dialog id="dialog-contoh-foto">` 4 ikon (ti-sun/ti-forbid-2/ti-crop/ti-square) tanpa foto asli. Tidak ada field baru (grep "domisili\|agama\|pendidikan" di view: 0 hasil), rekening tetap `rekeningTersamar()` read-only tanpa input | [x] |
 | CL.5 test, screenshot asli 390/1366, SQLite lalu MySQL | Test tampilan baru di `ExtrasProfileUpdateTest.php`: akun baru → `bagian-data_diri` auto-`open`; profil lengkap → "Profil siap melamar" + tidak ada bagian ter-`open` + tombol "Lihat seperti Client" ada; galat validasi bagian `tautan` → `old('bagian')` membuka kembali bagian itu. Tester menambah `ClSimpanPerBagianTest.php` (9 test isolasi cross-bagian). Reviewer sempat REQUEST-CHANGES (3 temuan: sidebar ke halaman lama, redirect event-tidak-valid ke path lama, test tampilan CL.5.2 belum ada) — ketiganya sudah diperbaiki developer, lalu orchestrator sendiri menemukan & memperbaiki 1 lagi: field dinamis `tautan_label[]`/`tautan_url[]` belum punya pesan galat inline per-baris (beda dari pola `pengalaman_judul[]` yang sudah benar) — ditambahkan `input-error`+`@error("tautan_url.$i")` di `profile-edit.blade.php`. Screenshot aplikasi asli (server dev + SQLite sementara scratchpad + `DemoLengkapSeeder`, Edge headless via `puppeteer-core`, akun `ghost01`=profil kosong untuk "akun baru", `dimas_rk`+upload foto asli lewat UI untuk "profil lengkap"): akun baru 1366/390 (Data Diri terbuka), profil lengkap 1366/390 ("Profil siap melamar"), bagian Kontak sedang diubah di 390 (CSS sticky `.bagian-foot` terkonfirmasi di kode, form Kontak pendek sehingga tidak scroll di screenshot ini), dialog Contoh foto di 390, galat validasi Tautan di 1366 (pesan inline + banner atas). Test: **768 passed** SQLite (`DRIVER=sqlite DB=:memory:`) lalu **768 passed** MySQL (`DRIVER=mysql DB=jbtb_test`), berurutan, `migrate:fresh --force` sukses tiap kali. Pint lulus | [x] |
+
+---
+
+# Bagian CM–CP: Pembagian peran Super Admin vs Admin (hasil review tim 17 Oktober 2026)
+
+> **Sumber:** `docs/BIMBINGAN-2026-10-17.md` (catatan Erlina/Imanisa + "Keputusan Fakrul"). Ini **perubahan scope yang sudah diputus Fakrul**, bukan bugfix; FREEZE dibuka khusus untuk paket ini. Urutan wajib: **CM → CN → CO → CP** (CN dan CO bergantung pada gerbang CM). Tiap bagian commit sendiri, **jangan push**. **CM menyentuh RBAC/auth: subagent wajib, berhenti setelah CM dan tunggu review Fakrul sebelum lanjut.** SQLite lalu MySQL `jbtb_test` berurutan (cetak driver), screenshot aplikasi asli 1366 dan 390 px untuk tiap perubahan tampilan.
+>
+> **Prinsip:** Super Admin = pengawas dan urusan Client (pengajuan, persetujuan, akun, penugasan, pengingat). Admin = pelaksana proyek yang didelegasikan kepadanya (Extras, nego, kontrak, honor Extras). Admin melihat proyek lain hanya **lihat-saja**.
+>
+> **Ditahan, JANGAN dikerjakan:** penggajian staf (Fakrul belum memutuskan, biarkan seperti sekarang), siapa pemilik invoice (Admin atau SA), Imanisa "Simpan/Batal dijadikan satu" di profil (menunggu klarifikasi), rekap "proyek yang pernah di-lock" (ST-6), "remind callingan".
+
+## Bagian CM: Satu gerbang "proyek dikelola oleh", godmode SA dicabut
+
+### CM.1: Definisi tunggal
+1. Tambah `CastingProject::dikelolaOleh(User $user): bool` dan scope `scopeDikelolaOleh($q, User $user)`. Benar bila: `$user` Admin/Korlap **dan** (`admin_id === $user->id` **atau** punya baris `admin_project_assignments` untuk proyek itu, status apa pun). Super Admin: benar **hanya** saat mode Monitoring Admin/Korlap aktif (session `sa_mode` ∈ admin/korlap, lihat `ViewAs`); di luar mode, salah.
+2. Ganti pemakaian lama yang bertentangan agar memakai definisi ini: `AdminRingkasan::untuk()` (sekarang hanya `admin_id`), filter Korlap CF.3 (sekarang hanya penugasan), dashboard Admin, daftar Proyek. Satu sumber, jangan dua rumus.
+
+### CM.2: Batas keras Admin/Korlap
+1. **Setiap aksi tulis** (POST/PUT/PATCH/DELETE) Admin/Korlap yang menyentuh proyek, pendaftaran, nego, kontrak, pembayaran, sengketa, invoice, absensi, catatan/sanksi, undangan, biaya, lampiran, lowongan buka/tutup, edit proyek: ditolak bila `! dikelolaOleh`. Gunakan **satu** mekanisme pusat (Gate/Policy `kelola-proyek` atau middleware route yang me-resolve proyek dari parameter route), bukan `abort_unless` disalin di tiap method. Penolakan = 403 dengan pesan "Proyek ini bukan tanggung jawab Anda." (halaman 403 kustom).
+2. **Lihat-saja:** Admin boleh membuka halaman GET proyek lain (detail, Lineup, keuangan) tapi tanpa tombol aksi (`@can`), dengan banner kecil "Lihat saja, proyek ini dipegang {nama PIC}". Data rahasia tetap sama aturannya.
+3. **Daftar & dashboard:** dashboard Admin, "Perlu tindakan", kalender, dan daftar Proyek default **hanya proyek yang dikelola**. Daftar Proyek punya tab/filter "Semua proyek (lihat saja)". Toggle "Semua proyek" di dashboard Admin (CG.4 AD-9) **dihapus** karena dashboard hanya untuk tugasnya.
+4. **Notifikasi:** notifikasi operasional proyek hanya ke Admin PIC dan staf yang ditugaskan proyek itu. Grep semua `kabari(` dan pastikan tidak ada yang dikirim ke semua Admin.
+5. **Buat proyek:** Admin tetap boleh membuat proyek sendiri (tanpa ACC, sama seperti sekarang) dan otomatis menjadi PIC.
+
+### CM.3: Godmode Super Admin dicabut
+1. `CheckRole`: hapus jalan pintas "Super Admin otomatis lolos ke rute admin/korlap" untuk **aksi tulis**. Super Admin boleh **GET** halaman Admin (lihat-saja, seperti Admin melihat proyek orang lain). Aksi tulis di rute Admin/Korlap hanya lolos bila mode Monitoring Admin/Korlap aktif; aksi tetap tercatat "(sebagai Admin)" seperti sekarang.
+2. Halaman pratinjau Monitoring (sebelum masuk mode) **tanpa tombol aksi** (catatan Erlina D-6). Masuk mode = tombol jelas "Ambil alih sebagai Admin" + konfirmasi.
+3. Yang tetap jadi tugas SA langsung (rute `/super-admin/*`, tanpa mode): pengajuan Client (CN), akun Client & staf, penugasan staf ke proyek, pengingat (CO), log aktivitas, monitoring. Penggajian staf **tidak diubah** (ditahan).
+4. Pembayaran honor Extras = Admin saja. Super Admin di luar mode hanya melihat.
+
+### CM.4: Test dan penutup
+1. Test: Admin A tidak bisa melakukan setiap aksi tulis (satu test per kelompok aksi di CM.2.1) pada proyek Admin B (403), tapi bisa GET dan tidak melihat tombol aksi; Admin yang **ditugaskan** (bukan PIC) bisa beraksi; Korlap tetap terbatas (test CF.3 tetap hijau); SA tanpa mode: GET boleh, POST ke rute Admin 403; SA dalam mode Admin: aksi boleh dan log "(sebagai Admin)"; notifikasi proyek tidak sampai ke Admin yang tidak terkait; dashboard/daftar Admin hanya proyeknya.
+2. **Banyak test lama memakai SA untuk aksi Admin.** Perbarui test itu agar memakai Admin PIC (atau mode Admin) dan tulis di Bukti daftar test yang diubah beserta alasannya. **Jangan** melemahkan gerbang demi membuat test lama hijau.
+3. Seeder demo: pastikan tiap proyek punya PIC dan penugasan yang konsisten dengan `AKUN-DEMO.md` (P2: Rina PIC, Dedi Korlap; P3/P6: Yoga). Perbarui `AKUN-DEMO.md` bagian uji manual dengan langkah "Rina coba aksi di P3 → 403".
+4. Commit, **berhenti, laporkan daftar file auth/RBAC yang berubah untuk review Fakrul.**
+
+| Item | Bukti | QA |
+|---|---|---|
+| CM.1 `dikelolaOleh` + scope, satu definisi dipakai AdminRingkasan/Korlap/dashboard/daftar | `CastingProject::dikelolaOleh(User)`/`scopeDikelolaOleh()` MENGGANTIKAN total `bolehDiurusOleh()`/`scopeDiurusOleh()` lama (grep `bolehDiurusOleh\|scopeDiurusOleh`: 0 hasil). Admin/Korlap: `admin_id===user.id` ATAU ada baris `admin_project_assignments`. Super Admin: benar HANYA saat `session('sa_mode')` ∈ admin/korlap. Dipakai satu sumber di: `AdminRingkasan::untuk()`, `AttendanceController` (Korlap), `AdminDashboardController`, `AdminCastingProjectController::index` (SA dikecualikan dari scope ini — tetap lihat semua di listing, konsisten "SA GET lihat-saja") | [x] |
+| CM.2 gerbang pusat aksi tulis, lihat-saja + banner, dashboard/daftar hanya proyeknya, notifikasi terbatas | Mekanisme pusat: `app/Policies/CastingProjectPolicy::kelola()` (auto-discovered Laravel) + `$this->authorize('kelola', $project)` dipanggil dari `Admin\{ApplicantController,AttendanceController,CastingProjectController,FeeNegotiationController,KeuanganProyekController,UndanganController}`, `PaymentController`, `ContractController::sign` (cabang non-Extras), `InvoiceController`, `ProjectAttachmentController::store` — bukan `abort_unless` disalin. 403 pesan "Proyek ini bukan tanggung jawab Anda." muncul nyata (`errors/403.blade.php` pakai `$exception->getMessage()`). Lihat-saja: banner "Lihat saja, proyek ini dipegang {PIC}" + tombol aksi disembunyikan `@can('kelola',$project)`/`$bolehKelola` di `admin/projects/{show,applicants}.blade.php`, `payments/show.blade.php`, `admin/negotiations/show.blade.php`, `contracts/show.blade.php`, `invoices/show.blade.php`, `admin/attendance/index.blade.php`, `partials/project-attachments.blade.php`. Dashboard Admin & daftar Proyek default `dikelolaOleh`; toggle "Semua proyek" (AD-09) dihapus total dari dashboard; daftar Proyek dapat tab "Semua proyek (lihat saja)" (`?semua=1`). Grep `->kabari(` dicek manual: semua kirim ke Client/Extras pemilik atau `$project->admin` (PIC) spesifik, tidak ada broadcast ke semua Admin — tidak perlu diubah. `ProjectAttachmentController::destroy()`: pengunggah sendiri ATAU Super Admin SAJA (bukan `dikelolaOleh`, sempat salah arah di draf awal — diperbaiki karena `dikelolaOleh` bikin Admin PIC bisa hapus upload Client/orang lain; pengunggah eks-PIC tetap boleh hapus uploadnya sendiri) | [x] |
+| CM.3 godmode SA dicabut untuk aksi tulis, pratinjau Monitoring tanpa aksi, "Ambil alih sebagai Admin" | `CheckRole`: bypass SA tanpa syarat dihapus. GET/HEAD tetap lolos (lihat-saja). Non-GET: SA lolos hanya bila `session('sa_mode')` ada di `$roles` rute itu, selain itu 403. Aksi lewat mode tetap log "(sebagai Admin)". Halaman pratinjau Monitoring sudah tanpa tombol aksi sejak awal (diverifikasi). Tombol masuk mode diganti **"Ambil alih sebagai Admin/Korlap"** + `<x-confirm-form>` konfirmasi (`super-admin/monitoring/_kepala.blade.php`). Rute SA-langsung-tanpa-mode (CM.3.3) dipisah ke grup `role:super_admin` MURNI supaya tidak ikut kena gerbang per-grup `CheckRole`: `super-admin.payrolls.tandai-dibayar` (penggajian staf, logic `tandaiDibayar()` TIDAK disentuh) + `super-admin.tags.{update,gabung,destroy}` + `super-admin.admins.kategori` (form tag/kategori di `/super-admin/akun`, sempat mati total akibat deadlock ViewAs sebelum diperbaiki) | [x] |
+| CM.4 test (baru + test lama yang disesuaikan, dengan alasan), seeder/AKUN-DEMO, SQLite lalu MySQL | `tests/Feature/CmProyekDikelolaOlehTest.php` (baru): 1 test per kelompok aksi (grade/reject/bulk/undang/biaya/transfer honor/nego/TTD kontrak/invoice/sengketa/catatan/batal-undangan/edit-portofolio/lampiran) + GET lihat-saja tanpa tombol + Admin ditugaskan (bukan PIC) bisa beraksi + Korlap penugasan + SA tanpa-mode vs mode + notifikasi tidak sampai ke Admin tidak terkait + dashboard/daftar ter-scope + toggle dashboard sudah hilang. **14 test lama disesuaikan** (aktor diganti PIC asli proyek, atau SA ditambah `withSession(['sa_mode'=>'admin'])` untuk aksi yang memang butuh mode sekarang — BUKAN gerbang dilonggarkan): `AuditAGuardTest` (6 tempat + 1 dikembalikan ke SA-tanpa-mode via rute super-admin setelah fix CM.3.3), `AuditCTest` (toggle dashboard dihapus → test ditulis ulang), `BatalkanAuthorizationTest`, `BdMonitoringModeTest` (dipecah 2: SA-tanpa-mode 403, SA-mode-admin berhasil), `BeEditClientPicTest`, `BgGantiClientTest`, `BhPortofolioTest`, `BlMonitoringPratinjauTest` (teks tombol "Ambil alih sebagai..."), `BnFavoritTest`, `BqPerluDitransferTest`, `BrRapikanTagTest` (+1 test regresi deadlock akun-tag SA), `CaSelesaikanSengketaTest` (diperbaiki 2x — awalnya salah arah meng-assert form TETAP tampil ke SA-tanpa-mode, dibalik jadi `assertDontSee` sesuai CM.3.2), `FieldNoteTest`, `ProjectAttachmentTest`. Seeder: P1/P2 PIC Rina (+Dedi Korlap P2), P3/P6 PIC Yoga (+Bambang Korlap P3) — sudah konsisten, diverifikasi lewat `BqPerluDitransferTest` hijau. `docs/AKUN-DEMO.md` (gitignored) dapat bagian "D. Proyek dikelola oleh (CM)" (langkah "Rina coba aksi di P3 (PIC Yoga) → 403" + langkah uji fix SA-tanpa-mode). Lewat pipeline developer→reviewer penuh: reviewer REQUEST-CHANGES ronde 1 (4 temuan nyata: rute payroll & akun-tag SA ikut ke-gerbang tidak sengaja, hak hapus lampiran melebar, beberapa halaman belum sembunyikan tombol aksi, 1 test salah arah) — semua diperbaiki developer, diverifikasi ulang manual (routes/web.php, ProjectAttachmentController) oleh orchestrator. Test: **797 passed** SQLite (`DRIVER=sqlite DB=:memory:`) lalu **797 passed** MySQL (`DRIVER=mysql DB=jbtb_test`), berurutan, `migrate:fresh --force` sukses. Pint lulus | [x] |
+
+## Bagian CN: Pengajuan Client lengkap, SA tinggal Setujui / Minta revisi / Tolak
+
+Keputusan Fakrul: kelengkapan diisi **sebelum** sampai ke SA. **Client** mengisi peran apa saja, kriteria tiap peran, jumlah orang tiap peran, **budget proyek (total)**, dan tanggal shooting + lokasi. **Budget per orang tiap peran** diatur **Admin PIC** setelah proyek disetujui (karena ada potongan agensi). SA hanya memutuskan.
+
+### CN.1: Form pengajuan Client
+1. Tambah ke form `client/projects/request` (dan form ubah saat revisi): daftar peran dengan tombol "+" (nama peran, jumlah orang, kriteria singkat; pakai tabel `casting_project_classes` yang ada, budget per orang **dikosongkan**), tanggal shooting satu atau lebih + lokasi (pakai `event_shooting_dates`), dan **budget proyek total** (kolom baru).
+2. **Migrasi:** `casting_projects.budget_total` decimal(14,2) nullable. Bila `casting_project_classes.budget_client` saat ini NOT NULL, ubah jadi nullable (kosong = "belum diatur Admin"); periksa semua pembaca kolom itu agar null tidak error (kalkulasi invoice usulan, label, test).
+3. Kuota proyek = jumlah orang semua peran (dihitung, tidak diisi terpisah). Validasi: minimal satu peran, minimal satu tanggal shooting setelah deadline, budget total > 0.
+4. **Kerahasiaan:** `budget_total` terlihat Client pemilik, SA, Admin PIC/ditugaskan. **Tidak pernah** ke Extras, publik, atau label nego (tambahkan ke test kebocoran yang ada bersama `budget_client`).
+
+### CN.2: Keputusan SA
+1. Halaman/dialog "Pengajuan proyek" di SA menampilkan ringkasan lengkap (Client, peran + jumlah + kriteria, tanggal + lokasi, budget total, catatan, lampiran). Tiga aksi:
+   1. **Setujui**: wajib pilih **Admin PIC** (dan Korlap, opsional) → membuat `admin_id` + penugasan; status `disetujui`; lowongan **belum dibuka**.
+   2. **Minta revisi**: wajib catatan → status baru `perlu_revisi` (tambah nilai enum `client_request_status`, pola BM.3); catatan disimpan di `alasan_tolak` (label UI "Catatan dari JBTB"); Client mendapat notifikasi, mengubah, lalu mengajukan ulang → `menunggu_acc`.
+   3. **Tolak**: wajib alasan, seperti sekarang.
+2. Hapus alur "ACC ditolak bila peran/tanggal kosong" (CI.2.3) karena kini tidak mungkin kosong; ganti dengan validasi form CN.1. Tombol "Proses → form edit" usulan Erlina (SA-2) **tidak dibuat**, digantikan langkah ini.
+3. Client melihat status pengajuan: Menunggu keputusan / Perlu revisi (+ catatan + tombol Ubah) / Disetujui / Ditolak.
+
+### CN.3: Setelah disetujui
+1. Admin PIC menerima notifikasi dan item "Perlu tindakan": **"Atur budget per orang tiap peran: {proyek}"**.
+2. Di form edit proyek, bagian peran menampilkan **Budget proyek: Rp X**, **Total alokasi: Σ(budget per orang × jumlah orang)**, dan **Sisa (potongan agensi): Rp Y**. Bila alokasi melebihi budget total, tampil peringatan (tidak memblokir).
+3. **Buka lowongan diblokir** sampai semua peran punya budget per orang, dengan pesan jelas.
+4. Usulan nominal invoice = `budget_total` bila terisi (jika tidak, rumus lama). Kepemilikan invoice **tidak diubah** (ditahan).
+
+### CN.4: Test dan penutup
+Test: form Client wajib peran/tanggal/budget; budget per orang kosong setelah pengajuan; Setujui wajib PIC dan membuat penugasan; Minta revisi → `perlu_revisi` + notifikasi + Client bisa ubah & ajukan ulang; Tolak tetap; budget total tidak bocor ke Extras/publik; buka lowongan diblokir sampai budget per orang lengkap; peringatan alokasi > budget; seeder: P4 (menunggu) diisi lengkap, satu pengajuan `perlu_revisi` ditambah, P2/P3 punya `budget_total`. Perbarui `AKUN-DEMO.md`. Manager memperbarui `DATABASE-SCHEMA` dan Bab 3.
+
+| Item | Bukti | QA |
+|---|---|---|
+| CN.1 form Client (peran, tanggal, budget total) + migrasi `budget_total` + `budget_client` nullable + kerahasiaan | | [ ] |
+| CN.2 Setujui (pilih PIC) / Minta revisi (`perlu_revisi`) / Tolak, CI.2.3 diganti validasi | | [ ] |
+| CN.3 tugas Admin atur budget per orang, ringkasan alokasi/sisa, blokir buka lowongan | | [ ] |
+| CN.4 test, seeder, AKUN-DEMO, SQLite lalu MySQL, screenshot | | [ ] |
+
+## Bagian CO: Dashboard Super Admin = tugas SA + pengingat ke Admin
+
+### CO.1: "Perlu tindakan" SA hanya tugas SA
+Isinya hanya: pengajuan Client menunggu keputusan, pengajuan yang sudah direvisi Client, proyek disetujui yang belum punya PIC/Korlap, akun yang perlu perhatian SA (mis. Client belum ganti password lebih dari 7 hari). **Tidak** memuat tugas Admin (nego, kontrak, transfer, sengketa, grade). Dikelompokkan per jenis (catatan Erlina D-2), tiap kelompok punya hitungan.
+
+### CO.2: Pantau & ingatkan Admin (fitur baru)
+1. Seksi **"Pantau Admin"**: per Admin aktif, daftar tugas tertunda di proyeknya (pakai `AdminRingkasan::untuk($adminId)` dan `langkah()` yang sudah ada), tiap baris: proyek, tugas, sejak kapan, tombol **Ingatkan**.
+2. **Ingatkan** membuka dialog kecil (catatan opsional) → notifikasi in-app ke Admin PIC jenis `pengingat_sa` ("Super Admin mengingatkan: {tugas} di {proyek}", tautan ke halaman tugas), `ActivityLog` `REMIND_ADMIN`. Tanpa WA. Satu tugas yang sama maksimal satu pengingat per 24 jam (tombol menjadi "Sudah diingatkan {waktu}"). Tidak ada tabel baru (data di `notifications`).
+3. Sisi Admin: item "Perlu tindakan" yang diingatkan diberi tanda **"Diingatkan SA"**; menu sidebar yang punya tugas tertunda/pengingat belum dibaca diberi **titik merah** (dot, bukan angka besar), hilang saat dibuka/dibaca.
+
+### CO.3: Tata letak dashboard SA
+1. Di paling atas, **3 tombol pintasan**: **Perlu Tindakan**, **Persetujuan** (pengajuan Client, catatan D-7), **Pantau Admin** (D-8). Masing-masing menampilkan hitungan, klik → scroll ke seksinya; tombol yang punya item mendesak (pengajuan > 2 hari, tugas Admin > 3 hari) diberi warna mendesak. Tombol lama di bagian bawah dipindahkan/dihapus bila sudah tergantikan (catatan SA-1).
+2. **Filter tanggal** (D-1): tampilan kalender penuh di dashboard diganti dropdown periode (Hari ini, 7 hari ke depan, Bulan ini, Bulan depan); kalender lengkap tetap bisa dibuka lewat tombol kecil "Lihat kalender" (dialog/halaman).
+3. **Log aktivitas** (D-5): tampilkan `@username` di samping nama pelaku.
+
+### CO.4: Test dan penutup
+Test: Perlu tindakan SA tidak memuat tugas Admin; Ingatkan → notifikasi ke PIC saja + log + batas 24 jam; dot merah muncul dan hilang; pintasan dan anchor ada; filter periode bekerja; log memuat username. Screenshot aplikasi asli. SQLite lalu MySQL.
+
+| Item | Bukti | QA |
+|---|---|---|
+| CO.1 Perlu tindakan SA dikelompokkan, hanya tugas SA | | [ ] |
+| CO.2 Pantau Admin + Ingatkan (notif, log, batas 24 jam) + tanda "Diingatkan SA" + titik merah menu | | [ ] |
+| CO.3 3 tombol pintasan + warna mendesak, filter periode dropdown + kalender opsional, username di log | | [ ] |
+| CO.4 test, screenshot, SQLite lalu MySQL | | [ ] |
+
+## Bagian CP: Warna tombol & seksi terbuka, persen kelengkapan profil, info proyek
+
+1. **Hierarki tombol (semua role)**, satu aturan di `theme-style` + `UI-GUIDELINES.md`: **satu tombol utama** (brand solid) per kartu/area; aksi lain **sekunder** (outline netral); **bahaya** merah outline (solid hanya di dialog konfirmasi); **mendesak** oranye (`badge-urgent`/tombol urgent); tidak ada lagi deretan tombol yang semuanya sama warna. Audit halaman yang paling ramai: dashboard SA/Admin/Extras, Lineup, profil Extras, halaman nego/bayar.
+2. **Seksi/kartu yang sedang dibuka** (profil Extras per bagian, `<details>`, filter panel, FAQ): beda jelas dari yang tertutup: garis kiri aksen + latar tipis + judul tebal. Konsisten di terang dan gelap, kontras ≥ 4,5:1.
+3. **Persentase kelengkapan profil Extras** (catatan Imanisa): di kepala halaman Profil, "Profil 70% lengkap" + progress bar, dihitung dari daftar field tetap (foto utama, usia, jenis kelamin, tinggi, nama asli, nomor WA, minimal 1 tag, minimal 1 pengalaman, bahasa, minimal 2 foto galeri). Status "Siap melamar / kurang X" (CL) tetap ada; persen hanya pelengkap. Tampilkan juga di dashboard Extras bila < 100%.
+4. **Info proyek (catatan staf ST-4/ST-5):** cek dulu yang sudah ada. Detail proyek Admin: ringkasan "Extras di proyek ini" (jumlah per status + daftar yang lolos ke atas, tautan ke Lineup) bila belum ada. Popup profil Extras untuk Admin/SA: "Proyek yang pernah diikuti" (nama, peran, status akhir, tahun) bila belum ada. Bila sudah ada, tulis di Bukti dan lewati.
+5. Test tampilan + `BrOverflowMobileTest`, screenshot aplikasi asli 1366/390 terang & gelap untuk butir 1–3. SQLite lalu MySQL.
+
+| Item | Bukti | QA |
+|---|---|---|
+| CP.1 hierarki tombol + UI-GUIDELINES | | [ ] |
+| CP.2 seksi terbuka beda warna | | [ ] |
+| CP.3 persen kelengkapan profil | | [ ] |
+| CP.4 info Extras per proyek + riwayat proyek per Extras | | [ ] |
+| CP.5 test, screenshot, SQLite lalu MySQL | | [ ] |

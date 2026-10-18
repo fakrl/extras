@@ -217,7 +217,9 @@ class BdMonitoringModeTest extends TestCase
         $this->assertStringEndsWith('(sebagai Korlap)', $log->description);
     }
 
-    public function test_sa_godmode_lihat_kontrak_invoice_tapi_transfer_diblokir_sebelum_ttd_extras(): void
+    // CM.3: godmode SA dicabut untuk aksi tulis. Di luar mode, SA cuma lihat (GET);
+    // transfer honor & TTD kontrak sebagai Admin kini wajib lewat mode Monitoring Admin.
+    public function test_sa_tanpa_mode_lihat_kontrak_invoice_tapi_aksi_tulis_diblokir(): void
     {
         $application = $this->aplikasi('lolos');
         $application->payment()->create(['status' => 'belum_dibayar']);
@@ -225,7 +227,7 @@ class BdMonitoringModeTest extends TestCase
 
         $this->actingAs($this->sa)->post(route('payments.transfer', $application), [
             'bukti_transfer' => UploadedFile::fake()->create('bukti.pdf', 100),
-        ])->assertRedirect()->assertSessionHas('error');
+        ])->assertForbidden();
         $this->assertSame('belum_dibayar', $application->payment->fresh()->status);
 
         $this->actingAs($this->sa)->get(route('payments.show', $application))->assertOk();
@@ -234,17 +236,30 @@ class BdMonitoringModeTest extends TestCase
 
         $this->actingAs($this->sa)->post(route('contracts.sign', $application), [
             'signature' => 'data:image/png;base64,'.base64_encode('x'),
+        ])->assertForbidden();
+        $contract = $application->contract->fresh();
+        $this->assertNull($contract->ttd_admin_signature_path);
+
+        $this->actingAs($this->sa)->post(route('payments.confirm', $application))->assertForbidden();
+        $this->assertSame('belum_dibayar', $application->payment->fresh()->status);
+    }
+
+    public function test_sa_mode_admin_bisa_ttd_kontrak_dan_transfer_honor(): void
+    {
+        $application = $this->aplikasi('lolos');
+        $application->payment()->create(['status' => 'belum_dibayar']);
+        $application->contract()->create([]);
+
+        $this->sebagai($this->admin)->post(route('contracts.sign', $application), [
+            'signature' => 'data:image/png;base64,'.base64_encode('x'),
         ])->assertRedirect();
         $contract = $application->contract->fresh();
         $this->assertNotNull($contract->ttd_admin_signature_path);
         $this->assertNull($contract->ttd_extras_signature_path);
 
-        $this->actingAs($this->sa)->post(route('payments.transfer', $application), [
+        $this->sebagai($this->admin)->post(route('payments.transfer', $application), [
             'bukti_transfer' => UploadedFile::fake()->create('bukti.pdf', 100),
         ])->assertRedirect()->assertSessionHas('error');
-        $this->assertSame('belum_dibayar', $application->payment->fresh()->status);
-
-        $this->actingAs($this->sa)->post(route('payments.confirm', $application))->assertForbidden();
         $this->assertSame('belum_dibayar', $application->payment->fresh()->status);
     }
 

@@ -99,7 +99,7 @@
         @endif
     </x-filter-panel>
 </form>
-    @include('admin.tags.rapikan', ['tags' => $tagRapikan])
+    @include('admin.tags.rapikan', ['tags' => $tagRapikan, 'routeNames' => ['update' => 'super-admin.tags.update', 'gabung' => 'super-admin.tags.gabung', 'destroy' => 'super-admin.tags.destroy']])
 
 <div data-live-target>
 {{-- Form bulk berdiri sendiri, checkbox terhubung lewat atribut form (AY.1: tanpa form bersarang). --}}
@@ -156,7 +156,7 @@
                 </div>
                 @if ($u->extrasProfile && ! $u->trashed())
                     <div class="xsec">Tag</div>
-                    <form method="POST" action="{{ route('admin.users.kategori', $u) }}">
+                    <form method="POST" action="{{ route('super-admin.admins.kategori', $u) }}">
                         @csrf @method('PATCH')
                         @include('partials.tag-input', ['name' => 'tag_nama', 'selected' => $u->extrasProfile->categories])
                         <button type="submit" class="btn btn-sm btn-brand" style="margin-top: 12px;">Simpan Tag</button>

@@ -3,6 +3,7 @@
 @section('title', 'Negosiasi Fee')
 
 @section('content')
+@php $bolehKelola = auth()->user()->can('kelola', $application->castingProject); @endphp
 <p style="margin: -8px 0 8px;"><a href="{{ route('admin.projects.applicants', $application->castingProject) }}" style="color: var(--accent); font-size: 13px;">&larr; Kembali ke pendaftar</a></p>
 <p style="color: var(--text-secondary); margin: 0 0 20px; font-size: 13.5px;">
     <strong>{{ '@'.$application->extras->user->username }}</strong> · {{ $application->castingProjectClass?->nama_kelas ?? 'Peran belum dipilih' }} · {{ $application->extras->user->name }}<br>
@@ -44,14 +45,17 @@
 <div style="position: sticky; bottom: 0; background: var(--bg-card); padding: 12px; border-top: 1px solid var(--border-color); z-index: 10;">
     @if ($application->status_partisipasi === 'deal')
         <div class="alert-success" style="margin-bottom: 8px;">Fee sudah Deal di Rp {{ number_format($application->fee_final, 0, ',', '.') }}.</div>
+        @if ($bolehKelola)
         <x-confirm-form action="{{ route('admin.negotiations.ajukan-ke-client', $application) }}" message="Ajukan {{ $application->extras->user->name }} ke Client dengan fee Rp {{ number_format($application->fee_final, 0, ',', '.') }}? Setelah diajukan, Client yang memutuskan.">
             <button type="submit" class="btn btn-brand">Ajukan ke Client</button>
         </x-confirm-form>
+        @endif
     @elseif ($application->status_partisipasi === 'ditolak')
         <div class="alert-info">Negosiasi untuk pendaftar ini sudah dihentikan.</div>
     @elseif (! $application->masihBisaNego())
         <div class="alert-info">Fee final Rp {{ number_format($application->fee_final ?? 0, 0, ',', '.') }}. Negosiasi sudah selesai ({{ $application->label() }}).</div>
     @elseif ($application->feeNegotiations->isEmpty())
+        @if ($bolehKelola)
         <form method="POST" action="{{ route('admin.negotiations.ajukan', $application) }}" style="display: flex; gap: 8px; flex-wrap: wrap;">
             @csrf
             <input type="number" name="nominal" class="input-inline" min="1" placeholder="Nominal penawaran awal (Rp) *" required value="{{ $application->extras->rate_card }}" style="flex: 1 1 200px;" oninput="this.form.querySelector('[data-pratinjau]').textContent = this.value ? 'Rp ' + Number(this.value).toLocaleString('id-ID') : ''">
@@ -62,11 +66,12 @@
         @unless ($application->castingProject->nego_terbuka)
             <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 6px;">Penawaran ini final, Extras hanya bisa menerima atau menolak.</div>
         @endunless
+        @endif
     @else
         @php $terakhir = $application->feeNegotiations->last(); $nominalTerakhir = $terakhir->nominal; $menungguExtras = $terakhir->diajukan_oleh === 'admin' && in_array($terakhir->aksi, ['tawar', 'counter'], true); @endphp
         @if ($menungguExtras)
             <div class="alert-info">Menunggu balasan Extras sejak {{ $terakhir->created_at->translatedFormat('d M Y H:i') }}.</div>
-        @else
+        @elseif ($bolehKelola)
         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
             <x-confirm-form action="{{ route('admin.negotiations.terima', $application) }}" message="Terima Rp {{ number_format($nominalTerakhir, 0, ',', '.') }} untuk {{ $application->extras->user->name }}? Fee akan terkunci dan tidak bisa dinego ulang.">
                 <input type="hidden" name="nominal" value="{{ $nominalTerakhir }}">
@@ -84,6 +89,7 @@
         </div>
         @endif
 
+        @if ($bolehKelola)
         <div style="margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--border-color);">
             <button type="button" class="btn btn-danger-outline" onclick="document.getElementById('hentikan-nego-dialog').showModal()">Hentikan Negosiasi</button>
         </div>
@@ -100,6 +106,7 @@
                 </div>
             </form>
         </dialog>
+        @endif
     @endif
 </div>
 @endsection

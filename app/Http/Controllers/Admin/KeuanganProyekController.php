@@ -17,6 +17,8 @@ class KeuanganProyekController extends Controller
      */
     public function simpanNominal(Request $request, CastingProject $castingProject): RedirectResponse
     {
+        $this->authorize('kelola', $castingProject);
+
         $data = $request->validate(['nominal' => ['required', 'numeric', 'min:0']]);
 
         $invoice = $castingProject->invoices()->firstOrCreate([]);
@@ -37,6 +39,8 @@ class KeuanganProyekController extends Controller
 
     public function tandaiLunas(Request $request, CastingProject $castingProject): RedirectResponse
     {
+        $this->authorize('kelola', $castingProject);
+
         $data = $request->validate(['nominal' => ['required', 'numeric', 'min:0']]);
 
         $invoice = $castingProject->invoices()->firstOrCreate([]);
@@ -58,6 +62,8 @@ class KeuanganProyekController extends Controller
 
     public function storeExpense(Request $request, CastingProject $castingProject): RedirectResponse
     {
+        $this->authorize('kelola', $castingProject);
+
         if ($castingProject->client_request_status !== 'disetujui') {
             return back()->with('error', 'Biaya hanya bisa dicatat untuk proyek yang sudah disetujui.');
         }
@@ -82,6 +88,7 @@ class KeuanganProyekController extends Controller
     public function destroyExpense(Request $request, ProjectExpense $projectExpense): RedirectResponse
     {
         $user = $request->user();
+        $this->authorize('kelola', $projectExpense->castingProject);
         abort_unless($user->isSuperAdmin() || (int) $projectExpense->created_by === $user->id, 403, 'Hanya pembuat atau Super Admin yang bisa menghapus biaya ini.');
 
         $projectExpense->delete();
