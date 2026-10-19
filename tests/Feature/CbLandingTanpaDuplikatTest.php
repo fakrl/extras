@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
+/** Carousel geser manual (tanpa duplikat/auto-animasi): satu set kartu asli, dibatasi CAST_MAKS/PORTO_MAKS. */
 class CbLandingTanpaDuplikatTest extends TestCase
 {
     use RefreshDatabase;
@@ -47,7 +48,7 @@ class CbLandingTanpaDuplikatTest extends TestCase
 
     public function test_konstanta_bernama(): void
     {
-        $this->assertSame([12, 8, 6, 4], [HomeController::CAST_MAKS, HomeController::PORTO_MAKS, HomeController::CAST_MUAT, HomeController::PORTO_MUAT]);
+        $this->assertSame([12, 8], [HomeController::CAST_MAKS, HomeController::PORTO_MAKS]);
     }
 
     public function test_tanpa_data_bagian_tidak_muncul_dan_cast_kurang_dari_4_tersembunyi(): void
@@ -59,65 +60,38 @@ class CbLandingTanpaDuplikatTest extends TestCase
         $this->assertStringNotContainsString('id="cast"', $this->html());
     }
 
-    public function test_cast_pas_muat_statis_tanpa_duplikat(): void
-    {
-        $ada = 0;
-        foreach ([4, 6] as $n) {
-            $this->cast($n - $ada, $ada + 1);
-            $ada = $n;
-            $html = $this->html();
-            $this->assertSame($n, $this->hitung($html, 'class="cast-card"'));
-            $this->assertSame($n, $this->hitung($html, 'class="cast-no"'));
-            $this->assertStringNotContainsString('data-dup aria-hidden', $html);
-            $this->assertStringNotContainsString('class="marquee-track', $html);
-            $this->assertStringNotContainsString('data-marquee style', $html);
-            $this->assertStringContainsString('class="baris-statis"', $html);
-            foreach (range(1, $n) as $i) {
-                $this->assertSame(1, $this->hitung($html, "@cast_{$i}</div>"));
-            }
-        }
-    }
-
-    public function test_cast_lebih_dari_muat_marquee_satu_set_duplikat(): void
+    public function test_cast_satu_set_tanpa_duplikat_dan_tanpa_tombol_jeda(): void
     {
         $this->cast(7);
         $html = $this->html();
-        $this->assertSame(14, $this->hitung($html, 'class="cast-card"'));
-        $this->assertSame(7, $this->hitung($html, 'data-dup aria-hidden="true" tabindex="-1"'));
+        $this->assertSame(7, $this->hitung($html, 'class="cast-card"'));
         $this->assertSame(7, $this->hitung($html, 'class="cast-no"'));
-        $this->assertStringContainsString('--marquee-durasi: 35s', $html);
-        $this->assertStringNotContainsString('class="baris-statis"', $html);
+        $this->assertStringNotContainsString('data-dup', $html);
+        $this->assertStringNotContainsString('marquee-jeda', $html);
+        $this->assertStringNotContainsString('--marquee-durasi', $html);
+        foreach (range(1, 7) as $i) {
+            $this->assertSame(1, $this->hitung($html, "@cast_{$i}</div>"));
+        }
     }
 
     public function test_cast_dibatasi_maksimal_12(): void
     {
         $this->cast(20);
         $html = $this->html();
-        $this->assertSame(24, $this->hitung($html, 'class="cast-card"'));
-        $this->assertSame(12, $this->hitung($html, 'data-dup aria-hidden'));
+        $this->assertSame(12, $this->hitung($html, 'class="cast-card"'));
+        $this->assertStringNotContainsString('data-dup', $html);
     }
 
-    public function test_porto_statis_marquee_dan_batas(): void
+    public function test_porto_satu_set_tanpa_duplikat_dan_batas(): void
     {
         $this->porto(2);
         $html = $this->html();
         $this->assertSame(2, $this->hitung($html, 'class="porto-card"'));
-        $this->assertStringNotContainsString('data-dup aria-hidden', $html);
-        $this->assertStringNotContainsString('class="marquee-track', $html);
-
-        $this->porto(2);
-        $this->assertSame(4, $this->hitung($this->html(), 'class="porto-card"'));
-        $this->assertStringNotContainsString('data-dup aria-hidden', $this->html());
-
-        $this->porto(1);
-        $html = $this->html();
-        $this->assertSame(10, $this->hitung($html, 'class="porto-card"'));
-        $this->assertSame(5, $this->hitung($html, 'data-dup aria-hidden="true"'));
-        $this->assertStringContainsString('--marquee-durasi: 45s', $html);
+        $this->assertStringNotContainsString('data-dup', $html);
 
         $this->porto(10);
         $html = $this->html();
-        $this->assertSame(16, $this->hitung($html, 'class="porto-card"'));
-        $this->assertSame(8, $this->hitung($html, 'data-dup aria-hidden="true"'));
+        $this->assertSame(8, $this->hitung($html, 'class="porto-card"'));
+        $this->assertStringNotContainsString('data-dup', $html);
     }
 }
