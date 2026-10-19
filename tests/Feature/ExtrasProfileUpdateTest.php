@@ -119,4 +119,26 @@ class ExtrasProfileUpdateTest extends TestCase
 
         $response->assertSessionHasErrors(['tautan_url.0' => 'URL tautan harus berupa URL yang valid.']);
     }
+
+    public function test_tautan_label_tanpa_url_ditolak_bukan_dibuang_diam_diam(): void
+    {
+        $user = User::factory()->create(['role' => 'extras']);
+        $profile = ExtrasProfile::create(['user_id' => $user->id]);
+
+        $this->actingAs($user)->put('/extras/profil', [
+            'bagian' => 'tautan',
+            'tautan_label' => ['Instagram'],
+            'tautan_url' => [''],
+        ])->assertSessionHasErrors('tautan_url.0');
+
+        $this->assertNull($profile->fresh()->tautan_tambahan);
+
+        $this->actingAs($user)->put('/extras/profil', [
+            'bagian' => 'tautan',
+            'tautan_label' => [''],
+            'tautan_url' => ['https://instagram.com/contoh'],
+        ])->assertSessionHasErrors('tautan_label.0');
+
+        $this->assertNull($profile->fresh()->tautan_tambahan);
+    }
 }

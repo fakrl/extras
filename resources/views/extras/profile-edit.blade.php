@@ -280,7 +280,7 @@
                 <div style="min-width: 130px;">
                     <label for="tinggi_badan">Tinggi Badan (cm)</label>
                     <input type="number" name="tinggi_badan" id="tinggi_badan" value="{{ old('tinggi_badan', $profile->tinggi_badan) }}"
-                           placeholder="Contoh: 165" inputmode="numeric"
+                           placeholder="Contoh: 165" inputmode="numeric" min="1"
                            @class(['input-error' => $errors->has('tinggi_badan')])>
                     @error('tinggi_badan')<span class="field-error">{{ $message }}</span>@enderror
                 </div>
@@ -521,11 +521,12 @@
                 @forelse ($existingTautan as $i => $tautan)
                     <div class="tautan-row">
                         <label for="tautan_label_{{ $i }}" class="sr-only">Nama tautan</label>
-                        <input type="text" name="tautan_label[]" id="tautan_label_{{ $i }}" value="{{ $tautan['label'] }}" placeholder="Nama (contoh: Instagram)" class="input-inline" style="flex: 0 0 130px;">
+                        <input type="text" name="tautan_label[]" id="tautan_label_{{ $i }}" value="{{ $tautan['label'] }}" placeholder="Nama (contoh: Instagram)" class="input-inline" style="flex: 0 0 130px;" @class(['input-error' => $errors->has("tautan_label.$i")])>
                         <label for="tautan_url_{{ $i }}" class="sr-only">URL tautan</label>
                         <input type="url" name="tautan_url[]" id="tautan_url_{{ $i }}" value="{{ $tautan['url'] }}" placeholder="https://..." @class(['input-inline', 'input-error' => $errors->has("tautan_url.$i")])>
                         <button type="button" class="btn-icon-danger btn-remove-row" aria-label="Hapus tautan ini">&times;</button>
                     </div>
+                    @error("tautan_label.$i")<span class="field-error">{{ $message }}</span>@enderror
                     @error("tautan_url.$i")<span class="field-error">{{ $message }}</span>@enderror
                 @empty
                     <div class="tautan-row">
