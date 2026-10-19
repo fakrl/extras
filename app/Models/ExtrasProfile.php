@@ -141,6 +141,25 @@ class ExtrasProfile extends Model
         return $this->foto_profil_path && $this->usia && $this->gender && $this->tinggi_badan;
     }
 
+    /** CP.3: persen kelengkapan dari 10 field tetap, tiap field bernilai 10%. */
+    public function persenKelengkapan(): int
+    {
+        $field = [
+            (bool) $this->foto_profil_path,
+            (bool) $this->usia,
+            (bool) $this->gender,
+            (bool) $this->tinggi_badan,
+            (bool) $this->nama_asli,
+            (bool) $this->user?->nomor_wa,
+            $this->exists && $this->categories()->exists(),
+            count($this->riwayat_pengalaman ?? []) >= 1,
+            trim((string) $this->bahasa) !== '',
+            $this->fotoTambahan()->count() >= 2,
+        ];
+
+        return (int) round((array_sum($field) / count($field)) * 100);
+    }
+
     /**
      * RF-04: satu-satunya titik yang mengisi nik_hash, kolom teknis untuk
      * lookup duplikat, karena `nik` di-cast `encrypted` (IV random, tidak

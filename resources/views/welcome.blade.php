@@ -207,7 +207,9 @@
         .badge-dibuka { display: inline-block; font-size: var(--fs-xs); font-weight: 700; letter-spacing: 0.5px; background: var(--hp-accent); color: var(--hp-accent-on); padding: 2px 8px; border-radius: 3px; }
         .lowongan-summary-badges .badge-urgent { padding: 2px 8px; border-radius: 3px; letter-spacing: 0.5px; }
         .lowongan-chevron { font-size: 18px; color: var(--hp-muted); flex-shrink: 0; transition: transform .2s; line-height: 1; }
+        .lowongan-item[open] { border-left: 3px solid var(--hp-accent); background: color-mix(in srgb, var(--hp-accent) 8%, transparent); padding-left: 10px; margin-left: -13px; }
         .lowongan-item[open] .lowongan-chevron { transform: rotate(45deg); }
+        .lowongan-item[open] .lowongan-summary-title { font-weight: 700; }
         @media (prefers-reduced-motion: reduce) { .lowongan-chevron { transition: none; } }
         .lowongan-detail { padding: 4px 0 20px 72px; display: flex; flex-direction: column; gap: 12px; }
         .lowongan-roles { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }

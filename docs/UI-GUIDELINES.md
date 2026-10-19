@@ -148,6 +148,16 @@ Banner `.sa-mode-banner` menempel (sticky) di atas konten saat mode Admin/Korlap
 - **Extras** — feed ala media sosial (bukan tabel admin-style), fee tertinggi & urgent di atas.
 - **CD** — fokus approve/reject + riwayat booking, JANGAN expose data margin/fee-client mentah (tembok visibilitas, lihat `CLAUDE.md` §5).
 
+## Hierarki Tombol (CP.1, 19 Okt 2026)
+
+Satu aturan dipakai di SELURUH role: **satu tombol utama** (brand solid, `.btn-brand`/`.btn-primary`) per kartu/area aksi; aksi lain jadi **sekunder** (`.btn` netral atau `.btn-outline-brand`); **bahaya** = merah outline (`.btn-danger-outline`), solid merah (`.btn-danger`) HANYA di dialog konfirmasi; **mendesak** = oranye (`.badge-urgent`, bukan tombol — badge di sebelah label tombol/link). JANGAN ada deretan tombol yang semuanya `.btn-brand` berdampingan dalam satu kartu/baris aksi.
+
+Diaudit 19 Okt 2026 di halaman paling ramai (dashboard SA/Admin/Extras, Lineup, profil Extras, nego fee & pembayaran) — semua sudah konsisten dari pengerjaan sebelumnya (CO dkk), tidak ada pelanggaran ditemukan, jadi tidak ada perubahan kelas di halaman-halaman itu. Kelas yang dipakai sudah ada semua di `layouts/app.blade.php`, jangan bikin kelas tombol baru tanpa cek dulu.
+
+## Seksi/Kartu `<details>` Terbuka (CP.2, 19 Okt 2026)
+
+`<details>` yang sedang terbuka (kartu per-bagian profil Extras, filter panel, FAQ) harus beda jelas dari yang tertutup: garis kiri aksen 3px + latar tint accent tipis (`color-mix(in srgb, var(--accent) 8%, var(--bg-card))`) + judul lebih tebal (700). Selector: `.bagian-card[open]` (profil Extras), `details.card[open]` (kartu riwayat berbasis `<details>`), `.fpanel[open] > summary` (filter panel, bentuknya tombol pil jadi full border accent + latar tint, bukan garis kiri). Landing (`welcome.blade.php`) pakai token `--hp-*` sendiri untuk pola yang sama di `.lowongan-item[open]` (FAQ & daftar lowongan), sesuai aturan "Palet landing vs aplikasi" di atas — jangan campur `--accent` app ke landing. Kontras teks tetap jauh di atas 4,5:1 di kedua tema karena tint accent-nya tipis di atas `--bg-card`/`--hp-bg` yang sudah tinggi kontras duluan (dihitung 19 Okt 2026: terang ~16:1, gelap ~13:1 dengan rumus WCAG yang sama seperti tabel badge di atas).
+
 ## Anti-"Vibecoded Look" (26 Agu 2026)
 
 Fakrul minta hindari ciri khas UI yang keliatan "AI-generated template" (referensi: thread "30 reasons your site looks vibecoded"). Sebagian besar poin di referensi itu buat landing page produk SaaS (pricing tiers, testimonials, TOS) — TIDAK relevan buat SIM Casting JBTB yang merupakan aplikasi internal RBAC, bukan produk yang dijual publik. Fokus cuma ke poin yang genuinely berlaku di sini:
