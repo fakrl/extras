@@ -101,6 +101,8 @@
                         @endforeach
                     </div>
                 @endif
+                <div class="profil-updated" style="margin-top: 6px;">Profil {{ $profile->persenKelengkapan() }}% lengkap</div>
+                <progress value="{{ $profile->persenKelengkapan() }}" max="100" class="profil-persen-bar"></progress>
                 @if ($profile->updated_at)
                     <div class="profil-updated">Terakhir diperbarui {{ $profile->updated_at->translatedFormat('d M Y, H:i') }}</div>
                 @endif

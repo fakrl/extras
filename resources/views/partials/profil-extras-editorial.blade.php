@@ -246,4 +246,18 @@
             <div class="pe-empty">Belum ada foto</div>
         @endif
     </section>
+
+    @if ($mode === 'admin')
+    <section class="pe-sec pe-pad">
+        <p class="pe-num">06 / Proyek yang pernah diikuti</p>
+        @forelse ($profile->applications as $riwayat)
+            <div class="pe-exp">
+                <p class="pe-exp-judul pe-serif">{{ $riwayat->castingProject->nama_produksi }}<span>{{ $riwayat->castingProject->shootingDates->min('tanggal')?->year ?? $riwayat->created_at->year }}</span></p>
+                <p class="pe-exp-ket">{{ $riwayat->castingProjectClass->nama_kelas ?? 'Peran belum dipilih' }} &bull; {{ $riwayat->label() }}</p>
+            </div>
+        @empty
+            <p class="pe-text" style="color: var(--pe-muted);">Belum pernah ikut proyek.</p>
+        @endforelse
+    </section>
+    @endif
 </div>

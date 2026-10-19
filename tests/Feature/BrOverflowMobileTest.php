@@ -39,4 +39,12 @@ class BrOverflowMobileTest extends TestCase
         $this->assertMatchesRegularExpression('/img, video \{[^}]*max-width: 100%/', File::get(resource_path('views/partials/theme-style.blade.php')));
         $this->assertDoesNotMatchRegularExpression('/(^|[\s,}])(html|body)\s*\{[^}]*overflow-x:\s*hidden/', $css.File::get(resource_path('views/partials/theme-style.blade.php')));
     }
+
+    /** CP.3/CP.5: progress bar persen kelengkapan profil full-width, bukan lebar bawaan <progress> yang bisa bikin layout sempit di HP. */
+    public function test_progress_bar_persen_kelengkapan_full_width(): void
+    {
+        $css = File::get(resource_path('views/layouts/app.blade.php'));
+
+        $this->assertStringContainsString('.profil-persen-bar { width: 100%;', $css);
+    }
 }

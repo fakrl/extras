@@ -58,6 +58,17 @@
 </p>
 
 
+@php $persenProfil = $extrasProfile?->persenKelengkapan(); @endphp
+@if ($persenProfil !== null && $persenProfil < 100)
+    <a href="{{ route('extras.profile.edit') }}" class="dash-row" style="margin-bottom: 12px;">
+        <div style="flex: 1; min-width: 0;">
+            <div class="dash-sub" style="margin-bottom: 4px;">Profil {{ $persenProfil }}% lengkap</div>
+            <progress value="{{ $persenProfil }}" max="100" class="profil-persen-bar"></progress>
+        </div>
+        <span class="dash-sub">Lengkapi &rarr;</span>
+    </a>
+@endif
+
 @if ($tindakan->isNotEmpty())
     <div class="card dash-perlu" data-dash="perlu-tindakan">
         <div class="card-title">

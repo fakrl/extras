@@ -193,6 +193,9 @@
             color: var(--text-primary); text-decoration: none;
         }
 
+        /* CP.3: persen kelengkapan profil Extras, dipakai kepala halaman profil & dashboard. */
+        .profil-persen-bar { width: 100%; height: 8px; margin: 0; accent-color: var(--accent-strong); }
+
         /* Step-bar horizontal: progress pendaftaran Extras (dashboard Extras).
            Bisa discroll ke samping di layar kecil, bukan wrap/vertical. */
         .step-bar-wrap { overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
@@ -373,7 +376,7 @@
         .fpanel { position: relative; flex-shrink: 0; }
         .fpanel > summary { list-style: none; gap: 6px; }
         .fpanel > summary::-webkit-details-marker { display: none; }
-        .fpanel[open] > summary { border-color: var(--accent); color: var(--accent-strong); }
+        .fpanel[open] > summary { border-color: var(--accent); color: var(--accent-strong); background: color-mix(in srgb, var(--accent) 12%, var(--bg-card)); font-weight: 700; }
         .fpanel-n { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--accent); color: var(--accent-on); font-size: var(--fs-xs); font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
         .fpanel-isi { position: absolute; right: 0; top: calc(100% + 6px); z-index: 60; width: 400px; max-width: calc(100vw - 32px); max-height: min(70vh, 560px); display: flex; flex-direction: column; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: 0 12px 32px rgba(0,0,0,0.18); }
         .fpanel-body { overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 12px; }

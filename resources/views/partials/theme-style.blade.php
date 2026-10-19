@@ -94,4 +94,15 @@
     .badge-netral { background: rgba(148,163,184,0.18); border-color: rgba(148,163,184,0.4); color: var(--text-secondary); }
     .badge-info { background: rgba(29,78,216,0.12); border-color: rgba(29,78,216,0.35); color: var(--info); }
     .badge-urgent { background: var(--urgent); border-color: var(--urgent); color: var(--urgent-on); font-weight: 700; }
+
+    /* CP.2: seksi <details> yang sedang terbuka beda jelas dari yang tertutup, konsisten terang/gelap lewat token accent. */
+    .bagian-card[open],
+    details.card[open] {
+        border-left: 3px solid var(--accent);
+        background: color-mix(in srgb, var(--accent) 8%, var(--bg-card));
+    }
+    .bagian-card[open] > .bagian-head .bagian-title,
+    details.card[open] > summary {
+        font-weight: 700;
+    }
 </style>

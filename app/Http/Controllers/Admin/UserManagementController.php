@@ -162,7 +162,7 @@ class UserManagementController extends Controller
         if (! $profile) {
             return back()->with('error', 'Profil Extras belum dibuat untuk akun ini.');
         }
-        $profile->load('user', 'categories');
+        $profile->load(['user', 'categories', 'applications' => fn ($q) => $q->with('castingProject.shootingDates', 'castingProjectClass')->latest()]);
 
         return view($request->ajax() || $request->boolean('partial') ? 'partials.profil-extras-app' : 'extras.profile-show', ['profile' => $profile, 'mode' => 'admin']);
     }
