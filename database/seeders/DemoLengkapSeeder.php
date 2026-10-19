@@ -149,6 +149,23 @@ class DemoLengkapSeeder extends Seeder
             $profile->generateShareToken();
         }
 
+        // CL/BJ: tautan tambahan (sosmed/portofolio) & galeri foto tambahan, contoh profil terisi penuh.
+        $this->u['dimas_rk']->extrasProfile->forceFill([
+            'tautan_tambahan' => [
+                ['label' => 'Instagram', 'url' => 'https://instagram.com/dimas.rk'],
+                ['label' => 'Portofolio', 'url' => 'https://dimasrk.my.canva.site'],
+            ],
+            'foto_tambahan' => [1 => $this->fotoDemo('dimas_rk-slot1', 1), 2 => $this->fotoDemo('dimas_rk-slot2', 2)],
+        ])->save();
+        $this->u['yohanes_m']->extrasProfile->forceFill([
+            'foto_tambahan' => [1 => $this->fotoDemo('yohanes_m-slot1', 3), 2 => $this->fotoDemo('yohanes_m-slot2', 4), 3 => $this->fotoDemo('yohanes_m-slot3', 5)],
+        ])->save();
+        $this->u['clara_b']->extrasProfile->update(['tautan_tambahan' => [['label' => 'LinkedIn', 'url' => 'https://linkedin.com/in/clarabennett']]]);
+        $this->u['kevin_t']->extrasProfile->update(['tautan_tambahan' => [
+            ['label' => 'Instagram', 'url' => 'https://instagram.com/kevin.tanoto'],
+            ['label' => 'TikTok', 'url' => 'https://tiktok.com/@kevint'],
+        ]]);
+
         $ghost = $this->akun('extras', 'ghost01', 'ghost01', 'ghost01@extras.test', now()->subDays(40));
         $ghost->extrasProfile()->create(['created_at' => now()->subDays(40)]);
         $tglHapus = now()->addDays(4)->translatedFormat('d F Y');
@@ -278,9 +295,18 @@ class DemoLengkapSeeder extends Seeder
             $this->deal($a, $un === 'pak_harto' ? 300000 : 200000, -12);
             $this->greenlight($a, $rudy, -10);
             $this->kontrak($pdf, $a, $yoga, true, -7);
-            $this->bayar($a, $un === 'clara_b' ? 'ditransfer' : 'belum_dibayar', 0, $yoga);
+            $status = match ($un) {
+                'clara_b' => 'ditransfer', 'melati_k' => 'disengketakan', default => 'belum_dibayar'
+            };
+            $pay = $this->bayar($a, $status, 0, $yoga);
             if ($un === 'intan_r') {
                 $intanApp = $a;
+            }
+            if ($un === 'melati_k') {
+                // CA: contoh sengketa yang SUDAH diselesaikan (beda dari sari_mei di P1 yang sengaja dibiarkan belum selesai).
+                $this->log($this->u[$un], 'DISPUTE_PAYMENT', "Extras Melati Kusuma menandai pembayaran sebagai sengketa untuk proyek '{$p3->nama_produksi}'", $a, 0);
+                $pay->selesaikanSengketa('Sudah dicek ulang ke rekap keuangan, nominal sudah sesuai kesepakatan awal.');
+                $this->log($yoga, 'RESOLVE_DISPUTE', "Admin Yoga Pratama menyelesaikan sengketa pembayaran proyek '{$p3->nama_produksi}'", $a, 0);
             }
 
             match ($un) {
@@ -344,6 +370,16 @@ class DemoLengkapSeeder extends Seeder
         $this->jadwal($p6, [10], 'SCBD, Jakarta Selatan');
         $this->kelas($p6, 'Nasabah muda', 10, 450000, ['Dewasa', 'Pekerja kantoran']);
         $p6->adminAssignments()->create(['user_id' => $yoga->id, 'assigned_by' => $fakrul->id]);
+
+        // P7: fee tetap (nego_terbuka=false), tetap ada pendaftar - demo badge "Fee Tetap" tanpa menghapus P6 yang sengaja kosong.
+        $p7 = $this->project('Iklan "Kopi Instan Semangat"', $yoga, -3, [
+            'deadline' => today()->addDays(10), 'kuota' => 5, 'client_id' => $maya->id, 'nego_terbuka' => false,
+        ]);
+        $this->jadwal($p7, [12], 'Senayan, Jakarta Pusat');
+        $kelasP7 = $this->kelas($p7, 'Pekerja Kantoran', 5, 275000, ['Dewasa', 'Pekerja kantoran']);
+        $p7->adminAssignments()->create(['user_id' => $yoga->id, 'assigned_by' => $fakrul->id]);
+        $this->daftar($p7, $kelasP7, 'tono_g', 'diajukan', -2);
+        $this->deal($this->daftar($p7, $kelasP7, 'melati_k', 'deal', -3), 275000, -1);
 
         // BH.3: portofolio beranda, P1 + 2 arsip lama (satu izinkan nama client)
         $p1->update(['tampil_portofolio' => true, 'portofolio_jenis' => 'Film layar lebar', 'portofolio_tahun' => today()->subDays(30)->year]);
