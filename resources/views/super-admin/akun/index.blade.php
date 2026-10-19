@@ -51,12 +51,6 @@
 </div>
 @include('partials.client-baru-modal')
 
-<div class="xfilter" role="group" aria-label="Pintasan jenis akun" style="margin-bottom: 8px;">
-    @foreach (['' => 'Semua', 'admin' => 'Admin', 'korlap' => 'Korlap', 'client' => 'Client', 'extras' => 'Extras', 'super_admin' => 'Super Admin'] as $r => $nama)
-        <a href="{{ route('super-admin.akun.index', $r === '' ? [] : ['role' => $r]) }}" class="btn btn-sm {{ (string) $f['role'] === (string) $r ? 'btn-brand' : '' }}" @if ((string) $f['role'] === (string) $r) aria-current="true" @endif>{{ $nama }}</a>
-    @endforeach
-</div>
-
 @php
     $tagNama = $tagGroups->flatten()->pluck('nama', 'id');
     $roleOpsi = ['' => 'Semua'] + \Illuminate\Support\Arr::except(\App\Models\User::LABELS, 'super_admin') + ['super_admin' => 'Super Admin'];
