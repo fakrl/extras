@@ -20,7 +20,7 @@ use Illuminate\Support\Carbon;
 // Admin\CastingProjectController::store() lewat Str::random(32) literal.
 #[Fillable([
     'admin_id', 'nama_produksi', 'poster_path',
-    'share_token', 'link_grup', 'deadline', 'kuota',
+    'share_token', 'link_grup', 'deadline', 'kuota', 'budget_total',
     'is_urgent', 'nego_terbuka', 'status', 'client_request_status', 'brief_catatan', 'alasan_tolak', 'client_id',
     'tampil_portofolio', 'portofolio_judul', 'portofolio_jenis', 'portofolio_tahun', 'tampilkan_nama_client',
 ])]
@@ -122,6 +122,18 @@ class CastingProject extends Model
     public function classes(): HasMany
     {
         return $this->hasMany(CastingProjectClass::class);
+    }
+
+    /** CN.3.2: total yang sudah dialokasikan Admin ke semua peran (budget per orang x kuota). */
+    public function totalAlokasiBudget(): float
+    {
+        return (float) $this->classes->sum(fn ($k) => (float) $k->budget_client * $k->kuota_kelas);
+    }
+
+    /** CN.3.3: buka lowongan diblokir sampai SEMUA peran punya budget per orang. */
+    public function semuaKelasPunyaBudget(): bool
+    {
+        return $this->classes->isNotEmpty() && $this->classes->every(fn ($k) => $k->budget_client !== null);
     }
 
     public function shootingDates(): HasMany
@@ -247,6 +259,22 @@ class CastingProject extends Model
             && $this->client_request_status === 'disetujui'
             && ! $this->deadline->isBefore(today())
             && ! $this->kuotaPenuh();
+    }
+
+    /**
+     * CN: proyek disetujui tapi belum pernah dibuka sebagai lowongan (budget per
+     * orang belum diatur Admin PIC) HARUS tidak terlihat oleh Extras. Satu-satunya
+     * bukti valid "pernah dibuka" adalah ada yang berhasil mendaftar, karena
+     * ProjectApplication cuma bisa dibuat lewat menerimaPendaftaran() di atas.
+     */
+    public function pernahDibuka(): bool
+    {
+        return $this->applications()->exists();
+    }
+
+    public function scopePernahDibuka($query)
+    {
+        return $query->whereHas('applications');
     }
 
     /**

@@ -41,10 +41,14 @@ class KeuanganService
     }
 
     /**
-     * BV.2: usulan awal nominal invoice (rumus PDF: budget_client x kuota_kelas) dan rincian PDF.
+     * BV.2/CN.3.4: usulan awal nominal invoice. Pakai budget_total (diisi Client
+     * saat pengajuan) bila terisi, kalau tidak rumus lama (budget_client x kuota_kelas).
+     * Kepemilikan invoice tidak diubah di sini (ditahan, lihat SPEC CN).
      */
     public function nilaiInvoice(CastingProject $project): float
     {
-        return (float) $this->rincianInvoice($project)->total;
+        return $project->budget_total !== null
+            ? (float) $project->budget_total
+            : (float) $this->rincianInvoice($project)->total;
     }
 }

@@ -155,8 +155,10 @@ class ProjectAttachmentTest extends TestCase
         $this->actingAs($client)->post(route('client.projects.request.store'), [
             'nama_produksi' => 'Iklan Lampiran',
             'deadline' => today()->addWeek()->toDateString(),
-            'kuota' => 5,
+            'budget_total' => 1000000,
             'brief_catatan' => 'Brief',
+            'kelas' => [['nama_kelas' => 'Warga', 'kuota_kelas' => 5]],
+            'tanggal_shooting' => [['tanggal' => today()->addWeeks(2)->toDateString()]],
             'files' => [UploadedFile::fake()->create('moodboard.pdf', 100, 'application/pdf')],
         ])->assertRedirect(route('client.dashboard'));
 

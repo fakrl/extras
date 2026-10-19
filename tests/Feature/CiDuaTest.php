@@ -82,21 +82,27 @@ class CiDuaTest extends TestCase
         $this->actingAs($client)->get(route('invoices.show', $p))->assertSee('Rp 300.000')->assertDontSee('Fee per Orang');
     }
 
-    public function test_acc_ditolak_bila_kelas_atau_tanggal_kosong(): void
+    /**
+     * CN.2.2: alur lama "ACC ditolak bila peran/tanggal kosong" (CI.2.3) DIHAPUS -
+     * sekarang tidak mungkin kosong karena form Client (CN.1) mewajibkannya saat
+     * pengajuan. Digantikan validasi wajib pilih Admin PIC saat Setujui.
+     */
+    public function test_acc_wajib_pilih_admin_pic(): void
     {
         $sa = $this->user('super_admin');
-        $p = $this->proyek(['client_id' => $this->user('client')->id, 'client_request_status' => 'menunggu_acc']);
-
-        $this->actingAs($sa)->patch(route('super-admin.projects.acc', $p))->assertSessionHas('error', 'Lengkapi peran dan tanggal dulu.');
-        $this->assertSame('menunggu_acc', $p->fresh()->client_request_status);
-
-        $p->classes()->create(['nama_kelas' => 'Ibu-ibu', 'budget_client' => 1, 'kuota_kelas' => 1]);
-        $this->patch(route('super-admin.projects.acc', $p))->assertSessionHas('error');
-        $this->assertSame('menunggu_acc', $p->fresh()->client_request_status);
-
+        $admin = $this->user('admin');
+        $p = $this->proyek(['client_id' => $this->user('client')->id, 'client_request_status' => 'menunggu_acc', 'status' => 'ditutup']);
+        $p->classes()->create(['nama_kelas' => 'Ibu-ibu', 'budget_client' => null, 'kuota_kelas' => 1]);
         $p->shootingDates()->create(['tanggal' => today()->addDays(5)]);
-        $this->patch(route('super-admin.projects.acc', $p))->assertSessionHas('status');
-        $this->assertSame('disetujui', $p->fresh()->client_request_status);
+
+        $this->actingAs($sa)->patch(route('super-admin.projects.acc', $p))->assertSessionHasErrors('admin_id');
+        $this->assertSame('menunggu_acc', $p->fresh()->client_request_status);
+
+        $this->patch(route('super-admin.projects.acc', $p), ['admin_id' => $admin->id])->assertSessionHas('status');
+        $p->refresh();
+        $this->assertSame('disetujui', $p->client_request_status);
+        $this->assertSame($admin->id, $p->admin_id);
+        $this->assertSame('ditutup', $p->status);
     }
 
     public function test_ganti_email_client_wajib_kata_sandi_saat_ini(): void

@@ -222,7 +222,7 @@ class DemoLengkapSeeder extends Seeder
 
         // P2: berjalan, satu Extras di tiap tahap
         $p2 = $this->project('Iklan "Minuman Segar"', $rina, -7, [
-            'deadline' => today()->addDays(3), 'kuota' => 15, 'client_id' => $andini->id,
+            'deadline' => today()->addDays(3), 'kuota' => 15, 'client_id' => $andini->id, 'budget_total' => 3000000,
             'brief_catatan' => 'Iklan TV 30 detik minuman isotonik, suasana kampus & kantor.', 'link_grup' => 'https://chat.whatsapp.com/demo-minuman-segar',
         ]);
         $this->jadwal($p2, [5, 6], 'Kampus UI Depok');
@@ -264,7 +264,8 @@ class DemoLengkapSeeder extends Seeder
         $this->biaya($p2, $rina, [['DP konsumsi', 300000, -1]]);
 
         // P3: shooting hari ini & besok
-        $p3 = $this->project('Series "Kampus Biru" eps 1-2', $yoga, -20, ['deadline' => today()->subDays(5), 'kuota' => 8, 'status' => 'ditutup', 'link_grup' => 'https://chat.whatsapp.com/demo-kampus-biru', 'client_id' => $rudy->id]);
+        // CN.3.2: budget_total < alokasi (300000*6 + 400000*2 = 2.600.000) -> demo peringatan alokasi melebihi budget.
+        $p3 = $this->project('Series "Kampus Biru" eps 1-2', $yoga, -20, ['deadline' => today()->subDays(5), 'kuota' => 8, 'status' => 'ditutup', 'link_grup' => 'https://chat.whatsapp.com/demo-kampus-biru', 'client_id' => $rudy->id, 'budget_total' => 2400000]);
         [$hariIni] = $this->jadwal($p3, [0, 1], 'Kampus Universitas Pamulang');
         $mhs3 = $this->kelas($p3, 'Mahasiswa', 6, 300000, ['Mahasiswa']);
         $dosen = $this->kelas($p3, 'Dosen', 2, 400000, ['Orang Tua']);
@@ -288,14 +289,33 @@ class DemoLengkapSeeder extends Seeder
 
         $this->biaya($p3, $yoga, [['Transport korlap', 150000, 0]]);
 
-        // P4: pengajuan Client, menunggu ACC
+        // P4: pengajuan Client, menunggu ACC - CN.1 lengkap (peran, tanggal+lokasi, budget total) sejak diajukan.
         $p4 = CastingProject::create([
             'nama_produksi' => 'Video Klip "Nadaria"', 'share_token' => Str::random(32),
-            'deadline' => today()->addDays(14), 'kuota' => 20, 'brief_catatan' => 'Video klip single baru, butuh 20 extras penonton konser umur 18-30.',
+            'deadline' => today()->addDays(14), 'kuota' => 20, 'budget_total' => 15000000,
+            'brief_catatan' => 'Video klip single baru, konsep konser panggung outdoor.',
             'client_id' => $maya->id, 'client_request_status' => 'menunggu_acc', 'status' => 'ditutup',
             'created_at' => now()->subDay(),
         ]);
+        $p4->classes()->create(['nama_kelas' => 'Penonton Konser', 'kuota_kelas' => 15, 'kriteria' => 'Usia 18-30, antusias, bisa joget']);
+        $p4->classes()->create(['nama_kelas' => 'Crew Panggung', 'kuota_kelas' => 5, 'kriteria' => 'Pria dewasa, badan tegap']);
+        $p4->shootingDates()->create(['tanggal' => today()->addDays(16), 'lokasi' => 'Lapangan Parkir Timur, GBK Senayan']);
         $this->log($maya, 'SUBMIT_PROJECT_REQUEST', "Client Maya Salsabila mengajukan proyek '{$p4->nama_produksi}'", $p4, -1);
+
+        // P4b: pengajuan Client, diminta revisi SA - CN.2.1.2 (Client lupa lengkapi lokasi shooting).
+        $p4b = CastingProject::create([
+            'nama_produksi' => 'Iklan "Sampo Berkilau"', 'share_token' => Str::random(32),
+            'deadline' => today()->addDays(18), 'kuota' => 6, 'budget_total' => 4500000,
+            'brief_catatan' => 'Iklan sampo, konsep rambut panjang berkilau di kolam renang.',
+            'client_id' => $rudy->id, 'client_request_status' => 'perlu_revisi', 'status' => 'ditutup',
+            'alasan_tolak' => 'Lokasi shooting tanggal ke-2 belum diisi, mohon lengkapi dulu sebelum diajukan ulang.',
+            'created_at' => now()->subDays(2),
+        ]);
+        $p4b->classes()->create(['nama_kelas' => 'Model Wanita', 'kuota_kelas' => 6, 'kriteria' => 'Wanita 20-28 th, rambut panjang sehat']);
+        $p4b->shootingDates()->create(['tanggal' => today()->addDays(20), 'lokasi' => 'Kolam Renang Senayan']);
+        $p4b->shootingDates()->create(['tanggal' => today()->addDays(21)]);
+        $this->log($rudy, 'SUBMIT_PROJECT_REQUEST', "Client Rudy Hartono mengajukan proyek '{$p4b->nama_produksi}'", $p4b, -2);
+        $this->log($fakrul, 'REQUEST_REVISION_PROJECT', "Super Admin meminta revisi permintaan proyek '{$p4b->nama_produksi}' dari Client", $p4b, -1);
 
         // P5: pengajuan Client, ditolak
         $p5 = CastingProject::create([

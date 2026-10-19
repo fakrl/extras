@@ -48,6 +48,14 @@ class AdminRingkasan
                     ->when($admin, fn ($q) => $q->dikelolaOleh($admin))->count(),
                 'url' => $url(['tanpa_client' => 1]),
             ],
+            // CN.3.1: proyek sudah disetujui tapi ada peran yang budget per orangnya belum diatur Admin PIC.
+            'atur_budget' => [
+                'label' => 'Atur budget per orang tiap peran',
+                'jumlah' => CastingProject::where('client_request_status', 'disetujui')
+                    ->whereHas('classes', fn ($q) => $q->whereNull('budget_client'))
+                    ->when($admin, fn ($q) => $q->dikelolaOleh($admin))->count(),
+                'url' => $url([]),
+            ],
         ];
     }
 

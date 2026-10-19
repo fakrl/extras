@@ -110,6 +110,7 @@ class SuperAdminDashboardTest extends TestCase
 
     public function test_acc_dan_tolak_dari_dashboard_tetap_jalan(): void
     {
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'aktif']);
         $a = $this->proyek([], 'menunggu_acc', ['nama_produksi' => 'Iklan Kopi', 'status' => 'ditutup']);
         $b = $this->proyek([], 'menunggu_acc', ['status' => 'ditutup']);
         $a->classes()->create(['nama_kelas' => 'Ibu-ibu', 'budget_client' => 1, 'kuota_kelas' => 1]);
@@ -121,7 +122,7 @@ class SuperAdminDashboardTest extends TestCase
             ->assertSee(route('super-admin.projects.reject', $b), false)
             ->assertSee('tolak-req-'.$b->id, false);
 
-        $this->from(route('super-admin.dashboard'))->patch(route('super-admin.projects.acc', $a))
+        $this->from(route('super-admin.dashboard'))->patch(route('super-admin.projects.acc', $a), ['admin_id' => $admin->id])
             ->assertRedirect(route('super-admin.dashboard'));
         $this->from(route('super-admin.dashboard'))->patch(route('super-admin.projects.reject', $b), ['alasan_tolak' => 'Budget kurang'])
             ->assertRedirect(route('super-admin.dashboard'));

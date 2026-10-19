@@ -327,6 +327,8 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
         ->name('super-admin.projects.acc');
     Route::match(['post', 'patch'], '/projects/{castingProject}/reject', [SuperAdminDashboardController::class, 'rejectProject'])
         ->name('super-admin.projects.reject');
+    Route::match(['post', 'patch'], '/projects/{castingProject}/minta-revisi', [SuperAdminDashboardController::class, 'mintaRevisiProject'])
+        ->name('super-admin.projects.minta-revisi');
 
     // Audit Trail: Log Aktivitas Seluruh Role
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])
@@ -355,6 +357,8 @@ Route::middleware(['auth', 'role:client'])->prefix('client')->group(function () 
     // Modul 2: Pengajuan brief permintaan proyek oleh Client (Pintu 1)
     Route::get('/projects/request', [ProjectRequestController::class, 'create'])->name('client.projects.request');
     Route::post('/projects/request', [ProjectRequestController::class, 'store'])->name('client.projects.request.store');
+    Route::get('/projects/{castingProject}/ubah', [ProjectRequestController::class, 'edit'])->name('client.projects.request.edit');
+    Route::match(['put', 'patch'], '/projects/{castingProject}/ubah', [ProjectRequestController::class, 'update'])->name('client.projects.request.update');
 
     Route::get('/reviews', [ReviewController::class, 'index'])->name('client.reviews.index');
     Route::post('/reviews', [ReviewController::class, 'review'])->name('client.reviews.review');

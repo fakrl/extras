@@ -76,6 +76,7 @@
                 $dibuka = $project->status === 'dibuka';
                 $tutup = $tahapProyek === 'mendatang' && ! $dibuka;
                 $adaPerlu = $perluTindakan && ! $pudar;
+                $pernahDibuka = $project->applications_count > 0;
             @endphp
             <tr @class(['tp-pudar' => $pudar])>
                 <td class="tp-c-proyek">
@@ -129,8 +130,9 @@
                     @endif
  @if ($project->client_request_status === 'disetujui')
                     @can('kelola', $project)
-                    <x-confirm-form :action="route('admin.projects.toggle-status', $project)" method="PATCH" :message="$dibuka ? 'Tutup lowongan '.$project->nama_produksi.'? Extras tidak bisa mendaftar lagi.' : 'Buka lagi lowongan '.$project->nama_produksi.'?'">
-                        <button type="submit" class="btn btn-sm" title="{{ $dibuka ? 'Tutup lowongan' : 'Buka lagi lowongan' }}" aria-label="{{ $dibuka ? 'Tutup lowongan' : 'Buka lagi lowongan' }}"><i class="ti {{ $dibuka ? 'ti-lock-open' : 'ti-lock' }}" aria-hidden="true"></i> {{ $dibuka ? 'Tutup' : 'Buka' }}</button>
+                    @php $labelBuka = $pernahDibuka ? 'Buka lagi lowongan' : 'Buka lowongan'; @endphp
+                    <x-confirm-form :action="route('admin.projects.toggle-status', $project)" method="PATCH" :message="$dibuka ? 'Tutup lowongan '.$project->nama_produksi.'? Extras tidak bisa mendaftar lagi.' : $labelBuka.' '.$project->nama_produksi.'?'">
+                        <button type="submit" class="btn btn-sm" title="{{ $dibuka ? 'Tutup lowongan' : $labelBuka }}" aria-label="{{ $dibuka ? 'Tutup lowongan' : $labelBuka }}"><i class="ti {{ $dibuka ? 'ti-lock-open' : 'ti-lock' }}" aria-hidden="true"></i> {{ $dibuka ? 'Tutup' : 'Buka' }}</button>
                     </x-confirm-form>
                     @endcan
                     @endif

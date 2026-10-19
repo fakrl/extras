@@ -60,20 +60,17 @@ class OperationalModulesTest extends TestCase
     {
         $client = User::factory()->create(['role' => 'client']);
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
+        $admin = User::factory()->create(['role' => 'admin']);
 
-        // Client ajukan proyek
+        // CN.1: Client lengkapi peran, tanggal+lokasi, dan budget total saat mengajukan.
         $response = $this->actingAs($client)->post(route('client.projects.request.store'), [
             'nama_produksi' => 'Proyek Request Client',
             'deadline' => today()->addDays(10)->format('Y-m-d'),
-            'kuota' => 8,
+            'budget_total' => 5000000,
             'brief_catatan' => 'Butuh talent muda profesional.',
-            'tanggal_shooting' => [today()->addDays(12)->format('Y-m-d')],
+            'tanggal_shooting' => [['tanggal' => today()->addDays(12)->format('Y-m-d'), 'lokasi' => 'Studio A']],
             'kelas' => [
-                [
-                    'nama_kelas' => 'Talent Muda',
-                    'budget_client' => 400000,
-                    'kuota_kelas' => 8,
-                ],
+                ['nama_kelas' => 'Talent Muda', 'kuota_kelas' => 8, 'kriteria' => 'Usia 18-25'],
             ],
         ]);
 
@@ -83,16 +80,23 @@ class OperationalModulesTest extends TestCase
         $this->assertNotNull($project);
         $this->assertSame('menunggu_acc', $project->client_request_status);
         $this->assertSame('ditutup', $project->status);
+        $this->assertSame(8, $project->kuota);
+        $this->assertSame(5000000.0, (float) $project->budget_total);
+        $this->assertNull($project->classes->first()->budget_client);
 
-        // Super Admin ACC proyek
-        $project->classes()->create(['nama_kelas' => 'Talent Muda', 'budget_client' => 400000, 'kuota_kelas' => 8]);
-        $project->shootingDates()->create(['tanggal' => today()->addDays(12)]);
-        $accResponse = $this->actingAs($superAdmin)->post(route('super-admin.projects.acc', $project));
+        // CN.2.1.1: Setujui wajib pilih Admin PIC.
+        $this->actingAs($superAdmin)->post(route('super-admin.projects.acc', $project))
+            ->assertSessionHasErrors('admin_id');
+
+        $accResponse = $this->actingAs($superAdmin)->post(route('super-admin.projects.acc', $project), ['admin_id' => $admin->id]);
         $accResponse->assertRedirect();
 
         $project->refresh();
         $this->assertSame('disetujui', $project->client_request_status);
-        $this->assertSame('dibuka', $project->status);
+        $this->assertSame($admin->id, $project->admin_id);
+        // CN.2.1.1: status LOWONGAN belum dibuka otomatis.
+        $this->assertSame('ditutup', $project->status);
+        $this->assertTrue($project->adminAssignments()->where('user_id', $admin->id)->exists());
         $this->assertSame('Pengajuan Proyek Disetujui', $client->notifications()->first()?->data['judul']);
     }
 

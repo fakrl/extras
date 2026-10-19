@@ -229,7 +229,9 @@ class CastingProjectController extends Controller
             'kelas.*.id' => ['nullable', 'integer'],
             'kelas.*.nama_kelas' => ['required', 'string'],
             'kelas.*.kriteria' => ['nullable', 'string', 'max:500'],
-            'kelas.*.budget_client' => ['required', 'numeric', 'min:0'],
+            // CN.3.2: nullable di sini - Admin PIC mengisi budget per orang bertahap per kelas
+            // pasca-approval Client (RF-09 store() di atas tetap wajib, itu bukan jalur CN).
+            'kelas.*.budget_client' => ['nullable', 'numeric', 'min:0'],
             'kelas.*.kuota_kelas' => ['required', 'integer', 'min:1'],
             'kelas.*.jam_callsheet' => ['nullable', 'string'],
             'kelas.*.jam_callingan' => ['nullable', 'string'],
@@ -403,6 +405,11 @@ class CastingProjectController extends Controller
 
         if ($castingProject->client_request_status !== 'disetujui') {
             return back()->with('error', 'Lowongan hanya bisa dibuka/ditutup untuk proyek yang sudah di-ACC Owner.');
+        }
+
+        // CN.3.3: buka lowongan diblokir sampai semua peran punya budget per orang.
+        if ($castingProject->status !== 'dibuka' && ! $castingProject->loadMissing('classes')->semuaKelasPunyaBudget()) {
+            return back()->with('error', 'Lengkapi budget per orang untuk semua peran dulu sebelum membuka lowongan.');
         }
 
         $castingProject->update([

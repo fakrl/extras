@@ -8,8 +8,8 @@
 </p>
 
 @php
-    $statusPengajuan = ['draft' => ['Draft', 'badge-netral'], 'menunggu_acc' => ['Menunggu ACC tim JBTB', 'badge-pending'], 'disetujui' => ['Disetujui', 'badge-aktif'], 'ditolak' => ['Ditolak', 'badge-tolak']];
-    $pengajuanPerlu = $pengajuan->where('client_request_status', 'ditolak');
+    $statusPengajuan = ['draft' => ['Draft', 'badge-netral'], 'menunggu_acc' => ['Menunggu ACC tim JBTB', 'badge-pending'], 'disetujui' => ['Disetujui', 'badge-aktif'], 'ditolak' => ['Ditolak', 'badge-tolak'], 'perlu_revisi' => ['Perlu Revisi', 'badge-pending']];
+    $pengajuanPerlu = $pengajuan->whereIn('client_request_status', ['ditolak', 'perlu_revisi']);
     $jumlahTindakan = $pengajuanPerlu->count() + ($perluDireview ? 1 : 0) + $invoiceMenungguTtd->count() + $jadwalKosong->count() + (auth()->user()->email ? 0 : 1);
 @endphp
 
@@ -67,14 +67,16 @@
                 <div>
                     <span class="badge {{ $badgeReq }}">{{ $req->client_request_status === 'ditolak' ? 'Proyek Ditolak' : $labelReq }}</span>
                     <strong>{{ $req->nama_produksi }}</strong>
-                    @if ($req->client_request_status === 'ditolak' && $req->alasan_tolak)
-                        <div class="dash-sub" style="color: var(--danger);">Alasan: {{ $req->alasan_tolak }}</div>
+                    @if (in_array($req->client_request_status, ['ditolak', 'perlu_revisi']) && $req->alasan_tolak)
+                        <div class="dash-sub" style="color: var(--danger);">{{ $req->client_request_status === 'perlu_revisi' ? 'Catatan dari JBTB' : 'Alasan' }}: {{ $req->alasan_tolak }}</div>
                     @else
                         <div class="dash-sub">Diajukan {{ $req->created_at->translatedFormat('d M Y') }}</div>
                     @endif
                 </div>
                 @if ($req->client_request_status === 'ditolak')
                     <a href="{{ route('client.projects.request') }}" class="btn">Ajukan Ulang</a>
+                @elseif ($req->client_request_status === 'perlu_revisi')
+                    <a href="{{ route('client.projects.request.edit', $req) }}" class="btn btn-brand">Ubah</a>
                 @endif
             </div>
         @endforeach
