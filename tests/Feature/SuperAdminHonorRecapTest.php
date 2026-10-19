@@ -10,7 +10,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
- * BD.3.2: honor staf belum dibayar muncul di "Perlu tindakan" dashboard Super Admin.
+ * BD.3.2 (disesuaikan CO.1 17 Okt 2026): honor staf belum dibayar BUKAN lagi
+ * bagian "Perlu Tindakan" SA (daftar eksplisit CO.1 tidak menyebutnya) - tetap
+ * tampil sebagai info "Total saat ini", "Perlu Tindakan" tetap "Semua aman".
  */
 class SuperAdminHonorRecapTest extends TestCase
 {
@@ -32,7 +34,7 @@ class SuperAdminHonorRecapTest extends TestCase
         $payroll->addons()->create(['label' => 'Transport', 'nominal' => 50000, 'created_by' => $superAdmin->id]);
     }
 
-    public function test_honor_staf_belum_dibayar_termasuk_addon_muncul_di_perlu_tindakan(): void
+    public function test_honor_staf_belum_dibayar_termasuk_addon_tampil_sebagai_info(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
         $this->buatPayroll($superAdmin);
@@ -42,21 +44,21 @@ class SuperAdminHonorRecapTest extends TestCase
         $response->assertOk();
         $response->assertSee('Honor staf belum dibayar');
         $response->assertSee('Rp 550.000');
-        $response->assertSee(route('admin.projects.index', ['bayar' => 'staf']), false);
+        // CO.1: honor staf bukan item eksplisit "Perlu Tindakan" SA - tetap "Semua aman" di situ.
+        $response->assertSee('Semua aman')->assertSee('dash-perlu is-aman');
         // Bug HP Erlin (1 Sep 2026): tanpa `color-scheme`, browser mobile bisa
         // paksa dark-mode sendiri walau toggle app bilang light - lihat
         // partials/theme-style.blade.php & layouts/app.blade.php.
         $response->assertSee('color-scheme', false);
     }
 
-    public function test_honor_staf_sudah_dibayar_tidak_muncul_dan_empty_state_tampil(): void
+    public function test_honor_staf_sudah_dibayar_total_nol(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
         $this->buatPayroll($superAdmin, 'sudah');
 
         $this->actingAs($superAdmin)->get(route('super-admin.dashboard'))
             ->assertOk()
-            ->assertDontSee('<span class="badge badge-pending">Honor staf belum dibayar</span>', false)
             ->assertSee('Semua aman')->assertSee('dash-perlu is-aman');
     }
 

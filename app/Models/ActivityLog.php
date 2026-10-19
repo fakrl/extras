@@ -61,6 +61,7 @@ class ActivityLog extends Model
         'AUTO_PRUNE_ABANDONED_USERS' => 'Hapus otomatis akun mangkrak',
         'SA_MODE_MULAI' => 'Mulai mode Monitoring',
         'SA_MODE_KELUAR' => 'Keluar mode Monitoring',
+        'REMIND_ADMIN' => 'Ingatkan Admin',
     ];
 
     public static function actionLabel(string $code): string

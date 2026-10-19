@@ -32,7 +32,7 @@
                 <div class="tahap-isi">
                     <strong>{{ '@'.($u->username ?? '-') }}</strong>
                     <span class="dash-sub">{{ $i['app']->castingProject?->kode_proyek }} &middot; {{ $i['app']->castingProjectClass?->nama_kelas ?? $i['app']->karakter ?? '-' }}</span>
-                    <div class="tahap-aksi">{{ $i['teks'] }}</div>
+                    <div class="tahap-aksi">{{ $i['teks'] }} @if ($i['diingatkan'] ?? false)<span class="badge badge-urgent">Diingatkan SA</span>@endif</div>
                 </div>
                 <div class="tahap-kanan">
                     <span class="dash-sub">{{ $i['sejak']?->diffForHumans() }}</span>

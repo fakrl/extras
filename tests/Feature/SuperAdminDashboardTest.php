@@ -92,20 +92,19 @@ class SuperAdminDashboardTest extends TestCase
         $r->assertSee(route('admin.projects.index', ['tahap' => 'berjalan']), false);
     }
 
-    public function test_perlu_tindakan_tampilkan_sengketa_dan_invoice_belum_lunas(): void
+    // CO.1: sengketa pembayaran adalah tugas Admin (CM.3.4), bukan tugas SA - tidak boleh muncul di Perlu Tindakan SA.
+    public function test_perlu_tindakan_tidak_memuat_sengketa_pembayaran(): void
     {
         $p = $this->proyek(['2026-06-20'], 'disetujui', ['nama_produksi' => 'Film Senja']);
         $app = $this->aplikasi($p, 'kontrak_ditandatangani', 'Sari Sengketa');
         Payment::create(['project_application_id' => $app->id, 'status' => 'disengketakan', 'alasan_sengketa' => 'Nominal kurang']);
-        $p->classes()->create(['nama_kelas' => 'A', 'budget_client' => 150000, 'kuota_kelas' => 4]);
-        $p->invoices()->create([]);
 
         $r = $this->actingAs($this->sa)->get(route('super-admin.dashboard'));
 
-        $r->assertSee('Pembayaran disengketakan')->assertSee('Sari Sengketa')->assertSee('Nominal kurang')
-            ->assertSee(route('payments.show', $app), false)
-            ->assertSee('Invoice belum lunas')->assertSee('Film Senja')->assertSee('Rp 600.000')
-            ->assertDontSee('Semua aman')->assertDontSee('dash-perlu is-aman');
+        $r->assertOk()
+            ->assertDontSee('Pembayaran disengketakan')
+            ->assertDontSee('Sari Sengketa')
+            ->assertDontSee('Nominal kurang');
     }
 
     public function test_acc_dan_tolak_dari_dashboard_tetap_jalan(): void
@@ -150,16 +149,21 @@ class SuperAdminDashboardTest extends TestCase
             ->assertOk()->assertDontSee('1\/2 hadir', false)->assertSee('bulan=2026-06', false);
     }
 
-    public function test_akun_per_role_dan_client_belum_ganti_password(): void
+    // CO.1.4: "akun perlu perhatian SA" = Client belum ganti password > 7 hari (updated_at, bukan sekadar flag-nya).
+    public function test_akun_per_role_dan_akun_perlu_perhatian_lebih_dari_7_hari(): void
     {
-        User::factory()->count(2)->create(['role' => 'client', 'wajib_ganti_password' => true]);
+        $lama = User::factory()->count(2)->create(['role' => 'client', 'wajib_ganti_password' => true]);
+        User::whereIn('id', $lama->pluck('id'))->update(['updated_at' => now()->subDays(10)]);
+        User::factory()->create(['role' => 'client', 'wajib_ganti_password' => true]); // baru dibuat, belum 7 hari
         User::factory()->create(['role' => 'client']);
         $this->proyek(['2026-06-14', '2026-06-18'], 'disetujui', ['nama_produksi' => 'Sinetron Pagi']);
 
         $r = $this->actingAs($this->sa)->get(route('super-admin.dashboard'));
 
-        $this->assertSame(3, (int) $r->viewData('akunPerRole')['client']);
-        $r->assertSee('2 akun Client baru belum ganti password')
+        $this->assertSame(4, (int) $r->viewData('akunPerRole')['client']);
+        $this->assertSame(2, $r->viewData('akunPerhatian'));
+        $r->assertSee('2 akun Client')
+            ->assertSee('Belum ganti password lebih dari 7 hari')
             ->assertSee('Sinetron Pagi')
             ->assertDontSee('Margin Bulan Ini')
             ->assertDontSee('Honor Berjalan (Top 5)');
