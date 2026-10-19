@@ -122,37 +122,17 @@
             .hero-inner { padding: 64px 20px 56px; }
         }
 
-        /* ── Marquee (BH.2/BH.3): track = 2 paruh identik, geser -50% ── */
-        .marquee { position: relative; overflow: hidden; max-width: var(--hp-reel, 1440px); margin-inline: auto; }
+        /* ── Carousel (BH.2/BH.3): geser manual (drag mouse/trackpad/swipe), bukan auto-animasi ── */
+        .marquee { position: relative; max-width: var(--hp-reel, 1440px); margin-inline: auto; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; cursor: grab; }
+        .marquee::-webkit-scrollbar { display: none; }
+        .marquee.is-dragging { cursor: grabbing; scroll-snap-type: none; user-select: none; }
         .marquee::before, .marquee::after { content: ''; position: absolute; top: 0; bottom: 0; width: 80px; z-index: 2; pointer-events: none; }
         .marquee::before { left: 0; background: linear-gradient(to right, var(--hp-bg), transparent); }
         .marquee::after { right: 0; background: linear-gradient(to left, var(--hp-bg), transparent); }
-        .marquee-track { display: flex; width: max-content; padding-block: 4px; }
-        .marquee-track > * { margin-right: 20px; }
-        @media (prefers-reduced-motion: no-preference) {
-            @keyframes marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-            .marquee-track { animation: marquee-scroll var(--marquee-durasi, 40s) linear infinite; }
-            .marquee.is-rev .marquee-track { animation-direction: reverse; }
-            .marquee:hover .marquee-track, .marquee:focus-within .marquee-track, .marquee.is-paused .marquee-track, .marquee.is-jeda .marquee-track { animation-play-state: paused; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .marquee { overflow-x: auto; scroll-snap-type: x proximity; }
-            .marquee::before, .marquee::after { display: none; }
-            .marquee-track { padding-inline: 32px 12px; }
-            .marquee-track > * { scroll-snap-align: start; }
-            .marquee [data-dup] { display: none; }
-        }
-        .baris-statis { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px 16px; max-width: var(--hp-reel, 1440px); margin: 0 auto; padding: 4px 32px; }
-        .baris-statis > * { min-width: 0; }
-        .baris-statis .cast-card { flex: 0 1 210px; }
-        .baris-statis .porto-card { flex: 0 1 380px; }
-        @media (min-width: 768px) { .baris-statis { flex-wrap: nowrap; } }
-        @media (max-width: 767px) { .baris-statis .cast-card { flex-basis: 160px; } .baris-statis .porto-card { flex-basis: 280px; } }
+        .marquee-track { display: flex; width: max-content; gap: 20px; padding: 4px 32px; }
+        .marquee-track > * { scroll-snap-align: start; }
         .hp-sec-head { max-width: 1100px; margin: 0 auto 2.5rem; padding: 0 32px; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px 24px; flex-wrap: wrap; }
         .hp-sec-title { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2.2rem, 5.5vw, 3.75rem); font-weight: 400; line-height: 1; letter-spacing: -0.04em; margin: 0; color: var(--hp-fg); }
-        .marquee-jeda { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid var(--hp-line); border-radius: 8px; background: transparent; color: var(--hp-fg); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
-        .marquee-jeda:hover { background: var(--hp-card); }
-        @media (prefers-reduced-motion: reduce) { .marquee-jeda { display: none; } }
         .hp-sec-note { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--hp-muted); }
 
         /* ── Cast (BH.2) ── */
@@ -440,7 +420,7 @@
         </div>
     </div>
 
-    {{-- Cast (BH.2): cuma Extras yang izin + disetujui Admin, minimal 4. CB: <= CAST_MUAT statis, lebih = marquee satu set duplikat --}}
+    {{-- Cast (BH.2): cuma Extras yang izin + disetujui Admin, minimal 4. Carousel geser manual (drag/scroll/swipe), bukan auto-animasi. --}}
     @if ($castExtras->isNotEmpty())
     <div class="film-strip-divider" aria-hidden="true"></div>
     <section class="cast-section" id="cast" aria-labelledby="cast-judul">
@@ -449,31 +429,27 @@
                 <span class="section-eyebrow">Cast</span>
                 <h2 class="hp-sec-title" id="cast-judul">Kenalan dengan cast</h2>
             </div>
-            <span class="hp-sec-note">Extras JBTB</span>
-            @unless ($castStatis)<button type="button" class="marquee-jeda" data-marquee-jeda aria-pressed="false"><i class="ti ti-player-pause" aria-hidden="true"></i> <span>Jeda animasi</span></button>@endunless
+            <span class="hp-sec-note">Geser untuk lihat semua &#x2194;</span>
         </div>
-        <div @class(['marquee' => ! $castStatis]) @unless ($castStatis) data-marquee style="--marquee-durasi: {{ $castExtras->count() * 5 }}s;" @endunless>
-            <div @class(['marquee-track' => ! $castStatis, 'baris-statis' => $castStatis])>
-                @foreach (range(0, $castStatis ? 0 : 1) as $r)
-                    @foreach ($castExtras as $i => $ex)
-                        <a href="{{ route('public.extras.profile', $ex->share_token) }}" class="cast-card"
-                           @if ($r) data-dup aria-hidden="true" tabindex="-1" @endif>
-                            <div class="cast-photo-wrap">
-                                <img src="{{ route('public.extras.foto', $ex->share_token) }}" alt="{{ $r ? '' : 'Foto @'.$ex->user->username }}" class="cast-photo" loading="lazy">
-                                @unless ($r)<span class="cast-no" aria-hidden="true">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</span>@endunless
-                                <span class="cast-view" aria-hidden="true">Lihat &#x2197;</span>
-                            </div>
-                            <div class="cast-name">{{ '@'.$ex->user->username }}</div>
-                            <div class="cast-tag">{{ $ex->categories->first()?->nama ?? 'Extras' }}</div>
-                        </a>
-                    @endforeach
+        <div class="marquee" data-carousel tabindex="0" aria-label="Daftar cast, geser untuk lihat semua">
+            <div class="marquee-track">
+                @foreach ($castExtras as $i => $ex)
+                    <a href="{{ route('public.extras.profile', $ex->share_token) }}" class="cast-card">
+                        <div class="cast-photo-wrap">
+                            <img src="{{ route('public.extras.foto', $ex->share_token) }}" alt="Foto {{ '@'.$ex->user->username }}" class="cast-photo" loading="lazy">
+                            <span class="cast-no" aria-hidden="true">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</span>
+                            <span class="cast-view" aria-hidden="true">Lihat &#x2197;</span>
+                        </div>
+                        <div class="cast-name">{{ '@'.$ex->user->username }}</div>
+                        <div class="cast-tag">{{ $ex->categories->first()?->nama ?? 'Extras' }}</div>
+                    </a>
                 @endforeach
             </div>
         </div>
     </section>
     @endif
 
-    {{-- Portofolio (BH.3): cuma proyek selesai yang dicentang Admin/SA --}}
+    {{-- Portofolio (BH.3): cuma proyek selesai yang dicentang Admin/SA. Carousel geser manual, sama seperti Cast. --}}
     @if ($portofolio->isNotEmpty())
     <div class="film-strip-divider" aria-hidden="true"></div>
     <section class="porto-section" id="portofolio" aria-labelledby="porto-judul">
@@ -482,26 +458,23 @@
                 <span class="section-eyebrow">Portofolio</span>
                 <h2 class="hp-sec-title" id="porto-judul">Pernah dikerjakan</h2>
             </div>
-            <span class="hp-sec-note">Produksi yang kami cast</span>
-            @unless ($portoStatis)<button type="button" class="marquee-jeda" data-marquee-jeda aria-pressed="false"><i class="ti ti-player-pause" aria-hidden="true"></i> <span>Jeda animasi</span></button>@endunless
+            <span class="hp-sec-note">Geser untuk lihat semua &#x2194;</span>
         </div>
-        <div @class(['marquee is-rev' => ! $portoStatis]) @unless ($portoStatis) data-marquee style="--marquee-durasi: {{ $portofolio->count() * 9 }}s;" @endunless>
-            <div @class(['marquee-track' => ! $portoStatis, 'baris-statis' => $portoStatis])>
-                @foreach (range(0, $portoStatis ? 0 : 1) as $r)
-                    @foreach ($portofolio as $p)
-                        @php $gambar = $p->poster_path; @endphp
-                        <article class="porto-card" @if ($r) data-dup aria-hidden="true" @endif>
-                            <div class="porto-img">
-                                @if ($gambar)
-                                    <img src="{{ asset('storage/'.$gambar) }}" alt="" loading="lazy">
-                                @else
-                                    <i class="ti ti-movie" aria-hidden="true"></i>
-                                @endif
-                            </div>
-                            <h3 class="porto-title">{{ $p->portofolio_judul ?: $p->nama_produksi }}</h3>
-                            <div class="porto-sub">{{ implode(' · ', array_filter([$p->portofolio_jenis, $p->portofolio_tahun, $p->tampilkan_nama_client ? $p->namaClient() : null])) }}</div>
-                        </article>
-                    @endforeach
+        <div class="marquee" data-carousel tabindex="0" aria-label="Daftar portofolio, geser untuk lihat semua">
+            <div class="marquee-track">
+                @foreach ($portofolio as $p)
+                    @php $gambar = $p->poster_path; @endphp
+                    <article class="porto-card">
+                        <div class="porto-img">
+                            @if ($gambar)
+                                <img src="{{ asset('storage/'.$gambar) }}" alt="" loading="lazy">
+                            @else
+                                <i class="ti ti-movie" aria-hidden="true"></i>
+                            @endif
+                        </div>
+                        <h3 class="porto-title">{{ $p->portofolio_judul ?: $p->nama_produksi }}</h3>
+                        <div class="porto-sub">{{ implode(' · ', array_filter([$p->portofolio_jenis, $p->portofolio_tahun, $p->tampilkan_nama_client ? $p->namaClient() : null])) }}</div>
+                    </article>
                 @endforeach
             </div>
         </div>
@@ -611,19 +584,25 @@
     </footer>
 
     <script>
-    document.querySelectorAll('[data-marquee]').forEach(function (m) {
-        var t;
-        m.addEventListener('touchstart', function () { clearTimeout(t); m.classList.add('is-paused'); }, { passive: true });
-        m.addEventListener('touchend', function () { t = setTimeout(function () { m.classList.remove('is-paused'); }, 2500); });
-    });
-    document.querySelectorAll('[data-marquee-jeda]').forEach(function (b) {
-        b.addEventListener('click', function () {
-            var jeda = b.getAttribute('aria-pressed') !== 'true';
-            b.closest('section').querySelector('[data-marquee]').classList.toggle('is-jeda', jeda);
-            b.setAttribute('aria-pressed', jeda);
-            b.querySelector('span').textContent = jeda ? 'Putar animasi' : 'Jeda animasi';
-            b.querySelector('i').className = jeda ? 'ti ti-player-play' : 'ti ti-player-pause';
+    // Carousel geser manual: drag mouse/trackpad, swipe native di touch.
+    document.querySelectorAll('[data-carousel]').forEach(function (el) {
+        var dragging = false, moved = false, startX, startScroll;
+        el.addEventListener('pointerdown', function (e) {
+            dragging = true; moved = false;
+            startX = e.clientX; startScroll = el.scrollLeft;
+            el.classList.add('is-dragging');
+            el.setPointerCapture(e.pointerId);
         });
+        el.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - startX;
+            if (Math.abs(dx) > 3) moved = true;
+            el.scrollLeft = startScroll - dx;
+        });
+        function stop() { dragging = false; el.classList.remove('is-dragging'); }
+        el.addEventListener('pointerup', stop);
+        el.addEventListener('pointercancel', stop);
+        el.addEventListener('click', function (e) { if (moved) { e.preventDefault(); e.stopPropagation(); } }, true);
     });
     </script>
     <script>

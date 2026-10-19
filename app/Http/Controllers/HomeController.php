@@ -11,10 +11,6 @@ class HomeController extends Controller
 
     const PORTO_MAKS = 8;
 
-    const CAST_MUAT = 6;
-
-    const PORTO_MUAT = 4;
-
     public function index()
     {
         $allTerbuka = CastingProject::where('status', 'dibuka')->where('client_request_status', 'disetujui')
@@ -44,9 +40,6 @@ class HomeController extends Controller
             $castExtras = collect();
         }
 
-        $castStatis = $castExtras->count() <= self::CAST_MUAT;
-        $portoStatis = $portofolio->count() <= self::PORTO_MUAT;
-
-        return view('welcome', compact('proyekTerbuka', 'adaLebih', 'portofolio', 'castExtras', 'castStatis', 'portoStatis'));
+        return view('welcome', compact('proyekTerbuka', 'adaLebih', 'portofolio', 'castExtras'));
     }
 }
