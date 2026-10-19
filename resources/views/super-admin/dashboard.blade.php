@@ -4,7 +4,6 @@
 
 @php
     $rp = fn ($v) => 'Rp '.number_format((float) $v, 0, ',', '.');
-    $jumlahTindakan = $pendingRequests->count() + $sengketa->count() + ($honorStaf->jumlah ? 1 : 0) + ($tanpaClient ? 1 : 0) + $invoiceBelumLunas->count();
     $namaRole = ['super_admin' => 'Super Admin', 'admin' => 'Admin', 'korlap' => 'Korlap', 'client' => 'Client', 'extras' => 'Extras'];
 @endphp
 
@@ -36,10 +35,24 @@
 .sa-mini-title { font-size: var(--fs-sm, 13px); font-weight: 600; margin-bottom: 8px; }
 .sa-akun-mini .sa-akun { grid-template-columns: 1fr !important; gap: 8px; }
 .sa-akun-mini .sa-role-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+.sa-pintasan { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+.sa-pintasan .btn { display: inline-flex; align-items: center; gap: 8px; }
+.pt-grup { margin-bottom: 14px; }
+.pt-grup:last-child { margin-bottom: 0; }
+.pt-grup-head { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 </style>
 @endpush
 
 @section('content')
+@php
+    $badgeKelas = fn ($mendesak) => $mendesak ? 'badge-urgent' : 'badge-netral';
+@endphp
+<div class="sa-pintasan">
+    <a href="#perlu-tindakan" class="btn"><span class="badge {{ $badgeKelas($pengajuanMendesak || $pantauMendesak) }}">{{ $jumlahTindakan }}</span> Perlu Tindakan</a>
+    <a href="#grup-pengajuan" class="btn"><span class="badge {{ $badgeKelas($pengajuanMendesak) }}">{{ $pengajuanBaru->count() + $pengajuanRevisi->count() }}</span> Persetujuan</a>
+    <a href="#pantau-admin" class="btn"><span class="badge {{ $badgeKelas($pantauMendesak) }}">{{ $pantauTotal }}</span> Pantau Admin</a>
+</div>
+
 {{-- BD.3.1 Filter periode: 1 baris --}}
 <div class="sa-filterbar">
     @foreach (\App\Http\Controllers\SuperAdmin\DashboardController::PRESET as $val => $label)
@@ -59,154 +72,89 @@
 {{-- 3 kotak sejajar: Jadwal · Perlu tindakan · Status proyek (+ Akun) --}}
 <div class="dash-tiga">
 <div class="card">
-    <div class="card-title">Jadwal Shooting</div>
-    <x-jadwal-calendar :events="$jadwal" :bulan="$bulan->format('Y-m')" :detail="true" />
-    <p class="dash-sub" style="margin: 8px 0 0;">Klik tanggal bertanda untuk lihat kegiatan hari itu.</p>
+    <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>Jadwal Shooting</span>
+        <button type="button" class="btn btn-sm" onclick="document.getElementById('dialog-kalender').showModal()">Lihat kalender</button>
+    </div>
+    {{-- CO.3.2: dropdown periode menggantikan kalender penuh di kartu ini --}}
+    <form method="GET" action="{{ route('super-admin.dashboard') }}" style="margin-bottom: 10px;">
+        <label for="kalender-preset" class="dash-sub" style="display: block; margin-bottom: 4px;">Tampilkan jadwal</label>
+        <select name="kalender" id="kalender-preset" onchange="this.form.submit()">
+            @foreach (\App\Http\Controllers\SuperAdmin\DashboardController::PRESET_KALENDER as $val => $label)
+                <option value="{{ $val }}" @selected($kalenderPreset === $val)>{{ $label }}</option>
+            @endforeach
+        </select>
+    </form>
+    @forelse ($jadwalRingkas as $e)
+        <a href="{{ $e->url_proyek }}" class="dash-row">
+            <div>
+                <strong>{{ $e->nama_produksi }}</strong>
+                <div class="dash-sub">{{ $e->tanggal->translatedFormat('d M Y') }} &bull; {{ $e->absensi }}</div>
+            </div>
+            <span class="dash-sub">Buka &rarr;</span>
+        </a>
+    @empty
+        <p class="dash-sub" style="margin: 0;">Tidak ada jadwal shooting di periode ini.</p>
+    @endforelse
 </div>
 
-<div class="card dash-perlu {{ $jumlahTindakan ? '' : 'is-aman' }}">
+<div class="card dash-perlu {{ $jumlahTindakan ? '' : 'is-aman' }}" id="perlu-tindakan">
     <div class="card-title">
-        <i class="ti ti-clipboard-list"></i> Perlu Tindakan <span class="dash-sub" style="font-weight: 400;">(semua periode)</span>
+        <i class="ti ti-clipboard-list"></i> Perlu Tindakan
         @if ($jumlahTindakan)
             <span class="badge badge-netral" style="margin-left: 8px;">{{ $jumlahTindakan }}</span>
         @endif
     </div>
 
-    @php $rpAjuan = fn ($v) => 'Rp '.number_format((float) $v, 0, ',', '.'); @endphp
-    @foreach ($pendingRequests as $req)
-        <div class="dash-row">
-            <div>
-                <span class="badge badge-pending">Menunggu ACC</span>
-                <strong>{{ $req->nama_produksi }}</strong>
-                <div class="dash-sub">{{ $req->namaClient() }} &bull; {{ $req->client?->name }}</div>
-                <details style="margin-top: 6px; font-size: 13px;">
-                    <summary style="cursor: pointer; color: var(--accent);">Lihat pengajuan lengkap</summary>
-                    <div style="margin-top: 6px;">Deadline: <strong>{{ $req->deadline?->translatedFormat('d M Y') ?? '-' }}</strong> &bull; Budget total: <strong>{{ $req->budget_total !== null ? $rpAjuan($req->budget_total) : '-' }}</strong></div>
-                    <div style="margin-top: 6px;"><strong>Peran ({{ $req->kuota }} orang):</strong>
-                        <ul style="margin: 4px 0 0 18px;">
-                            @foreach ($req->classes as $kls)
-                                <li>{{ $kls->nama_kelas }} &times; {{ $kls->kuota_kelas }} orang @if ($kls->kriteria) &mdash; {{ $kls->kriteria }} @endif</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                    <div style="margin-top: 6px;"><strong>Tanggal shooting:</strong>
-                        <ul style="margin: 4px 0 0 18px;">
-                            @foreach ($req->shootingDates as $tgl)
-                                <li>{{ $tgl->tanggal->translatedFormat('d M Y') }} @if ($tgl->lokasi) &mdash; {{ $tgl->lokasi }} @endif</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                    <div style="margin-top: 6px; white-space: pre-line;"><strong>Catatan:</strong> {{ $req->brief_catatan ?: '-' }}</div>
-                    @if ($req->attachments->isNotEmpty())
-                        <div style="margin-top: 6px;"><strong>Lampiran:</strong>
-                            <ul style="margin: 4px 0 0 18px;">
-                                @foreach ($req->attachments as $f)
-                                    <li><a href="{{ route('project-attachments.download', $f) }}">{{ $f->nama_asli }}</a></li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-                </details>
-            </div>
-            <div style="display: flex; gap: 12px; flex-shrink: 0; flex-wrap: wrap;">
-                <button type="button" class="btn btn-sm btn-brand" onclick="document.getElementById('setujui-req-{{ $req->id }}').showModal()">Setujui</button>
-                <button type="button" class="btn btn-sm" onclick="document.getElementById('revisi-req-{{ $req->id }}').showModal()">Minta Revisi</button>
-                <button type="button" class="btn btn-sm btn-danger-outline" onclick="document.getElementById('tolak-req-{{ $req->id }}').showModal()">Tolak</button>
-            </div>
+    <div id="grup-pengajuan">
+        <div class="pt-grup">
+            <div class="pt-grup-head">Pengajuan Client menunggu keputusan <span class="badge badge-netral">{{ $pengajuanBaru->count() }}</span></div>
+            @foreach ($pengajuanBaru as $req)
+                @include('super-admin.dashboard._pengajuan', ['req' => $req, 'label' => 'Menunggu ACC'])
+            @endforeach
+            @if ($pengajuanBaru->isEmpty())
+                <p class="dash-sub" style="margin: 0;">Tidak ada pengajuan baru.</p>
+            @endif
         </div>
-        <dialog id="setujui-req-{{ $req->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 380px; width: 90%;">
-            <form method="POST" action="{{ route('super-admin.projects.acc', $req) }}" style="padding: 18px;">
-                @csrf @method('PATCH')
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Setujui pengajuan {{ $req->nama_produksi }}?</div>
-                <label for="admin-req-{{ $req->id }}">Admin PIC <span class="wajib" aria-hidden="true">*</span></label>
-                <select name="admin_id" id="admin-req-{{ $req->id }}" required style="margin-bottom: 10px;">
-                    <option value="">- Pilih Admin -</option>
-                    @foreach ($adminsAktif as $a)
-                        <option value="{{ $a->id }}">{{ $a->name }}</option>
-                    @endforeach
-                </select>
-                <label for="korlap-req-{{ $req->id }}">Korlap <span style="color: var(--text-muted); font-weight: 400;">(boleh dikosongkan)</span></label>
-                <select name="korlap_id" id="korlap-req-{{ $req->id }}" style="margin-bottom: 12px;">
-                    <option value="">- Tidak ada -</option>
-                    @foreach ($korlapsAktif as $k)
-                        <option value="{{ $k->id }}">{{ $k->name }}</option>
-                    @endforeach
-                </select>
-                <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                    <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
-                    <button type="submit" class="btn btn-sm btn-brand">Setujui Pengajuan</button>
+
+        <div class="pt-grup">
+            <div class="pt-grup-head">Pengajuan sudah direvisi Client <span class="badge badge-netral">{{ $pengajuanRevisi->count() }}</span></div>
+            @foreach ($pengajuanRevisi as $req)
+                @include('super-admin.dashboard._pengajuan', ['req' => $req, 'label' => 'Diajukan ulang'])
+            @endforeach
+            @if ($pengajuanRevisi->isEmpty())
+                <p class="dash-sub" style="margin: 0;">Tidak ada pengajuan hasil revisi.</p>
+            @endif
+        </div>
+    </div>
+
+    <div class="pt-grup">
+        <div class="pt-grup-head">Proyek disetujui belum punya PIC <span class="badge badge-netral">{{ $tanpaPic->count() }}</span></div>
+        @if ($tanpaPic->isNotEmpty())
+            <a href="{{ route('admin.projects.index', ['tanpa_client' => 1]) }}" class="dash-row">
+                <div>
+                    <span class="badge badge-pending">PIC/Client belum diisi</span>
+                    <strong>{{ $tanpaPic->count() }} proyek</strong>
+                    <div class="dash-sub">Pilih Admin PIC dan akun Client di form edit proyek</div>
                 </div>
-            </form>
-        </dialog>
-        <dialog id="revisi-req-{{ $req->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 380px; width: 90%;">
-            <form method="POST" action="{{ route('super-admin.projects.minta-revisi', $req) }}" style="padding: 18px;">
-                @csrf @method('PATCH')
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Minta revisi pengajuan {{ $req->nama_produksi }}?</div>
-                <label for="revisi-catatan-{{ $req->id }}">Catatan untuk Client <span class="wajib" aria-hidden="true">*</span></label>
-                <textarea name="alasan_tolak" id="revisi-catatan-{{ $req->id }}" rows="3" required maxlength="500" style="width: 100%; margin-bottom: 12px;"></textarea>
-                <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                    <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
-                    <button type="submit" class="btn btn-sm btn-brand">Kirim Minta Revisi</button>
-                </div>
-            </form>
-        </dialog>
-        <dialog id="tolak-req-{{ $req->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 380px; width: 90%;">
-            <form method="POST" action="{{ route('super-admin.projects.reject', $req) }}" style="padding: 18px;">
-                @csrf @method('PATCH')
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Tolak pengajuan {{ $req->nama_produksi }}?</div>
-                <label for="alasan-req-{{ $req->id }}">Alasan penolakan (dikirim ke Client) <span class="wajib" aria-hidden="true">*</span></label>
-                <textarea name="alasan_tolak" id="alasan-req-{{ $req->id }}" rows="3" required maxlength="500" style="width: 100%; margin-bottom: 12px;"></textarea>
-                <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                    <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
-                    <button type="submit" class="btn btn-sm btn-danger-outline">Tolak Pengajuan</button>
-                </div>
-            </form>
-        </dialog>
-    @endforeach
+                <span class="dash-sub">Buka &rarr;</span>
+            </a>
+        @else
+            <p class="dash-sub" style="margin: 0;">Semua proyek disetujui sudah punya PIC.</p>
+        @endif
+    </div>
 
-    @foreach ($sengketa as $p)
-        <a href="{{ route('payments.show', $p->project_application_id) }}" class="dash-row">
-            <div>
-                <span class="badge badge-pending">Pembayaran disengketakan</span>
-                <strong>{{ $p->projectApplication?->extras?->user?->name ?? 'Extras' }}</strong>
-                <div class="dash-sub">{{ $p->projectApplication?->castingProject?->nama_produksi }} &bull; {{ \Illuminate\Support\Str::limit($p->alasan_sengketa, 80) }}</div>
-            </div>
-            <span class="dash-sub">Buka &rarr;</span>
-        </a>
-    @endforeach
-
-    @if ($honorStaf->jumlah)
-        <a href="{{ route('admin.projects.index', ['bayar' => 'staf']) }}" class="dash-row">
-            <div>
-                <span class="badge badge-pending">Honor staf belum dibayar</span>
-                <strong>{{ $honorStaf->jumlah }} honor</strong>
-                <div class="dash-sub">Total {{ $rp($honorStaf->total) }}</div>
-            </div>
-            <span class="dash-sub">Buka &rarr;</span>
-        </a>
-    @endif
-
-    @if ($tanpaClient)
-        <a href="{{ route('admin.projects.index', ['tanpa_client' => 1]) }}" class="dash-row">
-            <div>
-                <span class="badge badge-pending">PIC/Client belum diisi</span>
-                <strong>{{ $tanpaClient }} proyek</strong>
-                <div class="dash-sub">Pilih Admin PIC dan akun Client di form edit proyek</div>
-            </div>
-            <span class="dash-sub">Buka &rarr;</span>
-        </a>
-    @endif
-
-    @foreach ($invoiceBelumLunas as $inv)
-        <a href="{{ route('admin.projects.show', [$inv->casting_project_id, 'tab' => 'keuangan']) }}" class="dash-row">
-            <div>
-                <span class="badge badge-info">Invoice belum lunas</span>
-                <strong>{{ $inv->castingProject?->nama_produksi }}</strong>
-                <div class="dash-sub">{{ $rp($inv->nilai) }}</div>
-            </div>
-            <span class="dash-sub">Buka &rarr;</span>
-        </a>
-    @endforeach
+    <div class="pt-grup">
+        <div class="pt-grup-head">Akun perlu perhatian <span class="badge badge-netral">{{ $akunPerhatian }}</span></div>
+        @if ($akunPerhatian)
+            <a href="{{ route('super-admin.akun.index', ['role' => 'client', 'ganti_password' => 1]) }}" class="dash-row">
+                <div><strong>{{ $akunPerhatian }} akun Client</strong><div class="dash-sub">Belum ganti password lebih dari 7 hari</div></div>
+                <span class="dash-sub">Buka &rarr;</span>
+            </a>
+        @else
+            <p class="dash-sub" style="margin: 0;">Tidak ada akun yang perlu perhatian.</p>
+        @endif
+    </div>
 
     @unless ($jumlahTindakan)
         <div class="dash-aman" role="status"><i class="ti ti-circle-check"></i> Semua aman &mdash; tidak ada yang perlu ditindak.</div>
@@ -252,17 +200,24 @@
                 <a href="{{ route('super-admin.akun.index', ['role' => $role, 'status' => 'aktif']) }}" class="dash-pill" @if ($role === 'super_admin') title="Termasuk akun Anda sendiri, yang tidak tampil di daftar" @endif>{{ $label }} <strong>{{ $akunPerRole[$role] ?? 0 }}</strong>@if ($role === 'super_admin') <span class="dash-sub">(termasuk Anda)</span>@endif</a>
             @endforeach
         </div>
-        @if ($clientBelumGantiPassword)
-            <a href="{{ route('super-admin.akun.index', ['role' => 'client', 'ganti_password' => 1]) }}" class="dash-row">
-                <div><span class="badge badge-pending">Perlu tindakan</span> {{ $clientBelumGantiPassword }} akun Client baru belum ganti password</div>
-                <span class="dash-sub">Buka &rarr;</span>
-            </a>
-        @else
-            <p class="dash-sub" style="margin: 0;">Semua akun Client sudah ganti password.</p>
-        @endif
     </div>
     </div>
 </div>
+</div>
+
+<div class="card" id="pantau-admin">
+    <div class="card-title">
+        <i class="ti ti-users"></i> Pantau Admin
+        @if ($pantauTotal)
+            <span class="badge badge-netral" style="margin-left: 8px;">{{ $pantauTotal }}</span>
+        @endif
+    </div>
+    <p class="dash-sub" style="margin: 0 0 4px;">Tugas tertunda tiap Admin aktif di proyeknya. Klik Ingatkan untuk kirim pengingat in-app ke Admin PIC.</p>
+    @forelse ($pantauAdmin as $p)
+        @include('super-admin.dashboard._pantau-admin', ['p' => $p])
+    @empty
+        <p class="dash-sub" style="margin: 0;">Tidak ada tugas tertunda di Admin mana pun saat ini.</p>
+    @endforelse
 </div>
 
 <div class="card">
@@ -274,10 +229,18 @@
         </div>
         <div class="metric-card" style="border: 1px solid var(--border-color);">
             <div class="metric-label">Invoice belum lunas ({{ $invoiceBelumLunas->count() }})</div>
-            <div class="dash-sub">Rincian ada di Perlu Tindakan.</div>
+            <div class="dash-sub">Rincian ada di halaman keuangan proyek masing-masing.</div>
         </div>
     </div>
 </div>
+
+<dialog id="dialog-kalender" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; max-width: 640px; width: 95%;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <strong>Kalender Shooting</strong>
+        <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Tutup</button>
+    </div>
+    <x-jadwal-calendar :events="$jadwal" :bulan="$bulan->format('Y-m')" :detail="true" />
+</dialog>
 @endsection
 
 @push('scripts')

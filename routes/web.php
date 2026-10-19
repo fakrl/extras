@@ -330,6 +330,10 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
     Route::match(['post', 'patch'], '/projects/{castingProject}/minta-revisi', [SuperAdminDashboardController::class, 'mintaRevisiProject'])
         ->name('super-admin.projects.minta-revisi');
 
+    // CO.2: Pantau Admin - ingatkan Admin PIC (in-app saja, tugas SA langsung).
+    Route::post('/pantau-admin/ingatkan', [SuperAdminDashboardController::class, 'ingatkanAdmin'])
+        ->name('super-admin.pantau-admin.ingatkan');
+
     // Audit Trail: Log Aktivitas Seluruh Role
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])
         ->name('super-admin.activity-logs');

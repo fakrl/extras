@@ -48,7 +48,7 @@ class DashboardController extends Controller
             ? route('payments.show', $sengketa->first()->project_application_id)
             : route('admin.projects.index', ['bayar' => 'sengketa']);
         $ringkasan = AdminRingkasan::untuk($user);
-        $tahapan = AdminRingkasan::tahapan($user);
+        $tahapan = $this->tandaiDiingatkan(AdminRingkasan::tahapan($user), $user);
 
         $urgentProjects = CastingProject::where('status', 'dibuka')->tap($proyekPic)
             ->with(['shootingDates', 'applications', 'client'])
@@ -89,5 +89,22 @@ class DashboardController extends Controller
             'ringkasan',
             'tahapan'
         ));
+    }
+
+    /** CO.2.3: tandai item tahapan yang punya pengingat SA belum dibaca ('diingatkan'). */
+    private function tandaiDiingatkan(array $tahapan, $user): array
+    {
+        $kunci = $user->unreadNotifications()->where('data->jenis', 'pengingat_sa')->get()
+            ->map(fn ($n) => $n->data['kunci'] ?? null)->filter()->flip();
+
+        return collect($tahapan)->map(function ($t) use ($kunci) {
+            $t['daftar'] = collect($t['daftar'])->map(function ($i) use ($kunci) {
+                $i['diingatkan'] = $kunci->has('pa-'.$i['app']->id);
+
+                return $i;
+            })->values();
+
+            return $t;
+        })->all();
     }
 }

@@ -707,6 +707,10 @@
             border-radius:8px; display:flex; align-items:center; justify-content:center;
             padding:0 3px; pointer-events:none;
         }
+        .sb-dot {
+            display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+            background: var(--danger-solid); margin-left: 6px; vertical-align: middle;
+        }
         .notif-dropdown {
             position:absolute; right:0; top:calc(100% + 8px); z-index:300;
             background:var(--bg-card); border:1px solid var(--border-color);

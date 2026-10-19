@@ -272,12 +272,16 @@ class DemoLengkapSeeder extends Seeder
         foreach ([$yoga, $bambang] as $staf) {
             $p3->adminAssignments()->create(['user_id' => $staf->id, 'assigned_by' => $fakrul->id, 'created_at' => now()->subDays(20)]);
         }
+        $intanApp = null;
         foreach (['yohanes_m', 'clara_b', 'melati_k', 'intan_r', 'pak_harto', 'wulan_s'] as $un) {
             $a = $this->daftar($p3, $un === 'pak_harto' ? $dosen : $mhs3, $un, 'kontrak_ditandatangani', -15);
             $this->deal($a, $un === 'pak_harto' ? 300000 : 200000, -12);
             $this->greenlight($a, $rudy, -10);
             $this->kontrak($pdf, $a, $yoga, true, -7);
             $this->bayar($a, $un === 'clara_b' ? 'ditransfer' : 'belum_dibayar', 0, $yoga);
+            if ($un === 'intan_r') {
+                $intanApp = $a;
+            }
 
             match ($un) {
                 'yohanes_m', 'clara_b' => $this->selfie($a, $hariIni, $bambang),
@@ -288,6 +292,14 @@ class DemoLengkapSeeder extends Seeder
         }
 
         $this->biaya($p3, $yoga, [['Transport korlap', 150000, 0]]);
+
+        // CO.2: demo "sudah diingatkan" - SA mengingatkan Yoga soal honor Intan yang belum ditransfer.
+        if ($intanApp) {
+            $tugasIntan = "Honor belum ditransfer di {$p3->nama_produksi}";
+            $this->notif($yoga, 'Pengingat dari Super Admin', "Super Admin mengingatkan: {$tugasIntan}",
+                route('payments.show', $intanApp, false), false, now(), ['jenis' => 'pengingat_sa', 'kunci' => 'pa-'.$intanApp->id]);
+            $this->log($fakrul, 'REMIND_ADMIN', "Super Admin mengingatkan Yoga Pratama: {$tugasIntan}", $intanApp, 0);
+        }
 
         // P4: pengajuan Client, menunggu ACC - CN.1 lengkap (peran, tanggal+lokasi, budget total) sejak diajukan.
         $p4 = CastingProject::create([
