@@ -177,8 +177,8 @@ class ProfileController extends Controller
                 Rule::unique('users', 'username')->ignore($request->user()->id),
             ],
             'usia' => ['nullable', 'integer', 'min:1', 'max:120'],
-            'gender' => ['nullable', 'string'],
-            'tinggi_badan' => ['nullable', 'integer'],
+            'gender' => ['nullable', 'in:pria,wanita'],
+            'tinggi_badan' => ['nullable', 'integer', 'min:1'],
             'berat_badan' => ['nullable', 'integer', 'min:20', 'max:250'],
             'ukuran_baju' => ['nullable', 'string'],
         ]);
@@ -270,9 +270,9 @@ class ProfileController extends Controller
             // CLAUDE.md §5, hanya dilihat Extras & Admin, TIDAK PERNAH
             // dikirim ke view Client.
             'tautan_label' => ['nullable', 'array'],
-            'tautan_label.*' => ['nullable', 'string', 'max:100'],
+            'tautan_label.*' => ['nullable', 'string', 'max:100', 'required_with:tautan_url.*'],
             'tautan_url' => ['nullable', 'array'],
-            'tautan_url.*' => ['nullable', 'url', 'max:500'],
+            'tautan_url.*' => ['nullable', 'url', 'max:500', 'required_with:tautan_label.*'],
             'rate_card' => ['nullable', 'numeric', 'min:0'],
         ]);
 
