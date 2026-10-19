@@ -50,6 +50,7 @@ class KorlapRingkasan
     public static function shooting(string $tanggal, ?int $korlapId = null): Collection
     {
         return EventShootingDate::whereDate('tanggal', $tanggal)
+            ->whereHas('castingProject', fn ($q) => $q->where('client_request_status', 'disetujui'))
             ->when($korlapId, fn ($q) => $q->whereHas('castingProject.adminAssignments', self::penugasan($korlapId)))
             ->with(['castingProject.adminAssignments.user', 'castingProject.shootingDates'])
             ->orderBy('jam_mulai')->get()
@@ -60,6 +61,7 @@ class KorlapRingkasan
     public static function shootingTerdekat(?int $korlapId = null): ?EventShootingDate
     {
         return EventShootingDate::whereDate('tanggal', '>', today())
+            ->whereHas('castingProject', fn ($q) => $q->where('client_request_status', 'disetujui'))
             ->when($korlapId, fn ($q) => $q->whereHas('castingProject.adminAssignments', self::penugasan($korlapId)))
             ->with('castingProject:id,nama_produksi')->orderBy('tanggal')->first();
     }

@@ -23,6 +23,7 @@ class ExtrasBudgetVisibilityTest extends TestCase
         $project = CastingProject::create([
             'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Rahasia',
             'status' => 'dibuka', 'deadline' => now()->addDays(7), 'kuota' => 5,
+            'budget_total' => 123456789,
         ]);
         $project->classes()->create([
             'nama_kelas' => 'Ibu-ibu', 'budget_client' => 999999, 'kuota_kelas' => 3,
@@ -42,6 +43,8 @@ class ExtrasBudgetVisibilityTest extends TestCase
         $response->assertOk();
         $response->assertDontSee('999.999');
         $response->assertDontSee('999999');
+        $response->assertDontSee('123456789');
+        $response->assertDontSee('123.456.789');
     }
 
     public function test_show_lowongan_tidak_menampilkan_budget_client(): void
@@ -55,5 +58,7 @@ class ExtrasBudgetVisibilityTest extends TestCase
         $response->assertOk();
         $response->assertDontSee('999.999');
         $response->assertDontSee('999999');
+        $response->assertDontSee('123456789');
+        $response->assertDontSee('123.456.789');
     }
 }

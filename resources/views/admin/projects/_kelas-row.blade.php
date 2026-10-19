@@ -9,8 +9,8 @@
             <input type="text" name="kelas[{{ $i }}][nama_kelas]" value="{{ $k['nama_kelas'] ?? '' }}" placeholder="misal: Ibu-ibu 29-50th" required>
         </div>
         <div>
-            <label>Budget Client (Rp) <span class="wajib" aria-hidden="true">*</span></label>
-            <input type="number" name="kelas[{{ $i }}][budget_client]" value="{{ $k['budget_client'] ?? '' }}" min="0" required>
+            <label>Budget per Orang (Rp) <span style="color: var(--text-muted); font-weight: 400;">(bisa menyusul, dipotong margin agensi dari budget total)</span></label>
+            <input type="number" name="kelas[{{ $i }}][budget_client]" value="{{ $k['budget_client'] ?? '' }}" min="0">
         </div>
         <div>
             <label>Kuota Peran <span class="wajib" aria-hidden="true">*</span></label>

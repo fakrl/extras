@@ -142,7 +142,7 @@
                             <td><strong>{{ $k->nama_kelas }}</strong>
                                 @if ($k->kriteria)<div style="font-size: var(--fs-xs); color: var(--text-secondary);">{{ $k->kriteria }}</div>@endif</td>
                             <td>{{ $k->kuota_kelas }}</td>
-                            <td>{{ $rp($k->budget_client) }}</td>
+                            <td>{{ $k->budget_client !== null ? $rp($k->budget_client) : 'Belum diatur' }}</td>
                             <td>{{ $k->jam_callingan ? substr($k->jam_callingan, 0, 5) : '-' }}</td>
                             <td>
                                 <div class="xcard-tags">
@@ -221,7 +221,7 @@
                                     <button type="submit" class="btn btn-sm">Simpan Nominal</button>
                                 </form>
                             @else
-                                {{ $rp($nominalInv) }}
+                                <span class="tp-kosong">Rahasia — bukan proyek Anda</span>
                             @endif
                         </td>
                         <td>

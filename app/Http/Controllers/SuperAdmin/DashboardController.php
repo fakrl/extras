@@ -16,6 +16,7 @@ use App\Services\KeuanganService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class DashboardController extends Controller
 {
@@ -52,7 +53,9 @@ class DashboardController extends Controller
         $jumlahHari = (int) $dari->copy()->startOfDay()->diffInDays($sampai->copy()->startOfDay()) + 1;
 
         $pendingRequests = CastingProject::where('client_request_status', 'menunggu_acc')
-            ->with('client')->latest()->get();
+            ->with('client', 'classes', 'shootingDates', 'attachments')->latest()->get();
+        $adminsAktif = User::where('role', User::ROLE_ADMIN)->where('status', 'aktif')->orderBy('name')->get();
+        $korlapsAktif = User::where('role', User::ROLE_KORLAP)->where('status', 'aktif')->orderBy('name')->get();
         $sengketa = Payment::where('status', 'disengketakan')
             ->with('projectApplication.extras.user', 'projectApplication.castingProject:id,nama_produksi')->latest()->get();
         $honorStaf = (object) [
@@ -80,6 +83,7 @@ class DashboardController extends Controller
         $bulan = rescue(fn () => Carbon::createFromFormat('!Y-m', (string) $request->query('bulan')), null, false) ?: now();
         $jadwal = EventShootingDate::whereDate('tanggal', '>=', $bulan->copy()->startOfMonth()->startOfWeek(Carbon::MONDAY))
             ->whereDate('tanggal', '<=', $bulan->copy()->endOfMonth()->endOfWeek(Carbon::SUNDAY))
+            ->whereHas('castingProject', fn ($q) => $q->where('client_request_status', 'disetujui'))
             ->with(['castingProject' => fn ($q) => $q->select('id', 'nama_produksi')->withCount(['applications as extras_count' => fn ($a) => $a
                 ->whereIn('status_partisipasi', [...ProjectApplication::STATUS_AKTIF, 'selesai_produksi'])])])
             ->withCount(['attendances as hadir_count' => fn ($q) => $q->where('status', 'hadir')])
@@ -97,28 +101,50 @@ class DashboardController extends Controller
 
         return view('super-admin.dashboard', compact(
             'dari', 'sampai', 'preset', 'jumlahHari',
-            'pendingRequests', 'sengketa', 'honorStaf', 'invoiceBelumLunas', 'tanpaClient',
+            'pendingRequests', 'adminsAktif', 'korlapsAktif', 'sengketa', 'honorStaf', 'invoiceBelumLunas', 'tanpaClient',
             'statusProyek', 'proyekPerTahap', 'tabAwal', 'bulan', 'jadwal',
             'akunPerRole', 'clientBelumGantiPassword'
         ));
     }
 
-    public function accProject(CastingProject $castingProject): RedirectResponse
+    /**
+     * CN.2.1.1: Setujui wajib pilih Admin PIC (Korlap opsional). Status jadi
+     * disetujui, TAPI lowongan belum dibuka otomatis (status proyek tetap
+     * 'ditutup' sampai Admin PIC membuka lewat toggleStatus(), yang digerbang
+     * kelengkapan budget per orang - lihat CN.3.3).
+     */
+    public function accProject(Request $request, CastingProject $castingProject): RedirectResponse
     {
         if ($castingProject->client_request_status !== 'menunggu_acc') {
             return back()->with('error', 'Pengajuan ini sudah diproses sebelumnya.');
         }
-        if (! $castingProject->classes()->exists() || ! $castingProject->shootingDates()->exists()) {
-            return back()->with('error', 'Lengkapi peran dan tanggal dulu.');
-        }
+
+        $data = $request->validate([
+            'admin_id' => ['required', 'integer', Rule::exists('users', 'id')->where('role', User::ROLE_ADMIN)->where('status', 'aktif')],
+            'korlap_id' => ['nullable', 'integer', Rule::exists('users', 'id')->where('role', User::ROLE_KORLAP)->where('status', 'aktif')],
+        ], [
+            'admin_id.required' => 'Pilih Admin PIC proyek ini dulu.',
+        ]);
+
         $castingProject->update([
             'client_request_status' => 'disetujui',
-            'status' => 'dibuka',
+            'admin_id' => $data['admin_id'],
         ]);
+
+        $castingProject->adminAssignments()->firstOrCreate(
+            ['user_id' => $data['admin_id']],
+            ['assigned_by' => $request->user()->id, 'status_log' => 'berjalan']
+        );
+        if (! empty($data['korlap_id'])) {
+            $castingProject->adminAssignments()->firstOrCreate(
+                ['user_id' => $data['korlap_id']],
+                ['assigned_by' => $request->user()->id, 'status_log' => 'berjalan']
+            );
+        }
 
         ActivityLog::record(
             'APPROVE_PROJECT_REQUEST',
-            "Super Admin menyetujui (ACC) permintaan proyek '{$castingProject->nama_produksi}' dari Client",
+            "Super Admin menyetujui (ACC) permintaan proyek '{$castingProject->nama_produksi}' dari Client, PIC: ".User::find($data['admin_id'])->name,
             $castingProject
         );
 
@@ -126,7 +152,7 @@ class DashboardController extends Controller
         $admin = $castingProject->admin;
         if ($admin) {
             $judulAcc = 'Proyek Baru Disetujui';
-            $pesanAcc = "Permintaan proyek '{$castingProject->namaKode()}' telah disetujui Super Admin. Silakan lengkapi detail proyek.";
+            $pesanAcc = "Permintaan proyek '{$castingProject->namaKode()}' telah disetujui Super Admin. Atur budget per orang tiap peran sebelum membuka lowongan.";
             try {
                 $admin->notify(new InAppNotification($judulAcc, $pesanAcc, route('admin.projects.edit', $castingProject)));
             } catch (\Throwable) {
@@ -136,6 +162,33 @@ class DashboardController extends Controller
         $this->kabariClient($castingProject, 'Pengajuan Proyek Disetujui', "Pengajuan proyek '{$castingProject->namaKode()}' disetujui tim JBTB dan sedang disiapkan.");
 
         return back()->with('status', "Permintaan proyek '{$castingProject->nama_produksi}' berhasil disetujui (ACC). Proyek kini masuk antrean Admin.");
+    }
+
+    /**
+     * CN.2.1.2: Minta revisi - wajib catatan, disimpan di alasan_tolak (label
+     * UI "Catatan dari JBTB"). Client mengubah lalu mengajukan ulang.
+     */
+    public function mintaRevisiProject(Request $request, CastingProject $castingProject): RedirectResponse
+    {
+        if ($castingProject->client_request_status !== 'menunggu_acc') {
+            return back()->with('error', 'Pengajuan ini sudah diproses sebelumnya.');
+        }
+        $data = $request->validate(['alasan_tolak' => ['required', 'string', 'max:500']]);
+
+        $castingProject->update([
+            'client_request_status' => 'perlu_revisi',
+            'alasan_tolak' => $data['alasan_tolak'],
+        ]);
+
+        $this->kabariClient($castingProject, 'Pengajuan Proyek Perlu Revisi', "Pengajuan proyek '{$castingProject->namaKode()}' perlu direvisi. Catatan dari JBTB: {$data['alasan_tolak']}");
+
+        ActivityLog::record(
+            'REQUEST_REVISION_PROJECT',
+            "Super Admin meminta revisi permintaan proyek '{$castingProject->nama_produksi}' dari Client",
+            $castingProject
+        );
+
+        return back()->with('status', "Permintaan revisi untuk '{$castingProject->nama_produksi}' telah dikirim ke Client.");
     }
 
     public function rejectProject(Request $request, CastingProject $castingProject): RedirectResponse

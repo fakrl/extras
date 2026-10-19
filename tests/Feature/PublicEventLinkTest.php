@@ -128,7 +128,10 @@ class PublicEventLinkTest extends TestCase
     // 6. nama Client & budget_client tidak pernah muncul di halaman /event/{token}.
     public function test_nama_client_dan_budget_client_tidak_tampil_di_halaman_event(): void
     {
-        $project = $this->buatProyek(['client_id' => User::factory()->create(['role' => 'client', 'nama_perusahaan' => 'Client Sangat Rahasia XYZ'])->id]);
+        $project = $this->buatProyek([
+            'client_id' => User::factory()->create(['role' => 'client', 'nama_perusahaan' => 'Client Sangat Rahasia XYZ'])->id,
+            'budget_total' => 888888888,
+        ]);
         $project->classes()->create([
             'nama_kelas' => 'Ibu-ibu', 'budget_client' => 777777, 'kuota_kelas' => 3,
         ]);
@@ -139,6 +142,8 @@ class PublicEventLinkTest extends TestCase
         $response->assertDontSee('Client Sangat Rahasia XYZ');
         $response->assertDontSee('777777');
         $response->assertDontSee('777.777');
+        $response->assertDontSee('888888888');
+        $response->assertDontSee('888.888.888');
     }
 
     // 7. Alur login/register NORMAL (tanpa buka link event dulu) tetap seperti sebelumnya.
@@ -202,6 +207,7 @@ class PublicEventLinkTest extends TestCase
             'admin_id' => $admin->id, 'nama_produksi' => 'Proyek Terbuka ABC',
             'share_token' => Str::random(32),
             'deadline' => now()->addDays(7), 'kuota' => 5, 'status' => 'dibuka',
+            'budget_total' => 555555555,
         ]);
         $terbuka->classes()->create(['nama_kelas' => 'Ibu-ibu', 'budget_client' => 999999, 'kuota_kelas' => 3]);
 
@@ -231,6 +237,8 @@ class PublicEventLinkTest extends TestCase
         $response->assertDontSee('PH LAIN2');
         $response->assertDontSee('999999');
         $response->assertDontSee('999.999');
+        $response->assertDontSee('555555555');
+        $response->assertDontSee('555.555.555');
     }
 
     public function test_homepage_menampilkan_stats_akurat(): void

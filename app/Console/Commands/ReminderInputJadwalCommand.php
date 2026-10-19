@@ -17,6 +17,7 @@ class ReminderInputJadwalCommand extends Command
 
         $dates = EventShootingDate::whereDate('tanggal', $tanggalH3)
             ->whereNull('lokasi')
+            ->whereHas('castingProject', fn ($q) => $q->where('client_request_status', 'disetujui'))
             ->with('castingProject.client')
             ->get();
 

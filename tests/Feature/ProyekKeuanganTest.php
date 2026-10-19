@@ -303,6 +303,8 @@ class ProyekKeuanganTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $buka = CastingProject::factory()->create(['nama_produksi' => 'Pr Buka', 'status' => 'dibuka', 'share_token' => 'tok123', 'client_request_status' => 'disetujui', 'admin_id' => $admin->id]);
         $tutup = CastingProject::factory()->create(['nama_produksi' => 'Pr Tutup', 'status' => 'ditutup', 'share_token' => 'tok456', 'client_request_status' => 'disetujui', 'admin_id' => $admin->id]);
+        // CN: label "Buka lagi" cuma untuk proyek yang pernah dibuka (pernah ada pendaftar).
+        ProjectApplication::create(['casting_project_id' => $tutup->id, 'extras_id' => ExtrasProfile::factory()->create()->id, 'status_partisipasi' => 'diajukan']);
 
         $r = $this->actingAs($admin)->get(route('admin.projects.index'))->assertOk();
         foreach (['Lineup', 'Edit proyek', 'Salin link pendaftaran', 'Tutup lowongan', 'Buka lagi lowongan'] as $label) {

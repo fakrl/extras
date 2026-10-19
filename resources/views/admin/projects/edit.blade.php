@@ -104,6 +104,28 @@
         <button type="button" id="btn-add-tanggal" class="btn btn-sm" style="margin-bottom: 20px;">+ Tambah Tanggal</button>
 
         <hr>
+        @php
+            $rp = fn ($v) => 'Rp '.number_format((float) $v, 0, ',', '.');
+            $alokasi = $castingProject->totalAlokasiBudget();
+        @endphp
+        @can('kelola', $castingProject)
+            @if ($castingProject->budget_total !== null)
+                <div style="background: var(--bg-muted, #f8fafc); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; font-size: 13px; display: flex; flex-wrap: wrap; gap: 16px;">
+                    <div><strong>Budget proyek:</strong> {{ $rp($castingProject->budget_total) }}</div>
+                    <div><strong>Total alokasi:</strong> {{ $rp($alokasi) }}</div>
+                    <div><strong>Sisa (potongan agensi):</strong> {{ $rp($castingProject->budget_total - $alokasi) }}</div>
+                </div>
+                @if ($alokasi > $castingProject->budget_total)
+                    <div style="background: #fef9c3; border: 1px solid #ca8a04; color: #713f12; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px;">
+                        Total alokasi melebihi budget proyek dari Client. Proyek tetap bisa disimpan, tapi cek ulang nego fee per peran.
+                    </div>
+                @endif
+            @endif
+        @else
+            <div style="background: var(--bg-muted, #f8fafc); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; font-size: 13px; color: var(--text-muted);">
+                Budget rahasia — bukan proyek Anda.
+            </div>
+        @endcan
         <div style="font-size: 14px; font-weight: 500; margin-bottom: 8px;">
             Peran yang Dibutuhkan <span style="color: var(--text-muted); font-weight: 400; font-size: 12.5px;">(minimal satu peran)</span>
         </div>
@@ -188,8 +210,8 @@
                 '<div class="form-row" style="align-items:flex-end;">' +
                 '<div><label>Nama Peran <span class="wajib" aria-hidden="true">*</span></label>' +
                 '<input type="text" name="kelas[' + kelasIndex + '][nama_kelas]" required></div>' +
-                '<div><label>Budget Client (Rp) <span class="wajib" aria-hidden="true">*</span></label>' +
-                '<input type="number" name="kelas[' + kelasIndex + '][budget_client]" min="0" required></div>' +
+                '<div><label>Budget Client (Rp)</label>' +
+                '<input type="number" name="kelas[' + kelasIndex + '][budget_client]" min="0" placeholder="Diisi Admin PIC nanti"></div>' +
                 '<div><label>Kuota Peran <span class="wajib" aria-hidden="true">*</span></label>' +
                 '<input type="number" name="kelas[' + kelasIndex + '][kuota_kelas]" min="1" required></div>' +
                 '<div style="flex:0;"><button type="button" class="btn-icon-danger btn-remove-kelas" aria-label="Hapus peran" title="Hapus peran">&times;</button></div>' +
