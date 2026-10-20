@@ -94,4 +94,41 @@ class CbLandingTanpaDuplikatTest extends TestCase
         $this->assertSame(8, $this->hitung($html, 'class="porto-card"'));
         $this->assertStringNotContainsString('data-dup', $html);
     }
+
+    public function test_tombol_panah_prev_next_tampil_per_carousel(): void
+    {
+        $this->cast(5);
+        $this->porto(3);
+        $html = $this->html();
+        $this->assertSame(2, $this->hitung($html, 'class="marquee-wrap"'));
+        $this->assertSame(2, $this->hitung($html, 'class="marquee-nav prev" data-dir="-1"'));
+        $this->assertSame(2, $this->hitung($html, 'class="marquee-nav next" data-dir="1"'));
+    }
+
+    /**
+     * Regression guard (bukan simulasi klik sungguhan - itu di-verifikasi manual via
+     * screenshot/puppeteer, lihat DEV-NOTES): setPointerCapture cuma boleh dipanggil
+     * SETELAH threshold drag terlampaui (di dalam blok `if (!moved ...)`), dan cuma
+     * untuk pointerType mouse - supaya klik polos (tanpa drag) tetap membuka tautan
+     * kartu di semua pointer type, dan swipe sentuh/pen tetap pakai scroll native.
+     */
+    public function test_pointer_capture_carousel_cuma_setelah_drag_dan_cuma_mouse(): void
+    {
+        $html = $this->html();
+        preg_match('/document\.querySelectorAll\(\'\[data-carousel\]\'\).*?<\/script>/s', $html, $m);
+        $this->assertNotEmpty($m, 'Script carousel tidak ditemukan');
+        $script = $m[0];
+
+        $posPointerdown = strpos($script, "pointerdown', function (e) {");
+        $posCapture = strpos($script, 'setPointerCapture(pointerId)');
+        $posPointerdownEnd = strpos($script, '});', $posPointerdown);
+        $this->assertTrue($posCapture > $posPointerdownEnd, 'setPointerCapture tidak boleh dipanggil langsung di dalam handler pointerdown');
+        $posMovedCheck = strpos($script, 'if (!moved && Math.abs(dx) > 3)');
+        $posPointerTypeCheck = strpos($script, "pointerType === 'mouse'");
+        $this->assertNotFalse($posCapture, 'Panggilan setPointerCapture tidak ditemukan');
+        $this->assertNotFalse($posMovedCheck);
+        $this->assertNotFalse($posPointerTypeCheck);
+        $this->assertTrue($posMovedCheck < $posCapture, 'setPointerCapture harus di dalam blok pengecekan threshold drag');
+        $this->assertTrue($posPointerTypeCheck < $posCapture, 'setPointerCapture harus digerbang pointerType mouse');
+    }
 }
