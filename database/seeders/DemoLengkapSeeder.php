@@ -384,26 +384,30 @@ class DemoLengkapSeeder extends Seeder
         // CQ: proyek "evergreen" tersebar beberapa bulan ke belakang & ke depan (relatif ke tanggal seed
         // dijalankan), biar filter periode (7/14/30/60/90/365 hari, +7/+30, custom) beneran kelihatan
         // bedanya tiap preset - bukan cuma menumpuk di ±1-2 bulan seperti P1-P7 di atas.
+        // P8-P10: selesai produksi, lengkap kontrak TTD + pembayaran dikonfirmasi (bukan cuma daftar mentah).
         foreach ([
-            ['P8 evergreen', $yoga, $andini, -58, 'Selesai 2 bulan lalu'],
-            ['P9 evergreen', $rina, $rudy, -88, 'Selesai 3 bulan lalu'],
-            ['P10 evergreen', $yoga, $maya, -148, 'Selesai 5 bulan lalu'],
-        ] as [$nama, $pic, $klien, $hari, $catatan]) {
-            $ev = $this->project("Iklan \"{$nama}\"", $pic, $hari - 10, [
+            ['P8', 'Iklan "Sarapan Sehat"', $yoga, $andini, -58, 'Selesai 2 bulan lalu'],
+            ['P9', 'FTV "Pulang ke Rumah"', $rina, $rudy, -88, 'Selesai 3 bulan lalu'],
+            ['P10', 'Iklan "Skincare Glowing"', $yoga, $maya, -148, 'Selesai 5 bulan lalu'],
+        ] as [$kode, $nama, $pic, $klien, $hari, $catatan]) {
+            $ev = $this->project($nama, $pic, $hari - 10, [
                 'deadline' => today()->addDays($hari - 5), 'kuota' => 6, 'client_id' => $klien->id,
-                'status' => 'ditutup', 'brief_catatan' => $catatan,
+                'status' => 'ditutup', 'brief_catatan' => "{$catatan} ({$kode} evergreen).", 'budget_total' => 2000000,
             ]);
             $this->jadwal($ev, [$hari], 'Jakarta');
             $kelasEv = $this->kelas($ev, 'Pemeran Pendukung', 6, 250000, ['Dewasa']);
-            $this->deal($this->daftar($ev, $kelasEv, 'wulan_s', 'selesai_produksi', $hari - 15), 250000, $hari - 12);
+            $a = $this->daftar($ev, $kelasEv, 'wulan_s', 'selesai_produksi', $hari - 15);
+            $this->deal($a, 250000, $hari - 12);
+            $this->kontrak($pdf, $a, $pic, true, $hari - 9);
+            $this->bayar($a, 'dikonfirmasi_diterima', $hari + 5, $pic);
         }
         foreach ([
-            ['P11 evergreen', $yoga, $andini, 45, 'Shooting 1,5 bulan lagi'],
-            ['P12 evergreen', $rina, $rudy, 75, 'Shooting 2,5 bulan lagi'],
-        ] as [$nama, $pic, $klien, $hari, $catatan]) {
-            $ev = $this->project("Iklan \"{$nama}\"", $pic, -1, [
+            ['P11', 'Series "Jalan Pulang" eps 1', $yoga, $andini, 45, 'Shooting 1,5 bulan lagi'],
+            ['P12', 'Iklan "Kartu Kredit Pintar"', $rina, $rudy, 75, 'Shooting 2,5 bulan lagi'],
+        ] as [$kode, $nama, $pic, $klien, $hari, $catatan]) {
+            $ev = $this->project($nama, $pic, -1, [
                 'deadline' => today()->addDays($hari - 10), 'kuota' => 6, 'client_id' => $klien->id,
-                'brief_catatan' => $catatan,
+                'brief_catatan' => "{$catatan} ({$kode} evergreen).", 'budget_total' => 2000000,
             ]);
             $this->jadwal($ev, [$hari], 'Jakarta');
             $this->kelas($ev, 'Pemeran Pendukung', 6, 250000, ['Dewasa']);
