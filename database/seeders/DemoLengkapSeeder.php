@@ -381,6 +381,35 @@ class DemoLengkapSeeder extends Seeder
         $this->daftar($p7, $kelasP7, 'tono_g', 'diajukan', -2);
         $this->deal($this->daftar($p7, $kelasP7, 'melati_k', 'deal', -3), 275000, -1);
 
+        // CQ: proyek "evergreen" tersebar beberapa bulan ke belakang & ke depan (relatif ke tanggal seed
+        // dijalankan), biar filter periode (7/14/30/60/90/365 hari, +7/+30, custom) beneran kelihatan
+        // bedanya tiap preset - bukan cuma menumpuk di ±1-2 bulan seperti P1-P7 di atas.
+        foreach ([
+            ['P8 evergreen', $yoga, $andini, -58, 'Selesai 2 bulan lalu'],
+            ['P9 evergreen', $rina, $rudy, -88, 'Selesai 3 bulan lalu'],
+            ['P10 evergreen', $yoga, $maya, -148, 'Selesai 5 bulan lalu'],
+        ] as [$nama, $pic, $klien, $hari, $catatan]) {
+            $ev = $this->project("Iklan \"{$nama}\"", $pic, $hari - 10, [
+                'deadline' => today()->addDays($hari - 5), 'kuota' => 6, 'client_id' => $klien->id,
+                'status' => 'ditutup', 'brief_catatan' => $catatan,
+            ]);
+            $this->jadwal($ev, [$hari], 'Jakarta');
+            $kelasEv = $this->kelas($ev, 'Pemeran Pendukung', 6, 250000, ['Dewasa']);
+            $this->deal($this->daftar($ev, $kelasEv, 'wulan_s', 'selesai_produksi', $hari - 15), 250000, $hari - 12);
+        }
+        foreach ([
+            ['P11 evergreen', $yoga, $andini, 45, 'Shooting 1,5 bulan lagi'],
+            ['P12 evergreen', $rina, $rudy, 75, 'Shooting 2,5 bulan lagi'],
+        ] as [$nama, $pic, $klien, $hari, $catatan]) {
+            $ev = $this->project("Iklan \"{$nama}\"", $pic, -1, [
+                'deadline' => today()->addDays($hari - 10), 'kuota' => 6, 'client_id' => $klien->id,
+                'brief_catatan' => $catatan,
+            ]);
+            $this->jadwal($ev, [$hari], 'Jakarta');
+            $this->kelas($ev, 'Pemeran Pendukung', 6, 250000, ['Dewasa']);
+            $ev->adminAssignments()->create(['user_id' => $pic->id, 'assigned_by' => $fakrul->id]);
+        }
+
         // BH.3: portofolio beranda, P1 + 2 arsip lama (satu izinkan nama client)
         $p1->update(['tampil_portofolio' => true, 'portofolio_jenis' => 'Film layar lebar', 'portofolio_tahun' => today()->subDays(30)->year]);
         foreach ([['Iklan TV "Kopi Pagi Nusantara"', 'PT Kopi Pagi Nusantara', 'Iklan TV', -200, true], ['FTV "Cinta di Pasar Minggu"', 'Sinar Rumah Produksi', 'FTV', -320, false]] as [$nama, $ph, $jenis, $hari, $client]) {
