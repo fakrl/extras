@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use App\Notifications\InAppNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
@@ -28,7 +29,7 @@ class BkNotifUrlRelatifTest extends TestCase
     {
         $user = User::factory()->create(['role' => 'admin']);
         $notif = $user->notifications()->create([
-            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'id' => (string) Str::uuid(),
             'type' => InAppNotification::class,
             'data' => ['judul' => 'Lama', 'pesan' => 'x', 'url' => 'https://ferris-hardy-judo.ngrok-free.dev/admin/dashboard'],
         ]);
