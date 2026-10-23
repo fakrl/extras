@@ -8,12 +8,13 @@ use App\Models\ClientReview;
 use App\Models\EventShootingDate;
 use App\Models\Invoice;
 use App\Models\ProjectApplication;
-use Carbon\Carbon;
+use App\Support\Periode;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $klienId = Auth::id();
 
@@ -61,15 +62,16 @@ class DashboardController extends Controller
             ])
             ->values();
 
-        $jadwalBulanIni = EventShootingDate::whereIn('casting_project_id', $proyekIds)
-            ->whereBetween('tanggal', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])
+        [$dari, $sampai, $preset] = Periode::dariSesi($request, 'periode_client_dashboard', '+30');
+        $agendaEvents = EventShootingDate::whereIn('casting_project_id', $proyekIds)
+            ->whereBetween('tanggal', [$dari, $sampai])
             ->with('castingProject:id,nama_produksi')
             ->get()
-            ->map(fn ($e) => tap($e, fn ($e) => $e->nama_produksi = $e->castingProject?->nama_produksi));
+            ->each(fn ($e) => $e->nama_produksi = $e->castingProject?->nama_produksi);
 
         return view('client.dashboard', compact(
             'perluDireview', 'chartKeputusan', 'proyekBerjalan', 'pengajuan', 'karakterPendaftar',
-            'jadwalBulanIni', 'invoiceMenungguTtd', 'jadwalKosong'
+            'agendaEvents', 'dari', 'sampai', 'preset', 'invoiceMenungguTtd', 'jadwalKosong'
         ));
     }
 }

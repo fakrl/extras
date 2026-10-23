@@ -13,7 +13,7 @@ use App\Models\User;
 use App\Notifications\InAppNotification;
 use App\Services\KeuanganService;
 use App\Support\AdminRingkasan;
-use Carbon\Carbon;
+use App\Support\Periode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -21,39 +21,13 @@ use Illuminate\Validation\Rule;
 
 class DashboardController extends Controller
 {
-    const PRESET = ['bulan' => 'Bulan ini', '3bulan' => '3 bulan', 'tahun' => 'Tahun ini'];
-
-    // CO.3.2: preset kalender Jadwal Shooting, terpisah dari PRESET (filter statistik lain).
-    const PRESET_KALENDER = ['hari_ini' => 'Hari ini', '7_hari' => '7 hari ke depan', 'bulan_ini' => 'Bulan ini', 'bulan_depan' => 'Bulan depan'];
-
     public function __construct(
         protected KeuanganService $keuanganService
     ) {}
 
-    /**
-     * BD.3.1: preset atau custom dari–sampai (custom menang kalau dua-duanya valid).
-     */
-    private function periode(Request $request): array
-    {
-        $tgl = fn (string $k) => rescue(fn () => Carbon::createFromFormat('!Y-m-d', (string) $request->query($k)), null, false) ?: null;
-        [$dari, $sampai] = [$tgl('dari'), $tgl('sampai')];
-
-        if ($dari && $sampai) {
-            return $dari->gt($sampai) ? [$sampai, $dari, null] : [$dari, $sampai, null];
-        }
-
-        $preset = array_key_exists((string) $request->query('periode'), self::PRESET) ? $request->query('periode') : 'bulan';
-
-        return match ($preset) {
-            '3bulan' => [now()->subMonths(2)->startOfMonth(), now()->endOfMonth(), $preset],
-            'tahun' => [now()->startOfYear(), now()->endOfYear(), $preset],
-            default => [now()->startOfMonth(), now()->endOfMonth(), $preset],
-        };
-    }
-
     public function index(Request $request)
     {
-        [$dari, $sampai, $preset] = $this->periode($request);
+        [$dari, $sampai, $preset] = Periode::dariSesi($request, 'periode_sa', '30');
         $jumlahHari = (int) $dari->copy()->startOfDay()->diffInDays($sampai->copy()->startOfDay()) + 1;
 
         // CO.1: "Perlu Tindakan" SA hanya tugas SA, dikelompokkan per jenis.
@@ -88,10 +62,10 @@ class DashboardController extends Controller
         $pantauTotal = $pantauAdmin->sum(fn ($p) => $p['tugas']->count());
         $pantauMendesak = $pantauAdmin->contains(fn ($p) => $p['tugas']->contains(fn ($t) => $t['sejak']?->lte(now()->subDays(3))));
 
-        $tahapQuery = fn (string $tahap) => CastingProject::diTahap($tahap)
-            ->when($tahap !== 'menunggu_acc', fn ($q) => $q->shootingDalam($dari, $sampai));
-        $statusProyek = collect(CastingProject::TAHAP)->map(fn ($label, $tahap) => $tahapQuery($tahap)->count());
-        $proyekPerTahap = collect(CastingProject::TAHAP)->map(fn ($label, $tahap) => $tahapQuery($tahap)
+        $tahapQuery = fn (string $tahap, $d, $s) => CastingProject::diTahap($tahap)
+            ->when($tahap !== 'menunggu_acc', fn ($q) => $q->shootingDalam($d, $s));
+        $statusProyek = collect(CastingProject::TAHAP)->map(fn ($label, $tahap) => $tahapQuery($tahap, $dari, $sampai)->count());
+        $proyekPerTahap = collect(CastingProject::TAHAP)->map(fn ($label, $tahap) => $tahapQuery($tahap, $dari, $sampai)
             ->with('client:id,name', 'shootingDates')
             ->when($tahap === 'selesai',
                 fn ($q) => $q->withMax('shootingDates as tanggal_acuan', 'tanggal')->orderByDesc('tanggal_acuan'),
@@ -101,16 +75,21 @@ class DashboardController extends Controller
             ->take(5)->get());
         $tabAwal = collect(['berjalan', 'mendatang', 'menunggu_acc', 'selesai'])->first(fn ($t) => $statusProyek[$t] > 0, 'berjalan');
 
-        // CO.3.2: dropdown periode untuk ringkasan Jadwal Shooting (preset terpisah dari filter statistik di atas).
-        $kalenderPreset = array_key_exists((string) $request->query('kalender'), self::PRESET_KALENDER) ? $request->query('kalender') : 'hari_ini';
-        [$kDari, $kSampai] = $this->rentangKalender($kalenderPreset);
-        $jadwalRingkas = $this->jadwalEvents($kDari, $kSampai);
+        // CQ.4.1: pertumbuhan % Status Proyek vs periode sebelumnya, panjang sama. Menunggu ACC tidak ikut filter → tidak punya pertumbuhan.
+        $sampaiSebelum = $dari->copy()->subDay();
+        $dariSebelum = $sampaiSebelum->copy()->subDays($jumlahHari - 1);
+        $pertumbuhan = collect(CastingProject::TAHAP)->map(function ($label, $tahap) use ($tahapQuery, $dariSebelum, $sampaiSebelum, $statusProyek) {
+            if ($tahap === 'menunggu_acc') {
+                return null;
+            }
+            $sebelum = $tahapQuery($tahap, $dariSebelum, $sampaiSebelum)->count();
+            $sekarang = $statusProyek[$tahap];
 
-        $bulan = rescue(fn () => Carbon::createFromFormat('!Y-m', (string) $request->query('bulan')), null, false) ?: now();
-        $jadwal = $this->jadwalEvents(
-            $bulan->copy()->startOfMonth()->startOfWeek(Carbon::MONDAY),
-            $bulan->copy()->endOfMonth()->endOfWeek(Carbon::SUNDAY)
-        );
+            return $sebelum > 0 ? (int) round((($sekarang - $sebelum) / $sebelum) * 100) : ($sekarang > 0 ? 100 : 0);
+        });
+
+        // CQ.2/CQ.4: satu agenda mengikuti filter periode yang sama (gantikan jadwalRingkas + jadwal lama).
+        $agendaEvents = $this->jadwalEvents($dari, $sampai);
 
         $akunPerRole = User::where('status', 'aktif')->selectRaw('role, count(*) as jumlah')->groupBy('role')->pluck('jumlah', 'role');
 
@@ -119,21 +98,10 @@ class DashboardController extends Controller
             'pengajuanBaru', 'pengajuanRevisi', 'pengajuanMendesak', 'adminsAktif', 'korlapsAktif',
             'honorStaf', 'invoiceBelumLunas', 'tanpaPic', 'akunPerhatian', 'jumlahTindakan',
             'pantauAdmin', 'pantauTotal', 'pantauMendesak',
-            'statusProyek', 'proyekPerTahap', 'tabAwal',
-            'kalenderPreset', 'jadwalRingkas', 'bulan', 'jadwal',
+            'statusProyek', 'proyekPerTahap', 'tabAwal', 'pertumbuhan',
+            'agendaEvents',
             'akunPerRole'
         ));
-    }
-
-    /** CO.3.2: rentang tanggal untuk tiap preset dropdown kalender ringkas. */
-    private function rentangKalender(string $preset): array
-    {
-        return match ($preset) {
-            '7_hari' => [today(), today()->addDays(6)],
-            'bulan_ini' => [now()->startOfMonth(), now()->endOfMonth()],
-            'bulan_depan' => [now()->addMonthNoOverflow()->startOfMonth(), now()->addMonthNoOverflow()->endOfMonth()],
-            default => [today(), today()],
-        };
     }
 
     private function jadwalEvents($dari, $sampai)

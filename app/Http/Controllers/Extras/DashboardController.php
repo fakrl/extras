@@ -9,12 +9,13 @@ use App\Models\CastingProject;
 use App\Models\EventShootingDate;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
-use Carbon\Carbon;
+use App\Support\Periode;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $extrasProfile = $user->extrasProfile;
@@ -60,11 +61,13 @@ class DashboardController extends Controller
                 ->pluck('casting_project_id')
             : collect();
 
-        $jadwalBulanIni = EventShootingDate::whereIn('casting_project_id', $proyekLolos)
-            ->whereBetween('tanggal', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])
+        // AZ.1: tetap di-scope ke $proyekLolos saja - Extras tidak boleh lihat lokasi/jadwal proyek yang belum lolos.
+        [$dari, $sampai, $preset] = Periode::dariSesi($request, 'periode_extras_dashboard', '+30');
+        $agendaEvents = EventShootingDate::whereIn('casting_project_id', $proyekLolos)
+            ->whereBetween('tanggal', [$dari, $sampai])
             ->with('castingProject:id,nama_produksi')
             ->get()
-            ->map(fn ($e) => tap($e, fn ($e) => $e->nama_produksi = $e->castingProject?->nama_produksi));
+            ->each(fn ($e) => $e->nama_produksi = $e->castingProject?->nama_produksi);
 
         // BJ.4: lowongan yang belum didaftar; peran paling cocok yang masih ada slot, urut % cocok desc lalu deadline terdekat.
         $tagSaya = $extrasProfile?->categories->modelKeys() ?? [];
@@ -88,6 +91,6 @@ class DashboardController extends Controller
 
         $jumlahBatalMendadak = $extrasProfile?->batalMendadak()->count() ?? 0;
 
-        return view('extras.dashboard', compact('jumlahBatalMendadak', 'extrasProfile', 'pendaftaranAktif', 'riwayatPendaftaran', 'bentrokPer', 'aktivitasSaya', 'jadwalBulanIni', 'castingCallTerbuka', 'riwayatAbsensi'));
+        return view('extras.dashboard', compact('jumlahBatalMendadak', 'extrasProfile', 'pendaftaranAktif', 'riwayatPendaftaran', 'bentrokPer', 'aktivitasSaya', 'agendaEvents', 'dari', 'sampai', 'preset', 'castingCallTerbuka', 'riwayatAbsensi'));
     }
 }

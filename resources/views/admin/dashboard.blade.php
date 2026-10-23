@@ -10,8 +10,11 @@
     @php $tindakan = array_filter($ringkasan, fn ($r) => $r['jumlah'] > 0); $jumlahTindakan = $urgentProjects->count() + $pembayaranSengketa + array_sum(array_column($tindakan, 'jumlah')); @endphp
     <div class="dash-tiga">
         <div class="card">
-            <div class="card-title">Jadwal Shooting Bulan Ini</div>
-            <x-jadwal-calendar :events="$jadwalBulanIni" :compact="true" />
+            <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <span>Jadwal Shooting</span>
+                <x-filter-periode :dari="$dari" :sampai="$sampai" :preset="$preset" :action="route('admin.dashboard')" />
+            </div>
+            <x-agenda :events="$agendaEvents" />
         </div>
 
         <div class="card dash-perlu {{ $jumlahTindakan ? '' : 'is-aman' }}">

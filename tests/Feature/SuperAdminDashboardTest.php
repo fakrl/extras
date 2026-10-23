@@ -63,14 +63,14 @@ class SuperAdminDashboardTest extends TestCase
 
     }
 
-    public function test_preset_dan_parameter_rusak_jatuh_ke_bulan_ini(): void
+    public function test_preset_dan_parameter_rusak_jatuh_ke_default(): void
     {
         $r = $this->actingAs($this->sa)->get(route('super-admin.dashboard', ['dari' => 'x', 'sampai' => '2026-01-01', 'periode' => 'ngawur']));
 
         $r->assertOk()->assertSee('30 hari');
-        $this->assertSame('bulan', $r->viewData('preset'));
+        $this->assertSame('30', $r->viewData('preset'));
 
-        $this->actingAs($this->sa)->get(route('super-admin.dashboard', ['periode' => 'tahun']))->assertSee('365 hari');
+        $this->actingAs($this->sa)->get(route('super-admin.dashboard', ['periode' => '365']))->assertSee('365 hari');
     }
 
     public function test_empat_kartu_status_proyek_angka_benar(): void
@@ -83,7 +83,7 @@ class SuperAdminDashboardTest extends TestCase
         $this->proyek(['2025-01-10']);
         $this->proyek(['2026-06-25'], 'ditolak');
 
-        $r = $this->actingAs($this->sa)->get(route('super-admin.dashboard'));
+        $r = $this->actingAs($this->sa)->get(route('super-admin.dashboard', ['dari' => '2026-06-01', 'sampai' => '2026-06-30']));
 
         $this->assertSame(
             ['menunggu_acc' => 1, 'mendatang' => 1, 'berjalan' => 1, 'selesai' => 2],
@@ -130,7 +130,7 @@ class SuperAdminDashboardTest extends TestCase
         $this->assertSame('ditolak', $b->fresh()->client_request_status);
     }
 
-    public function test_kalender_berisi_jumlah_extras_absensi_dan_aksi_tanpa_xss(): void
+    public function test_agenda_berisi_jumlah_extras_absensi_dan_aksi_tanpa_xss(): void
     {
         $p = CastingProject::factory()->create(['client_request_status' => 'disetujui', 'nama_produksi' => '<img src=x onerror=alert(1)>']);
         $tgl = $p->shootingDates()->create(['tanggal' => '2026-06-16', 'lokasi' => 'Studio "A"']);
@@ -138,15 +138,16 @@ class SuperAdminDashboardTest extends TestCase
         $this->aplikasi($p);
         Attendance::create(['project_application_id' => $hadir->id, 'event_shooting_date_id' => $tgl->id, 'status' => 'hadir', 'dicatat_oleh' => $this->sa->id]);
 
-        $r = $this->actingAs($this->sa)->get(route('super-admin.dashboard'));
+        $r = $this->actingAs($this->sa)->get(route('super-admin.dashboard', ['periode' => '+7']));
 
-        $r->assertOk()->assertSee('1\/2 hadir', false)
+        $r->assertOk()->assertSee('1/2 hadir')
             ->assertDontSee('<img src=x', false)
-            ->assertSee(e(json_encode(route('admin.attendance.index', ['project' => $p->id, 'tanggal' => $tgl->id]))), false)
-            ->assertSee(e(json_encode(route('admin.projects.show', $p))), false);
+            ->assertSee(e(route('admin.attendance.index', ['project' => $p->id, 'tanggal' => $tgl->id])), false)
+            ->assertSee(e(route('admin.projects.show', $p)), false);
 
-        $this->actingAs($this->sa)->get(route('super-admin.dashboard', ['bulan' => '2026-07']))
-            ->assertOk()->assertDontSee('1\/2 hadir', false)->assertSee('bulan=2026-06', false);
+        // CQ.2: kegiatan di luar rentang filter tidak tampil (7 hari terakhir dari 15 Juni tidak mencakup 16 Juni).
+        $this->actingAs($this->sa)->get(route('super-admin.dashboard', ['periode' => '7']))
+            ->assertOk()->assertDontSee('1/2 hadir');
     }
 
     // CO.1.4: "akun perlu perhatian SA" = Client belum ganti password > 7 hari (updated_at, bukan sekadar flag-nya).

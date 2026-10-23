@@ -82,4 +82,20 @@ class BePeriodeKartuTest extends TestCase
         $this->get(route('admin.projects.index', ['dari' => 'x', 'sampai' => '2026-06-30']))
             ->assertOk()->assertDontSee('Periode:');
     }
+
+    // CQ.1: parsing dari/sampai halaman ini di-reuse dari Periode::opsional() - tanpa input tetap
+    // tampilkan semua (tidak jatuh ke default periode manapun), dan dibalik tetap dibenerin otomatis.
+    public function test_tanpa_input_tampilkan_semua_dan_custom_terbalik_tetap_dibenerin(): void
+    {
+        $tanpaFilter = $this->actingAs($this->sa)->get(route('admin.projects.index'))->viewData('projects')->total();
+        $denganFilterJuni = $this->actingAs($this->sa)->get(route('admin.projects.index', ['dari' => '2026-06-01', 'sampai' => '2026-06-30']))->viewData('projects')->total();
+
+        $this->assertGreaterThan($denganFilterJuni, $tanpaFilter);
+
+        $normal = $this->actingAs($this->sa)->get(route('admin.projects.index', ['dari' => '2026-05-31', 'sampai' => '2026-07-31']))->viewData('projects')->total();
+        $terbalik = $this->actingAs($this->sa)->get(route('admin.projects.index', ['dari' => '2026-07-31', 'sampai' => '2026-05-31']))->viewData('projects')->total();
+
+        $this->assertGreaterThan(0, $terbalik);
+        $this->assertSame($normal, $terbalik);
+    }
 }

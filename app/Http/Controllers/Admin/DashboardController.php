@@ -9,12 +9,13 @@ use App\Models\Payment;
 use App\Models\ProjectApplication;
 use App\Support\AdminRingkasan;
 use App\Support\KorlapRingkasan;
-use Carbon\Carbon;
+use App\Support\Periode;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
@@ -57,11 +58,17 @@ class DashboardController extends Controller
             ->values();
 
         $proyekIds = CastingProject::query()->dikelolaOleh($user)->pluck('id');
-        $jadwalBulanIni = EventShootingDate::whereIn('casting_project_id', $proyekIds)
-            ->whereBetween('tanggal', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])
+        // CQ.3: Korlap (murni atau SA mode Korlap) pakai default maju (+7, jadwal ke depan),
+        // Admin pakai mundur (30) - session key dipisah juga biar SA ganti mode tidak saling timpa.
+        $korlapMode = $user->isKorlap() || $user->modeSa() === 'korlap';
+        [$dari, $sampai, $preset] = $korlapMode
+            ? Periode::dariSesi($request, 'periode_korlap_dashboard', '+7')
+            : Periode::dariSesi($request, 'periode_admin_dashboard', '30');
+        $agendaEvents = EventShootingDate::whereIn('casting_project_id', $proyekIds)
+            ->whereBetween('tanggal', [$dari, $sampai])
             ->with('castingProject:id,nama_produksi')
             ->get()
-            ->map(fn ($e) => tap($e, fn ($e) => $e->nama_produksi = $e->castingProject?->nama_produksi));
+            ->each(fn ($e) => $e->nama_produksi = $e->castingProject?->nama_produksi);
 
         $korlap = [];
         if ($user->bisaSebagaiKorlap() && ! ($user->bisaSebagaiAdmin() && $user->modeSa() !== 'korlap')) {
@@ -83,7 +90,10 @@ class DashboardController extends Controller
             'perluDinego',
             'chartStatusPembayaran',
             'urgentProjects',
-            'jadwalBulanIni',
+            'agendaEvents',
+            'dari',
+            'sampai',
+            'preset',
             'pembayaranSengketa',
             'linkSengketa',
             'ringkasan',
