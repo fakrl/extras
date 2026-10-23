@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\KeuanganService;
 use App\Support\AdminRingkasan;
 use App\Support\PerHalaman;
+use App\Support\Periode;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,8 +31,9 @@ class CastingProjectController extends Controller
         $tahap = array_key_exists((string) $request->query('tahap'), CastingProject::TAHAP) ? $request->query('tahap') : null;
         $bayar = in_array($request->query('bayar'), ['staf', 'extras', 'sengketa'], true) ? $request->query('bayar') : null;
         $cari = trim((string) $request->query('q'));
-        $tgl = fn (string $k) => rescue(fn () => Carbon::createFromFormat('!Y-m-d', (string) $request->query($k)), null, false) ?: null;
-        $periode = ($dari = $tgl('dari')) && ($sampai = $tgl('sampai')) ? [min($dari, $sampai), max($dari, $sampai)] : null;
+        // CQ.1: rumus parsing/swap tanggal di-reuse dari Periode (satu rumus, jangan disalin) -
+        // tapi halaman ini TIDAK punya default/preset, jadi pakai opsional() yang null kalau kosong.
+        $periode = Periode::opsional($request);
 
         // CM.2.3: default hanya proyek yang dikelola Admin/Korlap. Super Admin tetap lihat-saja
         // semua proyek (GET) seperti sebelumnya, karena di luar mode dia tidak "mengelola" proyek manapun.

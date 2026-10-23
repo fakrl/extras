@@ -15,8 +15,11 @@
 
 <div class="dash-tiga">
     <div class="card">
-        <div class="card-title">Jadwal Shooting Bulan Ini</div>
-        <x-jadwal-calendar :events="$jadwalBulanIni" :compact="true" />
+        <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <span>Jadwal Shooting</span>
+            <x-filter-periode :dari="$dari" :sampai="$sampai" :preset="$preset" :action="route('client.dashboard')" />
+        </div>
+        <x-agenda :events="$agendaEvents" />
     </div>
 
     <div class="card dash-perlu {{ $jumlahTindakan ? '' : 'is-aman' }}">

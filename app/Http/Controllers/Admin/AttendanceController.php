@@ -10,6 +10,7 @@ use App\Models\EventShootingDate;
 use App\Models\ProjectApplication;
 use App\Models\User;
 use App\Support\KorlapRingkasan;
+use App\Support\Periode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -73,13 +74,26 @@ class AttendanceController extends Controller
 
         $rekap = $shootingDate ? KorlapRingkasan::rekap($applicants) : null;
 
-        $jadwalBulanIni = EventShootingDate::whereBetween('tanggal', [now()->startOfMonth(), now()->endOfMonth()])
+        // CQ.2.3/CQ.3: default +7, tapi diperluas supaya mencakup tanggal yang sedang dipilih via ?tanggal=.
+        [$dari, $sampai, $preset] = Periode::dariSesi($request, 'periode_absensi', '+7');
+        $agendaDari = $dari;
+        $agendaSampai = $sampai;
+        if ($shootingDate) {
+            $tgl = $shootingDate->tanggal->copy()->startOfDay();
+            $agendaDari = $tgl->lt($agendaDari) ? $tgl->copy() : $agendaDari;
+            $agendaSampai = $tgl->gt($agendaSampai) ? $tgl->copy() : $agendaSampai;
+        }
+
+        $agendaEvents = EventShootingDate::whereBetween('tanggal', [$agendaDari, $agendaSampai])
             ->whereHas('castingProject', fn ($q) => $q->dikelolaOleh($user))
             ->with('castingProject:id,nama_produksi')
             ->get()
-            ->map(fn ($e) => tap($e, fn ($e) => $e->nama_produksi = $e->castingProject?->nama_produksi));
+            ->each(function ($e) {
+                $e->nama_produksi = $e->castingProject?->nama_produksi;
+                $e->url_proyek = route('admin.attendance.index', ['project' => $e->casting_project_id, 'tanggal' => $e->id]);
+            });
 
-        return view('admin.attendance.index', compact('projects', 'castingProject', 'shootingDate', 'applicants', 'rekap', 'today', 'jadwalBulanIni'));
+        return view('admin.attendance.index', compact('projects', 'castingProject', 'shootingDate', 'applicants', 'rekap', 'today', 'agendaEvents', 'dari', 'sampai', 'preset'));
     }
 
     private function pastikanBolehProyek(Request $request, CastingProject $project): void

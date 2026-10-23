@@ -141,30 +141,24 @@ class CoDashboardSaTest extends TestCase
             ->assertSee('id="pantau-admin"', false);
     }
 
-    // CO.3.2: dropdown periode kalender menghasilkan rentang tanggal yang benar.
-    public function test_filter_periode_kalender_dropdown(): void
+    // CQ.1/CQ.2: kalender dropdown lama dihapus, diganti satu filter periode yang menentukan agenda.
+    public function test_filter_periode_menentukan_agenda_yang_tampil(): void
     {
         $hariIni = CastingProject::factory()->create(['client_request_status' => 'disetujui', 'nama_produksi' => 'Proyek Hari Ini']);
         $hariIni->shootingDates()->create(['tanggal' => '2026-06-10']);
 
-        $tujuhHari = CastingProject::factory()->create(['client_request_status' => 'disetujui', 'nama_produksi' => 'Proyek 7 Hari']);
-        $tujuhHari->shootingDates()->create(['tanggal' => '2026-06-15']);
+        $tujuhHariLalu = CastingProject::factory()->create(['client_request_status' => 'disetujui', 'nama_produksi' => 'Proyek 7 Hari Lalu']);
+        $tujuhHariLalu->shootingDates()->create(['tanggal' => '2026-06-03']);
 
-        $bulanDepan = CastingProject::factory()->create(['client_request_status' => 'disetujui', 'nama_produksi' => 'Proyek Bulan Depan']);
-        $bulanDepan->shootingDates()->create(['tanggal' => '2026-07-05']);
+        $nama = fn ($r) => $r->viewData('agendaEvents')->pluck('nama_produksi')->all();
 
-        // viewData dipakai (bukan assertSee halaman) karena kalender PENUH di dialog "Lihat kalender"
-        // ikut merender event sebulan penuh terlepas dari dropdown - itu memang perilaku yang diharapkan.
-        $nama = fn ($r) => $r->viewData('jadwalRingkas')->pluck('nama_produksi')->all();
-
+        // default 30 hari terakhir -> mencakup keduanya.
         $r1 = $this->actingAs($this->sa)->get(route('super-admin.dashboard'));
-        $this->assertSame(['Proyek Hari Ini'], $nama($r1));
+        $this->assertEqualsCanonicalizing(['Proyek Hari Ini', 'Proyek 7 Hari Lalu'], $nama($r1));
 
-        $r2 = $this->actingAs($this->sa)->get(route('super-admin.dashboard', ['kalender' => '7_hari']));
-        $this->assertEqualsCanonicalizing(['Proyek Hari Ini', 'Proyek 7 Hari'], $nama($r2));
-
-        $r3 = $this->actingAs($this->sa)->get(route('super-admin.dashboard', ['kalender' => 'bulan_depan']));
-        $this->assertSame(['Proyek Bulan Depan'], $nama($r3));
+        // preset 7 hari terakhir -> 3 Juni di luar rentang, 10 Juni termasuk.
+        $r2 = $this->actingAs($this->sa)->get(route('super-admin.dashboard', ['periode' => '7']));
+        $this->assertSame(['Proyek Hari Ini'], $nama($r2));
     }
 
     // Bug fix: Admin yang hanya ditugaskan (admin_project_assignments), bukan PIC,

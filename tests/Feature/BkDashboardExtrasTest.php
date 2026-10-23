@@ -68,6 +68,9 @@ class BkDashboardExtrasTest extends TestCase
             $this->assertStringContainsString($nama, $riwayat);
         }
         $this->assertStringNotContainsString('Jauh', $riwayat);
-        $this->assertSame(1, substr_count($html, '>Sudah Selesai<'));
+        // CQ.2: "Sudah Selesai" boleh juga muncul di kartu Jadwal Shooting (agenda, bukan riwayat) -
+        // yang dicek di sini cuma tidak dobel di daftar Pendaftaran Aktif di atas Riwayat.
+        $aktifSaja = substr($html, strpos($html, 'data-dash="pendaftaran"'), strpos($html, 'data-dash="riwayat"') - strpos($html, 'data-dash="pendaftaran"'));
+        $this->assertStringNotContainsString('>Sudah Selesai<', $aktifSaja);
     }
 }

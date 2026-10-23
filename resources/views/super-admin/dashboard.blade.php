@@ -9,9 +9,6 @@
 
 @push('styles')
 <style>
-.sa-filter { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.sa-filter .btn { min-height: 32px; padding: 0 12px; font-size: 12px; border-radius: 20px; }
-.sa-filter input[type=date] { min-height: 32px; font-size: 12px; padding: 0 6px; width: auto; }
 .sa-stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
 @media (min-width: 861px) {
     .sa-stat-grid { grid-template-columns: repeat(4, 1fr); }
@@ -25,9 +22,6 @@
 .sa-tab:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
 .sa-lihat-semua { color: var(--accent); font-weight: 600; }
 .sa-filterbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
-.sa-filterbar .btn { min-height: 34px; padding: 0 12px; font-size: 12.5px; border-radius: 20px; }
-.sa-filterbar-range { display: flex; gap: 6px; align-items: center; margin: 0; min-width: 0; }
-.sa-filterbar-range input[type=date] { min-height: 34px; font-size: 12.5px; padding: 0 6px; width: auto; margin: 0; flex: 1 1 auto; min-width: 0; }
 .sa-filterbar-info { margin-left: auto; cursor: help; white-space: nowrap; }
 @media (max-width: 860px) { .sa-filterbar-info { margin-left: 0; white-space: normal; } }
 .dash-tiga .sa-stat-grid { grid-template-columns: repeat(2, 1fr); }
@@ -53,17 +47,9 @@
     <a href="#pantau-admin" class="btn"><span class="badge {{ $badgeKelas($pantauMendesak) }}">{{ $pantauTotal }}</span> Pantau Admin</a>
 </div>
 
-{{-- BD.3.1 Filter periode: 1 baris --}}
+{{-- CQ.4.1 Filter periode: satu dropdown untuk semua (Status Proyek, agenda, statistik) --}}
 <div class="sa-filterbar">
-    @foreach (\App\Http\Controllers\SuperAdmin\DashboardController::PRESET as $val => $label)
-        <a href="{{ route('super-admin.dashboard', ['periode' => $val]) }}" class="btn {{ $preset === $val ? 'btn-brand' : '' }}">{{ $label }}</a>
-    @endforeach
-    <form method="GET" action="{{ route('super-admin.dashboard') }}" class="sa-filterbar-range">
-        <input type="date" name="dari" value="{{ $dari->format('Y-m-d') }}" aria-label="Dari tanggal" required>
-        <span class="dash-sub">&ndash;</span>
-        <input type="date" name="sampai" value="{{ $sampai->format('Y-m-d') }}" aria-label="Sampai tanggal" required>
-        <button type="submit" class="btn {{ $preset ? '' : 'btn-brand' }}">Terapkan</button>
-    </form>
+    <x-filter-periode :dari="$dari" :sampai="$sampai" :preset="$preset" :action="route('super-admin.dashboard')" />
     <span class="dash-sub sa-filterbar-info">
         <strong>{{ $jumlahHari }} hari</strong> &middot; {{ $dari->translatedFormat('d M Y') }} &ndash; {{ $sampai->translatedFormat('d M Y') }}
     </span>
@@ -72,30 +58,8 @@
 {{-- 3 kotak sejajar: Jadwal · Perlu tindakan · Status proyek (+ Akun) --}}
 <div class="dash-tiga">
 <div class="card">
-    <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
-        <span>Jadwal Shooting</span>
-        <button type="button" class="btn btn-sm" onclick="document.getElementById('dialog-kalender').showModal()">Lihat kalender</button>
-    </div>
-    {{-- CO.3.2: dropdown periode menggantikan kalender penuh di kartu ini --}}
-    <form method="GET" action="{{ route('super-admin.dashboard') }}" style="margin-bottom: 10px;">
-        <label for="kalender-preset" class="dash-sub" style="display: block; margin-bottom: 4px;">Tampilkan jadwal</label>
-        <select name="kalender" id="kalender-preset" onchange="this.form.submit()">
-            @foreach (\App\Http\Controllers\SuperAdmin\DashboardController::PRESET_KALENDER as $val => $label)
-                <option value="{{ $val }}" @selected($kalenderPreset === $val)>{{ $label }}</option>
-            @endforeach
-        </select>
-    </form>
-    @forelse ($jadwalRingkas as $e)
-        <a href="{{ $e->url_proyek }}" class="dash-row">
-            <div>
-                <strong>{{ $e->nama_produksi }}</strong>
-                <div class="dash-sub">{{ $e->tanggal->translatedFormat('d M Y') }} &bull; {{ $e->absensi }}</div>
-            </div>
-            <span class="dash-sub">Buka &rarr;</span>
-        </a>
-    @empty
-        <p class="dash-sub" style="margin: 0;">Tidak ada jadwal shooting di periode ini.</p>
-    @endforelse
+    <div class="card-title">Jadwal Shooting</div>
+    <x-agenda :events="$agendaEvents" />
 </div>
 
 <div class="card dash-perlu {{ $jumlahTindakan ? '' : 'is-aman' }}" id="perlu-tindakan">
@@ -104,6 +68,7 @@
         @if ($jumlahTindakan)
             <span class="badge badge-netral" style="margin-left: 8px;">{{ $jumlahTindakan }}</span>
         @endif
+        <span class="dash-sub" style="font-weight: 400;">(semua waktu, tidak ikut filter)</span>
     </div>
 
     <div id="grup-pengajuan">
@@ -168,6 +133,11 @@
             <button type="button" class="metric-card sa-tab" role="tab" id="tab-{{ $tahap }}" aria-controls="panel-{{ $tahap }}" aria-selected="{{ $tahap === $tabAwal ? 'true' : 'false' }}" tabindex="{{ $tahap === $tabAwal ? 0 : -1 }}">
                 <div class="metric-label">{{ $label }}</div>
                 <div class="metric-value">{{ $statusProyek[$tahap] }}</div>
+                @if ($pertumbuhan[$tahap] === null)
+                    <div class="dash-sub" style="font-size: 11px;">Semua waktu</div>
+                @else
+                    <div class="dash-sub" style="font-size: 11px;" title="Dibanding periode sebelumnya, panjang sama">{{ $pertumbuhan[$tahap] >= 0 ? '▲' : '▼' }} {{ abs($pertumbuhan[$tahap]) }}%</div>
+                @endif
             </button>
         @endforeach
     </div>
@@ -211,6 +181,7 @@
         @if ($pantauTotal)
             <span class="badge badge-netral" style="margin-left: 8px;">{{ $pantauTotal }}</span>
         @endif
+        <span class="dash-sub" style="font-weight: 400;">(semua waktu, tidak ikut filter)</span>
     </div>
     <p class="dash-sub" style="margin: 0 0 4px;">Tugas tertunda tiap Admin aktif di proyeknya. Klik Ingatkan untuk kirim pengingat in-app ke Admin PIC.</p>
     @forelse ($pantauAdmin as $p)
@@ -234,13 +205,6 @@
     </div>
 </div>
 
-<dialog id="dialog-kalender" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; max-width: 640px; width: 95%;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <strong>Kalender Shooting</strong>
-        <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Tutup</button>
-    </div>
-    <x-jadwal-calendar :events="$jadwal" :bulan="$bulan->format('Y-m')" :detail="true" />
-</dialog>
 @endsection
 
 @push('scripts')

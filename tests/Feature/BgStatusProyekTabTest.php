@@ -52,7 +52,7 @@ class BgStatusProyekTabTest extends TestCase
         $this->proyek('Jalan Luar Periode', ['2026-05-01', '2026-07-20']);
         $this->proyek('Datang Luar Periode', ['2026-07-20']);
 
-        $r = $this->actingAs($this->sa)->get(route('super-admin.dashboard'))->assertOk()
+        $r = $this->actingAs($this->sa)->get(route('super-admin.dashboard', ['dari' => '2026-06-01', 'sampai' => '2026-06-30']))->assertOk()
             ->assertDontSee('5 Proyek Berjalan Teratas')
             ->assertSee('role="tablist"', false);
         $html = $r->getContent();
@@ -83,13 +83,15 @@ class BgStatusProyekTabTest extends TestCase
 
     public function test_default_mendatang_kalau_berjalan_kosong_lalu_berjalan_kalau_semua_kosong(): void
     {
-        $this->actingAs($this->sa)->get(route('super-admin.dashboard'))
+        $periode = ['dari' => '2026-06-01', 'sampai' => '2026-06-30'];
+
+        $this->actingAs($this->sa)->get(route('super-admin.dashboard', $periode))
             ->assertViewHas('tabAwal', 'berjalan')->assertSee('Tidak ada proyek berjalan dalam periode ini.');
 
         $this->proyek('Ajuan', [], 'menunggu_acc');
-        $this->actingAs($this->sa)->get(route('super-admin.dashboard'))->assertViewHas('tabAwal', 'menunggu_acc');
+        $this->actingAs($this->sa)->get(route('super-admin.dashboard', $periode))->assertViewHas('tabAwal', 'menunggu_acc');
 
         $this->proyek('Datang', ['2026-06-20']);
-        $this->actingAs($this->sa)->get(route('super-admin.dashboard'))->assertViewHas('tabAwal', 'mendatang');
+        $this->actingAs($this->sa)->get(route('super-admin.dashboard', $periode))->assertViewHas('tabAwal', 'mendatang');
     }
 }
