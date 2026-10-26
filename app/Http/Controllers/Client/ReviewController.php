@@ -159,12 +159,20 @@ class ReviewController extends Controller
     /** BI.1: profil Extras versi Client, cuma kandidat yang sudah diajukan di proyek Client ini (D3 sementara). */
     public function profil(Request $request, User $user)
     {
-        $profile = $user->extrasProfile;
+        $profile = $user->extrasProfile()->withTerpilih()->first();
         abort_unless($profile && $profile->applications()
             ->terlihatClient()
             ->whereHas('castingProject', fn ($q) => $q->milikClient($request->user()))
             ->exists(), 403);
-        $profile->load('user', 'categories');
+
+        // Tembok visibilitas: cuma proyek milik Client ini + status lolos-ke-atas yang pernah sampai ke query/response.
+        $profile->load([
+            'user', 'categories',
+            'applications' => fn ($q) => $q->whereIn('status_partisipasi', ProjectApplication::STATUS_LOLOS_KE_ATAS)
+                ->whereHas('castingProject', fn ($c) => $c->milikClient($request->user())->where('client_request_status', 'disetujui'))
+                ->with('castingProject.shootingDates')
+                ->latest(),
+        ]);
 
         return view($request->ajax() || $request->boolean('partial') ? 'partials.profil-extras-app' : 'extras.profile-show', ['profile' => $profile, 'mode' => 'client']);
     }
