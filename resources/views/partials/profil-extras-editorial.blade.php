@@ -68,6 +68,9 @@
 .pe-stack > * + * { margin-top: 24px; }
 .pe-exp { padding: 10px 0; border-top: 1px solid var(--pe-line); }
 .pe-exp:first-of-type { border-top: 0; padding-top: 0; }
+a.pe-exp { display: block; color: inherit; text-decoration: none; }
+.pe-riwayat-lain { font-size: 13px; padding: 6px 0; border-top: 1px solid var(--pe-line); color: var(--pe-fg); text-decoration: none; display: block; }
+.pe-riwayat-lain:first-of-type { border-top: 0; }
 .pe-exp-judul { font-size: 18px; margin: 0; display: flex; justify-content: space-between; gap: 12px; }
 .pe-exp-judul span { font-family: inherit; font-size: 12px; letter-spacing: .1em; color: var(--pe-accent); white-space: nowrap; padding-top: 4px; }
 .pe-exp-ket { font-size: 13px; color: var(--pe-muted); margin: 2px 0 0; }
@@ -247,17 +250,51 @@
         @endif
     </section>
 
-    @if ($mode === 'admin')
+    @if ($mode === 'admin' || $mode === 'client')
     <section class="pe-sec pe-pad">
         <p class="pe-num">06 / Proyek yang pernah diikuti</p>
-        @forelse ($profile->applications as $riwayat)
-            <div class="pe-exp">
-                <p class="pe-exp-judul pe-serif">{{ $riwayat->castingProject->nama_produksi }}<span>{{ $riwayat->castingProject->shootingDates->min('tanggal')?->year ?? $riwayat->created_at->year }}</span></p>
-                <p class="pe-exp-ket">{{ $riwayat->castingProjectClass->nama_kelas ?? 'Peran belum dipilih' }} &bull; {{ $riwayat->label() }}</p>
-            </div>
-        @empty
-            <p class="pe-text" style="color: var(--pe-muted);">Belum pernah ikut proyek.</p>
-        @endforelse
+        @if ($mode === 'admin')
+            @php
+                $userLogin = auth()->user();
+                $lolosKeAtas = \App\Models\ProjectApplication::STATUS_LOLOS_KE_ATAS;
+                [$riwayatUtama, $riwayatLain] = $profile->applications->partition(fn ($a) => in_array($a->status_partisipasi, $lolosKeAtas, true));
+                $tautanRiwayat = function ($riwayat) use ($userLogin, $lolosKeAtas) {
+                    $proyek = $riwayat->castingProject;
+                    if (! $proyek->dikelolaOleh($userLogin)) {
+                        return route('admin.projects.show', $proyek);
+                    }
+                    $keClient = in_array($riwayat->status_partisipasi, [...$lolosKeAtas, 'diajukan_ke_client'], true);
+
+                    return route('admin.projects.applicants', [$proyek] + ($keClient ? ['tab' => 'client'] : [])).'#app-'.$riwayat->id;
+                };
+            @endphp
+            @forelse ($riwayatUtama as $riwayat)
+                <a href="{{ $tautanRiwayat($riwayat) }}" class="pe-exp">
+                    <p class="pe-exp-judul pe-serif">{{ $riwayat->castingProject->nama_produksi }}<span>{{ $riwayat->castingProject->shootingDates->min('tanggal')?->year ?? $riwayat->created_at->year }}</span></p>
+                    <p class="pe-exp-ket">{{ $riwayat->castingProjectClass->nama_kelas ?? 'Peran belum dipilih' }} &bull; {{ $riwayat->label() }}</p>
+                </a>
+            @empty
+                <p class="pe-text" style="color: var(--pe-muted);">Belum pernah ikut proyek.</p>
+            @endforelse
+            @if ($riwayatLain->isNotEmpty())
+                <details style="margin-top: 16px;">
+                    <summary class="pe-label" style="cursor: pointer;">Riwayat pendaftaran lain ({{ $riwayatLain->count() }})</summary>
+                    @foreach ($riwayatLain as $riwayat)
+                        <a href="{{ $tautanRiwayat($riwayat) }}" class="pe-riwayat-lain">{{ $riwayat->castingProject->nama_produksi }} ({{ $riwayat->castingProject->shootingDates->min('tanggal')?->year ?? $riwayat->created_at->year }}) &bull; {{ $riwayat->label() }}</a>
+                    @endforeach
+                </details>
+            @endif
+        @else
+            <p class="pe-text">Pernah ikut <strong>{{ $profile->terpilih_count }}</strong> produksi bersama JBTB</p>
+            @forelse ($profile->applications as $riwayat)
+                <a href="{{ route('client.reviews.show', $riwayat->castingProject) }}" class="pe-exp">
+                    <p class="pe-exp-judul pe-serif">{{ $riwayat->castingProject->nama_produksi }}<span>{{ $riwayat->castingProject->shootingDates->min('tanggal')?->year ?? $riwayat->created_at->year }}</span></p>
+                    <p class="pe-exp-ket">{{ $riwayat->labelClient() }}</p>
+                </a>
+            @empty
+                <p class="pe-text" style="color: var(--pe-muted);">Belum pernah ikut proyek bersama Anda.</p>
+            @endforelse
+        @endif
     </section>
     @endif
 </div>
