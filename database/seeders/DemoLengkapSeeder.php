@@ -18,6 +18,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -141,7 +142,7 @@ class DemoLengkapSeeder extends Seeder
         foreach (['dimas_rk', 'sari_mei', 'bagas22', 'citra_ay', 'pak_harto', 'kevin_t', 'yohanes_m', 'clara_b', 'arga_p'] as $i => $un) {
             $profile = $this->u[$un]->extrasProfile;
             $profile->forceFill([
-                'foto_profil_path' => $this->fotoDemo($un, $i),
+                'foto_profil_path' => $this->fotoDemo($un, $i, $profile->gender),
                 'izin_tampil_publik' => true,
                 'tampil_di_beranda' => $un !== 'arga_p',
                 'tampil_di_beranda_at' => $un !== 'arga_p' ? now()->subDays($i) : null,
@@ -155,10 +156,10 @@ class DemoLengkapSeeder extends Seeder
                 ['label' => 'Instagram', 'url' => 'https://instagram.com/dimas.rk'],
                 ['label' => 'Portofolio', 'url' => 'https://dimasrk.my.canva.site'],
             ],
-            'foto_tambahan' => [1 => $this->fotoDemo('dimas_rk-slot1', 1), 2 => $this->fotoDemo('dimas_rk-slot2', 2)],
+            'foto_tambahan' => [1 => $this->fotoDemo('dimas_rk-slot1', 1, 'pria'), 2 => $this->fotoDemo('dimas_rk-slot2', 2, 'pria')],
         ])->save();
         $this->u['yohanes_m']->extrasProfile->forceFill([
-            'foto_tambahan' => [1 => $this->fotoDemo('yohanes_m-slot1', 3), 2 => $this->fotoDemo('yohanes_m-slot2', 4), 3 => $this->fotoDemo('yohanes_m-slot3', 5)],
+            'foto_tambahan' => [1 => $this->fotoDemo('yohanes_m-slot1', 3, 'pria'), 2 => $this->fotoDemo('yohanes_m-slot2', 4, 'pria'), 3 => $this->fotoDemo('yohanes_m-slot3', 5, 'pria')],
         ])->save();
         $this->u['clara_b']->extrasProfile->update(['tautan_tambahan' => [['label' => 'LinkedIn', 'url' => 'https://linkedin.com/in/clarabennett']]]);
         $this->u['kevin_t']->extrasProfile->update(['tautan_tambahan' => [
@@ -646,7 +647,38 @@ class DemoLengkapSeeder extends Seeder
         ]);
     }
 
-    private function fotoDemo(string $username, int $i): string
+    /**
+     * Foto demo: coba unduh foto orang asli (biar kelihatan beneran saat ditinjau),
+     * disimpan lokal sekali saat seeding (bukan hotlink - CSP cuma izinkan gambar
+     * lokal). Gagal/offline -> fallback ke SVG gradient lama, seeding tidak boleh
+     * gagal gara-gara jaringan.
+     */
+    private function fotoDemo(string $username, int $i, ?string $gender = null): string
+    {
+        // ponytail: test tanpa kirim keluar (DemoSeederTest::assertNothingSent) - jangan coba HTTP saat testing.
+        if (app()->runningUnitTests()) {
+            return $this->fotoDemoSvg($username, $i);
+        }
+
+        $path = "demo/foto/{$username}.jpg";
+        $folder = $gender === 'wanita' ? 'women' : 'men';
+        $nomor = crc32($username) % 100;
+
+        try {
+            $foto = Http::timeout(3)->get("https://randomuser.me/api/portraits/{$folder}/{$nomor}.jpg");
+            if ($foto->successful()) {
+                Storage::disk('local')->put($path, $foto->body());
+
+                return $path;
+            }
+        } catch (\Throwable) {
+            // ponytail: offline/gagal jaringan, lanjut ke fallback SVG di bawah.
+        }
+
+        return $this->fotoDemoSvg($username, $i);
+    }
+
+    private function fotoDemoSvg(string $username, int $i): string
     {
         $h = ($i * 47) % 360;
         $path = "demo/foto/{$username}.svg";
