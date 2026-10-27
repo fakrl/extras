@@ -661,11 +661,12 @@ class DemoLengkapSeeder extends Seeder
         }
 
         $path = "demo/foto/{$username}.jpg";
-        $folder = $gender === 'wanita' ? 'women' : 'men';
-        $nomor = crc32($username) % 100;
+        $folder = $gender === 'wanita' ? 'female' : 'male';
+        // xsgames: 256x256 (vs randomuser.me yang cuma 128x128 - pecah kalau ditampilin besar).
+        $nomor = crc32($username) % 65;
 
         try {
-            $foto = Http::timeout(3)->get("https://randomuser.me/api/portraits/{$folder}/{$nomor}.jpg");
+            $foto = Http::timeout(3)->get("https://xsgames.co/randomusers/assets/avatars/{$folder}/{$nomor}.jpg");
             if ($foto->successful()) {
                 Storage::disk('local')->put($path, $foto->body());
 
