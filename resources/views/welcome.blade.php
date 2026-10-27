@@ -603,6 +603,9 @@
     // Carousel geser manual: drag mouse/trackpad, swipe native di touch.
     document.querySelectorAll('[data-carousel]').forEach(function (el) {
         var dragging = false, moved = false, startX, startScroll, pointerId, captured = false;
+        // Browser nge-drag <img>/<a> secara native by default - itu nyegat pointermove
+        // sebelum logika drag kita sempat jalan, jadi geser mouse kelihatan nggak ngapa-ngapain.
+        el.addEventListener('dragstart', function (e) { e.preventDefault(); });
         el.addEventListener('pointerdown', function (e) {
             dragging = true; moved = false; captured = false;
             startX = e.clientX; startScroll = el.scrollLeft;
@@ -634,9 +637,31 @@
         if (wrap) {
             wrap.querySelectorAll('.marquee-nav').forEach(function (btn) {
                 btn.addEventListener('click', function () {
+                    pauseAuto(); resumeAutoLater();
                     el.scrollBy({ left: Number(btn.dataset.dir) * el.clientWidth * 0.8, behavior: 'smooth' });
                 });
             });
+        }
+
+        // Auto-geser pulang-pergi pas idle, berhenti saat disentuh/di-hover/digeser manual.
+        var autoDir = 1, autoPaused = false, resumeTimer;
+        function pauseAuto() { autoPaused = true; clearTimeout(resumeTimer); }
+        function resumeAutoLater() { clearTimeout(resumeTimer); resumeTimer = setTimeout(function () { autoPaused = false; }, 2500); }
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            el.addEventListener('pointerdown', pauseAuto);
+            el.addEventListener('pointerup', resumeAutoLater);
+            el.addEventListener('pointercancel', resumeAutoLater);
+            el.addEventListener('mouseenter', pauseAuto);
+            el.addEventListener('mouseleave', resumeAutoLater);
+            (function tick() {
+                var max = el.scrollWidth - el.clientWidth;
+                if (!autoPaused && max > 2) {
+                    el.scrollLeft += autoDir * 0.6;
+                    if (el.scrollLeft >= max) autoDir = -1;
+                    else if (el.scrollLeft <= 0) autoDir = 1;
+                }
+                requestAnimationFrame(tick);
+            })();
         }
     });
     </script>
