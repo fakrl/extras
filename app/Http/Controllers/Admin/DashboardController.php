@@ -9,7 +9,7 @@ use App\Models\Payment;
 use App\Models\ProjectApplication;
 use App\Support\AdminRingkasan;
 use App\Support\KorlapRingkasan;
-use App\Support\Periode;
+use App\Support\Timeline;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -58,12 +58,8 @@ class DashboardController extends Controller
             ->values();
 
         $proyekIds = CastingProject::query()->dikelolaOleh($user)->pluck('id');
-        // CQ.3: Korlap (murni atau SA mode Korlap) pakai default maju (+7, jadwal ke depan),
-        // Admin pakai mundur (30) - session key dipisah juga biar SA ganti mode tidak saling timpa.
-        $korlapMode = $user->isKorlap() || $user->modeSa() === 'korlap';
-        [$dari, $sampai, $preset] = $korlapMode
-            ? Periode::dariSesi($request, 'periode_korlap_dashboard', '+7')
-            : Periode::dariSesi($request, 'periode_admin_dashboard', '30');
+        // CR.1.3: timeline Jadwal default Minggu ini untuk semua (Admin & Korlap sama-sama).
+        [$dari, $sampai, $skala] = Timeline::dariSesi($request, 'timeline_admin_dashboard', 'minggu');
         $agendaEvents = EventShootingDate::whereIn('casting_project_id', $proyekIds)
             ->whereBetween('tanggal', [$dari, $sampai])
             ->with('castingProject:id,nama_produksi')
@@ -93,7 +89,7 @@ class DashboardController extends Controller
             'agendaEvents',
             'dari',
             'sampai',
-            'preset',
+            'skala',
             'pembayaranSengketa',
             'linkSengketa',
             'ringkasan',

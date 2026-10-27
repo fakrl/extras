@@ -7,6 +7,8 @@ use App\Models\Contract;
 use App\Models\Payment;
 use App\Models\ProjectApplication;
 use App\Models\User;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Collection;
 
 // BL.1: satu sumber angka "perlu tindakan" Admin, dipakai dashboard Admin & pratinjau Monitoring SA.
 // CM.1.2: scoping proyek lewat CastingProject::dikelolaOleh(), bukan admin_id langsung.
@@ -85,6 +87,53 @@ class AdminRingkasan
                 'daftar' => $isi->sortBy(fn ($i) => $i['sejak']?->timestamp ?? 0)->take($maks)->values(),
             ];
         })->all();
+    }
+
+    /**
+     * CO.2.1/CR.3.2: per Admin aktif, tugas tertunda di proyek yang dia PIC-i.
+     * $maks null = semua (halaman Pantau Admin), int = batasi TAMPILAN per Admin (kartu dashboard ringkas).
+     * 'jumlah' = total tugas perlu SEBELUM dipotong $maks, dipakai KPI dashboard SA.
+     */
+    public static function pantauAdmin(Collection $admins, ?int $maks = 5): Collection
+    {
+        // tahapan($a) HARUS dipanggil dengan maks PHP_INT_MAX supaya daftar per tahap
+        // tidak terpotong 8 item tertua sebelum difilter perlu=true ($maks di sini cuma batasi tampilan).
+        $perAdmin = $admins->map(function (User $a) use ($maks) {
+            $semua = collect(self::tahapan($a, PHP_INT_MAX))
+                ->flatMap(fn ($t) => $t['daftar'])
+                ->filter(fn ($i) => $i['perlu'] && $i['app']->castingProject?->admin_id === $a->id)
+                ->sortBy(fn ($i) => $i['sejak']?->timestamp ?? 0)
+                ->values();
+
+            return ['admin' => $a, 'jumlah' => $semua->count(), 'tampil' => $semua->when($maks, fn ($c) => $c->take($maks))->values()];
+        })->filter(fn ($p) => $p['jumlah'] > 0)->values();
+
+        // N+1: satu query notifikasi untuk semua tugas yang ditampilkan, bukan per tugas.
+        $kunciSemua = $perAdmin->flatMap(fn ($p) => $p['tampil'])->map(fn ($i) => 'pa-'.$i['app']->id)->values();
+        $notifTerakhir = DatabaseNotification::where('notifiable_type', User::class)
+            ->whereIn('notifiable_id', $admins->pluck('id'))
+            ->where('data->jenis', 'pengingat_sa')
+            ->whereIn('data->kunci', $kunciSemua)
+            ->get()
+            ->groupBy(fn ($n) => $n->data['kunci'] ?? null)
+            ->map(fn ($g) => $g->sortByDesc('created_at')->first());
+
+        return $perAdmin->map(function ($p) use ($notifTerakhir) {
+            $tugas = $p['tampil']->map(function ($i) use ($notifTerakhir) {
+                $terakhir = $notifTerakhir->get('pa-'.$i['app']->id);
+
+                return [
+                    'app_id' => $i['app']->id,
+                    'proyek' => $i['app']->castingProject?->nama_produksi,
+                    'tugas' => $i['teks'],
+                    'sejak' => $i['sejak'],
+                    'url' => $i['url'],
+                    'diingatkan_pada' => $terakhir && $terakhir->created_at->gt(now()->subDay()) ? $terakhir->created_at : null,
+                ];
+            })->values();
+
+            return ['admin' => $p['admin'], 'jumlah' => $p['jumlah'], 'tugas' => $tugas];
+        });
     }
 
     private static function lamaranAktif()

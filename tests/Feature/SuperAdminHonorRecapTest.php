@@ -10,9 +10,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
- * BD.3.2 (disesuaikan CO.1 17 Okt 2026): honor staf belum dibayar BUKAN lagi
- * bagian "Perlu Tindakan" SA (daftar eksplisit CO.1 tidak menyebutnya) - tetap
- * tampil sebagai info "Total saat ini", "Perlu Tindakan" tetap "Semua aman".
+ * CR.2 (26 Okt 2026): kartu "Total saat ini" (honor staf) dikeluarkan dari
+ * dashboard SA - invoice jadi KPI, honor staf tetap ada di halaman payroll/
+ * riwayat kerja masing-masing (tidak dihapus dari aplikasi, cuma dari dashboard).
  */
 class SuperAdminHonorRecapTest extends TestCase
 {
@@ -34,32 +34,19 @@ class SuperAdminHonorRecapTest extends TestCase
         $payroll->addons()->create(['label' => 'Transport', 'nominal' => 50000, 'created_by' => $superAdmin->id]);
     }
 
-    public function test_honor_staf_belum_dibayar_termasuk_addon_tampil_sebagai_info(): void
+    public function test_honor_staf_tidak_lagi_tampil_di_dashboard(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
         $this->buatPayroll($superAdmin);
 
-        $response = $this->actingAs($superAdmin)->get(route('super-admin.dashboard'));
-
-        $response->assertOk();
-        $response->assertSee('Honor staf belum dibayar');
-        $response->assertSee('Rp 550.000');
-        // CO.1: honor staf bukan item eksplisit "Perlu Tindakan" SA - tetap "Semua aman" di situ.
-        $response->assertSee('Semua aman')->assertSee('dash-perlu is-aman');
-        // Bug HP Erlin (1 Sep 2026): tanpa `color-scheme`, browser mobile bisa
-        // paksa dark-mode sendiri walau toggle app bilang light - lihat
-        // partials/theme-style.blade.php & layouts/app.blade.php.
-        $response->assertSee('color-scheme', false);
-    }
-
-    public function test_honor_staf_sudah_dibayar_total_nol(): void
-    {
-        $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        $this->buatPayroll($superAdmin, 'sudah');
-
         $this->actingAs($superAdmin)->get(route('super-admin.dashboard'))
             ->assertOk()
-            ->assertSee('Semua aman')->assertSee('dash-perlu is-aman');
+            ->assertDontSee('Honor staf belum dibayar')
+            ->assertDontSee('Rp 550.000')
+            ->assertDontSee('Total saat ini')
+            // Bug HP Erlin (1 Sep 2026): tanpa `color-scheme`, browser mobile bisa
+            // paksa dark-mode sendiri walau toggle app bilang light.
+            ->assertSee('color-scheme', false);
     }
 
     public static function bukanSuperAdminProvider(): array

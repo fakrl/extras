@@ -40,6 +40,7 @@
             font-weight: 700; font-size: 15px;
         }
         .sidebar-brand span { font-weight: 600; font-size: 15px; white-space: nowrap; }
+        .sb-ikon-mr { margin-right: 6px; }
         .sidebar-toggle { margin-left: auto; width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: 10px; background: none; color: var(--text-secondary); font-size: 20px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
         .sidebar-toggle:hover { background: var(--bg-card-hover); color: var(--text-primary); }
         @media (min-width: 861px) {
@@ -486,6 +487,27 @@
         .dash-pill strong { font-size: var(--fs-md, 16px); color: var(--text-primary); }
         a.dash-pill:hover { border-color: var(--accent); }
         .dash-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+        /* CR.4: dialog kartu dashboard SA (butuh-keputusan, diingatkan, tetapkan-pic) - ganti style inline */
+        .dash-dialog { border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 380px; width: 90%; }
+        .dash-dialog-lg { max-width: 420px; width: 92%; }
+        .dash-dialog-isi { padding: 18px; }
+        .dash-dialog-judul { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+        .dash-dialog-sub { margin-bottom: 14px; }
+        .dash-dialog-bagian { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--border-color); }
+        .dash-dialog-field { margin-bottom: 10px; }
+        .dash-dialog-hint { color: var(--text-muted); font-weight: 400; }
+        .dash-dialog-btn { display: flex; gap: 8px; justify-content: flex-end; }
+        .dash-dialog-tutup { margin-top: 12px; }
+        .pa-admin { padding: 10px 0; border-top: 1px solid var(--border-color); }
+        .pa-admin-nama { font-weight: 600; margin-bottom: 6px; }
+        /* CR.4: detail pengajuan Client (_pengajuan.blade.php) - ganti style inline */
+        .pu-catatan { margin-top: 4px; }
+        .pu-detail { margin-top: 6px; font-size: 13px; }
+        .pu-detail summary { cursor: pointer; color: var(--accent); }
+        .pu-detail-blok { margin-top: 6px; }
+        .pu-detail-blok.pu-pre { white-space: pre-line; }
+        .pu-detail-list { margin: 4px 0 0 18px; }
+        .pu-aksi { display: flex; gap: 12px; flex-shrink: 0; flex-wrap: wrap; }
         .dash-metrik { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         a.metric-card { display: block; text-decoration: none; color: inherit; border: 1px solid var(--border-color); }
         a.metric-card:hover { border-color: var(--accent); }

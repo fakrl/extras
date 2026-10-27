@@ -1,6 +1,6 @@
 @php $url = $e->url_proyek ?? null; @endphp
 <div class="dash-row">
-    <div style="min-width: 0;">
+    <div class="agenda-item-info">
         <strong>{{ $e->nama_produksi }}</strong>
         @if (! empty($e->jumlah_extras))
             <div class="dash-sub">{{ $e->jumlah_extras }} Extras @if (! empty($e->absensi)) &middot; {{ $e->absensi }} @endif</div>
@@ -16,7 +16,7 @@
         @endif
     </div>
     @if ($url || ! empty($e->url_absensi))
-        <div style="display: flex; gap: 10px; flex-shrink: 0;">
+        <div class="agenda-item-aksi">
             @if ($url)<a href="{{ $url }}" class="dash-sub">Buka &rarr;</a>@endif
             @if (! empty($e->url_absensi))<a href="{{ $e->url_absensi }}" class="dash-sub">Absensi &rarr;</a>@endif
         </div>

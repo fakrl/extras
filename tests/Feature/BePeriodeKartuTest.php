@@ -51,23 +51,20 @@ class BePeriodeKartuTest extends TestCase
         ];
     }
 
+    // CR.2: kartu "Status Proyek" per-tahap lama (4 tab) dihapus dari dashboard, diganti
+    // KPI "Proyek berjalan" - dicek konsistensinya dengan daftar Proyek tab Berjalan saja.
     #[DataProvider('periode')]
-    public function test_angka_kartu_sama_dengan_total_daftar_tujuan(array $query): void
+    public function test_kpi_proyek_berjalan_sama_dengan_total_daftar_tujuan(array $query): void
     {
         $r = $this->actingAs($this->sa)->get(route('super-admin.dashboard', $query))->assertOk();
-        $angka = $r->viewData('statusProyek');
-        $this->assertGreaterThan(2, $angka->sum());
+        $angka = $r->viewData('proyekBerjalan');
+        $this->assertGreaterThan(0, $angka);
 
-        foreach (CastingProject::TAHAP as $tahap => $label) {
-            $this->assertSame(1, preg_match('/href="([^"]*tahap='.$tahap.'[^"]*)" class="sa-lihat-semua"/', $r->getContent(), $m), $tahap);
-            $url = html_entity_decode($m[1]);
-            // daftar proyek menaruh pengajuan ditolak (BW.1) di tab Menunggu ACC; kartu dashboard tidak
-            $this->assertSame($tahap !== 'menunggu_acc', str_contains($url, 'dari='), $tahap);
+        $this->assertSame(1, preg_match('/href="([^"]*tahap=berjalan[^"]*)" class="kpi-card/', $r->getContent(), $m));
+        $url = html_entity_decode($m[1]);
 
-            $daftar = $this->get($url)->assertOk();
-            $harap = $angka[$tahap] + ($tahap === 'menunggu_acc' ? 1 : 0);
-            $this->assertSame($harap, $daftar->viewData('projects')->total(), "$tahap $url");
-        }
+        $daftar = $this->get($url)->assertOk();
+        $this->assertSame($angka, $daftar->viewData('projects')->total());
     }
 
     public function test_chip_periode_tampil_bisa_dihapus_dan_ikut_di_form_cari(): void

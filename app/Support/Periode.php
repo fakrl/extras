@@ -6,24 +6,19 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 /**
- * CQ.1: satu rumus periode (preset mundur/maju + custom), dipakai semua
- * halaman yang punya filter tanggal. Gantikan sistem preset terpisah lama
- * (DashboardController::periode()/PRESET/PRESET_KALENDER/rentangKalender()).
+ * CR.1.1: rentang tanggal untuk angka/statistik (pola Stripe/GA). Preset lama
+ * (14/60/90/365/+7/+30 mundur-maju generik, era CQ.1) dihapus - diganti preset
+ * kalender yang umum dipakai. Navigasi jadwal/agenda pindah ke Timeline.
  */
 class Periode
 {
-    const MUNDUR = [
+    const PRESET = [
+        'hari_ini' => 'Hari ini',
         '7' => '7 hari terakhir',
-        '14' => '14 hari terakhir',
         '30' => '30 hari terakhir',
-        '60' => '60 hari terakhir',
-        '90' => '90 hari terakhir',
-        '365' => '1 tahun terakhir',
-    ];
-
-    const MAJU = [
-        '+7' => '7 hari ke depan',
-        '+30' => '30 hari ke depan',
+        'bulan_ini' => 'Bulan ini',
+        'bulan_lalu' => 'Bulan lalu',
+        'tahun_ini' => 'Tahun ini',
     ];
 
     /** @return array{0: Carbon, 1: Carbon, 2: ?string} */
@@ -33,8 +28,7 @@ class Periode
             return [...$custom, null];
         }
 
-        $semua = self::MUNDUR + self::MAJU;
-        $preset = array_key_exists((string) $request->query('periode'), $semua) ? $request->query('periode') : $default;
+        $preset = array_key_exists((string) $request->query('periode'), self::PRESET) ? $request->query('periode') : $default;
 
         return self::rentang($preset);
     }
@@ -86,24 +80,22 @@ class Periode
         return [$dari, $sampai, $preset];
     }
 
+    /** @return array{0: Carbon, 1: Carbon, 2: string} */
     private static function rentang(string $preset): array
     {
-        if (str_starts_with($preset, '+')) {
-            $n = max(1, (int) substr($preset, 1));
-
-            return [today(), today()->copy()->addDays($n - 1), $preset];
-        }
-
-        $n = max(1, (int) $preset);
-
-        return [today()->copy()->subDays($n - 1), today(), $preset];
+        return match ($preset) {
+            'hari_ini' => [today(), today(), $preset],
+            'bulan_ini' => [today()->copy()->startOfMonth(), today()->copy()->endOfMonth(), $preset],
+            'bulan_lalu' => [today()->copy()->subMonthNoOverflow()->startOfMonth(), today()->copy()->subMonthNoOverflow()->endOfMonth(), $preset],
+            'tahun_ini' => [today()->copy()->startOfYear(), today()->copy()->endOfYear(), $preset],
+            default => [today()->copy()->subDays(max(1, (int) $preset) - 1), today(), $preset],
+        };
     }
 
     public static function label(Carbon $dari, Carbon $sampai, ?string $preset): string
     {
-        $semua = self::MUNDUR + self::MAJU;
-        if ($preset && isset($semua[$preset])) {
-            return $semua[$preset];
+        if ($preset && isset(self::PRESET[$preset])) {
+            return self::PRESET[$preset];
         }
 
         $fmt = $dari->year === $sampai->year ? 'd M' : 'd M Y';

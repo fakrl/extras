@@ -10,7 +10,7 @@ use App\Models\EventShootingDate;
 use App\Models\ProjectApplication;
 use App\Models\User;
 use App\Support\KorlapRingkasan;
-use App\Support\Periode;
+use App\Support\Timeline;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -74,8 +74,9 @@ class AttendanceController extends Controller
 
         $rekap = $shootingDate ? KorlapRingkasan::rekap($applicants) : null;
 
-        // CQ.2.3/CQ.3: default +7, tapi diperluas supaya mencakup tanggal yang sedang dipilih via ?tanggal=.
-        [$dari, $sampai, $preset] = Periode::dariSesi($request, 'periode_absensi', '+7');
+        // CR.1.3: timeline Hari ini (satu-satunya halaman dengan default beda), diperluas
+        // supaya tetap mencakup tanggal yang sedang dipilih via ?tanggal= walau di luar skala.
+        [$dari, $sampai, $skala] = Timeline::dariSesi($request, 'timeline_absensi', 'hari');
         $agendaDari = $dari;
         $agendaSampai = $sampai;
         if ($shootingDate) {
@@ -93,7 +94,7 @@ class AttendanceController extends Controller
                 $e->url_proyek = route('admin.attendance.index', ['project' => $e->casting_project_id, 'tanggal' => $e->id]);
             });
 
-        return view('admin.attendance.index', compact('projects', 'castingProject', 'shootingDate', 'applicants', 'rekap', 'today', 'agendaEvents', 'dari', 'sampai', 'preset'));
+        return view('admin.attendance.index', compact('projects', 'castingProject', 'shootingDate', 'applicants', 'rekap', 'today', 'agendaEvents', 'dari', 'sampai', 'skala'));
     }
 
     private function pastikanBolehProyek(Request $request, CastingProject $project): void

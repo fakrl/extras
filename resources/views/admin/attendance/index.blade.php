@@ -241,8 +241,8 @@
 <div class="card absen-jadwal">
     <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
         <span>Jadwal Shooting</span>
-        <x-filter-periode :dari="$dari" :sampai="$sampai" :preset="$preset" :action="route('admin.attendance.index')" />
     </div>
+    <x-navigasi-timeline :dari="$dari" :sampai="$sampai" :skala="$skala" :action="route('admin.attendance.index')" />
     <x-agenda :events="$agendaEvents" />
 </div>
 </div>
