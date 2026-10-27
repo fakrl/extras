@@ -17,8 +17,8 @@
     <div class="card">
         <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
             <span>Jadwal Shooting</span>
-            <x-filter-periode :dari="$dari" :sampai="$sampai" :preset="$preset" :action="route('client.dashboard')" />
         </div>
+        <x-navigasi-timeline :dari="$dari" :sampai="$sampai" :skala="$skala" :action="route('client.dashboard')" />
         <x-agenda :events="$agendaEvents" />
     </div>
 

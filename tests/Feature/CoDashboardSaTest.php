@@ -11,7 +11,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * CO: dashboard Super Admin = tugas SA + pengingat ke Admin.
+ * CO: Super Admin memantau & mengingatkan Admin. Konten grup pengajuan/Pantau
+ * Admin lengkap pindah ke /super-admin/persetujuan & /super-admin/pantau-admin
+ * sejak CR.2/CR.3 - lihat SuperAdminPersetujuanTest & SuperAdminPantauAdminTest.
  */
 class CoDashboardSaTest extends TestCase
 {
@@ -37,24 +39,6 @@ class CoDashboardSaTest extends TestCase
             'extras_id' => $profil->id,
             'status_partisipasi' => 'diajukan',
         ]);
-    }
-
-    // CO.1: pengajuan baru vs pengajuan hasil revisi dibedakan dan dikelompokkan.
-    public function test_perlu_tindakan_kelompok_pengajuan_baru_dan_revisi(): void
-    {
-        $baru = CastingProject::factory()->create(['client_request_status' => 'menunggu_acc', 'nama_produksi' => 'Iklan Baru']);
-        $revisi = CastingProject::factory()->create(['client_request_status' => 'menunggu_acc', 'alasan_tolak' => 'Lengkapi lokasi', 'nama_produksi' => 'Iklan Revisi']);
-
-        $r = $this->actingAs($this->sa)->get(route('super-admin.dashboard'));
-
-        $r->assertOk();
-        $this->assertSame([$baru->id], $r->viewData('pengajuanBaru')->pluck('id')->all());
-        $this->assertSame([$revisi->id], $r->viewData('pengajuanRevisi')->pluck('id')->all());
-        $r->assertSee('Pengajuan Client menunggu keputusan')
-            ->assertSee('Pengajuan sudah direvisi Client')
-            ->assertSee('Iklan Baru')
-            ->assertSee('Iklan Revisi')
-            ->assertSee('Diajukan ulang');
     }
 
     // CO.2: Ingatkan -> notif ke PIC saja, log REMIND_ADMIN, maks 1x/24 jam.
@@ -90,7 +74,8 @@ class CoDashboardSaTest extends TestCase
         $this->assertSame(2, $pic->notifications()->where('data->jenis', 'pengingat_sa')->count());
     }
 
-    public function test_pantau_admin_tombol_ingatkan_jadi_sudah_diingatkan(): void
+    // CR.2.4: dashboard SA juga menampilkan baris ringkas + tombol Ingatkan (bukan cuma halaman Pantau Admin).
+    public function test_dashboard_tandai_sudah_diingatkan_setelah_dikirim(): void
     {
         $pic = User::factory()->create(['role' => 'admin', 'status' => 'aktif']);
         $app = $this->tugasTertunda($pic);
@@ -125,40 +110,6 @@ class CoDashboardSaTest extends TestCase
         ProjectApplication::whereKey($app->id)->update(['status_partisipasi' => 'ditolak']);
 
         $this->actingAs($pic)->get(route('admin.dashboard'))->assertDontSee('Ada tugas tertunda', false);
-    }
-
-    // CO.3.1: 3 tombol pintasan dengan anchor ke seksi masing-masing.
-    public function test_tombol_pintasan_dan_anchor_ada(): void
-    {
-        $r = $this->actingAs($this->sa)->get(route('super-admin.dashboard'));
-
-        $r->assertOk()
-            ->assertSee('href="#perlu-tindakan"', false)
-            ->assertSee('href="#grup-pengajuan"', false)
-            ->assertSee('href="#pantau-admin"', false)
-            ->assertSee('id="perlu-tindakan"', false)
-            ->assertSee('id="grup-pengajuan"', false)
-            ->assertSee('id="pantau-admin"', false);
-    }
-
-    // CQ.1/CQ.2: kalender dropdown lama dihapus, diganti satu filter periode yang menentukan agenda.
-    public function test_filter_periode_menentukan_agenda_yang_tampil(): void
-    {
-        $hariIni = CastingProject::factory()->create(['client_request_status' => 'disetujui', 'nama_produksi' => 'Proyek Hari Ini']);
-        $hariIni->shootingDates()->create(['tanggal' => '2026-06-10']);
-
-        $tujuhHariLalu = CastingProject::factory()->create(['client_request_status' => 'disetujui', 'nama_produksi' => 'Proyek 7 Hari Lalu']);
-        $tujuhHariLalu->shootingDates()->create(['tanggal' => '2026-06-03']);
-
-        $nama = fn ($r) => $r->viewData('agendaEvents')->pluck('nama_produksi')->all();
-
-        // default 30 hari terakhir -> mencakup keduanya.
-        $r1 = $this->actingAs($this->sa)->get(route('super-admin.dashboard'));
-        $this->assertEqualsCanonicalizing(['Proyek Hari Ini', 'Proyek 7 Hari Lalu'], $nama($r1));
-
-        // preset 7 hari terakhir -> 3 Juni di luar rentang, 10 Juni termasuk.
-        $r2 = $this->actingAs($this->sa)->get(route('super-admin.dashboard', ['periode' => '7']));
-        $this->assertSame(['Proyek Hari Ini'], $nama($r2));
     }
 
     // Bug fix: Admin yang hanya ditugaskan (admin_project_assignments), bukan PIC,

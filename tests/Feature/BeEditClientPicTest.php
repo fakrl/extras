@@ -58,8 +58,9 @@ class BeEditClientPicTest extends TestCase
         $this->actingAs($sa)->withSession(['sa_mode' => 'admin'])->patch(route('admin.projects.update', $project), $this->payload(['admin_id' => $project->admin_id]))
             ->assertSessionHasErrors(['client_id' => 'Pilih akun Client proyek ini dulu (proyek lama belum punya Client).']);
 
+        // CR.2: baris "Butuh keputusan Anda" tautan aksi langsung (bukan lagi link ke daftar ber-filter).
         $this->actingAs($sa)->get(route('super-admin.dashboard'))
-            ->assertSee('PIC/Client belum diisi')->assertSee(route('admin.projects.index', ['tanpa_client' => 1]), false);
+            ->assertSee('PIC/Client belum diisi')->assertSee(route('admin.projects.edit', $project), false);
 
         $this->actingAs($sa)->get(route('admin.projects.index', ['tanpa_client' => 1]))
             ->assertSee('Proyek Yatim')->assertSee('Tanpa PIC/Client')->assertDontSee('Proyek Lengkap');

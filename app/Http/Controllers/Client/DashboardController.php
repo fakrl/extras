@@ -8,7 +8,7 @@ use App\Models\ClientReview;
 use App\Models\EventShootingDate;
 use App\Models\Invoice;
 use App\Models\ProjectApplication;
-use App\Support\Periode;
+use App\Support\Timeline;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -62,7 +62,7 @@ class DashboardController extends Controller
             ])
             ->values();
 
-        [$dari, $sampai, $preset] = Periode::dariSesi($request, 'periode_client_dashboard', '+30');
+        [$dari, $sampai, $skala] = Timeline::dariSesi($request, 'timeline_client_dashboard', 'minggu');
         $agendaEvents = EventShootingDate::whereIn('casting_project_id', $proyekIds)
             ->whereBetween('tanggal', [$dari, $sampai])
             ->with('castingProject:id,nama_produksi')
@@ -71,7 +71,7 @@ class DashboardController extends Controller
 
         return view('client.dashboard', compact(
             'perluDireview', 'chartKeputusan', 'proyekBerjalan', 'pengajuan', 'karakterPendaftar',
-            'agendaEvents', 'dari', 'sampai', 'preset', 'invoiceMenungguTtd', 'jadwalKosong'
+            'agendaEvents', 'dari', 'sampai', 'skala', 'invoiceMenungguTtd', 'jadwalKosong'
         ));
     }
 }

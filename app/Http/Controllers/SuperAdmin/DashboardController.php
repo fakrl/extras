@@ -8,15 +8,15 @@ use App\Models\CastingProject;
 use App\Models\EventShootingDate;
 use App\Models\Invoice;
 use App\Models\ProjectApplication;
-use App\Models\StaffPayroll;
 use App\Models\User;
 use App\Notifications\InAppNotification;
 use App\Services\KeuanganService;
 use App\Support\AdminRingkasan;
 use App\Support\Periode;
+use App\Support\Timeline;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 
 class DashboardController extends Controller
@@ -25,82 +25,91 @@ class DashboardController extends Controller
         protected KeuanganService $keuanganService
     ) {}
 
+    /**
+     * CR.2: dashboard SA diringkas ke yang perlu diputuskan/ditindak saja.
+     * Detail lengkap (daftar Proyek, Persetujuan, Pantau Admin) ada di
+     * halamannya masing-masing - lihat Persetujuan/PantauAdminController.
+     */
     public function index(Request $request)
     {
+        // CR.1.1: rentang angka/statistik (KPI "Proyek berjalan").
         [$dari, $sampai, $preset] = Periode::dariSesi($request, 'periode_sa', '30');
         $jumlahHari = (int) $dari->copy()->startOfDay()->diffInDays($sampai->copy()->startOfDay()) + 1;
+        // CR.1.2: navigasi timeline kartu Jadwal, terpisah dari rentang angka di atas.
+        [$dariJadwal, $sampaiJadwal, $skala] = Timeline::dariSesi($request, 'timeline_sa', 'minggu');
 
-        // CO.1: "Perlu Tindakan" SA hanya tugas SA, dikelompokkan per jenis.
-        // Pengajuan yang sudah direvisi Client dibedakan dari pengajuan baru
-        // lewat alasan_tolak terisi (diisi saat Minta Revisi, tidak dihapus
-        // saat Client mengajukan ulang) - murah, tanpa kolom/tabel baru.
         $pengajuanBaru = CastingProject::where('client_request_status', 'menunggu_acc')->whereNull('alasan_tolak')
             ->with('client', 'classes', 'shootingDates', 'attachments')->latest()->get();
         $pengajuanRevisi = CastingProject::where('client_request_status', 'menunggu_acc')->whereNotNull('alasan_tolak')
             ->with('client', 'classes', 'shootingDates', 'attachments')->latest()->get();
         $adminsAktif = User::where('role', User::ROLE_ADMIN)->where('status', 'aktif')->orderBy('name')->get();
         $korlapsAktif = User::where('role', User::ROLE_KORLAP)->where('status', 'aktif')->orderBy('name')->get();
-        $honorStaf = (object) [
-            'jumlah' => StaffPayroll::where('status_bayar', '!=', 'sudah')->count(),
-            'total' => $this->keuanganService->totalHonorStafBelumDiproses(),
-        ];
         $tanpaPic = CastingProject::tanpaPicClient()->latest()->get();
-        $invoiceBelumLunas = Invoice::where('status_bayar', '!=', 'lunas')
-            ->with('castingProject.classes')->latest()->get()
-            ->each(fn (Invoice $i) => $i->nilai = (float) ($i->nominal ?? $this->keuanganService->nilaiInvoice($i->castingProject)));
         // Dasar "> 7 hari": updated_at (bukan created_at) supaya akun yang direset
         // passwordnya belakangan (AdminManagementController::resetPassword) dihitung
         // sejak reset, bukan sejak akun dibuat.
-        $akunPerhatian = User::where('role', 'client')->where('wajib_ganti_password', true)
-            ->where('updated_at', '<=', now()->subDays(7))->count();
+        $akunPerhatianList = User::where('role', 'client')->where('wajib_ganti_password', true)
+            ->where('updated_at', '<=', now()->subDays(7))->oldest('updated_at')->get();
+        $akunPerhatian = $akunPerhatianList->count();
 
-        $jumlahTindakan = $pengajuanBaru->count() + $pengajuanRevisi->count() + $tanpaPic->count() + $akunPerhatian;
+        // CR.2.2: "Menunggu keputusan" = 3 jenis keputusan proyek (akun perlu
+        // perhatian tetap tampil di daftar "Butuh keputusan Anda" & halaman
+        // Persetujuan, tapi tidak masuk angka KPI ini - beda sifat, bukan "keputusan").
+        $menungguKeputusan = $pengajuanBaru->count() + $pengajuanRevisi->count() + $tanpaPic->count();
+        $jumlahTindakan = $menungguKeputusan + $akunPerhatian;
         $pengajuanMendesak = $pengajuanBaru->merge($pengajuanRevisi)->contains(fn ($p) => $p->created_at?->lte(now()->subDays(2)));
 
-        // CO.2: Pantau Admin - tugas tertunda per Admin aktif, dari AdminRingkasan::tahapan() yang sudah ada.
-        $pantauAdmin = $this->pantauAdmin($adminsAktif);
-        $pantauTotal = $pantauAdmin->sum(fn ($p) => $p['tugas']->count());
+        $pantauAdmin = AdminRingkasan::pantauAdmin($adminsAktif);
+        // Pakai total lengkap ('jumlah', sebelum dipotong tampilan), bukan count() tugas yang sudah take(5).
+        $pantauTotal = $pantauAdmin->sum('jumlah');
         $pantauMendesak = $pantauAdmin->contains(fn ($p) => $p['tugas']->contains(fn ($t) => $t['sejak']?->lte(now()->subDays(3))));
 
-        $tahapQuery = fn (string $tahap, $d, $s) => CastingProject::diTahap($tahap)
-            ->when($tahap !== 'menunggu_acc', fn ($q) => $q->shootingDalam($d, $s));
-        $statusProyek = collect(CastingProject::TAHAP)->map(fn ($label, $tahap) => $tahapQuery($tahap, $dari, $sampai)->count());
-        $proyekPerTahap = collect(CastingProject::TAHAP)->map(fn ($label, $tahap) => $tahapQuery($tahap, $dari, $sampai)
-            ->with('client:id,name', 'shootingDates')
-            ->when($tahap === 'selesai',
-                fn ($q) => $q->withMax('shootingDates as tanggal_acuan', 'tanggal')->orderByDesc('tanggal_acuan'),
-                fn ($q) => $q->withMin(['shootingDates as tanggal_acuan' => fn ($d) => $d->whereDate('tanggal', '>=', today())], 'tanggal'))
-            ->when(in_array($tahap, ['mendatang', 'berjalan']), fn ($q) => $q->orderByRaw('tanggal_acuan is null')->orderBy('tanggal_acuan'))
-            ->when($tahap === 'menunggu_acc', fn ($q) => $q->latest())
-            ->take(5)->get());
-        $tabAwal = collect(['berjalan', 'mendatang', 'menunggu_acc', 'selesai'])->first(fn ($t) => $statusProyek[$t] > 0, 'berjalan');
+        // CR.2.3: gabungan 3 jenis "perlu keputusan", urut paling lama menunggu, maks 5.
+        $butuhKeputusan = $pengajuanBaru->concat($pengajuanRevisi)
+            ->map(fn (CastingProject $p) => ['tipe' => 'pengajuan', 'req' => $p, 'sejak' => $p->created_at])
+            ->concat($tanpaPic->map(fn (CastingProject $p) => ['tipe' => 'tanpa_pic', 'project' => $p, 'sejak' => $p->created_at]))
+            ->concat($akunPerhatianList->map(fn (User $u) => ['tipe' => 'akun', 'user' => $u, 'sejak' => $u->updated_at]))
+            ->sortBy('sejak')
+            ->take(5)
+            ->values();
 
-        // CQ.4.1: pertumbuhan % Status Proyek vs periode sebelumnya, panjang sama. Menunggu ACC tidak ikut filter → tidak punya pertumbuhan.
+        // CR.2.4: "Admin perlu diingatkan" - flat lintas Admin, urut paling lama tertunda, maks 5.
+        $diingatkan = $pantauAdmin
+            ->flatMap(fn ($p) => $p['tugas']->map(fn ($t) => $t + ['admin' => $p['admin']]))
+            ->sortBy(fn ($t) => $t['sejak']?->timestamp ?? 0)
+            ->take(5)
+            ->values();
+
+        // CR.2.2 KPI "Proyek berjalan": shooting dalam rentang angka + pertumbuhan vs periode sebelumnya, panjang sama.
+        $proyekBerjalan = CastingProject::diTahap('berjalan')->shootingDalam($dari, $sampai)->count();
         $sampaiSebelum = $dari->copy()->subDay();
         $dariSebelum = $sampaiSebelum->copy()->subDays($jumlahHari - 1);
-        $pertumbuhan = collect(CastingProject::TAHAP)->map(function ($label, $tahap) use ($tahapQuery, $dariSebelum, $sampaiSebelum, $statusProyek) {
-            if ($tahap === 'menunggu_acc') {
-                return null;
-            }
-            $sebelum = $tahapQuery($tahap, $dariSebelum, $sampaiSebelum)->count();
-            $sekarang = $statusProyek[$tahap];
+        $proyekBerjalanSebelum = CastingProject::diTahap('berjalan')->shootingDalam($dariSebelum, $sampaiSebelum)->count();
+        $pertumbuhanBerjalan = $proyekBerjalanSebelum > 0
+            ? (int) round((($proyekBerjalan - $proyekBerjalanSebelum) / $proyekBerjalanSebelum) * 100)
+            : ($proyekBerjalan > 0 ? 100 : null);
 
-            return $sebelum > 0 ? (int) round((($sekarang - $sebelum) / $sebelum) * 100) : ($sekarang > 0 ? 100 : 0);
-        });
+        $invoiceBelumLunas = Invoice::where('status_bayar', '!=', 'lunas')
+            ->with('castingProject.classes')->get()
+            ->each(fn (Invoice $i) => $i->nilai = (float) ($i->nominal ?? $this->keuanganService->nilaiInvoice($i->castingProject)));
+        $invoiceTotal = $invoiceBelumLunas->sum('nilai');
 
-        // CQ.2/CQ.4: satu agenda mengikuti filter periode yang sama (gantikan jadwalRingkas + jadwal lama).
-        $agendaEvents = $this->jadwalEvents($dari, $sampai);
-
-        $akunPerRole = User::where('status', 'aktif')->selectRaw('role, count(*) as jumlah')->groupBy('role')->pluck('jumlah', 'role');
+        // CR.2.5: jadwal maks 5 TANGGAL berkegiatan (bukan 5 event) - agenda sendiri tidak diubah (CQ.2).
+        $agendaEvents = $this->jadwalEvents($dariJadwal, $sampaiJadwal)
+            ->groupBy(fn (EventShootingDate $e) => Carbon::parse($e->tanggal)->format('Y-m-d'))
+            ->take(5)
+            ->flatten(1);
 
         return view('super-admin.dashboard', compact(
             'dari', 'sampai', 'preset', 'jumlahHari',
-            'pengajuanBaru', 'pengajuanRevisi', 'pengajuanMendesak', 'adminsAktif', 'korlapsAktif',
-            'honorStaf', 'invoiceBelumLunas', 'tanpaPic', 'akunPerhatian', 'jumlahTindakan',
+            'dariJadwal', 'sampaiJadwal', 'skala',
+            'adminsAktif', 'korlapsAktif',
+            'menungguKeputusan', 'jumlahTindakan', 'pengajuanMendesak',
             'pantauAdmin', 'pantauTotal', 'pantauMendesak',
-            'statusProyek', 'proyekPerTahap', 'tabAwal', 'pertumbuhan',
-            'agendaEvents',
-            'akunPerRole'
+            'butuhKeputusan', 'diingatkan',
+            'proyekBerjalan', 'pertumbuhanBerjalan',
+            'invoiceBelumLunas', 'invoiceTotal',
+            'agendaEvents'
         ));
     }
 
@@ -121,36 +130,6 @@ class DashboardController extends Controller
                 $e->url_proyek = route('admin.projects.show', $e->casting_project_id);
                 $e->url_absensi = route('admin.attendance.index', ['project' => $e->casting_project_id, 'tanggal' => $e->id]);
             });
-    }
-
-    /**
-     * CO.2.1: per Admin aktif, tugas tertunda (reuse AdminRingkasan::tahapan(), tanpa
-     * hitungan baru). Maks 5 tugas terlama per Admin, sama urutan dengan dashboard Admin.
-     */
-    private function pantauAdmin(Collection $admins): Collection
-    {
-        return $admins->map(function (User $a) {
-            $tugas = collect(AdminRingkasan::tahapan($a))
-                ->flatMap(fn ($t) => $t['daftar'])
-                ->filter(fn ($i) => $i['perlu'] && $i['app']->castingProject?->admin_id === $a->id)
-                ->sortBy(fn ($i) => $i['sejak']?->timestamp ?? 0)
-                ->take(5)
-                ->map(function ($i) use ($a) {
-                    $kunci = 'pa-'.$i['app']->id;
-                    $terakhir = $a->notifications()->where('data->jenis', 'pengingat_sa')->where('data->kunci', $kunci)->latest()->first();
-
-                    return [
-                        'app_id' => $i['app']->id,
-                        'proyek' => $i['app']->castingProject?->nama_produksi,
-                        'tugas' => $i['teks'],
-                        'sejak' => $i['sejak'],
-                        'url' => $i['url'],
-                        'diingatkan_pada' => $terakhir && $terakhir->created_at->gt(now()->subDay()) ? $terakhir->created_at : null,
-                    ];
-                })->values();
-
-            return ['admin' => $a, 'tugas' => $tugas];
-        })->filter(fn ($p) => $p['tugas']->isNotEmpty())->values();
     }
 
     /** CO.2.2/CO.2.3: ingatkan Admin PIC, notif in-app saja, maks 1x/24 jam per tugas. */
@@ -197,28 +176,7 @@ class DashboardController extends Controller
             return back()->with('error', 'Pengajuan ini sudah diproses sebelumnya.');
         }
 
-        $data = $request->validate([
-            'admin_id' => ['required', 'integer', Rule::exists('users', 'id')->where('role', User::ROLE_ADMIN)->where('status', 'aktif')],
-            'korlap_id' => ['nullable', 'integer', Rule::exists('users', 'id')->where('role', User::ROLE_KORLAP)->where('status', 'aktif')],
-        ], [
-            'admin_id.required' => 'Pilih Admin PIC proyek ini dulu.',
-        ]);
-
-        $castingProject->update([
-            'client_request_status' => 'disetujui',
-            'admin_id' => $data['admin_id'],
-        ]);
-
-        $castingProject->adminAssignments()->firstOrCreate(
-            ['user_id' => $data['admin_id']],
-            ['assigned_by' => $request->user()->id, 'status_log' => 'berjalan']
-        );
-        if (! empty($data['korlap_id'])) {
-            $castingProject->adminAssignments()->firstOrCreate(
-                ['user_id' => $data['korlap_id']],
-                ['assigned_by' => $request->user()->id, 'status_log' => 'berjalan']
-            );
-        }
+        $data = $this->simpanPic($request, $castingProject, ['client_request_status' => 'disetujui']);
 
         ActivityLog::record(
             'APPROVE_PROJECT_REQUEST',
@@ -240,6 +198,66 @@ class DashboardController extends Controller
         $this->kabariClient($castingProject, 'Pengajuan Proyek Disetujui', "Pengajuan proyek '{$castingProject->namaKode()}' disetujui tim JBTB dan sedang disiapkan.");
 
         return back()->with('status', "Permintaan proyek '{$castingProject->nama_produksi}' berhasil disetujui (ACC). Proyek kini masuk antrean Admin.");
+    }
+
+    /**
+     * CR.2.3: "Tetapkan PIC" - untuk proyek yang SUDAH disetujui tapi belum
+     * punya Admin PIC (CastingProject::tanpaPicClient()). Reuse validasi &
+     * cara assign PIC/Korlap yang sama dengan accProject() lewat simpanPic(),
+     * bukan logika keputusan baru.
+     */
+    public function tetapkanPic(Request $request, CastingProject $castingProject): RedirectResponse
+    {
+        if (! CastingProject::tanpaPicClient()->whereKey($castingProject->id)->exists()) {
+            return back()->with('error', 'Proyek ini belum bisa ditetapkan PIC-nya.');
+        }
+        if ($castingProject->admin_id) {
+            return back()->with('error', 'Proyek ini sudah punya Admin PIC.');
+        }
+
+        $data = $this->simpanPic($request, $castingProject);
+
+        ActivityLog::record(
+            'ASSIGN_PIC_PROJECT',
+            "Super Admin menetapkan Admin PIC proyek '{$castingProject->nama_produksi}': ".User::find($data['admin_id'])->name,
+            $castingProject
+        );
+
+        $castingProject->loadMissing('admin');
+        if ($admin = $castingProject->admin) {
+            try {
+                $admin->notify(new InAppNotification('Ditugaskan sebagai PIC Proyek', "Anda ditetapkan sebagai Admin PIC proyek '{$castingProject->namaKode()}'.", route('admin.projects.show', $castingProject)));
+            } catch (\Throwable) {
+            }
+        }
+
+        return back()->with('status', "Admin PIC untuk '{$castingProject->nama_produksi}' berhasil ditetapkan.");
+    }
+
+    /** Reuse validasi + simpan admin_id/korlap_id, dipakai accProject() & tetapkanPic(). */
+    private function simpanPic(Request $request, CastingProject $castingProject, array $tambahan = []): array
+    {
+        $data = $request->validate([
+            'admin_id' => ['required', 'integer', Rule::exists('users', 'id')->where('role', User::ROLE_ADMIN)->where('status', 'aktif')],
+            'korlap_id' => ['nullable', 'integer', Rule::exists('users', 'id')->where('role', User::ROLE_KORLAP)->where('status', 'aktif')],
+        ], [
+            'admin_id.required' => 'Pilih Admin PIC proyek ini dulu.',
+        ]);
+
+        $castingProject->update(['admin_id' => $data['admin_id'], ...$tambahan]);
+
+        $castingProject->adminAssignments()->firstOrCreate(
+            ['user_id' => $data['admin_id']],
+            ['assigned_by' => $request->user()->id, 'status_log' => 'berjalan']
+        );
+        if (! empty($data['korlap_id'])) {
+            $castingProject->adminAssignments()->firstOrCreate(
+                ['user_id' => $data['korlap_id']],
+                ['assigned_by' => $request->user()->id, 'status_log' => 'berjalan']
+            );
+        }
+
+        return $data;
     }
 
     /**

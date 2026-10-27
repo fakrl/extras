@@ -40,6 +40,8 @@ use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardCo
 use App\Http\Controllers\SuperAdmin\GlobalSearchController;
 use App\Http\Controllers\SuperAdmin\ModeRoleController;
 use App\Http\Controllers\SuperAdmin\MonitoringController;
+use App\Http\Controllers\SuperAdmin\PantauAdminController;
+use App\Http\Controllers\SuperAdmin\PersetujuanController;
 use App\Http\Controllers\SuperAdmin\ProjectAssignmentController;
 use App\Http\Controllers\UbahPasswordController;
 use Illuminate\Http\Request;
@@ -287,6 +289,10 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
 Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(function () {
     Route::get('/dashboard', [SuperAdminDashboardController::class, 'index'])->name('super-admin.dashboard');
 
+    // CR.3: halaman detail dipindah dari dashboard (bukan dibuat ulang).
+    Route::get('/persetujuan', [PersetujuanController::class, 'index'])->name('super-admin.persetujuan');
+    Route::get('/pantau-admin', [PantauAdminController::class, 'index'])->name('super-admin.pantau-admin.index');
+
     Route::get('/akun', [AdminManagementController::class, 'akun'])->name('super-admin.akun.index');
     Route::get('/monitoring', [AdminManagementController::class, 'keAkun'])->name('super-admin.monitoring');
     Route::get('/monitoring/admin', [MonitoringController::class, 'admin'])->name('super-admin.monitoring.admin');
@@ -329,6 +335,9 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
         ->name('super-admin.projects.reject');
     Route::match(['post', 'patch'], '/projects/{castingProject}/minta-revisi', [SuperAdminDashboardController::class, 'mintaRevisiProject'])
         ->name('super-admin.projects.minta-revisi');
+    // CR.2.3: Tetapkan PIC - proyek sudah disetujui tapi admin_id masih kosong.
+    Route::match(['post', 'patch'], '/projects/{castingProject}/tetapkan-pic', [SuperAdminDashboardController::class, 'tetapkanPic'])
+        ->name('super-admin.projects.tetapkan-pic');
 
     // CO.2: Pantau Admin - ingatkan Admin PIC (in-app saja, tugas SA langsung).
     Route::post('/pantau-admin/ingatkan', [SuperAdminDashboardController::class, 'ingatkanAdmin'])

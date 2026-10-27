@@ -11,6 +11,9 @@
 <style>
 .agenda-tgl-label { font-size: 12.5px; font-weight: 700; color: var(--text-secondary); margin: 14px 0 4px; }
 .agenda-tgl-label:first-child { margin-top: 0; }
+.agenda-kosong { margin: 0; }
+.agenda-item-info { min-width: 0; }
+.agenda-item-aksi { display: flex; gap: 10px; flex-shrink: 0; }
 </style>
 @endpush
 @endonce
@@ -26,6 +29,6 @@
             @include('components.agenda-item', ['e' => $e])
         @endforeach
     @empty
-        <p class="dash-sub" style="margin: 0;">Tidak ada kegiatan di periode ini.</p>
+        <p class="dash-sub agenda-kosong">Tidak ada kegiatan di periode ini.</p>
     @endforelse
 </div>

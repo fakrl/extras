@@ -9,7 +9,7 @@ use App\Models\CastingProject;
 use App\Models\EventShootingDate;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
-use App\Support\Periode;
+use App\Support\Timeline;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -62,7 +62,7 @@ class DashboardController extends Controller
             : collect();
 
         // AZ.1: tetap di-scope ke $proyekLolos saja - Extras tidak boleh lihat lokasi/jadwal proyek yang belum lolos.
-        [$dari, $sampai, $preset] = Periode::dariSesi($request, 'periode_extras_dashboard', '+30');
+        [$dari, $sampai, $skala] = Timeline::dariSesi($request, 'timeline_extras_dashboard', 'minggu');
         $agendaEvents = EventShootingDate::whereIn('casting_project_id', $proyekLolos)
             ->whereBetween('tanggal', [$dari, $sampai])
             ->with('castingProject:id,nama_produksi')
@@ -91,6 +91,6 @@ class DashboardController extends Controller
 
         $jumlahBatalMendadak = $extrasProfile?->batalMendadak()->count() ?? 0;
 
-        return view('extras.dashboard', compact('jumlahBatalMendadak', 'extrasProfile', 'pendaftaranAktif', 'riwayatPendaftaran', 'bentrokPer', 'aktivitasSaya', 'agendaEvents', 'dari', 'sampai', 'preset', 'castingCallTerbuka', 'riwayatAbsensi'));
+        return view('extras.dashboard', compact('jumlahBatalMendadak', 'extrasProfile', 'pendaftaranAktif', 'riwayatPendaftaran', 'bentrokPer', 'aktivitasSaya', 'agendaEvents', 'dari', 'sampai', 'skala', 'castingCallTerbuka', 'riwayatAbsensi'));
     }
 }
