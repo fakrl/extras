@@ -69,6 +69,43 @@
     </a>
 @endif
 
+@if ($callinganCard)
+    @php
+        $ca = $callinganCard['app'];
+        $ct = $callinganCard['tanggal'];
+        $caJamKumpul = $ca->jam_callingan;
+        $caKorlap = $ca->castingProject->adminAssignments->first(fn ($a) => $a->user?->isKorlap())?->user;
+        $caMapsUrl = $ct->lokasi ? 'https://www.google.com/maps/search/?api=1&query='.rawurlencode($ct->lokasi) : null;
+        $caWaKorlap = $caKorlap?->tautanWa("Halo {$caKorlap->name}, saya ".auth()->user()->name." mau tanya soal shooting {$ca->castingProject->nama_produksi}.");
+    @endphp
+    <div class="card" data-dash="callingan" style="border: 2px solid var(--accent); margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
+            <div>
+                <span class="badge badge-urgent">{{ $callinganCard['hari_ini'] ? 'Hari ini' : 'Besok' }}</span>
+                <div style="font-size: 15px; font-weight: 700; margin-top: 6px;">{{ $ca->castingProject->nama_produksi }}</div>
+            </div>
+            @if ($callinganCard['hari_ini'])
+                <button type="button" class="btn btn-brand" onclick="document.getElementById('dialog-absen-{{ $ca->id }}').showModal()"><i class="ti ti-camera"></i> Absen Selfie</button>
+            @endif
+        </div>
+        <div style="margin: 12px 0;">
+            <div style="color: var(--text-muted); font-size: var(--fs-xs); text-transform: uppercase;">Jam Kumpul</div>
+            <div style="font-size: 26px; font-weight: 800; color: var(--accent-strong);">{{ $caJamKumpul ?: '(belum diisi)' }}</div>
+        </div>
+        @if ($ca->keterangan_scene)
+            <div style="font-size: var(--fs-sm); margin-bottom: 10px;"><strong>Kostum/Scene:</strong> {{ $ca->keterangan_scene }}</div>
+        @endif
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            @if ($caMapsUrl)
+                <a href="{{ $caMapsUrl }}" target="_blank" rel="noopener" class="btn btn-sm"><i class="ti ti-map-pin"></i> Buka Maps</a>
+            @endif
+            @if ($caWaKorlap)
+                <a href="{{ $caWaKorlap }}" target="_blank" rel="noopener" class="btn btn-sm"><i class="ti ti-brand-whatsapp"></i> WA Korlap ({{ $caKorlap->name }})</a>
+            @endif
+        </div>
+    </div>
+@endif
+
 @if ($tindakan->isNotEmpty())
     <div class="card dash-perlu" data-dash="perlu-tindakan">
         <div class="card-title">
@@ -167,34 +204,6 @@
             @endphp
 
             <div style="margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 12px;">
-                <div style="font-size: 13px; font-weight: 600; color: var(--accent-strong); margin-bottom: 8px;">
-                    <i class="ti ti-clock"></i> Jam Kumpul & Info Lokasi
-                </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; font-size: 12.5px; background: var(--bg-secondary, rgba(0,0,0,.03)); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
-                    @if ($callingan)
-                        <div>
-                            <div style="color: var(--text-muted); font-size: var(--fs-xs); text-transform: uppercase;">Jam Kumpul</div>
-                            <div style="margin-top: 2px;"><span class="badge badge-urgent" style="font-size: 16px; font-weight: 700;">{{ $callingan }} WIB</span></div>
-                            <div style="font-size: var(--fs-xs); color: var(--text-muted);">(Wajib tiba di lokasi)</div>
-                        </div>
-                    @endif
-                    <div>
-                        <div style="color: var(--text-muted); font-size: var(--fs-xs); text-transform: uppercase;">Peran / Tokoh</div>
-                        <div style="font-weight: 600;">{{ $karakter ?: ($app->castingProjectClass->nama_kelas ?? 'Umum') }}</div>
-                        <div style="font-size: var(--fs-xs); color: var(--text-muted);">Kelas: {{ $app->castingProjectClass->nama_kelas ?? 'Umum' }}</div>
-                    </div>
-                    @if ($scene)
-                        <div>
-                            <div style="color: var(--text-muted); font-size: var(--fs-xs); text-transform: uppercase;">Scene & Catatan Kostum</div>
-                            <div>{{ $scene }}</div>
-                        </div>
-                    @endif
-                    <div>
-                        <div style="color: var(--text-muted); font-size: var(--fs-xs); text-transform: uppercase;">Kontinuitas</div>
-                        <div>{{ $continuity }}</div>
-                    </div>
-                </div>
-
                 {{-- Status Absensi & Tombol Selfie --}}
                 @if ($shootingDates->contains(fn ($d) => $d->tanggal->isToday()))
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; background: var(--bg-card); border: 1px dashed var(--border-color); border-radius: 8px; padding: 10px 12px;">
@@ -234,26 +243,55 @@
                 </dialog>
                 @endif
 
-                @php $jadwalTerisi = $shootingDates->where('lokasi', '!=', null); @endphp
-                @if ($jadwalTerisi->isNotEmpty())
-                    <div style="font-size: 12.5px; font-weight: 600; margin-bottom: 6px;">Jadwal Shooting Detail</div>
-                    @foreach ($jadwalTerisi as $date)
-                        <div style="font-size: 12.5px; margin-bottom: 6px; padding: 8px; background: var(--bg-secondary, rgba(0,0,0,.04)); border-radius: 6px;">
-                            <div style="font-weight: 500;">{{ $date->tanggal->translatedFormat('l, d F Y') }}</div>
-                            @if ($date->lokasi) <div>Lokasi: {{ $date->lokasi }}</div> @endif
-                            @if ($date->jam_mulai) <div>Waktu: {{ substr($date->jam_mulai, 0, 5) }}{{ $date->jam_selesai ? ' – ' . substr($date->jam_selesai, 0, 5) : '' }}</div> @endif
-                            @if ($date->catatan) <div>Catatan: {{ $date->catatan }}</div> @endif
-                            @if ($date->panggilan)
-                                <div style="margin-top: 4px;"><strong>Panggilan:</strong></div>
-                                <ul style="margin: 2px 0 0 14px;">
-                                    @foreach ($date->panggilan as $p)
-                                        <li>{{ $p['nama'] }} ({{ $p['jam'] }})</li>
-                                    @endforeach
-                                </ul>
-                            @endif
+                {{-- CS.3.2: dipindah ke details supaya tidak dobel dengan kartu callingan di atas. --}}
+                <details>
+                    <summary style="cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--accent-strong);">Lihat jam kumpul, lokasi & kostum</summary>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; font-size: 12.5px; background: var(--bg-secondary, rgba(0,0,0,.03)); border-radius: 8px; padding: 12px; margin: 8px 0 12px;">
+                        @if ($callingan)
+                            <div>
+                                <div style="color: var(--text-muted); font-size: var(--fs-xs); text-transform: uppercase;">Jam Kumpul</div>
+                                <div style="margin-top: 2px;"><span class="badge badge-urgent" style="font-size: 16px; font-weight: 700;">{{ $callingan }} WIB</span></div>
+                                <div style="font-size: var(--fs-xs); color: var(--text-muted);">(Wajib tiba di lokasi)</div>
+                            </div>
+                        @endif
+                        <div>
+                            <div style="color: var(--text-muted); font-size: var(--fs-xs); text-transform: uppercase;">Peran / Tokoh</div>
+                            <div style="font-weight: 600;">{{ $karakter ?: ($app->castingProjectClass->nama_kelas ?? 'Umum') }}</div>
+                            <div style="font-size: var(--fs-xs); color: var(--text-muted);">Kelas: {{ $app->castingProjectClass->nama_kelas ?? 'Umum' }}</div>
                         </div>
-                    @endforeach
-                @endif
+                        @if ($scene)
+                            <div>
+                                <div style="color: var(--text-muted); font-size: var(--fs-xs); text-transform: uppercase;">Scene & Catatan Kostum</div>
+                                <div>{{ $scene }}</div>
+                            </div>
+                        @endif
+                        <div>
+                            <div style="color: var(--text-muted); font-size: var(--fs-xs); text-transform: uppercase;">Kontinuitas</div>
+                            <div>{{ $continuity }}</div>
+                        </div>
+                    </div>
+
+                    @php $jadwalTerisi = $shootingDates->where('lokasi', '!=', null); @endphp
+                    @if ($jadwalTerisi->isNotEmpty())
+                        <div style="font-size: 12.5px; font-weight: 600; margin-bottom: 6px;">Jadwal Shooting Detail</div>
+                        @foreach ($jadwalTerisi as $date)
+                            <div style="font-size: 12.5px; margin-bottom: 6px; padding: 8px; background: var(--bg-secondary, rgba(0,0,0,.04)); border-radius: 6px;">
+                                <div style="font-weight: 500;">{{ $date->tanggal->translatedFormat('l, d F Y') }}</div>
+                                @if ($date->lokasi) <div>Lokasi: {{ $date->lokasi }}</div> @endif
+                                @if ($date->jam_mulai) <div>Waktu: {{ substr($date->jam_mulai, 0, 5) }}{{ $date->jam_selesai ? ' – ' . substr($date->jam_selesai, 0, 5) : '' }}</div> @endif
+                                @if ($date->catatan) <div>Catatan: {{ $date->catatan }}</div> @endif
+                                @if ($date->panggilan)
+                                    <div style="margin-top: 4px;"><strong>Panggilan:</strong></div>
+                                    <ul style="margin: 2px 0 0 14px;">
+                                        @foreach ($date->panggilan as $p)
+                                            <li>{{ $p['nama'] }} ({{ $p['jam'] }})</li>
+                                        @endforeach
+                                    </ul>
+                                @endif
+                            </div>
+                        @endforeach
+                    @endif
+                </details>
             </div>
         @endif
     </div>

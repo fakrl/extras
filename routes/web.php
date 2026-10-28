@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AkunClientController;
 use App\Http\Controllers\Admin\ApplicantController;
 use App\Http\Controllers\Admin\AttendanceController;
+use App\Http\Controllers\Admin\CallsheetController;
 use App\Http\Controllers\Admin\CastingProjectController as AdminCastingProjectController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\FeeNegotiationController as AdminFeeNegotiationController;
@@ -260,6 +261,14 @@ Route::middleware(['auth', 'role:admin,korlap,super_admin'])
                 ->name('admin.absensi.tolak');
             Route::get('/media/absensi/{attendance}', [AttendanceController::class, 'fotoStream'])
                 ->name('admin.absensi.foto');
+
+            // CS.1/CS.2: callsheet per tanggal shooting - otorisasi granular (dikelolaOleh/SA) di controller.
+            Route::get('/projects/{castingProject}/callsheet/{tanggal}', [CallsheetController::class, 'show'])
+                ->where('tanggal', '\d{4}-\d{2}-\d{2}')->name('admin.callsheet.show');
+            Route::get('/projects/{castingProject}/callsheet/{tanggal}/pdf', [CallsheetController::class, 'pdf'])
+                ->where('tanggal', '\d{4}-\d{2}-\d{2}')->name('admin.callsheet.pdf');
+            Route::post('/projects/{castingProject}/callsheet/{tanggal}/salin', [CallsheetController::class, 'salin'])
+                ->where('tanggal', '\d{4}-\d{2}-\d{2}')->name('admin.callsheet.salin');
         });
     });
 

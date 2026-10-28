@@ -243,9 +243,15 @@ class DemoLengkapSeeder extends Seeder
             'deadline' => today()->addDays(3), 'kuota' => 15, 'client_id' => $andini->id, 'budget_total' => 3000000,
             'brief_catatan' => 'Iklan TV 30 detik minuman isotonik, suasana kampus & kantor.', 'link_grup' => 'https://chat.whatsapp.com/demo-minuman-segar',
         ]);
-        $this->jadwal($p2, [5, 6], 'Kampus UI Depok');
+        [$jadwalP2a] = $this->jadwal($p2, [5, 6], 'Kampus UI Depok');
+        $jadwalP2a->update([
+            'catatan' => 'Parkir kendaraan di gedung PKM, briefing koordinator jam 05.30.',
+            'panggilan' => [['nama' => 'Tim make up', 'jam' => '05:00'], ['nama' => 'Tim wardrobe', 'jam' => '05:15']],
+        ]);
         $mhs = $this->kelas($p2, 'Mahasiswa kampus', 5, 300000, ['Dewasa muda', 'Mahasiswa', 'Naik motor']);
+        $mhs->update(['keterangan_scene' => 'Baju kampus kasual, bawa tas ransel', 'tipe_continuity' => 'free']);
         $kantor = $this->kelas($p2, 'Pekerja kantoran', 3, 350000, ['Dewasa', 'Pekerja kantoran']);
+        $kantor->update(['keterangan_scene' => 'Kemeja formal, id card kantor', 'tipe_continuity' => 'continuity']);
         foreach ([$rina, $dedi] as $staf) {
             $p2->adminAssignments()->create(['user_id' => $staf->id, 'assigned_by' => $fakrul->id]);
         }
@@ -285,8 +291,14 @@ class DemoLengkapSeeder extends Seeder
         // CN.3.2: budget_total < alokasi (300000*6 + 400000*2 = 2.600.000) -> demo peringatan alokasi melebihi budget.
         $p3 = $this->project('Series "Kampus Biru" eps 1-2', $yoga, -20, ['deadline' => today()->subDays(5), 'kuota' => 8, 'status' => 'ditutup', 'link_grup' => 'https://chat.whatsapp.com/demo-kampus-biru', 'client_id' => $rudy->id, 'budget_total' => 2400000]);
         [$hariIni] = $this->jadwal($p3, [0, 1], 'Kampus Universitas Pamulang');
+        $hariIni->update([
+            'catatan' => 'Bawa jas almamater sendiri kalau punya, kalau tidak dipinjamkan di lokasi.',
+            'panggilan' => [['nama' => 'Tim kamera', 'jam' => '05:00'], ['nama' => 'Tim lighting', 'jam' => '05:00']],
+        ]);
         $mhs3 = $this->kelas($p3, 'Mahasiswa', 6, 300000, ['Mahasiswa']);
+        $mhs3->update(['keterangan_scene' => 'Jas almamater, sepatu kets', 'tipe_continuity' => 'continuity']);
         $dosen = $this->kelas($p3, 'Dosen', 2, 400000, ['Orang Tua']);
+        $dosen->update(['keterangan_scene' => 'Kemeja batik, sepatu pantofel', 'tipe_continuity' => 'free']);
         foreach ([$yoga, $bambang] as $staf) {
             $p3->adminAssignments()->create(['user_id' => $staf->id, 'assigned_by' => $fakrul->id, 'created_at' => now()->subDays(20)]);
         }
@@ -302,6 +314,8 @@ class DemoLengkapSeeder extends Seeder
             $pay = $this->bayar($a, $status, 0, $yoga);
             if ($un === 'intan_r') {
                 $intanApp = $a;
+                // CS.1: demo override jam kumpul per pendaftaran, beda dari default peran (06:00).
+                $a->update(['jam_callingan_override' => '05:30']);
             }
             if ($un === 'melati_k') {
                 // CA: contoh sengketa yang SUDAH diselesaikan (beda dari sari_mei di P1 yang sengaja dibiarkan belum selesai).

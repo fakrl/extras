@@ -83,10 +83,16 @@
 
         <div class="card">
             <div class="card-title">Jadwal Shooting</div>
+            @php $bolehCallsheet = auth()->user()->isSuperAdmin() || $bolehKelola; @endphp
             @forelse ($p->shootingDates as $d)
                 <div class="entity-card-row">
                     <span class="entity-card-row-label">{{ $d->tanggal->translatedFormat('D, d M Y') }}</span>
-                    <span class="entity-card-row-value">{{ implode(' · ', array_filter([$d->jam_mulai ? substr($d->jam_mulai, 0, 5).($d->jam_selesai ? '–'.substr($d->jam_selesai, 0, 5) : '') : null, $d->lokasi])) ?: '-' }}</span>
+                    <span class="entity-card-row-value" style="display: flex; align-items: center; gap: 8px;">
+                        {{ implode(' · ', array_filter([$d->jam_mulai ? substr($d->jam_mulai, 0, 5).($d->jam_selesai ? '–'.substr($d->jam_selesai, 0, 5) : '') : null, $d->lokasi])) ?: '-' }}
+                        @if ($bolehCallsheet)
+                            <a href="{{ route('admin.callsheet.show', [$p, $d->tanggal->toDateString()]) }}" class="btn btn-sm">Callsheet</a>
+                        @endif
+                    </span>
                 </div>
             @empty
                 <div style="color: var(--text-muted); font-size: var(--fs-sm);">Belum ada jadwal.</div>
