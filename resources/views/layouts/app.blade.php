@@ -19,12 +19,13 @@
 
         .app-shell { display: flex; min-height: 100vh; }
 
+        /* CT.3: Sidebar M3 Navigation Drawer */
         .sidebar {
-            width: 220px;
+            width: 240px;
             flex-shrink: 0;
-            background-color: var(--bg-sidebar);
-            border-right: 1px solid var(--border-color);
-            padding: 20px 12px;
+            background-color: var(--md-surface-container-low, var(--bg-sidebar));
+            border-right: 1px solid var(--md-outline-variant, var(--border-color));
+            padding: 16px 12px;
             display: flex;
             flex-direction: column;
             gap: 4px;
@@ -32,7 +33,7 @@
         }
         .sidebar-brand {
             display: flex; align-items: center; gap: 10px;
-            padding: 0 8px 20px;
+            padding: 0 10px 18px;
         }
         .sidebar-brand .logo {
             width: 30px; height: 30px; border-radius: 8px;
@@ -40,49 +41,79 @@
         }
         .sidebar-brand span { font-weight: 600; font-size: 15px; white-space: nowrap; }
         .sb-ikon-mr { margin-right: 6px; }
-        .sidebar-toggle { margin-left: auto; width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: 10px; background: none; color: var(--text-secondary); font-size: 20px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+        .sidebar-toggle { margin-left: auto; width: 44px; height: 44px; flex-shrink: 0; border: 0; border-radius: var(--md-shape-full, 10px); background: none; color: var(--text-secondary); font-size: 20px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
         .sidebar-toggle:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+
+        /* CT.3.1: Navigation Rail M3 (ketika .sb-ringkas aktif di desktop ≥ 861px) */
         @media (min-width: 861px) {
-            .sb-ringkas .sidebar { width: 64px; padding: 20px 10px; }
+            .sb-ringkas .sidebar { width: 72px; padding: 16px 6px; }
             .sb-ringkas .sidebar-brand { flex-direction: column; gap: 8px; padding: 0 0 12px; }
             .sb-ringkas .sidebar-brand span, .sb-ringkas .sidebar-group-label, .sb-ringkas .sidebar .chevron-icon { display: none; }
             .sb-ringkas .sidebar-toggle { margin: 0; }
             .sb-ringkas .sidebar-toggle i { transform: scaleX(-1); }
-            .sb-ringkas .sidebar-link, .sb-ringkas .sidebar-dropdown-summary { justify-content: center; gap: 0; padding: 10px 0; min-height: 44px; font-size: 0; }
-            .sb-ringkas .sidebar i { font-size: 19px; margin: 0 !important; }
+            .sb-ringkas .sidebar-link, .sb-ringkas .sidebar-dropdown-summary {
+                flex-direction: column; justify-content: center; align-items: center;
+                gap: 4px; padding: 8px 2px; min-height: 56px; font-size: 11px;
+                border-radius: var(--md-shape-md, 12px); text-align: center;
+                white-space: normal; line-height: 1.15;
+            }
+            .sb-ringkas .sidebar-link i {
+                font-size: 19px; margin: 0 !important;
+                width: 52px; height: 28px;
+                border-radius: var(--md-shape-full, 9999px);
+                display: inline-flex; align-items: center; justify-content: center;
+                transition: background 0.15s ease, color 0.15s ease;
+            }
+            .sb-ringkas .sidebar-link.active {
+                background: transparent; color: var(--md-on-surface, var(--text-primary)); font-weight: 700;
+            }
+            .sb-ringkas .sidebar-link.active i {
+                background: var(--md-secondary-container, var(--bg-nav-active));
+                color: var(--md-on-secondary-container, var(--accent-strong));
+            }
             .sb-ringkas .sidebar-dropdown { position: relative; }
             .sb-ringkas .sidebar-dropdown:has(.active) > summary { background: var(--bg-nav-active); color: var(--accent-strong); }
-            .sb-ringkas .sidebar-submenu { position: absolute; left: calc(100% + 12px); top: 0; z-index: 100; min-width: 200px; margin: 0; padding: 6px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: 0 8px 24px rgba(0,0,0,0.18); }
+            .sb-ringkas .sidebar-submenu { position: absolute; left: calc(100% + 12px); top: 0; z-index: 100; min-width: 200px; margin: 0; padding: 6px; background: var(--md-surface-container, var(--bg-card)); border: 1px solid var(--md-outline-variant, var(--border-color)); border-radius: var(--md-shape-lg, var(--radius-lg)); box-shadow: var(--md-elevation-3, 0 8px 24px rgba(0,0,0,0.18)); }
             .sb-ringkas .sidebar-submenu::before { content: ''; position: absolute; right: 100%; top: 0; bottom: 0; width: 14px; }
-            .sb-ringkas .sidebar-submenu .sidebar-link { justify-content: flex-start; gap: 10px; padding: 10px; font-size: 13.5px; }
-            .sb-ringkas .sidebar-submenu i { font-size: 17px; }
+            .sb-ringkas .sidebar-submenu .sidebar-link { justify-content: flex-start; flex-direction: row; gap: 10px; padding: 10px 14px; font-size: 13.5px; border-radius: var(--md-shape-full, 9999px); }
+            .sb-ringkas .sidebar-submenu i { font-size: 17px; width: auto; height: auto; }
         }
         .sidebar-group-label {
             font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.5px;
-            color: var(--text-muted); padding: 14px 10px 4px;
+            color: var(--text-muted); padding: 14px 14px 4px;
         }
+        /* Item M3 Navigation Drawer (pil indikator penuh) */
         .sidebar-link {
-            display: flex; align-items: center; gap: 10px;
-            padding: 10px 10px; border-radius: 8px;
-            color: var(--text-secondary); font-size: 13.5px;
-            min-height: 40px;
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 16px; border-radius: var(--md-shape-full, 9999px);
+            color: var(--md-on-surface-variant, var(--text-secondary)); font-size: 13.5px;
+            min-height: 44px; text-decoration: none;
+            transition: background 0.15s ease, color 0.15s ease;
         }
-        .sidebar-link i { font-size: 17px; }
-        .sidebar-link:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+        .sidebar-link i { font-size: 18px; }
+        .sidebar-link:hover {
+            background: color-mix(in srgb, var(--md-on-surface, #171D17) 8%, transparent);
+            color: var(--md-on-surface, var(--text-primary));
+        }
         .sidebar-link.active {
-            background: var(--bg-nav-active); color: var(--accent-strong); font-weight: 500;
+            background: var(--md-secondary-container, var(--bg-nav-active));
+            color: var(--md-on-secondary-container, var(--accent-strong));
+            font-weight: 600;
         }
 
         .sidebar-dropdown { margin-bottom: 2px; }
         .sidebar-dropdown-summary {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 10px 10px; border-radius: 8px;
-            color: var(--text-secondary); font-size: 13.5px; font-weight: 600;
-            cursor: pointer; list-style: none; min-height: 40px;
+            padding: 10px 16px; border-radius: var(--md-shape-full, 9999px);
+            color: var(--md-on-surface-variant, var(--text-secondary)); font-size: 13.5px; font-weight: 600;
+            cursor: pointer; list-style: none; min-height: 44px;
             user-select: none;
         }
         .sidebar-dropdown-summary::-webkit-details-marker { display: none; }
-        .sidebar-dropdown-summary:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+        .sidebar-dropdown-summary:hover {
+            background: color-mix(in srgb, var(--md-on-surface, #171D17) 8%, transparent);
+            color: var(--md-on-surface, var(--text-primary));
+        }
         .sidebar-dropdown[open] .sidebar-dropdown-summary { color: var(--accent-strong); }
         .sidebar-dropdown-summary .chevron-icon {
             font-size: 14px; transition: transform 0.2s ease;
@@ -92,7 +123,8 @@
         }
         .sidebar-submenu {
             display: flex; flex-direction: column; gap: 2px;
-            padding-left: 14px; margin-top: 2px;
+            padding-left: 16px; margin-top: 2px;
+        }
         }
 
         .main-area { flex: 1; display: flex; flex-direction: column; min-width: 0; }
@@ -751,44 +783,122 @@
         .nav-backdrop, .sidebar-tema { display: none; }
         button.sidebar-link { width: 100%; border: 0; background: none; font-family: inherit; cursor: pointer; text-align: left; }
 
-        /* HP: Extras = bottom nav 3 item (BJ.5); role lain = drawer dari kiri (BR.3) */
+        /* CT.3.3: Banner mode SA (Monitoring/Ambil alih) bergaya M3 */
+        .sa-mode-banner {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap;
+            background: var(--md-tertiary-container, rgba(234,179,8,0.14));
+            border: 1px solid var(--md-tertiary, rgba(234,179,8,0.45));
+            color: var(--md-on-tertiary-container, var(--text-primary));
+            padding: 12px 18px; border-radius: var(--md-shape-md, var(--radius-md)); margin-bottom: 16px; font-size: var(--fs-base);
+            position: sticky; top: 8px; z-index: 250;
+            box-shadow: var(--md-elevation-2);
+        }
+
+        /* CT.4: Kepadatan M3 compact untuk admin dan super_admin di desktop (≥ 861 px) */
+        @media (min-width: 861px) {
+            body[data-density="compact"] .card {
+                padding: var(--space-3, 12px);
+            }
+            body[data-density="compact"] table th,
+            body[data-density="compact"] table td {
+                padding: 6px 8px;
+            }
+            body[data-density="compact"] .tabel-proyek td {
+                height: 64px;
+                padding: 8px 8px;
+            }
+            body[data-density="compact"] .dash-row {
+                padding: 6px 0;
+            }
+            body[data-density="compact"] .content {
+                padding: 18px 24px;
+            }
+            body[data-density="compact"] .topbar {
+                padding: 12px 24px;
+            }
+            body[data-density="compact"] .metric-card {
+                padding: 10px 12px;
+            }
+        }
+
+        /* CT.3.2: HP ≤ 860 px — Extras & Korlap bottom navigation bar M3; SA/Admin/Client modal drawer M3 */
         @media (max-width: 860px) {
             .app-shell { flex-direction: column; }
-            .nav-bawah .sidebar {
+            .nav-bawah .sidebar,
+            body[data-role="korlap"] .sidebar {
                 position: fixed; bottom: 0; left: 0; right: 0; top: auto;
-                width: 100%; height: 64px;
+                width: 100%; height: 68px;
                 flex-direction: row; align-items: center;
-                justify-content: flex-start;
+                justify-content: space-around;
                 overflow-x: auto; overflow-y: hidden;
-                padding: 6px 4px;
-                border-right: none; border-top: 1px solid var(--border-color);
+                padding: 6px 8px;
+                border-right: none;
+                border-top: 1px solid var(--md-outline-variant, var(--border-color));
+                background: var(--md-surface-container, var(--bg-card));
                 z-index: 50;
-                gap: 0;
+                gap: 2px;
+                box-shadow: 0 -1px 6px rgba(0,0,0,0.06);
             }
-            .nav-bawah .sidebar-brand, .nav-bawah .sidebar-group-label, .sidebar-toggle { display: none; }
-            .nav-bawah .sidebar-link {
-                flex-direction: column; justify-content: center;
-                gap: 2px; padding: 6px 8px; min-height: 52px;
-                font-size: var(--fs-xs); flex: 1 0 auto; min-width: 64px; text-align: center;
-                border-radius: 10px; white-space: nowrap;
+            .nav-bawah .sidebar-brand, .nav-bawah .sidebar-group-label, .nav-bawah .sidebar-toggle,
+            body[data-role="korlap"] .sidebar-brand, body[data-role="korlap"] .sidebar-group-label, body[data-role="korlap"] .sidebar-toggle,
+            body[data-role="korlap"] .nav-burger, body[data-role="korlap"] .nav-backdrop, body[data-role="korlap"] .sidebar-tema {
+                display: none !important;
             }
-            .nav-bawah .sidebar-link i { font-size: 20px; }
-            .sidebar-link.is-utama i { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--accent); color: var(--accent-on); font-size: 20px; }
-            .sidebar-link.is-utama { font-weight: 600; color: var(--accent-strong); }
-            .sidebar-link.is-utama.active { background: transparent; }
-            .nav-bawah .main-area { padding-bottom: 64px; }
+            .nav-bawah .sidebar-link,
+            body[data-role="korlap"] .sidebar-link {
+                flex-direction: column; justify-content: center; align-items: center;
+                gap: 3px; padding: 4px 6px; min-height: 52px;
+                font-size: 11px; flex: 1 1 0; min-width: 60px; text-align: center;
+                border-radius: var(--md-shape-lg, 16px); white-space: nowrap;
+                color: var(--md-on-surface-variant, var(--text-secondary));
+                text-decoration: none;
+            }
+            .nav-bawah .sidebar-link i,
+            body[data-role="korlap"] .sidebar-link i {
+                font-size: 20px;
+                width: 52px; height: 28px;
+                border-radius: var(--md-shape-full, 9999px);
+                display: inline-flex; align-items: center; justify-content: center;
+                transition: background .15s ease, color .15s ease;
+            }
+            .nav-bawah .sidebar-link.active,
+            body[data-role="korlap"] .sidebar-link.active {
+                background: transparent;
+                color: var(--md-on-surface, var(--text-primary));
+                font-weight: 700;
+            }
+            .nav-bawah .sidebar-link.active i,
+            body[data-role="korlap"] .sidebar-link.active i {
+                background: var(--md-secondary-container, var(--bg-nav-active));
+                color: var(--md-on-secondary-container, var(--accent-strong));
+            }
+            .sidebar-link.is-utama i {
+                width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                background: var(--md-primary, var(--accent)); color: var(--md-on-primary, var(--accent-on)); font-size: 20px;
+            }
+            .sidebar-link.is-utama.active i {
+                background: var(--md-primary, var(--accent)); color: var(--md-on-primary, var(--accent-on));
+                box-shadow: var(--md-elevation-2);
+            }
+            .nav-bawah .main-area,
+            body[data-role="korlap"] .main-area {
+                padding-bottom: 72px;
+            }
 
             .nav-laci .sidebar {
                 position: fixed; top: 0; bottom: 0; left: 0; z-index: 400;
                 width: min(300px, 86vw); overflow-y: auto; overscroll-behavior: contain;
                 transform: translateX(-100%); visibility: hidden;
                 transition: transform .2s ease, visibility 0s .2s;
-                box-shadow: 0 0 32px rgba(0,0,0,0.25);
+                background: var(--md-surface-container-low, var(--bg-sidebar));
+                border-radius: 0 var(--md-shape-xl, 28px) var(--md-shape-xl, 28px) 0;
+                box-shadow: var(--md-elevation-3, 0 0 32px rgba(0,0,0,0.25));
+                border-right: none;
             }
             .nav-buka .nav-laci .sidebar { transform: none; visibility: visible; transition: transform .2s ease; }
-            .nav-laci .sidebar-link, .nav-laci .sidebar-dropdown-summary { min-height: 44px; }
+            .nav-laci .sidebar-link, .nav-laci .sidebar-dropdown-summary { min-height: 48px; border-radius: var(--md-shape-full, 9999px); margin: 0 4px; }
             .nav-laci .nav-burger { display: inline-flex; }
-            .nav-laci .sidebar-tema { display: flex; margin-top: auto; }
+            .nav-laci .sidebar-tema { display: flex; margin-top: auto; border-radius: var(--md-shape-full, 9999px); margin: auto 4px 4px; }
             .nav-laci #theme-toggle { display: none; }
             .nav-buka .nav-backdrop { display: block; position: fixed; inset: 0; z-index: 399; background: rgba(0,0,0,0.45); }
             html.nav-buka { overflow: hidden; }
@@ -841,9 +951,10 @@
     </style>
     @stack('styles')
 </head>
-<body>
-    @php($navRole = auth()->user()?->modeSa() ?? auth()->user()?->role ?? 'guest')
-    @php($laci = ! in_array($navRole, ['extras', 'guest'], true))
+@php($navRole = auth()->user()?->modeSa() ?? auth()->user()?->role ?? 'guest')
+@php($laci = ! in_array($navRole, ['extras', 'guest'], true))
+@php($isCompact = in_array($navRole, ['admin', 'super_admin'], true))
+<body @if($isCompact) data-density="compact" @endif @if($navRole === 'korlap') data-role="korlap" @endif>
     <div class="app-shell {{ $laci ? 'nav-laci' : 'nav-bawah' }}">
         <aside class="sidebar" id="app-sidebar" aria-label="Menu utama">
             <div class="sidebar-brand">

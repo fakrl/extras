@@ -126,3 +126,60 @@ Screenshot aplikasi asli diambil di Microsoft Edge headless via Playwright mengg
     2. Dashboard Admin (`rina@jbtb.test`)
     3. Tabel/Daftar Proyek (`/admin/projects`)
     4. Dialog Konfirmasi M3 (termasuk tampilan Bottom Sheet di 390px)
+
+---
+
+# Catatan Migrasi Material Design 3 (Tahap 2: CT.3 + CT.4)
+
+> Tanggal: 28 Oktober 2026  
+> Branch: `ct-m3-antigravity` (worktree terisolasi)  
+
+---
+
+## 7. Kerangka Navigasi M3 (CT.3)
+
+1. **Desktop (≥ 861 px)**:
+   - **Navigation Drawer M3**: Lebar sidebar 240px dengan gaya surface-container M3, borderless atau pembatas outline-variant halus. Item menu aktif berbentuk pil (`border-radius: var(--md-shape-full)`) dengan background `var(--md-secondary-container)` dan teks/ikon `var(--md-on-secondary-container)`.
+   - **Navigation Rail M3**: Mode ciut (`.sidebar.sb-ringkas`) lebar 72px. Ikon aktif berada di dalam pil indikator (52px x 28px) dengan label kecil 11px di bawahnya.
+   - **Top App Bar**: Header ringkas dengan penataan avatar, notifikasi, dan brand selaras M3.
+2. **Mobile (≤ 860 px)**:
+   - **Bottom Navigation Bar M3**: Diterapkan khusus untuk role **Extras** (`.nav-bawah .sidebar`) dan **Korlap** (`body[data-role="korlap"] .sidebar`). Bar navigasi menempel di bagian bawah layar setinggi 68px (padding-bottom disesuaikan untuk safe area), dengan 3–4 item navigasi vertikal (ikon dalam pil indikator aktif + label teks 11px di bawahnya).
+   - **Modal Drawer M3**: Untuk Super Admin, Admin, dan Client di mobile, menu laci `<aside class="sidebar">` tetap menggunakan drawer modal yang muncul dari sisi kiri dengan sudut kanan melengkung 28px (`var(--md-shape-xl)`).
+   - **Red Dot Indicator (CO)**: Indikator titik merah tetap dipertahankan pada ikon navigasi yang memiliki badge.
+3. **Super Admin Mode Banner**:
+   - `.sa-mode-banner` diperbarui menggunakan gaya M3 dengan warna `var(--md-tertiary-container)` dan teks `var(--md-on-tertiary-container)`, sticky di posisi paling atas layar.
+
+---
+
+## 8. Kepadatan (CT.4)
+
+- **Atribut `data-density="compact"`**:
+  - Ditambahkan pada tag `<body>` secara kondisional di `layouts/app.blade.php` hanya untuk role `admin` dan `super_admin`.
+  - Berlaku pada layar desktop (≥ 861 px): padding tabel dipadatkan (6px 8px), baris proyek dibatasi ke 64px, padding kartu metrik dan kartu konten dipadatkan ke 12px, margin antar baris dashboard lebih rapat.
+  - Role `extras`, `korlap`, `client`, dan seluruh tampilan pada mobile (≤ 860 px) tetap mempertahankan mode **comfortable** dengan target sentuh ≥ 44px.
+
+---
+
+## 9. Hasil Pengujian Tahap 2
+
+- **Pint**: PASS (0 issues).
+- **Test Feature Navigasi & Kepadatan (`CtKerangkaNavigasiTest.php`)**: 4 passed (14 assertions).
+- **Test SQLite (`php artisan test`)**:
+  - Total: **921 passed (4536 assertions)** — 100% passed.
+- **Test MySQL (`DB_CONNECTION=mysql DB_DATABASE=jbtb_test php artisan test`)**:
+  - Total: **921 passed (4536 assertions)** — 100% passed, identik dengan SQLite.
+
+---
+
+## 10. Screenshot Aplikasi Asli Tahap 2
+
+Ditambahkan **56 screenshot** baru di `ct-screenshots/` (prefix `tahap2_`) mencakup:
+- 5 Dashboard Role (Super Admin, Admin, Client, Korlap, Extras)
+- Halaman Login
+- Persetujuan & Pantau Admin SA
+- Daftar Proyek & Lineup Admin
+- Pilih Kandidat Client
+- Absensi Korlap
+- Lowongan & Profil Extras
+- Dialog Bottom Sheet di mobile 390px
+Semua dalam format Desktop 1366px & Mobile 390px, Terang & Gelap.
