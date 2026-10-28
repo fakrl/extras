@@ -8,6 +8,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script>document.documentElement.classList.add('no-anim'); try { document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme-v2') || 'light'); if (localStorage.getItem('jbtb-sidebar') === 'ringkas') document.documentElement.classList.add('sb-ringkas'); } catch (e) {}</script>
     <title>@yield('title', 'SIM Casting JBTB')</title>
+    <link rel="icon" href="{{ asset('images/logo-jbtb.jpg') }}" type="image/jpeg">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
     @include('partials.theme-style')
@@ -35,9 +36,7 @@
         }
         .sidebar-brand .logo {
             width: 30px; height: 30px; border-radius: 8px;
-            background: var(--accent); color: var(--accent-on);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 15px;
+            object-fit: contain; flex-shrink: 0; display: block;
         }
         .sidebar-brand span { font-weight: 600; font-size: 15px; white-space: nowrap; }
         .sb-ikon-mr { margin-right: 6px; }
@@ -751,7 +750,7 @@
     <div class="app-shell {{ $laci ? 'nav-laci' : 'nav-bawah' }}">
         <aside class="sidebar" id="app-sidebar" aria-label="Menu utama">
             <div class="sidebar-brand">
-                <div class="logo">J</div>
+                <img src="{{ asset('images/logo-jbtb.jpg') }}" alt="Logo JBTB" class="logo">
                 <span>JBTB Casting</span>
                 <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-controls="app-sidebar" aria-pressed="false" aria-label="Ringkas sidebar" title="Ringkas sidebar"><i class="ti ti-layout-sidebar-left-collapse"></i></button>
             </div>

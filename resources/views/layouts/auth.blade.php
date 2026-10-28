@@ -6,6 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="color-scheme" content="dark light">
     <title>@yield('title', 'SIM Casting JBTB')</title>
+    <link rel="icon" href="{{ asset('images/logo-jbtb.jpg') }}" type="image/jpeg">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
     <script>try { document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme-v2') || 'light'); } catch (e) {}</script>
@@ -31,9 +32,7 @@
         }
         .auth-brand .logo {
             width: 32px; height: 32px; border-radius: 8px;
-            background: var(--accent); color: var(--accent-on);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 16px;
+            object-fit: contain; flex-shrink: 0; display: block;
         }
         .auth-brand span { font-weight: 600; font-size: 15px; }
         h1.auth-title { font-size: 19px; font-weight: 600; margin: 0 0 4px; }
@@ -81,7 +80,7 @@
 <body>
     <main class="auth-card">
         <a href="{{ route('home') }}" class="auth-brand" style="text-decoration: none; color: inherit;" aria-label="JBTB Casting, ke beranda">
-            <div class="logo">J</div>
+            <img src="{{ asset('images/logo-jbtb.jpg') }}" alt="Logo JBTB" class="logo">
             <span>JBTB Casting</span>
         </a>
         @yield('content')
