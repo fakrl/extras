@@ -48,8 +48,8 @@
 
     <div class="card sa-card">
         <div class="card-title">Staf perlu diingatkan</div>
-        @forelse ($diingatkan as $t)
-            @include('super-admin.dashboard._diingatkan', ['t' => $t])
+        @forelse ($diingatkan as $o)
+            @include('super-admin.dashboard._diingatkan', ['o' => $o])
         @empty
             <x-kosong teks="Semua Admin dan Korlap sesuai jadwal." />
         @endforelse
