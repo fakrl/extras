@@ -47,4 +47,26 @@ class BrOverflowMobileTest extends TestCase
 
         $this->assertStringContainsString('.profil-persen-bar { width: 100%;', $css);
     }
+
+    /** CU.6: Pilih Kandidat Client (390px) - header "Total" kepotong + tombol keluar layar, jadi kartu bertumpuk di <=640px. */
+    public function test_pilih_kandidat_client_jadi_kartu_di_640(): void
+    {
+        $view = File::get(resource_path('views/client/reviews/index.blade.php'));
+        $css = File::get(resource_path('views/layouts/app.blade.php')).$view;
+
+        $this->assertStringContainsString('class="pk-tabel"', $view);
+        $this->assertStringContainsString('.pk-tabel, .pk-tabel tbody, .pk-tabel tr, .pk-tabel td { display: block; width: 100%; }', $css);
+        $this->assertStringContainsString('.pk-tabel td:last-child .btn { width: 100%; }', $css);
+    }
+
+    /** CU.3: step-bar pendaftaran Extras (5 langkah) harus muat di 390px tanpa scroll horizontal. */
+    public function test_step_bar_pendaftaran_extras_muat_tanpa_scroll_di_390(): void
+    {
+        $view = File::get(resource_path('views/partials/application-progress.blade.php'));
+        $css = File::get(resource_path('views/layouts/app.blade.php'));
+
+        $this->assertStringContainsString('ap-progress', $view);
+        $this->assertStringContainsString('.ap-progress { overflow-x: visible; }', $css);
+        $this->assertStringContainsString('.ap-progress-bar .step-bar-item { width: auto; flex: 1 1 0; min-width: 0; }', $css);
+    }
 }

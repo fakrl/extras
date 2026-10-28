@@ -97,15 +97,20 @@ class DashboardController extends Controller
         ));
     }
 
-    /** CO.2.3: tandai item tahapan yang punya pengingat SA belum dibaca ('diingatkan'). */
+    /**
+     * CO.2.3: tandai item tahapan yang punya pengingat SA belum dibaca ('diingatkan').
+     * CU.7 fix: ikut kenal key kelompok 'pg-{admin}-{proyek}-{jenis}' (reminder lewat
+     * kartu dashboard SA), bukan cuma 'pa-{app_id}' (reminder individual lama).
+     */
     private function tandaiDiingatkan(array $tahapan, $user): array
     {
         $kunci = $user->unreadNotifications()->where('data->jenis', 'pengingat_sa')->get()
             ->map(fn ($n) => $n->data['kunci'] ?? null)->filter()->flip();
 
-        return collect($tahapan)->map(function ($t) use ($kunci) {
-            $t['daftar'] = collect($t['daftar'])->map(function ($i) use ($kunci) {
-                $i['diingatkan'] = $kunci->has('pa-'.$i['app']->id);
+        return collect($tahapan)->map(function ($t) use ($kunci, $user) {
+            $t['daftar'] = collect($t['daftar'])->map(function ($i) use ($kunci, $user) {
+                $kunciGrup = 'pg-'.$user->id.'-'.$i['app']->casting_project_id.'-'.$i['jenis'];
+                $i['diingatkan'] = $kunci->has('pa-'.$i['app']->id) || $kunci->has($kunciGrup);
 
                 return $i;
             })->values();
