@@ -20,8 +20,14 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ReviewController extends Controller
 {
+    /** CU.5: $statusFilter opsional (dari 3 angka dashboard) - tampilan saja, menyaring daftar yang sudah dihitung, bukan query/aturan baru. */
     public function index(Request $request)
     {
+        // CU.5 fix: normalisasi SEBELUM dikirim ke view - nilai mentah tak dikenal
+        // (atau array, ?status[]=x) bikin view crash karena diindex langsung ke array literal.
+        $statusFilter = in_array($request->query('status'), ['menunggu', 'approved', 'rejected'], true)
+            ? $request->query('status') : null;
+
         $proyek = CastingProject::query()->milikClient($request->user())->where('client_request_status', 'disetujui')
             ->with(['applications' => fn ($q) => $q->terlihatClient()])
             ->get()
@@ -37,7 +43,11 @@ class ReviewController extends Controller
                 ];
             });
 
-        return view('client.reviews.index', compact('proyek'));
+        if ($statusFilter) {
+            $proyek = $proyek->filter(fn ($item) => $item[$statusFilter] > 0)->values();
+        }
+
+        return view('client.reviews.index', compact('proyek', 'statusFilter'));
     }
 
     public function review(Request $request): RedirectResponse

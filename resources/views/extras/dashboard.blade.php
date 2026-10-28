@@ -356,7 +356,7 @@
                 @if ($peran)
                     <div style="margin-top: 4px; font-size: 13px;">
                         {{ $peran->nama_kelas }}
-                        @if ($project->persenCocok !== null) <span class="badge {{ $project->persenCocok >= 50 ? 'badge-aktif' : 'badge-netral' }}">{{ $project->persenCocok }}% cocok</span> @endif
+                        @if ($project->persenCocok !== null && $project->persenCocok >= 50) <span class="badge badge-aktif">{{ $project->persenCocok }}% cocok</span> @endif
                         @if ($project->classes->count() > 1) <span class="dash-sub">+{{ $project->classes->count() - 1 }} peran lain</span> @endif
                     </div>
                 @endif
