@@ -183,3 +183,47 @@ Ditambahkan **56 screenshot** baru di `ct-screenshots/` (prefix `tahap2_`) menca
 - Lowongan & Profil Extras
 - Dialog Bottom Sheet di mobile 390px
 Semua dalam format Desktop 1366px & Mobile 390px, Terang & Gelap.
+
+---
+
+# Catatan Sinkronisasi Merge `origin/main` (Tiket CV: Commit `daf558e`)
+
+> Tanggal: 29 Oktober 2026  
+> Base Merge Commit: `e902adc` / Penyesuaian: `f10698a`  
+
+---
+
+## 11. Resolusi Merge dan Penyelarasan M3
+
+1. **Daftar File yang Terlibat**:
+   - `resources/views/layouts/app.blade.php`: Menerima penambahan script CV (`window.tampilkanKredensial`, event delegation untuk `staf-mini-form`). Seluruh lapisan CSS facade M3 (token, nav drawer, nav rail ringkas, bottom nav bar, dialog bottom sheet) dipertahankan 100%.
+   - `resources/views/partials/staf-baru-mini.blade.php`: Komponen baru dari CV untuk form mini tambah Admin/Korlap langsung di dialog. Diselaraskan dengan class `.btn-tautan` dan `.staf-mini-form` bergaya container M3.
+   - `resources/views/partials/sidebar-super_admin.blade.php`: Menu Pantau Admin telah dilebur ke Monitoring (dengan titik merah tugas tertunda di Monitoring).
+   - `resources/views/super-admin/monitoring/admin.blade.php` & `korlap.blade.php`: Halaman baru Monitoring per orang dengan akordeon `details.mon-orang`.
+   - `resources/views/admin/projects/index.blade.php`: Halaman Proyek SA baru dengan filter panel M3 dan tab riwayat.
+   - `tests/Feature/CallsheetTest.php`: Distabilkan generator NIK seed agar tidak terjadi bentrok hash NIK acak di SQLite.
+
+2. **Prinsip Penyelesaian**:
+   - Struktur markup dan fitur fungsional tiket CV dipertahankan sepenuhnya (tidak ada route, form, atau atribut JavaScript yang dihapus).
+   - Seluruh komponen baru dari tiket CV langsung mengadopsi token dan elemen visual M3 via CSS facade.
+
+---
+
+## 12. Hasil Pengujian Pasca-Merge
+
+- **Pint**: PASS (0 issues).
+- **Test SQLite (`php artisan test`)**:
+  - Total: **946 passed (4626 assertions)** — 100% passed (termasuk 4 test suite baru CV: `CvPantauStafTest`, `CvDaftarProyekTest`, `CvLogBisaDiklikTest`, `CvTambahStafDialogTest`).
+- **Test MySQL (`DB_CONNECTION=mysql DB_DATABASE=jbtb_test php artisan test`)**:
+  - Total: **946 passed (4626 assertions)** — 100% passed, jumlah test & assertion identik dengan SQLite.
+
+---
+
+## 13. Matriks Screenshot Fitur Baru CV
+
+Ditambahkan **20 screenshot** baru di `ct-screenshots/` (prefix `cv_`) mencakup:
+- Monitoring ▸ Admin (dengan akordeon staf terbuka) (1366px & 390px, Terang & Gelap)
+- Monitoring ▸ Korlap (1366px & 390px, Terang & Gelap)
+- Daftar Proyek dengan panel Filter terbuka (1366px & 390px, Terang & Gelap)
+- Dialog Setujui dengan form mini "+ Admin baru" terbuka (1366px & 390px, Terang & Gelap)
+- Halaman Log Aktivitas (1366px & 390px, Terang & Gelap)
