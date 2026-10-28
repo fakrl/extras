@@ -14,6 +14,10 @@
     $sbPantauTotal = collect(\App\Support\AdminRingkasan::tahapan(null, PHP_INT_MAX))
         ->flatMap(fn ($t) => $t['daftar'])
         ->contains(fn ($i) => $i['perlu'] && $adminAktifIds->contains($i['app']->castingProject?->admin_id));
+    // CV.1.5: titik merah pindah ke item Monitoring, gabungan tugas Admin+Korlap.
+    $korlapAktif = \App\Models\User::where('role', \App\Models\User::ROLE_KORLAP)->where('status', 'aktif')->get();
+    $sbPantauKorlap = \App\Support\KorlapRingkasan::tugasTertunda($korlapAktif, 1)->isNotEmpty();
+    $sbPantauMonitoring = $sbPantauTotal || $sbPantauKorlap;
 @endphp
 
 <a href="{{ route('super-admin.dashboard') }}" class="sidebar-link {{ str_starts_with($route, 'super-admin/dashboard') ? 'active' : '' }}">
@@ -22,10 +26,6 @@
 <a href="{{ route('super-admin.persetujuan') }}" class="sidebar-link {{ str_starts_with($route, 'super-admin/persetujuan') ? 'active' : '' }}">
     <i class="ti ti-circle-check"></i> Persetujuan
     @if ($sbMenungguKeputusan)<span class="sb-dot" aria-label="Ada yang perlu diputuskan"></span>@endif
-</a>
-<a href="{{ route('super-admin.pantau-admin.index') }}" class="sidebar-link {{ str_starts_with($route, 'super-admin/pantau-admin') ? 'active' : '' }}">
-    <i class="ti ti-users"></i> Pantau Admin
-    @if ($sbPantauTotal)<span class="sb-dot" aria-label="Ada tugas tertunda"></span>@endif
 </a>
 <a href="{{ route('super-admin.akun.index') }}" class="sidebar-link {{ $isAkunActive ? 'active' : '' }}">
     <i class="ti ti-users-group"></i> Manajemen Akun
@@ -39,7 +39,7 @@
 
 <details class="sidebar-dropdown" {{ str_starts_with($route, 'super-admin/sebagai') || str_starts_with($route, 'super-admin/monitoring') ? 'open' : '' }}>
     <summary class="sidebar-dropdown-summary">
-        <span><i class="ti ti-eye sb-ikon-mr"></i> Monitoring</span>
+        <span><i class="ti ti-eye sb-ikon-mr"></i> Monitoring @if ($sbPantauMonitoring)<span class="sb-dot" aria-label="Ada tugas tertunda"></span>@endif</span>
         <i class="ti ti-chevron-right chevron-icon"></i>
     </summary>
     <div class="sidebar-submenu">

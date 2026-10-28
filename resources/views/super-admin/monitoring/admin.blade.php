@@ -7,15 +7,6 @@
 @section('content')
 @include('super-admin.monitoring._kepala', ['mode' => 'admin', 'teks' => 'Pratinjau pekerjaan Admin, lihat saja. Klik kartu untuk masuk mode Admin langsung ke halaman terkait. Di mode Admin, aksi yang Anda lakukan nyata dan tercatat atas nama Anda.'])
 
-<div class="mon-kartu">
-    @foreach ($ringkasan as $key => $r)
-        <button type="submit" form="mon-masuk" name="ke" value="{{ $r['url'] }}" class="metric-card mon-btn {{ $r['jumlah'] ? 'is-ada' : '' }}" data-kartu="{{ $key }}">
-            <div class="metric-label">{{ $r['label'] }}</div>
-            <div class="metric-value">{{ $r['jumlah'] }}</div>
-        </button>
-    @endforeach
-</div>
-
 <div class="card" style="margin-bottom: 16px;">
     <div class="card-title">Tahapan Partisipasi Kandidat</div>
     @include('admin.partials.tahapan', ['monitor' => true])
@@ -23,32 +14,12 @@
 
 <div class="mon-dua">
     <div class="card">
-        <div class="card-title">Per Admin</div>
-        <div class="table-container">
-            <table>
-                <thead><tr><th>Nama</th><th>Proyek PIC aktif</th><th>Menunggu dia</th><th>Aksi terakhir</th></tr></thead>
-                <tbody>
-                    @forelse ($admins as $a)
-                        <tr>
-                            <td><a href="{{ route('super-admin.admins.show', $a) }}" style="font-weight: 600;">{{ $a->name }}</a></td>
-                            <td>{{ $a->proyek_aktif }}</td>
-                            <td>@if ($a->menunggu)<span class="badge badge-netral">{{ $a->menunggu }}</span>@else<span class="dash-sub">0</span>@endif</td>
-                            <td>
-                                @if ($a->aktivitasTerakhir)
-                                    {{ \App\Models\ActivityLog::actionLabel($a->aktivitasTerakhir->action) }}
-                                    <div class="dash-sub">{{ $a->aktivitasTerakhir->created_at?->diffForHumans() }}</div>
-                                @else
-                                    <span class="dash-sub">Belum ada</span>
-                                @endif
-                            </td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="4" class="dash-sub" style="text-align: center;">Belum ada Admin aktif.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        <p class="dash-sub" style="margin: 8px 0 0;">Menunggu dia = nego menunggu balasan + kontrak menunggu TTD di proyek yang dia PIC-i.</p>
+        <div class="card-title">Daftar Admin</div>
+        @forelse ($admins as $a)
+            @include('super-admin.monitoring._orang', ['u' => $a, 'label' => 'Admin'])
+        @empty
+            <x-kosong teks="Belum ada Admin aktif." />
+        @endforelse
     </div>
 
     <div class="card">

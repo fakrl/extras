@@ -12,13 +12,12 @@ use App\Models\User;
 use App\Notifications\InAppNotification;
 use App\Services\KeuanganService;
 use App\Support\AdminRingkasan;
+use App\Support\KorlapRingkasan;
 use App\Support\Periode;
 use App\Support\Timeline;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 
 class DashboardController extends Controller
@@ -69,6 +68,13 @@ class DashboardController extends Controller
         $pantauTotal = $pantauAdmin->sum('jumlah');
         $pantauMendesak = $pantauAdmin->contains(fn ($p) => $p['tugas']->contains(fn ($t) => $t['sejak']?->lte(now()->subDays(3))));
 
+        // CV.1.5: KPI "Tugas staf tertunda" & kartu "Staf perlu diingatkan" gabung Admin+Korlap.
+        $tugasKorlap = KorlapRingkasan::tugasTertunda($korlapsAktif, null);
+        $korlapTotal = $tugasKorlap->sum('jumlah');
+        $korlapMendesak = $tugasKorlap->contains(fn ($p) => $p['tugas']->contains(fn ($t) => $t['sejak']?->lte(now()->subDays(3))));
+        $stafTertunda = $pantauTotal + $korlapTotal;
+        $stafMendesak = $pantauMendesak || $korlapMendesak;
+
         // CR.2.3: gabungan 3 jenis "perlu keputusan", urut paling lama menunggu, maks 5.
         $butuhKeputusan = $pengajuanBaru->concat($pengajuanRevisi)
             ->map(fn (CastingProject $p) => ['tipe' => 'pengajuan', 'req' => $p, 'sejak' => $p->created_at])
@@ -82,7 +88,10 @@ class DashboardController extends Controller
         // (bukan per kandidat) supaya tidak tampak baris kembar - hitungan "N Extras"
         // + satu tombol Ingatkan per kelompok. Halaman Pantau Admin TETAP rinci per
         // kandidat (pakai $pantauAdmin apa adanya, tidak disentuh).
-        $diingatkan = $this->diingatkanKelompok($pantauAdmin, $adminsAktif);
+        // CV.1.5: digabung dengan kelompok tugas Korlap, "Staf perlu diingatkan" maks 5 total.
+        $diingatkanAdmin = AdminRingkasan::kelompok($pantauAdmin, $adminsAktif, null)->map(fn ($g) => $g + ['peran' => 'admin']);
+        $diingatkanKorlap = $tugasKorlap->flatMap(fn ($p) => $p['tugas']->map(fn ($t) => $t + ['korlap' => $p['korlap'], 'peran' => 'korlap']));
+        $diingatkan = $diingatkanAdmin->concat($diingatkanKorlap)->sortBy(fn ($g) => $g['sejak']?->timestamp ?? 0)->take(5)->values();
 
         // CR.2.2 KPI "Proyek berjalan": shooting dalam rentang angka + pertumbuhan vs periode sebelumnya, panjang sama.
         $proyekBerjalan = CastingProject::diTahap('berjalan')->shootingDalam($dari, $sampai)->count();
@@ -110,6 +119,7 @@ class DashboardController extends Controller
             'adminsAktif', 'korlapsAktif',
             'menungguKeputusan', 'jumlahTindakan', 'pengajuanMendesak',
             'pantauAdmin', 'pantauTotal', 'pantauMendesak',
+            'tugasKorlap', 'stafTertunda', 'stafMendesak',
             'butuhKeputusan', 'diingatkan',
             'proyekBerjalan', 'pertumbuhanBerjalan',
             'invoiceBelumLunas', 'invoiceTotal',
@@ -216,59 +226,6 @@ class DashboardController extends Controller
         ActivityLog::record('REMIND_ADMIN', "Super Admin mengingatkan {$admin->name}: {$tugas} ({$jumlah} Extras) di {$proyek}", $apps->first()->castingProject);
 
         return back()->with('status', "Pengingat terkirim ke {$admin->name}.");
-    }
-
-    /**
-     * CU.7: kelompokkan tugas "perlu diingatkan" (dari AdminRingkasan::pantauAdmin(),
-     * TIDAK diubah) per Admin+proyek+jenis tugas supaya dashboard tidak menampilkan
-     * baris kembar per kandidat. Status "sudah diingatkan" dicek per kelompok (kunci
-     * 'pg-...'), terpisah dari pengingat per-kandidat ('pa-...') di halaman Pantau Admin.
-     */
-    private function diingatkanKelompok(Collection $pantauAdmin, Collection $adminsAktif): Collection
-    {
-        $mentah = $pantauAdmin
-            ->flatMap(fn ($p) => $p['tugas']->map(fn ($t) => $t + ['admin' => $p['admin']]))
-            ->groupBy(fn ($t) => $t['admin']->id.'|'.$t['proyek_id'].'|'.$t['jenis']);
-
-        $kunciSemua = $mentah->keys()->map(function ($k) {
-            [$adminId, $proyekId, $jenis] = explode('|', $k, 3);
-
-            return "pg-{$adminId}-{$proyekId}-{$jenis}";
-        })->values();
-
-        $notifTerakhir = DatabaseNotification::where('notifiable_type', User::class)
-            ->whereIn('notifiable_id', $adminsAktif->pluck('id'))
-            ->where('data->jenis', 'pengingat_sa')
-            ->whereIn('data->kunci', $kunciSemua)
-            ->get()
-            ->groupBy(fn ($n) => $n->data['kunci'] ?? null)
-            ->map(fn ($g) => $g->sortByDesc('created_at')->first());
-
-        return $mentah->map(function ($grup, $kunciGrup) use ($notifTerakhir) {
-            [$adminId, $proyekId, $jenis] = explode('|', $kunciGrup, 3);
-            $pertama = $grup->sortBy(fn ($t) => $t['sejak']?->timestamp ?? 0)->first();
-            $terakhir = $notifTerakhir->get("pg-{$adminId}-{$proyekId}-{$jenis}");
-            // Kompatibel dengan pengingat per-kandidat lama ('pa-...', dari halaman Pantau
-            // Admin): kalau SEMUA kandidat di kelompok ini sudah diingatkan satu-satu dalam
-            // 24 jam, kelompok juga dianggap "sudah diingatkan" (meski belum ada notif 'pg-').
-            $semuaPaDiingatkan = $grup->every(fn ($t) => $t['diingatkan_pada'] !== null);
-            $diingatkanPada = $terakhir && $terakhir->created_at->gt(now()->subDay())
-                ? $terakhir->created_at
-                : ($semuaPaDiingatkan ? $grup->sortByDesc(fn ($t) => $t['diingatkan_pada']->timestamp)->first()['diingatkan_pada'] : null);
-
-            return [
-                'admin' => $pertama['admin'],
-                'proyek' => $pertama['proyek'],
-                'tugas' => $jenis === 'balas_nego' ? 'Counter nego menunggu balasan' : $pertama['tugas'],
-                'jumlah' => $grup->count(),
-                'sejak' => $pertama['sejak'],
-                'app_ids' => $grup->pluck('app_id')->values(),
-                'diingatkan_pada' => $diingatkanPada,
-            ];
-        })
-            ->sortBy(fn ($g) => $g['sejak']?->timestamp ?? 0)
-            ->take(5)
-            ->values();
     }
 
     /**

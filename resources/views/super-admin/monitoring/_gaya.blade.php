@@ -23,5 +23,13 @@
 .mon-bar .is-hadir { background: var(--accent); }
 .mon-bar .is-tunggu { background: #eab308; }
 .mon-bar .is-absen { background: var(--danger, #d9534f); }
+.mon-orang { border-top: 1px solid var(--border-color); padding: 10px 0; }
+.mon-orang:first-child { border-top: none; padding-top: 0; }
+.mon-orang-summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.mon-orang-summary::-webkit-details-marker { display: none; }
+.mon-orang-isi { margin-top: 10px; padding-left: 4px; }
+.mon-proyek-blok { border-top: 1px dashed var(--border-color); padding: 8px 0; }
+.mon-proyek-blok:first-child { border-top: none; }
+.mon-tua { color: var(--danger, #d9534f); font-weight: 600; }
 </style>
 @endpush

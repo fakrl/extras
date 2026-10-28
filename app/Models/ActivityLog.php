@@ -70,6 +70,7 @@ class ActivityLog extends Model
         return self::ACTION_LABELS[$code] ?? ucfirst(strtolower(str_replace(['_', '.'], ' ', $code)));
     }
 
+    /** CV.3: tautan ke sumber log untuk tiap jenis subjek yang dicatat. Subjek terhapus → null (teks biasa). */
     public function subjectUrl(): ?string
     {
         $s = $this->subject;
@@ -77,10 +78,24 @@ class ActivityLog extends Model
         return match (true) {
             $s instanceof User => route('super-admin.admins.show', $s),
             $s instanceof ExtrasProfile => route('super-admin.admins.show', $s->user_id),
-            $s instanceof CastingProject => route('admin.projects.show', $s),
-            $s instanceof ProjectApplication => route('admin.projects.applicants', $s->casting_project_id),
+            $s instanceof CastingProject => in_array($this->action, ['SIGN_INVOICE', 'UPLOAD_CUSTOM_INVOICE_DOC'], true)
+                ? route('invoices.show', $s)
+                : route('admin.projects.show', $s),
+            $s instanceof ProjectApplication => $this->urlProjectApplication($s),
+            $s instanceof Attendance => route('admin.attendance.index', ['project' => $s->projectApplication?->casting_project_id, 'tanggal' => $s->event_shooting_date_id]).'#app-'.$s->project_application_id,
+            $s instanceof Contract => route('contracts.show', $s->project_application_id),
+            $s instanceof Invoice => route('invoices.show', $s->casting_project_id),
+            $s instanceof FeeNegotiation => route('admin.negotiations.show', $s->project_application_id),
             default => null,
         };
+    }
+
+    /** Lineup ber-anchor, kecuali log aksi pembayaran → halaman pembayaran. */
+    private function urlProjectApplication(ProjectApplication $s): string
+    {
+        return in_array($this->action, ['UPLOAD_PAYOUT_TRANSFER', 'CONFIRM_PAYMENT', 'DISPUTE_PAYMENT', 'RESOLVE_DISPUTE'], true)
+            ? route('payments.show', $s)
+            : route('admin.projects.applicants', $s->casting_project_id).'#app-'.$s->id;
     }
 
     public function user(): BelongsTo
