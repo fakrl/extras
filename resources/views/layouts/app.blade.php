@@ -622,6 +622,21 @@
         .dash-dialog-hint { color: var(--text-muted); font-weight: 400; }
         .dash-dialog-btn { display: flex; gap: 8px; justify-content: flex-end; }
         .dash-dialog-tutup { margin-top: 12px; }
+        .btn-tautan {
+            background: none; border: none; padding: 2px 4px;
+            color: var(--md-primary, var(--accent)); font-size: var(--fs-xs);
+            font-family: inherit; font-weight: 500; cursor: pointer;
+            text-decoration: underline; text-underline-offset: 2px;
+            border-radius: var(--md-shape-xs, 4px);
+        }
+        .btn-tautan:hover { color: var(--md-on-surface, var(--text-primary)); background: var(--bg-card-hover); }
+        .staf-baru-mini { margin-top: 4px; margin-bottom: 8px; }
+        .staf-mini-form {
+            background: var(--md-surface-container, var(--bg-page));
+            border: 1px solid var(--md-outline-variant, var(--border-color));
+            border-radius: var(--md-shape-sm, 8px);
+            padding: 10px; margin-top: 6px;
+        }
         .pa-admin { padding: 10px 0; border-top: 1px solid var(--border-color); }
         .pa-admin-nama { font-weight: 600; margin-bottom: 6px; }
         /* CR.4: detail pengajuan Client (_pengajuan.blade.php) - ganti style inline */
