@@ -62,6 +62,7 @@ class ActivityLog extends Model
         'SA_MODE_MULAI' => 'Mulai mode Monitoring',
         'SA_MODE_KELUAR' => 'Keluar mode Monitoring',
         'REMIND_ADMIN' => 'Ingatkan Admin',
+        'CALLSHEET_EXPORT' => 'Ekspor callsheet',
     ];
 
     public static function actionLabel(string $code): string

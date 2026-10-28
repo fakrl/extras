@@ -35,6 +35,11 @@
                         </div>
                     </div>
                 </{{ $tag }}>
+                @unless ($masuk)
+                    <div style="padding: 0 0 10px; text-align: right;">
+                        <a href="{{ route('admin.callsheet.show', [$sd->castingProject, $sd->tanggal->toDateString()]) }}" class="btn btn-sm">Callsheet</a>
+                    </div>
+                @endunless
             @empty
                 <div class="dash-sub" style="padding: 8px 0;">
                     Tidak ada shooting {{ strtolower($judul) }}.

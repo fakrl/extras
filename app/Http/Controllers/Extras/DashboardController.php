@@ -22,7 +22,7 @@ class DashboardController extends Controller
 
         $pendaftaranSaya = $extrasProfile
             ? ProjectApplication::where('extras_id', $extrasProfile->id)
-                ->with(['castingProject.shootingDates', 'castingProjectClass', 'payment:id,project_application_id,status'])
+                ->with(['castingProject.shootingDates', 'castingProject.adminAssignments.user', 'castingProjectClass', 'payment:id,project_application_id,status'])
                 ->latest()
                 ->get()
                 ->unique('casting_project_id')
@@ -91,6 +91,22 @@ class DashboardController extends Controller
 
         $jumlahBatalMendadak = $extrasProfile?->batalMendadak()->count() ?? 0;
 
-        return view('extras.dashboard', compact('jumlahBatalMendadak', 'extrasProfile', 'pendaftaranAktif', 'riwayatPendaftaran', 'bentrokPer', 'aktivitasSaya', 'agendaEvents', 'dari', 'sampai', 'skala', 'castingCallTerbuka', 'riwayatAbsensi'));
+        // CS.3: satu kartu callingan paling atas, H-1/H saja, hari ini diutamakan dari besok.
+        $callinganCard = null;
+        foreach ($pendaftaranAktif as $app) {
+            if (! in_array($app->status_partisipasi, ['lolos', 'kontrak_ditandatangani'], true)) {
+                continue;
+            }
+            $tanggalCalling = $app->castingProject->shootingDates->first(fn ($d) => $d->tanggal->isToday() || $d->tanggal->isTomorrow());
+            if (! $tanggalCalling) {
+                continue;
+            }
+            $hariIni = $tanggalCalling->tanggal->isToday();
+            if (! $callinganCard || ($hariIni && ! $callinganCard['hari_ini'])) {
+                $callinganCard = ['app' => $app, 'tanggal' => $tanggalCalling, 'hari_ini' => $hariIni];
+            }
+        }
+
+        return view('extras.dashboard', compact('jumlahBatalMendadak', 'extrasProfile', 'pendaftaranAktif', 'riwayatPendaftaran', 'bentrokPer', 'aktivitasSaya', 'agendaEvents', 'dari', 'sampai', 'skala', 'castingCallTerbuka', 'riwayatAbsensi', 'callinganCard'));
     }
 }
