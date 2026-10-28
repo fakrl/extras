@@ -48,7 +48,9 @@
     </div>
 
     @forelse ($logs as $log)
+        @php $url = $log->subjectUrl(); @endphp
         <div style="padding: 10px 0; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 4px; min-width: 0;">
+            <{{ $url ? 'a' : 'div' }} @if ($url) href="{{ $url }}" @endif style="color: inherit; text-decoration: none; display: flex; flex-direction: column; gap: 4px; min-width: 0;">
             <div style="font-size: 13.5px; overflow-wrap: anywhere;">{{ $log->description }}</div>
             <div style="display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: var(--fs-xs); color: var(--text-muted);">
                 <span style="font-weight: 600; color: var(--text-secondary);">{{ $log->user?->name ?? 'Sistem' }}</span>
@@ -58,10 +60,11 @@
                 <span class="badge badge-netral">{{ \App\Models\User::LABELS[$log->role] ?? ucfirst($log->role) }}</span>
                 <span title="{{ $log->action }}">{{ \App\Models\ActivityLog::actionLabel($log->action) }}</span>
                 <time datetime="{{ $log->created_at->toIso8601String() }}" title="{{ $log->created_at->format('d/m/Y H:i:s') }}">{{ $log->created_at->locale('id')->diffForHumans() }}</time>
-                @if ($url = $log->subjectUrl())
-                    <a href="{{ $url }}" style="color: var(--accent);"><i class="ti ti-external-link"></i> Buka {{ ['User' => 'akun', 'ExtrasProfile' => 'profil Extras', 'CastingProject' => 'proyek', 'ProjectApplication' => 'pendaftaran'][class_basename($log->subject_type)] ?? 'subjek' }}</a>
+                @if ($url)
+                    <span style="color: var(--accent);"><i class="ti ti-external-link"></i> Buka {{ ['User' => 'akun', 'ExtrasProfile' => 'profil Extras', 'CastingProject' => 'proyek', 'ProjectApplication' => 'pendaftaran', 'Attendance' => 'absensi', 'Contract' => 'kontrak', 'Invoice' => 'invoice', 'FeeNegotiation' => 'nego'][class_basename($log->subject_type)] ?? 'subjek' }}</span>
                 @endif
             </div>
+            </{{ $url ? 'a' : 'div' }}>
             @if (!empty($log->properties))
                 <details style="font-size: var(--fs-xs); color: var(--text-muted);">
                     <summary style="cursor: pointer; color: var(--accent);">Lihat Parameter</summary>

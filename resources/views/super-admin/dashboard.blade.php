@@ -21,7 +21,7 @@
 
 <div class="kpi-grid">
     <x-kpi label="Menunggu keputusan" :angka="$menungguKeputusan" :href="route('super-admin.persetujuan')" :mendesak="$menungguKeputusan > 0 && $pengajuanMendesak" />
-    <x-kpi label="Tugas Admin tertunda" :angka="$pantauTotal" :sub="'di '.$pantauAdmin->count().' Admin'" :href="route('super-admin.pantau-admin.index')" :mendesak="$pantauMendesak" />
+    <x-kpi label="Tugas staf tertunda" :angka="$stafTertunda" :sub="'di '.($pantauAdmin->count() + $tugasKorlap->count()).' staf'" :href="route('super-admin.monitoring.admin')" :mendesak="$stafMendesak" />
     <x-kpi label="Proyek berjalan" :angka="$proyekBerjalan" :pertumbuhan="$pertumbuhanBerjalan" :href="route('admin.projects.index', ['tahap' => 'berjalan', 'dari' => $dari->format('Y-m-d'), 'sampai' => $sampai->format('Y-m-d')])" />
     <x-kpi label="Invoice belum lunas" :angka="$invoiceBelumLunas->count()" :sub="$rp($invoiceTotal)" :href="route('admin.projects.index')" :mendesak="$invoiceBelumLunas->isNotEmpty()" />
 </div>
@@ -47,14 +47,15 @@
     </div>
 
     <div class="card sa-card">
-        <div class="card-title">Admin perlu diingatkan</div>
+        <div class="card-title">Staf perlu diingatkan</div>
         @forelse ($diingatkan as $t)
             @include('super-admin.dashboard._diingatkan', ['t' => $t])
         @empty
-            <x-kosong teks="Semua Admin sesuai jadwal." />
+            <x-kosong teks="Semua Admin dan Korlap sesuai jadwal." />
         @endforelse
-        @if ($pantauTotal)
-            <a href="{{ route('super-admin.pantau-admin.index') }}" class="sa-lihat-semua">Lihat semua &rarr;</a>
+        @if ($stafTertunda)
+            @php $tujuanStaf = ($diingatkan->first()['peran'] ?? 'admin') === 'korlap' ? 'super-admin.monitoring.korlap' : 'super-admin.monitoring.admin'; @endphp
+            <a href="{{ route($tujuanStaf) }}" class="sa-lihat-semua">Lihat semua &rarr;</a>
         @endif
     </div>
 </div>

@@ -17,6 +17,7 @@
                 <option value="{{ $k->id }}">{{ $k->name }}</option>
             @endforeach
         </select>
+        @include('partials.staf-baru-mini', ['uid' => $idDialog.'-stafbaru', 'selectAdmin' => $idDialog.'-admin', 'selectKorlap' => $idDialog.'-korlap'])
         <div class="dash-dialog-btn">
             <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
             <button type="submit" class="btn btn-sm btn-brand">Tetapkan</button>
