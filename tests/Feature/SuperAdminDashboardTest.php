@@ -53,11 +53,11 @@ class SuperAdminDashboardTest extends TestCase
 
         $r->assertOk()
             ->assertSee('Menunggu keputusan')
-            ->assertSee('Tugas Admin tertunda')
+            ->assertSee('Tugas staf tertunda')
             ->assertSee('Proyek berjalan')
             ->assertSee('Invoice belum lunas')
             ->assertSee(e(route('super-admin.persetujuan')), false)
-            ->assertSee(e(route('super-admin.pantau-admin.index')), false)
+            ->assertSee(e(route('super-admin.monitoring.admin')), false)
             ->assertSee(e(route('admin.projects.index', ['tahap' => 'berjalan'])), false);
     }
 
@@ -156,7 +156,7 @@ class SuperAdminDashboardTest extends TestCase
     public function test_admin_perlu_diingatkan_maksimal_5_dan_kosong(): void
     {
         $r0 = $this->actingAs($this->sa)->get(route('super-admin.dashboard'));
-        $r0->assertSee('Semua Admin sesuai jadwal.');
+        $r0->assertSee('Semua Admin dan Korlap sesuai jadwal.');
 
         $pic = User::factory()->create(['role' => 'admin', 'status' => 'aktif']);
         $klien = User::factory()->create(['role' => 'client']);
@@ -186,6 +186,7 @@ class SuperAdminDashboardTest extends TestCase
         $r = $this->actingAs($this->sa)->get(route('super-admin.dashboard'));
 
         $this->assertSame(7, $r->viewData('pantauTotal'));
+        $this->assertSame(7, $r->viewData('stafTertunda'));
         $r->assertSee('>7<', false);
     }
 

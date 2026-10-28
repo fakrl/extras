@@ -40,7 +40,7 @@
 @endunless
 
 <div class="xfilter" role="tablist" aria-label="Bagian detail proyek">
-    @foreach (['info' => 'Info', 'pendaftar' => 'Pendaftar', 'keuangan' => 'Keuangan', 'lampiran' => 'Lampiran'] as $key => $label)
+    @foreach (['info' => 'Info', 'pendaftar' => 'Pendaftar', 'keuangan' => 'Keuangan', 'lampiran' => 'Lampiran', 'riwayat' => 'Riwayat'] as $key => $label)
         <a href="{{ route('admin.projects.show', [$p, 'tab' => $key === 'info' ? null : $key]) }}" role="tab"
            class="btn btn-sm {{ $tab === $key ? 'btn-brand' : '' }}" @if ($tab === $key) aria-selected="true" @endif>{{ $label }}</a>
     @endforeach
@@ -194,6 +194,27 @@
 
 @elseif ($tab === 'lampiran')
     @include('partials.project-attachments', ['project' => $p])
+
+@elseif ($tab === 'riwayat')
+    <div class="card">
+        <div class="card-title">Riwayat Aktivitas</div>
+        @forelse ($riwayat as $log)
+            @php $url = $log->subjectUrl(); @endphp
+            <{{ $url ? 'a' : 'div' }} @if ($url) href="{{ $url }}" @endif class="dash-row" style="color: inherit; text-decoration: none; flex-wrap: wrap;">
+                <div style="min-width: 0;">
+                    <div>{{ $log->description }}</div>
+                    <div class="dash-sub">
+                        {{ $log->user ? ($log->user->username ? '@'.$log->user->username : $log->user->name) : 'Sistem' }}
+                        &middot; {{ \App\Models\ActivityLog::actionLabel($log->action) }}
+                        &middot; {{ $log->created_at->locale('id')->diffForHumans() }}
+                    </div>
+                </div>
+            </{{ $url ? 'a' : 'div' }}>
+        @empty
+            <x-kosong teks="Belum ada aktivitas tercatat untuk proyek ini." />
+        @endforelse
+        <x-pagination-bar :paginator="$riwayat" :pilihan="\App\Support\PerHalaman::TABEL" />
+    </div>
 
 @else
     @php

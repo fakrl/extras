@@ -41,7 +41,6 @@ use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardCo
 use App\Http\Controllers\SuperAdmin\GlobalSearchController;
 use App\Http\Controllers\SuperAdmin\ModeRoleController;
 use App\Http\Controllers\SuperAdmin\MonitoringController;
-use App\Http\Controllers\SuperAdmin\PantauAdminController;
 use App\Http\Controllers\SuperAdmin\PersetujuanController;
 use App\Http\Controllers\SuperAdmin\ProjectAssignmentController;
 use App\Http\Controllers\UbahPasswordController;
@@ -300,12 +299,14 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
 
     // CR.3: halaman detail dipindah dari dashboard (bukan dibuat ulang).
     Route::get('/persetujuan', [PersetujuanController::class, 'index'])->name('super-admin.persetujuan');
-    Route::get('/pantau-admin', [PantauAdminController::class, 'index'])->name('super-admin.pantau-admin.index');
+    // CV.1: halaman Pantau Admin dihapus sebagai menu, digabung ke Monitoring ▸ Admin.
+    Route::redirect('/pantau-admin', '/super-admin/monitoring/admin')->name('super-admin.pantau-admin.index');
 
     Route::get('/akun', [AdminManagementController::class, 'akun'])->name('super-admin.akun.index');
     Route::get('/monitoring', [AdminManagementController::class, 'keAkun'])->name('super-admin.monitoring');
     Route::get('/monitoring/admin', [MonitoringController::class, 'admin'])->name('super-admin.monitoring.admin');
     Route::get('/monitoring/korlap', [MonitoringController::class, 'korlap'])->name('super-admin.monitoring.korlap');
+    Route::post('/monitoring/korlap/ingatkan', [MonitoringController::class, 'ingatkanKorlap'])->name('super-admin.monitoring.korlap.ingatkan');
 
     Route::get('/attendance', [AttendanceController::class, 'index'])
         ->name('super-admin.attendance.index');
