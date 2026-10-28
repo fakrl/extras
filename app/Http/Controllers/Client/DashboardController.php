@@ -27,11 +27,6 @@ class DashboardController extends Controller
         $approve = ClientReview::where('client_id', $klienId)->where('keputusan', 'approve')->count();
         $reject = ClientReview::where('client_id', $klienId)->where('keputusan', 'reject')->count();
 
-        $chartKeputusan = [
-            'labels' => ['Dipilih', 'Ditolak'],
-            'data' => [$approve, $reject],
-        ];
-
         // CL-11: berjalan = lowongan masih dibuka atau shooting sedang berlangsung.
         $proyekBerjalan = CastingProject::whereIn('id', $proyekIds)
             ->where(fn ($q) => $q->where('status', 'dibuka')->orWhere(fn ($t) => $t->diTahap('berjalan')))
@@ -70,7 +65,7 @@ class DashboardController extends Controller
             ->each(fn ($e) => $e->nama_produksi = $e->castingProject?->nama_produksi);
 
         return view('client.dashboard', compact(
-            'perluDireview', 'chartKeputusan', 'proyekBerjalan', 'pengajuan', 'karakterPendaftar',
+            'perluDireview', 'approve', 'reject', 'proyekBerjalan', 'pengajuan', 'karakterPendaftar',
             'agendaEvents', 'dari', 'sampai', 'skala', 'invoiceMenungguTtd', 'jadwalKosong'
         ));
     }

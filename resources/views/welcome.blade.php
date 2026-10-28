@@ -199,6 +199,22 @@
         .lowongan-item[open] .lowongan-chevron { transform: rotate(45deg); }
         .lowongan-item[open] .lowongan-summary-title { font-weight: 700; }
         @media (prefers-reduced-motion: reduce) { .lowongan-chevron { transition: none; } }
+        /* CU.8: HP - judul baris sendiri (penuh, tidak terjepit badge), badge baris
+           kedua, deadline baris ketiga (lewat grid, thumb span 3 baris di kiri). */
+        @media (max-width: 767px) {
+            .lowongan-summary {
+                display: grid;
+                grid-template-columns: 56px 1fr auto;
+                grid-template-areas: "thumb title chevron" "thumb badges badges" "thumb meta meta";
+                column-gap: 16px; row-gap: 4px;
+            }
+            .lowongan-thumb { grid-area: thumb; }
+            .lowongan-summary-info { display: contents; }
+            .lowongan-summary-title { grid-area: title; }
+            .lowongan-chevron { grid-area: chevron; }
+            .lowongan-summary-badges { grid-area: badges; justify-self: start; }
+            .lowongan-summary-meta { grid-area: meta; margin-top: 0; }
+        }
         .lowongan-detail { padding: 4px 0 20px 72px; display: flex; flex-direction: column; gap: 12px; }
         .lowongan-roles { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
         .lowongan-roles li { font-size: 13px; color: var(--hp-muted); display: flex; justify-content: space-between; gap: 8px; }

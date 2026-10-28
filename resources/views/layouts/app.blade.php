@@ -263,6 +263,11 @@
             .step-bar-circle { width: 22px; height: 22px; font-size: var(--fs-xs); }
             .step-bar-line { margin-top: 11px; min-width: 14px; }
             .step-bar-label { font-size: var(--fs-xs); }
+            /* CU.3: step-bar pendaftaran Extras - semua langkah muat, tanpa scroll horizontal. */
+            .ap-progress { overflow-x: visible; }
+            .ap-progress-bar { min-width: 0; }
+            .ap-progress-bar .step-bar-item { width: auto; flex: 1 1 0; min-width: 0; }
+            .ap-progress-bar .step-bar-line { flex: 0 1 8px; min-width: 6px; }
         }
 
         /* Card grid untuk daftar Proyek Casting & Pendaftar, desktop/iPad-first
@@ -511,6 +516,9 @@
         .dash-metrik { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         a.metric-card { display: block; text-decoration: none; color: inherit; border: 1px solid var(--border-color); }
         a.metric-card:hover { border-color: var(--accent); }
+        /* CU.5: bar tersegmen tipis pengganti donat Chart.js di dashboard Client. */
+        .kp-segbar { display: flex; height: 8px; border-radius: 999px; overflow: hidden; background: var(--bg-card-hover); }
+        .kp-segbar span { height: 100%; }
 
         @media (max-width: 860px) {
             .dashboard-grid-2col.is-wide-narrow,
