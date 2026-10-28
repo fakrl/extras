@@ -46,37 +46,54 @@
 
         /* CT.3.1: Navigation Rail M3 (ketika .sb-ringkas aktif di desktop ≥ 861px) */
         @media (min-width: 861px) {
-            .sb-ringkas .sidebar { width: 72px; padding: 16px 6px; }
+            .sb-ringkas .sidebar { width: 68px; padding: 16px 8px; align-items: center; }
             .sb-ringkas .sidebar-brand { flex-direction: column; gap: 8px; padding: 0 0 12px; }
             .sb-ringkas .sidebar-brand span, .sb-ringkas .sidebar-group-label, .sb-ringkas .sidebar .chevron-icon { display: none; }
             .sb-ringkas .sidebar-toggle { margin: 0; }
             .sb-ringkas .sidebar-toggle i { transform: scaleX(-1); }
             .sb-ringkas .sidebar-link, .sb-ringkas .sidebar-dropdown-summary {
-                flex-direction: column; justify-content: center; align-items: center;
-                gap: 4px; padding: 8px 2px; min-height: 56px; font-size: 11px;
-                border-radius: var(--md-shape-md, 12px); text-align: center;
-                white-space: normal; line-height: 1.15;
-            }
-            .sb-ringkas .sidebar-link i {
-                font-size: 19px; margin: 0 !important;
-                width: 52px; height: 28px;
+                justify-content: center; align-items: center;
+                gap: 0; padding: 0; width: 48px; height: 44px; min-height: 44px;
+                font-size: 0; text-align: center;
                 border-radius: var(--md-shape-full, 9999px);
+                position: relative; margin: 2px auto;
+            }
+            .sb-ringkas .sidebar-link i, .sb-ringkas .sidebar-dropdown-summary i {
+                font-size: 20px; margin: 0 !important;
                 display: inline-flex; align-items: center; justify-content: center;
-                transition: background 0.15s ease, color 0.15s ease;
             }
             .sb-ringkas .sidebar-link.active {
-                background: transparent; color: var(--md-on-surface, var(--text-primary)); font-weight: 700;
+                background: var(--md-secondary-container, var(--bg-nav-active));
+                color: var(--md-on-secondary-container, var(--accent-strong));
+                font-weight: 700;
             }
             .sb-ringkas .sidebar-link.active i {
+                color: var(--md-on-secondary-container, var(--accent-strong));
+            }
+            .sb-ringkas .sidebar-link .sb-dot,
+            .sb-ringkas .sidebar-dropdown-summary .sb-dot {
+                position: absolute; top: 8px; right: 8px; margin: 0;
+            }
+            .sb-ringkas .sidebar-dropdown { position: relative; width: 100%; display: flex; justify-content: center; }
+            .sb-ringkas .sidebar-dropdown:has(.active) > summary {
                 background: var(--md-secondary-container, var(--bg-nav-active));
                 color: var(--md-on-secondary-container, var(--accent-strong));
             }
-            .sb-ringkas .sidebar-dropdown { position: relative; }
-            .sb-ringkas .sidebar-dropdown:has(.active) > summary { background: var(--bg-nav-active); color: var(--accent-strong); }
-            .sb-ringkas .sidebar-submenu { position: absolute; left: calc(100% + 12px); top: 0; z-index: 100; min-width: 200px; margin: 0; padding: 6px; background: var(--md-surface-container, var(--bg-card)); border: 1px solid var(--md-outline-variant, var(--border-color)); border-radius: var(--md-shape-lg, var(--radius-lg)); box-shadow: var(--md-elevation-3, 0 8px 24px rgba(0,0,0,0.18)); }
-            .sb-ringkas .sidebar-submenu::before { content: ''; position: absolute; right: 100%; top: 0; bottom: 0; width: 14px; }
-            .sb-ringkas .sidebar-submenu .sidebar-link { justify-content: flex-start; flex-direction: row; gap: 10px; padding: 10px 14px; font-size: 13.5px; border-radius: var(--md-shape-full, 9999px); }
-            .sb-ringkas .sidebar-submenu i { font-size: 17px; width: auto; height: auto; }
+            .sb-ringkas .sidebar-submenu {
+                position: absolute; left: calc(100% + 10px); top: 0; z-index: 100;
+                min-width: 200px; margin: 0; padding: 6px;
+                background: var(--md-surface-container, var(--bg-card));
+                border: 1px solid var(--md-outline-variant, var(--border-color));
+                border-radius: var(--md-shape-md, var(--radius-lg));
+                box-shadow: var(--md-elevation-3, 0 8px 24px rgba(0,0,0,0.18));
+            }
+            .sb-ringkas .sidebar-submenu::before { content: ''; position: absolute; right: 100%; top: 0; bottom: 0; width: 12px; }
+            .sb-ringkas .sidebar-submenu .sidebar-link {
+                width: 100%; height: auto; min-height: 40px; margin: 2px 0;
+                padding: 8px 14px; justify-content: flex-start;
+                font-size: 13.5px; border-radius: var(--md-shape-full, 9999px);
+            }
+            .sb-ringkas .sidebar-submenu .sidebar-link i { font-size: 17px; margin-right: 10px !important; }
         }
         .sidebar-group-label {
             font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.5px;
@@ -124,7 +141,6 @@
         .sidebar-submenu {
             display: flex; flex-direction: column; gap: 2px;
             padding-left: 16px; margin-top: 2px;
-        }
         }
 
         .main-area { flex: 1; display: flex; flex-direction: column; min-width: 0; }
