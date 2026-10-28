@@ -114,15 +114,28 @@
         </script>
     @endunless
 
+    @php $kpTotal = max($perluDireview + $approve + $reject, 1); @endphp
     <div class="card">
         <div class="card-title">Keputusan Pemilihan Saya</div>
-        <div class="dash-metrik" style="margin-bottom: 12px;">
-            <a href="{{ route('client.reviews.index') }}" class="metric-card" style="grid-column: span 2;">
-                <div class="metric-label">Perlu Direview</div>
+        <div class="dash-metrik" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 10px;">
+            <a href="{{ route('client.reviews.index', ['status' => 'menunggu']) }}" class="metric-card">
+                <div class="metric-label">Perlu dipilih</div>
                 <div class="metric-value">{{ $perluDireview }}</div>
             </a>
+            <a href="{{ route('client.reviews.index', ['status' => 'approved']) }}" class="metric-card">
+                <div class="metric-label">Dipilih</div>
+                <div class="metric-value">{{ $approve }}</div>
+            </a>
+            <a href="{{ route('client.reviews.index', ['status' => 'rejected']) }}" class="metric-card">
+                <div class="metric-label">Ditolak</div>
+                <div class="metric-value">{{ $reject }}</div>
+            </a>
         </div>
-        <div class="chart-box"><canvas id="chartKeputusan"></canvas></div>
+        <div class="kp-segbar" role="img" aria-label="Perlu dipilih {{ $perluDireview }}, Dipilih {{ $approve }}, Ditolak {{ $reject }}">
+            <span style="width: {{ $perluDireview / $kpTotal * 100 }}%; background: #94a3b8;"></span>
+            <span style="width: {{ $approve / $kpTotal * 100 }}%; background: #22c55e;"></span>
+            <span style="width: {{ $reject / $kpTotal * 100 }}%; background: #ef4444;"></span>
+        </div>
         <a href="{{ route('client.reviews.index') }}" class="btn btn-brand" style="width: 100%; margin-top: 12px;">Buka Pemilihan Kandidat</a>
     </div>
 </div>
@@ -188,28 +201,3 @@
     </div>
 </div>
 @endsection
-
-@push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-<script>
-    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    var textColor = isDark ? '#9db3a2' : '#435449';
-
-    new Chart(document.getElementById('chartKeputusan'), {
-        type: 'doughnut',
-        data: {
-            labels: @json($chartKeputusan['labels']),
-            datasets: [{
-                data: @json($chartKeputusan['data']),
-                backgroundColor: ['#22c55e', '#ef4444'],
-                borderWidth: 0,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { position: 'bottom', labels: { color: textColor } } }
-        }
-    });
-</script>
-@endpush

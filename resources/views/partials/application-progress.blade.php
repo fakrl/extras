@@ -32,8 +32,9 @@
         </div>
     </div>
 @else
-    <div class="step-bar-wrap">
-        <div class="step-bar">
+    {{-- CU.3: ap-progress/.ap-progress-bar = modifier biar 5 langkah muat tanpa scroll di 390px, tanpa ganggu .step-bar bawaan (tahap-bar Admin & "Cara Kerja" tetap scroll). --}}
+    <div class="step-bar-wrap ap-progress">
+        <div class="step-bar ap-progress-bar">
             @foreach ($stepLabels as $i => $label)
                 @php
                     $i = $i + 1;
