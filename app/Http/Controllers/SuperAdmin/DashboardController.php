@@ -17,7 +17,9 @@ use App\Support\Periode;
 use App\Support\Timeline;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 
 class DashboardController extends Controller
@@ -84,14 +86,14 @@ class DashboardController extends Controller
             ->take(5)
             ->values();
 
-        // CU.7: "Admin perlu diingatkan" dikelompokkan per Admin+proyek+jenis tugas
-        // (bukan per kandidat) supaya tidak tampak baris kembar - hitungan "N Extras"
-        // + satu tombol Ingatkan per kelompok. Halaman Pantau Admin TETAP rinci per
-        // kandidat (pakai $pantauAdmin apa adanya, tidak disentuh).
-        // CV.1.5: digabung dengan kelompok tugas Korlap, "Staf perlu diingatkan" maks 5 total.
+        // CU.7: kelompok per Admin+proyek+jenis tugas (bukan per kandidat) - tetap dipakai
+        // Monitoring & sebagai bahan mentah di bawah. Halaman Pantau Admin/Monitoring TETAP
+        // rinci per kandidat/kelompok (pakai $pantauAdmin/$tugasKorlap apa adanya, tidak disentuh).
         $diingatkanAdmin = AdminRingkasan::kelompok($pantauAdmin, $adminsAktif, null)->map(fn ($g) => $g + ['peran' => 'admin']);
         $diingatkanKorlap = $tugasKorlap->flatMap(fn ($p) => $p['tugas']->map(fn ($t) => $t + ['korlap' => $p['korlap'], 'peran' => 'korlap']));
-        $diingatkan = $diingatkanAdmin->concat($diingatkanKorlap)->sortBy(fn ($g) => $g['sejak']?->timestamp ?? 0)->take(5)->values();
+        // CW.1: kartu dashboard SA diringkas jadi SATU baris per ORANG (gabung semua kelompok
+        // tugasnya, lintas proyek/jenis) - bukan satu baris per kelompok seperti CU.7/CV.1.
+        $diingatkan = $this->diingatkanPerOrang($diingatkanAdmin, $diingatkanKorlap);
 
         // CR.2.2 KPI "Proyek berjalan": shooting dalam rentang angka + pertumbuhan vs periode sebelumnya, panjang sama.
         $proyekBerjalan = CastingProject::diTahap('berjalan')->shootingDalam($dari, $sampai)->count();
@@ -144,6 +146,90 @@ class DashboardController extends Controller
                 $e->url_proyek = route('admin.projects.show', $e->casting_project_id);
                 $e->url_absensi = route('admin.attendance.index', ['project' => $e->casting_project_id, 'tanggal' => $e->id]);
             });
+    }
+
+    /**
+     * CW.1: gabung kelompok tugas (CU.7/CV.1, per Admin+proyek+jenis / per Korlap+proyek+jenis)
+     * jadi SATU baris per orang. 'jumlah' & 'sejak' = gabungan semua kelompok milik orang itu.
+     * 'diingatkan_pada': dalam 24 jam, pakai notif batch baru ('pall-{peran}-{id}') kalau ada;
+     * kalau tidak, dianggap sudah diingatkan hanya bila SEMUA kelompok orang itu sudah bertanda
+     * (lewat kompat pg-/pa- yang sudah dihitung AdminRingkasan::kelompok()/KorlapRingkasan::tugasTertunda() -
+     * TIDAK menulis balik ke key lama, cukup baca status yang sudah ada supaya search-nya SEARAH).
+     */
+    private function diingatkanPerOrang(Collection $diingatkanAdmin, Collection $diingatkanKorlap): Collection
+    {
+        $perOrang = $diingatkanAdmin->concat($diingatkanKorlap)
+            ->groupBy(fn ($g) => $g['peran'].'-'.($g['peran'] === 'korlap' ? $g['korlap']->id : $g['admin']->id))
+            ->map(function ($grup) {
+                $pertama = $grup->first();
+
+                return [
+                    'staf' => $pertama['peran'] === 'korlap' ? $pertama['korlap'] : $pertama['admin'],
+                    'peran' => $pertama['peran'],
+                    'jumlah' => $grup->sum('jumlah'),
+                    'sejak' => $grup->sortBy(fn ($g) => $g['sejak']?->timestamp ?? 0)->first()['sejak'],
+                    'kelompok' => $grup->values(),
+                ];
+            })->values();
+
+        $kunciSemua = $perOrang->map(fn ($o) => "pall-{$o['peran']}-{$o['staf']->id}")->values();
+        $notifTerakhir = DatabaseNotification::where('notifiable_type', User::class)
+            ->whereIn('notifiable_id', $perOrang->map(fn ($o) => $o['staf']->id))
+            ->where('data->jenis', 'pengingat_sa')
+            ->whereIn('data->kunci', $kunciSemua)
+            ->get()
+            ->groupBy(fn ($n) => $n->data['kunci'] ?? null)
+            ->map(fn ($g) => $g->sortByDesc('created_at')->first());
+
+        return $perOrang->map(function ($o) use ($notifTerakhir) {
+            $kunci = "pall-{$o['peran']}-{$o['staf']->id}";
+            $terakhir = $notifTerakhir->get($kunci);
+            $semuaKelompokDiingatkan = $o['kelompok']->every(fn ($g) => $g['diingatkan_pada'] !== null);
+
+            $o['kunci'] = $kunci;
+            $o['diingatkan_pada'] = match (true) {
+                $terakhir && $terakhir->created_at->gt(now()->subDay()) => $terakhir->created_at,
+                $semuaKelompokDiingatkan => $o['kelompok']->sortByDesc(fn ($g) => $g['diingatkan_pada']->timestamp)->first()['diingatkan_pada'],
+                default => null,
+            };
+
+            return $o;
+        })->sortBy(fn ($o) => $o['sejak']?->timestamp ?? 0)->take(5)->values();
+    }
+
+    /** CW.1.2: satu pengingat gabungan untuk SEMUA kelompok tugas tertunda milik satu orang, batas 24 jam per orang. */
+    public function ingatkanOrang(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'peran' => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_KORLAP])],
+            'staf_id' => ['required', 'integer'],
+            'catatan' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $staf = User::where('role', $data['peran'])->where('status', 'aktif')->findOrFail($data['staf_id']);
+
+        $kelompok = $data['peran'] === User::ROLE_KORLAP
+            ? (KorlapRingkasan::tugasTertunda(collect([$staf]), null)->first()['tugas'] ?? collect())
+            : AdminRingkasan::kelompok(AdminRingkasan::pantauAdmin(collect([$staf]), null), collect([$staf]), null);
+        abort_if($kelompok->isEmpty(), 422);
+
+        $kunci = "pall-{$data['peran']}-{$staf->id}";
+        $terakhir = $staf->notifications()->where('data->jenis', 'pengingat_sa')->where('data->kunci', $kunci)->latest()->first();
+        if ($terakhir && $terakhir->created_at->gt(now()->subDay())) {
+            return back()->with('error', "{$staf->name} sudah diingatkan dalam 24 jam terakhir.");
+        }
+
+        $catatan = $data['catatan'] ?? null;
+        $jumlah = $kelompok->sum('jumlah');
+        $ringkasan = $kelompok->map(fn ($g) => "{$g['tugas']} \u{00B7} {$g['jumlah']} Extras di {$g['proyek']}")->implode(', ');
+        $pesan = "Anda diingatkan untuk mengerjakan: {$ringkasan}".($catatan ? ". Catatan: {$catatan}" : '');
+        $url = $data['peran'] === User::ROLE_KORLAP ? route('super-admin.monitoring.korlap') : route('super-admin.monitoring.admin');
+
+        $staf->notify(new InAppNotification('Pengingat dari Super Admin', $pesan, $url, ['jenis' => 'pengingat_sa', 'kunci' => $kunci]));
+
+        ActivityLog::record('REMIND_STAF', "Super Admin mengingatkan {$staf->name} ({$jumlah} tugas lintas proyek): {$ringkasan}", $staf);
+
+        return back()->with('status', "Pengingat terkirim ke {$staf->name}.");
     }
 
     /**
