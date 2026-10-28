@@ -60,11 +60,12 @@ class CallsheetTest extends TestCase
         ]);
 
         $buatExtras = function (string $username, string $nomorWa) {
+            static $nikSeed = 100000;
             $user = User::factory()->create(['role' => 'extras', 'username' => $username, 'nomor_wa' => $nomorWa]);
             $profile = ExtrasProfile::create([
                 'user_id' => $user->id,
                 'nama_asli' => 'Nama Asli Rahasia '.$username,
-                'nik' => '3171234567890'.random_int(100, 999),
+                'nik' => '3171'.str_pad((string) (++$nikSeed), 12, '0', STR_PAD_LEFT),
                 'rekening' => '998877'.random_int(1000, 9999),
             ]);
 
