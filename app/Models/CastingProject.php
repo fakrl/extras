@@ -171,6 +171,12 @@ class CastingProject extends Model
         return $this->hasMany(AdminProjectAssignment::class);
     }
 
+    /** CV.2: Korlap proyek ini (dari adminAssignments, bukan kolom baru) - butuh eager load adminAssignments.user. */
+    public function korlap(): ?User
+    {
+        return $this->adminAssignments->first(fn (AdminProjectAssignment $a) => $a->user?->isKorlap())?->user;
+    }
+
     /** BM.1: 1 proyek = 1 akun Client; satu-satunya cek akses Client ke proyek. */
     public function milikClient(User $user): bool
     {

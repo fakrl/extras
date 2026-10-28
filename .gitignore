@@ -39,3 +39,7 @@ docs/ARCHITECTURE-REVIEW-*.md
 
 # Daftar akun & password demo
 docs/AKUN-DEMO.md
+
+# CV.5: screenshot bukti SPEC, bisa memuat data — jangan ke repo public
+/screenshots/
+/screenshots.zip

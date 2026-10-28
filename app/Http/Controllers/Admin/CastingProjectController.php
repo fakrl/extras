@@ -26,11 +26,17 @@ class CastingProjectController extends Controller
 {
     public function index(Request $request)
     {
-        $semua = $request->boolean('semua');
+        // CV.2.1: SA selalu lihat semua (tidak ada toggle); "semua" cuma berarti sesuatu untuk Admin.
+        $semua = $request->user()->isSuperAdmin() || $request->boolean('semua');
         $peserta = $request->query('peserta');
         $tahap = array_key_exists((string) $request->query('tahap'), CastingProject::TAHAP) ? $request->query('tahap') : null;
         $bayar = in_array($request->query('bayar'), ['staf', 'extras', 'sengketa'], true) ? $request->query('bayar') : null;
         $cari = trim((string) $request->query('q'));
+        $adminId = $request->integer('admin_id') ?: null;
+        $korlapId = $request->integer('korlap_id') ?: null;
+        $clientId = $request->integer('client_id') ?: null;
+        $tindakan = $request->boolean('tindakan');
+        $urut = in_array($request->query('urut'), ['baru', 'nama'], true) ? $request->query('urut') : 'shooting';
         // CQ.1: rumus parsing/swap tanggal di-reuse dari Periode (satu rumus, jangan disalin) -
         // tapi halaman ini TIDAK punya default/preset, jadi pakai opsional() yang null kalau kosong.
         $periode = Periode::opsional($request);
@@ -38,7 +44,7 @@ class CastingProjectController extends Controller
         // CM.2.3: default hanya proyek yang dikelola Admin/Korlap. Super Admin tetap lihat-saja
         // semua proyek (GET) seperti sebelumnya, karena di luar mode dia tidak "mengelola" proyek manapun.
         $saring = fn ($q) => $q
-            ->when(! $semua && ! $request->user()->isSuperAdmin(), fn ($q) => $q->dikelolaOleh($request->user()))
+            ->when(! $semua, fn ($q) => $q->dikelolaOleh($request->user()))
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($peserta, fn ($q) => $q->whereHas('applications', fn ($a) => $a->where('status_partisipasi', $peserta)))
             ->when($request->boolean('tanpa_client'), fn ($q) => $q->tanpaPicClient())
@@ -46,6 +52,9 @@ class CastingProjectController extends Controller
             ->when($bayar === 'staf', fn ($q) => $q->whereHas('payrolls', fn ($p) => $p->where('status_bayar', '!=', 'sudah')))
             ->when($bayar === 'extras', fn ($q) => $q->whereHas('payments', fn ($p) => $p->perluDitransfer()))
             ->when($bayar === 'sengketa', fn ($q) => $q->whereHas('payments', fn ($p) => $p->where('status', 'disengketakan')))
+            ->when($adminId, fn ($q) => $q->where('admin_id', $adminId))
+            ->when($korlapId, fn ($q) => $q->whereHas('adminAssignments', fn ($a) => $a->where('user_id', $korlapId)))
+            ->when($clientId, fn ($q) => $q->where('client_id', $clientId))
             ->when($cari !== '', fn ($q) => $q->where(fn ($w) => $w->where('nama_produksi', 'like', "%{$cari}%")
                 ->orWhereHas('client', fn ($c) => $c->where('name', 'like', "%{$cari}%")->orWhere('nama_perusahaan', 'like', "%{$cari}%"))
                 ->orWhere(fn ($k) => $k->cariKode($cari))))
@@ -58,10 +67,24 @@ class CastingProjectController extends Controller
         $jumlahTahap = collect(CastingProject::TAHAP)->map(fn ($label, $t) => $diTahap($saring(CastingProject::query()), $t)->count())
             ->prepend($saring(CastingProject::query())->count(), '');
 
-        $projects = $saring(CastingProject::withCount('applications')->with(['client', 'admin', 'shootingDates']))
-            ->when($tahap, fn ($q) => $diTahap($q, $tahap))
-            ->orderByDesc('is_urgent')
-            ->latest()
+        $dasar = $saring(CastingProject::withCount('applications')->with(['client', 'admin', 'adminAssignments.user', 'shootingDates']))
+            ->when($tahap, fn ($q) => $diTahap($q, $tahap));
+
+        // CV.2.1.4: "Perlu tindakan saja" - reuse AdminRingkasan::perluPerProyek(), bukan query SQL
+        // terpisah yang bisa menyimpang dari definisi "perlu" yang sudah ada (riwayat bug CR/CU).
+        if ($tindakan) {
+            $idsPerlu = array_keys(AdminRingkasan::perluPerProyek((clone $dasar)->pluck('id')->all()));
+            $dasar->whereIn('casting_projects.id', $idsPerlu ?: [0]);
+        }
+
+        $dasar = match ($urut) {
+            'baru' => $dasar->latest(),
+            'nama' => $dasar->orderBy('nama_produksi'),
+            default => $dasar->withMin(['shootingDates as tanggal_acuan' => fn ($d) => $d->whereDate('tanggal', '>=', today())], 'tanggal')
+                ->orderByRaw('tanggal_acuan is null')->orderBy('tanggal_acuan'),
+        };
+
+        $projects = $dasar->orderByDesc('is_urgent')
             ->paginate(PerHalaman::dari($request, PerHalaman::KARTU))
             ->withQueryString();
 
@@ -71,7 +94,14 @@ class CastingProjectController extends Controller
 
         $perlu = AdminRingkasan::perluPerProyek($projects->pluck('id')->all());
 
-        return view('admin.projects.index', compact('projects', 'perlu', 'peserta', 'tahap', 'bayar', 'cari', 'periode', 'jumlahTahap', 'semua'));
+        $pics = User::where('role', User::ROLE_ADMIN)->where('status', 'aktif')->orderBy('name')->get();
+        $korlaps = User::where('role', User::ROLE_KORLAP)->where('status', 'aktif')->orderBy('name')->get();
+        $clients = User::where('role', User::ROLE_CLIENT)->where('status', 'aktif')->orderBy('name')->get();
+
+        return view('admin.projects.index', compact(
+            'projects', 'perlu', 'peserta', 'tahap', 'bayar', 'cari', 'periode', 'jumlahTahap', 'semua',
+            'adminId', 'korlapId', 'clientId', 'tindakan', 'urut', 'pics', 'korlaps', 'clients'
+        ));
     }
 
     /**
@@ -79,7 +109,7 @@ class CastingProjectController extends Controller
      */
     public function show(Request $request, CastingProject $castingProject, KeuanganService $keuangan)
     {
-        $tab = in_array($request->query('tab'), ['pendaftar', 'keuangan', 'lampiran'], true) ? $request->query('tab') : 'info';
+        $tab = in_array($request->query('tab'), ['pendaftar', 'keuangan', 'lampiran', 'riwayat'], true) ? $request->query('tab') : 'info';
 
         $castingProject->load(['client', 'admin', 'shootingDates', 'classes.categories', 'adminAssignments.user']);
 
@@ -100,7 +130,19 @@ class CastingProjectController extends Controller
                 ->whereNotIn('id', $castingProject->adminAssignments->pluck('user_id'))->orderBy('name')->get()
             : collect();
 
-        return view('admin.projects.show', compact('castingProject', 'tab', 'pendaftar', 'usulanInvoice', 'stafTersedia'));
+        // CV.2.5: tab Riwayat - linimasa activity_logs untuk proyek ini & pendaftarannya saja.
+        $riwayat = null;
+        if ($tab === 'riwayat') {
+            $appIds = $castingProject->applications()->pluck('id');
+            $riwayat = ActivityLog::where(fn ($w) => $w->where('subject_type', CastingProject::class)->where('subject_id', $castingProject->id))
+                ->orWhere(fn ($w) => $w->where('subject_type', ProjectApplication::class)->whereIn('subject_id', $appIds))
+                ->with('user')
+                ->latest('created_at')
+                ->paginate(PerHalaman::dari($request, PerHalaman::TABEL))
+                ->withQueryString();
+        }
+
+        return view('admin.projects.show', compact('castingProject', 'tab', 'pendaftar', 'usulanInvoice', 'stafTersedia', 'riwayat'));
     }
 
     public function create()

@@ -138,6 +138,62 @@ class AdminRingkasan
         });
     }
 
+    /**
+     * CU.7/CV.1: kelompokkan hasil pantauAdmin() per Admin+proyek+jenis tugas (bukan per
+     * kandidat), status "sudah diingatkan" 24 jam per kelompok (kunci 'pg-{admin}-{proyek}-{jenis}').
+     * Dipakai dashboard SA (kartu, $take=5) & Monitoring Admin (akordeon per proyek, $take=null).
+     * Logika sama persis dengan DashboardController::diingatkanKelompok() sebelum CV - jangan diubah perilakunya.
+     */
+    public static function kelompok(Collection $pantauAdmin, Collection $adminsAktif, ?int $take = null): Collection
+    {
+        $mentah = $pantauAdmin
+            ->flatMap(fn ($p) => $p['tugas']->map(fn ($t) => $t + ['admin' => $p['admin']]))
+            ->groupBy(fn ($t) => $t['admin']->id.'|'.$t['proyek_id'].'|'.$t['jenis']);
+
+        $kunciSemua = $mentah->keys()->map(function ($k) {
+            [$adminId, $proyekId, $jenis] = explode('|', $k, 3);
+
+            return "pg-{$adminId}-{$proyekId}-{$jenis}";
+        })->values();
+
+        $notifTerakhir = DatabaseNotification::where('notifiable_type', User::class)
+            ->whereIn('notifiable_id', $adminsAktif->pluck('id'))
+            ->where('data->jenis', 'pengingat_sa')
+            ->whereIn('data->kunci', $kunciSemua)
+            ->get()
+            ->groupBy(fn ($n) => $n->data['kunci'] ?? null)
+            ->map(fn ($g) => $g->sortByDesc('created_at')->first());
+
+        $hasil = $mentah->map(function ($grup, $kunciGrup) use ($notifTerakhir) {
+            [$adminId, $proyekId, $jenis] = explode('|', $kunciGrup, 3);
+            $pertama = $grup->sortBy(fn ($t) => $t['sejak']?->timestamp ?? 0)->first();
+            $kunci = "pg-{$adminId}-{$proyekId}-{$jenis}";
+            $terakhir = $notifTerakhir->get($kunci);
+            // Kompatibel dengan pengingat per-kandidat lama ('pa-...', dari halaman Pantau
+            // Admin): kalau SEMUA kandidat di kelompok ini sudah diingatkan satu-satu dalam
+            // 24 jam, kelompok juga dianggap "sudah diingatkan" (meski belum ada notif 'pg-').
+            $semuaPaDiingatkan = $grup->every(fn ($t) => $t['diingatkan_pada'] !== null);
+            $diingatkanPada = $terakhir && $terakhir->created_at->gt(now()->subDay())
+                ? $terakhir->created_at
+                : ($semuaPaDiingatkan ? $grup->sortByDesc(fn ($t) => $t['diingatkan_pada']->timestamp)->first()['diingatkan_pada'] : null);
+
+            return [
+                'admin' => $pertama['admin'],
+                'proyek' => $pertama['proyek'],
+                'proyek_id' => (int) $proyekId,
+                'jenis' => $jenis,
+                'tugas' => $jenis === 'balas_nego' ? 'Counter nego menunggu balasan' : $pertama['tugas'],
+                'jumlah' => $grup->count(),
+                'sejak' => $pertama['sejak'],
+                'app_ids' => $grup->pluck('app_id')->values(),
+                'diingatkan_pada' => $diingatkanPada,
+                'kunci' => $kunci,
+            ];
+        })->sortBy(fn ($g) => $g['sejak']?->timestamp ?? 0)->values();
+
+        return $take ? $hasil->take($take)->values() : $hasil;
+    }
+
     private static function lamaranAktif()
     {
         return ProjectApplication::whereIn('status_partisipasi', array_merge(...array_column(self::TAHAP, 'status')))

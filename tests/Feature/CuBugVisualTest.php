@@ -131,10 +131,11 @@ class CuBugVisualTest extends TestCase
         $r->assertSee('Honor belum ditransfer', false);
         $r->assertSee('4 Extras', false);
 
-        // Halaman Pantau Admin TETAP rinci per kandidat (tidak ikut dikelompokkan).
-        $rp = $this->actingAs($sa)->get(route('super-admin.pantau-admin.index'));
-        $baris = $rp->viewData('pantauAdmin')->first(fn ($x) => $x['admin']->id === $admin->id);
-        $this->assertCount(4, $baris['tugas']);
+        // CV.1: halaman Pantau Admin digabung ke Monitoring - AdminRingkasan::pantauAdmin()
+        // di belakangnya tetap rinci per kandidat (tidak ikut dikelompokkan).
+        $rp = $this->actingAs($sa)->get(route('super-admin.monitoring.admin'));
+        $baris = $rp->viewData('admins')->firstWhere('id', $admin->id);
+        $this->assertSame(4, $baris->jumlah_tugas);
     }
 
     // CU.7 (temuan review): >5 kandidat status sama di 1 Admin tidak boleh kepotong 5 saat

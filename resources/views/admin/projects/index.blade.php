@@ -11,16 +11,10 @@
     <a href="{{ route('admin.projects.create') }}" class="btn btn-brand">+ Buat Proyek</a>
 </div>
 
-<div class="xfilter" role="group" aria-label="Cakupan daftar proyek" style="margin-bottom: 12px;">
-    <a href="{{ route('admin.projects.index', request()->except(['semua', 'page'])) }}" class="btn btn-sm {{ $semua ? '' : 'btn-brand' }}" @if (! $semua) aria-current="true" @endif>Proyek saya</a>
-    <a href="{{ route('admin.projects.index', ['semua' => 1] + request()->except(['semua', 'page'])) }}" class="btn btn-sm {{ $semua ? 'btn-brand' : '' }}" @if ($semua) aria-current="true" @endif>Semua proyek (lihat saja)</a>
-</div>
-
 <form method="GET" action="{{ route('admin.projects.index') }}" class="xtoolbar" role="search" id="live-form" data-live>
-    <input type="search" name="q" value="{{ $cari }}" class="xtoolbar-cari" placeholder="Cari nama produksi atau client..." aria-label="Cari proyek">
+    <input type="search" name="q" value="{{ $cari }}" class="xtoolbar-cari" placeholder="Cari nama, kode, atau client..." aria-label="Cari proyek">
     @if ($peserta)<input type="hidden" name="peserta" value="{{ $peserta }}">@endif
     @if ($tahap)<input type="hidden" name="tahap" value="{{ $tahap }}">@endif
-    @if ($semua)<input type="hidden" name="semua" value="1">@endif
     <x-per-halaman :pilihan="\App\Support\PerHalaman::KARTU" :nilai="$projects->perPage()" />
     <x-filter-panel :filter="[
         $periode ? [['dari', 'sampai'], 'Periode: '.$periode[0]->translatedFormat($periode[0]->year === $periode[1]->year ? 'd M' : 'd M Y').'–'.$periode[1]->translatedFormat('d M Y')] : null,
@@ -29,9 +23,21 @@
         request()->boolean('urgent') ? ['urgent', 'Urgent'] : null,
         request()->boolean('tanpa_client') ? ['tanpa_client', 'Tanpa PIC/Client'] : null,
         $peserta ? ['peserta', 'Ada kandidat '.(\App\Models\ProjectApplication::LABELS[$peserta] ?? $peserta)] : null,
+        $adminId ? ['admin_id', 'PIC: '.($pics->firstWhere('id', $adminId)->name ?? $adminId)] : null,
+        $korlapId ? ['korlap_id', 'Korlap: '.($korlaps->firstWhere('id', $korlapId)->name ?? $korlapId)] : null,
+        $clientId ? ['client_id', 'Client: '.($clients->firstWhere('id', $clientId)->name ?? $clientId)] : null,
+        $tindakan ? ['tindakan', 'Perlu tindakan saja'] : null,
+        ! auth()->user()->isSuperAdmin() && $semua ? ['semua', 'Pegangan: Semua (lihat saja)'] : null,
     ]">
+        @unless (auth()->user()->isSuperAdmin())
+            <label class="fswitch">Semua proyek (lihat saja) <input type="checkbox" name="semua" value="1" @checked($semua)></label>
+        @endunless
+        <x-filter-panel.grup label="PIC" name="admin_id" :opsi="['' => 'Semua'] + $pics->pluck('name', 'id')->all()" :nilai="$adminId" />
+        <x-filter-panel.grup label="Korlap" name="korlap_id" :opsi="['' => 'Semua'] + $korlaps->pluck('name', 'id')->all()" :nilai="$korlapId" />
+        <x-filter-panel.grup label="Client" name="client_id" :opsi="['' => 'Semua'] + $clients->pluck('name', 'id')->all()" :nilai="$clientId" />
         <x-filter-panel.grup label="Lowongan" name="status" :opsi="['' => 'Semua'] + \App\Models\CastingProject::LABELS" :nilai="request('status')" />
         <x-filter-panel.grup label="Honor" name="bayar" :opsi="['' => 'Semua', 'staf' => 'Staf belum dibayar', 'extras' => 'Extras belum ditransfer', 'sengketa' => 'Disengketakan']" :nilai="$bayar" />
+        <label class="fswitch">Perlu tindakan saja <input type="checkbox" name="tindakan" value="1" @checked($tindakan)></label>
         <label class="fswitch">Urgent <input type="checkbox" name="urgent" value="1" @checked(request()->boolean('urgent'))></label>
         <label class="fswitch">Tanpa PIC/Client <input type="checkbox" name="tanpa_client" value="1" @checked(request()->boolean('tanpa_client'))></label>
         <div>
@@ -43,6 +49,11 @@
             </div>
         </div>
     </x-filter-panel>
+    <select name="urut" onchange="this.form.submit()" aria-label="Urutkan" class="btn btn-sm">
+        <option value="shooting" @selected($urut === 'shooting')>Urutkan: Shooting terdekat</option>
+        <option value="baru" @selected($urut === 'baru')>Urutkan: Terbaru dibuat</option>
+        <option value="nama" @selected($urut === 'nama')>Urutkan: Nama</option>
+    </select>
 </form>
 
 <div data-live-target>
@@ -95,6 +106,7 @@
                     @else
                         <span class="tp-kosong">Belum ada Client</span>
                     @endif
+                    <div class="tp-sub">PIC {{ $project->admin?->name ?? '-' }} &middot; Korlap {{ $project->korlap()?->name ?? '-' }}</div>
                 </td>
                 <td class="tp-c-shoot">
                     @if ($ket)

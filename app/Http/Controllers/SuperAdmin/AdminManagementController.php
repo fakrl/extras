@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Rules\NomorWa;
 use App\Support\FilterAkun;
 use App\Support\PerHalaman;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -157,7 +158,7 @@ class AdminManagementController extends Controller
     /**
      * RF-40: Super Admin menambahkan akun Admin baru + sub-role spesifik.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $allowedRoles = ['admin', 'korlap'];
         if ($request->user()->is_protected) {
@@ -169,6 +170,7 @@ class AdminManagementController extends Controller
             'email' => ['required', 'email', 'unique:users,email'],
             'role' => ['required', 'in:'.implode(',', $allowedRoles)],
             'honor_nominal' => ['nullable', 'numeric', 'min:0'],
+            'nomor_wa' => ['nullable', 'string', 'max:20', new NomorWa],
         ]);
 
         $password = self::passwordSementara();
@@ -180,9 +182,15 @@ class AdminManagementController extends Controller
             'role' => $data['role'],
             'status' => 'aktif',
             'honor_nominal' => $data['role'] === 'super_admin' ? null : ($data['honor_nominal'] ?? null),
+            'nomor_wa' => $data['nomor_wa'] ?? null,
         ]);
 
         ActivityLog::record('CREATE_USER', "{$request->user()->name} membuat akun staf {$user->name} ({$user->label()}).", $user);
+
+        // CV.4: dipanggil via fetch() dari form mini "+ Admin/Korlap baru" di dialog Setujui/Tetapkan PIC.
+        if ($request->wantsJson()) {
+            return response()->json(['id' => $user->id, 'name' => $user->name, 'kredensial' => $this->kredensial($user, $password)]);
+        }
 
         return redirect()->route('super-admin.akun.index')->with('status', 'Akun Admin berhasil ditambahkan.')
             ->with('kredensial', $this->kredensial($user, $password));

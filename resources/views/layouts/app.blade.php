@@ -995,6 +995,91 @@
     @auth
         @if(auth()->user()?->role === 'super_admin')
             <x-command-palette />
+            <script>
+                // CV.4: tampilkan dialog kredensial (sama persis partials.kredensial-dialog) dari hasil fetch(), tanpa reload halaman.
+                window.tampilkanKredensial = function (k) {
+                    var lama = document.getElementById('kredensial-dialog');
+                    if (lama) lama.remove();
+                    var teks = 'Halo ' + k.nama + ', berikut akun SIM Casting JBTB kamu:\nUsername: ' + k.username + '\nPassword: ' + k.password + '\nLogin: ' + k.url + '\nSetelah masuk, kamu akan diminta mengganti password.';
+                    var dlg = document.createElement('dialog');
+                    dlg.id = 'kredensial-dialog';
+                    dlg.style.cssText = 'border:1px solid var(--border-color);border-radius:10px;padding:0;max-width:440px;width:calc(100% - 32px);';
+                    var wa = k.nomor_wa ? '<a class="btn" target="_blank" rel="noopener" href="https://wa.me/' + k.nomor_wa + '?text=' + encodeURIComponent(teks) + '"><i class="ti ti-brand-whatsapp"></i> Kirim via WA</a>' : '';
+                    dlg.innerHTML = '<div style="padding:18px;">'
+                        + '<div id="kredensial-judul" style="font-size:var(--fs-md);font-weight:600;margin-bottom:6px;"></div>'
+                        + '<p style="font-size:var(--fs-sm);color:var(--text-muted);margin:0 0 12px;">Hanya tampil sekali. Kalau terlanjur tertutup, pakai "Reset Password" untuk membuat yang baru.</p>'
+                        + '<textarea id="kredensial-teks" readonly rows="6" style="width:100%;font-family:monospace;font-size:var(--fs-sm);margin-bottom:12px;"></textarea>'
+                        + '<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">'
+                        + '<button type="button" class="btn" onclick="this.closest(\'dialog\').close()">Tutup</button>' + wa
+                        + '<button type="button" class="btn btn-brand" id="kredensial-salin">Salin semua</button></div></div>';
+                    document.body.appendChild(dlg);
+                    dlg.querySelector('#kredensial-judul').textContent = 'Kredensial akun ' + k.nama;
+                    dlg.querySelector('#kredensial-teks').value = teks;
+                    dlg.showModal();
+                    dlg.querySelector('#kredensial-salin').addEventListener('click', function () {
+                        var btn = this;
+                        var ok = function () { btn.textContent = 'Tersalin'; };
+                        var fallback = function () { dlg.querySelector('#kredensial-teks').select(); try { document.execCommand('copy'); ok(); } catch (e) {} };
+                        if (navigator.clipboard) navigator.clipboard.writeText(teks).then(ok, fallback); else fallback();
+                    });
+                };
+            </script>
+            <script>
+                // CV.4: form mini "+ Admin/Korlap baru" di dalam dialog Setujui/Tetapkan PIC - delegasi, bisa banyak instance di satu halaman.
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' && e.target.closest('.staf-mini-form')) e.preventDefault();
+                });
+                document.addEventListener('click', function (e) {
+                    var toggle = e.target.closest('[data-staf-toggle]');
+                    if (toggle) {
+                        var panel = document.getElementById(toggle.dataset.stafToggle);
+                        if (panel) { panel.hidden = !panel.hidden; if (!panel.hidden) panel.querySelector('input').focus(); }
+                        return;
+                    }
+                    var cancel = e.target.closest('[data-staf-cancel]');
+                    if (cancel) {
+                        var panel2 = cancel.closest('.staf-mini-form');
+                        panel2.hidden = true;
+                        panel2.querySelectorAll('input').forEach(function (i) { i.value = ''; });
+                        panel2.querySelector('[data-error]').textContent = '';
+                        return;
+                    }
+                    var submit = e.target.closest('[data-staf-submit]');
+                    if (!submit) return;
+                    e.preventDefault();
+                    var panel = submit.closest('.staf-mini-form');
+                    var err = panel.querySelector('[data-error]');
+                    err.textContent = '';
+                    var body = {
+                        role: panel.dataset.role,
+                        name: panel.querySelector('[data-field=nama]').value,
+                        email: panel.querySelector('[data-field=email]').value,
+                        nomor_wa: panel.querySelector('[data-field=nomor_wa]').value,
+                    };
+                    submit.disabled = true;
+                    fetch('{{ route('super-admin.admins.store') }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+                        body: JSON.stringify(body),
+                    }).then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+                        .then(function (res) {
+                            submit.disabled = false;
+                            if (!res.ok) {
+                                err.textContent = res.data.errors ? Object.values(res.data.errors).flat().join(' ') : (res.data.message || 'Gagal membuat akun.');
+                                return;
+                            }
+                            var select = document.getElementById(panel.dataset.target);
+                            var opt = document.createElement('option');
+                            opt.value = res.data.id; opt.textContent = res.data.name;
+                            select.appendChild(opt);
+                            select.value = res.data.id;
+                            panel.hidden = true;
+                            panel.querySelectorAll('input').forEach(function (i) { i.value = ''; });
+                            window.tampilkanKredensial(res.data.kredensial);
+                        })
+                        .catch(function () { submit.disabled = false; err.textContent = 'Gagal menghubungi server.'; });
+                });
+            </script>
         @endif
         <x-profil-modal />
         @if (auth()->user()->bisaSebagaiAdmin())
