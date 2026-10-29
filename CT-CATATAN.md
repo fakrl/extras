@@ -227,3 +227,51 @@ Ditambahkan **20 screenshot** baru di `ct-screenshots/` (prefix `cv_`) mencakup:
 - Daftar Proyek dengan panel Filter terbuka (1366px & 390px, Terang & Gelap)
 - Dialog Setujui dengan form mini "+ Admin baru" terbuka (1366px & 390px, Terang & Gelap)
 - Halaman Log Aktivitas (1366px & 390px, Terang & Gelap)
+
+---
+
+# Laporan Bagian CX: Menu "Persetujuan" Digabung ke dalam "Proyek"
+
+> Tanggal: 29 Oktober 2026  
+> Branch: `ct-m3-antigravity` (worktree terisolasi)  
+> Scope: `docs/SPEC.md` Bagian CX (CX.1, CX.2, CX.3)
+
+---
+
+## 14. Ringkasan Implementasi CX
+
+1. **CX.1: Tab "Menunggu Keputusan" di Halaman Proyek (Khusus Super Admin)**:
+   - Di `resources/views/admin/projects/index.blade.php`: ditambahkan tab baru **"Menunggu Keputusan"** di urutan **PALING KIRI** (sebelum Mendatang, Berjalan, Selesai, Semua).
+   - Admin biasa **TIDAK** melihat tab ini sama sekali (dan query `?tahap=menunggu_acc` dinetralkan otomatis ke `null` untuk non-SA).
+   - Badge hitungan di tab "Menunggu Keputusan" menampilkan **total dari 4 grup keputusan**:
+     Pengajuan Baru (`menunggu_acc` whereNull `alasan_tolak`) + Diajukan Ulang (`menunggu_acc` whereNotNull `alasan_tolak`) + Tanpa PIC (`CastingProject::tanpaPicClient()`) + Akun Perlu Perhatian (`User::where('role', 'client')->where('wajib_ganti_password', true)->...`).
+   - Saat tab "Menunggu Keputusan" aktif, kotak cari + panel filter + urutkan disembunyikan.
+   - Konten tab me-reuse komponen yang sudah ada via partial `resources/views/admin/projects/_persetujuan.blade.php`, mencakup 4 sub-tab metrik M3 (`.pu-tab`, `.pu-tabs`), panel-panel grup, serta dialog Setujui/Minta Revisi/Tolak/Tetapkan PIC (termasuk form mini `+ Admin/Korlap baru`).
+
+2. **CX.2: Redirect dan Pembersihan**:
+   - Menu sidebar "Persetujuan" khusus SA di `resources/views/partials/sidebar-super_admin.blade.php` **dihapus**. Titik merah (`sb-dot`) dipindahkan ke menu **"Proyek"**.
+   - Rute lama `/super-admin/persetujuan` dijadikan `Route::redirect('/persetujuan', '/admin/projects?tahap=menunggu_acc')` di dalam grup auth + `role:super_admin` (tetap 403 untuk selain Super Admin).
+   - `App\Http\Controllers\SuperAdmin\PersetujuanController.php` dan `resources/views/super-admin/persetujuan.blade.php` dihapus bersih (DRY, data dipindahkan ke `Admin\CastingProjectController::index()`).
+   - Link KPI "Menunggu keputusan" dan "Lihat semua (n) →" pada dashboard Super Admin diperbarui mengarah ke `route('admin.projects.index', ['tahap' => 'menunggu_acc'])`.
+
+3. **CX.3: Verifikasi Browser Asli & Fungsionalitas End-to-End**:
+   - Verifikasi Browser Asli via Playwright Chromium/Edge: login sebagai Super Admin, buka `/admin/projects`, klik tab "Menunggu Keputusan", verifikasi 4 sub-tab muncul, klik tombol "Setujui" pada proyek pengajuan Client, isi pilihan Admin PIC pada native dialog M3, dan submit form.
+   - Database MySQL lokal terbukti terupdate: `client_request_status` menjadi `'disetujui'` dan `admin_id` terisi sesuai pilihan.
+   - Tangkapan layar browser asli disimpan dengan prefix `cx_`.
+
+---
+
+## 15. Hasil Pengujian & Matriks Screenshot CX
+
+- **Pint**: PASS (0 issues).
+- **Test SQLite (`php artisan test`)**: **949 passed (4639 assertions)** — 100% passed.
+- **Test MySQL (`DB_CONNECTION=mysql DB_DATABASE=jbtb_test php artisan test`)**: **949 passed (4639 assertions)** — 100% passed.
+- **Daftar Screenshot Asli CX (`ct-screenshots/`)**:
+  - `cx_proyek_semua_1366_light.png` & `cx_proyek_semua_1366_dark.png` (Desktop 1366px)
+  - `cx_proyek_semua_390_light.png` & `cx_proyek_semua_390_dark.png` (Mobile 390px)
+  - `cx_proyek_menunggu_keputusan_1366_light.png` & `cx_proyek_menunggu_keputusan_1366_dark.png` (Desktop 1366px)
+  - `cx_proyek_menunggu_keputusan_390_light.png` & `cx_proyek_menunggu_keputusan_390_dark.png` (Mobile 390px)
+  - `cx_dialog_setujui_1366_light.png` & `cx_dialog_setujui_1366_dark.png` (Dialog M3 Desktop)
+  - `cx_dialog_setujui_390_light.png` & `cx_dialog_setujui_390_dark.png` (Bottom Sheet M3 Mobile)
+  - `cx_setujui_sukses_1366_light.png` (Flash snackbar M3 konfirmasi ACC sukses tersimpan)
+

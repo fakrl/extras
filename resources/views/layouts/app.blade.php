@@ -650,6 +650,14 @@
         .dash-metrik { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         a.metric-card { display: block; text-decoration: none; color: inherit; border: 1px solid var(--border-color); }
         a.metric-card:hover { border-color: var(--accent); }
+        .pu-tab { width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; border: 1px solid var(--border-color); min-height: 44px; background: var(--card-bg); border-radius: var(--md-shape-medium); transition: border-color var(--md-motion-duration-short2) var(--md-motion-easing-standard), background var(--md-motion-duration-short2) var(--md-motion-easing-standard); }
+        .pu-tab:hover { border-color: var(--accent); background: var(--bg-card-hover); }
+        .pu-tab[aria-selected=true] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); background: var(--md-primary-container, var(--card-bg)); color: var(--md-on-primary-container, inherit); }
+        .pu-tab[aria-selected=true] .metric-label { color: var(--md-on-primary-container, inherit); font-weight: 600; }
+        .pu-tab[aria-selected=true] .metric-value { color: var(--md-on-primary-container, inherit); }
+        .pu-tab:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+        .pu-tabs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; margin-top: 16px; }
+        @media (min-width: 861px) { .pu-tabs { grid-template-columns: repeat(4, 1fr); } }
         /* CU.5: bar tersegmen tipis pengganti donat Chart.js di dashboard Client. */
         .kp-segbar { display: flex; height: 8px; border-radius: 999px; overflow: hidden; background: var(--bg-card-hover); }
         .kp-segbar span { height: 100%; }

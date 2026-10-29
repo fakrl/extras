@@ -3,6 +3,22 @@
 @section('title', 'Proyek')
 
 @section('content')
+@php
+    $isSuperAdmin = auth()->user()->isSuperAdmin();
+    $isTabMenungguKeputusan = $isSuperAdmin && $tahap === 'menunggu_acc';
+
+    // CX.1: Deretan tab tahap - khusus Super Admin, tab "Menunggu Keputusan" di posisi PALING KIRI
+    // dengan badge total ke-4 grup. Admin biasa tidak melihat tab ini sama sekali.
+    $tabsTahap = [];
+    if ($isSuperAdmin) {
+        $tabsTahap['menunggu_acc'] = ['label' => 'Menunggu Keputusan', 'jumlah' => $menungguKeputusanCount];
+    }
+    $tabsTahap['mendatang'] = ['label' => 'Mendatang', 'jumlah' => $jumlahTahap['mendatang'] ?? 0];
+    $tabsTahap['berjalan'] = ['label' => 'Berjalan', 'jumlah' => $jumlahTahap['berjalan'] ?? 0];
+    $tabsTahap['selesai'] = ['label' => 'Selesai', 'jumlah' => $jumlahTahap['selesai'] ?? 0];
+    $tabsTahap[''] = ['label' => 'Semua', 'jumlah' => $jumlahTahap[''] ?? 0];
+@endphp
+
 <div class="card-header-row">
     <div>
         <div style="font-size: 16px; font-weight: 600;">Proyek</div>
@@ -11,6 +27,7 @@
     <a href="{{ route('admin.projects.create') }}" class="btn btn-brand">+ Buat Proyek</a>
 </div>
 
+@unless ($isTabMenungguKeputusan)
 <form method="GET" action="{{ route('admin.projects.index') }}" class="xtoolbar" role="search" id="live-form" data-live>
     <input type="search" name="q" value="{{ $cari }}" class="xtoolbar-cari" placeholder="Cari nama, kode, atau client..." aria-label="Cari proyek">
     @if ($peserta)<input type="hidden" name="peserta" value="{{ $peserta }}">@endif
@@ -55,16 +72,20 @@
         <option value="nama" @selected($urut === 'nama')>Urutkan: Nama</option>
     </select>
 </form>
+@endunless
 
 <div data-live-target>
 
 <div class="xfilter" role="tablist" aria-label="Tahap proyek">
-    @foreach (['' => 'Semua'] + \App\Models\CastingProject::TAHAP as $key => $label)
+    @foreach ($tabsTahap as $key => $info)
         <a href="{{ route('admin.projects.index', array_merge(request()->except(['tahap', 'page']), $key === '' ? [] : ['tahap' => $key])) }}" role="tab"
-           class="btn btn-sm {{ (string) $tahap === (string) $key ? 'btn-brand' : '' }}" @if ((string) $tahap === (string) $key) aria-selected="true" @endif>{{ $label }} ({{ $jumlahTahap[$key] }})</a>
+           class="btn btn-sm {{ (string) $tahap === (string) $key ? 'btn-brand' : '' }}" @if ((string) $tahap === (string) $key) aria-selected="true" @endif>{{ $info['label'] }} ({{ $info['jumlah'] }})</a>
     @endforeach
 </div>
 
+@if ($isTabMenungguKeputusan)
+    @include('admin.projects._persetujuan')
+@else
 @if ($projects->isEmpty())
     <div class="card" style="text-align:center; color: var(--text-muted); padding: 30px 0;">
         {{ array_filter(request()->except(['per', 'page'])) ? 'Tidak ada proyek yang sesuai filter.' : 'Belum ada proyek casting. Klik "+ Buat Proyek" untuk membuat yang pertama.' }}
@@ -156,6 +177,7 @@
     </div>
 @endif
 <x-pagination-bar :paginator="$projects" :pilihan="\App\Support\PerHalaman::KARTU" />
+@endif
 </div>
 
 <script>

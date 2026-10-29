@@ -350,8 +350,10 @@ class ProyekKeuanganTest extends TestCase
     public function test_tab_tahap_filter_angka_dan_ditolak_masuk_menunggu_acc(): void
     {
         $sa = User::factory()->create(['role' => 'super_admin']);
-        $buat = function (string $nama, string $req, ?int $hari = null) {
-            $p = CastingProject::factory()->create(['nama_produksi' => $nama, 'client_request_status' => $req]);
+        $klien = User::factory()->create(['role' => 'client']);
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'aktif']);
+        $buat = function (string $nama, string $req, ?int $hari = null) use ($klien, $admin) {
+            $p = CastingProject::factory()->create(['nama_produksi' => $nama, 'client_request_status' => $req, 'client_id' => $klien->id, 'admin_id' => $admin->id]);
             $hari !== null && $p->shootingDates()->create(['tanggal' => today()->addDays($hari)]);
         };
         $buat('P Acc', 'menunggu_acc');
@@ -362,17 +364,17 @@ class ProyekKeuanganTest extends TestCase
         $buat('P Lewat', 'disetujui', -9);
 
         $r = $this->actingAs($sa)->get(route('admin.projects.index'))->assertOk();
-        $this->assertSame(['' => 6, 'menunggu_acc' => 2, 'mendatang' => 2, 'berjalan' => 1, 'selesai' => 1], $r->viewData('jumlahTahap')->all());
-        $r->assertSee('Semua (6)')->assertSee('Menunggu ACC (2)')->assertSee('Mendatang (2)')->assertSee('Berjalan (1)')->assertSee('Selesai (1)');
+        $this->assertSame(['' => 6, 'menunggu_acc' => 1, 'mendatang' => 2, 'berjalan' => 1, 'selesai' => 1], $r->viewData('jumlahTahap')->all());
+        $r->assertSee('Semua (6)')->assertSee('Menunggu Keputusan (1)')->assertSee('Mendatang (2)')->assertSee('Berjalan (1)')->assertSee('Selesai (1)');
+        $r->assertSee('badge badge-tolak">Pengajuan ditolak', false);
 
         $this->get(route('admin.projects.index', ['tahap' => 'mendatang']))
             ->assertSee('P Depan1')->assertSee('P Depan2')->assertDontSee('P Jalan')->assertDontSee('P Lewat')->assertDontSee('P Acc');
         $acc = $this->get(route('admin.projects.index', ['tahap' => 'menunggu_acc']))
-            ->assertSee('P Acc')->assertSee('P Tolak')->assertDontSee('P Depan1');
-        $acc->assertSee('badge badge-tolak">Pengajuan ditolak', false);
+            ->assertSee('P Acc')->assertDontSee('P Depan1');
 
         $r = $this->get(route('admin.projects.index', ['tahap' => 'selesai', 'q' => 'Depan']))->assertDontSee('P Lewat');
-        $this->assertSame(['' => 2, 'menunggu_acc' => 0, 'mendatang' => 2, 'berjalan' => 0, 'selesai' => 0], $r->viewData('jumlahTahap')->all());
+        $this->assertSame(['' => 2, 'menunggu_acc' => 1, 'mendatang' => 2, 'berjalan' => 0, 'selesai' => 0], $r->viewData('jumlahTahap')->all());
         $r->assertSee('Tidak ada proyek yang sesuai filter.');
     }
 

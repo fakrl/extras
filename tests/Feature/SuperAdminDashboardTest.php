@@ -56,7 +56,7 @@ class SuperAdminDashboardTest extends TestCase
             ->assertSee('Tugas staf tertunda')
             ->assertSee('Proyek berjalan')
             ->assertSee('Invoice belum lunas')
-            ->assertSee(e(route('super-admin.persetujuan')), false)
+            ->assertSee(e(route('admin.projects.index', ['tahap' => 'menunggu_acc'])), false)
             ->assertSee(e(route('super-admin.monitoring.admin')), false)
             ->assertSee(e(route('admin.projects.index', ['tahap' => 'berjalan'])), false);
     }

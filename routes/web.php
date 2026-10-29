@@ -41,7 +41,6 @@ use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardCo
 use App\Http\Controllers\SuperAdmin\GlobalSearchController;
 use App\Http\Controllers\SuperAdmin\ModeRoleController;
 use App\Http\Controllers\SuperAdmin\MonitoringController;
-use App\Http\Controllers\SuperAdmin\PersetujuanController;
 use App\Http\Controllers\SuperAdmin\ProjectAssignmentController;
 use App\Http\Controllers\UbahPasswordController;
 use Illuminate\Http\Request;
@@ -297,8 +296,8 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
 Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(function () {
     Route::get('/dashboard', [SuperAdminDashboardController::class, 'index'])->name('super-admin.dashboard');
 
-    // CR.3: halaman detail dipindah dari dashboard (bukan dibuat ulang).
-    Route::get('/persetujuan', [PersetujuanController::class, 'index'])->name('super-admin.persetujuan');
+    // CX.2: rute lama persetujuan redirect ke tab Menunggu Keputusan di Proyek.
+    Route::redirect('/persetujuan', '/admin/projects?tahap=menunggu_acc')->name('super-admin.persetujuan');
     // CV.1: halaman Pantau Admin dihapus sebagai menu, digabung ke Monitoring ▸ Admin.
     Route::redirect('/pantau-admin', '/super-admin/monitoring/admin')->name('super-admin.pantau-admin.index');
 
