@@ -128,4 +128,26 @@ class CvDaftarProyekTest extends TestCase
 
         $r->assertOk()->assertSee('Log milik proyek ini')->assertDontSee('Log milik proyek lain');
     }
+
+    public function test_filter_peran_jenis(): void
+    {
+        $sa = User::factory()->create(['role' => 'super_admin']);
+        $pic = User::factory()->create(['role' => 'admin', 'status' => 'aktif']);
+        $korlap = User::factory()->create(['role' => 'korlap', 'status' => 'aktif']);
+        $client = User::factory()->create(['role' => 'client']);
+
+        $pPic = CastingProject::factory()->create(['admin_id' => $pic->id, 'client_id' => null, 'nama_produksi' => 'Ada PIC']);
+        $pKorlap = CastingProject::factory()->create(['admin_id' => null, 'client_id' => null, 'nama_produksi' => 'Ada Korlap']);
+        $pKorlap->adminAssignments()->create(['user_id' => $korlap->id, 'assigned_by' => $sa->id, 'status_log' => 'berjalan']);
+        $pClient = CastingProject::factory()->create(['admin_id' => null, 'client_id' => $client->id, 'nama_produksi' => 'Ada Client']);
+
+        $rPic = $this->actingAs($sa)->get(route('admin.projects.index', ['peran' => 'pic']))->assertOk();
+        $rPic->assertSee('Ada PIC')->assertDontSee('Ada Korlap')->assertDontSee('Ada Client');
+
+        $rKorlap = $this->actingAs($sa)->get(route('admin.projects.index', ['peran' => 'korlap']))->assertOk();
+        $rKorlap->assertSee('Ada Korlap')->assertDontSee('Ada PIC');
+
+        $rClient = $this->actingAs($sa)->get(route('admin.projects.index', ['peran' => 'client']))->assertOk();
+        $rClient->assertSee('Ada Client')->assertDontSee('Ada Korlap');
+    }
 }
