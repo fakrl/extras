@@ -99,18 +99,18 @@ class SuperAdminPersetujuanTest extends TestCase
             ->assertDontSee('Iklan Rahasia SA');
     }
 
-    public function test_menu_persetujuan_dan_titik_merah_di_sidebar(): void
+    public function test_titik_merah_sidebar_pindah_ke_proyek(): void
     {
         CastingProject::factory()->create(['client_request_status' => 'menunggu_acc']);
 
         $rSa = $this->actingAs($this->sa)->get(route('super-admin.dashboard'));
         $rSa->assertOk();
-        // Menu Persetujuan tetap ada di sidebar dengan ikon dan titik merah
-        $rSa->assertSee('Persetujuan');
-        $rSa->assertSee('ti-circle-check');
-        $rSa->assertSee('Ada yang perlu diputuskan');
-        // Menu Proyek juga ada di sidebar
+        // Menu Persetujuan mandiri di sidebar sudah dihilangkan karena sudah ada di dalam menu Proyek
+        $rSa->assertDontSee('>Persetujuan<', false);
+        // Titik merah kini berada di menu Proyek
+        $rSa->assertSee('Proyek');
         $rSa->assertSee('ti-movie');
+        $rSa->assertSee('Ada yang perlu diputuskan');
     }
 
     public function test_search_bar_filter_pengajuan_persetujuan(): void
