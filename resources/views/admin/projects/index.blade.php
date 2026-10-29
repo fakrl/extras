@@ -43,59 +43,59 @@
         @endforeach
     </div>
 
-    @unless ($isTabMenungguKeputusan)
     <form method="GET" action="{{ route('admin.projects.index') }}" class="xtoolbar-search-area" role="search" id="live-form" style="display: flex; gap: 8px; align-items: center; flex: 1 1 320px; justify-content: flex-end; margin: 0;" data-live>
-        <input type="search" name="q" value="{{ $cari }}" class="xtoolbar-cari" placeholder="Cari nama, kode, atau client..." aria-label="Cari proyek" style="margin: 0; min-width: 140px; flex: 1 1 180px;">
-        @if ($peserta)<input type="hidden" name="peserta" value="{{ $peserta }}">@endif
+        <input type="search" name="q" value="{{ $cari }}" class="xtoolbar-cari" id="pu-search-input" placeholder="Cari nama, kode, atau client..." aria-label="Cari proyek" style="margin: 0; min-width: 140px; flex: 1 1 180px;">
         @if ($tahap)<input type="hidden" name="tahap" value="{{ $tahap }}">@endif
-        <x-filter-panel :filter="[
-            $urut && $urut !== 'shooting' ? ['urut', 'Urutkan: '.['baru' => 'Terbaru dibuat', 'nama' => 'Nama'][$urut]] : null,
-            $peran ? ['peran', 'Peran: '.['pic' => 'Hanya PIC saja', 'korlap' => 'Hanya Korlap saja', 'client' => 'Hanya Client saja', 'tanpa_pic' => 'Tanpa PIC', 'tanpa_client' => 'Tanpa PIC/Client'][$peran]] : null,
-            $periode ? [['dari', 'sampai'], 'Periode: '.$periode[0]->translatedFormat($periode[0]->year === $periode[1]->year ? 'd M' : 'd M Y').'–'.$periode[1]->translatedFormat('d M Y')] : null,
-            $bayar ? ['bayar', ['staf' => 'Honor staf belum dibayar', 'sengketa' => 'Pembayaran disengketakan'][$bayar] ?? 'Honor Extras belum ditransfer'] : null,
-            request('status') ? ['status', 'Lowongan: '.(\App\Models\CastingProject::LABELS[request('status')] ?? request('status'))] : null,
-            request()->boolean('urgent') ? ['urgent', 'Urgent'] : null,
-            request()->boolean('tanpa_client') && ! $peran ? ['tanpa_client', 'Tanpa PIC/Client'] : null,
-            $peserta ? ['peserta', 'Ada kandidat '.(\App\Models\ProjectApplication::LABELS[$peserta] ?? $peserta)] : null,
-            $adminId ? ['admin_id', 'PIC: '.($pics->firstWhere('id', $adminId)->name ?? $adminId)] : null,
-            $korlapId ? ['korlap_id', 'Korlap: '.($korlaps->firstWhere('id', $korlapId)->name ?? $korlapId)] : null,
-            $clientId ? ['client_id', 'Client: '.($clients->firstWhere('id', $clientId)->name ?? $clientId)] : null,
-            $tindakan ? ['tindakan', 'Perlu tindakan saja'] : null,
-            ! auth()->user()->isSuperAdmin() && $semua ? ['semua', 'Pegangan: Semua (lihat saja)'] : null,
-        ]">
-            <x-filter-panel.grup label="Urutkan" name="urut" :opsi="[
-                'shooting' => 'Shooting terdekat',
-                'baru' => 'Terbaru dibuat',
-                'nama' => 'Nama (A-Z)',
-            ]" :nilai="$urut" />
+        @unless ($isTabMenungguKeputusan)
+            @if ($peserta)<input type="hidden" name="peserta" value="{{ $peserta }}">@endif
+            <x-filter-panel :filter="[
+                $urut && $urut !== 'shooting' ? ['urut', 'Urutkan: '.['baru' => 'Terbaru dibuat', 'nama' => 'Nama'][$urut]] : null,
+                $peran ? ['peran', 'Peran: '.['pic' => 'Hanya PIC saja', 'korlap' => 'Hanya Korlap saja', 'client' => 'Hanya Client saja', 'tanpa_pic' => 'Tanpa PIC', 'tanpa_client' => 'Tanpa PIC/Client'][$peran]] : null,
+                $periode ? [['dari', 'sampai'], 'Periode: '.$periode[0]->translatedFormat($periode[0]->year === $periode[1]->year ? 'd M' : 'd M Y').'–'.$periode[1]->translatedFormat('d M Y')] : null,
+                $bayar ? ['bayar', ['staf' => 'Honor staf belum dibayar', 'sengketa' => 'Pembayaran disengketakan'][$bayar] ?? 'Honor Extras belum ditransfer'] : null,
+                request('status') ? ['status', 'Lowongan: '.(\App\Models\CastingProject::LABELS[request('status')] ?? request('status'))] : null,
+                request()->boolean('urgent') ? ['urgent', 'Urgent'] : null,
+                request()->boolean('tanpa_client') && ! $peran ? ['tanpa_client', 'Tanpa PIC/Client'] : null,
+                $peserta ? ['peserta', 'Ada kandidat '.(\App\Models\ProjectApplication::LABELS[$peserta] ?? $peserta)] : null,
+                $adminId ? ['admin_id', 'PIC: '.($pics->firstWhere('id', $adminId)->name ?? $adminId)] : null,
+                $korlapId ? ['korlap_id', 'Korlap: '.($korlaps->firstWhere('id', $korlapId)->name ?? $korlapId)] : null,
+                $clientId ? ['client_id', 'Client: '.($clients->firstWhere('id', $clientId)->name ?? $clientId)] : null,
+                $tindakan ? ['tindakan', 'Perlu tindakan saja'] : null,
+                ! auth()->user()->isSuperAdmin() && $semua ? ['semua', 'Pegangan: Semua (lihat saja)'] : null,
+            ]">
+                <x-filter-panel.grup label="Urutkan" name="urut" :opsi="[
+                    'shooting' => 'Shooting terdekat',
+                    'baru' => 'Terbaru dibuat',
+                    'nama' => 'Nama (A-Z)',
+                ]" :nilai="$urut" />
 
-            <x-filter-panel.grup label="Jenis Peran" name="peran" :opsi="[
-                '' => 'Semua peran',
-                'pic' => 'Hanya PIC saja',
-                'korlap' => 'Hanya Korlap saja',
-                'client' => 'Hanya Client saja',
-                'tanpa_client' => 'Tanpa PIC/Client',
-            ]" :nilai="$peran" />
+                <x-filter-panel.grup label="Jenis Peran" name="peran" :opsi="[
+                    '' => 'Semua peran',
+                    'pic' => 'Hanya PIC saja',
+                    'korlap' => 'Hanya Korlap saja',
+                    'client' => 'Hanya Client saja',
+                    'tanpa_client' => 'Tanpa PIC/Client',
+                ]" :nilai="$peran" />
 
-            <x-filter-panel.grup label="Lowongan" name="status" :opsi="['' => 'Semua'] + \App\Models\CastingProject::LABELS" :nilai="request('status')" />
-            <x-filter-panel.grup label="Honor" name="bayar" :opsi="['' => 'Semua', 'staf' => 'Staf belum dibayar', 'extras' => 'Extras belum ditransfer', 'sengketa' => 'Disengketakan']" :nilai="$bayar" />
-            <label class="fswitch">Perlu tindakan saja <input type="checkbox" name="tindakan" value="1" @checked($tindakan)></label>
-            <label class="fswitch">Urgent <input type="checkbox" name="urgent" value="1" @checked(request()->boolean('urgent'))></label>
-            @unless (auth()->user()->isSuperAdmin())
-                <label class="fswitch">Semua proyek (lihat saja) <input type="checkbox" name="semua" value="1" @checked($semua)></label>
-            @endunless
-            <div>
-                <div class="fpanel-label">Periode shooting</div>
-                <div class="fpanel-dua">
-                    <input type="date" name="dari" value="{{ $periode ? $periode[0]->format('Y-m-d') : request('dari') }}" aria-label="Dari tanggal">
-                    <span style="color: var(--text-muted);">s/d</span>
-                    <input type="date" name="sampai" value="{{ $periode ? $periode[1]->format('Y-m-d') : request('sampai') }}" aria-label="Sampai tanggal">
+                <x-filter-panel.grup label="Lowongan" name="status" :opsi="['' => 'Semua'] + \App\Models\CastingProject::LABELS" :nilai="request('status')" />
+                <x-filter-panel.grup label="Honor" name="bayar" :opsi="['' => 'Semua', 'staf' => 'Staf belum dibayar', 'extras' => 'Extras belum ditransfer', 'sengketa' => 'Disengketakan']" :nilai="$bayar" />
+                <label class="fswitch">Perlu tindakan saja <input type="checkbox" name="tindakan" value="1" @checked($tindakan)></label>
+                <label class="fswitch">Urgent <input type="checkbox" name="urgent" value="1" @checked(request()->boolean('urgent'))></label>
+                @unless (auth()->user()->isSuperAdmin())
+                    <label class="fswitch">Semua proyek (lihat saja) <input type="checkbox" name="semua" value="1" @checked($semua)></label>
+                @endunless
+                <div>
+                    <div class="fpanel-label">Periode shooting</div>
+                    <div class="fpanel-dua">
+                        <input type="date" name="dari" value="{{ $periode ? $periode[0]->format('Y-m-d') : request('dari') }}" aria-label="Dari tanggal">
+                        <span style="color: var(--text-muted);">s/d</span>
+                        <input type="date" name="sampai" value="{{ $periode ? $periode[1]->format('Y-m-d') : request('sampai') }}" aria-label="Sampai tanggal">
+                    </div>
                 </div>
-            </div>
-        </x-filter-panel>
-        <x-per-halaman :pilihan="\App\Support\PerHalaman::KARTU" :nilai="$projects->perPage()" />
+            </x-filter-panel>
+            <x-per-halaman :pilihan="\App\Support\PerHalaman::KARTU" :nilai="$projects->perPage()" />
+        @endunless
     </form>
-    @endunless
 </div>
 
 @if ($isTabMenungguKeputusan)
