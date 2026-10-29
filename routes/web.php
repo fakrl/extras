@@ -296,8 +296,10 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
 Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(function () {
     Route::get('/dashboard', [SuperAdminDashboardController::class, 'index'])->name('super-admin.dashboard');
 
-    // CX.2: rute lama persetujuan redirect ke tab Menunggu Keputusan di Proyek.
-    Route::redirect('/persetujuan', '/admin/projects?tahap=menunggu_acc')->name('super-admin.persetujuan');
+    // CX.2: rute persetujuan diarahkan ke tab Menunggu Keputusan di Proyek (dengan query param jika ada).
+    Route::get('/persetujuan', function (Request $request) {
+        return redirect()->route('admin.projects.index', array_merge(['tahap' => 'menunggu_acc'], $request->query()));
+    })->name('super-admin.persetujuan');
     // CV.1: halaman Pantau Admin dihapus sebagai menu, digabung ke Monitoring ▸ Admin.
     Route::redirect('/pantau-admin', '/super-admin/monitoring/admin')->name('super-admin.pantau-admin.index');
 

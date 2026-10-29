@@ -1,8 +1,5 @@
 @extends('layouts.app')
 
-@section('title', 'Proyek')
-
-@section('content')
 @php
     $isSuperAdmin = auth()->user()->isSuperAdmin();
     $isTabMenungguKeputusan = $isSuperAdmin && $tahap === 'menunggu_acc';
@@ -19,10 +16,18 @@
     $tabsTahap[''] = ['label' => 'Semua', 'jumlah' => $jumlahTahap[''] ?? 0];
 @endphp
 
+@section('title', $isTabMenungguKeputusan ? 'Persetujuan' : 'Proyek')
+
+@section('content')
+
 <div class="card-header-row">
     <div>
-        <div style="font-size: 16px; font-weight: 600;">Proyek</div>
-        <div style="font-size: var(--fs-sm); color: var(--text-secondary);">Semua proyek casting. Info lengkap, pendaftar, dan keuangan ada di detail proyek (klik barisnya).</div>
+        <div style="font-size: 18px; font-weight: 700;">{{ $isTabMenungguKeputusan ? 'Persetujuan' : 'Proyek' }}</div>
+        <div style="font-size: var(--fs-sm); color: var(--text-secondary);">
+            {{ $isTabMenungguKeputusan
+                ? 'Pengajuan proyek dan akun yang menunggu keputusan Super Admin.'
+                : 'Semua proyek casting. Info lengkap, pendaftar, dan keuangan ada di detail proyek (klik barisnya).' }}
+        </div>
     </div>
     <a href="{{ route('admin.projects.create') }}" class="btn btn-brand">+ Buat Proyek</a>
 </div>
