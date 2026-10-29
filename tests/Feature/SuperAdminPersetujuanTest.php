@@ -99,17 +99,32 @@ class SuperAdminPersetujuanTest extends TestCase
             ->assertDontSee('Iklan Rahasia SA');
     }
 
-    public function test_titik_merah_sidebar_pindah_ke_proyek(): void
+    public function test_menu_persetujuan_dan_titik_merah_di_sidebar(): void
     {
         CastingProject::factory()->create(['client_request_status' => 'menunggu_acc']);
 
         $rSa = $this->actingAs($this->sa)->get(route('super-admin.dashboard'));
         $rSa->assertOk();
-        // Menu Persetujuan sudah dihapus
-        $rSa->assertDontSee('>Persetujuan<', false);
-        // Titik merah nempel di menu Proyek untuk Super Admin
-        $rSa->assertSee('ti-movie');
+        // Menu Persetujuan tetap ada di sidebar dengan ikon dan titik merah
+        $rSa->assertSee('Persetujuan');
+        $rSa->assertSee('ti-circle-check');
         $rSa->assertSee('Ada yang perlu diputuskan');
+        // Menu Proyek juga ada di sidebar
+        $rSa->assertSee('ti-movie');
+    }
+
+    public function test_search_bar_filter_pengajuan_persetujuan(): void
+    {
+        $cocok = CastingProject::factory()->create(['client_request_status' => 'menunggu_acc', 'nama_produksi' => 'Iklan Sepatu']);
+        $tidakCocok = CastingProject::factory()->create(['client_request_status' => 'menunggu_acc', 'nama_produksi' => 'Film Bioskop']);
+
+        $r = $this->actingAs($this->sa)->get(route('admin.projects.index', ['tahap' => 'menunggu_acc', 'q' => 'Sepatu']));
+
+        $r->assertOk();
+        $this->assertSame([$cocok->id], $r->viewData('pengajuanBaru')->pluck('id')->all());
+        $r->assertSee('Iklan Sepatu');
+        $r->assertDontSee('Film Bioskop');
+        $r->assertSee('name="q"', false);
     }
 
     public function test_akses_ditolak_untuk_role_selain_super_admin(): void

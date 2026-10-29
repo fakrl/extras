@@ -7,6 +7,15 @@
     @endforeach
 </div>
 
+<form method="GET" action="{{ route('admin.projects.index') }}" class="xtoolbar" role="search" id="pu-search-form">
+    <input type="hidden" name="tahap" value="menunggu_acc">
+    <input type="search" name="q" value="{{ $cari }}" class="xtoolbar-cari" id="pu-search-input" placeholder="Cari nama pengajuan, kode, atau client..." aria-label="Cari pengajuan">
+    <button type="submit" class="btn btn-sm">Cari</button>
+    @if ($cari)
+        <a href="{{ route('admin.projects.index', ['tahap' => 'menunggu_acc']) }}" class="btn btn-sm">Reset</a>
+    @endif
+</form>
+
 <div class="card" role="tabpanel" id="pu-panel-pengajuan-baru" aria-labelledby="pu-tab-pengajuan-baru" @if ($tabAwalPersetujuan !== 'pengajuan-baru') hidden @endif>
     <div class="card-title">Pengajuan Client menunggu keputusan</div>
     @forelse ($pengajuanBaru as $req)
@@ -84,5 +93,20 @@
             t2.focus();
         });
     });
+
+    var searchInput = document.getElementById('pu-search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            var q = this.value.toLowerCase().trim();
+            var panels = document.querySelectorAll('[role="tabpanel"]');
+            panels.forEach(function (panel) {
+                var rows = panel.querySelectorAll('.dash-row');
+                rows.forEach(function (row) {
+                    var txt = row.textContent.toLowerCase();
+                    row.style.display = (!q || txt.indexOf(q) !== -1) ? '' : 'none';
+                });
+            });
+        });
+    }
 }());
 </script>

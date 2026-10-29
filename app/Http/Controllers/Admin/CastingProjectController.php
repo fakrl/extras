@@ -64,13 +64,46 @@ class CastingProjectController extends Controller
             $menungguKeputusanCount = $pengajuanBaruCount + $pengajuanRevisiCount + $tanpaPicCount + $akunPerhatianCount;
 
             if ($tahap === 'menunggu_acc') {
-                $pengajuanBaru = CastingProject::where('client_request_status', 'menunggu_acc')->whereNull('alasan_tolak')
-                    ->with('client', 'classes', 'shootingDates', 'attachments')->latest()->get();
-                $pengajuanRevisi = CastingProject::where('client_request_status', 'menunggu_acc')->whereNotNull('alasan_tolak')
-                    ->with('client', 'classes', 'shootingDates', 'attachments')->latest()->get();
-                $tanpaPic = CastingProject::tanpaPicClient()->with('client')->latest()->get();
-                $akunPerhatianList = User::where('role', 'client')->where('wajib_ganti_password', true)
-                    ->where('updated_at', '<=', now()->subDays(7))->oldest('updated_at')->get();
+                $saringCariProyek = function ($query) use ($cari) {
+                    if ($cari === '') {
+                        return $query;
+                    }
+
+                    return $query->where(function ($w) use ($cari) {
+                        $w->where('nama_produksi', 'like', "%{$cari}%")
+                            ->orWhereHas('client', fn ($c) => $c->where('name', 'like', "%{$cari}%")->orWhere('nama_perusahaan', 'like', "%{$cari}%"))
+                            ->orWhere(fn ($k) => $k->cariKode($cari));
+                    });
+                };
+
+                $saringCariAkun = function ($query) use ($cari) {
+                    if ($cari === '') {
+                        return $query;
+                    }
+
+                    return $query->where(function ($w) use ($cari) {
+                        $w->where('name', 'like', "%{$cari}%")
+                            ->orWhere('email', 'like', "%{$cari}%")
+                            ->orWhere('nama_perusahaan', 'like', "%{$cari}%");
+                    });
+                };
+
+                $pengajuanBaru = $saringCariProyek(
+                    CastingProject::where('client_request_status', 'menunggu_acc')->whereNull('alasan_tolak')
+                )->with('client', 'classes', 'shootingDates', 'attachments')->latest()->get();
+
+                $pengajuanRevisi = $saringCariProyek(
+                    CastingProject::where('client_request_status', 'menunggu_acc')->whereNotNull('alasan_tolak')
+                )->with('client', 'classes', 'shootingDates', 'attachments')->latest()->get();
+
+                $tanpaPic = $saringCariProyek(
+                    CastingProject::tanpaPicClient()
+                )->with('client')->latest()->get();
+
+                $akunPerhatianList = $saringCariAkun(
+                    User::where('role', 'client')->where('wajib_ganti_password', true)->where('updated_at', '<=', now()->subDays(7))
+                )->oldest('updated_at')->get();
+
                 $adminsAktif = User::where('role', User::ROLE_ADMIN)->where('status', 'aktif')->orderBy('name')->get();
                 $korlapsAktif = User::where('role', User::ROLE_KORLAP)->where('status', 'aktif')->orderBy('name')->get();
 
