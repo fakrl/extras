@@ -40,6 +40,7 @@ class CastingProjectController extends Controller
         $adminId = $request->integer('admin_id') ?: null;
         $korlapId = $request->integer('korlap_id') ?: null;
         $clientId = $request->integer('client_id') ?: null;
+        $peran = in_array($request->query('peran'), ['pic', 'korlap', 'client', 'tanpa_pic', 'tanpa_client'], true) ? $request->query('peran') : null;
         $tindakan = $request->boolean('tindakan');
         $urut = in_array($request->query('urut'), ['baru', 'nama'], true) ? $request->query('urut') : 'shooting';
         // CQ.1: rumus parsing/swap tanggal di-reuse dari Periode (satu rumus, jangan disalin) -
@@ -122,11 +123,15 @@ class CastingProjectController extends Controller
             ->when(! $semua, fn ($q) => $q->dikelolaOleh($request->user()))
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($peserta, fn ($q) => $q->whereHas('applications', fn ($a) => $a->where('status_partisipasi', $peserta)))
-            ->when($request->boolean('tanpa_client'), fn ($q) => $q->tanpaPicClient())
+            ->when($request->boolean('tanpa_client') || $peran === 'tanpa_client', fn ($q) => $q->tanpaPicClient())
             ->when($periode, fn ($q) => $q->shootingDalam(...$periode))
             ->when($bayar === 'staf', fn ($q) => $q->whereHas('payrolls', fn ($p) => $p->where('status_bayar', '!=', 'sudah')))
             ->when($bayar === 'extras', fn ($q) => $q->whereHas('payments', fn ($p) => $p->perluDitransfer()))
             ->when($bayar === 'sengketa', fn ($q) => $q->whereHas('payments', fn ($p) => $p->where('status', 'disengketakan')))
+            ->when($peran === 'pic', fn ($q) => $q->whereNotNull('admin_id'))
+            ->when($peran === 'korlap', fn ($q) => $q->whereHas('adminAssignments'))
+            ->when($peran === 'client', fn ($q) => $q->whereNotNull('client_id'))
+            ->when($peran === 'tanpa_pic', fn ($q) => $q->whereNull('admin_id'))
             ->when($adminId, fn ($q) => $q->where('admin_id', $adminId))
             ->when($korlapId, fn ($q) => $q->whereHas('adminAssignments', fn ($a) => $a->where('user_id', $korlapId)))
             ->when($clientId, fn ($q) => $q->where('client_id', $clientId))
@@ -179,7 +184,7 @@ class CastingProjectController extends Controller
 
         return view('admin.projects.index', compact(
             'projects', 'perlu', 'peserta', 'tahap', 'bayar', 'cari', 'periode', 'jumlahTahap', 'semua',
-            'adminId', 'korlapId', 'clientId', 'tindakan', 'urut', 'pics', 'korlaps', 'clients',
+            'adminId', 'korlapId', 'clientId', 'peran', 'tindakan', 'urut', 'pics', 'korlaps', 'clients',
             'menungguKeputusanCount', 'pengajuanBaru', 'pengajuanRevisi', 'tanpaPic', 'akunPerhatianList',
             'adminsAktif', 'korlapsAktif', 'tabAwalPersetujuan'
         ));
