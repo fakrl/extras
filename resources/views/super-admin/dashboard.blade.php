@@ -20,7 +20,7 @@
 <h1 class="sa-head-judul">Dashboard</h1>
 
 <div class="kpi-grid">
-    <x-kpi label="Menunggu keputusan" :angka="$menungguKeputusan" :href="route('super-admin.persetujuan')" :mendesak="$menungguKeputusan > 0 && $pengajuanMendesak" />
+    <x-kpi label="Menunggu keputusan" :angka="$menungguKeputusan" :href="route('admin.projects.index', ['tahap' => 'menunggu_acc'])" :mendesak="$menungguKeputusan > 0 && $pengajuanMendesak" />
     <x-kpi label="Tugas staf tertunda" :angka="$stafTertunda" :sub="'di '.($pantauAdmin->count() + $tugasKorlap->count()).' staf'" :href="route('super-admin.monitoring.admin')" :mendesak="$stafMendesak" />
     <x-kpi label="Proyek berjalan" :angka="$proyekBerjalan" :pertumbuhan="$pertumbuhanBerjalan" :href="route('admin.projects.index', ['tahap' => 'berjalan', 'dari' => $dari->format('Y-m-d'), 'sampai' => $sampai->format('Y-m-d')])" />
     <x-kpi label="Invoice belum lunas" :angka="$invoiceBelumLunas->count()" :sub="$rp($invoiceTotal)" :href="route('admin.projects.index')" :mendesak="$invoiceBelumLunas->isNotEmpty()" />
@@ -42,7 +42,7 @@
             <x-kosong ikon="circle-check" teks="Tidak ada yang perlu diputuskan." />
         @endforelse
         @if ($jumlahTindakan)
-            <a href="{{ route('super-admin.persetujuan') }}" class="sa-lihat-semua">Lihat semua ({{ $jumlahTindakan }}) &rarr;</a>
+            <a href="{{ route('admin.projects.index', ['tahap' => 'menunggu_acc']) }}" class="sa-lihat-semua">Lihat semua ({{ $jumlahTindakan }}) &rarr;</a>
         @endif
     </div>
 

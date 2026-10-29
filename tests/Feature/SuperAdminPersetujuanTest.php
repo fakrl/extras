@@ -8,8 +8,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * CR.3.1: halaman detail Persetujuan (dipindah dari dashboard SA) - reuse
- * partial _pengajuan apa adanya, tab per grup dengan hitungan, role:super_admin murni.
+ * CX.1 - CX.3: Halaman Persetujuan digabung ke dalam Proyek sebagai tab "Menunggu Keputusan" (SA saja).
+ * Reuse partial _pengajuan apa adanya, tab per grup dengan hitungan, rute lama redirect, sidebar dot pindah ke Proyek.
  */
 class SuperAdminPersetujuanTest extends TestCase
 {
@@ -24,18 +24,19 @@ class SuperAdminPersetujuanTest extends TestCase
         $this->sa = User::factory()->create(['role' => 'super_admin']);
     }
 
-    // CO.1: pengajuan baru vs pengajuan hasil revisi dibedakan dan dikelompokkan per tab.
+    // CX.1: Tab Menunggu Keputusan di halaman Proyek memuat pengajuan baru vs hasil revisi dengan hitungan.
     public function test_tab_pengajuan_baru_dan_revisi_dengan_hitungan(): void
     {
         $baru = CastingProject::factory()->create(['client_request_status' => 'menunggu_acc', 'nama_produksi' => 'Iklan Baru']);
         $revisi = CastingProject::factory()->create(['client_request_status' => 'menunggu_acc', 'alasan_tolak' => 'Lengkapi lokasi', 'nama_produksi' => 'Iklan Revisi']);
 
-        $r = $this->actingAs($this->sa)->get(route('super-admin.persetujuan'));
+        $r = $this->actingAs($this->sa)->get(route('admin.projects.index', ['tahap' => 'menunggu_acc']));
 
         $r->assertOk();
         $this->assertSame([$baru->id], $r->viewData('pengajuanBaru')->pluck('id')->all());
         $this->assertSame([$revisi->id], $r->viewData('pengajuanRevisi')->pluck('id')->all());
-        $r->assertSee('Pengajuan Client menunggu keputusan')
+        $r->assertSee('Menunggu Keputusan')
+            ->assertSee('Pengajuan Client menunggu keputusan')
             ->assertSee('Pengajuan sudah direvisi Client')
             ->assertSee('Iklan Baru')
             ->assertSee('Iklan Revisi')
@@ -45,11 +46,13 @@ class SuperAdminPersetujuanTest extends TestCase
 
     public function test_tab_tanpa_pic_dan_akun_perlu_perhatian(): void
     {
-        $tanpaPic = CastingProject::factory()->create(['client_request_status' => 'disetujui', 'admin_id' => null, 'nama_produksi' => 'Proyek Tanpa PIC']);
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'aktif']);
+        $klien = User::factory()->create(['role' => 'client']);
+        $tanpaPic = CastingProject::factory()->create(['client_request_status' => 'disetujui', 'admin_id' => null, 'client_id' => $klien->id, 'nama_produksi' => 'Proyek Tanpa PIC']);
         $akun = User::factory()->create(['role' => 'client', 'name' => 'Client Lama', 'wajib_ganti_password' => true]);
         User::whereKey($akun->id)->update(['updated_at' => now()->subDays(10)]);
 
-        $r = $this->actingAs($this->sa)->get(route('super-admin.persetujuan'));
+        $r = $this->actingAs($this->sa)->get(route('admin.projects.index', ['tahap' => 'menunggu_acc']));
 
         $r->assertOk()->assertSee('Proyek Tanpa PIC')->assertSee('Client Lama')
             ->assertSee(route('super-admin.projects.tetapkan-pic', $tanpaPic), false)
@@ -61,14 +64,52 @@ class SuperAdminPersetujuanTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin', 'status' => 'aktif']);
         $a = CastingProject::factory()->create(['client_request_status' => 'menunggu_acc', 'nama_produksi' => 'Iklan Kopi', 'status' => 'ditutup']);
         $b = CastingProject::factory()->create(['client_request_status' => 'menunggu_acc', 'status' => 'ditutup']);
+        $url = route('admin.projects.index', ['tahap' => 'menunggu_acc']);
 
-        $this->actingAs($this->sa)->from(route('super-admin.persetujuan'))->patch(route('super-admin.projects.acc', $a), ['admin_id' => $admin->id])
-            ->assertRedirect(route('super-admin.persetujuan'));
-        $this->actingAs($this->sa)->from(route('super-admin.persetujuan'))->patch(route('super-admin.projects.reject', $b), ['alasan_tolak' => 'Budget kurang'])
-            ->assertRedirect(route('super-admin.persetujuan'));
+        $this->actingAs($this->sa)->from($url)->patch(route('super-admin.projects.acc', $a), ['admin_id' => $admin->id])
+            ->assertRedirect($url);
+        $this->actingAs($this->sa)->from($url)->patch(route('super-admin.projects.reject', $b), ['alasan_tolak' => 'Budget kurang'])
+            ->assertRedirect($url);
 
         $this->assertSame('disetujui', $a->fresh()->client_request_status);
         $this->assertSame('ditolak', $b->fresh()->client_request_status);
+    }
+
+    public function test_rute_lama_persetujuan_redirect_ke_lokasi_baru(): void
+    {
+        $r = $this->actingAs($this->sa)->get(route('super-admin.persetujuan'));
+        $r->assertRedirect(route('admin.projects.index', ['tahap' => 'menunggu_acc']));
+    }
+
+    public function test_admin_biasa_tidak_melihat_tab_menunggu_keputusan(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'aktif']);
+        CastingProject::factory()->create(['client_request_status' => 'menunggu_acc', 'nama_produksi' => 'Iklan Rahasia SA']);
+
+        $r = $this->actingAs($admin)->get(route('admin.projects.index'));
+        $r->assertOk()
+            ->assertDontSee('Menunggu Keputusan')
+            ->assertDontSee('tahap=menunggu_acc');
+
+        // Akses langsung dengan query param juga tidak menampilkan data persetujuan
+        $rLangsung = $this->actingAs($admin)->get(route('admin.projects.index', ['tahap' => 'menunggu_acc']));
+        $rLangsung->assertOk()
+            ->assertDontSee('Menunggu Keputusan')
+            ->assertDontSee('Pengajuan Client menunggu keputusan')
+            ->assertDontSee('Iklan Rahasia SA');
+    }
+
+    public function test_titik_merah_sidebar_pindah_ke_proyek(): void
+    {
+        CastingProject::factory()->create(['client_request_status' => 'menunggu_acc']);
+
+        $rSa = $this->actingAs($this->sa)->get(route('super-admin.dashboard'));
+        $rSa->assertOk();
+        // Menu Persetujuan sudah dihapus
+        $rSa->assertDontSee('>Persetujuan<', false);
+        // Titik merah nempel di menu Proyek untuk Super Admin
+        $rSa->assertSee('ti-movie');
+        $rSa->assertSee('Ada yang perlu diputuskan');
     }
 
     public function test_akses_ditolak_untuk_role_selain_super_admin(): void

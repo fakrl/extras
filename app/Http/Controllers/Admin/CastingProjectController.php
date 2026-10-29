@@ -26,10 +26,15 @@ class CastingProjectController extends Controller
 {
     public function index(Request $request)
     {
+        $isSuperAdmin = $request->user()->isSuperAdmin();
         // CV.2.1: SA selalu lihat semua (tidak ada toggle); "semua" cuma berarti sesuatu untuk Admin.
-        $semua = $request->user()->isSuperAdmin() || $request->boolean('semua');
+        $semua = $isSuperAdmin || $request->boolean('semua');
         $peserta = $request->query('peserta');
         $tahap = array_key_exists((string) $request->query('tahap'), CastingProject::TAHAP) ? $request->query('tahap') : null;
+        // CX.1: Admin biasa tidak boleh mengakses tahap menunggu_acc
+        if ($tahap === 'menunggu_acc' && ! $isSuperAdmin) {
+            $tahap = null;
+        }
         $bayar = in_array($request->query('bayar'), ['staf', 'extras', 'sengketa'], true) ? $request->query('bayar') : null;
         $cari = trim((string) $request->query('q'));
         $adminId = $request->integer('admin_id') ?: null;
@@ -40,6 +45,43 @@ class CastingProjectController extends Controller
         // CQ.1: rumus parsing/swap tanggal di-reuse dari Periode (satu rumus, jangan disalin) -
         // tapi halaman ini TIDAK punya default/preset, jadi pakai opsional() yang null kalau kosong.
         $periode = Periode::opsional($request);
+
+        // CX.1: Data persetujuan untuk tab "Menunggu Keputusan" (khusus Super Admin)
+        $menungguKeputusanCount = 0;
+        $pengajuanBaru = collect();
+        $pengajuanRevisi = collect();
+        $tanpaPic = collect();
+        $akunPerhatianList = collect();
+        $adminsAktif = collect();
+        $korlapsAktif = collect();
+        $tabAwalPersetujuan = 'pengajuan-baru';
+
+        if ($isSuperAdmin) {
+            $pengajuanBaruCount = CastingProject::where('client_request_status', 'menunggu_acc')->whereNull('alasan_tolak')->count();
+            $pengajuanRevisiCount = CastingProject::where('client_request_status', 'menunggu_acc')->whereNotNull('alasan_tolak')->count();
+            $tanpaPicCount = CastingProject::tanpaPicClient()->count();
+            $akunPerhatianCount = User::where('role', 'client')->where('wajib_ganti_password', true)->where('updated_at', '<=', now()->subDays(7))->count();
+            $menungguKeputusanCount = $pengajuanBaruCount + $pengajuanRevisiCount + $tanpaPicCount + $akunPerhatianCount;
+
+            if ($tahap === 'menunggu_acc') {
+                $pengajuanBaru = CastingProject::where('client_request_status', 'menunggu_acc')->whereNull('alasan_tolak')
+                    ->with('client', 'classes', 'shootingDates', 'attachments')->latest()->get();
+                $pengajuanRevisi = CastingProject::where('client_request_status', 'menunggu_acc')->whereNotNull('alasan_tolak')
+                    ->with('client', 'classes', 'shootingDates', 'attachments')->latest()->get();
+                $tanpaPic = CastingProject::tanpaPicClient()->with('client')->latest()->get();
+                $akunPerhatianList = User::where('role', 'client')->where('wajib_ganti_password', true)
+                    ->where('updated_at', '<=', now()->subDays(7))->oldest('updated_at')->get();
+                $adminsAktif = User::where('role', User::ROLE_ADMIN)->where('status', 'aktif')->orderBy('name')->get();
+                $korlapsAktif = User::where('role', User::ROLE_KORLAP)->where('status', 'aktif')->orderBy('name')->get();
+
+                $tabAwalPersetujuan = collect([
+                    'pengajuan-baru' => $pengajuanBaru->count(),
+                    'pengajuan-revisi' => $pengajuanRevisi->count(),
+                    'tanpa-pic' => $tanpaPic->count(),
+                    'akun' => $akunPerhatianList->count(),
+                ])->search(fn ($n) => $n > 0) ?: 'pengajuan-baru';
+            }
+        }
 
         // CM.2.3: default hanya proyek yang dikelola Admin/Korlap. Super Admin tetap lihat-saja
         // semua proyek (GET) seperti sebelumnya, karena di luar mode dia tidak "mengelola" proyek manapun.
@@ -66,6 +108,10 @@ class CastingProjectController extends Controller
 
         $jumlahTahap = collect(CastingProject::TAHAP)->map(fn ($label, $t) => $diTahap($saring(CastingProject::query()), $t)->count())
             ->prepend($saring(CastingProject::query())->count(), '');
+
+        if ($isSuperAdmin) {
+            $jumlahTahap['menunggu_acc'] = $menungguKeputusanCount;
+        }
 
         $dasar = $saring(CastingProject::withCount('applications')->with(['client', 'admin', 'adminAssignments.user', 'shootingDates']))
             ->when($tahap, fn ($q) => $diTahap($q, $tahap));
@@ -100,7 +146,9 @@ class CastingProjectController extends Controller
 
         return view('admin.projects.index', compact(
             'projects', 'perlu', 'peserta', 'tahap', 'bayar', 'cari', 'periode', 'jumlahTahap', 'semua',
-            'adminId', 'korlapId', 'clientId', 'tindakan', 'urut', 'pics', 'korlaps', 'clients'
+            'adminId', 'korlapId', 'clientId', 'tindakan', 'urut', 'pics', 'korlaps', 'clients',
+            'menungguKeputusanCount', 'pengajuanBaru', 'pengajuanRevisi', 'tanpaPic', 'akunPerhatianList',
+            'adminsAktif', 'korlapsAktif', 'tabAwalPersetujuan'
         ));
     }
 

@@ -23,15 +23,12 @@
 <a href="{{ route('super-admin.dashboard') }}" class="sidebar-link {{ str_starts_with($route, 'super-admin/dashboard') ? 'active' : '' }}">
     <i class="ti ti-layout-dashboard"></i> Dashboard
 </a>
-<a href="{{ route('super-admin.persetujuan') }}" class="sidebar-link {{ str_starts_with($route, 'super-admin/persetujuan') ? 'active' : '' }}">
-    <i class="ti ti-circle-check"></i> Persetujuan
-    @if ($sbMenungguKeputusan)<span class="sb-dot" aria-label="Ada yang perlu diputuskan"></span>@endif
-</a>
 <a href="{{ route('super-admin.akun.index') }}" class="sidebar-link {{ $isAkunActive ? 'active' : '' }}">
     <i class="ti ti-users-group"></i> Manajemen Akun
 </a>
 <a href="{{ route('admin.projects.index') }}" class="sidebar-link {{ str_starts_with($route, 'admin/projects') ? 'active' : '' }}">
     <i class="ti ti-movie"></i> Proyek
+    @if ($sbMenungguKeputusan)<span class="sb-dot" aria-label="Ada yang perlu diputuskan"></span>@endif
 </a>
 <a href="{{ route('super-admin.activity-logs') }}" class="sidebar-link {{ str_starts_with($route, 'super-admin/activity-logs') ? 'active' : '' }}">
     <i class="ti ti-activity"></i> Log Aktivitas
