@@ -4,16 +4,17 @@
     $isSuperAdmin = auth()->user()->isSuperAdmin();
     $isTabMenungguKeputusan = $isSuperAdmin && $tahap === 'menunggu_acc';
 
-    // CX.1: Deretan tab tahap - khusus Super Admin, tab "Menunggu Keputusan" di posisi PALING KIRI
-    // dengan badge total ke-4 grup. Admin biasa tidak melihat tab ini sama sekali.
-    $tabsTahap = [];
+    // CX.1: Deretan tab tahap - tab "Semua" sebagai default di posisi paling kiri,
+    // lalu "Menunggu Keputusan" (khusus Super Admin), Mendatang, Berjalan, Selesai.
+    $tabsTahap = [
+        '' => ['label' => 'Semua', 'jumlah' => $jumlahTahap[''] ?? 0],
+    ];
     if ($isSuperAdmin) {
         $tabsTahap['menunggu_acc'] = ['label' => 'Menunggu Keputusan', 'jumlah' => $menungguKeputusanCount];
     }
     $tabsTahap['mendatang'] = ['label' => 'Mendatang', 'jumlah' => $jumlahTahap['mendatang'] ?? 0];
     $tabsTahap['berjalan'] = ['label' => 'Berjalan', 'jumlah' => $jumlahTahap['berjalan'] ?? 0];
     $tabsTahap['selesai'] = ['label' => 'Selesai', 'jumlah' => $jumlahTahap['selesai'] ?? 0];
-    $tabsTahap[''] = ['label' => 'Semua', 'jumlah' => $jumlahTahap[''] ?? 0];
 @endphp
 
 @section('title', $isTabMenungguKeputusan ? 'Persetujuan' : 'Proyek')
