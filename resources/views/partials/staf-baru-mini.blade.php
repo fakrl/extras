@@ -1,8 +1,9 @@
 @php $uid = $uid ?? 'stafbaru-'.\Illuminate\Support\Str::random(6); @endphp
-<div class="staf-baru-mini" style="display: flex; gap: 8px; margin: 8px 0; flex-wrap: wrap;">
-    <button type="button" class="btn btn-sm btn-tonal" data-staf-toggle="{{ $uid }}-admin">+ Admin baru</button>
-    <button type="button" class="btn btn-sm btn-tonal" data-staf-toggle="{{ $uid }}-korlap">+ Korlap baru</button>
-</div>
+<div class="staf-baru-mini">
+    <div style="display: flex; gap: 8px; margin: 8px 0; flex-wrap: wrap;">
+        <button type="button" class="btn btn-sm btn-tonal" data-staf-toggle="{{ $uid }}-admin">+ Admin baru</button>
+        <button type="button" class="btn btn-sm btn-tonal" data-staf-toggle="{{ $uid }}-korlap">+ Korlap baru</button>
+    </div>
 
     @foreach (['admin' => ['Admin', $selectAdmin], 'korlap' => ['Korlap', $selectKorlap]] as $role => [$label, $selectId])
     <div id="{{ $uid }}-{{ $role }}" class="staf-mini-form dash-dialog-field" data-role="{{ $role }}" data-target="{{ $selectId }}" hidden>

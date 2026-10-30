@@ -11,7 +11,7 @@
     $sejakTertua = $tasks->min('sejak');
 @endphp
 
-<x-baris-tugas :judul="$staf->name" :meta="$peranLabel.' &middot; '.$jumlahTugas.' tugas tertunda &middot; '.$totalExtras.' Extras'" :umur="'sejak '.($sejakTertua?->diffForHumans() ?? '-')">
+<x-baris-tugas :judul="$staf->name" :meta="$peranLabel.' · '.$jumlahTugas.' tugas tertunda · '.$totalExtras.' Extras'" :umur="'sejak '.($sejakTertua?->diffForHumans() ?? '-')">
     @if ($semuaSudahDiingatkan)
         <button type="button" class="btn btn-sm" onclick="document.getElementById('dash-ingatkan-staf-{{ $idx }}').showModal()" style="color: var(--accent);">
             <i class="ti ti-check"></i> Sudah diingatkan
