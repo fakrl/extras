@@ -33,7 +33,12 @@ class BeEditClientPicTest extends TestCase
         $project->update(['client_id' => $lama->id]);
 
         $this->actingAs($sa)->get(route('admin.projects.edit', $project))
-            ->assertOk()->assertSee('data-cari-select="client_id"', false)->assertSee('client-baru-dialog');
+            ->assertOk()
+            ->assertSee('data-cari-select="client_id"', false)
+            ->assertSee('client-baru-dialog')
+            ->assertSee('admin-baru-dialog')
+            ->assertSee('Admin baru')
+            ->assertSee('Client baru');
 
         // CM.3: godmode SA dicabut untuk aksi tulis, edit proyek kini wajib lewat mode Monitoring Admin.
         $this->actingAs($sa)->withSession(['sa_mode' => 'admin'])->patch(route('admin.projects.update', $project), $this->payload([

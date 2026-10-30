@@ -130,7 +130,7 @@ class AdminManagementController extends Controller
      * BD.1: Super Admin bikin akun Client. Password sementara digenerate,
      * tampil sekali lewat flash `kredensial`, Client wajib ganti saat login.
      */
-    public function storeClient(Request $request): RedirectResponse
+    public function storeClient(Request $request): RedirectResponse|JsonResponse
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -149,6 +149,14 @@ class AdminManagementController extends Controller
         ]);
 
         ActivityLog::record('CREATE_USER', "Super Admin membuat akun Client {$user->name} (@{$user->username}).", $user);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'id' => $user->id,
+                'name' => $user->name.($user->username ? ' (@'.$user->username.')' : ''),
+                'kredensial' => $this->kredensial($user, $password),
+            ]);
+        }
 
         return back()->with('status', "Akun Client {$user->name} berhasil dibuat.")
             ->with('kredensial', $this->kredensial($user, $password))
@@ -190,6 +198,12 @@ class AdminManagementController extends Controller
         // CV.4: dipanggil via fetch() dari form mini "+ Admin/Korlap baru" di dialog Setujui/Tetapkan PIC.
         if ($request->wantsJson()) {
             return response()->json(['id' => $user->id, 'name' => $user->name, 'kredensial' => $this->kredensial($user, $password)]);
+        }
+
+        if ($request->filled('_redirect_back') || $request->has('_form')) {
+            return back()->with('status', "Akun Admin {$user->name} berhasil ditambahkan.")
+                ->with('kredensial', $this->kredensial($user, $password))
+                ->with('admin_baru_id', $user->id);
         }
 
         return redirect()->route('super-admin.akun.index')->with('status', 'Akun Admin berhasil ditambahkan.')

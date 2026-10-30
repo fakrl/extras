@@ -5,9 +5,17 @@
         <select name="admin_id" id="admin_id" @required($adminWajib)>
             <option value="">{{ $adminKosong }}</option>
             @foreach ($admins as $a)
-                <option value="{{ $a->id }}" @selected((string) old('admin_id', $adminId) === (string) $a->id)>{{ $a->name }}{{ $a->username ? ' (@'.$a->username.')' : '' }}</option>
+                <option value="{{ $a->id }}" @selected((string) old('admin_id', session('admin_baru_id', $adminId)) === (string) $a->id)>{{ $a->name }}{{ $a->username ? ' (@'.$a->username.')' : '' }}</option>
             @endforeach
         </select>
+        @if (auth()->user()->isSuperAdmin())
+            <div style="margin-top: 8px;">
+                <button type="button" class="btn btn-sm btn-tonal" onclick="document.getElementById('admin-baru-dialog').showModal()">
+                    <i class="ti ti-plus"></i> Admin baru
+                </button>
+            </div>
+            <p style="font-size: var(--fs-xs); color: var(--text-muted); margin: 4px 0 0;">Admin belum ada? Tambahkan akun Admin baru di sini.</p>
+        @endif
     </div>
     <div>
         <label for="client_id">Akun Client <span class="wajib" aria-hidden="true">*</span></label>
@@ -19,8 +27,12 @@
             @endforeach
         </select>
         @if (auth()->user()->isSuperAdmin())
-            <button type="button" class="btn btn-sm" style="margin-top: 6px;" onclick="document.getElementById('client-baru-dialog').showModal()">+ Client baru</button>
-            <p style="font-size: var(--fs-xs); color: var(--text-muted); margin: 4px 0 0;">Isian form ini belum tersimpan akan hilang, buat Client dulu sebelum mengisi.</p>
+            <div style="margin-top: 8px;">
+                <button type="button" class="btn btn-sm btn-tonal" onclick="document.getElementById('client-baru-dialog').showModal()">
+                    <i class="ti ti-plus"></i> Client baru
+                </button>
+            </div>
+            <p style="font-size: var(--fs-xs); color: var(--text-muted); margin: 4px 0 0;">Client belum ada? Tambahkan akun Client baru di sini.</p>
         @else
             <p style="font-size: var(--fs-xs); color: var(--text-muted); margin: 4px 0 0;">Client belum ada? Minta Super Admin membuatkan akunnya.</p>
         @endif

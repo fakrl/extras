@@ -145,6 +145,7 @@
         </div>
     </form>
     @if (auth()->user()->isSuperAdmin())
+        @include('partials.admin-baru-modal')
         @include('partials.client-baru-modal')
     @endif
 </div>
