@@ -335,4 +335,46 @@ Ditambahkan **20 screenshot** baru di `ct-screenshots/` (prefix `cv_`) mencakup:
   - `lineup_with_kembali.png` (Halaman Lineup dengan tombol "Kembali ke Proyek")
   - `absensi_with_kembali.png` (Halaman Absensi dengan tombol "Kembali")
 
+---
+
+## 18. Redesain Toolbar Pencarian, Penyederhanaan Filter & Pengarsipan Proyek Selesai
+
+### Masalah Awal:
+1. Area pencarian di `/admin/projects` terlalu padat dan sesak karena tab tahap proyek, input pencarian, tombol filter modal, dan dropdown "Per halaman" dijejalkan dalam satu baris sempit.
+2. Filter modal memuat opsi yang jarang dibutuhkan dan membingungkan (seperti status lowongan dan kategori honor staf/extras/sengketa).
+3. Proyek yang sudah selesai ("Selesai") bercampur dengan proyek aktif di tab default "Semua", padahal proyek selesai berstatus riwayat/arsip dan mengganggu fokus tindakan pada proyek yang sedang berjalan atau mendatang.
+
+### Solusi & Implementasi:
+1. **Pemisahan Baris Bersih (Clean 2-Row Layout)**:
+   - Baris 1: Tab tahap proyek (`xfilter`) diletakkan mandiri di atas baris pencarian, memberikan ruang bernapas yang lega dan mudah diakses.
+   - Baris 2: Search input modern berbentuk pill panjang penuh dengan ikon pencarian `ti ti-search`, bersanding rapi dengan tombol filter modal `[ # Filter ]`.
+   - Dropdown "Per halaman" di pojok kanan atas dihapus karena pagination bar di bagian bawah tabel (`<x-pagination-bar>`) sudah menyediakan kontrol per halaman dan nomor halaman secara lengkap.
+2. **Penyederhanaan Popup Filter**:
+   - Menghilangkan filter yang tidak esensial: "Lowongan" (Dibuka/Ditutup/Selesai) dan "Honor" (Staf/Extras/Sengketa).
+   - Mempertahankan filter esensial berfrekuensi tinggi:
+     - **Urutkan**: Shooting terdekat, Terbaru dibuat, Nama (A-Z).
+     - **Jenis Peran**: PIC, Korlap, Client, Tanpa PIC/Client.
+     - **Perlu tindakan saja** (Toggle switch).
+     - **Urgent** (Toggle switch).
+     - **Periode shooting** (Tanggal dari - sampai).
+     - **Semua proyek (lihat saja)** (Toggle switch khusus non-SuperAdmin).
+3. **Pengarsipan Otomatis Proyek Selesai pada Tab Default**:
+   - Di tab default "Semua", proyek dengan tahap selesai disembunyikan secara visual (`sembunyi-selesai tr:has(.tp-selesai)`).
+   - Menampilkan banner arsip ringkas di atas tabel:
+     `"Menampilkan proyek aktif. X proyek telah selesai (riwayat arsip)."` lengkap dengan tombol cepat:
+     - `[Tampilkan selesai]` / `[Sembunyikan selesai]` (Toggle instan di tempat tanpa reload).
+     - `[Buka tab Selesai ->]` (Navigasi langsung ke tab khusus riwayat proyek selesai).
+   - Mempertahankan kompatibilitas 100% pada HTML server-side rendering sehingga seluruh assertion test PHPUnit (`ProyekKeuanganTest`, `CvDaftarProyekTest`, `BiFilterPanelTest`) tetap lulus tanpa regresi.
+
+### Hasil Pengujian & Matriks Screenshot:
+- **Pint**: PASS (0 issues).
+- **Test Suite (`CvDaftarProyekTest`, `ProyekKeuanganTest`, `BiFilterPanelTest`)**:
+  - SQLite: **38 passed (288 assertions)**.
+  - MySQL (`jbtb_test`): **38 passed (288 assertions)**.
+- **Screenshot Baru (`ct-screenshots/`)**:
+  - `proyek_redesign_clean_toolbar_dark.png`
+  - `proyek_redesign_clean_toolbar_light.png`
+  - `proyek_toggle_selesai_shown.png`
+
+
 
