@@ -227,4 +227,50 @@ class SuperAdminDashboardTest extends TestCase
             ->assertSee(e(route('admin.attendance.index', ['project' => $p->id, 'tanggal' => $tgl->id])), false)
             ->assertSee(e(route('admin.projects.show', $p)), false);
     }
+
+    public function test_ingatkan_semua_staf_mengirim_pengingat_dan_mencatat_log(): void
+    {
+        $pic = User::factory()->create(['role' => 'admin', 'status' => 'aktif', 'name' => 'Admin Test Remind']);
+        $klien = User::factory()->create(['role' => 'client']);
+        $p1 = CastingProject::factory()->create(['admin_id' => $pic->id, 'client_id' => $klien->id, 'client_request_status' => 'disetujui', 'nama_produksi' => 'Proyek Alpha']);
+        $p2 = CastingProject::factory()->create(['admin_id' => $pic->id, 'client_id' => $klien->id, 'client_request_status' => 'disetujui', 'nama_produksi' => 'Proyek Beta']);
+
+        $profil1 = ExtrasProfile::factory()->create();
+        $profil2 = ExtrasProfile::factory()->create();
+        ProjectApplication::create(['casting_project_id' => $p1->id, 'extras_id' => $profil1->id, 'status_partisipasi' => 'diajukan']);
+        ProjectApplication::create(['casting_project_id' => $p2->id, 'extras_id' => $profil2->id, 'status_partisipasi' => 'diajukan']);
+
+        // Dashboard menampilkan nama admin, jumlah task, dan tombol Ingatkan
+        $r = $this->actingAs($this->sa)->get(route('super-admin.dashboard'));
+        $r->assertOk()
+            ->assertSee('Admin Test Remind')
+            ->assertSee('2 tugas tertunda')
+            ->assertSee('Ingatkan')
+            ->assertSee('Ingatkan Semua Tugas');
+
+        // Kirim ingatkan semua
+        $post = $this->actingAs($this->sa)->post(route('super-admin.pantau-staf.ingatkan-semua'), [
+            'staf_id' => $pic->id,
+            'peran' => 'admin',
+            'catatan' => 'Segera proses ya',
+        ]);
+        $post->assertSessionHas('status');
+
+        $this->assertSame(2, $pic->notifications()->where('data->jenis', 'pengingat_sa')->count());
+        $this->assertDatabaseHas('activity_logs', [
+            'action' => 'REMIND_ADMIN',
+            'subject_id' => $p1->id,
+        ]);
+        $this->assertDatabaseHas('activity_logs', [
+            'action' => 'REMIND_ADMIN',
+            'subject_id' => $p2->id,
+        ]);
+
+        // Coba lagi dalam 24 jam -> error
+        $postUlang = $this->actingAs($this->sa)->post(route('super-admin.pantau-staf.ingatkan-semua'), [
+            'staf_id' => $pic->id,
+            'peran' => 'admin',
+        ]);
+        $postUlang->assertSessionHas('error');
+    }
 }

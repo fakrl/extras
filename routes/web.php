@@ -353,6 +353,8 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
     // CO.2: Pantau Admin - ingatkan Admin PIC (in-app saja, tugas SA langsung).
     Route::post('/pantau-admin/ingatkan', [SuperAdminDashboardController::class, 'ingatkanAdmin'])
         ->name('super-admin.pantau-admin.ingatkan');
+    Route::post('/pantau-staf/ingatkan-semua', [SuperAdminDashboardController::class, 'ingatkanSemuaStaf'])
+        ->name('super-admin.pantau-staf.ingatkan-semua');
 
     // Audit Trail: Log Aktivitas Seluruh Role
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])

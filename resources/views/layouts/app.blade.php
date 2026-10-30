@@ -473,9 +473,47 @@
         .fpanel > summary::-webkit-details-marker { display: none; }
         .fpanel[open] > summary { border-color: var(--accent); color: var(--accent-strong); background: color-mix(in srgb, var(--accent) 12%, var(--bg-card)); font-weight: 700; }
         .fpanel-n { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--accent); color: var(--accent-on); font-size: var(--fs-xs); font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
-        .fpanel-isi { position: absolute; right: 0; top: calc(100% + 6px); z-index: 60; width: 400px; max-width: calc(100vw - 32px); max-height: min(70vh, 560px); display: flex; flex-direction: column; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: 0 12px 32px rgba(0,0,0,0.18); }
-        .fpanel-body { overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 12px; }
-        .fpanel-foot { display: flex; justify-content: space-between; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--border-color); }
+        .fpanel[open]::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 99;
+            background: rgba(0,0,0,0.45);
+            backdrop-filter: blur(2px);
+        }
+        .fpanel-isi {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            width: 460px;
+            max-width: calc(100vw - 32px);
+            max-height: min(85vh, 620px);
+            display: flex;
+            flex-direction: column;
+            background: var(--md-surface-container-low, var(--bg-card));
+            border: 1px solid var(--md-outline-variant, var(--border-color));
+            border-radius: var(--md-shape-large, 16px);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.28);
+        }
+        .fpanel-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .fpanel-head-title {
+            font-size: var(--fs-base);
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .fpanel-body { overflow-y: auto; padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
+        .fpanel-foot { display: flex; justify-content: space-between; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--border-color); background: var(--bg-card); border-radius: 0 0 16px 16px; }
         .fpanel .fpanel-label { display: block; font-size: var(--fs-xs); font-weight: 600; color: var(--text-muted); margin: 0 0 6px; text-transform: uppercase; letter-spacing: .03em; }
         .fpanel-chips { display: flex; flex-wrap: wrap; gap: 6px; }
         .fpanel-chips.is-baris { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -14px; padding: 0 14px; }
@@ -506,9 +544,8 @@
         @media (max-width: 560px) {
             .xtoolbar:has(> .fpanel) .per-halaman { font-size: 0; }
             .xtoolbar:has(> .fpanel) .per-halaman select { font-size: var(--fs-sm); }
-            .fpanel[open]::before { content: ''; position: fixed; inset: 0; z-index: 59; background: rgba(0,0,0,0.45); }
-            .fpanel-isi { position: fixed; left: 0; right: 0; bottom: 0; top: auto; width: auto; max-width: none; max-height: 85vh; border-radius: 16px 16px 0 0; }
-            .fpanel-foot { padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
+            .fpanel-isi { position: fixed; left: 0; right: 0; bottom: 0; top: auto; transform: none; width: 100%; max-width: 100%; max-height: 85vh; border-radius: 16px 16px 0 0; }
+            .fpanel-foot { padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
             .fpanel-foot .btn { min-height: 44px; flex: 1; }
         }
         @media (max-width: 480px) {
