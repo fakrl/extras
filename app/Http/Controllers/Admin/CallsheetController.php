@@ -44,8 +44,13 @@ class CallsheetController extends Controller
         );
 
         $nama = "Callsheet-{$castingProject->kode_proyek}-{$shootingDate->tanggal->toDateString()}.pdf";
+        $pdf = Pdf::loadView('admin.callsheet.pdf', $data);
 
-        return Pdf::loadView('admin.callsheet.pdf', $data)->download($nama);
+        if ($request->boolean('preview')) {
+            return $pdf->stream($nama);
+        }
+
+        return $pdf->download($nama);
     }
 
     /** CS.2.3: dipanggil via fetch() setelah navigator.clipboard.writeText() sukses di sisi klien. */

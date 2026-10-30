@@ -44,6 +44,14 @@ class WorkHistoryController extends Controller
         abort_unless($request->user()->isSuperAdmin() || $staffPayroll->assignment?->user_id === $request->user()->id, 403);
         abort_unless($staffPayroll->pdf_slip_path && Storage::disk('local')->exists($staffPayroll->pdf_slip_path), 404);
 
-        return Storage::disk('local')->download($staffPayroll->pdf_slip_path, "slip-honor-{$staffPayroll->id}.pdf");
+        $filename = "slip-honor-{$staffPayroll->id}.pdf";
+        if ($request->boolean('preview')) {
+            return Storage::disk('local')->response($staffPayroll->pdf_slip_path, $filename, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="'.$filename.'"',
+            ]);
+        }
+
+        return Storage::disk('local')->download($staffPayroll->pdf_slip_path, $filename);
     }
 }

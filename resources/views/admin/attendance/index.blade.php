@@ -16,6 +16,11 @@
 @endpush
 
 @section('content')
+<div style="margin-bottom: 12px;">
+    <a href="{{ request('project') ? route('admin.projects.show', request('project')) : route('admin.projects.index') }}" class="btn btn-sm btn-tonal" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i class="ti ti-arrow-left"></i> Kembali
+    </a>
+</div>
 <div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">Absensi Lapangan</div>
 <p style="color: var(--text-secondary); margin: 0 0 16px; font-size: 13.5px;">
     Tandai hadir/tidak hadir Extras per tanggal shooting.

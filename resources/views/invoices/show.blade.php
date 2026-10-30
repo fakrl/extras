@@ -9,6 +9,11 @@
 @endphp
 
 @section('content')
+<div style="margin-bottom: 12px;">
+    <a href="{{ $isClient ? route('client.dashboard') : route('admin.projects.show', [$castingProject, 'tab' => 'keuangan']) }}" class="btn btn-sm btn-tonal" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i class="ti ti-arrow-left"></i> Kembali ke {{ $isClient ? 'Dashboard' : 'Detail Proyek' }}
+    </a>
+</div>
 <div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">Invoice Produksi: {{ $castingProject->nama_produksi }} <span class="kode-proyek">{{ $castingProject->kode_proyek }}</span></div>
 <p style="color: var(--text-secondary); margin: 0 0 20px; font-size: 13.5px;">
     Client / PH: <strong>{{ $castingProject->namaClient() }}</strong>
@@ -57,9 +62,14 @@
             <div style="font-size: 13px; font-weight: 600;">
                 <i class="ti ti-circle-check"></i> Invoice PDF Siap Diunduh
             </div>
-            <a href="{{ route('invoices.download-pdf', $castingProject) }}" class="btn btn-brand btn-sm">
-                <i class="ti ti-download"></i> Unduh Invoice PDF Resmi JBTB
-            </a>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <a href="{{ route('invoices.download-pdf', [$castingProject, 'preview' => 1]) }}" target="_blank" class="btn btn-tonal btn-sm">
+                    <i class="ti ti-eye"></i> Pratinjau PDF
+                </a>
+                <a href="{{ route('invoices.download-pdf', $castingProject) }}" class="btn btn-brand btn-sm">
+                    <i class="ti ti-download"></i> Unduh Invoice PDF Resmi JBTB
+                </a>
+            </div>
         </div>
     @endif
 </div>

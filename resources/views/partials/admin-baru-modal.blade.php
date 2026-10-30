@@ -20,7 +20,7 @@
             <label>Nomor WA</label>
             <input type="tel" name="nomor_wa" value="{{ old('_form') === 'admin-baru' ? old('nomor_wa') : '' }}" maxlength="20" placeholder="08xxxxxxxxxx">
 
-            <label>Nominal Honor Dasar <span style="font-size: var(--fs-xs); color: var(--text-muted);">(opsional)</span></label>
+            <label>Nominal Honor Dasar</label>
             <input type="number" name="honor_nominal" value="{{ old('_form') === 'admin-baru' ? old('honor_nominal') : '' }}" min="0" placeholder="Rp 0">
 
             <div class="admin-baru-error" style="color: var(--danger); font-size: var(--fs-xs); margin-top: 6px; display: none;"></div>

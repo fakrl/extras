@@ -11,9 +11,14 @@
     $stafLain = $p->adminAssignments->reject(fn ($a) => $a->user?->isKorlap());
 @endphp
 
+<div style="margin-bottom: 12px;">
+    <a href="{{ route('admin.projects.index') }}" class="btn btn-sm btn-tonal" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i class="ti ti-arrow-left"></i> Kembali ke Daftar Proyek
+    </a>
+</div>
+
 <div class="card-header-row" style="flex-wrap: wrap; gap: 10px;">
     <div>
-        <div style="font-size: var(--fs-xs); color: var(--text-muted);"><a href="{{ route('admin.projects.index') }}">&larr; Proyek</a></div>
         <div style="font-size: 18px; font-weight: 700;">
             {{ $p->nama_produksi }}
             <span class="kode-proyek">{{ $p->kode_proyek }}</span>
@@ -232,7 +237,7 @@
                         <td>
                             <a href="{{ route('invoices.show', $p) }}">Invoice {{ $p->nama_produksi }}</a>
                             @if ($inv?->pdf_path)
-                                · <a href="{{ route('invoices.download-pdf', $p) }}">PDF</a>
+                                · <a href="{{ route('invoices.download-pdf', [$p, 'preview' => 1]) }}" target="_blank" title="Pratinjau PDF">PDF</a> (<a href="{{ route('invoices.download-pdf', $p) }}" title="Unduh PDF"><i class="ti ti-download" style="font-size: 0.8rem;"></i></a>)
                             @endif
                             @if (! $inv?->nominal && ! $lunas)
                                 <div style="font-size: var(--fs-xs); color: var(--text-muted);">Nominal belum diisi · usulan dari rincian peran, bisa diedit</div>
@@ -319,7 +324,10 @@
                             </td>
                             <td>
                                 @if ($payroll->pdf_slip_path)
-                                    <a href="{{ route('admin.payrolls.slip', $payroll) }}" class="btn btn-sm">Unduh Slip</a>
+                                    <div style="display: inline-flex; gap: 4px; margin-bottom: 4px;">
+                                        <a href="{{ route('admin.payrolls.slip', [$payroll, 'preview' => 1]) }}" target="_blank" class="btn btn-sm btn-tonal" title="Pratinjau Slip"><i class="ti ti-eye"></i></a>
+                                        <a href="{{ route('admin.payrolls.slip', $payroll) }}" class="btn btn-sm" title="Unduh Slip"><i class="ti ti-download"></i> Slip</a>
+                                    </div>
                                 @endif
                                 @unless ($payroll->isDibayar())
                                     @if ($payroll->assignment?->user_id === auth()->id() && ! auth()->user()->isSuperAdmin())

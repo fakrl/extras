@@ -93,7 +93,14 @@
                     <td style="padding: 8px 0;">{{ $a->created_at->translatedFormat('d M') }}</td>
                     <td style="padding: 8px 0;">@if ($a->payroll) Rp {{ number_format($a->payroll->nominalTotal(), 0, ',', '.') }} @else - @endif</td>
                     <td style="padding: 8px 0;">@if ($a->payroll) <span class="badge {{ $a->payroll->isDibayar() ? 'badge-aktif' : 'badge-netral' }}">{{ $a->payroll->isDibayar() ? 'Dibayar' : 'Belum diproses' }}</span> @else - @endif</td>
-                    <td style="padding: 8px 0;">@if ($a->payroll?->pdf_slip_path) <a href="{{ route('admin.payrolls.slip', $a->payroll) }}" class="btn btn-sm">Unduh Slip</a> @else - @endif</td>
+                    <td style="padding: 8px 0;">
+                        @if ($a->payroll?->pdf_slip_path)
+                            <div style="display: inline-flex; gap: 4px;">
+                                <a href="{{ route('admin.payrolls.slip', [$a->payroll, 'preview' => 1]) }}" target="_blank" class="btn btn-sm btn-tonal" title="Pratinjau Slip"><i class="ti ti-eye"></i></a>
+                                <a href="{{ route('admin.payrolls.slip', $a->payroll) }}" class="btn btn-sm" title="Unduh Slip"><i class="ti ti-download"></i></a>
+                            </div>
+                        @else - @endif
+                    </td>
                 </tr>
                 @endforeach
             </tbody>

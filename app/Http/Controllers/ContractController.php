@@ -97,9 +97,21 @@ class ContractController extends Controller
             $application->renderKontrakPdf();
         }
 
+        $filename = 'Kontrak-JBTB-'.Str::slug($application->castingProject->nama_produksi).'.pdf';
+        if ($request->boolean('preview')) {
+            return Storage::disk('local')->response(
+                $application->contract->pdf_path,
+                $filename,
+                [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="'.$filename.'"',
+                ]
+            );
+        }
+
         return Storage::disk('local')->download(
             $application->contract->pdf_path,
-            'Kontrak-JBTB-'.Str::slug($application->castingProject->nama_produksi).'.pdf'
+            $filename
         );
     }
 }

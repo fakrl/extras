@@ -4,7 +4,7 @@
 
 @section('content')
 <div style="margin-bottom: 12px;">
-    <a href="{{ route('client.reviews.index') }}" style="font-size: 13px; color: var(--text-secondary); text-decoration: none;">&larr; Kembali ke Pilih Kandidat</a>
+    <a href="{{ route('client.reviews.index') }}" class="btn btn-sm btn-tonal" style="display: inline-flex; align-items: center; gap: 6px;"><i class="ti ti-arrow-left"></i> Kembali ke Pilih Kandidat</a>
 </div>
 
 <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
@@ -17,7 +17,8 @@
     </div>
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
         <a href="{{ route('client.riwayat.export.xlsx', $castingProject) }}" class="btn btn-sm">Ekspor Excel</a>
-        <a href="{{ route('client.riwayat.export.pdf', $castingProject) }}" class="btn btn-sm">Ekspor PDF</a>
+        <a href="{{ route('client.riwayat.export.pdf', [$castingProject, 'preview' => 1]) }}" target="_blank" class="btn btn-sm btn-tonal"><i class="ti ti-eye"></i> Pratinjau PDF</a>
+        <a href="{{ route('client.riwayat.export.pdf', $castingProject) }}" class="btn btn-sm"><i class="ti ti-download"></i> Ekspor PDF</a>
     </div>
 </div>
 
