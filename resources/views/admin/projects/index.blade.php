@@ -127,13 +127,80 @@
             @endphp
             <tr @class(['tp-pudar' => $pudar])>
                 <td class="tp-c-proyek">
-                    <a href="{{ route('admin.projects.show', $project) }}" class="tp-link">{{ $project->nama_produksi }}</a>
+                    <a href="{{ route('admin.projects.show', $project) }}" class="tp-link" onclick="event.preventDefault(); document.getElementById('modal-proyek-{{ $project->id }}').showModal()" title="Klik untuk ringkasan proyek">{{ $project->nama_produksi }}</a>
                     <div class="tp-kode">
                         <span class="kode-proyek">{{ $project->kode_proyek }}</span>
                         @if ($project->isUrgent() && $project->status === 'dibuka')
                             <span class="badge badge-urgent">Urgent</span>
                         @endif
                     </div>
+
+                    <dialog id="modal-proyek-{{ $project->id }}" class="dash-dialog" style="max-width: 540px; width: 95%;">
+                        <div class="dash-dialog-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                    <span class="kode-proyek">{{ $project->kode_proyek }}</span>
+                                    @if ($project->isUrgent() && $project->status === 'dibuka')
+                                        <span class="badge badge-urgent">Urgent</span>
+                                    @endif
+                                    <span class="badge {{ $project->status === 'dibuka' ? 'badge-success' : 'badge-netral' }}">
+                                        {{ ucfirst($tahapProyek) }}
+                                    </span>
+                                </div>
+                                <h3 style="margin: 6px 0 0; font-size: 1.15rem; color: var(--color-on-surface);">{{ $project->nama_produksi }}</h3>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-icon" onclick="document.getElementById('modal-proyek-{{ $project->id }}').close()" aria-label="Tutup"><i class="ti ti-x"></i></button>
+                        </div>
+                        <div class="dash-dialog-body" style="padding: 16px 20px; font-size: 0.88rem; line-height: 1.5;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; background: var(--color-surface-container, #f8fafc); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--color-outline-variant, #e2e8f0);">
+                                <div>
+                                    <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Client / PH</span>
+                                    <strong style="color: var(--color-on-surface);">{{ $project->namaClient() }}</strong>
+                                    @if ($project->client?->nama_perusahaan && $project->client->name !== $project->client->nama_perusahaan)
+                                        <div style="font-size: 0.8rem; color: var(--text-muted);">{{ $project->client->name }}</div>
+                                    @endif
+                                    @if ($project->client?->telepon)
+                                        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;"><i class="ti ti-phone" style="font-size: 0.75rem;"></i> {{ $project->client->telepon }}</div>
+                                    @endif
+                                </div>
+                                <div>
+                                    <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Tim Pengelola</span>
+                                    <div><span style="color: var(--text-muted);">PIC:</span> <strong>{{ $project->admin?->name ?? 'Belum ada PIC' }}</strong></div>
+                                    <div><span style="color: var(--text-muted);">Korlap:</span> <strong>{{ $project->korlap()?->name ?? 'Belum ada Korlap' }}</strong></div>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; font-size: 0.85rem;">
+                                <div>
+                                    <span style="color: var(--text-muted); display: block; font-size: 0.78rem;">Jadwal Shooting</span>
+                                    @if ($ket)
+                                        <strong>{{ $project->rentangShooting() }}</strong>
+                                        <div style="font-size: 0.8rem; color: var(--text-muted);">{{ $ket }}</div>
+                                    @else
+                                        <span style="color: var(--text-muted);">Belum dijadwalkan</span>
+                                    @endif
+                                </div>
+                                <div>
+                                    <span style="color: var(--text-muted); display: block; font-size: 0.78rem;">Pendaftar / Kuota</span>
+                                    <strong>{{ $project->applications_count }} / {{ $kuota }} extras</strong>
+                                    @if ($kuota > 0)
+                                        <div class="tp-bar" style="margin-top: 4px;"><i style="width: {{ min(100, round($project->applications_count / $kuota * 100)) }}%;"></i></div>
+                                    @endif
+                                </div>
+                            </div>
+
+                            @if ($project->deskripsi)
+                                <div style="margin-top: 10px;">
+                                    <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 4px;">Deskripsi Proyek</span>
+                                    <div style="background: var(--color-surface, #fff); padding: 10px 12px; border-radius: 6px; border: 1px solid var(--color-outline-variant, #e2e8f0); color: var(--color-on-surface); font-size: 0.85rem; max-height: 120px; overflow-y: auto; white-space: pre-wrap;">{{ $project->deskripsi }}</div>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="dash-dialog-actions" style="display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--color-outline-variant, #e2e8f0);">
+                            <button type="button" class="btn btn-tonal" onclick="document.getElementById('modal-proyek-{{ $project->id }}').close()">Tutup</button>
+                            <a href="{{ route('admin.projects.show', $project) }}" class="btn btn-brand" style="display: inline-flex; align-items: center; gap: 6px;">Buka Halaman Proyek <i class="ti ti-arrow-right"></i></a>
+                        </div>
+                    </dialog>
                 </td>
                 <td class="tp-c-client">
                     @if ($project->client)

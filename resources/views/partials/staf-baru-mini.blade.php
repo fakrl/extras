@@ -1,7 +1,7 @@
 @php $uid = $uid ?? 'stafbaru-'.\Illuminate\Support\Str::random(6); @endphp
 <div class="staf-baru-mini" style="display: flex; gap: 8px; margin: 8px 0; flex-wrap: wrap;">
-    <button type="button" class="btn btn-sm btn-tonal" data-staf-toggle="{{ $uid }}-admin"><i class="ti ti-plus"></i> Admin baru</button>
-    <button type="button" class="btn btn-sm btn-tonal" data-staf-toggle="{{ $uid }}-korlap"><i class="ti ti-plus"></i> Korlap baru</button>
+    <button type="button" class="btn btn-sm btn-tonal" data-staf-toggle="{{ $uid }}-admin">+ Admin baru</button>
+    <button type="button" class="btn btn-sm btn-tonal" data-staf-toggle="{{ $uid }}-korlap">+ Korlap baru</button>
 </div>
 
     @foreach (['admin' => ['Admin', $selectAdmin], 'korlap' => ['Korlap', $selectKorlap]] as $role => [$label, $selectId])

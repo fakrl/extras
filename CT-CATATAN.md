@@ -275,3 +275,64 @@ Ditambahkan **20 screenshot** baru di `ct-screenshots/` (prefix `cv_`) mencakup:
   - `cx_dialog_setujui_390_light.png` & `cx_dialog_setujui_390_dark.png` (Bottom Sheet M3 Mobile)
   - `cx_setujui_sukses_1366_light.png` (Flash snackbar M3 konfirmasi ACC sukses tersimpan)
 
+---
+
+# Laporan Penyempurnaan UX: Modal Ringkasan Proyek, Tombol Kembali, & Pratinjau PDF
+
+> Tanggal: 31 Oktober 2026  
+> Branch: `ct-m3-antigravity` (worktree terisolasi)  
+> Scope: Modal ringkasan cepat pada daftar proyek, CTA navigasi "Kembali" konsisten, dan opsi pratinjau PDF (preview inline)
+
+---
+
+## 16. Ringkasan Implementasi
+
+1. **Modal Ringkasan Cepat Proyek (`/admin/projects`)**:
+   - Di tabel daftar proyek, baris proyek menyajikan info penting ringkas. Mengklik judul proyek membuka dialog pop-up (`modal-proyek-{{ $project->id }}`) yang menampilkan rincian:
+     - Client / Production House (nama, kontak, telepon).
+     - Tim Pengelola (PIC Admin dan Korlap).
+     - Jadwal shooting dan kuota pendaftar dengan progress bar.
+     - Deskripsi proyek / brief catatan lengkap.
+     - Tombol CTA `Buka Halaman Proyek →` menuju halaman penuh proyek.
+   - Tetap mempertahankan atribut tabel dan konten esensial sehingga seluruh test suite (`CvDaftarProyekTest`, `ProyekKeuanganTest`, dll) 100% lulus.
+
+2. **Konsistensi Tombol CTA "Kembali" pada Seluruh Halaman**:
+   - Menambahkan tombol "Kembali" bergaya M3 Tonal Button (`.btn.btn-sm.btn-tonal` dengan icon `ti ti-arrow-left`) pada:
+     - Lineup Pendaftar (`resources/views/admin/projects/applicants.blade.php`) &rarr; Kembali ke Proyek.
+     - Detail Proyek (`resources/views/admin/projects/show.blade.php`) &rarr; Kembali ke Daftar Proyek.
+     - Absensi Lapangan (`resources/views/admin/attendance/index.blade.php`) &rarr; Kembali ke Proyek/Daftar.
+     - Invoice (`resources/views/invoices/show.blade.php`) &rarr; Kembali ke Detail Proyek / Dashboard Client.
+     - Kontrak Digital (`resources/views/contracts/show.blade.php`) &rarr; Kembali ke Pendaftar / Dashboard Extras.
+     - Form Buat & Edit Proyek (`create.blade.php`, `edit.blade.php`) &rarr; Kembali ke Daftar / Detail Proyek.
+     - Callsheet Lapangan (`resources/views/admin/callsheet/show.blade.php`) &rarr; Kembali ke Proyek / Dashboard.
+     - Riwayat & Pilih Kandidat Client (`resources/views/client/reviews/riwayat-proyek.blade.php`, `show.blade.php`) &rarr; Kembali ke Riwayat / Daftar.
+
+3. **Opsi Pratinjau PDF (Preview) Sebelum Unduh**:
+   - Menambahkan dukungan parameter `?preview=1` pada seluruh controller penghasil PDF:
+     - `InvoiceController::downloadPdf`
+     - `ContractController::downloadPdf`
+     - `CallsheetController::pdf`
+     - `WorkHistoryController::slip`
+     - `ReviewController::exportRiwayatPdf`
+   - Jika `?preview=1` diberikan, file PDF di-stream dengan `Content-Disposition: inline` sehingga browser langsung membuka dokumen di tab baru tanpa harus mengunduh file ke disk terlebih dahulu. Jika diakses tanpa parameter, sistem tetap melakukan force download (`Content-Disposition: attachment`).
+   - Pada antarmuka Blade, tombol "Pratinjau PDF" disediakan berdampingan dengan tombol "Unduh PDF".
+
+4. **Kepatuhan Aturan Bebas Kata "Opsional" (BoFieldWajib)**:
+   - Menghapus kata "opsional" pada `admin-baru-modal.blade.php` dan `_diingatkan.blade.php` sesuai aturan sistem SIM Casting JBTB, memastikan `BoFieldWajibTest` lolos 100%.
+
+---
+
+## 17. Hasil Pengujian & Matriks Screenshot
+
+- **Pint**: PASS (0 issues).
+- **Test SQLite (`php artisan test`)**: **952 passed (4668 assertions)** — 100% passed.
+- **Test MySQL (`DB_CONNECTION=mysql DB_DATABASE=jbtb_test php artisan test`)**: **100% passed**.
+- **Screenshot Baru (`ct-screenshots/`)**:
+  - `proyek_list_concise.png` (Tampilan daftar proyek ringkas)
+  - `proyek_modal_popup.png` (Modal dialog ringkasan cepat info Client, PIC, Korlap, Deskripsi & CTA buka proyek)
+  - `proyek_show_with_kembali.png` (Halaman detail proyek dengan tombol "Kembali ke Daftar Proyek")
+  - `proyek_tab_keuangan_pdf_preview.png` (Tab Keuangan dengan opsi Pratinjau PDF)
+  - `lineup_with_kembali.png` (Halaman Lineup dengan tombol "Kembali ke Proyek")
+  - `absensi_with_kembali.png` (Halaman Absensi dengan tombol "Kembali")
+
+

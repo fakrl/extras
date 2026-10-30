@@ -3,6 +3,11 @@
 @section('title', 'Edit Proyek Casting')
 
 @section('content')
+<div style="margin-bottom: 12px;">
+    <a href="{{ route('admin.projects.show', $castingProject) }}" class="btn btn-sm btn-tonal" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i class="ti ti-arrow-left"></i> Kembali ke Proyek
+    </a>
+</div>
 
 @if ($castingProject->brief_catatan)
     <div style="background: color-mix(in srgb, var(--accent, #15803d) 8%, var(--bg-card, #fff)); border-left: 4px solid var(--accent, #15803d); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">

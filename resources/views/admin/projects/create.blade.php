@@ -3,6 +3,11 @@
 @section('title', 'Buka Lowongan Casting')
 
 @section('content')
+<div style="margin-bottom: 12px;">
+    <a href="{{ route('admin.projects.index') }}" class="btn btn-sm btn-tonal" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i class="ti ti-arrow-left"></i> Kembali ke Daftar Proyek
+    </a>
+</div>
 <div class="card">
     <div style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Buka Lowongan Casting Baru</div>
 

@@ -207,7 +207,13 @@ class ReviewController extends Controller
             ->latest()
             ->get();
 
-        return Pdf::loadView('client.reviews.riwayat-pdf', compact('reviews', 'castingProject'))
-            ->download('riwayat-'.Str::slug($castingProject->nama_produksi).'.pdf');
+        $filename = 'riwayat-'.Str::slug($castingProject->nama_produksi).'.pdf';
+        $pdf = Pdf::loadView('client.reviews.riwayat-pdf', compact('reviews', 'castingProject'));
+
+        if ($request->boolean('preview')) {
+            return $pdf->stream($filename);
+        }
+
+        return $pdf->download($filename);
     }
 }

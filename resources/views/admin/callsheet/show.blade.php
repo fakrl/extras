@@ -3,12 +3,10 @@
 @section('title', 'Callsheet '.$castingProject->nama_produksi)
 
 @section('content')
-<div style="font-size: var(--fs-xs); color: var(--text-muted); margin-bottom: 4px;">
-    @if ($bolehKelola)
-        <a href="{{ route('admin.projects.show', $castingProject) }}">&larr; {{ $castingProject->nama_produksi }}</a>
-    @else
-        <a href="{{ route('admin.dashboard') }}">&larr; Dashboard</a>
-    @endif
+<div style="margin-bottom: 12px;">
+    <a href="{{ $bolehKelola ? route('admin.projects.show', $castingProject) : route('admin.dashboard') }}" class="btn btn-sm btn-tonal" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i class="ti ti-arrow-left"></i> Kembali ke {{ $bolehKelola ? 'Proyek' : 'Dashboard' }}
+    </a>
 </div>
 <div class="card-header-row" style="flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
     <div>
@@ -19,6 +17,9 @@
         <button type="button" class="btn btn-brand" id="callsheet-salin-wa" data-log-url="{{ route('admin.callsheet.salin', [$castingProject, $shootingDate->tanggal->toDateString()]) }}">
             <i class="ti ti-copy"></i> Salin format WA
         </button>
+        <a href="{{ route('admin.callsheet.pdf', [$castingProject, $shootingDate->tanggal->toDateString(), 'preview' => 1]) }}" target="_blank" class="btn btn-tonal">
+            <i class="ti ti-eye"></i> Pratinjau PDF
+        </a>
         <a href="{{ route('admin.callsheet.pdf', [$castingProject, $shootingDate->tanggal->toDateString()]) }}" class="btn">
             <i class="ti ti-file-download"></i> Unduh PDF
         </a>

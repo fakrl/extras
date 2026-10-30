@@ -80,7 +80,10 @@
                     </td>
                     <td>
                         @if ($a->payroll?->pdf_slip_path)
-                            <a href="{{ route('admin.payrolls.slip', $a->payroll) }}" class="btn btn-sm">Unduh Slip</a>
+                            <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                                <a href="{{ route('admin.payrolls.slip', [$a->payroll, 'preview' => 1]) }}" target="_blank" class="btn btn-sm btn-tonal" title="Pratinjau Slip"><i class="ti ti-eye"></i></a>
+                                <a href="{{ route('admin.payrolls.slip', $a->payroll) }}" class="btn btn-sm" title="Unduh Slip"><i class="ti ti-download"></i></a>
+                            </div>
                         @else
                             <span style="color: var(--text-muted);">-</span>
                         @endif

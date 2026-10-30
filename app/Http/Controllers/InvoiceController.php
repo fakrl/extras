@@ -147,7 +147,15 @@ class InvoiceController extends Controller
         $invoice = $castingProject->invoices()->first();
         abort_unless($invoice && $invoice->pdf_path && Storage::disk('local')->exists($invoice->pdf_path), 404, 'Invoice PDF belum tersedia.');
 
-        return Storage::disk('local')->download($invoice->pdf_path, 'Invoice-JBTB-'.Str::slug($castingProject->nama_produksi).'.pdf');
+        $filename = 'Invoice-JBTB-'.Str::slug($castingProject->nama_produksi).'.pdf';
+        if ($request->boolean('preview')) {
+            return Storage::disk('local')->response($invoice->pdf_path, $filename, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="'.$filename.'"',
+            ]);
+        }
+
+        return Storage::disk('local')->download($invoice->pdf_path, $filename);
     }
 
     private function pastikanBolehLihat(Request $request, CastingProject $castingProject): void

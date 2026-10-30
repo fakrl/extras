@@ -45,7 +45,7 @@
                     <div style="font-size: var(--fs-xs); font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: .03em;">
                         Ingatkan Sekaligus
                     </div>
-                    <input type="text" name="catatan" placeholder="Catatan pengingat untuk semua tugas (opsional)..." maxlength="500" class="dash-dialog-field" style="margin-bottom: 8px;">
+                    <input type="text" name="catatan" placeholder="Catatan pengingat untuk semua tugas..." maxlength="500" class="dash-dialog-field" style="margin-bottom: 8px;">
                     <button type="submit" class="btn btn-sm btn-brand" style="width: 100%;">
                         <i class="ti ti-bell-ringing"></i> Ingatkan Semua Tugas ({{ $belumDiingatkan->count() }})
                     </button>

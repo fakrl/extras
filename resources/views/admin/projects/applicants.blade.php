@@ -24,6 +24,11 @@
 
 @section('content')
 @php $bolehKelola = auth()->user()->can('kelola', $castingProject); @endphp
+<div style="margin-bottom: 12px;">
+    <a href="{{ route('admin.projects.show', $castingProject) }}" class="btn btn-sm btn-tonal" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i class="ti ti-arrow-left"></i> Kembali ke Proyek
+    </a>
+</div>
 <div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">Lineup: {{ $castingProject->nama_produksi }}</div>
 <p style="color: var(--text-secondary); margin: 0 0 20px; font-size: 13.5px;">
     Client: {{ $castingProject->namaClient() }} · {{ $applicants->total() }} pendaftar

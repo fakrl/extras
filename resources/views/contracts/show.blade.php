@@ -17,7 +17,12 @@
 @endphp
 
 @section('content')
-<p style="color: var(--text-secondary); margin: -8px 0 20px; font-size: 13.5px;">
+<div style="margin-bottom: 12px;">
+    <a href="{{ $role === 'admin' ? route('admin.projects.show', [$application->castingProject, 'tab' => 'pendaftar']) : route('extras.dashboard') }}" class="btn btn-sm btn-tonal" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i class="ti ti-arrow-left"></i> Kembali ke {{ $role === 'admin' ? 'Pendaftar Proyek' : 'Dashboard' }}
+    </a>
+</div>
+<p style="color: var(--text-secondary); margin: -4px 0 20px; font-size: 13.5px;">
     @if ($role === 'admin')
         Extras: <strong>{{ $application->extras->user->name }}</strong> ·
     @endif
@@ -49,8 +54,13 @@
 </div>
 
 @if (! $application->contract->isVoided())
-    <div style="margin-bottom: 12px;">
-        <a href="{{ route('contracts.download-pdf', $application) }}" class="btn">Lihat Kontrak (PDF)</a>
+    <div style="margin-bottom: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+        <a href="{{ route('contracts.download-pdf', [$application, 'preview' => 1]) }}" target="_blank" class="btn btn-tonal">
+            <i class="ti ti-eye"></i> Pratinjau Kontrak (PDF)
+        </a>
+        <a href="{{ route('contracts.download-pdf', $application) }}" class="btn">
+            <i class="ti ti-download"></i> Unduh Kontrak (PDF)
+        </a>
     </div>
     @if (! $sudahTtd)
         <div class="card" style="margin-bottom: 12px;">
