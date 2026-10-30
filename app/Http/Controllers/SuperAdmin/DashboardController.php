@@ -229,6 +229,78 @@ class DashboardController extends Controller
     }
 
     /**
+     * Ingatkan semua tugas tertunda untuk satu staf (Admin / Korlap) sekaligus.
+     */
+    public function ingatkanSemuaStaf(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'staf_id' => ['required', 'integer', Rule::exists('users', 'id')],
+            'peran' => ['required', 'in:admin,korlap'],
+            'catatan' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $staf = User::findOrFail($data['staf_id']);
+        $catatan = $data['catatan'] ?? null;
+        $terkirim = 0;
+
+        if ($data['peran'] === 'admin') {
+            $pantau = AdminRingkasan::pantauAdmin(collect([$staf]), null);
+            $kelompok = AdminRingkasan::kelompok($pantau, collect([$staf]), null);
+
+            foreach ($kelompok as $grup) {
+                if ($grup['diingatkan_pada']) {
+                    continue;
+                }
+                $proyekId = $grup['proyek_id'];
+                $jenis = $grup['jenis'];
+                $jumlah = $grup['jumlah'];
+                $tugas = $grup['tugas'];
+                $proyek = $grup['proyek'];
+                $url = $grup['url'] ?? route('admin.projects.show', [$proyekId, 'tab' => 'pendaftar']);
+                $kunci = "pg-{$staf->id}-{$proyekId}-{$jenis}";
+
+                $terakhir = $staf->notifications()->where('data->jenis', 'pengingat_sa')->where('data->kunci', $kunci)->latest()->first();
+                if ($terakhir && $terakhir->created_at->gt(now()->subDay())) {
+                    continue;
+                }
+
+                $pesan = "Super Admin mengingatkan: {$tugas} · {$jumlah} Extras di {$proyek}".($catatan ? ". Catatan: {$catatan}" : '');
+                $staf->notify(new InAppNotification('Pengingat dari Super Admin', $pesan, $url, ['jenis' => 'pengingat_sa', 'kunci' => $kunci]));
+
+                $proyekModel = CastingProject::find($proyekId);
+                ActivityLog::record('REMIND_ADMIN', "Super Admin mengingatkan {$staf->name}: {$tugas} ({$jumlah} Extras) di {$proyek}", $proyekModel);
+                $terkirim++;
+            }
+        } else {
+            $tugasKorlap = KorlapRingkasan::tugasTertunda(collect([$staf]), null)->first();
+            if ($tugasKorlap && isset($tugasKorlap['tugas'])) {
+                foreach ($tugasKorlap['tugas'] as $item) {
+                    if ($item['diingatkan_pada']) {
+                        continue;
+                    }
+                    $kunci = $item['kunci'];
+                    $terakhir = $staf->notifications()->where('data->jenis', 'pengingat_sa')->where('data->kunci', $kunci)->latest()->first();
+                    if ($terakhir && $terakhir->created_at->gt(now()->subDay())) {
+                        continue;
+                    }
+
+                    $pesan = "Super Admin mengingatkan: {$item['tugas']} · {$item['jumlah']} Extras di {$item['proyek']}".($catatan ? ". Catatan: {$catatan}" : '');
+                    $staf->notify(new InAppNotification('Pengingat dari Super Admin', $pesan, $item['url'], ['jenis' => 'pengingat_sa', 'kunci' => $kunci]));
+
+                    ActivityLog::record('REMIND_KORLAP', "Super Admin mengingatkan {$staf->name}: {$item['tugas']} ({$item['jumlah']} Extras) di {$item['proyek']}", CastingProject::find($item['proyek_id']));
+                    $terkirim++;
+                }
+            }
+        }
+
+        if ($terkirim === 0) {
+            return back()->with('error', "Semua tugas untuk {$staf->name} sudah diingatkan dalam 24 jam terakhir.");
+        }
+
+        return back()->with('status', "Pengingat untuk {$terkirim} tugas berhasil dikirim ke {$staf->name}.");
+    }
+
+    /**
      * CN.2.1.1: Setujui wajib pilih Admin PIC (Korlap opsional). Status jadi
      * disetujui, TAPI lowongan belum dibuka otomatis (status proyek tetap
      * 'ditutup' sampai Admin PIC membuka lewat toggleStatus(), yang digerbang

@@ -5,7 +5,11 @@
 @endphp
 <details class="fpanel" data-k="fpanel">
     <summary class="btn btn-sm" data-live-sync="fpanel-btn"><i class="ti ti-adjustments-horizontal"></i> Filter @if ($chips)<span class="fpanel-n">{{ count($chips) }}</span>@endif</summary>
-    <div class="fpanel-isi" role="group" aria-label="Pilihan filter">
+    <div class="fpanel-isi" role="dialog" aria-modal="true" aria-label="Pilihan filter">
+        <div class="fpanel-head">
+            <div class="fpanel-head-title"><i class="ti ti-adjustments-horizontal"></i> Filter &amp; Urutkan</div>
+            <button type="button" class="btn-ikon" data-fpanel-tutup aria-label="Tutup filter" style="border: none; background: transparent; cursor: pointer; font-size: 18px; color: var(--text-muted); padding: 4px;"><i class="ti ti-x"></i></button>
+        </div>
         <div class="fpanel-body">{{ $slot }}</div>
         <div class="fpanel-foot" data-live-sync="fpanel-foot">
             <a href="{{ $reset }}" class="btn btn-sm" target="_self">Reset</a>
