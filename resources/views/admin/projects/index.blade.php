@@ -19,6 +19,12 @@
 
 @section('title', $isTabMenungguKeputusan ? 'Persetujuan' : 'Proyek')
 
+@push('styles')
+<style>
+.tp-wrap.sembunyi-selesai tr:has(.tp-selesai) { display: none; }
+</style>
+@endpush
+
 @section('content')
 
 <div class="card-header-row">
@@ -35,16 +41,21 @@
 
 <div data-live-target>
 
-<div class="xtoolbar xtoolbar-proyek" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
-    <div class="xfilter" role="tablist" aria-label="Tahap proyek" style="margin-bottom: 0; display: inline-flex; gap: 4px; flex-wrap: wrap;">
-        @foreach ($tabsTahap as $key => $info)
-            <a href="{{ route('admin.projects.index', array_merge(request()->except(['tahap', 'page']), $key === '' ? [] : ['tahap' => $key])) }}" role="tab"
-               class="btn btn-sm {{ (string) $tahap === (string) $key ? 'btn-brand' : '' }}" @if ((string) $tahap === (string) $key) aria-selected="true" @endif>{{ $info['label'] }} ({{ $info['jumlah'] }})</a>
-        @endforeach
-    </div>
+{{-- Baris 1: Filter Tab Tahap Proyek --}}
+<div class="xfilter" role="tablist" aria-label="Tahap proyek" style="margin-bottom: 12px; display: flex; gap: 6px; flex-wrap: wrap;">
+    @foreach ($tabsTahap as $key => $info)
+        <a href="{{ route('admin.projects.index', array_merge(request()->except(['tahap', 'page']), $key === '' ? [] : ['tahap' => $key])) }}" role="tab"
+           class="btn btn-sm {{ (string) $tahap === (string) $key ? 'btn-brand' : '' }}" @if ((string) $tahap === (string) $key) aria-selected="true" @endif>{{ $info['label'] }} ({{ $info['jumlah'] }})</a>
+    @endforeach
+</div>
 
-    <form method="GET" action="{{ route('admin.projects.index') }}" class="xtoolbar-search-area" role="search" id="live-form" style="display: flex; gap: 8px; align-items: center; flex: 1 1 320px; justify-content: flex-end; margin: 0;" data-live>
-        <input type="search" name="q" value="{{ $cari }}" class="xtoolbar-cari" id="pu-search-input" placeholder="Cari nama, kode, atau client..." aria-label="Cari proyek" style="margin: 0; min-width: 140px; flex: 1 1 180px;">
+{{-- Baris 2: Search Bar & Filter Toolbar --}}
+<div class="xtoolbar xtoolbar-proyek" style="margin-bottom: 16px;">
+    <form method="GET" action="{{ route('admin.projects.index') }}" class="xtoolbar-search-area" role="search" id="live-form" style="display: flex; gap: 10px; align-items: center; width: 100%; margin: 0;" data-live>
+        <div style="position: relative; flex: 1; min-width: 200px;">
+            <i class="ti ti-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none;"></i>
+            <input type="search" name="q" value="{{ $cari }}" class="xtoolbar-cari" id="pu-search-input" placeholder="Cari nama, kode, atau client..." aria-label="Cari proyek" style="margin: 0; width: 100%; padding-left: 38px; height: 42px; border-radius: var(--radius-full, 9999px);">
+        </div>
         @if ($tahap)<input type="hidden" name="tahap" value="{{ $tahap }}">@endif
         @unless ($isTabMenungguKeputusan)
             @if ($peserta)<input type="hidden" name="peserta" value="{{ $peserta }}">@endif
@@ -77,8 +88,6 @@
                     'tanpa_client' => 'Tanpa PIC/Client',
                 ]" :nilai="$peran" />
 
-                <x-filter-panel.grup label="Lowongan" name="status" :opsi="['' => 'Semua'] + \App\Models\CastingProject::LABELS" :nilai="request('status')" />
-                <x-filter-panel.grup label="Honor" name="bayar" :opsi="['' => 'Semua', 'staf' => 'Staf belum dibayar', 'extras' => 'Extras belum ditransfer', 'sengketa' => 'Disengketakan']" :nilai="$bayar" />
                 <label class="fswitch">Perlu tindakan saja <input type="checkbox" name="tindakan" value="1" @checked($tindakan)></label>
                 <label class="fswitch">Urgent <input type="checkbox" name="urgent" value="1" @checked(request()->boolean('urgent'))></label>
                 @unless (auth()->user()->isSuperAdmin())
@@ -93,7 +102,6 @@
                     </div>
                 </div>
             </x-filter-panel>
-            <x-per-halaman :pilihan="\App\Support\PerHalaman::KARTU" :nilai="$projects->perPage()" />
         @endunless
     </form>
 </div>
@@ -106,7 +114,23 @@
         {{ array_filter(request()->except(['per', 'page'])) ? 'Tidak ada proyek yang sesuai filter.' : 'Belum ada proyek casting. Klik "+ Buat Proyek" untuk membuat yang pertama.' }}
     </div>
 @else
-    <div class="table-container tp-wrap" id="projects-grid">
+    @if (! $tahap && ($jumlahTahap['selesai'] ?? 0) > 0)
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--color-surface-container, var(--bg-card)); border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 12px; font-size: var(--fs-xs); flex-wrap: wrap; gap: 8px;">
+            <span style="color: var(--text-secondary);">
+                <i class="ti ti-archive" style="margin-right: 4px;"></i> Menampilkan proyek aktif. <strong>{{ $jumlahTahap['selesai'] }} proyek telah selesai</strong> (riwayat arsip).
+            </span>
+            <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn btn-sm btn-tonal" id="btn-toggle-selesai" onclick="toggleSelesai()">
+                    <i class="ti ti-eye" id="ikon-toggle-selesai"></i> <span id="teks-toggle-selesai">Tampilkan selesai</span>
+                </button>
+                <a href="{{ route('admin.projects.index', array_merge(request()->except(['page']), ['tahap' => 'selesai'])) }}" class="btn btn-sm btn-tonal">
+                    Buka tab Selesai &rarr;
+                </a>
+            </div>
+        </div>
+    @endif
+
+    <div class="table-container tp-wrap @if (! $tahap) sembunyi-selesai @endif" id="projects-grid">
     <table class="tabel-proyek">
         <thead>
             <tr><th>Proyek</th><th class="tp-c-client">Client</th><th class="tp-c-shoot">Shooting</th><th class="tp-c-daftar">Pendaftar</th><th class="tp-aksi" aria-label="Tindakan"></th></tr>
@@ -214,7 +238,7 @@
                 <td class="tp-c-shoot">
                     @if ($ket)
                         <div>{{ $project->rentangShooting() }}</div>
-                        <div class="tp-sub">{{ $ket }}</div>
+                        <div class="tp-sub @if ($ket === 'selesai') tp-selesai @endif">{{ $ket }}</div>
                     @else
                         <span class="tp-kosong">Belum dijadwalkan</span>
                     @endif
@@ -263,6 +287,16 @@
 </div>
 
 <script>
+    function toggleSelesai() {
+        var grid = document.getElementById('projects-grid');
+        if (!grid) return;
+        var sembunyi = grid.classList.toggle('sembunyi-selesai');
+        var teks = document.getElementById('teks-toggle-selesai');
+        var ikon = document.getElementById('ikon-toggle-selesai');
+        if (teks) teks.textContent = sembunyi ? 'Tampilkan selesai' : 'Sembunyikan selesai';
+        if (ikon) ikon.className = sembunyi ? 'ti ti-eye' : 'ti ti-eye-off';
+    }
+
     // delegasi: tombol tetap jalan setelah daftar diganti live search
     document.addEventListener('click', function (e) {
         var btn = e.target.closest('[data-copy-link]');
