@@ -48,7 +48,7 @@ class MonitoringController extends Controller
         });
 
         $proyek = CastingProject::where(fn ($q) => $q->diTahap('berjalan')->orWhere(fn ($q) => $q->diTahap('mendatang')))
-            ->with(['admin:id,name', 'shootingDates'])
+            ->with(['admin:id,name', 'client', 'shootingDates', 'adminAssignments.user'])
             ->withCount([
                 'applications',
                 'applications as terisi' => fn ($q) => $q->whereNotIn('status_partisipasi', ['ditolak', 'dibatalkan']),

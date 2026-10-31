@@ -614,6 +614,69 @@
             }
         }
 
+        /* Modal Ringkasan Proyek bergaya M3 Filter Panel */
+        dialog.modal-proyek-dialog {
+            border: 1px solid var(--md-outline-variant, var(--border-color));
+            border-radius: var(--md-shape-large, 16px);
+            background: var(--md-surface-container-low, var(--bg-card));
+            color: var(--text-primary);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+            padding: 0;
+            width: 480px;
+            max-width: calc(100vw - 32px);
+            max-height: min(85vh, 620px);
+            overflow: hidden;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            margin: 0;
+        }
+        dialog.modal-proyek-dialog::backdrop {
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(2px);
+        }
+        .mp-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-card);
+        }
+        .mp-body {
+            overflow-y: auto;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .mp-foot {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 18px;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-card);
+            border-radius: 0 0 16px 16px;
+        }
+        .mp-label {
+            display: block;
+            font-size: var(--fs-xs);
+            font-weight: 600;
+            color: var(--text-muted);
+            margin: 0 0 6px;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+        }
+        .mp-card-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 10px 14px;
+        }
+
         /* Grid dashboard 2 kolom (Super Admin, dll), collapse ke 1 kolom di
            mobile supaya chart tidak diperas jadi sempit & tinggi tidak proporsional. */
         .dashboard-grid-2col { display: grid; gap: 16px; margin-bottom: 16px; align-items: start; }
@@ -1490,6 +1553,12 @@
         document.addEventListener('keydown', function (e) {
             var d = e.key === 'Escape' && !document.querySelector('dialog[open]') && document.querySelector('details.fpanel[open]');
             if (d) { d.open = false; d.querySelector('summary').focus(); }
+        });
+        // Tutup dialog modal-proyek-dialog saat klik backdrop
+        document.addEventListener('click', function (e) {
+            if (e.target.tagName === 'DIALOG' && e.target.classList.contains('modal-proyek-dialog')) {
+                e.target.close();
+            }
         });
     }());
     // BJ.1 input tag bebas (partials/tag-input): Enter/koma = chip; panel saran (per grup + tag lain dari DB) muncul saat fokus, tersaring sesuai ketikan.
