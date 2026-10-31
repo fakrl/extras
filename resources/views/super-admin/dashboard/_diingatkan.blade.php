@@ -1,5 +1,8 @@
-@php $ringkasan = $o['kelompok']->map(fn ($g) => $g['tugas'].' · '.$g['jumlah'].' Extras di '.$g['proyek'])->implode(', '); @endphp
-<x-baris-tugas :judul="$o['staf']->name" :meta="\App\Models\User::LABELS[$o['peran']].' · '.$ringkasan" :umur="'sejak '.$o['sejak']?->diffForHumans()">
+@php
+    $jumlahTugas = count($o['kelompok']);
+    $ringkasan = $o['kelompok']->map(fn ($g) => $g['tugas'].' · '.$g['jumlah'].' Extras di '.$g['proyek'])->implode(', ');
+@endphp
+<x-baris-tugas :judul="$o['staf']->name" :meta="\App\Models\User::LABELS[$o['peran']].' · '.$jumlahTugas.' tugas tertunda · '.$ringkasan" :umur="'sejak '.$o['sejak']?->diffForHumans()">
     @if ($o['diingatkan_pada'])
         <span class="dash-sub">Sudah diingatkan {{ $o['diingatkan_pada']->diffForHumans() }}</span>
     @else
@@ -19,7 +22,7 @@
         <textarea name="catatan" id="dash-ingatkan-catatan-{{ $loop->index }}" rows="2" maxlength="500" class="dash-dialog-field"></textarea>
         <div class="dash-dialog-btn">
             <button type="button" class="btn btn-sm" onclick="this.closest('dialog').close()">Batal</button>
-            <button type="submit" class="btn btn-sm btn-brand">Kirim Pengingat</button>
+            <button type="submit" class="btn btn-sm btn-brand">Ingatkan Semua Tugas</button>
         </div>
     </form>
 </dialog>
