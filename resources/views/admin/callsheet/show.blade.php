@@ -14,11 +14,8 @@
         <div style="font-size: var(--fs-sm); color: var(--text-secondary);">{{ $castingProject->nama_produksi }} <span class="kode-proyek">{{ $castingProject->kode_proyek }}</span></div>
     </div>
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <a href="https://api.whatsapp.com/send?text={{ rawurlencode($teksWa) }}" target="_blank" rel="noopener" class="btn btn-brand callsheet-btn-wa" data-log-url="{{ route('admin.callsheet.salin', [$castingProject, $shootingDate->tanggal->toDateString()]) }}" style="display: inline-flex; align-items: center; gap: 6px;">
+        <button type="button" class="btn btn-brand" onclick="document.getElementById('modal-callsheet-wa').showModal()" style="display: inline-flex; align-items: center; gap: 6px;">
             <i class="ti ti-brand-whatsapp"></i> Share ke WA
-        </a>
-        <button type="button" class="btn btn-tonal" id="callsheet-salin-wa" data-log-url="{{ route('admin.callsheet.salin', [$castingProject, $shootingDate->tanggal->toDateString()]) }}">
-            <i class="ti ti-copy"></i> Salin format WA
         </button>
         <a href="{{ route('admin.callsheet.pdf', [$castingProject, $shootingDate->tanggal->toDateString(), 'preview' => 1]) }}" target="_blank" class="btn btn-tonal">
             <i class="ti ti-eye"></i> Pratinjau PDF
@@ -108,38 +105,59 @@
     </div>
 @endif
 
-<div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
-        <div class="card-title" style="margin: 0;">Pratinjau Teks WA</div>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-            <a href="https://api.whatsapp.com/send?text={{ rawurlencode($teksWa) }}" target="_blank" rel="noopener" class="btn btn-sm btn-brand callsheet-btn-wa" data-log-url="{{ route('admin.callsheet.salin', [$castingProject, $shootingDate->tanggal->toDateString()]) }}" style="display: inline-flex; align-items: center; gap: 6px;">
-                <i class="ti ti-brand-whatsapp"></i> Share ke WA
-            </a>
-            <button type="button" class="btn btn-sm btn-tonal" id="callsheet-salin-wa-card" data-log-url="{{ route('admin.callsheet.salin', [$castingProject, $shootingDate->tanggal->toDateString()]) }}" style="display: inline-flex; align-items: center; gap: 6px;">
+{{-- Modal Pop-Up Pratinjau Teks WA --}}
+<dialog id="modal-callsheet-wa" class="modal-proyek-dialog" style="width: 580px; max-height: min(88vh, 680px);">
+    <div class="mp-head">
+        <div>
+            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <span class="badge badge-brand" style="display: inline-flex; align-items: center; gap: 4px;">
+                    <i class="ti ti-brand-whatsapp"></i> WhatsApp
+                </span>
+                <span class="kode-proyek">{{ $castingProject->kode_proyek }}</span>
+            </div>
+            <h3 style="margin: 4px 0 0; font-size: var(--fs-lg); font-weight: 600; color: var(--text-primary); line-height: 1.3;">
+                Pratinjau Format WA · {{ $shootingDate->tanggal->translatedFormat('d M Y') }}
+            </h3>
+        </div>
+        <button type="button" class="btn-ikon" onclick="document.getElementById('modal-callsheet-wa').close()" aria-label="Tutup" style="border: none; background: transparent; cursor: pointer; font-size: 18px; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center;">
+            <i class="ti ti-x"></i>
+        </button>
+    </div>
+    <div class="mp-body" style="padding: 14px 18px;">
+        <p style="font-size: var(--fs-xs); color: var(--text-muted); margin: 0 0 8px;">
+            Teks di bawah akan otomatis terisi saat dikirim ke kontak atau grup WhatsApp yang Anda pilih.
+        </p>
+        <textarea id="callsheet-wa-text" readonly rows="12" style="width: 100%; font-family: monospace; font-size: var(--fs-sm); background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 10px 12px; resize: vertical; line-height: 1.5;">{{ $teksWa }}</textarea>
+    </div>
+    <div class="mp-foot" style="justify-content: space-between;">
+        <button type="button" class="btn btn-sm btn-tonal" onclick="document.getElementById('modal-callsheet-wa').close()">
+            Tutup
+        </button>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-sm btn-tonal" id="callsheet-salin-wa" data-log-url="{{ route('admin.callsheet.salin', [$castingProject, $shootingDate->tanggal->toDateString()]) }}" style="display: inline-flex; align-items: center; gap: 6px;">
                 <i class="ti ti-copy"></i> Salin format WA
             </button>
+            <a href="https://api.whatsapp.com/send?text={{ rawurlencode($teksWa) }}" target="_blank" rel="noopener" class="btn btn-sm btn-brand callsheet-btn-wa" data-log-url="{{ route('admin.callsheet.salin', [$castingProject, $shootingDate->tanggal->toDateString()]) }}" style="display: inline-flex; align-items: center; gap: 6px;">
+                <i class="ti ti-brand-whatsapp"></i> Share ke WA &rarr;
+            </a>
         </div>
     </div>
-    <textarea id="callsheet-wa-text" readonly rows="10" style="width: 100%; font-family: monospace; font-size: var(--fs-sm);">{{ $teksWa }}</textarea>
-</div>
+</dialog>
 
 @push('scripts')
 <script>
 (function () {
     var teks = document.getElementById('callsheet-wa-text');
-    var copyBtns = [
-        document.getElementById('callsheet-salin-wa'),
-        document.getElementById('callsheet-salin-wa-card')
-    ].filter(Boolean);
+    var btnSalin = document.getElementById('callsheet-salin-wa');
 
-    copyBtns.forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var originalHtml = btn.innerHTML;
+    if (btnSalin && teks) {
+        btnSalin.addEventListener('click', function () {
+            var originalHtml = btnSalin.innerHTML;
             var ok = function () {
-                btn.innerHTML = '<i class="ti ti-check"></i> Tersalin';
-                setTimeout(function () { btn.innerHTML = originalHtml; }, 2000);
-                if (btn.dataset.logUrl) {
-                    fetch(btn.dataset.logUrl, {
+                btnSalin.innerHTML = '<i class="ti ti-check"></i> Tersalin';
+                setTimeout(function () { btnSalin.innerHTML = originalHtml; }, 2000);
+                if (btnSalin.dataset.logUrl) {
+                    fetch(btnSalin.dataset.logUrl, {
                         method: 'POST',
                         headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content }
                     });
@@ -148,7 +166,7 @@
             var fallback = function () { teks.select(); try { document.execCommand('copy'); ok(); } catch (e) {} };
             if (navigator.clipboard) navigator.clipboard.writeText(teks.value).then(ok, fallback); else fallback();
         });
-    });
+    }
 
     document.querySelectorAll('.callsheet-btn-wa').forEach(function (el) {
         el.addEventListener('click', function (e) {
