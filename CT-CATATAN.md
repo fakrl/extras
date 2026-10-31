@@ -376,5 +376,47 @@ Ditambahkan **20 screenshot** baru di `ct-screenshots/` (prefix `cv_`) mencakup:
   - `proyek_redesign_clean_toolbar_light.png`
   - `proyek_toggle_selesai_shown.png`
 
+---
+
+## 19. Desain Modal Ringkasan Proyek M3 & Eliminasi Kolom Client Redundan pada Tabel Proyek
+
+### Masalah Awal:
+1. Modal pop up ringkasan proyek memiliki kotak kontras yang tidak selaras pada dark mode (background putih terang dengan teks abu-abu yang sulit dibaca), serta tata letak elemen yang belum mengikuti standar desain pop up filter (`.fpanel`).
+2. Tabel daftar proyek masih menampilkan kolom "Client" yang memuat nama perusahaan, kontak, PIC, dan Korlap, padahal seluruh data tersebut sudah dipindahkan ke dalam pop up modal ringkasan, membuat tabel terasa sesak dengan data yang terduplikasi ganda.
+
+### Solusi & Implementasi:
+1. **Penyelarasan Desain Modal Dialog dengan Standar M3 Filter Panel (`.modal-proyek-dialog`)**:
+   - Struktur pop up diselaraskan penuh dengan arsitektur `.fpanel` (`.mp-head`, `.mp-body`, `.mp-foot`, `.mp-label`, `.mp-card-box`).
+   - Menggunakan token tema semantik (`var(--md-surface-container-low, var(--bg-card))`, `var(--border-color)`, `var(--text-primary)`, `var(--text-muted)`), sehingga pada light mode maupun dark mode tampilan beradaptasi mulus tanpa ada kotak putih yang kontras salah.
+   - Header memuat badge kode proyek, urgent, status lowongan/tahap, judul proyek, dan tombol tutup [X].
+   - Body memuat kartu modular berikon:
+     - **Client / PH**: Nama perusahaan, kontak PIC client, nomor telepon.
+     - **Tim Pengelola**: Grid 2 kolom kartu PIC internal dan Korlap.
+     - **Jadwal & Kuota**: Grid 2 kolom kartu rentang shooting dan progress bar pendaftar/kuota.
+     - **Deskripsi Proyek**: Kotak teks deskripsi yang rapi dan terisolasi.
+   - Foot memuat tombol aksi `[Tutup]` dan `[Buka Halaman Proyek ->]`.
+   - Menambahkan event listener penutupan otomatis saat pengguna mengklik backdrop di luar area dialog.
+
+2. **Eliminasi Kolom Client Redundan pada Tabel Proyek**:
+   - Menghapus kolom `<th class="tp-c-client">Client</th>` dan sel `<td class="tp-c-client">...</td>` dari tabel daftar proyek.
+   - Tabel proyek kini hanya memiliki 4 kolom ringkas dan fokus:
+     1. **Proyek**: Judul produksi, kode proyek, badge urgent (klik baris untuk membuka modal ringkasan).
+     2. **Shooting**: Tanggal shooting dan status waktu relatif.
+     3. **Pendaftar**: Jumlah extras / kuota, bar kemajuan, dan badge tindakan.
+     4. **Tindakan**: Aksi cepat (Lineup, Salin link, Lock/Unlock, Edit).
+   - Seluruh assertion pengujian PHPUnit (`CvDaftarProyekTest`, `ProyekKeuanganTest`, `BiFilterPanelTest`) tetap lulus 100% karena data client dan tim pengelola tetap tersaji di dalam HTML modal per baris.
+
+### Hasil Pengujian & Matriks Screenshot:
+- **Pint**: PASS (0 issues).
+- **Test Suite (`CvDaftarProyekTest`, `ProyekKeuanganTest`, `BiFilterPanelTest`)**:
+  - SQLite: **38 passed (288 assertions)**.
+  - MySQL (`jbtb_test`): **38 passed (288 assertions)**.
+- **Screenshot Baru (`ct-screenshots/`)**:
+  - `proyek_modal_ringkasan_m3.png` (Modal ringkasan tema terang selaras pop up filter)
+  - `proyek_modal_ringkasan_m3_dark.png` (Modal ringkasan tema gelap bebas kotak putih)
+  - `proyek_tabel_ringkas.png` (Tabel daftar proyek 4 kolom ringkas tanpa data duplikat)
+  - `proyek_tabel_ringkas_dark.png` (Tabel daftar proyek ringkas tema gelap)
+
+
 
 
