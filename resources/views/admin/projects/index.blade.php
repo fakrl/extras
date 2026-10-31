@@ -22,6 +22,72 @@
 @push('styles')
 <style>
 .tp-wrap.sembunyi-selesai tr:has(.tp-selesai) { display: none; }
+
+/* Modal Ringkasan Proyek bergaya M3 Filter Panel */
+dialog.modal-proyek-dialog {
+    border: 1px solid var(--md-outline-variant, var(--border-color));
+    border-radius: var(--md-shape-large, 16px);
+    background: var(--md-surface-container-low, var(--bg-card));
+    color: var(--text-primary);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+    padding: 0;
+    width: 480px;
+    max-width: calc(100vw - 32px);
+    max-height: min(85vh, 620px);
+    overflow: hidden;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+}
+dialog.modal-proyek-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(2px);
+}
+.mp-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-card);
+}
+.mp-body {
+    overflow-y: auto;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.mp-foot {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 18px;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-card);
+    border-radius: 0 0 16px 16px;
+}
+.mp-label {
+    display: block;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--text-muted);
+    margin: 0 0 6px;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+.mp-card-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+}
+.tabel-proyek th.tp-c-shoot { width: 22%; }
+.tabel-proyek th.tp-c-daftar { width: 180px; }
+.tabel-proyek th.tp-aksi { width: 200px; }
 </style>
 @endpush
 
@@ -133,7 +199,7 @@
     <div class="table-container tp-wrap @if (! $tahap) sembunyi-selesai @endif" id="projects-grid">
     <table class="tabel-proyek">
         <thead>
-            <tr><th>Proyek</th><th class="tp-c-client">Client</th><th class="tp-c-shoot">Shooting</th><th class="tp-c-daftar">Pendaftar</th><th class="tp-aksi" aria-label="Tindakan"></th></tr>
+            <tr><th>Proyek</th><th class="tp-c-shoot">Shooting</th><th class="tp-c-daftar">Pendaftar</th><th class="tp-aksi" aria-label="Tindakan"></th></tr>
         </thead>
         <tbody>
         @foreach ($projects as $project)
@@ -159,8 +225,8 @@
                         @endif
                     </div>
 
-                    <dialog id="modal-proyek-{{ $project->id }}" class="dash-dialog" style="max-width: 540px; width: 95%;">
-                        <div class="dash-dialog-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+                    <dialog id="modal-proyek-{{ $project->id }}" class="modal-proyek-dialog">
+                        <div class="mp-head">
                             <div>
                                 <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                                     <span class="kode-proyek">{{ $project->kode_proyek }}</span>
@@ -171,69 +237,71 @@
                                         {{ ucfirst($tahapProyek) }}
                                     </span>
                                 </div>
-                                <h3 style="margin: 6px 0 0; font-size: 1.15rem; color: var(--color-on-surface);">{{ $project->nama_produksi }}</h3>
+                                <h3 style="margin: 4px 0 0; font-size: var(--fs-lg); font-weight: 600; color: var(--text-primary); line-height: 1.3;">{{ $project->nama_produksi }}</h3>
                             </div>
-                            <button type="button" class="btn btn-sm btn-icon" onclick="document.getElementById('modal-proyek-{{ $project->id }}').close()" aria-label="Tutup"><i class="ti ti-x"></i></button>
+                            <button type="button" class="btn-ikon" onclick="document.getElementById('modal-proyek-{{ $project->id }}').close()" aria-label="Tutup" style="border: none; background: transparent; cursor: pointer; font-size: 18px; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center;"><i class="ti ti-x"></i></button>
                         </div>
-                        <div class="dash-dialog-body" style="padding: 16px 20px; font-size: 0.88rem; line-height: 1.5;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; background: var(--color-surface-container, #f8fafc); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--color-outline-variant, #e2e8f0);">
-                                <div>
-                                    <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Client / PH</span>
-                                    <strong style="color: var(--color-on-surface);">{{ $project->namaClient() }}</strong>
-                                    @if ($project->client?->nama_perusahaan && $project->client->name !== $project->client->nama_perusahaan)
-                                        <div style="font-size: 0.8rem; color: var(--text-muted);">{{ $project->client->name }}</div>
+                        <div class="mp-body">
+                            <div class="mp-card-box">
+                                <span class="mp-label"><i class="ti ti-building" style="margin-right: 4px;"></i> Client / PH</span>
+                                @if ($project->client)
+                                    <div style="font-weight: 600; color: var(--text-primary); font-size: var(--fs-base);">{{ $project->namaClient() }}</div>
+                                    @if ($project->client->nama_perusahaan && $project->client->name !== $project->client->nama_perusahaan)
+                                        <div style="color: var(--text-secondary); font-size: var(--fs-xs); margin-top: 2px;">{{ $project->client->name }}</div>
                                     @endif
                                     @if ($project->client?->telepon)
-                                        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;"><i class="ti ti-phone" style="font-size: 0.75rem;"></i> {{ $project->client->telepon }}</div>
+                                        <div style="color: var(--text-muted); font-size: var(--fs-xs); margin-top: 4px;"><i class="ti ti-phone" style="font-size: 11px;"></i> {{ $project->client->telepon }}</div>
                                     @endif
-                                </div>
-                                <div>
-                                    <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Tim Pengelola</span>
-                                    <div><span style="color: var(--text-muted);">PIC:</span> <strong>{{ $project->admin?->name ?? 'Belum ada PIC' }}</strong></div>
-                                    <div><span style="color: var(--text-muted);">Korlap:</span> <strong>{{ $project->korlap()?->name ?? 'Belum ada Korlap' }}</strong></div>
+                                @else
+                                    <span class="tp-kosong">Belum ada Client</span>
+                                @endif
+                            </div>
+
+                            <div>
+                                <span class="mp-label"><i class="ti ti-users" style="margin-right: 4px;"></i> Tim Pengelola</span>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <div class="mp-card-box" style="padding: 8px 12px;">
+                                        <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-bottom: 2px;">PIC</div>
+                                        <div style="font-weight: 600; color: var(--text-primary); font-size: var(--fs-sm);">{{ $project->admin?->name ?? 'Belum ada PIC' }}</div>
+                                    </div>
+                                    <div class="mp-card-box" style="padding: 8px 12px;">
+                                        <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-bottom: 2px;">Korlap</div>
+                                        <div style="font-weight: 600; color: var(--text-primary); font-size: var(--fs-sm);">{{ $project->korlap()?->name ?? 'Belum ada Korlap' }}</div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; font-size: 0.85rem;">
-                                <div>
-                                    <span style="color: var(--text-muted); display: block; font-size: 0.78rem;">Jadwal Shooting</span>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <div class="mp-card-box" style="padding: 8px 12px;">
+                                    <span class="mp-label"><i class="ti ti-calendar" style="margin-right: 4px;"></i> Jadwal Shooting</span>
                                     @if ($ket)
-                                        <strong>{{ $project->rentangShooting() }}</strong>
-                                        <div style="font-size: 0.8rem; color: var(--text-muted);">{{ $ket }}</div>
+                                        <div style="font-weight: 600; color: var(--text-primary); font-size: var(--fs-sm);">{{ $project->rentangShooting() }}</div>
+                                        <div style="color: var(--text-muted); font-size: var(--fs-xs); margin-top: 2px;">{{ $ket }}</div>
                                     @else
-                                        <span style="color: var(--text-muted);">Belum dijadwalkan</span>
+                                        <span class="tp-kosong" style="font-size: var(--fs-xs);">Belum dijadwalkan</span>
                                     @endif
                                 </div>
-                                <div>
-                                    <span style="color: var(--text-muted); display: block; font-size: 0.78rem;">Pendaftar / Kuota</span>
-                                    <strong>{{ $project->applications_count }} / {{ $kuota }} extras</strong>
+                                <div class="mp-card-box" style="padding: 8px 12px;">
+                                    <span class="mp-label"><i class="ti ti-user-check" style="margin-right: 4px;"></i> Pendaftar / Kuota</span>
+                                    <div style="font-weight: 600; color: var(--text-primary); font-size: var(--fs-sm);">{{ $project->applications_count }} / {{ $kuota }} extras</div>
                                     @if ($kuota > 0)
-                                        <div class="tp-bar" style="margin-top: 4px;"><i style="width: {{ min(100, round($project->applications_count / $kuota * 100)) }}%;"></i></div>
+                                        <div class="tp-bar" style="margin-top: 6px;"><i style="width: {{ min(100, round($project->applications_count / $kuota * 100)) }}%;"></i></div>
                                     @endif
                                 </div>
                             </div>
 
                             @if ($project->deskripsi)
-                                <div style="margin-top: 10px;">
-                                    <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 4px;">Deskripsi Proyek</span>
-                                    <div style="background: var(--color-surface, #fff); padding: 10px 12px; border-radius: 6px; border: 1px solid var(--color-outline-variant, #e2e8f0); color: var(--color-on-surface); font-size: 0.85rem; max-height: 120px; overflow-y: auto; white-space: pre-wrap;">{{ $project->deskripsi }}</div>
+                                <div>
+                                    <span class="mp-label"><i class="ti ti-notes" style="margin-right: 4px;"></i> Deskripsi Proyek</span>
+                                    <div class="mp-card-box" style="font-size: var(--fs-xs); color: var(--text-secondary); line-height: 1.5; max-height: 90px; overflow-y: auto; white-space: pre-wrap;">{{ $project->deskripsi }}</div>
                                 </div>
                             @endif
                         </div>
-                        <div class="dash-dialog-actions" style="display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--color-outline-variant, #e2e8f0);">
-                            <button type="button" class="btn btn-tonal" onclick="document.getElementById('modal-proyek-{{ $project->id }}').close()">Tutup</button>
-                            <a href="{{ route('admin.projects.show', $project) }}" class="btn btn-brand" style="display: inline-flex; align-items: center; gap: 6px;">Buka Halaman Proyek <i class="ti ti-arrow-right"></i></a>
+                        <div class="mp-foot">
+                            <button type="button" class="btn btn-sm btn-tonal" onclick="document.getElementById('modal-proyek-{{ $project->id }}').close()">Tutup</button>
+                            <a href="{{ route('admin.projects.show', $project) }}" class="btn btn-sm btn-brand" style="display: inline-flex; align-items: center; gap: 6px;">Buka Halaman Proyek <i class="ti ti-arrow-right"></i></a>
                         </div>
                     </dialog>
-                </td>
-                <td class="tp-c-client">
-                    @if ($project->client)
-                        <div class="tp-nama">{{ $project->namaClient() }}</div>
-                        @if ($project->client->nama_perusahaan)<div class="tp-sub">{{ $project->client->name }}</div>@endif
-                    @else
-                        <span class="tp-kosong">Belum ada Client</span>
-                    @endif
-                    <div class="tp-sub">PIC {{ $project->admin?->name ?? '-' }} &middot; Korlap {{ $project->korlap()?->name ?? '-' }}</div>
                 </td>
                 <td class="tp-c-shoot">
                     @if ($ket)
@@ -307,6 +375,13 @@
             btn.title = 'Link disalin!'; btn.setAttribute('aria-label', btn.title);
             setTimeout(function () { ikon.className = 'ti ti-link'; btn.title = judul; btn.setAttribute('aria-label', judul); }, 2000);
         });
+    });
+
+    // tutup dialog saat klik backdrop
+    document.addEventListener('click', function (e) {
+        if (e.target.tagName === 'DIALOG' && e.target.classList.contains('modal-proyek-dialog')) {
+            e.target.close();
+        }
     });
 </script>
 @endsection
