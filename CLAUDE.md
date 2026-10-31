@@ -13,6 +13,7 @@ Keduanya aktif otomatis lewat hook `SessionStart` & `UserPromptSubmit`. Kalau be
 
 ## Konvensi Singkat
 
+- Dev server: **wajib port 9999** (`php artisan serve --port=9999`), dilarang pakai port 8000 (dicadangkan untuk project lain).
 - Update `docs/DEV-NOTES.md` tiap sesi kerja modul (bukan hanya task besar).
 - Perubahan scope/requirement → eskalasi ke Fakrul dulu, jangan langsung koding.
 - Subagent WAJIB untuk modul auth/RBAC, pembayaran/honor, kontrak/TTD, atau lintas >3 file. Langsung untuk view/Blade/CSS/bug kecil 1-2 file.
