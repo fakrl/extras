@@ -147,9 +147,10 @@
         .cast-section { padding-block: 7rem; border-top: 1px solid var(--hp-line); overflow: hidden; }
         .cast-card { flex: 0 0 210px; display: block; color: inherit; text-decoration: none; }
         .cast-card:focus-visible { outline: 2px solid var(--hp-accent); outline-offset: 4px; }
-        .cast-photo-wrap { aspect-ratio: 0.78; overflow: hidden; background: var(--hp-card); position: relative; border-radius: 4px; }
-        .cast-photo { width: 100%; height: 100%; object-fit: cover; display: block; filter: grayscale(1); transition: filter .5s ease, transform .5s ease; }
-        .cast-card:hover .cast-photo, .cast-card:focus-visible .cast-photo { filter: grayscale(0); transform: scale(1.05); }
+        .cast-photo-wrap { aspect-ratio: 0.78; overflow: hidden; background: var(--hp-card); position: relative; border-radius: 4px; transition: box-shadow .3s ease; }
+        .cast-card:hover .cast-photo-wrap { box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25); }
+        .cast-photo { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s cubic-bezier(0.2, 0, 0, 1), filter .3s ease; }
+        .cast-card:hover .cast-photo, .cast-card:focus-visible .cast-photo { transform: scale(1.06); filter: brightness(1.04); }
         .cast-no { position: absolute; left: 12px; top: 10px; font-size: 12px; color: rgba(255, 255, 255, 0.8); text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6); }
         .cast-view { position: absolute; right: 12px; bottom: 12px; border-radius: 999px; background: var(--hp-accent); color: var(--hp-accent-on); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; opacity: 0; transition: opacity .3s; }
         .cast-card:hover .cast-view, .cast-card:focus-visible .cast-view { opacity: 1; }
@@ -233,9 +234,10 @@
         /* ── Portofolio (BH.3) ── */
         .porto-section { padding-block: 7rem; border-top: 1px solid var(--hp-line); overflow: hidden; }
         .porto-card { flex: 0 0 380px; margin: 0; }
-        .porto-img { aspect-ratio: 1.28; overflow: hidden; border-radius: 4px; position: relative; background: linear-gradient(135deg, color-mix(in srgb, var(--hp-accent) 35%, var(--hp-card)), var(--hp-card) 70%); }
-        .porto-img img { width: 100%; height: 100%; object-fit: cover; display: block; filter: grayscale(1); transition: filter .5s ease, transform .5s ease; }
-        .porto-card:hover .porto-img img { filter: grayscale(0); transform: scale(1.05); }
+        .porto-img { aspect-ratio: 1.28; overflow: hidden; border-radius: 4px; position: relative; background: linear-gradient(135deg, color-mix(in srgb, var(--hp-accent) 35%, var(--hp-card)), var(--hp-card) 70%); transition: box-shadow .3s ease; }
+        .porto-card:hover .porto-img { box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25); }
+        .porto-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s cubic-bezier(0.2, 0, 0, 1), filter .3s ease; }
+        .porto-card:hover .porto-img img { transform: scale(1.06); filter: brightness(1.04); }
         .porto-img .ti { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 44px; color: var(--hp-muted); }
         .porto-title { font-family: Georgia, 'Times New Roman', serif; font-size: 1.5rem; font-weight: 400; letter-spacing: -0.03em; line-height: 1.15; margin: 16px 0 0; color: var(--hp-fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .porto-sub { margin-top: 6px; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hp-muted); }
