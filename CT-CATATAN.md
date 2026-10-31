@@ -472,6 +472,48 @@ Pada halaman monitoring admin (`/super-admin/monitoring/admin`), bagian widget "
   - `monitoring_proyek_modal_light.png` (Modal ringkasan proyek pada widget monitoring admin - tema terang)
   - `monitoring_proyek_modal_dark.png` (Modal ringkasan proyek pada widget monitoring admin - tema gelap)
 
+---
+
+## 22. Upgrade Halaman Kebijakan Privasi (Kepatuhan UU No. 27/2022 UU PDP & Catatan Sistem JBTB)
+
+### Latar Belakang:
+Halaman kebijakan privasi awal (`resources/views/privacy-policy.blade.php`) hanya berupa catatan dasar internal SIM Casting. Pengguna meminta halaman privasi di-upgrade agar komprehensif, terstruktur profesional, dan mencakup seluruh ketentuan hukum (UU PDP) serta aturan bisnis yang telah tercatat pada dokumen sistem (`docs/CLAUDE.md`, `docs/BAB-3-DRAFT.md`, `docs/SECURITY-CHECKLIST.md`) dan memori Obsidian (`decisions-log.md`, `architecture.md`).
+
+### Ketentuan Kunci yang Diintegrasikan:
+1. **Identitas Pengendali Data Resmi**:
+   - Dicantumkan identitas resmi PT. JBTB Casting Creative Group (NIB terdaftar OSS) berkedudukan di Pamulang, Kota Tangerang Selatan, Banten.
+2. **Kategori Data Pribadi (Umum & Spesifik/Sensitif)**:
+   - Klasifikasi data pribadi menurut UU PDP: NIK & rekening bank (spesifik/sensitif), nama panggung, foto/video, kontak WhatsApp, akun Google OAuth, kredensial password terenkripsi, dan riwayat transaksi pendaftaran.
+3. **Dasar Hukum Pemrosesan Data (Pasal 20 UU PDP)**:
+   - Persetujuan eksplisit (*Consent*), pelaksanaan kontrak (*Contractual Necessity*), kepatuhan hukum perpajakan (*Legal Obligation*), dan kepentingan yang sah (*Legitimate Interest*).
+4. **Tembok Visibilitas Tiga Lapis (RBAC & Proteksi Bisnis Inti)**:
+   - Menjelaskan secara tegas bahwa Client **tidak pernah** dapat melihat nama asli, NIK, kontak WhatsApp, rekening bank, dan portofolio pribadi Extras untuk mencegah talent bypass dan melindungi privasi.
+5. **Keamanan Teknis & Kriptografi**:
+   - Enkripsi database kolom AES-256 (NIK, rekening, nama asli).
+   - Blind Index HMAC dengan kunci terpisah (`NIK_HASH_KEY`) untuk pencarian duplikasi tanpa dekripsi massal.
+   - Penyimpanan privat media (foto, video, KTP/selfie) dengan gerbang otorisasi backend.
+   - Tanda tangan digital kanvas HTML5 Signature Pad yang tersemat ke PDF kontrak.
+6. **Masa Retensi & Ketentuan Akun Mangkrak**:
+   - Akun profil kosong tanpa pendaftaran selama `{{ \App\Models\User::HARI_MANGKRAK }}` hari dihapus otomatis setelah peringatan minimal H-7.
+7. **Pihak Ketiga, Cookie & Hak Pemilik Data**:
+   - Sub-prosesor: Google LLC (OAuth), WhatsApp Notification Gateway, dan penyedia hosting cloud.
+   - Strictly Necessary session cookie (`laravel_session`, token CSRF) & local storage tema (`jbtb-theme-v2`), tanpa *third-party marketing tracker*.
+   - Hak-hak subjek data: hak akses, perbaikan, penarikan persetujuan, dan hak penghapusan data.
+8. **UI Modern & Navigasi Cepat (M3)**:
+   - Dilengkapi bilah navigasi atas dengan logo merek JBTB, tombol toggle tema (terang/gelap), tombol kembali ke Beranda, kartu navigasi cepat (Daftar Isi / TOC) 10 bab, serta callout box M3.
+
+### Hasil Pengujian & Matriks Screenshot:
+- **Pint**: PASS (0 issues).
+- **Test Suite (`AuditBFondasiTest`, `BnMangkrakTerjadwalTest`, `BeWajibGantiPublikTest`, `BoFieldWajibTest`)**:
+  - SQLite: **14 passed (99 assertions)**.
+  - MySQL (`jbtb_test`): **14 passed (99 assertions)**.
+- **Screenshot Baru (`ct-screenshots/`)**:
+  - `privacy_policy_light.png` (Tampilan atas & TOC kebijakan privasi - tema terang)
+  - `privacy_policy_table.png` (Tabel klasifikasi data pribadi UU PDP - tema terang)
+  - `privacy_policy_dark.png` (Tampilan atas kebijakan privasi - tema gelap)
+  - `privacy_policy_footer.png` (Bagian hak pemilik data, kontak & footer)
+
+
 
 
 
