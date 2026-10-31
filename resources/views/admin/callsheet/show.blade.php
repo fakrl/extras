@@ -14,8 +14,8 @@
         <div style="font-size: var(--fs-sm); color: var(--text-secondary);">{{ $castingProject->nama_produksi }} <span class="kode-proyek">{{ $castingProject->kode_proyek }}</span></div>
     </div>
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <a href="https://web.whatsapp.com/send?text={{ rawurlencode($teksWa) }}" target="_blank" rel="noopener" class="btn btn-brand callsheet-btn-wa-web" data-log-url="{{ route('admin.callsheet.salin', [$castingProject, $shootingDate->tanggal->toDateString()]) }}" style="display: inline-flex; align-items: center; gap: 6px;">
-            <i class="ti ti-brand-whatsapp"></i> Share ke WA Web
+        <a href="https://api.whatsapp.com/send?text={{ rawurlencode($teksWa) }}" target="_blank" rel="noopener" class="btn btn-brand callsheet-btn-wa" data-log-url="{{ route('admin.callsheet.salin', [$castingProject, $shootingDate->tanggal->toDateString()]) }}" style="display: inline-flex; align-items: center; gap: 6px;">
+            <i class="ti ti-brand-whatsapp"></i> Share ke WA
         </a>
         <button type="button" class="btn btn-tonal" id="callsheet-salin-wa" data-log-url="{{ route('admin.callsheet.salin', [$castingProject, $shootingDate->tanggal->toDateString()]) }}">
             <i class="ti ti-copy"></i> Salin format WA
@@ -112,8 +112,8 @@
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
         <div class="card-title" style="margin: 0;">Pratinjau Teks WA</div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-            <a href="https://web.whatsapp.com/send?text={{ rawurlencode($teksWa) }}" target="_blank" rel="noopener" class="btn btn-sm btn-brand callsheet-btn-wa-web" data-log-url="{{ route('admin.callsheet.salin', [$castingProject, $shootingDate->tanggal->toDateString()]) }}" style="display: inline-flex; align-items: center; gap: 6px;">
-                <i class="ti ti-brand-whatsapp"></i> Share ke WA Web
+            <a href="https://api.whatsapp.com/send?text={{ rawurlencode($teksWa) }}" target="_blank" rel="noopener" class="btn btn-sm btn-brand callsheet-btn-wa" data-log-url="{{ route('admin.callsheet.salin', [$castingProject, $shootingDate->tanggal->toDateString()]) }}" style="display: inline-flex; align-items: center; gap: 6px;">
+                <i class="ti ti-brand-whatsapp"></i> Share ke WA
             </a>
             <button type="button" class="btn btn-sm btn-tonal" id="callsheet-salin-wa-card" data-log-url="{{ route('admin.callsheet.salin', [$castingProject, $shootingDate->tanggal->toDateString()]) }}" style="display: inline-flex; align-items: center; gap: 6px;">
                 <i class="ti ti-copy"></i> Salin format WA
@@ -150,7 +150,7 @@
         });
     });
 
-    document.querySelectorAll('.callsheet-btn-wa-web').forEach(function (el) {
+    document.querySelectorAll('.callsheet-btn-wa').forEach(function (el) {
         el.addEventListener('click', function (e) {
             var logUrl = el.dataset.logUrl;
             if (logUrl) {
@@ -158,11 +158,6 @@
                     method: 'POST',
                     headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content }
                 });
-            }
-            var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-            if (isMobile) {
-                e.preventDefault();
-                window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(teks.value), '_blank');
             }
         });
     });

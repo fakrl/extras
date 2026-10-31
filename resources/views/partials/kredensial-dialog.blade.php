@@ -10,7 +10,9 @@
         <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;">
             <button type="button" class="btn" onclick="this.closest('dialog').close()">Tutup</button>
             @if (! empty($k["nomor_wa"]))
-            <a class="btn" target="_blank" rel="noopener" href="https://wa.me/{{ $k["nomor_wa"] }}?text={{ rawurlencode($teksKredensial) }}"><i class="ti ti-brand-whatsapp"></i> Kirim via WA</a>
+            <a class="btn" target="_blank" rel="noopener" href="https://api.whatsapp.com/send?phone={{ $k["nomor_wa"] }}&text={{ rawurlencode($teksKredensial) }}"><i class="ti ti-brand-whatsapp"></i> Kirim via WA</a>
+            @else
+            <a class="btn" target="_blank" rel="noopener" href="https://api.whatsapp.com/send?text={{ rawurlencode($teksKredensial) }}"><i class="ti ti-brand-whatsapp"></i> Share ke WA</a>
             @endif
             <button type="button" class="btn btn-brand" id="kredensial-salin">Salin semua</button>
         </div>

@@ -1343,7 +1343,9 @@
                     var dlg = document.createElement('dialog');
                     dlg.id = 'kredensial-dialog';
                     dlg.style.cssText = 'border:1px solid var(--border-color);border-radius:10px;padding:0;max-width:440px;width:calc(100% - 32px);';
-                    var wa = k.nomor_wa ? '<a class="btn" target="_blank" rel="noopener" href="https://wa.me/' + k.nomor_wa + '?text=' + encodeURIComponent(teks) + '"><i class="ti ti-brand-whatsapp"></i> Kirim via WA</a>' : '';
+                    var wa = k.nomor_wa
+                        ? '<a class="btn" target="_blank" rel="noopener" href="https://api.whatsapp.com/send?phone=' + k.nomor_wa + '&text=' + encodeURIComponent(teks) + '"><i class="ti ti-brand-whatsapp"></i> Kirim via WA</a>'
+                        : '<a class="btn" target="_blank" rel="noopener" href="https://api.whatsapp.com/send?text=' + encodeURIComponent(teks) + '"><i class="ti ti-brand-whatsapp"></i> Share ke WA</a>';
                     dlg.innerHTML = '<div style="padding:18px;">'
                         + '<div id="kredensial-judul" style="font-size:var(--fs-md);font-weight:600;margin-bottom:6px;"></div>'
                         + '<p style="font-size:var(--fs-sm);color:var(--text-muted);margin:0 0 12px;">Hanya tampil sekali. Kalau terlanjur tertutup, pakai "Reset Password" untuk membuat yang baru.</p>'

@@ -515,29 +515,30 @@ Halaman kebijakan privasi awal (`resources/views/privacy-policy.blade.php`) hany
 
 ---
 
-## 23. Tombol Share Langsung ke WhatsApp Web pada Callsheet Shooting
+## 23. Tombol Share Langsung ke WhatsApp (Aplikasi & Web) pada Callsheet Shooting
 
 ### Masalah Awal:
-Pada halaman callsheet shooting (`/admin/projects/{id}/callsheet/{tanggal}`), pengguna sebelumnya hanya memiliki opsi menyalin teks callsheet secara manual melalui tombol "Salin format WA", lalu harus membuka WhatsApp Web, mencari kontak/grup, dan menempelkan teks tersebut secara manual. Pengguna meminta penambahan tombol untuk membagikan (*share*) langsung teks callsheet ke WhatsApp Web agar dapat langsung memilih kontak atau grup tujuan.
+Pada halaman callsheet shooting (`/admin/projects/{id}/callsheet/{tanggal}`), pengguna sebelumnya hanya memiliki opsi menyalin teks callsheet secara manual melalui tombol "Salin format WA", lalu harus membuka WhatsApp, mencari kontak/grup, dan menempelkan teks tersebut secara manual. Pengguna meminta penambahan tombol untuk membagikan (*share*) langsung teks callsheet ke WhatsApp (baik aplikasi desktop/mobile maupun web) dengan label ringkas "Share ke WA" agar dapat langsung memilih kontak atau grup tujuan.
 
 ### Solusi & Implementasi:
-1. **Penambahan Tombol "Share ke WA Web" pada Bagian Pratinjau Teks WA**:
-   - Di `resources/views/admin/callsheet/show.blade.php`, menambahkan tombol `[Share ke WA Web]` (`.btn-brand` dengan ikon `<i class="ti ti-brand-whatsapp"></i>`) tepat di atas kotak textarea "Pratinjau Teks WA" bersanding dengan tombol `[Salin format WA]`.
-   - Mengarahkan ke skema URL resmi `https://web.whatsapp.com/send?text={encoded_teks}` (tanpa nomor tujuan), sehingga saat diklik di peramban desktop, WhatsApp Web akan otomatis membuka daftar obrolan dan mempersiapkan teks callsheet di kotak ketik obrolan saat kontak atau grup dipilih.
-   - Menyertakan deteksi perangkat bergerak (mobile user agent) via JavaScript: jika dibuka di ponsel pintar, tautan akan dialihkan ke `https://api.whatsapp.com/send?text=` untuk membuka aplikasi native WhatsApp.
-2. **Penambahan Tombol pada Baris Aksi Atas (*Header Action*)**:
-   - Menambahkan tombol aksi cepat `[Share ke WA Web]` pada `card-header-row` di bagian atas halaman callsheet, sejajar dengan tombol Salin format WA, Pratinjau PDF, dan Unduh PDF.
-3. **Pencatatan Log Aktivitas (*Activity Log*)**:
-   - Menghubungkan klik tombol "Share ke WA Web" dengan endpoint `admin.callsheet.salin` via `fetch()` di sisi klien untuk mencatat log aktivitas `CALLSHEET_EXPORT` (`format: wa`) secara otomatis.
+1. **Penambahan Tombol Universal "Share ke WA"**:
+   - Di `resources/views/admin/callsheet/show.blade.php`, menambahkan tombol `[Share ke WA]` (`.btn-brand` dengan ikon `<i class="ti ti-brand-whatsapp"></i>`) pada header kartu "Pratinjau Teks WA" serta pada baris aksi atas halaman.
+   - Menggunakan skema universal `https://api.whatsapp.com/send?text={encoded_teks}` (tanpa mengunci nomor tujuan):
+     - Di komputer dengan aplikasi WhatsApp terinstal (Windows/macOS), peramban akan langsung memicu pembukaan aplikasi WhatsApp.
+     - Di komputer tanpa aplikasi WhatsApp, tersedia opsi pembukaan instan via WhatsApp Web.
+     - Di ponsel pintar (mobile), langsung membuka aplikasi WhatsApp native.
+   - Menyeragamkan teks dan skema ke seluruh bagian aplikasi yang menyediakan fitur share ke WhatsApp (`profile-show.blade.php`, `kredensial-dialog.blade.php`, `app.blade.php`).
+2. **Pencatatan Log Aktivitas (*Activity Log*)**:
+   - Menghubungkan klik tombol "Share ke WA" dengan endpoint `admin.callsheet.salin` via `fetch()` di sisi klien untuk mencatat log aktivitas `CALLSHEET_EXPORT` (`format: wa`) secara otomatis.
 
 ### Hasil Pengujian & Matriks Screenshot:
 - **Pint**: PASS (0 issues).
-- **Test Suite (`CallsheetTest`)**:
-  - SQLite: **15 passed (49 assertions)**.
-  - MySQL (`jbtb_test`): **15 passed (49 assertions)**.
+- **Test Suite (`CallsheetTest`, `CdHubungiWaTest`)**:
+  - SQLite: **20 passed (143 assertions)**.
+  - MySQL (`jbtb_test`): **20 passed (143 assertions)**.
 - **Screenshot Baru (`ct-screenshots/`)**:
-  - `callsheet_wa_share_bottom_dark.png` (Kartu Pratinjau Teks WA dengan tombol Share ke WA Web & Salin)
-  - `callsheet_wa_share_top_light.png` (Bilah aksi atas dengan tombol Share ke WA Web)
+  - `callsheet_wa_share_bottom_dark.png` (Kartu Pratinjau Teks WA dengan tombol Share ke WA & Salin)
+  - `callsheet_wa_share_top_light.png` (Bilah aksi atas dengan tombol Share ke WA)
 
 
 
