@@ -417,6 +417,30 @@ Ditambahkan **20 screenshot** baru di `ct-screenshots/` (prefix `cv_`) mencakup:
   - `proyek_tabel_ringkas.png` (Tabel daftar proyek 4 kolom ringkas tanpa data duplikat)
   - `proyek_tabel_ringkas_dark.png` (Tabel daftar proyek ringkas tema gelap)
 
+---
+
+## 20. Penyatuan Grid Pendaftar pada Tab Detail Proyek (Seragam dengan Tampilan Lineup)
+
+### Masalah Awal:
+Pada halaman detail proyek (`/admin/projects/{id}?tab=pendaftar`), daftar extras pendaftar dipecah-pecah ke dalam beberapa section terpisah berdasarkan status partisipasi (`Diundang [1]`, `Diajukan [x]`, `Nego Fee [x]`, dsb). Hal ini menyebabkan tampilan berantakan dan terasa kosong/tidak nyaman dilihat (seperti 1 kartu yang berdiri sendiri di area kosong).
+
+### Solusi & Implementasi:
+1. **Penggabungan Seluruh Pendaftar ke dalam Satu Grid Responsif Tunggal (`.xgrid`)**:
+   - Mengubah query `$pendaftar` pada `CastingProjectController::show` untuk mengambil daftar pendaftar dalam bentuk koleksi langsung tanpa `groupBy('status_partisipasi')`.
+   - Pada `resources/views/admin/projects/show.blade.php`, menghapus pengelompokan heading per status dan membungkus seluruh kartu extras ke dalam satu elemen `<div class="xgrid">`.
+   - Setiap kartu extras tetap menampilkan badge status masing-masing di pojok foto (`Diajukan`, `Diundang`, `Direview Admin`, `Nego Fee`, dsb) via `partials/extras-card.blade.php`, identik dengan antarmuka di halaman Lineup (`/admin/projects/{id}/applicants`).
+   - Menyediakan informasi ringkasan jumlah pendaftar dan kuota di bagian atas serta tombol cepat `[Buka Lineup lengkap ->]`.
+
+### Hasil Pengujian & Matriks Screenshot:
+- **Pint**: PASS (0 issues).
+- **Test Suite (`CvDaftarProyekTest`, `ProyekKeuanganTest`, `CeUndangExtrasTest`, `BiFilterPanelTest`)**:
+  - SQLite: **60 passed (461 assertions)**.
+  - MySQL (`jbtb_test`): **60 passed (461 assertions)**.
+- **Screenshot Baru (`ct-screenshots/`)**:
+  - `proyek_detail_pendaftar_kumpul.png` (Grid pendaftar bersatu tema terang)
+  - `proyek_detail_pendaftar_kumpul_dark.png` (Grid pendaftar bersatu tema gelap)
+
+
 
 
 

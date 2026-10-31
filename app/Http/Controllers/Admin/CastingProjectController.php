@@ -202,7 +202,7 @@ class CastingProjectController extends Controller
         $pendaftar = $tab === 'pendaftar'
             ? $castingProject->applications()
                 ->with(['extras' => fn ($q) => $q->withProyekSelesai(), 'extras.user', 'extras.categories', 'castingProjectClass.categories'])
-                ->latest()->get()->groupBy('status_partisipasi')
+                ->latest()->get()
             : collect();
 
         $usulanInvoice = null;

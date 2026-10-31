@@ -174,26 +174,28 @@
     </div>
 
 @elseif ($tab === 'pendaftar')
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
-        <div style="font-size: var(--fs-sm); color: var(--text-secondary);">{{ $pendaftar->flatten()->count() }} pendaftar / kuota {{ $p->kuota }}</div>
+    @php
+        $listPendaftar = $pendaftar instanceof \Illuminate\Support\Collection && $pendaftar->first() instanceof \Illuminate\Support\Collection ? $pendaftar->flatten() : $pendaftar;
+    @endphp
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+        <div style="font-size: var(--fs-sm); color: var(--text-secondary);"><strong style="color: var(--text-primary);">{{ $listPendaftar->count() }} pendaftar</strong> / kuota {{ $p->kuota }} extras</div>
         <a href="{{ route('admin.projects.applicants', $p) }}" class="btn btn-sm btn-brand">Buka Lineup lengkap &rarr;</a>
     </div>
-    @foreach (\App\Models\ProjectApplication::LABELS as $status => $label)
-        @continue(! $pendaftar->has($status))
-        <div style="font-weight: 600; margin: 14px 0 8px;">{{ $label }} <span class="badge badge-netral">{{ $pendaftar[$status]->count() }}</span></div>
+
+    @if ($listPendaftar->isNotEmpty())
         <div class="xgrid">
-            @foreach ($pendaftar[$status] as $app)
+            @foreach ($listPendaftar as $app)
                 @include('partials.extras-card', [
                     'profile' => $app->extras,
                     'aplikasi' => $app,
-                    'sub' => $app->extras->user->name ?? null,
-                    'lihat' => ['href' => route('admin.extras.profil', $app->extras->user_id), 'data-profil-modal' => true, 'data-aksi-url' => $diLineup = route('admin.projects.applicants', [$p, 'status' => $status]).'#app-'.$app->id, 'data-aksi-label' => 'Di Lineup'],
+                    'favorit' => true,
+                    'sub' => implode(' · ', array_filter([$app->extras->user->name ?? null, $app->grade ? 'Grade '.$app->grade : null])),
+                    'lihat' => ['href' => route('admin.extras.profil', $app->extras->user_id), 'data-profil-modal' => true, 'data-aksi-url' => $diLineup = route('admin.projects.applicants', [$p, 'status' => $app->status_partisipasi]).'#app-'.$app->id, 'data-aksi-label' => 'Di Lineup'],
                     'aksi' => ['label' => 'Di Lineup', 'href' => $diLineup],
                 ])
             @endforeach
         </div>
-    @endforeach
-    @if ($pendaftar->isEmpty())
+    @else
         <div class="card" style="text-align: center; color: var(--text-muted); padding: 30px 0;">Belum ada pendaftar.</div>
     @endif
 
