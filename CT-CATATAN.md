@@ -513,6 +513,33 @@ Halaman kebijakan privasi awal (`resources/views/privacy-policy.blade.php`) hany
   - `privacy_policy_dark.png` (Tampilan atas kebijakan privasi - tema gelap)
   - `privacy_policy_footer.png` (Bagian hak pemilik data, kontak & footer)
 
+---
+
+## 23. Tombol Share Langsung ke WhatsApp Web pada Callsheet Shooting
+
+### Masalah Awal:
+Pada halaman callsheet shooting (`/admin/projects/{id}/callsheet/{tanggal}`), pengguna sebelumnya hanya memiliki opsi menyalin teks callsheet secara manual melalui tombol "Salin format WA", lalu harus membuka WhatsApp Web, mencari kontak/grup, dan menempelkan teks tersebut secara manual. Pengguna meminta penambahan tombol untuk membagikan (*share*) langsung teks callsheet ke WhatsApp Web agar dapat langsung memilih kontak atau grup tujuan.
+
+### Solusi & Implementasi:
+1. **Penambahan Tombol "Share ke WA Web" pada Bagian Pratinjau Teks WA**:
+   - Di `resources/views/admin/callsheet/show.blade.php`, menambahkan tombol `[Share ke WA Web]` (`.btn-brand` dengan ikon `<i class="ti ti-brand-whatsapp"></i>`) tepat di atas kotak textarea "Pratinjau Teks WA" bersanding dengan tombol `[Salin format WA]`.
+   - Mengarahkan ke skema URL resmi `https://web.whatsapp.com/send?text={encoded_teks}` (tanpa nomor tujuan), sehingga saat diklik di peramban desktop, WhatsApp Web akan otomatis membuka daftar obrolan dan mempersiapkan teks callsheet di kotak ketik obrolan saat kontak atau grup dipilih.
+   - Menyertakan deteksi perangkat bergerak (mobile user agent) via JavaScript: jika dibuka di ponsel pintar, tautan akan dialihkan ke `https://api.whatsapp.com/send?text=` untuk membuka aplikasi native WhatsApp.
+2. **Penambahan Tombol pada Baris Aksi Atas (*Header Action*)**:
+   - Menambahkan tombol aksi cepat `[Share ke WA Web]` pada `card-header-row` di bagian atas halaman callsheet, sejajar dengan tombol Salin format WA, Pratinjau PDF, dan Unduh PDF.
+3. **Pencatatan Log Aktivitas (*Activity Log*)**:
+   - Menghubungkan klik tombol "Share ke WA Web" dengan endpoint `admin.callsheet.salin` via `fetch()` di sisi klien untuk mencatat log aktivitas `CALLSHEET_EXPORT` (`format: wa`) secara otomatis.
+
+### Hasil Pengujian & Matriks Screenshot:
+- **Pint**: PASS (0 issues).
+- **Test Suite (`CallsheetTest`)**:
+  - SQLite: **15 passed (49 assertions)**.
+  - MySQL (`jbtb_test`): **15 passed (49 assertions)**.
+- **Screenshot Baru (`ct-screenshots/`)**:
+  - `callsheet_wa_share_bottom_dark.png` (Kartu Pratinjau Teks WA dengan tombol Share ke WA Web & Salin)
+  - `callsheet_wa_share_top_light.png` (Bilah aksi atas dengan tombol Share ke WA Web)
+
+
 
 
 

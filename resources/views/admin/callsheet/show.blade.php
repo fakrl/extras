@@ -14,7 +14,10 @@
         <div style="font-size: var(--fs-sm); color: var(--text-secondary);">{{ $castingProject->nama_produksi }} <span class="kode-proyek">{{ $castingProject->kode_proyek }}</span></div>
     </div>
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <button type="button" class="btn btn-brand" id="callsheet-salin-wa" data-log-url="{{ route('admin.callsheet.salin', [$castingProject, $shootingDate->tanggal->toDateString()]) }}">
+        <a href="https://web.whatsapp.com/send?text={{ rawurlencode($teksWa) }}" target="_blank" rel="noopener" class="btn btn-brand callsheet-btn-wa-web" data-log-url="{{ route('admin.callsheet.salin', [$castingProject, $shootingDate->tanggal->toDateString()]) }}" style="display: inline-flex; align-items: center; gap: 6px;">
+            <i class="ti ti-brand-whatsapp"></i> Share ke WA Web
+        </a>
+        <button type="button" class="btn btn-tonal" id="callsheet-salin-wa" data-log-url="{{ route('admin.callsheet.salin', [$castingProject, $shootingDate->tanggal->toDateString()]) }}">
             <i class="ti ti-copy"></i> Salin format WA
         </button>
         <a href="{{ route('admin.callsheet.pdf', [$castingProject, $shootingDate->tanggal->toDateString(), 'preview' => 1]) }}" target="_blank" class="btn btn-tonal">
@@ -106,23 +109,62 @@
 @endif
 
 <div class="card">
-    <div class="card-title">Pratinjau Teks WA</div>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+        <div class="card-title" style="margin: 0;">Pratinjau Teks WA</div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+            <a href="https://web.whatsapp.com/send?text={{ rawurlencode($teksWa) }}" target="_blank" rel="noopener" class="btn btn-sm btn-brand callsheet-btn-wa-web" data-log-url="{{ route('admin.callsheet.salin', [$castingProject, $shootingDate->tanggal->toDateString()]) }}" style="display: inline-flex; align-items: center; gap: 6px;">
+                <i class="ti ti-brand-whatsapp"></i> Share ke WA Web
+            </a>
+            <button type="button" class="btn btn-sm btn-tonal" id="callsheet-salin-wa-card" data-log-url="{{ route('admin.callsheet.salin', [$castingProject, $shootingDate->tanggal->toDateString()]) }}" style="display: inline-flex; align-items: center; gap: 6px;">
+                <i class="ti ti-copy"></i> Salin format WA
+            </button>
+        </div>
+    </div>
     <textarea id="callsheet-wa-text" readonly rows="10" style="width: 100%; font-family: monospace; font-size: var(--fs-sm);">{{ $teksWa }}</textarea>
 </div>
 
 @push('scripts')
 <script>
 (function () {
-    var btn = document.getElementById('callsheet-salin-wa');
     var teks = document.getElementById('callsheet-wa-text');
-    btn.addEventListener('click', function () {
-        var ok = function () {
-            btn.innerHTML = '<i class="ti ti-check"></i> Tersalin';
-            setTimeout(function () { btn.innerHTML = '<i class="ti ti-copy"></i> Salin format WA'; }, 2000);
-            fetch(btn.dataset.logUrl, { method: 'POST', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content } });
-        };
-        var fallback = function () { teks.select(); try { document.execCommand('copy'); ok(); } catch (e) {} };
-        if (navigator.clipboard) navigator.clipboard.writeText(teks.value).then(ok, fallback); else fallback();
+    var copyBtns = [
+        document.getElementById('callsheet-salin-wa'),
+        document.getElementById('callsheet-salin-wa-card')
+    ].filter(Boolean);
+
+    copyBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var originalHtml = btn.innerHTML;
+            var ok = function () {
+                btn.innerHTML = '<i class="ti ti-check"></i> Tersalin';
+                setTimeout(function () { btn.innerHTML = originalHtml; }, 2000);
+                if (btn.dataset.logUrl) {
+                    fetch(btn.dataset.logUrl, {
+                        method: 'POST',
+                        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content }
+                    });
+                }
+            };
+            var fallback = function () { teks.select(); try { document.execCommand('copy'); ok(); } catch (e) {} };
+            if (navigator.clipboard) navigator.clipboard.writeText(teks.value).then(ok, fallback); else fallback();
+        });
+    });
+
+    document.querySelectorAll('.callsheet-btn-wa-web').forEach(function (el) {
+        el.addEventListener('click', function (e) {
+            var logUrl = el.dataset.logUrl;
+            if (logUrl) {
+                fetch(logUrl, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content }
+                });
+            }
+            var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            if (isMobile) {
+                e.preventDefault();
+                window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(teks.value), '_blank');
+            }
+        });
     });
 })();
 </script>
