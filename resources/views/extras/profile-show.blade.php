@@ -29,9 +29,9 @@
         </div>
         <p id="share-copied-modal" style="display:none; color:var(--accent); font-size:12px; margin:-10px 0 12px;">Link disalin!</p>
 
-        <a href="https://wa.me/?text={{ urlencode(route('public.extras.profile', $profile->share_token)) }}" target="_blank" rel="noopener"
+        <a href="https://api.whatsapp.com/send?text={{ urlencode(route('public.extras.profile', $profile->share_token)) }}" target="_blank" rel="noopener"
             style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:10px; border-radius:10px; background:#25d366; color:#fff; text-decoration:none; font-size:14px; font-weight:600; box-sizing:border-box;">
-            <i class="ti ti-brand-whatsapp" style="font-size:18px;"></i> WhatsApp
+            <i class="ti ti-brand-whatsapp" style="font-size:18px;"></i> Share ke WA
         </a>
     </div>
 </dialog>
