@@ -48,11 +48,8 @@
 
     <div class="card sa-card">
         <div class="card-title">Staf perlu diingatkan</div>
-        @php
-            $stafDiingatkan = $diingatkan->groupBy(fn ($t) => ($t['peran'] ?? 'admin').'-'.($t['peran'] === 'korlap' ? $t['korlap']->id : $t['admin']->id));
-        @endphp
-        @forelse ($stafDiingatkan as $stafKey => $tasks)
-            @include('super-admin.dashboard._diingatkan', ['tasks' => $tasks, 'idx' => $loop->index])
+        @forelse ($diingatkan as $o)
+            @include('super-admin.dashboard._diingatkan', ['o' => $o])
         @empty
             <x-kosong teks="Semua Admin dan Korlap sesuai jadwal." />
         @endforelse
