@@ -515,21 +515,23 @@ Halaman kebijakan privasi awal (`resources/views/privacy-policy.blade.php`) hany
 
 ---
 
-## 23. Tombol Share Langsung ke WhatsApp (Aplikasi & Web) pada Callsheet Shooting
+## 23. Modal Pop-Up Pratinjau & Share ke WhatsApp pada Callsheet Shooting
 
 ### Masalah Awal:
-Pada halaman callsheet shooting (`/admin/projects/{id}/callsheet/{tanggal}`), pengguna sebelumnya hanya memiliki opsi menyalin teks callsheet secara manual melalui tombol "Salin format WA", lalu harus membuka WhatsApp, mencari kontak/grup, dan menempelkan teks tersebut secara manual. Pengguna meminta penambahan tombol untuk membagikan (*share*) langsung teks callsheet ke WhatsApp (baik aplikasi desktop/mobile maupun web) dengan label ringkas "Share ke WA" agar dapat langsung memilih kontak atau grup tujuan.
+Pada halaman callsheet shooting (`/admin/projects/{id}/callsheet/{tanggal}`), pengguna sebelumnya memiliki section kartu teks WA yang panjang di bagian bawah dan tombol yang dobel (di bilah atas dan di header kartu bawah), sehingga redundan dan membuat halaman terlalu panjang. Pengguna meminta section bawah tersebut dihilangkan dan tombol "Share ke WA" di atas difungsikan untuk membuka pop-up modal dialog pratinjau teks WA dengan opsi salin dan share langsung.
 
 ### Solusi & Implementasi:
-1. **Penambahan Tombol Universal "Share ke WA"**:
-   - Di `resources/views/admin/callsheet/show.blade.php`, menambahkan tombol `[Share ke WA]` (`.btn-brand` dengan ikon `<i class="ti ti-brand-whatsapp"></i>`) pada header kartu "Pratinjau Teks WA" serta pada baris aksi atas halaman.
-   - Menggunakan skema universal `https://api.whatsapp.com/send?text={encoded_teks}` (tanpa mengunci nomor tujuan):
-     - Di komputer dengan aplikasi WhatsApp terinstal (Windows/macOS), peramban akan langsung memicu pembukaan aplikasi WhatsApp.
-     - Di komputer tanpa aplikasi WhatsApp, tersedia opsi pembukaan instan via WhatsApp Web.
-     - Di ponsel pintar (mobile), langsung membuka aplikasi WhatsApp native.
-   - Menyeragamkan teks dan skema ke seluruh bagian aplikasi yang menyediakan fitur share ke WhatsApp (`profile-show.blade.php`, `kredensial-dialog.blade.php`, `app.blade.php`).
-2. **Pencatatan Log Aktivitas (*Activity Log*)**:
-   - Menghubungkan klik tombol "Share ke WA" dengan endpoint `admin.callsheet.salin` via `fetch()` di sisi klien untuk mencatat log aktivitas `CALLSHEET_EXPORT` (`format: wa`) secara otomatis.
+1. **Pembersihan Redundansi & Eliminasi Section Bawah**:
+   - Menghapus kartu permanen `Pratinjau Teks WA` dari alur bawah halaman callsheet sehingga halaman menjadi ringkas, fokus, dan rapi.
+   - Menghilangkan tombol ganda pada halaman utama. Bilah aksi atas kini hanya memiliki 3 tombol utama yang seimbang: `[Share ke WA]`, `[Pratinjau PDF]`, dan `[Unduh PDF]`.
+2. **Modal Dialog M3 Pratinjau Teks WA (`#modal-callsheet-wa`)**:
+   - Saat tombol `[Share ke WA]` di bilah atas diklik, sistem membuka modal dialog pop-up yang menyajikan pratinjau format teks callsheet.
+   - Di dalam modal:
+     - Header dialog: Judul "Pratinjau Format WA", kode proyek, tanggal shooting, dan tombol silang `(x)`.
+     - Body dialog: Teks penjelasan ringkas serta textarea pratinjau teks callsheet lengkap.
+     - Footer dialog: Tombol `[Tutup]`, tombol `[Salin format WA]` (menyalin ke clipboard & feedback visual), dan tombol `[Share ke WA ->]` (membuka WhatsApp universal `api.whatsapp.com/send?text=...`).
+3. **Pencatatan Log Aktivitas (*Activity Log*)**:
+   - Klik pada tombol salin maupun tombol share ke WA di dalam modal tetap terhubung dengan endpoint `admin.callsheet.salin` via `fetch()` untuk mencatat log aktivitas `CALLSHEET_EXPORT` (`format: wa`).
 
 ### Hasil Pengujian & Matriks Screenshot:
 - **Pint**: PASS (0 issues).
@@ -537,8 +539,9 @@ Pada halaman callsheet shooting (`/admin/projects/{id}/callsheet/{tanggal}`), pe
   - SQLite: **20 passed (143 assertions)**.
   - MySQL (`jbtb_test`): **20 passed (143 assertions)**.
 - **Screenshot Baru (`ct-screenshots/`)**:
-  - `callsheet_wa_share_bottom_dark.png` (Kartu Pratinjau Teks WA dengan tombol Share ke WA & Salin)
-  - `callsheet_wa_share_top_light.png` (Bilah aksi atas dengan tombol Share ke WA)
+  - `callsheet_page_clean.png` (Tampilan halaman callsheet bersih tanpa section bawah & tombol redundan)
+  - `callsheet_modal_wa_dark.png` (Modal pop-up pratinjau teks WA & tombol share - mode gelap)
+  - `callsheet_modal_wa_light.png` (Modal pop-up pratinjau teks WA & tombol share - mode terang)
 
 
 
