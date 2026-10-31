@@ -153,6 +153,8 @@ class SuperAdminDashboardTest extends TestCase
         $this->assertSame($admin->id, $tanpaPic->fresh()->admin_id);
     }
 
+    // CW.1: kartu "Staf perlu diingatkan" = satu baris per ORANG, bukan per kelompok - sini
+    // 1 Admin punya tugas di 2 proyek berbeda (2 kelompok CU.7) tapi harus muncul 1 baris digabung.
     public function test_admin_perlu_diingatkan_maksimal_5_dan_kosong(): void
     {
         $r0 = $this->actingAs($this->sa)->get(route('super-admin.dashboard'));
@@ -167,7 +169,11 @@ class SuperAdminDashboardTest extends TestCase
         }
 
         $r = $this->actingAs($this->sa)->get(route('super-admin.dashboard'));
-        $this->assertCount(2, $r->viewData('diingatkan'));
+        $diingatkan = $r->viewData('diingatkan');
+        $this->assertCount(1, $diingatkan, 'tugas di 2 proyek milik 1 Admin harus digabung jadi 1 baris');
+        $this->assertSame($pic->id, $diingatkan->first()['staf']->id);
+        $this->assertSame(2, $diingatkan->first()['jumlah']);
+        $this->assertCount(2, $diingatkan->first()['kelompok']);
         $r->assertSee('Ingatkan');
     }
 

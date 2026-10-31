@@ -111,7 +111,8 @@ class CuBugVisualTest extends TestCase
         return $app;
     }
 
-    // CU.7: dashboard SA mengelompokkan per Admin+proyek+jenis tugas (bukan per kandidat).
+    // CU.7/CW.1: kelompok mentah tetap per Admin+proyek+jenis (dipakai Monitoring, tidak
+    // berubah); kartu dashboard SA sendiri sejak CW.1 diringkas lagi jadi 1 baris per ORANG.
     public function test_admin_perlu_diingatkan_dikelompokkan_per_admin_proyek_jenis(): void
     {
         $sa = User::factory()->create(['role' => 'super_admin']);
@@ -125,9 +126,10 @@ class CuBugVisualTest extends TestCase
         $r->assertOk();
 
         $diingatkan = $r->viewData('diingatkan');
-        $this->assertCount(1, $diingatkan, 'harusnya 1 baris dikelompokkan, bukan 4 baris per kandidat');
+        $this->assertCount(1, $diingatkan, 'harusnya 1 baris per orang, bukan 4 baris per kandidat');
         $this->assertSame(4, $diingatkan->first()['jumlah']);
-        $this->assertSame('Honor belum ditransfer', $diingatkan->first()['tugas']);
+        $this->assertCount(1, $diingatkan->first()['kelompok'], '1 Admin + 1 proyek + 1 jenis = 1 kelompok di baliknya');
+        $this->assertSame('Honor belum ditransfer', $diingatkan->first()['kelompok']->first()['tugas']);
         $r->assertSee('Honor belum ditransfer', false);
         $r->assertSee('4 Extras', false);
 
