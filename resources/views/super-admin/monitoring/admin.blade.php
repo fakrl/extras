@@ -26,7 +26,7 @@
         <div class="card-title">Proyek berjalan</div>
         @forelse ($proyek as $p)
             @php $tahap = $p->tahap(); @endphp
-            <a href="{{ route('admin.projects.show', $p) }}" class="dash-row" style="flex-wrap: nowrap;">
+            <a href="{{ route('admin.projects.show', $p) }}" class="dash-row" style="flex-wrap: nowrap;" onclick="event.preventDefault(); document.getElementById('modal-proyek-mon-{{ $p->id }}').showModal()" title="Klik untuk ringkasan proyek">
                 <div style="min-width: 0;">
                     <strong>{{ $p->nama_produksi }}</strong>
                     @if ($tahap)
@@ -40,6 +40,7 @@
                     <div class="dash-sub">pendaftar/kuota</div>
                 </div>
             </a>
+            @include('partials.modal-ringkasan-proyek', ['project' => $p, 'id' => 'modal-proyek-mon-'.$p->id])
         @empty
             <div class="dash-aman" role="status"><i class="ti ti-circle-check"></i> Tidak ada proyek berjalan atau mendatang.</div>
         @endforelse

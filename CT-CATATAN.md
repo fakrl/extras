@@ -440,6 +440,39 @@ Pada halaman detail proyek (`/admin/projects/{id}?tab=pendaftar`), daftar extras
   - `proyek_detail_pendaftar_kumpul.png` (Grid pendaftar bersatu tema terang)
   - `proyek_detail_pendaftar_kumpul_dark.png` (Grid pendaftar bersatu tema gelap)
 
+---
+
+## 21. Modal Pop-Up Ringkasan Proyek pada Halaman Monitoring Admin
+
+### Masalah Awal:
+Pada halaman monitoring admin (`/super-admin/monitoring/admin`), bagian widget "Proyek berjalan" sebelumnya langsung mengarahkan pengguna ke halaman detail proyek (`/admin/projects/{id}`) saat nama proyek diklik. Pengguna menginginkan deskripsi dan ringkasan proyek ditampilkan dalam bentuk pop-up modal terlebih dahulu (sama seperti pada daftar proyek utama), dengan tombol di dalamnya untuk melanjutkan ke halaman proyek jika diinginkan.
+
+### Solusi & Implementasi:
+1. **Pembuatan Partial Reusable `partials/modal-ringkasan-proyek.blade.php`**:
+   - Mengekstrak elemen dialog ringkasan proyek dari `resources/views/admin/projects/index.blade.php` ke partial terpisah yang dapat digunakan di berbagai halaman (`resources/views/partials/modal-ringkasan-proyek.blade.php`).
+   - Mendukung custom ID modal (misal `modal-proyek-mon-{$project->id}`) untuk mencegah benturan DOM ID jika terdapat beberapa modal proyek di halaman yang sama.
+   - Menyajikan informasi lengkap: judul produksi, kode proyek, badge urgensi & tahap, detail client & penanggung jawab client, tim pengelola (PIC & Korlap), jadwal shooting & sisa hari, kuota pendaftar dengan progress bar, serta deskripsi proyek.
+   - Menyertakan tombol navigasi cepat `[Buka Halaman Proyek ->]` serta tombol `[Tutup]` / icon silang `(x)`.
+
+2. **Globalisasi Style & Interaksi Backdrop M3 pada `layouts/app.blade.php`**:
+   - Memindahkan CSS kelas `.modal-proyek-dialog` dan sub-komponennya (`.mp-head`, `.mp-body`, `.mp-foot`, `.mp-card-box`, `.mp-label`) ke file tata letak global `resources/views/layouts/app.blade.php`.
+   - Menambahkan event listener penutupan modal saat backdrop luar dialog diklik (`dialog.addEventListener('click', ...)`).
+
+3. **Penerapan pada Widget "Proyek Berjalan" (`super-admin/monitoring/admin.blade.php`)**:
+   - Mengubah tautan baris proyek pada widget agar memanggil `document.getElementById('modal-proyek-mon-{{ $p->id }}').showModal()` saat diklik alih-alih berpindah URL langsung.
+   - Meng-include partial `modal-ringkasan-proyek` untuk setiap proyek pada daftar widget.
+   - Memperbarui query controller `MonitoringController@admin` untuk melakukan eager loading relasi `client` dan `adminAssignments.user` guna mengoptimalkan query dan mencegah potensi N+1.
+
+### Hasil Pengujian & Matriks Screenshot:
+- **Pint**: PASS (0 issues).
+- **Test Suite (`CvDaftarProyekTest`, `ProyekKeuanganTest`, `MonitoringTest`, `SuperAdminDashboardTest`)**:
+  - SQLite: **46 passed (291 assertions)**.
+  - MySQL (`jbtb_test`): **46 passed (291 assertions)**.
+- **Screenshot Baru (`ct-screenshots/`)**:
+  - `monitoring_proyek_modal_light.png` (Modal ringkasan proyek pada widget monitoring admin - tema terang)
+  - `monitoring_proyek_modal_dark.png` (Modal ringkasan proyek pada widget monitoring admin - tema gelap)
+
+
 
 
 
