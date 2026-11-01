@@ -54,6 +54,39 @@
 </div>
 
 @php
+    $appCounts = $castingProject->applications()->selectRaw('status_partisipasi, count(*) as count')->groupBy('status_partisipasi')->pluck('count', 'status_partisipasi');
+    $cntReview = ($appCounts['diajukan'] ?? 0) + ($appCounts['direview_admin'] ?? 0);
+    $cntNego = $appCounts['nego_fee'] ?? 0;
+    $cntDeal = $appCounts['deal'] ?? 0;
+    $cntLolos = ($appCounts['lolos'] ?? 0) + ($appCounts['kontrak_ditandatangani'] ?? 0);
+    $cntTolak = ($appCounts['ditolak'] ?? 0) + ($appCounts['dibatalkan'] ?? 0);
+    $cntSemua = $castingProject->applications()->count();
+@endphp
+
+@if (($tab ?? '') !== 'client')
+<div class="quick-filter-bar" style="margin: 8px 0 12px;">
+    <a href="{{ route('admin.projects.applicants', array_merge(['castingProject' => $castingProject], $tampilQ)) }}" class="quick-filter-chip {{ empty($statuses) ? 'is-active' : '' }}">
+        Semua ({{ $cntSemua }})
+    </a>
+    <a href="{{ route('admin.projects.applicants', array_merge(['castingProject' => $castingProject, 'status' => ['diajukan', 'direview_admin']], $tampilQ)) }}" class="quick-filter-chip {{ in_array('diajukan', $statuses) || in_array('direview_admin', $statuses) ? 'is-active' : '' }}">
+        Perlu Direview Admin ({{ $cntReview }})
+    </a>
+    <a href="{{ route('admin.projects.applicants', array_merge(['castingProject' => $castingProject, 'status' => ['nego_fee']], $tampilQ)) }}" class="quick-filter-chip {{ in_array('nego_fee', $statuses) ? 'is-active' : '' }}">
+        Sedang Nego Fee ({{ $cntNego }})
+    </a>
+    <a href="{{ route('admin.projects.applicants', array_merge(['castingProject' => $castingProject, 'status' => ['deal']], $tampilQ)) }}" class="quick-filter-chip {{ in_array('deal', $statuses) ? 'is-active' : '' }}">
+        Siap Diajukan ke Client ({{ $cntDeal }})
+    </a>
+    <a href="{{ route('admin.projects.applicants', array_merge(['castingProject' => $castingProject, 'status' => ['lolos', 'kontrak_ditandatangani']], $tampilQ)) }}" class="quick-filter-chip {{ in_array('lolos', $statuses) || in_array('kontrak_ditandatangani', $statuses) ? 'is-active' : '' }}">
+        Lolos / Kontrak ({{ $cntLolos }})
+    </a>
+    <a href="{{ route('admin.projects.applicants', array_merge(['castingProject' => $castingProject, 'status' => ['ditolak', 'dibatalkan']], $tampilQ)) }}" class="quick-filter-chip {{ in_array('ditolak', $statuses) || in_array('dibatalkan', $statuses) ? 'is-active' : '' }}">
+        Ditolak ({{ $cntTolak }})
+    </a>
+</div>
+@endif
+
+@php
     $statusAktif = ['diundang', 'diajukan', 'direview_admin', 'nego_fee', 'deal', 'diajukan_ke_client', 'lolos', 'kontrak_ditandatangani'];
     $statusSelesai = ['ditolak', 'selesai_produksi', 'dibatalkan'];
     $tagNamaDicari = $tagDicari->pluck('nama', 'id');
@@ -309,24 +342,38 @@
                 <div style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $app->grade ? 'Grade '.$app->grade : 'Belum ada grade.' }}</div>
             @endif
 
-            <div class="xsec">Aksi lain</div>
+            {{-- Zona 1: Keputusan Tahap Ini --}}
+            @if ($bolehKelola)
+            <div class="xsec" style="margin-top: 14px;"><i class="ti ti-target"></i> Keputusan Tahap Ini</div>
             <div class="xaksi">
-                @if ($ex->user)
-                    <a href="{{ route('admin.extras.profil', $ex->user) }}" class="btn" data-profil-modal><i class="ti ti-user"></i> Profil lengkap</a>
-                @endif
-                @if ($bolehKelola)
                 @if (in_array($app->status_partisipasi, ['direview_admin', 'nego_fee'], true))
                     <a href="{{ route('admin.negotiations.show', $app) }}" class="btn btn-brand">{{ $app->status_partisipasi === 'nego_fee' ? 'Lanjut Nego' : 'Mulai Nego' }}</a>
                 @endif
-                <button type="button" class="btn" onclick="document.getElementById('breakdown-dialog-{{ $app->id }}').showModal()"><i class="ti ti-movie"></i> Breakdown</button>
                 @if ($app->status_partisipasi === 'lolos' || $app->contract)
-                    <a href="{{ route('contracts.show', $app) }}" class="btn">Kontrak</a>
+                    <a href="{{ route('contracts.show', $app) }}" class="btn btn-brand">Kontrak</a>
                 @endif
                 @if ($app->status_partisipasi === 'kontrak_ditandatangani' || $app->payment)
-                    <a href="{{ route('payments.show', $app) }}" class="btn">Bayar</a>
+                    <a href="{{ route('payments.show', $app) }}" class="btn btn-brand">Bayar</a>
                 @endif
+                @if (in_array($app->status_partisipasi, ['diajukan', 'direview_admin'], true))
+                    <button type="button" class="btn btn-danger-outline" onclick="document.getElementById('reject-dialog-{{ $app->id }}').showModal()">Tolak</button>
+                @endif
+                @if ($app->status_partisipasi === 'deal')
+                    <button type="button" class="btn btn-danger-outline" onclick="document.getElementById('batalkan-dialog-{{ $app->id }}').showModal()">Batalkan</button>
+                @endif
+            </div>
+            @endif
+
+            {{-- Zona 2: Atribut & Penilaian Internal --}}
+            <div class="xsec" style="margin-top: 14px;">Penilaian &amp; Aksi Internal</div>
+            <div class="xaksi-internal" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                @if ($ex->user)
+                    <a href="{{ route('admin.extras.profil', $ex->user) }}" class="btn btn-tonal" data-profil-modal><i class="ti ti-user"></i> Profil lengkap</a>
+                @endif
+                @if ($bolehKelola)
+                <button type="button" class="btn btn-tonal" onclick="document.getElementById('breakdown-dialog-{{ $app->id }}').showModal()"><i class="ti ti-movie"></i> Breakdown</button>
                 @if ($bisaCatatan)
-                    <button type="button" class="btn" onclick="document.getElementById('catatan-dialog-{{ $app->id }}').showModal()">Catatan Lapangan</button>
+                    <button type="button" class="btn btn-tonal" onclick="document.getElementById('catatan-dialog-{{ $app->id }}').showModal()">Catatan Lapangan</button>
                 @endif
                 @if ($isAdmin)
                     @if ($ex->apresiasi)
@@ -336,14 +383,8 @@
                             <button type="submit" class="btn btn-danger-outline">Hapus dari Favorit</button>
                         </form>
                     @else
-                        <button type="button" class="btn" onclick="document.getElementById('apresiasi-dialog-{{ $app->id }}').showModal()"><i class="ti ti-star"></i> Jadikan Favorit</button>
+                        <button type="button" class="btn btn-tonal" onclick="document.getElementById('apresiasi-dialog-{{ $app->id }}').showModal()"><i class="ti ti-star"></i> Jadikan Favorit</button>
                     @endif
-                @endif
-                @if (in_array($app->status_partisipasi, ['diajukan', 'direview_admin'], true))
-                    <button type="button" class="btn btn-danger-outline" onclick="document.getElementById('reject-dialog-{{ $app->id }}').showModal()">Tolak</button>
-                @endif
-                @if ($app->status_partisipasi === 'deal')
-                    <button type="button" class="btn btn-danger-outline" onclick="document.getElementById('batalkan-dialog-{{ $app->id }}').showModal()">Batalkan</button>
                 @endif
                 @endif
             </div>

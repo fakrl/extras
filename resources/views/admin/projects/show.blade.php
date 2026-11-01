@@ -32,16 +32,21 @@
     </div>
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
         @can('kelola', $p)
-        <a href="{{ route('admin.projects.edit', $p) }}" class="btn btn-sm">Edit</a>
+        <a href="{{ route('admin.projects.edit', $p) }}" class="btn btn-sm btn-tonal"><i class="ti ti-pencil"></i> Edit Proyek</a>
         @endcan
-        <a href="{{ route('admin.projects.applicants', $p) }}" class="btn btn-sm">Lineup</a>
-        <a href="{{ route('invoices.show', $p) }}" class="btn btn-sm">Invoice</a>
+        <a href="{{ route('admin.projects.applicants', $p) }}" class="btn btn-sm btn-brand"><i class="ti ti-users-group"></i> Buka Workspace Lineup Penuh &rarr;</a>
+        <a href="{{ route('invoices.show', $p) }}" class="btn btn-sm btn-tonal"><i class="ti ti-receipt"></i> Lihat Dokumen Invoice</a>
     </div>
 </div>
 
 @php $bolehKelola = auth()->user()->can('kelola', $p); @endphp
 @unless ($bolehKelola)
-    <div role="status" style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-card); color: var(--text-secondary); font-size: var(--fs-sm); margin-bottom: 12px;"><i class="ti ti-eye"></i> Lihat saja, proyek ini dipegang {{ $p->admin?->name ?? 'belum ada PIC' }}.</div>
+    <div role="status" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-left: 4px solid var(--warning); border-radius: var(--radius-md); background: var(--md-custom-warning-container, rgba(245,158,11,0.12)); color: var(--text-primary); font-size: var(--fs-sm); margin-bottom: 14px;">
+        <i class="ti ti-eye" style="font-size: 18px; color: var(--warning);"></i>
+        <div>
+            <strong>Mode Lihat saja</strong> &mdash; Anda sedang dalam mode baca karena proyek ini ditugaskan kepada {{ $p->admin?->name ?? 'belum ada PIC' }}.
+        </div>
+    </div>
 @endunless
 
 <div class="xfilter" role="tablist" aria-label="Bagian detail proyek">
@@ -177,9 +182,14 @@
     @php
         $listPendaftar = $pendaftar instanceof \Illuminate\Support\Collection && $pendaftar->first() instanceof \Illuminate\Support\Collection ? $pendaftar->flatten() : $pendaftar;
     @endphp
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
-        <div style="font-size: var(--fs-sm); color: var(--text-secondary);"><strong style="color: var(--text-primary);">{{ $listPendaftar->count() }} pendaftar</strong> / kuota {{ $p->kuota }} extras</div>
-        <a href="{{ route('admin.projects.applicants', $p) }}" class="btn btn-sm btn-brand">Buka Lineup lengkap &rarr;</a>
+    <div style="background: var(--md-surface-container, var(--bg-card)); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div>
+            <div style="font-size: 13.5px; font-weight: 600; color: var(--text-primary);"><i class="ti ti-info-circle"></i> Ringkasan Pendaftar ({{ $listPendaftar->count() }} orang / kuota {{ $p->kuota }})</div>
+            <div style="font-size: var(--fs-xs); color: var(--text-secondary); margin-top: 2px;">
+                Menampilkan ringkasan pendaftar. Untuk memfilter tag, mengatur grade, dan memproses seleksi massal, gunakan tombol <strong>[Buka Workspace Lineup Penuh]</strong>.
+            </div>
+        </div>
+        <a href="{{ route('admin.projects.applicants', $p) }}" class="btn btn-sm btn-brand">Buka Workspace Lineup Penuh &rarr;</a>
     </div>
 
     @if ($listPendaftar->isNotEmpty())

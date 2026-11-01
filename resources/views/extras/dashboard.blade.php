@@ -139,24 +139,16 @@
 
 @forelse ($pendaftaranAktif as $app)
     <div class="card" id="pendaftaran-{{ $app->id }}" style="margin-bottom: 14px; scroll-margin-top: 80px;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
             <div>
-                <div style="font-size: 14.5px; font-weight: 600;">{{ $app->castingProject->nama_produksi }}</div>
-                <x-status-badge :model="$app" style="margin-top: 4px; display: inline-block;" />
+                <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);">{{ $app->castingProject->nama_produksi }}</div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: wrap;">
+                    <x-status-badge :model="$app" style="display: inline-block;" />
+                    @if ($app->castingProjectClass)
+                        <span class="badge badge-netral">Peran: {{ $app->castingProjectClass->nama_kelas }}</span>
+                    @endif
+                </div>
             </div>
-            @if ($app->status_partisipasi === 'diundang')
-                <a href="{{ route('extras.projects.show', $app->castingProject) }}" class="btn btn-brand">Lihat Undangan</a>
-            @elseif ($app->status_partisipasi === 'nego_fee')
-                <a href="{{ route('extras.negotiations.show', $app) }}" class="btn btn-brand">Lanjut Nego Fee</a>
-            @elseif ($app->status_partisipasi === 'lolos' && ! $extrasProfile->nik_hash)
-                <a href="{{ route('extras.kontrak.lengkapi-ktp', $app) }}" class="btn btn-brand">Lengkapi KTP</a>
-            @elseif ($app->status_partisipasi === 'lolos')
-                <a href="{{ route('contracts.show', $app) }}" class="btn btn-brand">Tanda Tangan Kontrak</a>
-            @elseif ($app->payment?->status === 'ditransfer')
-                <a href="{{ route('payments.show', $app) }}" class="btn btn-brand">Konfirmasi Bayar</a>
-            @elseif (in_array($app->status_partisipasi, ['kontrak_ditandatangani', 'selesai_produksi']))
-                <a href="{{ route('payments.show', $app) }}" class="btn btn-brand">Pembayaran</a>
-            @endif
         </div>
 
         @php $bentrokPasti = $bentrokPer[$app->id]->filter->isPasti(); @endphp

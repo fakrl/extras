@@ -28,7 +28,7 @@
 </a>
 <a href="{{ route('admin.projects.index') }}" class="sidebar-link {{ str_starts_with($route, 'admin/projects') || str_starts_with($route, 'super-admin/persetujuan') ? 'active' : '' }}">
     <i class="ti ti-movie"></i> Proyek
-    @if ($sbMenungguKeputusan)<span class="sb-dot" aria-label="Ada yang perlu diputuskan"></span>@endif
+    @if ($sbMenungguKeputusan)<span class="sb-dot sb-badge-count" aria-label="Ada yang perlu diputuskan" title="{{ $sbMenungguKeputusan }} keputusan">{{ $sbMenungguKeputusan }}</span>@endif
 </a>
 <a href="{{ route('super-admin.activity-logs') }}" class="sidebar-link {{ str_starts_with($route, 'super-admin/activity-logs') ? 'active' : '' }}">
     <i class="ti ti-activity"></i> Log Aktivitas

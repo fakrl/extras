@@ -3,24 +3,39 @@
 @section('title', $castingProject->nama_produksi)
 
 @section('content')
-<p style="color: var(--text-secondary); margin: -8px 0 20px; font-size: 13.5px;">
-    Client: {{ $castingProject->namaClient() }} · Deadline: {{ $castingProject->deadline->translatedFormat('d M Y') }}
-    @if ($castingProject->isUrgent())
-        <span class="badge badge-urgent">Butuh Dadakan</span>
-    @endif
-    @include('partials.label-nego', ['project' => $castingProject])
-</p>
+<div class="project-context-header">
+    <div class="pch-main">
+        <a href="{{ route('extras.projects.index') }}" class="pch-back"><i class="ti ti-arrow-left"></i> Lowongan</a>
+        <div>
+            <div class="pch-title">{{ $castingProject->nama_produksi }}</div>
+            <div class="pch-meta">
+                <span>Client: {{ $castingProject->namaClient() }}</span>
+                <span>&bull;</span>
+                <span>Deadline: {{ $castingProject->deadline->translatedFormat('d M Y') }}</span>
+                @if ($castingProject->kode_proyek)
+                    <span class="badge badge-netral">{{ $castingProject->kode_proyek }}</span>
+                @endif
+            </div>
+        </div>
+    </div>
+    <div>
+        @if ($castingProject->isUrgent())
+            <span class="badge badge-urgent">Butuh Dadakan</span>
+        @endif
+        @include('partials.label-nego', ['project' => $castingProject])
+    </div>
+</div>
 
 <div class="card" style="margin-bottom: 16px;">
-    <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Tanggal Shooting</div>
+    <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;"><i class="ti ti-calendar"></i> Tanggal Shooting</div>
     <ul style="margin: 0; padding-left: 18px; font-size: 13.5px;">
         @foreach ($castingProject->shootingDates as $date)
             @php($kena = $bentrok->filter(fn ($b) => $b->tanggalBentrok->contains($date->tanggal->toDateString())))
-            <li style="margin-bottom: 4px;">
-                {{ $date->tanggal->translatedFormat('d M Y') }}
+            <li style="margin-bottom: 6px;">
+                <strong>{{ $date->tanggal->translatedFormat('l, d F Y') }}</strong>
                 @if ($kena->isNotEmpty())
-                    <span class="badge badge-urgent">Bentrok dengan jadwalmu</span>
-                    <span style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $kena->map(fn ($b) => $b->castingProject->nama_produksi.' ('.($b->isPasti() ? 'sudah pasti' : 'masih diproses').')')->join(', ') }}</span>
+                    <span class="badge badge-urgent" style="margin-left: 4px;">Bentrok dengan jadwalmu</span>
+                    <span style="font-size: var(--fs-xs); color: var(--text-muted); display: block; margin-top: 2px;">{{ $kena->map(fn ($b) => $b->castingProject->nama_produksi.' ('.($b->isPasti() ? 'sudah pasti' : 'masih diproses').')')->join(', ') }}</span>
                 @endif
             </li>
         @endforeach
@@ -28,7 +43,7 @@
 </div>
 
 <div class="card" style="margin-bottom: 16px;">
-    <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Peran yang Dibutuhkan</div>
+    <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;"><i class="ti ti-users"></i> Peran yang Dibutuhkan</div>
     @if ($castingProject->classes->isEmpty())
         <p style="margin: 0; font-size: 13.5px; color: var(--text-muted);">Belum ada rincian peran.</p>
     @else
@@ -39,7 +54,7 @@
 @if ($undangan)
 <div class="card" style="margin-bottom: 16px; border-color: var(--accent);">
     <span class="badge badge-info">Diundang</span>
-    <div style="font-size: 14px; font-weight: 500; margin: 8px 0 4px;">Kamu diundang ke proyek ini @if ($undangan->castingProjectClass)sebagai {{ $undangan->castingProjectClass->nama_kelas }}@endif</div>
+    <div style="font-size: 14px; font-weight: 600; margin: 8px 0 4px;">Kamu diundang ke proyek ini @if ($undangan->castingProjectClass)sebagai {{ $undangan->castingProjectClass->nama_kelas }}@endif</div>
     <p style="margin: 0 0 12px; font-size: 13.5px; color: var(--text-secondary);">Terima kalau kamu bisa ikut, atau tolak kalau tidak. Setelah diterima, Admin akan mereview profilmu seperti pendaftar lain.</p>
     @if (session('konfirmasi_bentrok'))
         <div class="alert-danger" style="margin: 0 0 12px;"><span class="badge badge-urgent">Bentrok jadwal</span> {{ session('konfirmasi_bentrok') }} Klik Terima lagi untuk tetap menerima.</div>
@@ -47,27 +62,51 @@
     @include('partials.undangan-aksi', ['app' => $undangan, 'alasan' => true, 'konfirmasi' => session()->has('konfirmasi_bentrok')])
 </div>
 @elseif (! $castingProject->menerimaPendaftaran())
-<div class="alert-info">Proyek ini sudah tidak menerima pendaftaran (ditutup, kuota penuh, atau lewat deadline).</div>
+<div class="alert-info"><i class="ti ti-info-circle"></i> Proyek ini sudah tidak menerima pendaftaran (ditutup, kuota penuh, atau lewat deadline).</div>
 @else
 <form method="POST" action="{{ route('extras.projects.apply', $castingProject) }}">
     @csrf
     @if ($castingProject->classes->isNotEmpty())
-        <div class="card" style="margin-bottom: 16px;">
-            <div style="font-size: 14px; font-weight: 500; margin-bottom: 10px;">Pilih Peran yang Kamu Daftar</div>
-            @foreach ($castingProject->classes as $class)
-                @php($penuh = $class->sisaKuota() === 0)
-                <label style="display: block; margin-bottom: 8px;{{ $penuh ? ' color: var(--text-muted);' : '' }}">
-                    <input type="radio" name="casting_project_class_id" value="{{ $class->id }}" required @disabled($penuh)>
-                    {{ $class->nama_kelas }}
-                    @if ($penuh)
-                        <span style="font-size: var(--fs-xs);">· Penuh, slot bisa terbuka lagi</span>
-                    @endif
-                </label>
-            @endforeach
+        <div class="card" id="kartu-pilih-peran" style="margin-bottom: 16px; border: 1.5px solid var(--accent);">
+            <div style="font-size: 14.5px; font-weight: 600; margin-bottom: 4px;">Pilih Peran yang Kamu Daftar</div>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin: 0 0 12px;">Pilih salah satu peran yang sesuai dengan kesiapan dan kriteriamu.</p>
+            <div style="display: grid; gap: 8px;">
+                @foreach ($castingProject->classes as $class)
+                    @php($penuh = $class->sisaKuota() === 0)
+                    <label style="display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-card); cursor: {{ $penuh ? 'not-allowed' : 'pointer' }};{{ $penuh ? ' color: var(--text-muted); opacity: 0.7;' : '' }}">
+                        <input type="radio" name="casting_project_class_id" value="{{ $class->id }}" required @disabled($penuh) style="margin-top: 3px;">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; font-size: 13.5px;">{{ $class->nama_kelas }}</div>
+                            @if ($penuh)
+                                <span style="font-size: var(--fs-xs); color: var(--text-muted);">· Penuh, slot bisa terbuka lagi</span>
+                            @else
+                                <span style="font-size: var(--fs-xs); color: var(--accent); font-weight: 500;">Tersedia (Sisa kuota: {{ $class->sisaKuota() }})</span>
+                            @endif
+                        </div>
+                    </label>
+                @endforeach
+            </div>
         </div>
     @endif
-    <button type="submit" class="btn btn-brand">Daftar ke Proyek Ini</button>
+
+    @if ($bentrok->isNotEmpty())
+        <div style="margin-bottom: 12px; padding: 10px 14px; border-radius: var(--radius-md); background: var(--md-custom-warning-container, rgba(245,158,11,0.12)); border: 1px solid color-mix(in srgb, var(--warning) 40%, transparent);">
+            <div style="font-size: 13px; font-weight: 600; color: var(--warning);"><i class="ti ti-alert-triangle"></i> Peringatan Jadwal Beririsan</div>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Jadwal syuting proyek ini beririsan dengan proyekmu yang lain ({{ $bentrok->map(fn ($b) => $b->castingProject->nama_produksi)->unique()->join(', ') }}).</div>
+        </div>
+    @endif
+
+    <button type="submit" class="btn btn-brand" style="width: 100%; max-width: 280px; justify-content: center;"><i class="ti ti-check"></i> Daftar ke Proyek Ini</button>
 </form>
+
+{{-- Sticky CTA bar untuk mobile screen --}}
+<div class="sticky-mobile-cta">
+    <div>
+        <div style="font-size: 11px; color: var(--text-muted);">Deadline: {{ $castingProject->deadline->translatedFormat('d M') }}</div>
+        <div style="font-size: 13px; font-weight: 700;">{{ $castingProject->nama_produksi }}</div>
+    </div>
+    <a href="#kartu-pilih-peran" class="btn btn-brand" onclick="document.getElementById('kartu-pilih-peran')?.scrollIntoView({behavior:'smooth'}); return false;">Pilih Peran &darr;</a>
+</div>
 
 @if (session('konfirmasi_bentrok'))
     <dialog id="dialog-bentrok" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 380px; width: 90%;">

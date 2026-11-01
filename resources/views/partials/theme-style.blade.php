@@ -278,4 +278,175 @@
     details.card[open] > summary {
         font-weight: 700;
     }
+
+    /* ─── UI/UX Refactoring Enhancements ────────────────────────────────── */
+    /* Sidebar badge count */
+    .sb-dot.sb-badge-count {
+        width: auto; min-width: 18px; height: 18px; border-radius: 9px;
+        padding: 0 5px; font-size: 11px; font-weight: 700; line-height: 18px;
+        text-align: center; color: #fff; vertical-align: middle;
+        display: inline-flex; align-items: center; justify-content: center;
+    }
+
+    /* Next-Action Callout (Kotak Pemandu Langkah Selanjutnya) */
+    .next-action-callout {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: var(--radius-md);
+        margin: 10px 0;
+        flex-wrap: wrap;
+    }
+    .next-action-callout.nac-info {
+        background: var(--md-surface-container, var(--bg-card));
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+    }
+    .next-action-callout.nac-primary {
+        background: var(--md-primary-container, rgba(21,128,61,0.12));
+        border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+        color: var(--text-primary);
+    }
+    .next-action-callout.nac-warning {
+        background: var(--md-custom-warning-container, rgba(245,158,11,0.12));
+        border: 1px solid color-mix(in srgb, var(--warning) 40%, transparent);
+        color: var(--text-primary);
+    }
+    .next-action-callout.nac-danger {
+        background: var(--md-error-container, rgba(239,68,68,0.12));
+        border: 1px solid color-mix(in srgb, var(--danger) 40%, transparent);
+        color: var(--text-primary);
+    }
+    .next-action-callout .nac-content {
+        flex: 1;
+        min-width: 200px;
+    }
+    .next-action-callout .nac-title {
+        font-size: 13.5px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--text-primary);
+    }
+    .next-action-callout .nac-desc {
+        font-size: 12.5px;
+        color: var(--text-secondary);
+        line-height: 1.45;
+        margin-top: 3px;
+    }
+    .next-action-callout .nac-action {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    /* Penyatuan Konteks Proyek (Header Breadcrumb / Konteks) */
+    .project-context-header {
+        background: var(--md-surface-container, var(--bg-card));
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 12px 16px;
+        margin-bottom: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .project-context-header .pch-main {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .project-context-header .pch-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--accent);
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        padding: 4px 8px;
+        border-radius: var(--radius-sm);
+        background: var(--bg-page);
+        border: 1px solid var(--border-color);
+    }
+    .project-context-header .pch-back:hover {
+        background: var(--md-primary-container, var(--bg-card-hover));
+    }
+    .project-context-header .pch-title {
+        font-size: 14.5px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    .project-context-header .pch-meta {
+        font-size: 12px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Quick Filter Chips */
+    .quick-filter-bar {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 6px;
+        margin: 10px 0 14px;
+        scrollbar-width: thin;
+    }
+    .quick-filter-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12.5px;
+        font-weight: 500;
+        text-decoration: none;
+        white-space: nowrap;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        transition: all .15s ease;
+    }
+    .quick-filter-chip:hover {
+        background: var(--bg-card-hover);
+        color: var(--text-primary);
+    }
+    .quick-filter-chip.is-active,
+    .quick-filter-chip.active {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+        font-weight: 600;
+    }
+
+    /* Sticky Mobile CTA Bar */
+    .sticky-mobile-cta {
+        display: none;
+    }
+    @media (max-width: 640px) {
+        .sticky-mobile-cta {
+            display: flex;
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+            padding: 10px 14px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+    }
 </style>

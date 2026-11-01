@@ -15,11 +15,16 @@
                 @endif
             </div>
         </div>
-        <div class="dash-sub">
-            @if ($u->aktivitasTerakhir)
-                {{ \App\Models\ActivityLog::actionLabel($u->aktivitasTerakhir->action) }} &middot; {{ $u->aktivitasTerakhir->created_at?->diffForHumans() }}
-            @else
-                Belum ada aktivitas
+        <div class="dash-sub" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <span>
+                @if ($u->aktivitasTerakhir)
+                    {{ \App\Models\ActivityLog::actionLabel($u->aktivitasTerakhir->action) }} &middot; {{ $u->aktivitasTerakhir->created_at?->diffForHumans() }}
+                @else
+                    Belum ada aktivitas
+                @endif
+            </span>
+            @if ($peran === 'korlap')
+                <button type="submit" form="mon-masuk" name="ke" value="{{ $keAmbilAlih }}" class="btn btn-sm btn-tonal" onclick="event.stopPropagation();" title="Masuk ke mode Korlap untuk staf {{ $u->name }}">Masuk Mode Korlap Ini &rarr;</button>
             @endif
         </div>
     </summary>

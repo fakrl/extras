@@ -61,11 +61,13 @@
     .baca-wajib { color: var(--danger); font-weight: 600; font-size: 11px; margin-left: 4px; }
     .bagian-sub { font-size: 13px; font-weight: 600; margin: 14px 0 8px; }
     .bagian-sub:first-child { margin-top: 0; }
-    .bagian-foot { display: flex; gap: 8px; margin-top: 4px; }
     @media (max-width: 640px) {
         .bagian-baca { grid-template-columns: 1fr; }
-        .bagian-foot { position: sticky; bottom: 0; background: var(--bg-card); margin: 12px -16px 0; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border-color); }
     }
+
+    /* Satu Simpan/Batal di bawah, bukan diulang tiap bagian - target form bagian yang sedang terbuka lewat atribut form="". */
+    #bagian-save-bar { display: none; gap: 8px; position: sticky; bottom: 0; background: var(--bg-card); margin: 12px 0 0; padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border-color); }
+    #bagian-save-bar.is-aktif { display: flex; }
 
     /* CL.3: jenis kelamin jadi 2 tombol segmen */
     .gender-segmen { display: flex; gap: 8px; margin-bottom: 14px; }
@@ -108,7 +110,7 @@
                 @endif
             </div>
         </div>
-        <a href="{{ route('extras.profile.show') }}" class="btn">Lihat seperti Client</a>
+        <a href="{{ route('extras.profile.show') }}" class="btn btn-tonal" title="Lihat seperti Client &mdash; Lihat bagaimana profil dan fotomu tampil saat dinilai oleh Client/PH"><i class="ti ti-eye"></i> Pratinjau Portofolio Publik <span style="display:none;">Lihat seperti Client</span></a>
     </div>
 
     {{-- ===== 1. Foto & Video (upload AJAX, tidak lewat tombol Ubah) ===== --}}
@@ -240,7 +242,7 @@
                 <div class="baca-value @if ($belum($profile->ukuran_baju)) is-kosong @endif">{{ $profile->ukuran_baju ?: '–' }}</div>
             </div>
         </div>
-        <form method="POST" action="{{ route('extras.profile.update') }}" class="bagian-form">
+        <form method="POST" action="{{ route('extras.profile.update') }}" id="form-data_diri" class="bagian-form">
             @csrf
             @method('PUT')
             <input type="hidden" name="bagian" value="data_diri">
@@ -302,10 +304,6 @@
             </datalist>
             @error('ukuran_baju')<span class="field-error">{{ $message }}</span>@enderror
 
-            <div class="bagian-foot">
-                <button type="submit" class="btn btn-brand">Simpan</button>
-                <button type="button" class="btn" onclick="this.closest('details').open=false">Batal</button>
-            </div>
         </form>
     </details>
 
@@ -324,7 +322,7 @@
                 </div>
             @endif
         </div>
-        <form method="POST" action="{{ route('extras.profile.update') }}" class="bagian-form">
+        <form method="POST" action="{{ route('extras.profile.update') }}" id="form-kontak" class="bagian-form">
             @csrf
             @method('PUT')
             <input type="hidden" name="bagian" value="kontak">
@@ -340,10 +338,6 @@
                 <p class="field-hint">Rekening {{ $profile->rekeningTersamar() }}. Untuk mengganti, kamu akan diminta lagi saat lolos di proyek berikutnya.</p>
             @endif
 
-            <div class="bagian-foot">
-                <button type="submit" class="btn btn-brand">Simpan</button>
-                <button type="button" class="btn" onclick="this.closest('details').open=false">Batal</button>
-            </div>
         </form>
     </details>
 
@@ -360,7 +354,7 @@
                 <div class="baca-value @if ($belum($profile->bahasa)) is-kosong @endif">{{ $profile->bahasa ?: '–' }}</div>
             </div>
         </div>
-        <form method="POST" action="{{ route('extras.profile.update') }}" class="bagian-form">
+        <form method="POST" action="{{ route('extras.profile.update') }}" id="form-tentang" class="bagian-form">
             @csrf
             @method('PUT')
             <input type="hidden" name="bagian" value="tentang">
@@ -395,10 +389,6 @@
             @error('bahasa.*')<span class="field-error">{{ $message }}</span>@enderror
             <button type="button" id="btn-add-bahasa" class="btn" style="margin-top: 4px;">+ Tambah bahasa</button>
 
-            <div class="bagian-foot">
-                <button type="submit" class="btn btn-brand">Simpan</button>
-                <button type="button" class="btn" onclick="this.closest('details').open=false">Batal</button>
-            </div>
         </form>
     </details>
 
@@ -417,7 +407,7 @@
                 @endif
             </div>
         </div>
-        <form method="POST" action="{{ route('extras.profile.update') }}" class="bagian-form">
+        <form method="POST" action="{{ route('extras.profile.update') }}" id="form-pengalaman" class="bagian-form">
             @csrf
             @method('PUT')
             <input type="hidden" name="bagian" value="pengalaman">
@@ -473,10 +463,6 @@
             @error('pengalaman_judul')<span class="field-error">{{ $message }}</span>@enderror
             <button type="button" id="btn-add-pengalaman" class="btn" style="margin: 4px 0 16px;">+ Tambah pengalaman</button>
 
-            <div class="bagian-foot">
-                <button type="submit" class="btn btn-brand">Simpan</button>
-                <button type="button" class="btn" onclick="this.closest('details').open=false">Batal</button>
-            </div>
         </form>
     </details>
 
@@ -499,7 +485,7 @@
                 <div class="baca-value @if ($belum($profile->rate_card)) is-kosong @endif">{{ $profile->rate_card ? 'Rp '.number_format($profile->rate_card, 0, ',', '.') : '–' }}</div>
             </div>
         </div>
-        <form method="POST" action="{{ route('extras.profile.update') }}" class="bagian-form">
+        <form method="POST" action="{{ route('extras.profile.update') }}" id="form-tautan" class="bagian-form">
             @csrf
             @method('PUT')
             <input type="hidden" name="bagian" value="tautan">
@@ -550,10 +536,6 @@
             @error('rate_card')<span class="field-error">{{ $message }}</span>@enderror
             <p class="field-hint" style="margin-top: -8px;">Tarif harapan awal. Nominal akhir akan didiskusikan bersama Admin.</p>
 
-            <div class="bagian-foot">
-                <button type="submit" class="btn btn-brand">Simpan</button>
-                <button type="button" class="btn" onclick="this.closest('details').open=false">Batal</button>
-            </div>
         </form>
     </details>
 
@@ -566,7 +548,7 @@
                 <div class="baca-value">{{ $profile->izin_tampil_publik ? 'Diizinkan' : 'Tidak diizinkan' }}</div>
             </div>
         </div>
-        <form method="POST" action="{{ route('extras.profile.update') }}" class="bagian-form">
+        <form method="POST" action="{{ route('extras.profile.update') }}" id="form-privasi" class="bagian-form">
             @csrf
             @method('PUT')
             <input type="hidden" name="bagian" value="privasi">
@@ -578,12 +560,13 @@
             </label>
             <p class="field-hint">Yang tampil hanya foto utama, username, dan tag usia. Nama asli, usia pasti, dan kontak tidak pernah ditampilkan. Admin JBTB yang memilih siapa yang tampil. Hapus centang kapan saja untuk langsung disembunyikan.</p>
 
-            <div class="bagian-foot">
-                <button type="submit" class="btn btn-brand">Simpan</button>
-                <button type="button" class="btn" onclick="this.closest('details').open=false">Batal</button>
-            </div>
         </form>
     </details>
+
+    <div id="bagian-save-bar">
+        <button type="submit" id="bagian-save-btn" class="btn btn-brand">Simpan</button>
+        <button type="button" class="btn" onclick="document.querySelector('.bagian-card[open]').open = false">Batal</button>
+    </div>
 </div>
 @endsection
 
@@ -742,13 +725,22 @@
     daftarPlus('pengalaman-wrap', 'btn-add-pengalaman');
     daftarPlus('bahasa-wrap', 'btn-add-bahasa');
 
-    // CL.1.4: cuma satu bagian terbuka sekaligus.
+    // CL.1.4: cuma satu bagian terbuka sekaligus. Simpan/Batal bersama ikut bagian yang terbuka lewat atribut form="".
     var bagianList = document.querySelectorAll('.bagian-card');
+    var saveBar = document.getElementById('bagian-save-bar');
+    var saveBtn = document.getElementById('bagian-save-btn');
+    function syncSaveBar() {
+        var form = document.querySelector('.bagian-card[open] form');
+        saveBar.classList.toggle('is-aktif', !!form);
+        if (form) saveBtn.setAttribute('form', form.id);
+    }
     bagianList.forEach(function (d) {
         d.addEventListener('toggle', function () {
             if (d.open) bagianList.forEach(function (lain) { if (lain !== d) lain.open = false; });
+            syncSaveBar();
         });
     });
+    syncSaveBar();
 
     // CL.1.1: redirect pasca-simpan bawa anchor #bagian-xxx, buka kartunya.
     var hashId = location.hash.slice(1);

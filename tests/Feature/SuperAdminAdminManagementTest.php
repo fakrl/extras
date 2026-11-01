@@ -272,4 +272,35 @@ class SuperAdminAdminManagementTest extends TestCase
             'name' => 'Test', 'email' => 'test@example.com', 'role' => 'admin',
         ])->assertForbidden();
     }
+
+    public function test_super_admin_bisa_update_grade_dan_tag_extras(): void
+    {
+        $superAdmin = User::factory()->create(['role' => 'super_admin']);
+        $extras = User::factory()->create(['role' => 'extras']);
+        $extras->extrasProfile()->create();
+
+        $response = $this->actingAs($superAdmin)->patch(route('super-admin.admins.extras-update', $extras), [
+            'grade' => 'A',
+            'tag_nama' => ['Karakter Unik', 'Fotogenik'],
+        ]);
+
+        $response->assertSessionHas('status');
+        $this->assertSame('A', $extras->fresh()->extrasProfile->grade_saat_ini);
+        $this->assertCount(2, $extras->fresh()->extrasProfile->categories);
+    }
+
+    public function test_update_akun_umum_menolak_target_extras(): void
+    {
+        $superAdmin = User::factory()->create(['role' => 'super_admin']);
+        $extras = User::factory()->create(['role' => 'extras']);
+
+        $response = $this->actingAs($superAdmin)->patch(route('super-admin.admins.update', $extras), [
+            'name' => 'Ganti Nama',
+            'email' => 'ganti@example.com',
+            'role' => 'admin',
+        ]);
+
+        $response->assertSessionHas('error');
+        $this->assertSame('extras', $extras->fresh()->role);
+    }
 }

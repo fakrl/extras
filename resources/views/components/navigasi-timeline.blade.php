@@ -28,8 +28,8 @@
         @endforeach
     </div>
     <div class="nt-nav">
-        <a href="{{ $tautan($skala, \App\Support\Timeline::geser($dari, $skala, -1)) }}" class="btn" aria-label="Sebelumnya">&lsaquo;</a>
-        <a href="{{ $tautan($skala, \App\Support\Timeline::geser($dari, $skala, 1)) }}" class="btn" aria-label="Berikutnya">&rsaquo;</a>
+        <a href="{{ $tautan($skala, \App\Support\Timeline::geser($dari, $skala, -1)) }}" class="btn btn-tonal" aria-label="Sebelumnya" style="border: 1px solid var(--border-color); font-weight: 700; font-size: 16px;">&lsaquo;</a>
+        <a href="{{ $tautan($skala, \App\Support\Timeline::geser($dari, $skala, 1)) }}" class="btn btn-tonal" aria-label="Berikutnya" style="border: 1px solid var(--border-color); font-weight: 700; font-size: 16px;">&rsaquo;</a>
     </div>
     @unless ($sekarang)
         <a href="{{ $tautan($skala, $hariIni) }}" class="btn">Kembali ke hari ini</a>

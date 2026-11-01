@@ -310,7 +310,7 @@
             @csrf
             <button type="submit" class="btn btn-sm">Reset Password</button>
         </form>
-        <button type="button" class="btn btn-sm" onclick="document.getElementById('edit-user-dialog-{{ $user->id }}').showModal()">Edit</button>
+        <button type="button" class="btn btn-sm" onclick="document.getElementById('edit-user-dialog-{{ $user->id }}').showModal()">{{ $user->role === 'extras' ? 'Kelola Extras' : 'Edit' }}</button>
         <button type="button" class="btn btn-sm btn-danger-outline" onclick="document.getElementById('hapus-dialog-{{ $user->id }}').showModal()">Hapus</button>
     </div>
 </div>

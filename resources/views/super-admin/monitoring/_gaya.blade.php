@@ -31,5 +31,53 @@
 .mon-proyek-blok { border-top: 1px dashed var(--border-color); padding: 8px 0; }
 .mon-proyek-blok:first-child { border-top: none; }
 .mon-tua { color: var(--danger, #d9534f); font-weight: 600; }
+
+/* Layout responsif container pipeline tahapan kandidat (tanpa scroll horizontal di desktop) */
+@media (min-width: 860px) {
+    .step-bar-wrap { overflow-x: visible; }
+    .step-bar.tahap-bar {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+        gap: 12px;
+        min-width: 0;
+        align-items: stretch;
+    }
+    .step-bar.tahap-bar .step-bar-line { display: none; }
+    .step-bar.tahap-bar .step-bar-item.tahap-tab {
+        width: 100%;
+        min-height: 86px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 12px 8px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background: var(--bg-card);
+        gap: 6px;
+        box-sizing: border-box;
+        transition: border-color .15s ease, background .15s ease;
+    }
+    .step-bar.tahap-bar .step-bar-item.tahap-tab:hover {
+        border-color: var(--accent);
+    }
+    .step-bar.tahap-bar .step-bar-item.tahap-tab.is-active {
+        border-color: var(--accent-strong);
+        background: var(--bg-nav-active);
+    }
+    .step-bar.tahap-bar .step-bar-circle {
+        margin: 0;
+    }
+    .step-bar.tahap-bar .step-bar-label {
+        font-weight: 500;
+        margin-top: 2px;
+    }
+    .step-bar.tahap-bar .tahap-perlu {
+        margin-top: auto;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+    }
+}
 </style>
 @endpush

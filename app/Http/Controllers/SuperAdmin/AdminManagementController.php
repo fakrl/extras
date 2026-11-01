@@ -93,10 +93,12 @@ class AdminManagementController extends Controller
     {
         $this->guardTarget($user);
 
-        $allowedRoles = ['admin', 'korlap', 'client', 'extras'];
-        if ($request->user()->is_protected) {
-            $allowedRoles[] = 'super_admin';
+        // Extras tidak boleh diubah profil nama/email/rolenya dari form staf umum
+        if ($user->role === User::ROLE_EXTRAS) {
+            return back()->with('error', 'Akun Extras dikelola melalui menu Kelola Extras (Grade & Tag).');
         }
+
+        $allowedRoles = ['admin', 'korlap', 'client', 'extras'];
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -124,6 +126,56 @@ class AdminManagementController extends Controller
         ActivityLog::record('UPDATE_USER', "Super Admin mengubah data akun {$user->name} ({$keteranganRole}).", $user, $roleLama !== $user->role ? ['role_lama' => $roleLama, 'role_baru' => $user->role] : []);
 
         return redirect()->back(fallback: route('super-admin.akun.index'))->with('status', "Data akun {$user->name} berhasil diperbarui.");
+    }
+
+    /**
+     * Kelola akun Extras: Update Grade dan Tag Kategori look.
+     */
+    public function updateExtras(Request $request, User $user): RedirectResponse
+    {
+        $this->guardTarget($user);
+        abort_unless($user->role === User::ROLE_EXTRAS, 404);
+
+        $data = $request->validate([
+            'grade' => ['nullable', 'in:A,B,C,belum'],
+            'kategori_ids' => ['nullable', 'array'],
+            'kategori_ids.*' => ['exists:extras_categories,id'],
+            'tag_nama' => ['nullable', 'array'],
+            'tag_nama.*' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $profile = $user->extrasProfile()->firstOrCreate([]);
+
+        // 1. Grade update
+        $gradeBaru = ($data['grade'] ?? 'belum') === 'belum' ? null : $data['grade'];
+        $gradeLama = $profile->grade_saat_ini;
+        if ($gradeBaru !== $gradeLama) {
+            $profile->update([
+                'grade_saat_ini' => $gradeBaru,
+                'grade_diberikan_at' => $gradeBaru ? now() : null,
+            ]);
+            ActivityLog::record(
+                'SET_EXTRAS_GRADE',
+                "Super Admin mengubah grade @{$user->username} dari ".($gradeLama ? 'Grade '.$gradeLama : 'Belum dinilai').' ke '.($gradeBaru ? 'Grade '.$gradeBaru : 'Belum dinilai'),
+                $user,
+                ['grade_lama' => $gradeLama, 'grade_baru' => $gradeBaru]
+            );
+        }
+
+        // 2. Tag categories update
+        $ids = ExtrasCategory::idsDariInput($data['tag_nama'] ?? [], $data['kategori_ids'] ?? [], $request->user());
+        $ubah = $profile->categories()->sync($ids);
+        $nama = fn ($ids) => ExtrasCategory::whereKey($ids)->pluck('nama')->all();
+        if ($ubah['attached'] || $ubah['detached']) {
+            ActivityLog::record(
+                'UPDATE_EXTRAS_KATEGORI',
+                "{$request->user()->label()} {$request->user()->name} mengubah tag @{$user->username}",
+                $user,
+                ['ditambah' => $nama($ubah['attached']), 'dihapus' => $nama($ubah['detached'])]
+            );
+        }
+
+        return redirect()->back(fallback: route('super-admin.akun.index'))->with('status', "Data Extras {$user->name} (Grade & Tag) berhasil diperbarui.");
     }
 
     /**

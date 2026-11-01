@@ -6,7 +6,8 @@
 <style>
     .akun-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: var(--space-3); }
     .akun-head-btn { display: flex; gap: 8px; flex-wrap: wrap; }
-    .akun-row { display: flex; gap: 10px; align-items: flex-start; padding: 12px 0; border-top: 1px solid var(--border-color); }
+    .akun-row { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-top: 1px solid var(--border-color); border-radius: var(--radius-md); transition: background .15s ease; }
+    .akun-row:hover { background: var(--bg-card-hover); }
     .akun-row:first-of-type { border-top: 0; }
     .akun-row > input[type=checkbox] { margin-top: 4px; flex-shrink: 0; }
     .akun-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
@@ -16,7 +17,7 @@
     .akun-log { font-size: var(--fs-xs); color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .akun-log i { color: var(--text-muted); }
     .akun-kebab { position: relative; flex-shrink: 0; }
-    .akun-kebab > summary { list-style: none; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-card); }
+    .akun-kebab > summary { list-style: none; cursor: pointer; min-height: 34px; padding: 6px 12px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-card); font-size: var(--fs-xs); font-weight: 500; }
     .akun-kebab > summary::-webkit-details-marker { display: none; }
     .akun-kebab-isi { position: absolute; right: 0; top: 44px; min-width: 190px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: 0 8px 24px rgba(0,0,0,0.15); padding: 4px 0; z-index: 40; }
     .akun-menu-item { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 40px; padding: 8px 14px; font-size: var(--fs-sm); text-align: left; background: none; border: 0; color: var(--text-primary); text-decoration: none; cursor: pointer; margin: 0; }
@@ -43,10 +44,13 @@
 @endphp
 
 <div class="akun-head">
-    <p style="font-size: var(--fs-sm); color: var(--text-secondary); margin: 0;">Semua akun sistem: Admin, Korlap, Client, Extras, Super Admin.</p>
+    <div>
+        <p style="font-size: var(--fs-sm); color: var(--text-secondary); margin: 0;">Semua akun sistem: Admin, Korlap, Client, Extras, Super Admin.</p>
+        <p style="font-size: var(--fs-xs); color: var(--text-muted); margin: 3px 0 0;"><i class="ti ti-info-circle"></i> Akun Extras mendaftar secara mandiri melalui portal registrasi publik.</p>
+    </div>
     <div class="akun-head-btn">
-        <button type="button" class="btn btn-sm" onclick="document.getElementById('client-baru-dialog').showModal()"><i class="ti ti-plus"></i> Client</button>
-        <button type="button" class="btn btn-sm btn-brand" onclick="document.getElementById('add-admin-dialog').showModal()"><i class="ti ti-plus"></i> Staf</button>
+        <button type="button" class="btn btn-sm btn-tonal" onclick="document.getElementById('client-baru-dialog').showModal()"><i class="ti ti-plus"></i> Tambah Client</button>
+        <button type="button" class="btn btn-sm btn-brand" onclick="document.getElementById('add-admin-dialog').showModal()"><i class="ti ti-plus"></i> Tambah Staf (Admin/Korlap)</button>
     </div>
 </div>
 @include('partials.client-baru-modal')
@@ -110,10 +114,13 @@
     <button type="submit" id="bulk-terapkan" form="bulk-form" class="btn btn-sm btn-brand" disabled onclick="var s = document.getElementById('bulk-aksi'); var n = document.querySelectorAll('.bulk-cb:checked').length; return !!s.value && n > 0 && confirm((s.value === 'nonaktifkan' ? 'Nonaktifkan ' : 'Aktifkan ') + n + ' akun terpilih?' + (s.value === 'nonaktifkan' ? ' Mereka tidak bisa login sampai diaktifkan lagi.' : ''));">Terapkan</button>
 </div>
 
-<div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; font-size: var(--fs-xs); color: var(--text-muted);">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; font-size: var(--fs-xs); color: var(--text-muted); flex-wrap: wrap;">
     <span>{{ $users->total() }} akun</span>
     @unless ($modeExtras)
-        <label style="display: flex; align-items: center; gap: 6px; margin: 0; cursor: pointer;"><input type="checkbox" id="select-all-cb" style="min-height: 0;"> Pilih semua di halaman ini</label>
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <span id="select-all-context" style="color: var(--text-muted); font-size: var(--fs-xs);">0 dipilih — Centang akun untuk aksi massal</span>
+            <label style="display: flex; align-items: center; gap: 6px; margin: 0; cursor: pointer; color: var(--text-primary); font-weight: 500;"><input type="checkbox" id="select-all-cb" style="min-height: 0;"> Pilih semua di halaman ini</label>
+        </div>
     @endunless
 </div>
 
@@ -149,11 +156,18 @@
                     <span class="badge badge-netral">{{ ($g = $u->extrasProfile?->grade_saat_ini) ? 'Grade '.$g : 'Belum dinilai' }}</span>
                 </div>
                 @if ($u->extrasProfile && ! $u->trashed())
-                    <div class="xsec">Tag</div>
-                    <form method="POST" action="{{ route('super-admin.admins.kategori', $u) }}">
+                    <form method="POST" action="{{ route('super-admin.admins.extras-update', $u) }}">
                         @csrf @method('PATCH')
+                        <div class="xsec">Grade Extras</div>
+                        <select name="grade" style="margin-top: 4px; margin-bottom: 8px;">
+                            <option value="belum" @selected(! $u->extrasProfile?->grade_saat_ini)>Belum dinilai</option>
+                            <option value="A" @selected($u->extrasProfile?->grade_saat_ini === 'A')>Grade A (Utama / Profesional)</option>
+                            <option value="B" @selected($u->extrasProfile?->grade_saat_ini === 'B')>Grade B (Standar / Berpengalaman)</option>
+                            <option value="C" @selected($u->extrasProfile?->grade_saat_ini === 'C')>Grade C (Pemula / Baru)</option>
+                        </select>
+                        <div class="xsec" style="margin-top: 10px;">Tag</div>
                         @include('partials.tag-input', ['name' => 'tag_nama', 'selected' => $u->extrasProfile->categories])
-                        <button type="submit" class="btn btn-sm btn-brand" style="margin-top: 12px;">Simpan Tag</button>
+                        <button type="submit" class="btn btn-sm btn-brand" style="margin-top: 12px;">Simpan Perubahan</button>
                     </form>
                 @endif
                 <div class="xsec">Aktivitas terakhir</div>
@@ -167,9 +181,9 @@
 @else
     <div class="card" style="padding-top: 4px; padding-bottom: 4px;">
         @forelse ($users as $u)
-            <div class="akun-row">
+            <div class="akun-row" style="cursor: pointer;" onclick="document.getElementById('modal-akun-preview-{{ $u->id }}').showModal()">
                 @if (! $u->is_protected && ! $u->trashed())
-                    <input type="checkbox" name="user_ids[]" value="{{ $u->id }}" class="bulk-cb" form="bulk-form" aria-label="Pilih {{ $u->name }}">
+                    <input type="checkbox" name="user_ids[]" value="{{ $u->id }}" class="bulk-cb" form="bulk-form" aria-label="Pilih {{ $u->name }}" onclick="event.stopPropagation()">
                 @else
                     <span style="width: 15px; flex-shrink: 0;"></span>
                 @endif
@@ -178,7 +192,7 @@
                         @if ($u->trashed() || $u->is_protected)
                             <span>{{ $u->name }}</span>
                         @else
-                            <a href="{{ route('super-admin.admins.show', $u) }}">{{ $u->name }}</a>
+                            <a href="{{ route('super-admin.admins.show', $u) }}" onclick="if (!event.ctrlKey && !event.metaKey && event.button === 0) { event.preventDefault(); event.stopPropagation(); document.getElementById('modal-akun-preview-{{ $u->id }}').showModal(); }">{{ $u->name }}</a>
                         @endif
                         <x-status-badge :model="$u" />
                         <span class="badge {{ $statusBadge($u)[1] }}">{{ $statusBadge($u)[0] }}</span>
@@ -188,13 +202,14 @@
                         {{ implode(' · ', array_filter([$u->username ? '@'.$u->username : null, $u->email])) }}
                     </div>
                 </div>
-                <details class="akun-kebab">
-                    <summary aria-label="Aksi {{ $u->name }}"><i class="ti ti-dots-vertical"></i></summary>
+                <details class="akun-kebab" onclick="event.stopPropagation()">
+                    <summary aria-label="Aksi {{ $u->name }}"><i class="ti ti-adjustments"></i> Kelola &blacktriangledown;</summary>
                     <div class="akun-kebab-isi">
                         @include('super-admin.akun.aksi-menu', ['u' => $u])
                     </div>
                 </details>
             </div>
+            @include('super-admin.akun.modal-preview', ['u' => $u])
             @include('super-admin.akun.aksi-dialogs', ['u' => $u])
         @empty
             <p style="text-align: center; color: var(--text-muted); padding: 24px 0; margin: 0;">Tidak ada akun yang cocok.</p>
@@ -252,10 +267,19 @@
     // delegasi di document: daftar bisa diganti live search (AJAX) tanpa kehilangan listener
     function sync() {
         var toolbar = document.getElementById('bulk-toolbar');
-        if (!toolbar) return;
+        var ctx = document.getElementById('select-all-context');
         var n = document.querySelectorAll('.bulk-cb:checked').length;
-        toolbar.style.display = n ? 'flex' : 'none';
-        document.getElementById('bulk-count').textContent = n + ' akun dipilih';
+        if (toolbar) {
+            toolbar.style.display = n ? 'flex' : 'none';
+            document.getElementById('bulk-count').textContent = n + ' akun dipilih';
+        }
+        if (ctx) {
+            ctx.textContent = n > 0 
+                ? n + ' akun dipilih untuk aksi massal' 
+                : '0 dipilih — Centang akun untuk aksi massal';
+            ctx.style.color = n > 0 ? 'var(--accent-strong)' : 'var(--text-muted)';
+            ctx.style.fontWeight = n > 0 ? '600' : '400';
+        }
     }
     document.addEventListener('change', function (e) {
         if (e.target.id === 'select-all-cb') {

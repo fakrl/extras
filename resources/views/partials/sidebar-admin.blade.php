@@ -1,8 +1,10 @@
 @php
     $route = request()->path();
-    // CO.2.4: titik merah = ada tugas tertunda (AdminRingkasan, sudah ada) ATAU pengingat SA belum dibaca.
-    $sbTugasTertunda = collect(\App\Support\AdminRingkasan::untuk(auth()->user()))->sum('jumlah') > 0
-        || auth()->user()->unreadNotifications()->where('data->jenis', 'pengingat_sa')->exists();
+    // CO.2.4: titik merah / badge angka = ada tugas tertunda (AdminRingkasan, sudah ada) ATAU pengingat SA belum dibaca.
+    $sbTugasTertundaJumlah = collect(\App\Support\AdminRingkasan::untuk(auth()->user()))->sum('jumlah');
+    $sbPengingatSa = auth()->user()->unreadNotifications()->where('data->jenis', 'pengingat_sa')->count();
+    $sbTugasTertundaTotal = $sbTugasTertundaJumlah + $sbPengingatSa;
+    $sbTugasTertunda = $sbTugasTertundaTotal > 0;
 @endphp
 
 <div class="sidebar-group-label">Operasional Proyek</div>
@@ -11,7 +13,7 @@
 </a>
 <a href="{{ url('/admin/projects') }}" class="sidebar-link {{ str_starts_with($route, 'admin/projects') ? 'active' : '' }}">
     <i class="ti ti-movie"></i> Proyek
-    @if ($sbTugasTertunda)<span class="sb-dot" aria-label="Ada tugas tertunda"></span>@endif
+    @if ($sbTugasTertunda)<span class="sb-dot sb-badge-count" aria-label="Ada tugas tertunda" title="{{ $sbTugasTertundaTotal }} tugas tertunda">{{ $sbTugasTertundaTotal }}</span>@endif
 </a>
 <details class="sidebar-dropdown" {{ str_starts_with($route, 'admin/akun') ? 'open' : '' }}>
     <summary class="sidebar-dropdown-summary">

@@ -55,7 +55,7 @@
         <div class="card" style="margin: 0;">
             <div class="card-title">Menunggu validasi @if ($menunggu->isNotEmpty())<span class="badge badge-netral" style="margin-left: 8px;">{{ $menunggu->count() }}</span>@endif</div>
             @forelse ($menunggu as $a)
-                <{{ $tag }} {!! $klik($absensi($a->projectApplication?->casting_project_id, $a->event_shooting_date_id).'#app-'.$a->project_application_id) !!} class="dash-row mon-row" style="justify-content: flex-start; flex-wrap: nowrap;">
+                <{{ $tag }} {!! $klik($absensi($a->projectApplication?->casting_project_id, $a->event_shooting_date_id).'#app-'.$a->project_application_id) !!} class="dash-row mon-row" style="justify-content: flex-start; flex-wrap: nowrap; gap: 10px; align-items: center;">
                     @if ($a->foto_path)
                         <img src="{{ route('admin.absensi.foto', $a) }}" alt="Selfie" class="mon-foto" loading="lazy">
                     @else
@@ -65,7 +65,10 @@
                         <strong>{{ $a->projectApplication?->extras?->user?->name ?? 'Extras' }}</strong>
                         <div class="dash-sub">{{ $a->projectApplication?->castingProject?->nama_produksi }}</div>
                     </div>
-                    <span class="dash-sub" style="white-space: nowrap;">{{ $a->created_at->format('H:i') }} &middot; {{ $a->created_at->translatedFormat('d M') }}</span>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0;">
+                        <span class="dash-sub" style="white-space: nowrap;">{{ $a->created_at->format('H:i') }} &middot; {{ $a->created_at->translatedFormat('d M') }}</span>
+                        <span class="btn btn-sm btn-tonal" style="font-size: var(--fs-xs); padding: 2px 8px; pointer-events: none;">Buka &amp; Validasi Absensi &rarr;</span>
+                    </div>
                 </{{ $tag }}>
             @empty
                 <div class="dash-aman" role="status"><i class="ti ti-circle-check"></i> Tidak ada selfie yang menunggu validasi.</div>

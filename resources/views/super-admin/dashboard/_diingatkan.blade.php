@@ -16,7 +16,7 @@
             <i class="ti ti-check"></i> Sudah diingatkan
         </button>
     @else
-        <button type="button" class="btn btn-sm btn-brand" onclick="document.getElementById('dash-ingatkan-staf-{{ $idx }}').showModal()">
+        <button type="button" class="btn btn-sm btn-tonal" onclick="document.getElementById('dash-ingatkan-staf-{{ $idx }}').showModal()">
             <i class="ti ti-bell"></i> Ingatkan
         </button>
     @endif

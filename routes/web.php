@@ -321,6 +321,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(fu
     Route::patch('/admins/{user}/honor', [AdminManagementController::class, 'updateHonor'])->name('super-admin.admins.honor');
     Route::patch('/admins/{user}/toggle-status', [AdminManagementController::class, 'toggleStatus'])->name('super-admin.admins.toggle-status');
     Route::patch('/admins/{user}/kategori', [UserManagementController::class, 'updateKategori'])->name('super-admin.admins.kategori');
+    Route::patch('/admins/{user}/extras', [AdminManagementController::class, 'updateExtras'])->name('super-admin.admins.extras-update');
     Route::patch('/admins/{user}/restore', [AdminManagementController::class, 'restore'])->name('super-admin.admins.restore');
 
     // CM.3.3: dipakai dialog "Rapikan tag" di halaman /super-admin/akun (bukan proyek, data global tag).

@@ -117,22 +117,6 @@
         {{ array_filter(request()->except(['per', 'page'])) ? 'Tidak ada proyek yang sesuai filter.' : 'Belum ada proyek casting. Klik "+ Buat Proyek" untuk membuat yang pertama.' }}
     </div>
 @else
-    @if (! $tahap && ($jumlahTahap['selesai'] ?? 0) > 0)
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--color-surface-container, var(--bg-card)); border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 12px; font-size: var(--fs-xs); flex-wrap: wrap; gap: 8px;">
-            <span style="color: var(--text-secondary);">
-                <i class="ti ti-archive" style="margin-right: 4px;"></i> Menampilkan proyek aktif. <strong>{{ $jumlahTahap['selesai'] }} proyek telah selesai</strong> (riwayat arsip).
-            </span>
-            <div style="display: flex; gap: 8px;">
-                <button type="button" class="btn btn-sm btn-tonal" id="btn-toggle-selesai" onclick="toggleSelesai()">
-                    <i class="ti ti-eye" id="ikon-toggle-selesai"></i> <span id="teks-toggle-selesai">Tampilkan selesai</span>
-                </button>
-                <a href="{{ route('admin.projects.index', array_merge(request()->except(['page']), ['tahap' => 'selesai'])) }}" class="btn btn-sm btn-tonal">
-                    Buka tab Selesai &rarr;
-                </a>
-            </div>
-        </div>
-    @endif
-
     <div class="table-container tp-wrap @if (! $tahap) sembunyi-selesai @endif" id="projects-grid">
     <table class="tabel-proyek">
         <thead>
@@ -188,19 +172,19 @@
                     </span>
                     @endif
                 </td>
-                <td class="tp-aksi"><div class="tp-aksi-isi" style="flex-wrap: wrap;">
-                    <a href="{{ route('admin.projects.applicants', [$project, 'status' => $peserta]) }}" class="btn btn-sm" title="Lineup" aria-label="Lineup"><i class="ti ti-users-group" aria-hidden="true"></i> Lineup</a>
+                <td class="tp-aksi"><div class="tp-aksi-isi" style="flex-wrap: wrap; gap: 4px;">
+                    <a href="{{ route('admin.projects.applicants', [$project, 'status' => $peserta]) }}" class="btn btn-sm btn-brand" title="Lineup" aria-label="Lineup"><i class="ti ti-users-group" aria-hidden="true"></i> Lineup</a>
                     @can('kelola', $project)
-                    <a href="{{ route('admin.projects.edit', $project) }}" class="btn btn-sm" title="Edit proyek" aria-label="Edit proyek"><i class="ti ti-pencil" aria-hidden="true"></i> Edit</a>
+                    <a href="{{ route('admin.projects.edit', $project) }}" class="btn btn-sm btn-tonal" title="Edit proyek" aria-label="Edit proyek"><i class="ti ti-pencil" aria-hidden="true"></i> Edit</a>
                     @endcan
                     @if ($dibuka && $project->share_token)
-                        <button type="button" class="btn btn-sm" title="Salin link pendaftaran" aria-label="Salin link pendaftaran" data-copy-link="{{ url('/event/'.$project->share_token) }}"><i class="ti ti-link" aria-hidden="true"></i> Salin link</button>
+                        <button type="button" class="btn btn-sm btn-tonal" title="Salin link pendaftaran" aria-label="Salin link pendaftaran" data-copy-link="{{ url('/event/'.$project->share_token) }}"><i class="ti ti-link" aria-hidden="true"></i> Salin link</button>
                     @endif
  @if ($project->client_request_status === 'disetujui')
                     @can('kelola', $project)
                     @php $labelBuka = $pernahDibuka ? 'Buka lagi lowongan' : 'Buka lowongan'; @endphp
                     <x-confirm-form :action="route('admin.projects.toggle-status', $project)" method="PATCH" :message="$dibuka ? 'Tutup lowongan '.$project->nama_produksi.'? Extras tidak bisa mendaftar lagi.' : $labelBuka.' '.$project->nama_produksi.'?'">
-                        <button type="submit" class="btn btn-sm" title="{{ $dibuka ? 'Tutup lowongan' : $labelBuka }}" aria-label="{{ $dibuka ? 'Tutup lowongan' : $labelBuka }}"><i class="ti {{ $dibuka ? 'ti-lock-open' : 'ti-lock' }}" aria-hidden="true"></i> {{ $dibuka ? 'Tutup' : 'Buka' }}</button>
+                        <button type="submit" class="btn btn-sm btn-tonal" title="{{ $dibuka ? 'Tutup lowongan' : $labelBuka }}" aria-label="{{ $dibuka ? 'Tutup lowongan' : $labelBuka }}"><i class="ti {{ $dibuka ? 'ti-lock-open' : 'ti-lock' }}" aria-hidden="true"></i> {{ $dibuka ? 'Tutup' : 'Buka' }}</button>
                     </x-confirm-form>
                     @endcan
                     @endif

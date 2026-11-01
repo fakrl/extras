@@ -5,7 +5,7 @@
 @if ($item['tipe'] === 'pengajuan')
     @php $req = $item['req']; @endphp
     <x-baris-tugas :judul="$req->nama_produksi" :meta="($req->client?->name ?? '-')" :umur="$umur">
-        <button type="button" class="btn" onclick="document.getElementById('tinjau-{{ $req->id }}').showModal()">Tinjau</button>
+        <button type="button" class="btn btn-brand" onclick="document.getElementById('tinjau-{{ $req->id }}').showModal()">Tinjau</button>
     </x-baris-tugas>
     <dialog id="tinjau-{{ $req->id }}" class="dash-dialog dash-dialog-lg">
         <div class="dash-dialog-isi">
@@ -52,9 +52,9 @@
     @php $project = $item['project']; @endphp
     <x-baris-tugas :judul="$project->nama_produksi" :meta="$project->client?->name ?? 'PIC/Client belum diisi'" :umur="$umur">
         @if ($project->admin_id)
-            <a href="{{ route('admin.projects.edit', $project) }}" class="btn">Buka</a>
+            <a href="{{ route('admin.projects.edit', $project) }}" class="btn btn-brand">Buka</a>
         @else
-            <button type="button" class="btn" onclick="document.getElementById('dash-pic-{{ $project->id }}').showModal()">Tetapkan PIC</button>
+            <button type="button" class="btn btn-brand" onclick="document.getElementById('dash-pic-{{ $project->id }}').showModal()">Tetapkan PIC</button>
         @endif
     </x-baris-tugas>
     @unless ($project->admin_id)

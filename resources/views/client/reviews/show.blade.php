@@ -9,7 +9,12 @@
 
 <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
     <div>
-        <div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">{{ $castingProject->nama_produksi }}</div>
+        <div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">
+            {{ $castingProject->nama_produksi }}
+            @if ($castingProject->kode_proyek)
+                <span class="kode-proyek" style="margin-left: 6px;">{{ $castingProject->kode_proyek }}</span>
+            @endif
+        </div>
         <p style="color: var(--text-secondary); margin: 0; font-size: 13.5px;">Semua kandidat di proyek ini (menunggu keputusan Anda dan yang sudah diputus).</p>
         @if ($castingProject->link_grup)
             <a href="{{ $castingProject->link_grup }}" target="_blank" style="font-size: 12.5px;">Link Grup Koordinasi</a>
@@ -19,6 +24,13 @@
         <a href="{{ route('client.riwayat.export.xlsx', $castingProject) }}" class="btn btn-sm">Ekspor Excel</a>
         <a href="{{ route('client.riwayat.export.pdf', [$castingProject, 'preview' => 1]) }}" target="_blank" class="btn btn-sm btn-tonal"><i class="ti ti-eye"></i> Pratinjau PDF</a>
         <a href="{{ route('client.riwayat.export.pdf', $castingProject) }}" class="btn btn-sm"><i class="ti ti-download"></i> Ekspor PDF</a>
+    </div>
+</div>
+
+<div style="background: var(--md-surface-container, var(--bg-card)); border-left: 4px solid var(--accent); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: flex-start; gap: 10px;">
+    <i class="ti ti-info-circle" style="font-size: 18px; color: var(--accent); margin-top: 1px;"></i>
+    <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.45;">
+        <strong>Panduan Pemilihan Kandidat:</strong> Pilih kandidat yang sesuai dengan kriteria produksi Anda. Kandidat yang Anda setujui akan langsung diproses tanda tangan kontraknya oleh tim Admin JBTB.
     </div>
 </div>
 

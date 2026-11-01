@@ -21,8 +21,9 @@
     $bisaAdmin = auth()->user()?->bisaSebagaiAdmin();
     $tombolUndang = ($undang ?? false) && $bisaAdmin && $user?->extrasProfile && ! $user->diblokir() && $user->extrasProfile->profilLengkap();
     $tombolWa = ($wa ?? false) && $bisaAdmin && $user?->nomorWaInternasional();
+    $perluTindakanAdmin = $aplikasi && in_array($aplikasi->status_partisipasi, ['diajukan', 'direview_admin', 'nego_fee']);
 @endphp
-<article {{ (new \Illuminate\View\ComponentAttributeBag($attrs ?? []))->class(['xcard', 'is-highlight' => $highlight ?? false, 'has-ring' => $persen !== null]) }}>
+<article {{ (new \Illuminate\View\ComponentAttributeBag($attrs ?? []))->class(['xcard', 'is-highlight' => $highlight ?? false, 'has-ring' => $persen !== null, 'perlu-tindakan-admin' => $perluTindakanAdmin]) }}>
     <div class="xcard-ph" style="--h: {{ crc32((string) $nama) % 360 }};">
         <{{ $lihatTag }} {{ new \Illuminate\View\ComponentAttributeBag($lihatAttr) }} class="xcard-ph-btn" aria-label="Lihat profil {{ $label }}">
             @if ($profile?->foto_profil_path)

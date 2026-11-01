@@ -3,9 +3,13 @@
 @section('title', 'Dashboard Client')
 
 @section('content')
-<p style="color: var(--text-secondary); margin: -8px 0 20px; font-size: 13.5px;">
-    Halo, {{ auth()->user()->name }}.
-</p>
+<div class="card-header-row" style="margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+    <div>
+        <div style="font-size: 18px; font-weight: 700;">Dashboard Client</div>
+        <div style="font-size: 13.5px; color: var(--text-secondary);">Halo, {{ auth()->user()->name }} · Pantau proses casting dan pengajuan proyek Anda.</div>
+    </div>
+    <a href="{{ route('client.projects.request') }}" class="btn btn-brand"><i class="ti ti-plus"></i> Ajukan Proyek Baru</a>
+</div>
 
 @php
     $statusPengajuan = ['draft' => ['Draft', 'badge-netral'], 'menunggu_acc' => ['Menunggu ACC tim JBTB', 'badge-pending'], 'disetujui' => ['Disetujui', 'badge-aktif'], 'ditolak' => ['Ditolak', 'badge-tolak'], 'perlu_revisi' => ['Perlu Revisi', 'badge-pending']];
@@ -77,9 +81,9 @@
                     @endif
                 </div>
                 @if ($req->client_request_status === 'ditolak')
-                    <a href="{{ route('client.projects.request') }}" class="btn">Ajukan Ulang</a>
+                    <a href="{{ route('client.projects.request') }}" class="btn btn-sm btn-tonal"><i class="ti ti-copy"></i> Ajukan Proyek Serupa</a>
                 @elseif ($req->client_request_status === 'perlu_revisi')
-                    <a href="{{ route('client.projects.request.edit', $req) }}" class="btn btn-brand">Ubah</a>
+                    <a href="{{ route('client.projects.request.edit', $req) }}" class="btn btn-sm btn-brand">Ubah Pengajuan</a>
                 @endif
             </div>
         @endforeach
@@ -159,7 +163,7 @@
             <a href="{{ route('client.projects.request') }}" class="btn btn-brand">Ajukan Proyek Pertama</a>
         @endforelse
         @if ($pengajuan->isNotEmpty())
-            <a href="{{ route('client.projects.request') }}" class="btn" style="margin-top: 10px;">Ajukan Proyek Baru</a>
+            <a href="{{ route('client.projects.request') }}" class="btn btn-sm btn-tonal" style="margin-top: 10px;"><i class="ti ti-copy"></i> Gunakan Sebagai Template / Proyek Baru</a>
         @endif
     </div>
 

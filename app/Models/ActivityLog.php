@@ -108,6 +108,47 @@ class ActivityLog extends Model
         return $this->morphTo();
     }
 
+    public function ringkasanPerangkat(): string
+    {
+        $ua = $this->user_agent;
+        if (! $ua) {
+            return $this->ip_address ? "IP {$this->ip_address}" : 'Internal';
+        }
+
+        $os = match (true) {
+            str_contains($ua, 'Windows') => 'Windows',
+            str_contains($ua, 'Android') => 'Android',
+            str_contains($ua, 'iPhone') || str_contains($ua, 'iPad') => 'iOS',
+            str_contains($ua, 'Macintosh') || str_contains($ua, 'Mac OS') => 'Mac',
+            str_contains($ua, 'Linux') => 'Linux',
+            default => 'Perangkat',
+        };
+
+        $browser = match (true) {
+            str_contains($ua, 'Edg') => 'Edge',
+            str_contains($ua, 'Chrome') && ! str_contains($ua, 'Edg') => 'Chrome',
+            str_contains($ua, 'Safari') && ! str_contains($ua, 'Chrome') => 'Safari',
+            str_contains($ua, 'Firefox') => 'Firefox',
+            default => 'Browser',
+        };
+
+        return "{$os} · {$browser}".($this->ip_address ? " ({$this->ip_address})" : '');
+    }
+
+    public function ikonPerangkat(): string
+    {
+        $ua = $this->user_agent;
+        if (! $ua) {
+            return 'ti-device-laptop';
+        }
+
+        return match (true) {
+            str_contains($ua, 'Android') || str_contains($ua, 'iPhone') => 'ti-device-mobile',
+            str_contains($ua, 'iPad') || str_contains($ua, 'Tablet') => 'ti-device-tablet',
+            default => 'ti-device-desktop',
+        };
+    }
+
     /**
      * Catat aktivitas baru ke audit trail sistem.
      */
