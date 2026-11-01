@@ -1670,6 +1670,89 @@
             e.target.querySelectorAll('.tag-input-field').forEach(function (f) { if (f.value.trim()) { tambah(f.closest('[data-tag-input]'), f.value); f.value = ''; } });
         }, true);
     }());
+
+    // Dashboard Stat Card Popover: interaksi onclick (pop-up persistent) & hover
+    (function () {
+        function initDashPopovers() {
+            document.querySelectorAll('.dash-stat-card').forEach(function (card) {
+                var popover = card.querySelector('.dash-hover-popover');
+                if (!popover) return;
+                if (!popover.querySelector('.dash-popover-close')) {
+                    var header = popover.querySelector('.dash-popover-header');
+                    var closeBtn = document.createElement('button');
+                    closeBtn.type = 'button';
+                    closeBtn.className = 'dash-popover-close';
+                    closeBtn.setAttribute('aria-label', 'Tutup');
+                    closeBtn.innerHTML = '<i class="ti ti-x"></i>';
+                    if (header) {
+                        header.appendChild(closeBtn);
+                    } else {
+                        var firstEl = popover.firstElementChild;
+                        var titleText = firstEl ? firstEl.textContent : 'Rincian Statistik';
+                        var newHeader = document.createElement('div');
+                        newHeader.className = 'dash-popover-header';
+                        newHeader.innerHTML = '<span class="dash-popover-title">' + titleText + '</span>';
+                        newHeader.appendChild(closeBtn);
+                        if (firstEl) firstEl.remove();
+                        popover.insertBefore(newHeader, popover.firstChild);
+                    }
+                }
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initDashPopovers);
+        } else {
+            initDashPopovers();
+        }
+
+        document.addEventListener('click', function (e) {
+            var closeBtn = e.target.closest('.dash-popover-close');
+            if (closeBtn) {
+                e.stopPropagation();
+                var card = closeBtn.closest('.dash-stat-card');
+                if (card) card.classList.remove('is-open');
+                return;
+            }
+
+            // Izinkan klik link atau button di dalam popover
+            if (e.target.closest('.dash-hover-popover a, .dash-hover-popover button')) {
+                return;
+            }
+
+            // Jika klik di dalam isi popover (misal select text), jangan toggle
+            if (e.target.closest('.dash-hover-popover')) {
+                return;
+            }
+
+            var card = e.target.closest('.dash-stat-card');
+            if (card && card.querySelector('.dash-hover-popover')) {
+                var isOpen = card.classList.contains('is-open');
+                document.querySelectorAll('.dash-stat-card.is-open').forEach(function (c) {
+                    if (c !== card) c.classList.remove('is-open');
+                });
+                if (isOpen) {
+                    card.classList.remove('is-open');
+                } else {
+                    card.classList.add('is-open');
+                }
+                return;
+            }
+
+            // Klik di luar kartu menutup semua popover yang sedang terkunci/terbuka
+            document.querySelectorAll('.dash-stat-card.is-open').forEach(function (c) {
+                c.classList.remove('is-open');
+            });
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.dash-stat-card.is-open').forEach(function (c) {
+                    c.classList.remove('is-open');
+                });
+            }
+        });
+    }());
     </script>
     @stack('scripts')
 </body>

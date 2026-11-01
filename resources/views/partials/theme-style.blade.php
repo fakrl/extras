@@ -889,38 +889,66 @@
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        cursor: pointer;
     }
     .dash-stat-card:hover, .dash-stat-card:focus-within {
         border-color: var(--accent, #15803D);
         box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         z-index: 50;
     }
+    .dash-stat-card.is-open {
+        border-color: var(--accent, #15803D);
+        box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.2), 0 10px 25px rgba(0,0,0,0.14);
+        z-index: 70;
+    }
     .dash-stat-card .info-hint {
         position: absolute;
-        top: 12px;
-        right: 12px;
+        top: 10px;
+        right: 10px;
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         color: var(--text-muted);
-        font-size: 14px;
+        font-size: 15px;
         cursor: pointer;
+        transition: background 0.15s, color 0.15s, transform 0.15s;
+        z-index: 5;
+    }
+    .dash-stat-card:hover .info-hint,
+    .dash-stat-card .info-hint:hover {
+        background: var(--surface-2, rgba(0,0,0,0.06));
+        color: var(--accent, #15803D);
+    }
+    .dash-stat-card.is-open .info-hint {
+        background: var(--accent, #15803D);
+        color: #ffffff;
     }
     .dash-hover-popover {
         position: absolute;
-        top: calc(100% + 6px);
+        top: calc(100% + 8px);
         left: 0;
-        right: 0;
-        z-index: 60;
+        min-width: 280px;
+        max-width: min(340px, calc(100vw - 32px));
+        z-index: 80;
         background: var(--bg-card);
         border: 1px solid var(--border-color);
         border-radius: var(--radius-md);
         padding: 12px 14px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.14);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.18);
         opacity: 0;
         visibility: hidden;
-        transform: translateY(4px);
+        transform: translateY(6px);
         transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
         pointer-events: none;
-        max-width: 100%;
         box-sizing: border-box;
+    }
+    .dash-pulse-strip > .dash-stat-card:last-child .dash-hover-popover,
+    .dash-stat-card.is-right-aligned .dash-hover-popover {
+        left: auto;
+        right: 0;
     }
     .dash-stat-card:hover .dash-hover-popover,
     .dash-stat-card:focus-within .dash-hover-popover {
@@ -928,6 +956,46 @@
         visibility: visible;
         transform: translateY(0);
         pointer-events: auto;
+    }
+    .dash-stat-card.is-open .dash-hover-popover {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: translateY(0) !important;
+        pointer-events: auto !important;
+        z-index: 100 !important;
+    }
+    .dash-popover-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .dash-popover-title {
+        font-weight: 700;
+        font-size: 12.5px;
+        color: var(--text-primary);
+        line-height: 1.3;
+    }
+    .dash-popover-close {
+        background: none;
+        border: none;
+        padding: 2px 4px;
+        cursor: pointer;
+        color: var(--text-muted);
+        border-radius: 4px;
+        font-size: 15px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        transition: background 0.15s, color 0.15s;
+    }
+    .dash-popover-close:hover {
+        background: var(--surface-2, rgba(0,0,0,0.08));
+        color: var(--text-primary);
     }
     .popover-row {
         display: flex;
@@ -953,6 +1021,196 @@
     .dash-segmented-bar .seg {
         height: 100%;
         transition: width 0.3s ease;
+    }
+
+    /* Layout Split di Dalam Kartu Statistik Berdiagram */
+    .dash-viz-body {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-top: 8px;
+    }
+
+    .viz-donut-wrap,
+    .viz-ring-wrap {
+        position: relative;
+        width: 76px;
+        height: 76px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .viz-donut-svg,
+    .viz-ring-svg {
+        width: 76px;
+        height: 76px;
+        transform: rotate(-90deg);
+        transform-origin: center;
+    }
+
+    .viz-center-label {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        line-height: 1.1;
+        pointer-events: none;
+    }
+
+    .viz-center-num {
+        font-size: 16px;
+        font-weight: 800;
+        color: var(--text-primary);
+    }
+
+    .viz-center-sub {
+        font-size: 9.5px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    /* Legend di Samping Donut / Ring */
+    .viz-legend {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .viz-legend-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+
+    .viz-legend-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .viz-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .viz-legend-val {
+        font-weight: 700;
+        color: var(--text-primary);
+        flex-shrink: 0;
+    }
+
+    /* Financial Comparison Bars (.viz-fin-bars) */
+    .viz-fin-bars {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        margin-top: 8px;
+    }
+
+    .viz-fin-item {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .viz-fin-head {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11.5px;
+    }
+
+    .viz-fin-track {
+        height: 7px;
+        border-radius: 999px;
+        background: var(--surface-2, rgba(0,0,0,0.06));
+        overflow: hidden;
+        display: flex;
+    }
+
+    .viz-fin-fill {
+        height: 100%;
+        border-radius: 999px;
+        transition: width 0.3s ease;
+    }
+
+    /* Mini Funnel Chart (.viz-funnel) */
+    .viz-funnel {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-top: 8px;
+    }
+
+    .viz-funnel-row {
+        display: grid;
+        grid-template-columns: 82px 1fr 28px;
+        align-items: center;
+        gap: 8px;
+        font-size: 11.5px;
+    }
+
+    .viz-funnel-label {
+        color: var(--text-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .viz-funnel-track {
+        height: 8px;
+        background: var(--surface-2, rgba(0,0,0,0.06));
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .viz-funnel-bar {
+        height: 100%;
+        border-radius: 4px;
+    }
+
+    .viz-funnel-count {
+        text-align: right;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    @media (max-width: 380px) {
+        .dash-viz-body {
+            gap: 10px;
+        }
+        .viz-donut-wrap,
+        .viz-ring-wrap {
+            width: 64px;
+            height: 64px;
+        }
+        .viz-donut-svg,
+        .viz-ring-svg {
+            width: 64px;
+            height: 64px;
+        }
+        .viz-center-num {
+            font-size: 14px;
+        }
+        .viz-center-sub {
+            font-size: 8.5px;
+        }
     }
     .dash-mini-feed {
         display: flex;
@@ -1032,8 +1290,9 @@
         }
         .dash-stat-card:hover .dash-hover-popover,
         .dash-stat-card:focus-within .dash-hover-popover,
-        .dash-stat-card:active .dash-hover-popover {
-            display: block;
+        .dash-stat-card:active .dash-hover-popover,
+        .dash-stat-card.is-open .dash-hover-popover {
+            display: block !important;
         }
         .sa-mode-banner {
             padding: 10px 12px !important;

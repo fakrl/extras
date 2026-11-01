@@ -65,16 +65,45 @@
                 <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
                     <i class="ti ti-movie"></i> Aktivitas &amp; Proyek
                 </div>
-                <div style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 4px 0 2px;">
-                    {{ $statKarirExtras['proyek_selesai'] }} Selesai
-                </div>
-                <div style="font-size: 12px; color: var(--text-secondary);">
-                    {{ $statKarirExtras['lamaran_aktif'] }} Lamaran Aktif Saat Ini
+                @php
+                    $totAktif = max(1, $statKarirExtras['proyek_selesai'] + $statKarirExtras['lamaran_aktif']);
+                    $lenSelesai = round(($statKarirExtras['proyek_selesai'] / $totAktif) * 188.5, 1);
+                    $lenLamaran = max(0, round(188.5 - $lenSelesai, 1));
+                @endphp
+                <div class="dash-viz-body">
+                    <div class="viz-donut-wrap">
+                        <svg class="viz-donut-svg" viewBox="0 0 76 76" aria-hidden="true">
+                            <circle cx="38" cy="38" r="30" stroke="var(--surface-2, rgba(0,0,0,0.06))" stroke-width="7" fill="none" />
+                            <circle cx="38" cy="38" r="30" stroke="#15803D" stroke-width="7" stroke-dasharray="{{ $lenSelesai }} 188.5" stroke-dashoffset="0" fill="none" />
+                            <circle cx="38" cy="38" r="30" stroke="#0284C7" stroke-width="7" stroke-dasharray="{{ $lenLamaran }} 188.5" stroke-dashoffset="{{ -$lenSelesai }}" fill="none" />
+                        </svg>
+                        <div class="viz-center-label">
+                            <span class="viz-center-num">{{ $statKarirExtras['proyek_selesai'] }}</span>
+                            <span class="viz-center-sub">Selesai</span>
+                        </div>
+                    </div>
+                    <div class="viz-legend">
+                        <div class="viz-legend-row">
+                            <span class="viz-legend-label"><span class="viz-dot" style="background: #15803D;"></span>Selesai</span>
+                            <strong class="viz-legend-val">{{ $statKarirExtras['proyek_selesai'] }}</strong>
+                        </div>
+                        <div class="viz-legend-row">
+                            <span class="viz-legend-label"><span class="viz-dot" style="background: #0284C7;"></span>Lamaran</span>
+                            <strong class="viz-legend-val">{{ $statKarirExtras['lamaran_aktif'] }}</strong>
+                        </div>
+                        <div class="viz-legend-row">
+                            <span class="viz-legend-label"><span class="viz-dot" style="background: #D97706;"></span>Riwayat</span>
+                            <strong class="viz-legend-val">{{ $statKarirExtras['total_melamar'] }}</strong>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <span class="info-hint"><i class="ti ti-info-circle"></i></span>
+            <span class="info-hint" title="Klik untuk rincian / kunci pop-up"><i class="ti ti-info-circle"></i></span>
             <div class="dash-hover-popover">
-                <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Rincian Partisipasi Proyek</div>
+                <div class="dash-popover-header">
+                    <span class="dash-popover-title">Rincian Partisipasi Proyek</span>
+                    <button type="button" class="dash-popover-close" aria-label="Tutup"><i class="ti ti-x"></i></button>
+                </div>
                 <div class="popover-row"><span>Proses Seleksi / Nego</span><strong>{{ $statKarirExtras['proses_seleksi'] }}</strong></div>
                 <div class="popover-row"><span>Kontrak Aktif / Lolos</span><strong>{{ $statKarirExtras['kontrak_aktif'] }}</strong></div>
                 <div class="popover-row"><span>Selesai Produksi</span><strong>{{ $statKarirExtras['proyek_selesai'] }}</strong></div>
@@ -87,22 +116,44 @@
                 <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
                     <i class="ti ti-wallet"></i> Dompet Honor Saya
                 </div>
-                <div style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 4px 0 2px;">
+                <div style="font-size: 19px; font-weight: 700; color: var(--text-primary); margin: 3px 0 2px;">
                     Rp {{ number_format($statKarirExtras['honor_cair'], 0, ',', '.') }}
                 </div>
-                <div style="font-size: 12px; color: var(--text-secondary);">
-                    @if ($statKarirExtras['honor_konfirmasi'] > 0)
-                        <span style="color: var(--warning, #D97706); font-weight: 600;">Konfirmasi: Rp {{ number_format($statKarirExtras['honor_konfirmasi'], 0, ',', '.') }}</span>
-                    @elseif ($statKarirExtras['honor_proses'] > 0)
-                        <span>Proses: Rp {{ number_format($statKarirExtras['honor_proses'], 0, ',', '.') }}</span>
-                    @else
-                        <span>Semua honor telah diterima</span>
+                @php
+                    $pendingHonor = $statKarirExtras['honor_konfirmasi'] + $statKarirExtras['honor_proses'];
+                    $totHonorSum = max(1, $statKarirExtras['honor_cair'] + $pendingHonor);
+                    $pctCair = round(($statKarirExtras['honor_cair'] / $totHonorSum) * 100);
+                    $pctPending = max(0, 100 - $pctCair);
+                @endphp
+                <div class="viz-fin-bars" style="margin-top: 6px;">
+                    <div class="viz-fin-item">
+                        <div class="viz-fin-head">
+                            <span style="color: var(--text-secondary); font-size: 11px;">Sudah Cair</span>
+                            <strong style="color: #15803D; font-size: 11px;">Rp {{ number_format($statKarirExtras['honor_cair'], 0, ',', '.') }}</strong>
+                        </div>
+                        <div class="viz-fin-track">
+                            <div class="viz-fin-fill" style="width: {{ $pctCair }}%; background: #15803D;"></div>
+                        </div>
+                    </div>
+                    @if ($pendingHonor > 0)
+                        <div class="viz-fin-item">
+                            <div class="viz-fin-head">
+                                <span style="color: var(--text-secondary); font-size: 11px;">Proses/Konfirmasi</span>
+                                <strong style="color: #D97706; font-size: 11px;">Rp {{ number_format($pendingHonor, 0, ',', '.') }}</strong>
+                            </div>
+                            <div class="viz-fin-track">
+                                <div class="viz-fin-fill" style="width: {{ $pctPending }}%; background: #D97706;"></div>
+                            </div>
+                        </div>
                     @endif
                 </div>
             </div>
-            <span class="info-hint"><i class="ti ti-info-circle"></i></span>
+            <span class="info-hint" title="Klik untuk rincian / kunci pop-up"><i class="ti ti-info-circle"></i></span>
             <div class="dash-hover-popover">
-                <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Status Pencairan Honor</div>
+                <div class="dash-popover-header">
+                    <span class="dash-popover-title">Status Pencairan Honor</span>
+                    <button type="button" class="dash-popover-close" aria-label="Tutup"><i class="ti ti-x"></i></button>
+                </div>
                 <div class="popover-row"><span>Sudah Diterima (Cair)</span><strong style="color: #15803D;">Rp {{ number_format($statKarirExtras['honor_cair'], 0, ',', '.') }}</strong></div>
                 <div class="popover-row"><span>Perlu Konfirmasi Anda</span><strong style="color: #D97706;">Rp {{ number_format($statKarirExtras['honor_konfirmasi'], 0, ',', '.') }}</strong></div>
                 <div class="popover-row"><span>Dalam Proses Transfer</span><strong>Rp {{ number_format($statKarirExtras['honor_proses'], 0, ',', '.') }}</strong></div>
@@ -114,45 +165,88 @@
                 <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
                     <i class="ti ti-award"></i> Skor Kehadiran
                 </div>
-                <div style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 4px 0 2px;">
-                    {{ $statKarirExtras['skor_kehadiran'] }}%
-                </div>
-                <div class="dash-segmented-bar">
-                    <div class="seg" style="width: {{ $statKarirExtras['skor_kehadiran'] }}%; background: var(--accent, #15803D);"></div>
-                    <div class="seg" style="width: {{ 100 - $statKarirExtras['skor_kehadiran'] }}%; background: var(--surface-2, rgba(0,0,0,0.06));"></div>
-                </div>
-                <div style="font-size: 12px; color: var(--text-secondary);">
-                    {{ $statKarirExtras['hadir_count'] }}/{{ $statKarirExtras['total_absen'] }} Hadir · {{ $statKarirExtras['batal_mendadak'] }} Batal
+                @php
+                    $skorHadir = min(100, max(0, $statKarirExtras['skor_kehadiran']));
+                    $ringHadirLen = round(($skorHadir / 100) * 188.5, 1);
+                    $colorHadir = $skorHadir >= 80 ? '#15803D' : ($skorHadir >= 50 ? '#D97706' : '#DC2626');
+                @endphp
+                <div class="dash-viz-body">
+                    <div class="viz-ring-wrap" title="Skor Kehadiran: {{ $skorHadir }}%">
+                        <svg class="viz-ring-svg" viewBox="0 0 76 76" aria-hidden="true">
+                            <circle cx="38" cy="38" r="30" stroke="var(--surface-2, rgba(0,0,0,0.06))" stroke-width="7" fill="none" />
+                            <circle cx="38" cy="38" r="30" stroke="{{ $colorHadir }}" stroke-width="7" stroke-dasharray="{{ $ringHadirLen }} 188.5" stroke-linecap="round" fill="none" />
+                        </svg>
+                        <div class="viz-center-label">
+                            <span class="viz-center-num">{{ $skorHadir }}%</span>
+                            <span class="viz-center-sub">Hadir</span>
+                        </div>
+                    </div>
+                    <div class="viz-legend">
+                        <div class="viz-legend-row">
+                            <span class="viz-legend-label"><span class="viz-dot" style="background: #15803D;"></span>Hadir</span>
+                            <strong class="viz-legend-val">{{ $statKarirExtras['hadir_count'] }}/{{ $statKarirExtras['total_absen'] }}</strong>
+                        </div>
+                        <div class="viz-legend-row">
+                            <span class="viz-legend-label"><span class="viz-dot" style="background: #DC2626;"></span>Batal</span>
+                            <strong class="viz-legend-val">{{ $statKarirExtras['batal_mendadak'] }}</strong>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <span class="info-hint"><i class="ti ti-info-circle"></i></span>
+            <span class="info-hint" title="Klik untuk rincian / kunci pop-up"><i class="ti ti-info-circle"></i></span>
             <div class="dash-hover-popover">
-                <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Catatan Kedisiplinan &amp; Absensi</div>
+                <div class="dash-popover-header">
+                    <span class="dash-popover-title">Catatan Kedisiplinan &amp; Absensi</span>
+                    <button type="button" class="dash-popover-close" aria-label="Tutup"><i class="ti ti-x"></i></button>
+                </div>
                 <div class="popover-row"><span>Kehadiran Terverifikasi</span><strong>{{ $statKarirExtras['hadir_count'] }} kali</strong></div>
                 <div class="popover-row"><span>Total Panggilan Absen</span><strong>{{ $statKarirExtras['total_absen'] }} jadwal</strong></div>
                 <div class="popover-row"><span>Batal Mendadak</span><strong>{{ $statKarirExtras['batal_mendadak'] }} kali</strong></div>
             </div>
         </div>
 
-        <div class="dash-stat-card" tabindex="0">
+        <div class="dash-stat-card is-right-aligned" tabindex="0">
             <div>
                 <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
                     <i class="ti ti-user-check"></i> Kesiapan Profil &amp; Kontrak
                 </div>
-                <div style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 4px 0 2px;">
-                    {{ $extrasProfile?->persenKelengkapan() ?? 0 }}%
-                </div>
-                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">
-                    {{ $statKarirExtras['siap_kontrak'] ? 'Siap Kontrak (NIK Lengkap)' : 'Belum Lengkap NIK' }}
+                @php
+                    $persenProfilVal = min(100, max(0, $extrasProfile?->persenKelengkapan() ?? 0));
+                    $ringProfilLen = round(($persenProfilVal / 100) * 188.5, 1);
+                    $colorProfil = $persenProfilVal >= 80 ? '#15803D' : ($persenProfilVal >= 50 ? '#D97706' : '#DC2626');
+                @endphp
+                <div class="dash-viz-body">
+                    <div class="viz-ring-wrap" title="Kelengkapan Profil: {{ $persenProfilVal }}%">
+                        <svg class="viz-ring-svg" viewBox="0 0 76 76" aria-hidden="true">
+                            <circle cx="38" cy="38" r="30" stroke="var(--surface-2, rgba(0,0,0,0.06))" stroke-width="7" fill="none" />
+                            <circle cx="38" cy="38" r="30" stroke="{{ $colorProfil }}" stroke-width="7" stroke-dasharray="{{ $ringProfilLen }} 188.5" stroke-linecap="round" fill="none" />
+                        </svg>
+                        <div class="viz-center-label">
+                            <span class="viz-center-num">{{ $persenProfilVal }}%</span>
+                            <span class="viz-center-sub">Profil</span>
+                        </div>
+                    </div>
+                    <div class="viz-legend">
+                        <div class="viz-legend-row">
+                            <span class="viz-legend-label"><span class="viz-dot" style="background: {{ $statKarirExtras['siap_kontrak'] ? '#15803D' : '#D97706' }};"></span>NIK</span>
+                            <strong class="viz-legend-val">{{ $statKarirExtras['siap_kontrak'] ? 'Siap' : 'Belum' }}</strong>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <a href="{{ route('extras.profile.edit') }}" class="btn btn-sm btn-tonal" style="width: 100%; justify-content: center; font-size: 11px; padding: 2px 6px; gap: 4px;"><i class="ti ti-user-edit"></i> Edit Profil</a>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <span class="info-hint"><i class="ti ti-info-circle"></i></span>
+            <span class="info-hint" title="Klik untuk rincian / kunci pop-up"><i class="ti ti-info-circle"></i></span>
             <div class="dash-hover-popover">
-                <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Kelengkapan Data Talent</div>
+                <div class="dash-popover-header">
+                    <span class="dash-popover-title">Kelengkapan Data Talent</span>
+                    <button type="button" class="dash-popover-close" aria-label="Tutup"><i class="ti ti-x"></i></button>
+                </div>
                 <div class="popover-row"><span>Data Terisi</span><strong>{{ $extrasProfile?->persenKelengkapan() ?? 0 }}%</strong></div>
                 <div class="popover-row"><span>Status Verifikasi NIK</span><strong>{{ $statKarirExtras['siap_kontrak'] ? 'Lengkap' : 'Belum Terisi' }}</strong></div>
-                <div style="margin-top: 8px; text-align: right;">
-                    <a href="{{ route('extras.profile.edit') }}" class="btn btn-sm btn-tonal" style="font-size: 11px; padding: 2px 8px;"><i class="ti ti-user-edit"></i> Edit Profil <i class="ti ti-arrow-right"></i></a>
+                <div style="margin-top: 8px; text-align: right; padding-top: 6px; border-top: 1px dashed var(--border-color);">
+                    <a href="{{ route('extras.profile.edit') }}" class="btn btn-sm btn-tonal" style="width: 100%; justify-content: center; font-size: 11px; padding: 4px 8px; gap: 4px;"><i class="ti ti-user-edit"></i> Edit Profil <i class="ti ti-arrow-right"></i></a>
                 </div>
             </div>
         </div>

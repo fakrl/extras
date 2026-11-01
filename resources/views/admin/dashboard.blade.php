@@ -70,37 +70,110 @@
             <div class="card-title">Ringkasan</div>
             <div class="dash-metrik" style="margin-bottom: 14px;">
                 <div class="dash-stat-card metric-card" tabindex="0" style="padding: 10px 12px; cursor: pointer;">
-                    <a href="{{ route('admin.projects.index', ['status' => 'dibuka']) }}" style="text-decoration: none; color: inherit; display: block;">
+                    <div>
                         <div class="metric-label" style="display: flex; justify-content: space-between; align-items: center;">
                             <span>Proyek Aktif</span>
-                            <i class="ti ti-info-circle" style="font-size: 13px; color: var(--text-muted);"></i>
+                            <i class="ti ti-info-circle" style="font-size: 13px; color: var(--text-muted);" title="Klik untuk rincian / kunci pop-up"></i>
                         </div>
-                        <div class="metric-value">{{ $proyekAktif }}</div>
-                    </a>
+                        @php
+                            $totAgency = max(1, $breakdownAdmin['proyek_agency']);
+                            $pctPic = min(100, round(($breakdownAdmin['proyek_pic'] / $totAgency) * 100));
+                            $ringPicLen = round(($pctPic / 100) * 188.5, 1);
+                        @endphp
+                        <div class="dash-viz-body" style="margin-top: 6px;">
+                            <div class="viz-ring-wrap" style="width: 58px; height: 58px;" title="PIC Saya: {{ $breakdownAdmin['proyek_pic'] }} dari {{ $breakdownAdmin['proyek_agency'] }} proyek">
+                                <svg class="viz-ring-svg" viewBox="0 0 76 76" style="width: 58px; height: 58px;" aria-hidden="true">
+                                    <circle cx="38" cy="38" r="30" stroke="var(--surface-2, rgba(0,0,0,0.06))" stroke-width="7" fill="none" />
+                                    <circle cx="38" cy="38" r="30" stroke="#15803D" stroke-width="7" stroke-dasharray="{{ $ringPicLen }} 188.5" stroke-linecap="round" fill="none" />
+                                </svg>
+                                <div class="viz-center-label">
+                                    <span class="viz-center-num" style="font-size: 14px;">{{ $proyekAktif }}</span>
+                                    <span class="viz-center-sub" style="font-size: 8px;">Aktif</span>
+                                </div>
+                            </div>
+                            <div class="viz-legend">
+                                <div class="viz-legend-row" style="font-size: 11px;">
+                                    <span class="viz-legend-label"><span class="viz-dot" style="background: #15803D;"></span>PIC Saya</span>
+                                    <strong class="viz-legend-val">{{ $breakdownAdmin['proyek_pic'] }}</strong>
+                                </div>
+                                <div class="viz-legend-row" style="font-size: 11px;">
+                                    <span class="viz-legend-label"><span class="viz-dot" style="background: #64748B;"></span>Agency</span>
+                                    <strong class="viz-legend-val">{{ $breakdownAdmin['proyek_agency'] }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="dash-hover-popover">
-                        <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Distribusi Proyek Aktif</div>
+                        <div class="dash-popover-header">
+                            <span class="dash-popover-title">Distribusi Proyek Aktif</span>
+                            <button type="button" class="dash-popover-close" aria-label="Tutup"><i class="ti ti-x"></i></button>
+                        </div>
                         <div class="popover-row"><span>Proyek Saya (PIC)</span><strong>{{ $breakdownAdmin['proyek_pic'] }}</strong></div>
                         <div class="popover-row"><span>Total Proyek Agency</span><strong>{{ $breakdownAdmin['proyek_agency'] }}</strong></div>
                         <div class="popover-row"><span>Buka Lowongan</span><strong>{{ $breakdownAdmin['proyek_lowongan'] }}</strong></div>
                         <div class="popover-row"><span>Proses Seleksi</span><strong>{{ $breakdownAdmin['proyek_seleksi'] }}</strong></div>
                         <div class="popover-row"><span>Shooting Berjalan</span><strong>{{ $breakdownAdmin['proyek_shooting'] }}</strong></div>
+                        <div style="margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--border-color);">
+                            <a href="{{ route('admin.projects.index', ['status' => 'dibuka']) }}" class="btn btn-sm btn-tonal" style="width: 100%; justify-content: center; font-size: 11.5px; gap: 4px;">Buka Proyek Aktif <i class="ti ti-arrow-right"></i></a>
+                        </div>
                     </div>
                 </div>
 
                 <div class="dash-stat-card metric-card" tabindex="0" style="padding: 10px 12px; cursor: pointer;">
-                    <a href="{{ route('admin.projects.index') }}" style="text-decoration: none; color: inherit; display: block;">
+                    <div>
                         <div class="metric-label" style="display: flex; justify-content: space-between; align-items: center;">
                             <span>Total Pendaftar</span>
-                            <i class="ti ti-info-circle" style="font-size: 13px; color: var(--text-muted);"></i>
+                            <i class="ti ti-info-circle" style="font-size: 13px; color: var(--text-muted);" title="Klik untuk rincian / kunci pop-up"></i>
                         </div>
-                        <div class="metric-value">{{ $totalPendaftar }}</div>
-                    </a>
+                        @php
+                            $totPendaftarSum = max(1, $totalPendaftar);
+                            $lenReview = round(($breakdownAdmin['pendaftar_review'] / $totPendaftarSum) * 188.5, 1);
+                            $lenNego = round(($breakdownAdmin['pendaftar_nego'] / $totPendaftarSum) * 188.5, 1);
+                            $lenClient = round(($breakdownAdmin['pendaftar_client'] / $totPendaftarSum) * 188.5, 1);
+                            $lenKontrak = max(0, round(188.5 - $lenReview - $lenNego - $lenClient, 1));
+                        @endphp
+                        <div class="dash-viz-body" style="margin-top: 6px;">
+                            <div class="viz-donut-wrap" style="width: 58px; height: 58px;">
+                                <svg class="viz-donut-svg" viewBox="0 0 76 76" style="width: 58px; height: 58px;" aria-hidden="true">
+                                    <circle cx="38" cy="38" r="30" stroke="var(--surface-2, rgba(0,0,0,0.06))" stroke-width="7" fill="none" />
+                                    <circle cx="38" cy="38" r="30" stroke="#64748B" stroke-width="7" stroke-dasharray="{{ $lenReview }} 188.5" stroke-dashoffset="0" fill="none" />
+                                    <circle cx="38" cy="38" r="30" stroke="#D97706" stroke-width="7" stroke-dasharray="{{ $lenNego }} 188.5" stroke-dashoffset="{{ -$lenReview }}" fill="none" />
+                                    <circle cx="38" cy="38" r="30" stroke="#0284C7" stroke-width="7" stroke-dasharray="{{ $lenClient }} 188.5" stroke-dashoffset="{{ -($lenReview + $lenNego) }}" fill="none" />
+                                    <circle cx="38" cy="38" r="30" stroke="#15803D" stroke-width="7" stroke-dasharray="{{ $lenKontrak }} 188.5" stroke-dashoffset="{{ -($lenReview + $lenNego + $lenClient) }}" fill="none" />
+                                </svg>
+                                <div class="viz-center-label">
+                                    <span class="viz-center-num" style="font-size: 14px;">{{ $totalPendaftar }}</span>
+                                    <span class="viz-center-sub" style="font-size: 8px;">Talent</span>
+                                </div>
+                            </div>
+                            <div class="viz-legend">
+                                <div class="viz-legend-row" style="font-size: 11px;">
+                                    <span class="viz-legend-label"><span class="viz-dot" style="background: #64748B;"></span>Review</span>
+                                    <strong class="viz-legend-val">{{ $breakdownAdmin['pendaftar_review'] }}</strong>
+                                </div>
+                                <div class="viz-legend-row" style="font-size: 11px;">
+                                    <span class="viz-legend-label"><span class="viz-dot" style="background: #D97706;"></span>Nego</span>
+                                    <strong class="viz-legend-val">{{ $breakdownAdmin['pendaftar_nego'] }}</strong>
+                                </div>
+                                <div class="viz-legend-row" style="font-size: 11px;">
+                                    <span class="viz-legend-label"><span class="viz-dot" style="background: #15803D;"></span>Kontrak</span>
+                                    <strong class="viz-legend-val">{{ $breakdownAdmin['pendaftar_kontrak'] }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="dash-hover-popover">
-                        <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Status Pendaftar</div>
+                        <div class="dash-popover-header">
+                            <span class="dash-popover-title">Status Pendaftar</span>
+                            <button type="button" class="dash-popover-close" aria-label="Tutup"><i class="ti ti-x"></i></button>
+                        </div>
                         <div class="popover-row"><span>Menunggu Review</span><strong>{{ $breakdownAdmin['pendaftar_review'] }}</strong></div>
                         <div class="popover-row"><span>Sedang Nego Fee</span><strong>{{ $breakdownAdmin['pendaftar_nego'] }}</strong></div>
                         <div class="popover-row"><span>Pilihan Client</span><strong>{{ $breakdownAdmin['pendaftar_client'] }}</strong></div>
                         <div class="popover-row"><span>Belum TTD Kontrak</span><strong>{{ $breakdownAdmin['pendaftar_kontrak'] }}</strong></div>
+                        <div style="margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--border-color);">
+                            <a href="{{ route('admin.projects.index') }}" class="btn btn-sm btn-tonal" style="width: 100%; justify-content: center; font-size: 11.5px; gap: 4px;">Kelola Pelamar <i class="ti ti-arrow-right"></i></a>
+                        </div>
                     </div>
                 </div>
 

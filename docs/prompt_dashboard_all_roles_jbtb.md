@@ -1,158 +1,258 @@
-# Master Prompt: Rombak & Pengayaan Dashboard 5 Role (Business Pulse, Hover Breakdown, & Action Shortcuts) — SIM Casting JBTB (`fakrl/extras`)
+# Master Prompt V2: Transformasi Statistik Polosan Menjadi Visualisasi Diagram & Grafik Interaktif (Donut Chart, Radial Ring, Financial Bar, & Funnel Diagram) — SIM Casting JBTB (`fakrl/extras`)
 
 > **Cara Pakai Dokumen Ini di Antigravity:**
-> Simpan dokumen ini sebagai `docs/prompt_dashboard_all_roles_jbtb.md` di repositori lokalmu (atau *copy-paste* langsung ke Antigravity setelah proses sebelumnya selesai), lalu beri instruksi:
-> *"Baca dan eksekusi seluruh spesifikasi di `docs/prompt_dashboard_all_roles_jbtb.md` untuk memperkaya Dashboard ke-5 role (`super_admin`, `admin`, `korlap`, `client`, `extras`) dengan statistik ekosistem, hover breakdown interaktif, ringkasan margin keuangan, bottleneck kuota, dan shortcut aksi sesuai alur bisnis database, tanpa emoji Unicode/em-dash dan pastikan 100% test suite (`php artisan test`) tetap hijau."*
+> Simpan dokumen ini menimpa `docs/prompt_dashboard_all_roles_jbtb.md` di repositori lokalmu (atau *copy-paste* langsung ke Antigravity), lalu beri instruksi:
+> *"Perbaikan responsif mobile dan data statistik di Dashboard 5 role sudah jalan, tapi tampilan kartu statistiknya saat ini masih terlalu polosan (hanya kotak berisi teks angka dan garis tipis). Eksekusi spesifikasi V2 di `docs/prompt_dashboard_all_roles_jbtb.md` ini untuk mengubah kartu-kartu statistik polosan tersebut menjadi visualisasi diagram nyata (SVG Donut Chart multi-segmen, Radial Progress Ring, Financial Comparison Bar Chart, dan Visual Funnel Diagram) yang responsif di desktop & mobile, bebas emoji/em-dash, dan pastikan 100% test suite (`php artisan test`) tetap hijau."*
 
-## 1. Tujuan & Prinsip Desain Dashboard Baru
+## 1. Evaluasi Saat Ini & Mengapa Kartu Statistik Terlihat "Polosan"
 
-Saat ini, halaman Dashboard di kelima role baru menampilkan daftar antrean tugas harian (*to-do list*), namun belum menampilkan **Gambaran Utuh Ekosistem Sistem, Kesehatan Bisnis/Finansial, dan Progres Kuota Operasional** yang sebenarnya sudah tersedia di dalam 21 tabel database JBTB.
+1. **Status Responsivitas Mobile (Sudah Beres 100%)**:
+   * Posisi `.sticky-mobile-cta` (`bottom: 68px` di atas `.nav-bawah`), perilaku akordion `.dash-hover-popover` di layar HP (`<= 640px`), `flex-wrap` pada `.sa-mode-banner` & tombol ekspor/header, serta penguncian grid 1 kolom di mobile sudah terverifikasi berjalan rapi.
 
-Prinsip utama yang wajib diterapkan pada rombak Dashboard ini:
-1. **Data-Driven dari Skema Database Asli (Bukan Metrik Fiktif/E-Commerce seperti RFM)**:
-   - Seluruh angka statistik, *breakdown*, dan diagram visual wajib dihitung langsung dari tabel nyata di sistem: `users`, `extras_profiles`, `casting_projects`, `casting_project_classes`, `project_applications`, `fee_negotiations`, `contracts`, `invoices`, `payouts`, `payout_adjustments`, `project_expenses`, `staff_payrolls`, `attendances`, `field_notes`, `cancellations`, dan `activity_logs`.
-2. **Ringkas di Permukaan, Detail Saat Di-Hover (`.dash-stat-card` + `.dash-hover-popover`)**:
-   - Agar tampilan Dashboard tetap bersih dan tidak penuh sesak oleh teks, tampilkan **Angka Utama + 1 Sub-baris Ringkas** di kartu metrik.
-   - Ketika pengguna mengarahkan kursor (*hover* di desktop) atau mengetuk ikon info (*focus/tap* di mobile) pada kartu metrik tersebut, muncul **Floating Breakdown Popover (`.dash-hover-popover`)** yang merinci distribusi angkanya (misalnya rincian jumlah akun per role & per grade, atau rincian komponen pemasukan vs pengeluaran).
-3. **Setiap Angka Adalah Shortcut Aksi (Clickable Metrics)**:
-   - Setiap kartu metrik dan baris *breakdown* harus memiliki tautan pintas (*shortcut*) ke halaman/tab filter terkait sehingga pengguna bisa langsung melompat ke data yang dimaksud.
-4. **Aturan Ketat Zero "AI-Slop" & 100% Test Suite Aman**:
-   - **DILARANG** menggunakan emoji Unicode, tanda *em-dash*, atau panah teks mentah (`->`, `<-`, `v`). Gunakan murni **Tabler Icons (`<i class="ti ti-..."></i>`)** dan pemisah titik tengah (`·`).
-   - **WAJIB** mempertahankan seluruh variabel view eksisting yang diuji di `SuperAdminDashboardTest.php`, `AdminDashboardTest.php`, `ClientDashboardTest.php`, dan `ExtrasDashboardTest.php`. Variabel statistik baru ditambahkan sebagai variabel pendamping tanpa menghapus variabel lama.
+2. **Kenapa Statistik Dashboard Masih Terlihat "Polosan"**:
+   * Saat ini, ke-4 kartu di `.dash-pulse-strip` pada `/super-admin/dashboard` (*Populasi Akun: 36*, *Ekosistem Proyek: 15*, *Finansial & Margin: Rp 13.650.000*, *Funnel Partisipasi: 33*) maupun kartu statistik di `/extras/dashboard`, `/client/dashboard`, `/admin/dashboard`, dan Korlap **hanya menampilkan teks angka besar + subteks sebaris + garis lurus tipis (`.dash-segmented-bar`)**.
+   * Mata pengguna tidak melihat **bentuk grafik/diagram visual** yang membedakan karakteristik tiap data (mana yang merupakan proporsi komposisi, mana yang persentase ketercapaian target/kuota, mana yang perbandingan pemasukan vs pengeluaran, dan mana yang alur konversi bertingkat).
 
-## 2. Komponen CSS Baru di `resources/views/partials/theme-style.blade.php`
+## 2. Solusi Arsitektur Visual: Pure Dynamic SVG Diagrams + CSS (Tanpa Library Berat Tambahan)
 
-Tambahkan kumpulan class CSS yang bersih, responsif, dan mendukung Light/Dark Mode di `resources/views/partials/theme-style.blade.php`:
+Gunakan **Dynamic Inline `<svg>` & CSS** yang dihitung langsung dari variabel PHP di Blade (tanpa ketergantungan CDN eksternal sehingga langsung ter-render instan, tajam di semua resolusi, mendukung penuh Light/Dark Mode, dan tidak pernah merusak `php artisan test`).
 
-1. **`.dash-pulse-strip`**: Grid responsif (`grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin-bottom: 18px;`) untuk menampung kartu-kartu statistik ekosistem & bisnis.
-2. **`.dash-stat-card` & `.dash-hover-popover`**:
-   - `.dash-stat-card` memiliki `position: relative;`, transisi halus saat di-hover, dan indikator kecil `<i class="ti ti-info-circle"></i>` di pojok kanan atas yang menandakan adanya rincian *hover*.
-   - `.dash-hover-popover` adalah panel *breakdown* melayang (`position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 60; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.14); opacity: 0; visibility: hidden; transform: translateY(4px); transition: all 0.18s ease;`) yang otomatis tampil saat `.dash-stat-card:hover` atau `:focus-within`.
-   - Di dalam `.dash-hover-popover`, sediakan class `.popover-row` (`display: flex; justify-content: space-between; font-size: 12.5px; padding: 4px 0; border-bottom: 1px dashed var(--border-color);`) untuk menampilkan pasangan label dan nilai rincian secara rapi.
-3. **`.dash-segmented-bar`**: Bar horizontal multi-segmen (`height: 8px; border-radius: 999px; overflow: hidden; display: flex; gap: 2px; background: var(--surface-2);`) untuk menampilkan proporsi visual (seperti proporsi tahapan kandidat, keterisian kuota, atau perbandingan Invoice vs Biaya Produksi) tanpa perlu me-load library grafik berat.
-4. **`.dash-mini-feed`**: Kontainer daftar aktivitas terbaru yang ringkas dengan titik timeline vertikal, badge kategori aksi, dan waktu relatif (`diffForHumans()`).
+Tambahkan **4 Jenis Diagram Visual** berikut ke dalam `resources/views/partials/theme-style.blade.php` dan terapkan pada masing-masing kartu statistik sesuai sifat datanya:
 
-## 3. Spesifikasi Lengkap Per Role (Controller Query + View Layout)
+| Jenis Data Statistik | Diagram Visual yang Wajib Dipakai | Alasan & Bentuk Visualnya |
+| ----- | ----- | ----- |
+| **1. Data Komposisi / Proporsi Kategori**  *(Contoh: Populasi Akun Talent vs Client vs Tim, atau Proporsi Keputusan Kandidat Client)* | **Multi-Segment SVG Donut Chart (`.viz-donut`) + Mini Legend Berwarna** | Lingkaran donat (`76px x 76px`) dengan beberapa segmen warna (`<circle stroke-dasharray="...">`) dan angka total di tengah lubang donat, disandingkan dengan daftar legend ber-dot warna & angka di sebelahnya. |
+| **2. Data Persentase Target / Kapasitas**  *(Contoh: Keterisian Kuota Proyek 19%, Kesiapan Profil 80%, Skor Kehadiran 100%)* | **SVG Radial Progress Ring / Gauge (`.viz-ring`)** | Cincin progres melingkar (`72px x 72px`) dengan *track* abu-abu lembut dan busur warna aktif (`stroke-linecap: round`) yang mengelilingi angka persentase tebal (`19%`, `80%`, `100%`) tepat di tengah cincin. |
+| **3. Data Perbandingan Finansial**  *(Contoh: Omzet Invoice vs Beban Produksi vs Margin Agency 47%)* | **Horizontal Grouped / Waterfall Comparison Bars (`.viz-fin-bars`) + Margin Badge** | 3 batang horizontal berlabel yang membandingkan panjang visual **Tagihan Client (100%)**, **Total Biaya Produksi (X%)**, dan **Margin Kotor Agency (Y%)** lengkap dengan *pill badge* persentase margin yang menonjol. |
+| **4. Data Konversi Bertahap**  *(Contoh: Funnel Partisipasi 33 Lamaran dari Awal s.d. Selesai)* | **5-Stage Mini Funnel Bar Chart (`.viz-funnel`)** | Deretan bar horizontal bertingkat dari tahap 1 s.d. tahap akhir di mana lebar tiap bar proporsional terhadap jumlah kandidat di tahap tersebut, lengkap dengan label tahap di kiri dan angka di kanan. |
 
-### A. Role 1: `super_admin` — "Owner Business Pulse & System Ecosystem Dashboard"
+## 3. Spesifikasi CSS & Struktur HTML Diagram Baru
 
-* **File Target**:
-  - `app/Http/Controllers/SuperAdmin/DashboardController.php`
-  - `resources/views/super-admin/dashboard.blade.php` (serta partial di `resources/views/super-admin/dashboard/`)
-* **Analisa Kekurangan Saat Ini**:
-  - Saat ini hanya menampilkan 4 kartu antrean tugas (*Menunggu keputusan*, *Tugas staf tertunda*, *Proyek berjalan*, *Invoice belum lunas*), widget Jadwal, serta daftar *Butuh keputusan Anda* dan *Staf perlu diingatkan*.
-  - Belum ada informasi mengenai **Total Populasi Pengguna Sistem per Role/Grade**, **Kesehatan Finansial & Margin Kotor Agency**, **Distribusi Funnel Kandidat**, maupun **Feed Aktivitas Sistem Terbaru (`activity_logs`)**.
-* **Penambahan Data di `SuperAdmin/DashboardController.php` & Tampilan di `super-admin/dashboard.blade.php`**:
-  1. **Pertahankan 4 KPI Antrean Operasional Eksisting** agar `SuperAdminDashboardTest` tetap 100% lulus, lalu tambahkan **Section "Ikhtisar Ekosistem & Finansial Sistem" (`.dash-pulse-strip`)** yang berisi **4 Kartu Statistik Interaktif dengan Hover Popover**:
-     - **Kartu 1 — Populasi Pengguna Sistem (`$statPopulasi`)**:
-       - *Tampilan Utama*: Total seluruh akun di tabel `users` + shortcut ke `super_admin.akun.index`.
-       - *Hover Popover Breakdown*:
-         - `Extras (Talent)`: Jumlah total akun `role = 'extras'`
-         - `Extras Siap Kontrak (Sudah NIK)`: Jumlah `extras_profiles` dengan `nik_hash != null`
-         - `Distribusi Grade Extras`: `Grade A: X · Grade B: Y · Grade C: Z · Belum: W`
-         - `Client / PH`: Jumlah akun `role = 'client'`
-         - `Staf Internal`: `Admin: X · Korlap: Y · Super Admin: Z`
-     - **Kartu 2 — Ekosistem Proyek & Kuota Casting (`$statProyekKuota`)**:
-       - *Tampilan Utama*: Total seluruh proyek di `casting_projects` + persentase keterisian kuota pada proyek yang sedang aktif (*Fulfillment Rate* + `.dash-segmented-bar`).
-       - *Hover Popover Breakdown*:
-         - `Menunggu ACC Super Admin`: `status = 'diajukan_client'`
-         - `Buka Lowongan & Seleksi`: `status IN ('disetujui_super_admin', 'buka_lowongan', 'proses_seleksi')`
-         - `Shooting Berjalan`: `status = 'shooting_berjalan'`
-         - `Selesai Produksi`: `status = 'selesai'`
-         - `Ditolak / Dibatalkan`: `status IN ('ditolak_super_admin', 'dibatalkan')`
-         - `Keterisian Kursi Aktif`: `X Terisi dari Y Target Kuota` (dari `casting_project_classes`)
-     - **Kartu 3 — Kesehatan Finansial & Estimasi Margin Agency (`$statKeuangan`)**:
-       - *Tampilan Utama*: Total Nilai Invoice Client Terbit/Lunas (`invoices` di mana `status IN ('diterbitkan', 'lunas')`) beserta persentase **Estimasi Margin Kotor Agency** dan `.dash-segmented-bar` (Hijau untuk Lunas, Kuning untuk Belum Lunas).
-       - *Hover Popover Breakdown*:
-         - `Invoice Lunas (Kas Masuk)`: `Rp ...` (`invoices.status = 'lunas'`)
-         - `Piutang Client (Belum Lunas)`: `Rp ...` (`invoices.status = 'diterbitkan'`)
-         - `Total Payout Extras`: `Rp ...` (`payouts`)
-         - `Pengeluaran Operasional Proyek`: `Rp ...` (`project_expenses`)
-         - `Payroll Staf & Korlap`: `Rp ...` (`staff_payrolls`)
-         - `Estimasi Margin Kotor Agency`: `Rp ... (X%)` *(Selisih Total Invoice Terbit/Lunas dikurangi Total Payout + Expenses + Payroll)*
-     - **Kartu 4 — Funnel Partisipasi Kandidat Aktif (`$statFunnelKandidat`)**:
-       - *Tampilan Utama*: Total lamaran aktif di `project_applications` beserta `.dash-segmented-bar` 5 warna tahapan.
-       - *Hover Popover Breakdown*:
-         - `Tahap Awal (Diundang/Diajukan/Direview)`: `X kandidat`
-         - `Tahap Negosiasi Honor (Nego Fee)`: `Y kandidat`
-         - `Tahap Review Client (Deal/Diajukan)`: `Z kandidat`
-         - `Lolos & Kontrak Aktif`: `W kandidat`
-         - `Selesai Produksi`: `V kandidat`
-  2. **Tambahkan Widget "Aktivitas Sistem Terbaru" (`$aktivitasTerbaru` dari `ActivityLog`)**:
-     - Ambil 6 entri terbaru dari `ActivityLog::with('user')->latest()->take(6)->get()`.
-     - Tampilkan dalam kartu **Aktivitas Sistem Terbaru (`.dash-mini-feed`)** di bagian bawah dashboard Super Admin (menampilkan ikon kategori aksi, nama user & badge role, deskripsi singkat aktivitas, dan waktu relatif `diffForHumans()`), lengkap dengan tombol header `<a href="{{ route('super_admin.activity-logs.index') }}" class="btn btn-sm btn-tonal">Semua Log <i class="ti ti-arrow-right"></i></a>`.
+### A. Tambahkan Styling Diagram di `resources/views/partials/theme-style.blade.php`
 
-### B. Role 2: `admin` — "Project Execution, Quota Bottleneck, & Finance Action Dashboard"
+Tambahkan class CSS berikut agar seluruh diagram tersusun rapi di dalam `.dash-stat-card` (baik di desktop maupun mobile `<= 640px`):
 
-* **File Target**:
-  - `app/Http/Controllers/Admin/DashboardController.php`
-  - `resources/views/admin/dashboard.blade.php`
-* **Analisa Kekurangan Saat Ini**:
-  - Kartu *Ringkasan* di `admin/dashboard.blade.php` hanya menampilkan angka dasar (`proyekAktif`, `totalPendaftar`, `perluDinego`) tanpa rincian *hover* dan belum menyoroti **proyek mana yang kuota perannya masih kurang padahal jadwal syuting sudah dekat (*Quota Bottleneck*)** maupun rincian status kontrak & pencairan honor.
-* **Penambahan Data & Penyempurnaan di `admin/dashboard.blade.php` (Mode Admin)**:
-  1. **Perkaya Kartu Ringkasan dengan Hover Popover & Shortcut Spesifik**:
-     - Pada metrik `Proyek Aktif` (`$proyekAktif`): Tambahkan *hover popover* yang membedakan **Proyek yang Saya Pegang (PIC)** vs **Total Proyek Aktif Agency**, serta rincian berapa yang berstatus *Buka Lowongan*, *Proses Seleksi*, dan *Shooting Berjalan*.
-     - Pada metrik `Total Pendaftar` (`$totalPendaftar`): Tambahkan *hover popover* yang merinci jumlah kandidat yang **Menunggu Direview Admin**, **Sedang Nego Fee (`$perluDinego`)**, **Menunggu Pilihan Client**, dan **Belum TTD Kontrak**.
-  2. **Tambahkan Indikator "Peringatan Kuota Proyek (Bottleneck Kuota)" di Kartu Perlu Tindakan / Ringkasan**:
-     - Hitung keterisian kuota untuk proyek aktif (jumlah kandidat berstatus `deal`, `diajukan_ke_client`, `lolos`, `kontrak_ditandatangani`, `selesai_produksi` dibanding total kuota di `casting_project_classes`).
-     - Tampilkan bar progres keterisian kuota per proyek aktif yang belum mencapai 100%, lengkap dengan tombol shortcut `<i class="ti ti-users-group"></i> Penuhi Lineup` yang langsung mengarah ke `admin.projects.applicants` proyek tersebut.
-  3. **Pertahankan Elemen yang Diuji Test (`AdminDashboardTest`)**:
-     - Pastikan semua variabel eksisting (`proyekAktif`, `totalPendaftar`, `perluDinego`, `chartStatusPembayaran`, `urgentProjects`, `agendaEvents`, `pembayaranSengketa`, `ringkasan`, `tahapan`) dan canvas `#chartPembayaran` tetap utuh.
+```css
+/* Layout Split di Dalam Kartu Statistik Berdiagram */
+.dash-viz-body {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 8px;
+}
 
-### C. Role 3: `korlap` — "Field Operations & Real-Time Attendance Command Dashboard"
+.viz-donut-wrap,
+.viz-ring-wrap {
+    position: relative;
+    width: 76px;
+    height: 76px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-* **File Target**:
-  - `app/Http/Controllers/Admin/DashboardController.php` (bagian data `$korlap`)
-  - `resources/views/admin/dashboard.blade.php` (blok `bisaSebagaiKorlap()`)
-  - `resources/views/partials/korlap-ringkasan.blade.php`
-* **Analisa Kekurangan Saat Ini**:
-  - Tampilan Korlap langsung memunculkan daftar proyek hari ini dan validasi, tetapi belum memiliki **Strip Ringkasan Metrik Lapangan** di bagian atas serta tombol pintas (*quick actions*) untuk tugas-tugas lapangan terpenting.
-* **Penambahan Data & Penyempurnaan di `partials/korlap-ringkasan.blade.php`**:
-  1. **Tambahkan Strip 4 Kartu Metrik Lapangan Korlap di Bagian Atas**:
-     - **Proyek Lapangan Aktif**: Jumlah jadwal shooting hari ini & terdekat yang ditugaskan ke Korlap.
-     - **Tingkat Kehadiran Lapangan**: Total talent yang sudah `hadir` dibanding total panggilan pada jadwal aktif + *hover breakdown* (`Hadir`, `Menunggu Validasi`, `Belum Absen / Tidak Hadir`).
-     - **Antrean Validasi Selfie**: Jumlah presensi selfie yang menunggu validasi Korlap (`count($menunggu)`), diberi aksen kuning/amber tegas jika > 0.
-     - **Catatan & Evaluasi Lapangan (`field_notes`)**: Jumlah catatan lapangan terbaru (`count($catatan)`) dengan *hover breakdown* jenis catatan (*Info* vs *Peringatan/Sanksi*).
-  2. **Rapikan Tombol Shortcut di Setiap Kartu Proyek Shooting Hari Ini**:
-     - Pastikan setiap kartu proyek di kolom *"Shooting Hari Ini / Terdekat"* memiliki grup tombol pintas yang jelas dengan Tabler Icons: **`<i class="ti ti-clipboard-check"></i> Kelola Absensi`** dan **`<i class="ti ti-file-text"></i> Buka Callsheet`**.
+.viz-donut-svg,
+.viz-ring-svg {
+    width: 76px;
+    height: 76px;
+    transform: rotate(-90deg);
+}
 
-### D. Role 4: `client` — "Executive Project Tracker, Quota Progress, & Billing Dashboard"
+.viz-center-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1.1;
+    pointer-events: none;
+}
 
-* **File Target**:
-  - `app/Http/Controllers/Client/DashboardController.php`
-  - `resources/views/client/dashboard.blade.php`
-* **Analisa Kekurangan Saat Ini**:
-  - Kartu *Keputusan Pemilihan Saya* dan *Pengajuan Anda* belum menampilkan secara visual **di tahap mana posisi setiap proyek berada** (dari 4 tahap bisnis utama) dan **berapa persen kuota talent yang sudah terpenuhi** untuk proyek tersebut, serta belum ada ringkasan finansial/tagihan di dashboard.
-* **Penambahan Data & Penyempurnaan di `client/dashboard.blade.php`**:
-  1. **Tambahkan Ringkasan Status Proyek & Tagihan dengan Hover Popover**:
-     - Di bagian atas atau di dalam kartu ringkasan Client, tampilkan metrik **Ringkasan Tagihan & Kontrak** (berapa invoice berstatus *Menunggu Pembayaran*, *Lunas*, atau *Belum Terbit*, lengkap dengan *hover breakdown* nominal tagihan dan shortcut ke `/invoice`).
-  2. **Tambahkan "4-Step Project Stage Indicator" & "Bar Kuota Kandidat" pada Kartu Pengajuan / Proyek Anda**:
-     - Untuk setiap proyek milik Client di daftar `$pengajuan` / `$proyekBerjalan`, tampilkan:
-       - **Mini Stepper 4 Tahap**: `1. Pengajuan Brief` -> `2. Pemilihan Kandidat` -> `3. Produksi Shooting` -> `4. Selesai` (tahap aktif diberi warna aksen hijau JBTB).
-       - **Indikator Kuota Kandidat**: Tampilkan jumlah kandidat yang sudah disetujui Client dibanding total kuota yang dibutuhkan proyek tersebut, disertai tombol shortcut kontekstual (misalnya jika ada kandidat yang menunggu dipilih Client, tampilkan tombol `.btn-brand` `<i class="ti ti-user-check"></i> Pilih Kandidat ({{ $jumlahMenunggu }})` yang mengarah ke `client.reviews.show`).
+.viz-center-num {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text-primary);
+}
 
-### E. Role 5: `extras` — "Talent Career, Earnings Wallet, & Active Job Dashboard"
+.viz-center-sub {
+    font-size: 9.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
 
-* **File Target**:
-  - `app/Http/Controllers/Extras/DashboardController.php`
-  - `resources/views/extras/dashboard.blade.php`
-* **Analisa Kekurangan Saat Ini**:
-  - Dashboard Extras baru menampilkan progress kelengkapan profil, jadwal hari ini, perlu tindakan, dan pendaftaran aktif, tetapi **belum memiliki ringkasan pencapaian karir & dompet honor (`payouts`)** yang membuat talent tahu berapa proyek yang sudah mereka selesaikan, berapa honor yang sudah cair vs sedang diproses, dan bagaimana skor kehadiran mereka.
-* **Penambahan Data & Penyempurnaan di `extras/dashboard.blade.php`**:
-  1. **Tambahkan Strip 4 Kartu "Ringkasan Karir & Honor Saya" (`.dash-pulse-strip`)**:
-     - Hitung data dari relasi user yang sedang login di `Extras/DashboardController.php` (atau dari koleksi yang sudah ada) dan tampilkan dalam 4 kartu ringkas dengan *hover/tap breakdown*:
-       - **Kartu 1 — Aktivitas & Proyek Saya**: Menampilkan jumlah **Proyek Selesai (`selesai_produksi`)** dan **Lamaran Aktif** saat ini. Saat di-hover menampilkan rincian: *Sedang Proses Seleksi/Nego*, *Kontrak Aktif*, dan *Total Riwayat Melamar*.
-       - **Kartu 2 — Dompet Honor Saya (`payouts`)**: Menampilkan total nominal honor yang **Sudah Diterima** (`dikonfirmasi_diterima`) dan indikator jika ada honor yang **Sedang Ditransfer / Menunggu Konfirmasi** (`ditransfer` / `belum_dibayar`). Saat di-hover menampilkan rincian nominal *Sudah Cair* vs *Dalam Proses*.
-       - **Kartu 3 — Skor Kehadiran & Reputasi**: Menampilkan persentase kehadiran positif dari `$riwayatAbsensi` dan catatan pembatalan (`$jumlahBatalMendadak`). Saat di-hover menampilkan rincian jumlah *Hadir Tepat Waktu*, *Terlambat/Izin*, dan *Batal Mendadak*.
-       - **Kartu 4 — Kesiapan Profil & Kontrak**: Menampilkan persentase kelengkapan profil (`$persenProfil%`), status verifikasi KTP/NIK (Siap Kontrak vs Belum Lengkap NIK), dan shortcut `<i class="ti ti-user-edit"></i> Edit Profil`.
-  2. **Rapikan Banner Kelengkapan Profil**:
-     - Jika `$persenProfil >= 100` dan NIK sudah lengkap, jangan tampilkan banner peringatan besar yang memakan ruang vertikal di bagian paling atas; cukup tampilkan informasi status siap kerja yang ringkas di Kartu 4.
+/* Legend di Samping Donut / Ring */
+.viz-legend {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
 
-## 4. Verifikasi & Pengujian Wajib Sebelum Selesai
+.viz-legend-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
 
-1. **Audit Zero AI-Slop**:
-   - Pastikan seluruh kode baru di ke-4 `DashboardController.php` dan seluruh view dashboard **sama sekali tidak mengandung emoji Unicode, tidak mengandung `&mdash;` / `—`, dan tidak mengandung panah teks mentah (`->`, `<-`, `v`)**. Semua ikon wajib menggunakan `<i class="ti ti-..."></i>`.
-2. **Kompilasi View & Full Test Suite**:
-   - Jalankan `php artisan view:clear` dan `php artisan config:clear`.
-   - Jalankan `php artisan test --filter=Dashboard` terlebih dahulu untuk memastikan `SuperAdminDashboardTest`, `AdminDashboardTest`, `ClientDashboardTest`, dan `ExtrasDashboardTest` lulus 100%.
-   - Jalankan `php artisan test` secara penuh dan pastikan seluruh **967+ tests** tetap **PASS (Hijau 100%)**.
+.viz-legend-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.viz-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.viz-legend-val {
+    font-weight: 700;
+    color: var(--text-primary);
+    flex-shrink: 0;
+}
+
+/* Financial Comparison Bars (.viz-fin-bars) */
+.viz-fin-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-top: 8px;
+}
+
+.viz-fin-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.viz-fin-head {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11.5px;
+}
+
+.viz-fin-track {
+    height: 7px;
+    border-radius: 999px;
+    background: var(--surface-2, rgba(0,0,0,0.06));
+    overflow: hidden;
+    display: flex;
+}
+
+.viz-fin-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.3s ease;
+}
+
+/* Mini Funnel Chart (.viz-funnel) */
+.viz-funnel {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 8px;
+}
+
+.viz-funnel-row {
+    display: grid;
+    grid-template-columns: 78px 1fr 28px;
+    align-items: center;
+    gap: 8px;
+    font-size: 11.5px;
+}
+
+.viz-funnel-label {
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.viz-funnel-track {
+    height: 8px;
+    background: var(--surface-2, rgba(0,0,0,0.06));
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.viz-funnel-bar {
+    height: 100%;
+    border-radius: 4px;
+}
+
+.viz-funnel-count {
+    text-align: right;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+```
+
+### B. Rombak Visual 4 Kartu Ekosistem di Dashboard Super Admin (`resources/views/super-admin/dashboard.blade.php`)
+
+Ubah ke-4 kartu di `.dash-pulse-strip` pada `/super-admin/dashboard` dari kotak teks polosan menjadi 4 kartu berdiagram visual (tetap pertahankan `.dash-hover-popover` untuk rincian ekstra saat di-hover/tap):
+
+1. **Kartu 1 (`Populasi Akun`)** -> **Gunakan Multi-Segment SVG Donut Chart (`.viz-donut-wrap` + `.viz-legend`)**:
+   * Hitung keliling lingkaran SVG (`r = 30`, keliling C = 2 * pi * 30 ≈ 188.5).
+   * Gambar 3 `<circle>` segmen di atas track lingkaran untuk:
+     * **Talent / Extras**: Warna `#15803D` (Hijau JBTB)
+     * **Client / PH**: Warna `#D97706` (Amber)
+     * **Tim Internal (Admin + Korlap + SA)**: Warna `#0284C7` (Biru)
+   * Di tengah donat (`.viz-center-label`), tampilkan angka total akun (misal `36`) dan sub-label `AKUN`.
+   * Di sebelah kanan donat (`.viz-legend`), tampilkan 3 baris legend berdot warna (`Talent: 23`, `Client: 5`, `Tim: 8`).
+
+2. **Kartu 2 (`Ekosistem Proyek & Kuota`)** -> **Gunakan SVG Radial Gauge Ring (`.viz-ring-wrap`) + Mini Status Breakdown**:
+   * Di sisi kiri (`.viz-ring-wrap`), tampilkan **Cincin Radial Persentase Keterisian Kuota (`19%`)** menggunakan `<circle r="30" stroke-dasharray="{{ ($persenKuota / 100) * 188.5 }} 188.5" stroke="#15803D" stroke-width="7" stroke-linecap="round" fill="none" />` dengan teks tengah `{{ $persenKuota }}%` dan sub-label `KUOTA`.
+   * Di sisi kanan (`.viz-legend`), tampilkan total proyek (`15 Proyek`) beserta 3 baris status proyek utama dengan dot warna (`Berjalan/Seleksi`, `Menunggu ACC`, `Selesai`).
+
+3. **Kartu 3 (`Finansial & Margin`)** -> **Gunakan Financial Comparison Bars (`.viz-fin-bars`) + Margin Pill**:
+   * Di header kartu, tampilkan badge hijau/amber **`Margin {{ $persenMargin }}%`**.
+   * Di body kartu, tampilkan **3 Bar Perbandingan Proporsional (`.viz-fin-bars`)**:
+     * **Bar 1 (`Tagihan Client`)**: Nominal `Rp ...` dengan bar 2 warna (Hijau `#15803D` untuk *Lunas*, Kuning `#F59E0B` untuk *Piutang Belum Lunas*).
+     * **Bar 2 (`Beban Produksi`)**: Nominal `Rp ...` (Payout Extras + Pengeluaran + Payroll) dengan lebar proporsional terhadap Tagihan dan warna Oranye/Merah lembut (`#EA580C`).
+     * **Bar 3 (`Estimasi Margin`)**: Nominal `Rp ...` dengan bar warna Hijau Terang (`#16A34A`) proporsional terhadap Tagihan.
+
+4. **Kartu 4 (`Funnel Partisipasi`)** -> **Gunakan 5-Stage Mini Funnel Bar Chart (`.viz-funnel`)**:
+   * Tampilkan 4–5 baris `.viz-funnel-row` yang memvisualisasikan bentuk corong (*funnel*) dari tahap awal hingga selesai:
+     * `Awal/Review` (lebar bar proporsional terhadap total lamaran, warna `#64748B`)
+     * `Nego Fee` (warna `#D97706`)
+     * `Ke Client` (warna `#0284C7`)
+     * `Kontrak` (warna `#15803D`)
+     * `Selesai` (warna `#16A34A`)
+
+### C. Terapkan Diagram Visual Serupa di Dashboard Role Lainnya (`admin`, `korlap`, `client`, `extras`)
+
+1. **Dashboard `extras` (`resources/views/extras/dashboard.blade.php`)**:
+   * Pada kartu **Kesiapan Profil (`$persenProfil%`)** dan kartu **Skor Kehadiran (`100%`)** di strip atas Beranda Extras, tambahkan **SVG Radial Progress Ring (`.viz-ring-wrap`)** di sisi kiri kartu sehingga persentase `80%` dan `100%` tampil sebagai grafik cincin melingkar yang menarik, bukan sekadar teks angka polos.
+   * Pada kartu **Dompet Honor**, tampilkan `.viz-fin-bars` mini yang membandingkan bar *Sudah Diterima (Cair)* vs *Sedang Diproses/Ditransfer*.
+   * Pada kartu **Aktivitas & Proyek**, tampilkan mini *legend/bar* *Proyek Selesai* vs *Lamaran Aktif*.
+
+2. **Dashboard `client` (`resources/views/client/dashboard.blade.php`)**:
+   * Pada kartu **Keputusan Pemilihan Saya**, tambahkan **Multi-Segment SVG Donut Chart (`.viz-donut-wrap`)** di samping daftar metrik yang memvisualisasikan proporsi kandidat **Disetujui (`$approve` - Hijau)**, **Menunggu Review (`$perluDireview` - Kuning)**, dan **Ditolak (`$reject` - Merah/Abu)**.
+   * Pada kartu **Ringkasan Tagihan**, tampilkan bar perbandingan visual *Invoice Lunas* vs *Menunggu Pembayaran*.
+
+3. **Dashboard `admin` & `korlap` (`resources/views/admin/dashboard.blade.php` & `partials/korlap-ringkasan.blade.php`)**:
+   * Di **Mode Admin**: Tambahkan **SVG Donut / Radial Ring** pada kartu *Ringkasan* untuk memvisualisasikan proporsi *Proyek yang Saya Pegang (PIC)* vs *Total Proyek Aktif* serta bar visual pada daftar *Bottleneck Kuota Proyek*.
+   * Di **Mode Korlap (`partials/korlap-ringkasan.blade.php`)**: Pada kartu **Tingkat Kehadiran Lapangan**, gunakan **SVG Radial Progress Ring (`.viz-ring-wrap`)** untuk menampilkan persentase kehadiran beserta legend `Hadir`, `Menunggu Validasi`, dan `Belum Absen`.
+
+## 4. Aturan Kualitas & Verifikasi Akhir
+
+1. **Responsif di Desktop & Mobile**:
+   * Pada layar sangat sempit (`<= 380px`), pastikan `.dash-viz-body` tetap muat dengan nyaman (`gap: 10px;` dan ukuran `.viz-donut-wrap` dapat mengecil ke `64px x 64px` jika diperlukan) tanpa pernah memotong teks di `.viz-legend`.
+2. **Zero AI-Slop**:
+   * Jangan menambahkan emoji Unicode, *em-dash* (`—`), atau panah teks mentah. Gunakan Tabler Icons (`<i class="ti ti-..."></i>`).
+3. **Verifikasi Test Suite (`php artisan test`)**:
+   * Pastikan seluruh angka dan teks yang di-assert oleh `SuperAdminDashboardTest`, `AdminDashboardTest`, `ClientDashboardTest`, dan `ExtrasDashboardTest` tetap ada di dalam kartu sehingga **100% test suite (962+ tests) tetap PASS (Hijau)**.

@@ -41,20 +41,44 @@
             <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
                 <i class="ti ti-user-check"></i> Tingkat Kehadiran
             </div>
-            <div style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 4px 0 2px;">
-                {{ $statKorlap['tingkat_kehadiran'] }}%
-            </div>
-            <div class="dash-segmented-bar">
-                <div class="seg" style="width: {{ $statKorlap['tingkat_kehadiran'] }}%; background: var(--accent, #15803D);"></div>
-                <div class="seg" style="width: {{ 100 - $statKorlap['tingkat_kehadiran'] }}%; background: var(--surface-2, rgba(0,0,0,0.06));"></div>
-            </div>
-            <div style="font-size: 12px; color: var(--text-secondary);">
-                {{ $statKorlap['total_hadir'] }}/{{ $statKorlap['total_panggilan'] }} talent hadir
+            @php
+                $kehadiranPct = min(100, max(0, $statKorlap['tingkat_kehadiran']));
+                $ringKehadiranLen = round(($kehadiranPct / 100) * 188.5, 1);
+                $colorKehadiran = $kehadiranPct >= 80 ? '#15803D' : ($kehadiranPct >= 50 ? '#D97706' : '#DC2626');
+            @endphp
+            <div class="dash-viz-body">
+                <div class="viz-ring-wrap" title="Tingkat Kehadiran: {{ $kehadiranPct }}%">
+                    <svg class="viz-ring-svg" viewBox="0 0 76 76" aria-hidden="true">
+                        <circle cx="38" cy="38" r="30" stroke="var(--surface-2, rgba(0,0,0,0.06))" stroke-width="7" fill="none" />
+                        <circle cx="38" cy="38" r="30" stroke="{{ $colorKehadiran }}" stroke-width="7" stroke-dasharray="{{ $ringKehadiranLen }} 188.5" stroke-linecap="round" fill="none" />
+                    </svg>
+                    <div class="viz-center-label">
+                        <span class="viz-center-num">{{ $kehadiranPct }}%</span>
+                        <span class="viz-center-sub">Hadir</span>
+                    </div>
+                </div>
+                <div class="viz-legend">
+                    <div class="viz-legend-row">
+                        <span class="viz-legend-label"><span class="viz-dot" style="background: #15803D;"></span>Hadir</span>
+                        <strong class="viz-legend-val">{{ $statKorlap['total_hadir'] }}/{{ $statKorlap['total_panggilan'] }}</strong>
+                    </div>
+                    <div class="viz-legend-row">
+                        <span class="viz-legend-label"><span class="viz-dot" style="background: #D97706;"></span>Validasi</span>
+                        <strong class="viz-legend-val">{{ $statKorlap['total_menunggu_val'] }}</strong>
+                    </div>
+                    <div class="viz-legend-row">
+                        <span class="viz-legend-label"><span class="viz-dot" style="background: #64748B;"></span>Belum Absen</span>
+                        <strong class="viz-legend-val">{{ $statKorlap['total_belum_absen'] }}</strong>
+                    </div>
+                </div>
             </div>
         </div>
-        <span class="info-hint"><i class="ti ti-info-circle"></i></span>
+        <span class="info-hint" title="Klik untuk rincian / kunci pop-up"><i class="ti ti-info-circle"></i></span>
         <div class="dash-hover-popover">
-            <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Rincian Kehadiran Lapangan</div>
+            <div class="dash-popover-header">
+                <span class="dash-popover-title">Rincian Kehadiran Lapangan</span>
+                <button type="button" class="dash-popover-close" aria-label="Tutup"><i class="ti ti-x"></i></button>
+            </div>
             <div class="popover-row"><span>Hadir Tervalidasi</span><strong>{{ $statKorlap['total_hadir'] }}</strong></div>
             <div class="popover-row"><span>Menunggu Validasi</span><strong>{{ $statKorlap['total_menunggu_val'] }}</strong></div>
             <div class="popover-row"><span>Tidak Hadir</span><strong>{{ $statKorlap['total_tidak_hadir'] }}</strong></div>
@@ -88,9 +112,12 @@
                 {{ $statKorlap['catatan_sanksi'] }} Peringatan/Sanksi · {{ $statKorlap['catatan_info'] }} Info
             </div>
         </div>
-        <span class="info-hint"><i class="ti ti-info-circle"></i></span>
+        <span class="info-hint" title="Klik untuk rincian / kunci pop-up"><i class="ti ti-info-circle"></i></span>
         <div class="dash-hover-popover">
-            <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Distribusi Catatan Lapangan</div>
+            <div class="dash-popover-header">
+                <span class="dash-popover-title">Distribusi Catatan Lapangan</span>
+                <button type="button" class="dash-popover-close" aria-label="Tutup"><i class="ti ti-x"></i></button>
+            </div>
             <div class="popover-row"><span>Peringatan / Sanksi</span><strong>{{ $statKorlap['catatan_sanksi'] }}</strong></div>
             <div class="popover-row"><span>Informasi / Catatan Umum</span><strong>{{ $statKorlap['catatan_info'] }}</strong></div>
         </div>

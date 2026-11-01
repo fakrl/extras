@@ -118,52 +118,102 @@
         </script>
     @endunless
 
-    @php $kpTotal = max($perluDireview + $approve + $reject, 1); @endphp
+    @php
+        $kpSum = $perluDireview + $approve + $reject;
+        $kpTotal = max($kpSum, 1);
+        $lenApprove = round(($approve / $kpTotal) * 188.5, 1);
+        $lenReview = round(($perluDireview / $kpTotal) * 188.5, 1);
+        $lenReject = max(0, round(188.5 - $lenApprove - $lenReview, 1));
+    @endphp
     <div class="card">
         <div class="card-title">Keputusan Pemilihan Saya</div>
-        <div class="dash-metrik" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 10px;">
-            <a href="{{ route('client.reviews.index', ['status' => 'menunggu']) }}" class="metric-card">
-                <div class="metric-label">Perlu dipilih</div>
-                <div class="metric-value">{{ $perluDireview }}</div>
-            </a>
-            <a href="{{ route('client.reviews.index', ['status' => 'approved']) }}" class="metric-card">
-                <div class="metric-label">Dipilih</div>
-                <div class="metric-value">{{ $approve }}</div>
-            </a>
-            <a href="{{ route('client.reviews.index', ['status' => 'rejected']) }}" class="metric-card">
-                <div class="metric-label">Ditolak</div>
-                <div class="metric-value">{{ $reject }}</div>
-            </a>
+        <div class="dash-viz-body" style="margin-bottom: 12px;">
+            <div class="viz-donut-wrap">
+                <svg class="viz-donut-svg" viewBox="0 0 76 76" aria-hidden="true">
+                    <circle cx="38" cy="38" r="30" stroke="var(--surface-2, rgba(0,0,0,0.06))" stroke-width="7" fill="none" />
+                    <circle cx="38" cy="38" r="30" stroke="#15803D" stroke-width="7" stroke-dasharray="{{ $lenApprove }} 188.5" stroke-dashoffset="0" fill="none" />
+                    <circle cx="38" cy="38" r="30" stroke="#D97706" stroke-width="7" stroke-dasharray="{{ $lenReview }} 188.5" stroke-dashoffset="{{ -$lenApprove }}" fill="none" />
+                    <circle cx="38" cy="38" r="30" stroke="#DC2626" stroke-width="7" stroke-dasharray="{{ $lenReject }} 188.5" stroke-dashoffset="{{ -($lenApprove + $lenReview) }}" fill="none" />
+                </svg>
+                <div class="viz-center-label">
+                    <span class="viz-center-num">{{ $kpSum }}</span>
+                    <span class="viz-center-sub">Talent</span>
+                </div>
+            </div>
+            <div class="viz-legend">
+                <a href="{{ route('client.reviews.index', ['status' => 'approved']) }}" class="viz-legend-row" style="text-decoration: none;">
+                    <span class="viz-legend-label"><span class="viz-dot" style="background: #15803D;"></span>Dipilih</span>
+                    <strong class="viz-legend-val" style="color: #15803D;">{{ $approve }}</strong>
+                </a>
+                <a href="{{ route('client.reviews.index', ['status' => 'menunggu']) }}" class="viz-legend-row" style="text-decoration: none;">
+                    <span class="viz-legend-label"><span class="viz-dot" style="background: #D97706;"></span>Perlu dipilih</span>
+                    <strong class="viz-legend-val" style="color: #D97706;">{{ $perluDireview }}</strong>
+                </a>
+                <a href="{{ route('client.reviews.index', ['status' => 'rejected']) }}" class="viz-legend-row" style="text-decoration: none;">
+                    <span class="viz-legend-label"><span class="viz-dot" style="background: #DC2626;"></span>Ditolak</span>
+                    <strong class="viz-legend-val" style="color: #DC2626;">{{ $reject }}</strong>
+                </a>
+            </div>
         </div>
         <div class="kp-segbar" role="img" aria-label="Perlu dipilih {{ $perluDireview }}, Dipilih {{ $approve }}, Ditolak {{ $reject }}">
-            <span style="width: {{ $perluDireview / $kpTotal * 100 }}%; background: #94a3b8;"></span>
-            <span style="width: {{ $approve / $kpTotal * 100 }}%; background: #22c55e;"></span>
-            <span style="width: {{ $reject / $kpTotal * 100 }}%; background: #ef4444;"></span>
+            <span style="width: {{ $perluDireview / $kpTotal * 100 }}%; background: #D97706;"></span>
+            <span style="width: {{ $approve / $kpTotal * 100 }}%; background: #15803D;"></span>
+            <span style="width: {{ $reject / $kpTotal * 100 }}%; background: #DC2626;"></span>
         </div>
         <a href="{{ route('client.reviews.index') }}" class="btn btn-brand" style="width: 100%; margin-top: 12px;">Buka Pemilihan Kandidat</a>
 
         {{-- Ringkasan Tagihan & Kontrak --}}
         <div style="margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--border-color);">
             <div class="dash-stat-card" tabindex="0" style="padding: 10px 12px; cursor: pointer;">
-                <a href="{{ route('invoices.index-client') }}" style="text-decoration: none; color: inherit; display: block;">
+                <div>
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">
                         <span><i class="ti ti-receipt-2"></i> Ringkasan Tagihan &amp; Kontrak</span>
-                        <i class="ti ti-info-circle"></i>
+                        <i class="ti ti-info-circle" title="Klik untuk rincian / kunci pop-up"></i>
                     </div>
                     <div style="font-size: 16px; font-weight: 700; margin: 4px 0 2px; color: var(--text-primary);">
                         {{ $statBillingClient['total_invoice_count'] }} Dokumen Tagihan
                     </div>
-                    <div style="font-size: 12px; color: var(--text-secondary);">
+                    @php
+                        $totNominalInv = max(1, $statBillingClient['lunas_nominal'] + $statBillingClient['belum_lunas_nominal']);
+                        $pctNominalLunas = round(($statBillingClient['lunas_nominal'] / $totNominalInv) * 100);
+                        $pctNominalBelum = max(0, 100 - $pctNominalLunas);
+                    @endphp
+                    <div class="viz-fin-bars" style="margin-top: 6px;">
+                        <div class="viz-fin-item">
+                            <div class="viz-fin-head">
+                                <span style="color: var(--text-secondary); font-size: 11px;">Lunas ({{ $statBillingClient['lunas_count'] }})</span>
+                                <strong style="color: #15803D; font-size: 11px;">Rp {{ number_format($statBillingClient['lunas_nominal'], 0, ',', '.') }}</strong>
+                            </div>
+                            <div class="viz-fin-track">
+                                <div class="viz-fin-fill" style="width: {{ $pctNominalLunas }}%; background: #15803D;"></div>
+                            </div>
+                        </div>
+                        @if ($statBillingClient['belum_lunas_nominal'] > 0)
+                            <div class="viz-fin-item">
+                                <div class="viz-fin-head">
+                                    <span style="color: var(--text-secondary); font-size: 11px;">Menunggu Bayar ({{ $statBillingClient['belum_lunas_count'] }})</span>
+                                    <strong style="color: #D97706; font-size: 11px;">Rp {{ number_format($statBillingClient['belum_lunas_nominal'], 0, ',', '.') }}</strong>
+                                </div>
+                                <div class="viz-fin-track">
+                                    <div class="viz-fin-fill" style="width: {{ $pctNominalBelum }}%; background: #D97706;"></div>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                    <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 6px;">
                         {{ $statBillingClient['lunas_count'] }} Lunas · {{ $statBillingClient['belum_lunas_count'] }} Menunggu Pembayaran
                     </div>
-                </a>
+                </div>
                 <div class="dash-hover-popover">
-                    <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Status Tagihan Proyek</div>
+                    <div class="dash-popover-header">
+                        <span class="dash-popover-title">Status Tagihan Proyek</span>
+                        <button type="button" class="dash-popover-close" aria-label="Tutup"><i class="ti ti-x"></i></button>
+                    </div>
                     <div class="popover-row"><span>Invoice Lunas ({{ $statBillingClient['lunas_count'] }})</span><strong style="color: #15803D;">Rp {{ number_format($statBillingClient['lunas_nominal'], 0, ',', '.') }}</strong></div>
                     <div class="popover-row"><span>Menunggu Bayar ({{ $statBillingClient['belum_lunas_count'] }})</span><strong style="color: #D97706;">Rp {{ number_format($statBillingClient['belum_lunas_nominal'], 0, ',', '.') }}</strong></div>
                     <div class="popover-row"><span>Belum Terbit</span><strong>{{ $statBillingClient['belum_terbit_count'] }} Proyek</strong></div>
-                    <div style="margin-top: 8px; text-align: right;">
-                        <a href="{{ route('invoices.index-client') }}" class="btn btn-sm btn-tonal" style="font-size: 11px; padding: 2px 8px;">Lihat Semua Tagihan <i class="ti ti-arrow-right"></i></a>
+                    <div style="margin-top: 8px; text-align: right; padding-top: 6px; border-top: 1px dashed var(--border-color);">
+                        <a href="{{ route('invoices.index-client') }}" class="btn btn-sm btn-tonal" style="width: 100%; justify-content: center; font-size: 11px; padding: 4px 8px; gap: 4px;">Lihat Semua Tagihan <i class="ti ti-arrow-right"></i></a>
                     </div>
                 </div>
             </div>

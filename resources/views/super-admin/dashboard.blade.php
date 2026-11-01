@@ -29,122 +29,252 @@
 {{-- Ikhtisar Ekosistem & Finansial Sistem --}}
 <div class="dash-pulse-strip">
     <div class="dash-stat-card" tabindex="0">
-        <a href="{{ route('super-admin.akun.index') }}" style="text-decoration: none; color: inherit;">
+        <div>
             <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
                 <i class="ti ti-users"></i> Populasi Akun
             </div>
-            <div style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 4px 0 2px;">
-                {{ number_format($statPopulasi['total']) }}
+            @php
+                $totPop = max(1, $statPopulasi['total']);
+                $extrasLen = round(($statPopulasi['extras_total'] / $totPop) * 188.5, 1);
+                $clientLen = round(($statPopulasi['client_total'] / $totPop) * 188.5, 1);
+                $timTotal = $statPopulasi['admin_total'] + $statPopulasi['korlap_total'] + $statPopulasi['super_admin_total'];
+                $timLen = max(0, round(188.5 - $extrasLen - $clientLen, 1));
+            @endphp
+            <div class="dash-viz-body">
+                <div class="viz-donut-wrap">
+                    <svg class="viz-donut-svg" viewBox="0 0 76 76" aria-hidden="true">
+                        <circle cx="38" cy="38" r="30" stroke="var(--surface-2, rgba(0,0,0,0.06))" stroke-width="7" fill="none" />
+                        <circle cx="38" cy="38" r="30" stroke="#15803D" stroke-width="7" stroke-dasharray="{{ $extrasLen }} 188.5" stroke-dashoffset="0" fill="none" />
+                        <circle cx="38" cy="38" r="30" stroke="#D97706" stroke-width="7" stroke-dasharray="{{ $clientLen }} 188.5" stroke-dashoffset="{{ -$extrasLen }}" fill="none" />
+                        <circle cx="38" cy="38" r="30" stroke="#0284C7" stroke-width="7" stroke-dasharray="{{ $timLen }} 188.5" stroke-dashoffset="{{ -($extrasLen + $clientLen) }}" fill="none" />
+                    </svg>
+                    <div class="viz-center-label">
+                        <span class="viz-center-num">{{ number_format($statPopulasi['total']) }}</span>
+                        <span class="viz-center-sub">Akun</span>
+                    </div>
+                </div>
+                <div class="viz-legend">
+                    <div class="viz-legend-row">
+                        <span class="viz-legend-label"><span class="viz-dot" style="background: #15803D;"></span>Talent</span>
+                        <strong class="viz-legend-val">{{ $statPopulasi['extras_total'] }}</strong>
+                    </div>
+                    <div class="viz-legend-row">
+                        <span class="viz-legend-label"><span class="viz-dot" style="background: #D97706;"></span>Client</span>
+                        <strong class="viz-legend-val">{{ $statPopulasi['client_total'] }}</strong>
+                    </div>
+                    <div class="viz-legend-row">
+                        <span class="viz-legend-label"><span class="viz-dot" style="background: #0284C7;"></span>Tim</span>
+                        <strong class="viz-legend-val">{{ $timTotal }}</strong>
+                    </div>
+                </div>
             </div>
-            <div style="font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                {{ $statPopulasi['extras_total'] }} Talent · {{ $statPopulasi['client_total'] }} Client · {{ $statPopulasi['admin_total'] + $statPopulasi['korlap_total'] + $statPopulasi['super_admin_total'] }} Tim
-            </div>
-        </a>
-        <span class="info-hint"><i class="ti ti-info-circle"></i></span>
+        </div>
+        <span class="info-hint" title="Klik untuk rincian / kunci pop-up"><i class="ti ti-info-circle"></i></span>
         <div class="dash-hover-popover">
-            <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Distribusi Populasi Pengguna</div>
+            <div class="dash-popover-header">
+                <span class="dash-popover-title">Distribusi Populasi Pengguna</span>
+                <button type="button" class="dash-popover-close" aria-label="Tutup"><i class="ti ti-x"></i></button>
+            </div>
             <div class="popover-row"><span>Extras (Talent)</span><strong>{{ $statPopulasi['extras_total'] }}</strong></div>
             <div class="popover-row"><span>Siap Kontrak (NIK)</span><strong>{{ $statPopulasi['siap_kontrak'] }}</strong></div>
             <div class="popover-row"><span>Distribusi Grade</span><span>A: {{ $statPopulasi['grade_a'] }} · B: {{ $statPopulasi['grade_b'] }} · C: {{ $statPopulasi['grade_c'] }} · -: {{ $statPopulasi['grade_belum'] }}</span></div>
             <div class="popover-row"><span>Client / PH</span><strong>{{ $statPopulasi['client_total'] }}</strong></div>
             <div class="popover-row"><span>Staf Internal</span><span>Admin: {{ $statPopulasi['admin_total'] }} · Korlap: {{ $statPopulasi['korlap_total'] }} · SA: {{ $statPopulasi['super_admin_total'] }}</span></div>
+            <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border-color);">
+                <a href="{{ route('super-admin.akun.index') }}" class="btn btn-sm btn-tonal" style="width: 100%; justify-content: center; font-size: 12px; gap: 6px;">Kelola Semua Akun <i class="ti ti-arrow-right"></i></a>
+            </div>
         </div>
     </div>
 
     <div class="dash-stat-card" tabindex="0">
-        <a href="{{ route('admin.projects.index') }}" style="text-decoration: none; color: inherit;">
+        <div>
             <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
                 <i class="ti ti-movie"></i> Ekosistem Proyek
             </div>
-            <div style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 4px 0 2px;">
-                {{ $statProyekKuota['total'] }} Proyek
+            @php
+                $persenKuota = min(100, max(0, $statProyekKuota['fulfillment_rate']));
+                $ringLen = round(($persenKuota / 100) * 188.5, 1);
+                $ringColor = $persenKuota >= 75 ? '#15803D' : ($persenKuota >= 40 ? '#D97706' : '#DC2626');
+                $proyekAktifJalan = $statProyekKuota['shooting'] + $statProyekKuota['seleksi'];
+            @endphp
+            <div class="dash-viz-body">
+                <div class="viz-ring-wrap" title="Keterisian Kuota: {{ $persenKuota }}%">
+                    <svg class="viz-ring-svg" viewBox="0 0 76 76" aria-hidden="true">
+                        <circle cx="38" cy="38" r="30" stroke="var(--surface-2, rgba(0,0,0,0.06))" stroke-width="7" fill="none" />
+                        <circle cx="38" cy="38" r="30" stroke="{{ $ringColor }}" stroke-width="7" stroke-dasharray="{{ $ringLen }} 188.5" stroke-linecap="round" fill="none" />
+                    </svg>
+                    <div class="viz-center-label">
+                        <span class="viz-center-num">{{ $persenKuota }}%</span>
+                        <span class="viz-center-sub">Kuota</span>
+                    </div>
+                </div>
+                <div class="viz-legend">
+                    <div style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">
+                        {{ $statProyekKuota['total'] }} Proyek
+                    </div>
+                    <div class="viz-legend-row">
+                        <span class="viz-legend-label"><span class="viz-dot" style="background: #15803D;"></span>Berjalan</span>
+                        <strong class="viz-legend-val">{{ $proyekAktifJalan }}</strong>
+                    </div>
+                    <div class="viz-legend-row">
+                        <span class="viz-legend-label"><span class="viz-dot" style="background: #D97706;"></span>Menunggu ACC</span>
+                        <strong class="viz-legend-val">{{ $statProyekKuota['menunggu_acc'] }}</strong>
+                    </div>
+                    <div class="viz-legend-row">
+                        <span class="viz-legend-label"><span class="viz-dot" style="background: #64748B;"></span>Selesai</span>
+                        <strong class="viz-legend-val">{{ $statProyekKuota['selesai'] }}</strong>
+                    </div>
+                </div>
             </div>
-            <div class="dash-segmented-bar" title="Keterisian Kursi: {{ $statProyekKuota['fulfillment_rate'] }}%">
-                <div class="seg" style="width: {{ $statProyekKuota['fulfillment_rate'] }}%; background: var(--accent, #15803D);"></div>
-                <div class="seg" style="width: {{ 100 - $statProyekKuota['fulfillment_rate'] }}%; background: var(--surface-2, rgba(0,0,0,0.06));"></div>
-            </div>
-            <div style="font-size: 12px; color: var(--text-secondary);">
-                Keterisian Kuota: <strong>{{ $statProyekKuota['fulfillment_rate'] }}%</strong> ({{ $statProyekKuota['terisi_kuota'] }}/{{ $statProyekKuota['target_kuota'] }})
-            </div>
-        </a>
-        <span class="info-hint"><i class="ti ti-info-circle"></i></span>
+        </div>
+        <span class="info-hint" title="Klik untuk rincian / kunci pop-up"><i class="ti ti-info-circle"></i></span>
         <div class="dash-hover-popover">
-            <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Status Siklus Proyek</div>
+            <div class="dash-popover-header">
+                <span class="dash-popover-title">Status Siklus Proyek</span>
+                <button type="button" class="dash-popover-close" aria-label="Tutup"><i class="ti ti-x"></i></button>
+            </div>
             <div class="popover-row"><span>Menunggu ACC Super Admin</span><strong>{{ $statProyekKuota['menunggu_acc'] }}</strong></div>
             <div class="popover-row"><span>Buka Lowongan & Seleksi</span><strong>{{ $statProyekKuota['seleksi'] }}</strong></div>
             <div class="popover-row"><span>Shooting Berjalan</span><strong>{{ $statProyekKuota['shooting'] }}</strong></div>
             <div class="popover-row"><span>Selesai Produksi</span><strong>{{ $statProyekKuota['selesai'] }}</strong></div>
             <div class="popover-row"><span>Ditolak / Dibatalkan</span><strong>{{ $statProyekKuota['batal'] }}</strong></div>
             <div class="popover-row"><span>Keterisian Kursi Aktif</span><strong>{{ $statProyekKuota['terisi_kuota'] }} / {{ $statProyekKuota['target_kuota'] }}</strong></div>
+            <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border-color);">
+                <a href="{{ route('admin.projects.index') }}" class="btn btn-sm btn-tonal" style="width: 100%; justify-content: center; font-size: 12px; gap: 6px;">Buka Kelola Proyek <i class="ti ti-arrow-right"></i></a>
+            </div>
         </div>
     </div>
 
     <div class="dash-stat-card" tabindex="0">
-        <a href="{{ route('admin.projects.index') }}" style="text-decoration: none; color: inherit;">
-            <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
-                <i class="ti ti-receipt-2"></i> Finansial & Margin
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
+                    <i class="ti ti-receipt-2"></i> Finansial &amp; Margin
+                </div>
+                <span class="badge" style="background: rgba(21, 128, 61, 0.12); color: #15803D; font-weight: 700; font-size: 11px; padding: 2px 7px;">
+                    Margin {{ $statKeuangan['persen_margin'] }}%
+                </span>
             </div>
-            <div style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 4px 0 2px;">
+            <div style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 2px 0 6px;">
                 {{ $rp($statKeuangan['total_invoice']) }}
             </div>
             @php
-                $persenLunas = $statKeuangan['total_invoice'] > 0 ? round(($statKeuangan['invoice_lunas'] / $statKeuangan['total_invoice']) * 100) : 0;
+                $totInv = max(1, $statKeuangan['total_invoice']);
+                $persenLunas = round(($statKeuangan['invoice_lunas'] / $totInv) * 100);
+                $persenPiutang = max(0, 100 - $persenLunas);
+                $totBeban = $statKeuangan['payout_extras'] + $statKeuangan['biaya_operasional'] + $statKeuangan['payroll_staf'];
+                $persenBeban = min(100, round(($totBeban / $totInv) * 100));
+                $persenMarginKotor = min(100, max(0, $statKeuangan['persen_margin']));
             @endphp
-            <div class="dash-segmented-bar" title="Lunas: {{ $persenLunas }}%">
-                <div class="seg" style="width: {{ $persenLunas }}%; background: #15803D;"></div>
-                <div class="seg" style="width: {{ 100 - $persenLunas }}%; background: #D97706;"></div>
+            <div class="viz-fin-bars">
+                <div class="viz-fin-item">
+                    <div class="viz-fin-head">
+                        <span style="color: var(--text-secondary);">Tagihan Client</span>
+                        <strong style="color: #15803D;">{{ $persenLunas }}% lunas</strong>
+                    </div>
+                    <div class="viz-fin-track" title="Lunas: {{ $persenLunas }}%, Piutang: {{ $persenPiutang }}%">
+                        <div class="viz-fin-fill" style="width: {{ $persenLunas }}%; background: #15803D;"></div>
+                        <div class="viz-fin-fill" style="width: {{ $persenPiutang }}%; background: #F59E0B;"></div>
+                    </div>
+                </div>
+                <div class="viz-fin-item">
+                    <div class="viz-fin-head">
+                        <span style="color: var(--text-secondary);">Beban Produksi</span>
+                        <strong style="color: #EA580C;">{{ $rp($totBeban) }}</strong>
+                    </div>
+                    <div class="viz-fin-track">
+                        <div class="viz-fin-fill" style="width: {{ $persenBeban }}%; background: #EA580C;"></div>
+                    </div>
+                </div>
+                <div class="viz-fin-item">
+                    <div class="viz-fin-head">
+                        <span style="color: var(--text-secondary);">Estimasi Margin</span>
+                        <strong style="color: #16A34A;">{{ $rp($statKeuangan['margin_kotor']) }}</strong>
+                    </div>
+                    <div class="viz-fin-track">
+                        <div class="viz-fin-fill" style="width: {{ $persenMarginKotor }}%; background: #16A34A;"></div>
+                    </div>
+                </div>
             </div>
-            <div style="font-size: 12px; color: var(--text-secondary);">
-                Estimasi Margin: <strong>{{ $statKeuangan['persen_margin'] }}%</strong> ({{ $rp($statKeuangan['margin_kotor']) }})
-            </div>
-        </a>
-        <span class="info-hint"><i class="ti ti-info-circle"></i></span>
+        </div>
+        <span class="info-hint" title="Klik untuk rincian / kunci pop-up"><i class="ti ti-info-circle"></i></span>
         <div class="dash-hover-popover">
-            <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Rincian Arus Kas & Margin</div>
+            <div class="dash-popover-header">
+                <span class="dash-popover-title">Rincian Arus Kas &amp; Margin</span>
+                <button type="button" class="dash-popover-close" aria-label="Tutup"><i class="ti ti-x"></i></button>
+            </div>
             <div class="popover-row"><span>Invoice Lunas (Kas Masuk)</span><strong style="color: #15803D;">{{ $rp($statKeuangan['invoice_lunas']) }}</strong></div>
             <div class="popover-row"><span>Piutang Client (Belum Lunas)</span><strong style="color: #D97706;">{{ $rp($statKeuangan['invoice_piutang']) }}</strong></div>
             <div class="popover-row"><span>Total Payout Extras</span><strong>{{ $rp($statKeuangan['payout_extras']) }}</strong></div>
             <div class="popover-row"><span>Pengeluaran Proyek</span><strong>{{ $rp($statKeuangan['biaya_operasional']) }}</strong></div>
             <div class="popover-row"><span>Payroll Staf & Korlap</span><strong>Rp&nbsp;{{ number_format($statKeuangan['payroll_staf'], 0, ',', '.') }}</strong></div>
             <div class="popover-row"><span>Estimasi Margin Kotor</span><strong>{{ $rp($statKeuangan['margin_kotor']) }} ({{ $statKeuangan['persen_margin'] }}%)</strong></div>
+            <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border-color);">
+                <a href="{{ route('admin.projects.index') }}" class="btn btn-sm btn-tonal" style="width: 100%; justify-content: center; font-size: 12px; gap: 6px;">Lihat Proyek & Tagihan <i class="ti ti-arrow-right"></i></a>
+            </div>
         </div>
     </div>
 
-    <div class="dash-stat-card" tabindex="0">
-        <a href="{{ route('admin.projects.index') }}" style="text-decoration: none; color: inherit;">
-            <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
-                <i class="ti ti-filter"></i> Funnel Partisipasi
-            </div>
-            <div style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 4px 0 2px;">
-                {{ number_format($statFunnelKandidat['total']) }} Lamaran
+    <div class="dash-stat-card is-right-aligned" tabindex="0">
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
+                    <i class="ti ti-filter"></i> Funnel Partisipasi
+                </div>
+                <span style="font-size: 11px; font-weight: 700; color: var(--text-secondary);">
+                    {{ number_format($statFunnelKandidat['total']) }} Lamaran
+                </span>
             </div>
             @php
                 $totFun = max(1, $statFunnelKandidat['total']);
-                $pAwal = round(($statFunnelKandidat['tahap_awal'] / $totFun) * 100);
-                $pNego = round(($statFunnelKandidat['tahap_nego'] / $totFun) * 100);
-                $pRev = round(($statFunnelKandidat['tahap_review'] / $totFun) * 100);
-                $pKon = round(($statFunnelKandidat['tahap_kontrak'] / $totFun) * 100);
-                $pSel = round(($statFunnelKandidat['tahap_selesai'] / $totFun) * 100);
+                $wAwal = max(6, round(($statFunnelKandidat['tahap_awal'] / $totFun) * 100));
+                $wNego = max(6, round(($statFunnelKandidat['tahap_nego'] / $totFun) * 100));
+                $wRev = max(6, round(($statFunnelKandidat['tahap_review'] / $totFun) * 100));
+                $wKon = max(6, round(($statFunnelKandidat['tahap_kontrak'] / $totFun) * 100));
+                $wSel = max(6, round(($statFunnelKandidat['tahap_selesai'] / $totFun) * 100));
             @endphp
-            <div class="dash-segmented-bar">
-                <div class="seg" style="width: {{ $pAwal }}%; background: #64748B;" title="Awal: {{ $pAwal }}%"></div>
-                <div class="seg" style="width: {{ $pNego }}%; background: #F59E0B;" title="Nego: {{ $pNego }}%"></div>
-                <div class="seg" style="width: {{ $pRev }}%; background: #3B82F6;" title="Review: {{ $pRev }}%"></div>
-                <div class="seg" style="width: {{ $pKon }}%; background: #10B981;" title="Kontrak: {{ $pKon }}%"></div>
-                <div class="seg" style="width: {{ $pSel }}%; background: #059669;" title="Selesai: {{ $pSel }}%"></div>
+            <div class="viz-funnel">
+                <div class="viz-funnel-row">
+                    <span class="viz-funnel-label">Awal/Review</span>
+                    <div class="viz-funnel-track"><div class="viz-funnel-bar" style="width: {{ $wAwal }}%; background: #64748B;"></div></div>
+                    <span class="viz-funnel-count">{{ $statFunnelKandidat['tahap_awal'] }}</span>
+                </div>
+                <div class="viz-funnel-row">
+                    <span class="viz-funnel-label">Nego Fee</span>
+                    <div class="viz-funnel-track"><div class="viz-funnel-bar" style="width: {{ $wNego }}%; background: #D97706;"></div></div>
+                    <span class="viz-funnel-count">{{ $statFunnelKandidat['tahap_nego'] }}</span>
+                </div>
+                <div class="viz-funnel-row">
+                    <span class="viz-funnel-label">Ke Client</span>
+                    <div class="viz-funnel-track"><div class="viz-funnel-bar" style="width: {{ $wRev }}%; background: #0284C7;"></div></div>
+                    <span class="viz-funnel-count">{{ $statFunnelKandidat['tahap_review'] }}</span>
+                </div>
+                <div class="viz-funnel-row">
+                    <span class="viz-funnel-label">Kontrak</span>
+                    <div class="viz-funnel-track"><div class="viz-funnel-bar" style="width: {{ $wKon }}%; background: #15803D;"></div></div>
+                    <span class="viz-funnel-count">{{ $statFunnelKandidat['tahap_kontrak'] }}</span>
+                </div>
+                <div class="viz-funnel-row">
+                    <span class="viz-funnel-label">Selesai</span>
+                    <div class="viz-funnel-track"><div class="viz-funnel-bar" style="width: {{ $wSel }}%; background: #16A34A;"></div></div>
+                    <span class="viz-funnel-count">{{ $statFunnelKandidat['tahap_selesai'] }}</span>
+                </div>
             </div>
-            <div style="font-size: 12px; color: var(--text-secondary);">
-                {{ $statFunnelKandidat['tahap_kontrak'] }} Lolos Kontrak · {{ $statFunnelKandidat['tahap_selesai'] }} Selesai
-            </div>
-        </a>
-        <span class="info-hint"><i class="ti ti-info-circle"></i></span>
+        </div>
+        <span class="info-hint" title="Klik untuk rincian / kunci pop-up"><i class="ti ti-info-circle"></i></span>
         <div class="dash-hover-popover">
-            <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Distribusi Tahapan Kandidat</div>
+            <div class="dash-popover-header">
+                <span class="dash-popover-title">Distribusi Tahapan Kandidat</span>
+                <button type="button" class="dash-popover-close" aria-label="Tutup"><i class="ti ti-x"></i></button>
+            </div>
             <div class="popover-row"><span>Tahap Awal (Diundang/Diajukan)</span><strong>{{ $statFunnelKandidat['tahap_awal'] }}</strong></div>
             <div class="popover-row"><span>Tahap Negosiasi Honor (Nego)</span><strong>{{ $statFunnelKandidat['tahap_nego'] }}</strong></div>
             <div class="popover-row"><span>Tahap Review Client (Deal/Ajukan)</span><strong>{{ $statFunnelKandidat['tahap_review'] }}</strong></div>
             <div class="popover-row"><span>Lolos & Kontrak Aktif</span><strong>{{ $statFunnelKandidat['tahap_kontrak'] }}</strong></div>
             <div class="popover-row"><span>Selesai Produksi</span><strong>{{ $statFunnelKandidat['tahap_selesai'] }}</strong></div>
+            <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border-color);">
+                <a href="{{ route('admin.projects.index') }}" class="btn btn-sm btn-tonal" style="width: 100%; justify-content: center; font-size: 12px; gap: 6px;">Buka Seleksi & Lamaran <i class="ti ti-arrow-right"></i></a>
+            </div>
         </div>
     </div>
 </div>
