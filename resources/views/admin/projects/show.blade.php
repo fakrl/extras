@@ -49,6 +49,41 @@
     </div>
 @endunless
 
+@php
+    $totalKuota = $p->kuota ?: 1;
+    $pendaftarCount = $p->applications_count ?? $p->applications()->count();
+    $negoCount = $p->applications()->where('status_partisipasi', 'nego_fee')->count();
+    $dealLolosCount = $p->applications()->whereIn('status_partisipasi', ['deal', 'diajukan_ke_client', 'lolos', 'kontrak_ditandatangani', 'selesai_produksi'])->count();
+    $pctFulfillment = min(100, round(($dealLolosCount / $totalKuota) * 100));
+@endphp
+<div class="project-quota-strip">
+    <div class="pqs-stats">
+        <div>
+            <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Total Kuota</div>
+            <div style="font-size: 18px; font-weight: 700; color: var(--text-primary);">{{ $p->kuota }} <span style="font-size: 12px; font-weight: 400; color: var(--text-muted);">orang</span></div>
+        </div>
+        <div>
+            <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Pendaftar Masuk</div>
+            <div style="font-size: 18px; font-weight: 700; color: var(--accent);">{{ $pendaftarCount }}</div>
+        </div>
+        <div>
+            <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Diproses / Nego</div>
+            <div style="font-size: 18px; font-weight: 700; color: var(--warning, #D97706);">{{ $negoCount }}</div>
+        </div>
+        <div>
+            <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Deal / Lolos</div>
+            <div style="font-size: 18px; font-weight: 700; color: var(--accent-strong, #15803D);">{{ $dealLolosCount }}</div>
+        </div>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; color: var(--text-muted); margin-bottom: 4px;">
+        <span>Progress Keterisian Kuota Proyek</span>
+        <strong>{{ $pctFulfillment }}% ({{ $dealLolosCount }}/{{ $p->kuota }})</strong>
+    </div>
+    <div class="pqs-progress" aria-hidden="true">
+        <div style="width: {{ $pctFulfillment }}%; background: var(--accent, #15803D); transition: width .3s ease;"></div>
+    </div>
+</div>
+
 <div class="xfilter" role="tablist" aria-label="Bagian detail proyek">
     @foreach (['info' => 'Info', 'pendaftar' => 'Pendaftar', 'keuangan' => 'Keuangan', 'lampiran' => 'Lampiran', 'riwayat' => 'Riwayat'] as $key => $label)
         <a href="{{ route('admin.projects.show', [$p, 'tab' => $key === 'info' ? null : $key]) }}" role="tab"

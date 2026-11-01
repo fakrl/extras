@@ -7,18 +7,32 @@
     #bulk-toolbar { display: none; position: sticky; top: 10px; z-index: 30; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: var(--space-3); padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
     #bulk-toolbar select { width: auto; margin: 0; min-height: 36px; }
     .xgrid.is-daftar { grid-template-columns: 1fr; gap: 8px; }
-    .is-daftar .xcard { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 4px 12px; padding: 8px 12px; }
+    .is-daftar .xcard {
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 10px 16px;
+        border-radius: var(--radius-md);
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+    }
     .is-daftar .xcard-ph { display: contents; }
-    .is-daftar .xcard-ph-btn { order: 1; width: 52px; height: 52px; flex: none; border-radius: 10px; overflow: hidden; background: linear-gradient(160deg, hsl(var(--h) 24% 72%), hsl(var(--h) 20% 40%)); }
-    .is-daftar .xcard-inisial { font-size: 18px; }
+    .is-daftar .xcard-ph-btn { order: 1; width: 48px; height: 48px; flex: none; border-radius: 8px; overflow: hidden; }
+    .is-daftar .xcard-inisial { font-size: 16px; }
     .is-daftar .xcard-ck { order: 0; position: static; flex: none; }
     .is-daftar .xcard .xcard-st { order: 3; position: static; box-shadow: none; }
-    .is-daftar .xcard-fav { order: 4; position: static; }
-    .is-daftar .xcard-fav button { width: 44px; height: 44px; background: none; color: var(--text-muted); }
-    .is-daftar .xcard-body { order: 2; padding: 0; flex: 1 1 140px; min-width: 0; gap: 2px; }
-    .is-daftar .xcard-ring, .is-daftar .xcard-sub, .is-daftar .xcard-tags, .is-daftar .xcard-btns-2, .is-daftar .xcard-btns .btn-outline-brand, .is-daftar .xcard-line:has(.ti-ruler-2), .is-daftar .xcard-line:has(.ti-movie) { display: none; }
-    .is-daftar .xcard-btns { margin: 0; padding: 4px 0 0; }
-    .is-daftar .xcard-btns .btn { white-space: nowrap; padding: 0 12px; }
+    .is-daftar .xcard-fav { order: 5; position: static; }
+    .is-daftar .xcard-fav button { width: 38px; height: 38px; background: none; color: var(--text-muted); }
+    .is-daftar .xcard-body { order: 2; padding: 0; flex: 1 1 200px; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+    .is-daftar .ecard-specs-grid { display: inline-flex; gap: 8px; margin: 2px 0; background: none; border: none; padding: 0; }
+    .is-daftar .ecard-spec-item { display: inline-flex; align-items: center; gap: 3px; background: var(--md-surface-container, var(--bg-card-hover)); padding: 2px 6px; border-radius: 4px; }
+    .is-daftar .ecard-spec-item .spec-lbl { font-size: 9px; }
+    .is-daftar .ecard-spec-item .spec-val { font-size: 11px; }
+    .is-daftar .xcard-tags { display: flex; gap: 4px; margin-top: 2px; }
+    .is-daftar .xcard-btns { order: 4; margin: 0; display: flex; gap: 6px; align-items: center; }
+    .is-daftar .xcard-btns .btn { white-space: nowrap; padding: 6px 12px; min-height: 36px; }
+    .is-daftar .xcard-btns-2 { order: 4; margin: 0; display: inline-flex; }
 </style>
 @endpush
 
@@ -64,24 +78,30 @@
 @endphp
 
 @if (($tab ?? '') !== 'client')
-<div class="quick-filter-bar" style="margin: 8px 0 12px;">
-    <a href="{{ route('admin.projects.applicants', array_merge(['castingProject' => $castingProject], $tampilQ)) }}" class="quick-filter-chip {{ empty($statuses) ? 'is-active' : '' }}">
-        Semua ({{ $cntSemua }})
+<div class="lineup-stage-strip">
+    <a href="{{ route('admin.projects.applicants', array_merge(['castingProject' => $castingProject], $tampilQ)) }}" class="lineup-stage-box {{ empty($statuses) ? 'is-active' : '' }}">
+        <span class="stage-count">{{ $cntSemua }}</span>
+        <span class="stage-label">Semua Pendaftar</span>
     </a>
-    <a href="{{ route('admin.projects.applicants', array_merge(['castingProject' => $castingProject, 'status' => ['diajukan', 'direview_admin']], $tampilQ)) }}" class="quick-filter-chip {{ in_array('diajukan', $statuses) || in_array('direview_admin', $statuses) ? 'is-active' : '' }}">
-        Perlu Direview Admin ({{ $cntReview }})
+    <a href="{{ route('admin.projects.applicants', array_merge(['castingProject' => $castingProject, 'status' => ['diajukan', 'direview_admin']], $tampilQ)) }}" class="lineup-stage-box {{ in_array('diajukan', $statuses) || in_array('direview_admin', $statuses) ? 'is-active' : '' }}" @if($cntReview > 0) style="border-left: 3px solid var(--warning, #D97706);" @endif>
+        <span class="stage-count" @if($cntReview > 0) style="color: var(--warning, #D97706);" @endif>{{ $cntReview }}</span>
+        <span class="stage-label">Perlu Direview</span>
     </a>
-    <a href="{{ route('admin.projects.applicants', array_merge(['castingProject' => $castingProject, 'status' => ['nego_fee']], $tampilQ)) }}" class="quick-filter-chip {{ in_array('nego_fee', $statuses) ? 'is-active' : '' }}">
-        Sedang Nego Fee ({{ $cntNego }})
+    <a href="{{ route('admin.projects.applicants', array_merge(['castingProject' => $castingProject, 'status' => ['nego_fee']], $tampilQ)) }}" class="lineup-stage-box {{ in_array('nego_fee', $statuses) ? 'is-active' : '' }}">
+        <span class="stage-count">{{ $cntNego }}</span>
+        <span class="stage-label">Sedang Nego Fee</span>
     </a>
-    <a href="{{ route('admin.projects.applicants', array_merge(['castingProject' => $castingProject, 'status' => ['deal']], $tampilQ)) }}" class="quick-filter-chip {{ in_array('deal', $statuses) ? 'is-active' : '' }}">
-        Siap Diajukan ke Client ({{ $cntDeal }})
+    <a href="{{ route('admin.projects.applicants', array_merge(['castingProject' => $castingProject, 'status' => ['deal']], $tampilQ)) }}" class="lineup-stage-box {{ in_array('deal', $statuses) ? 'is-active' : '' }}">
+        <span class="stage-count">{{ $cntDeal }}</span>
+        <span class="stage-label">Siap ke Client</span>
     </a>
-    <a href="{{ route('admin.projects.applicants', array_merge(['castingProject' => $castingProject, 'status' => ['lolos', 'kontrak_ditandatangani']], $tampilQ)) }}" class="quick-filter-chip {{ in_array('lolos', $statuses) || in_array('kontrak_ditandatangani', $statuses) ? 'is-active' : '' }}">
-        Lolos / Kontrak ({{ $cntLolos }})
+    <a href="{{ route('admin.projects.applicants', array_merge(['castingProject' => $castingProject, 'status' => ['lolos', 'kontrak_ditandatangani']], $tampilQ)) }}" class="lineup-stage-box {{ in_array('lolos', $statuses) || in_array('kontrak_ditandatangani', $statuses) ? 'is-active' : '' }}" @if($cntLolos > 0) style="border-left: 3px solid var(--accent, #15803D);" @endif>
+        <span class="stage-count" @if($cntLolos > 0) style="color: var(--accent, #15803D);" @endif>{{ $cntLolos }}</span>
+        <span class="stage-label">Lolos / Kontrak</span>
     </a>
-    <a href="{{ route('admin.projects.applicants', array_merge(['castingProject' => $castingProject, 'status' => ['ditolak', 'dibatalkan']], $tampilQ)) }}" class="quick-filter-chip {{ in_array('ditolak', $statuses) || in_array('dibatalkan', $statuses) ? 'is-active' : '' }}">
-        Ditolak ({{ $cntTolak }})
+    <a href="{{ route('admin.projects.applicants', array_merge(['castingProject' => $castingProject, 'status' => ['ditolak', 'dibatalkan']], $tampilQ)) }}" class="lineup-stage-box {{ in_array('ditolak', $statuses) || in_array('dibatalkan', $statuses) ? 'is-active' : '' }}">
+        <span class="stage-count">{{ $cntTolak }}</span>
+        <span class="stage-label">Ditolak / Batal</span>
     </a>
 </div>
 @endif
@@ -218,24 +238,28 @@
         $gradeTerkunci = $ex->grade_diberikan_at && now()->lt($ex->grade_diberikan_at->addMonths(2));
         $kelas = $app->castingProjectClass;
     @endphp
-    <dialog class="xmodal" id="detail-{{ $app->id }}" aria-label="Detail {{ $alias }}" onclick="if (event.target === this) this.close()">
-        <div class="xmodal-ph" style="--h: {{ crc32((string) ($ex->user->username ?? '')) % 360 }};">
-            @if ($ex->foto_profil_path)
-                <img src="{{ route('extras.media.foto', $ex) }}" alt="Foto {{ $alias }}" loading="lazy">
-            @else
-                <span class="xcard-inisial" aria-hidden="true">{{ $ex->user->username ? strtoupper(mb_substr($ex->user->username, 0, 2)) : '?' }}</span>
-            @endif
-            <button type="button" class="xmodal-x" aria-label="Tutup" onclick="this.closest('dialog').close()"><i class="ti ti-x"></i></button>
-        </div>
-        <div class="xmodal-body">
-            <div class="xmodal-head">
-                <div style="min-width: 0;">
-                    <div class="xmodal-name">{{ $ex->user->username ? '@'.$ex->user->username : '(belum isi username)' }}</div>
-                    <div class="xmodal-sub">{{ $ex->user->name ?? '' }}</div>
+    <dialog class="xmodal xdrawer-right" id="detail-{{ $app->id }}" aria-label="Detail {{ $alias }}" onclick="if (event.target === this) this.close()">
+        <div class="drawer-head-sticky">
+            <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+                <div class="xcard-ph-btn" style="width: 44px; height: 44px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: var(--bg-nav-active);">
+                    @if ($ex->foto_profil_path)
+                        <img src="{{ route('extras.media.foto', $ex) }}" alt="Foto {{ $alias }}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">
+                    @else
+                        <span class="xcard-inisial" aria-hidden="true" style="font-size: 16px;">{{ $ex->user->username ? strtoupper(mb_substr($ex->user->username, 0, 2)) : '?' }}</span>
+                    @endif
                 </div>
-                <x-status-badge :model="$app" />
+                <div style="min-width: 0;">
+                    <div style="font-size: 15px; font-weight: 700; line-height: 1.2;">{{ $ex->user->name ?? $alias }}</div>
+                    <div class="dash-sub">{{ '@'.($ex->user->username ?? '-') }} · {{ $kelas->nama_kelas ?? 'Umum' }}</div>
+                </div>
             </div>
-            <div class="xmodal-badges">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <x-status-badge :model="$app" />
+                <button type="button" class="btn-ikon" aria-label="Tutup" onclick="this.closest('dialog').close()" style="border: none; background: transparent; cursor: pointer; font-size: 20px; color: var(--text-muted);"><i class="ti ti-x"></i></button>
+            </div>
+        </div>
+        <div class="drawer-body-scroll">
+            <div class="xmodal-badges" style="margin-top: 0;">
                 @if ($app->bentrok_jadwal_flag)
                     <span class="badge badge-urgent">Bentrok Jadwal</span>
                 @endif
@@ -250,10 +274,36 @@
                 @endif
             </div>
 
-            <div style="margin-top: 10px;">@include('partials.toggle-beranda', ['profile' => $ex])</div>
+            {{-- Zona 1: Kotak Keputusan Utama Tahap Ini --}}
+            @if ($bolehKelola)
+            <div class="decision-console-box">
+                <div style="font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--accent-strong, #15803D); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <i class="ti ti-bolt"></i> Keputusan Tahap Ini: {{ $app->label() }}
+                </div>
+                <div class="xaksi">
+                    @if (in_array($app->status_partisipasi, ['direview_admin', 'nego_fee'], true))
+                        <a href="{{ route('admin.negotiations.show', $app) }}" class="btn btn-brand">{{ $app->status_partisipasi === 'nego_fee' ? 'Lanjut Nego' : 'Mulai Nego' }}</a>
+                    @endif
+                    @if ($app->status_partisipasi === 'lolos' || $app->contract)
+                        <a href="{{ route('contracts.show', $app) }}" class="btn btn-brand">Kontrak</a>
+                    @endif
+                    @if ($app->status_partisipasi === 'kontrak_ditandatangani' || $app->payment)
+                        <a href="{{ route('payments.show', $app) }}" class="btn btn-brand">Bayar</a>
+                    @endif
+                    @if (in_array($app->status_partisipasi, ['diajukan', 'direview_admin'], true))
+                        <button type="button" class="btn btn-danger-outline" onclick="document.getElementById('reject-dialog-{{ $app->id }}').showModal()">Tolak</button>
+                    @endif
+                    @if ($app->status_partisipasi === 'deal')
+                        <button type="button" class="btn btn-danger-outline" onclick="document.getElementById('batalkan-dialog-{{ $app->id }}').showModal()">Batalkan</button>
+                    @endif
+                </div>
+            </div>
+            @endif
+
+            <div style="margin-top: 4px;">@include('partials.toggle-beranda', ['profile' => $ex])</div>
 
             @if ($app->status_partisipasi === 'ditolak' && $app->alasan_tolak)
-                <div class="alert-danger" style="margin: 12px 0 0;">Alasan ditolak: {{ $app->alasan_tolak }}</div>
+                <div class="alert-danger" style="margin: 8px 0 0;">Alasan ditolak: {{ $app->alasan_tolak }}</div>
             @endif
 
             @include('partials.tag-cocok', ['profile' => $ex, 'aplikasi' => $app])
@@ -268,7 +318,7 @@
                 </details>
             @endif
 
-            <div class="xsec">Peran & breakdown</div>
+            <div class="xsec">Peran &amp; breakdown</div>
             <div class="xkv">
                 <div><span class="xkv-l">Peran (kelas)</span><b>{{ $kelas->nama_kelas ?? 'Umum' }}</b></div>
                 <div><span class="xkv-l">Rate card</span><b>Rp {{ number_format($ex->rate_card ?? 0, 0, ',', '.') }}</b></div>
@@ -295,7 +345,7 @@
             @endif
 
             @if ($ex->fotoTambahan()->isNotEmpty() || $ex->video_profil_path || ! empty($ex->tautan_tambahan))
-                <div class="xsec">Galeri & tautan</div>
+                <div class="xsec">Galeri &amp; tautan</div>
                 @if ($ex->fotoTambahan()->isNotEmpty())
                     @include('partials.foto-lightbox', ['fotos' => $ex->fotoTambahan()->keys()->map(fn ($slot) => ['url' => route('extras.media.foto-tambahan', [$ex, $slot]), 'alt' => 'Foto '.$slot])->values()->all(), 'lightboxId' => 'lb-'.$app->id])
                 @endif
@@ -340,28 +390,6 @@
                 <div style="font-size: var(--fs-xs); color: var(--text-muted); margin-top: 4px;">Setelah ditetapkan, grade terkunci 2 bulan dan berlaku di semua proyek.</div>
             @else
                 <div style="font-size: var(--fs-xs); color: var(--text-muted);">{{ $app->grade ? 'Grade '.$app->grade : 'Belum ada grade.' }}</div>
-            @endif
-
-            {{-- Zona 1: Keputusan Tahap Ini --}}
-            @if ($bolehKelola)
-            <div class="xsec" style="margin-top: 14px;"><i class="ti ti-target"></i> Keputusan Tahap Ini</div>
-            <div class="xaksi">
-                @if (in_array($app->status_partisipasi, ['direview_admin', 'nego_fee'], true))
-                    <a href="{{ route('admin.negotiations.show', $app) }}" class="btn btn-brand">{{ $app->status_partisipasi === 'nego_fee' ? 'Lanjut Nego' : 'Mulai Nego' }}</a>
-                @endif
-                @if ($app->status_partisipasi === 'lolos' || $app->contract)
-                    <a href="{{ route('contracts.show', $app) }}" class="btn btn-brand">Kontrak</a>
-                @endif
-                @if ($app->status_partisipasi === 'kontrak_ditandatangani' || $app->payment)
-                    <a href="{{ route('payments.show', $app) }}" class="btn btn-brand">Bayar</a>
-                @endif
-                @if (in_array($app->status_partisipasi, ['diajukan', 'direview_admin'], true))
-                    <button type="button" class="btn btn-danger-outline" onclick="document.getElementById('reject-dialog-{{ $app->id }}').showModal()">Tolak</button>
-                @endif
-                @if ($app->status_partisipasi === 'deal')
-                    <button type="button" class="btn btn-danger-outline" onclick="document.getElementById('batalkan-dialog-{{ $app->id }}').showModal()">Batalkan</button>
-                @endif
-            </div>
             @endif
 
             {{-- Zona 2: Atribut & Penilaian Internal --}}

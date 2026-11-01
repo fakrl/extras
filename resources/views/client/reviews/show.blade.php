@@ -34,6 +34,34 @@
     </div>
 </div>
 
+@php
+    $totalKuota = $castingProject->kuota ?: 1;
+    $terpilihCount = $applications->filter(fn($a) => in_array($a->status_partisipasi, ['lolos', 'kontrak_ditandatangani', 'selesai_produksi']) || $a->clientReviews->contains('keputusan', 'approve'))->count();
+    $pctClient = min(100, round(($terpilihCount / $totalKuota) * 100));
+@endphp
+<div class="client-quota-banner">
+    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap; flex: 1; min-width: 260px;">
+        <div>
+            <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Kandidat Terpilih</div>
+            <div style="font-size: 18px; font-weight: 700; color: var(--accent-strong, #15803D);">
+                {{ $terpilihCount }} <span style="font-size: 13px; font-weight: 500; color: var(--text-muted);">/ {{ $castingProject->kuota }} kuota</span>
+            </div>
+        </div>
+        <div style="min-width: 140px; flex: 1;">
+            <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 3px;">
+                <span>Keterisian Kuota</span>
+                <strong>{{ $pctClient }}%</strong>
+            </div>
+            <div style="height: 6px; background: var(--border-color); border-radius: 999px; overflow: hidden;">
+                <div style="width: {{ $pctClient }}%; height: 100%; background: var(--accent, #15803D);"></div>
+            </div>
+        </div>
+    </div>
+    <div style="font-size: 12px; color: var(--text-muted);">
+        <i class="ti ti-check-circle"></i> Kandidat terpilih langsung maju ke proses kontrak JBTB
+    </div>
+</div>
+
 <div class="xfilter" aria-label="Filter status">
     @foreach (['' => 'Semua', 'menunggu' => 'Menunggu', 'approved' => 'Dipilih', 'rejected' => 'Ditolak'] as $val => $label)
         <a href="{{ route('client.reviews.show', array_filter(['castingProject' => $castingProject->id, 'status' => $val ?: null])) }}"
@@ -102,6 +130,7 @@
             @php
                 $review = $app->clientReviews->first();
                 $isPending = $app->status_partisipasi === 'diajukan_ke_client';
+                $isApproved = in_array($app->status_partisipasi, ['lolos', 'kontrak_ditandatangani', 'selesai_produksi']) || ($review?->keputusan === 'approve');
                 $badge = [$app->labelClient(), $app->badgeClass()];
                 $riwayatApprove = \App\Models\ClientReview::where('client_id', auth()->id())
                     ->whereHas('projectApplication', fn($q) => $q->where('extras_id', $app->extras->id))
@@ -121,7 +150,7 @@
                 'lihat' => ['href' => route('client.extras.profil', $app->extras->user_id), 'data-profil-modal' => true, 'data-aksi-fungsi' => 'bukaModalKandidat', 'data-aksi-arg' => $app->id, 'data-aksi-label' => $isPending ? 'Pilih / Tolak' : 'Detail review'],
                 'aksi' => $isPending ? ['label' => 'Pilih', 'onclick' => "bukaModalKandidat({$app->id}, true)"] : null,
                 'attrs' => [
-                    'class' => 'kandidat-card',
+                    'class' => 'kandidat-card' . ($isApproved ? ' talent-card-approved' : ''),
                     'data-appid' => $app->id,
                     'data-tags' => implode(' ', $app->extras->categories->modelKeys()),
                     'data-cocok' => $app->persenCocok() ?? -1,

@@ -78,29 +78,48 @@
         $caMapsUrl = $ct->lokasi ? 'https://www.google.com/maps/search/?api=1&query='.rawurlencode($ct->lokasi) : null;
         $caWaKorlap = $caKorlap?->tautanWa("Halo {$caKorlap->name}, saya ".auth()->user()->name." mau tanya soal shooting {$ca->castingProject->nama_produksi}.");
     @endphp
-    <div class="card" data-dash="callingan" style="border: 2px solid var(--accent); margin-bottom: 14px;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
-            <div>
-                <span class="badge badge-urgent">{{ $callinganCard['hari_ini'] ? 'Hari ini' : 'Besok' }}</span>
-                <div style="font-size: 15px; font-weight: 700; margin-top: 6px;">{{ $ca->castingProject->nama_produksi }}</div>
+    <div class="card boarding-pass-card" data-dash="callingan" style="border: 2px solid var(--accent); margin-bottom: 16px;">
+        <div class="bp-header {{ $callinganCard['hari_ini'] ? 'is-urgent' : '' }}">
+            <span><i class="ti ti-ticket"></i> JADWAL CALLINGAN SYUTING</span>
+            <span class="badge badge-urgent">{{ $callinganCard['hari_ini'] ? 'Hari ini' : 'Besok' }}</span>
+        </div>
+        <div class="bp-body">
+            <div style="font-size: 16px; font-weight: 700;">{{ $ca->castingProject->nama_produksi }}</div>
+            <div class="dash-sub">{{ $ca->castingProjectClass?->nama_kelas ?? $ca->karakter ?? 'Talent' }} · {{ $ct->tanggal->translatedFormat('l, d F Y') }}</div>
+
+            <div class="bp-ticket-grid">
+                <div class="bp-ticket-cell">
+                    <span class="bp-lbl">Jam Kumpul</span>
+                    <span class="bp-val" style="color: var(--accent-strong); font-size: 20px;">{{ $caJamKumpul ?: '(belum diisi)' }}</span>
+                </div>
+                <div class="bp-ticket-cell">
+                    <span class="bp-lbl">Lokasi Venue</span>
+                    <span class="bp-val">{{ $ct->lokasi ?: 'Lokasi syuting belum diisi' }}</span>
+                </div>
+                <div class="bp-ticket-cell">
+                    <span class="bp-lbl">Korlap Lapangan</span>
+                    <span class="bp-val">{{ $caKorlap?->name ?? 'Belum ada Korlap' }}</span>
+                </div>
             </div>
-            @if ($callinganCard['hari_ini'])
-                <button type="button" class="btn btn-brand" onclick="document.getElementById('dialog-absen-{{ $ca->id }}').showModal()"><i class="ti ti-camera"></i> Absen Selfie</button>
+
+            @if ($ca->keterangan_scene)
+                <div style="font-size: var(--fs-sm); margin-top: 10px; background: var(--bg-card); padding: 8px 10px; border-radius: var(--radius-sm); border: 1px dashed var(--border-color);">
+                    <strong>Kostum/Scene:</strong> {{ $ca->keterangan_scene }}
+                </div>
             @endif
         </div>
-        <div style="margin: 12px 0;">
-            <div style="color: var(--text-muted); font-size: var(--fs-xs); text-transform: uppercase;">Jam Kumpul</div>
-            <div style="font-size: 26px; font-weight: 800; color: var(--accent-strong);">{{ $caJamKumpul ?: '(belum diisi)' }}</div>
-        </div>
-        @if ($ca->keterangan_scene)
-            <div style="font-size: var(--fs-sm); margin-bottom: 10px;"><strong>Kostum/Scene:</strong> {{ $ca->keterangan_scene }}</div>
-        @endif
-        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+
+        <div class="bp-perforated"></div>
+
+        <div class="bp-footer">
             @if ($caMapsUrl)
-                <a href="{{ $caMapsUrl }}" target="_blank" rel="noopener" class="btn btn-sm"><i class="ti ti-map-pin"></i> Buka Maps</a>
+                <a href="{{ $caMapsUrl }}" target="_blank" rel="noopener" class="btn btn-sm btn-tonal"><i class="ti ti-map-pin"></i> Buka Maps</a>
             @endif
             @if ($caWaKorlap)
-                <a href="{{ $caWaKorlap }}" target="_blank" rel="noopener" class="btn btn-sm"><i class="ti ti-brand-whatsapp"></i> WA Korlap ({{ $caKorlap->name }})</a>
+                <a href="{{ $caWaKorlap }}" target="_blank" rel="noopener" class="btn btn-sm btn-tonal"><i class="ti ti-brand-whatsapp"></i> WA Korlap ({{ $caKorlap->name }})</a>
+            @endif
+            @if ($callinganCard['hari_ini'])
+                <button type="button" class="btn btn-brand" onclick="document.getElementById('dialog-absen-{{ $ca->id }}').showModal()"><i class="ti ti-camera"></i> Absen Selfie</button>
             @endif
         </div>
     </div>

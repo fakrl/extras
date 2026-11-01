@@ -449,4 +449,416 @@
             gap: 10px;
         }
     }
+
+    /* ─── MACRO LAYOUT OVERHAUL V2 TOKENS ────────────────────────────────── */
+
+    /* 1. Asymmetric Command Grid (Super Admin Dashboard) */
+    .sa-command-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+        align-items: start;
+        margin-top: 16px;
+    }
+    @media (min-width: 992px) {
+        .sa-command-grid {
+            grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+        }
+    }
+    .sa-action-ticket {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border-color);
+        transition: background .15s ease;
+    }
+    .sa-action-ticket:last-child {
+        border-bottom: none;
+    }
+    .sa-action-ticket:hover {
+        background: var(--bg-card-hover);
+    }
+    .sa-sticky-panel {
+        position: static;
+    }
+    @media (min-width: 992px) {
+        .sa-sticky-panel {
+            position: sticky;
+            top: 84px;
+        }
+    }
+
+    /* 2. Visual Pipeline Stage Strip (Admin Lineup) */
+    .lineup-stage-strip {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 10px;
+        margin: 10px 0 16px;
+    }
+    .lineup-stage-box {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 10px 12px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        color: var(--text-primary);
+        min-height: 68px;
+        transition: all .15s ease;
+    }
+    .lineup-stage-box:hover {
+        border-color: var(--accent);
+        transform: translateY(-1px);
+    }
+    .lineup-stage-box.is-active {
+        border-color: var(--accent-strong);
+        background: var(--bg-nav-active);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);
+    }
+    .lineup-stage-box .stage-count {
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1.1;
+    }
+    .lineup-stage-box .stage-label {
+        font-size: 11.5px;
+        color: var(--text-muted);
+        margin-top: 4px;
+        font-weight: 500;
+    }
+    .lineup-stage-box.is-active .stage-label {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    /* 3. Extras Card V2 (Modern Specs Grid & Top Bar) */
+    .ecard-v2 {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    .ecard-top-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        z-index: 2;
+    }
+    .ecard-top-bar.status-diajukan,
+    .ecard-top-bar.status-direview_admin,
+    .ecard-top-bar.status-nego_fee {
+        background: var(--warning, #D97706);
+    }
+    .ecard-top-bar.status-deal,
+    .ecard-top-bar.status-diajukan_ke_client,
+    .ecard-top-bar.status-lolos,
+    .ecard-top-bar.status-kontrak_ditandatangani,
+    .ecard-top-bar.status-selesai_produksi {
+        background: var(--accent, #15803D);
+    }
+    .ecard-top-bar.status-ditolak,
+    .ecard-top-bar.status-dibatalkan {
+        background: var(--danger, #DC2626);
+    }
+    .ecard-grade-pill {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: var(--accent-strong, #0B5E2C);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 12px;
+        z-index: 3;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    .ecard-specs-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        margin: 8px 0;
+        background: var(--md-surface-container, var(--bg-card-hover));
+        border-radius: 6px;
+        padding: 6px 4px;
+        text-align: center;
+        border: 1px solid var(--border-color);
+    }
+    .ecard-spec-item .spec-lbl {
+        display: block;
+        font-size: 9.5px;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        letter-spacing: .03em;
+    }
+    .ecard-spec-item .spec-val {
+        display: block;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-top: 1px;
+    }
+
+    /* 4. Slide-Over Right Drawer Modal */
+    dialog.xmodal.xdrawer-right {
+        margin: 0 0 0 auto !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        width: min(680px, 96vw) !important;
+        border-radius: 16px 0 0 16px !important;
+        display: flex;
+        flex-direction: column;
+        padding: 0 !important;
+        border: none !important;
+        border-left: 1px solid var(--border-color) !important;
+        box-shadow: -8px 0 32px rgba(0,0,0,0.2) !important;
+        animation: drawerSlideIn .25s ease-out;
+    }
+    @keyframes drawerSlideIn {
+        from { transform: translateX(100%); }
+        to { transform: translateX(0); }
+    }
+    dialog.xmodal.xdrawer-right::backdrop {
+        background: rgba(0,0,0,0.45);
+        backdrop-filter: blur(2px);
+    }
+    .drawer-head-sticky {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--bg-card);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    .drawer-body-scroll {
+        padding: 16px 20px 30px;
+        overflow-y: auto;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+    .decision-console-box {
+        background: var(--md-surface-container, var(--bg-card));
+        border: 2px solid var(--accent, #15803D);
+        border-radius: var(--radius-md);
+        padding: 14px 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    /* 5. Boarding-Pass Card (Extras Dashboard) */
+    .boarding-pass-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--md-elevation-2);
+        margin-bottom: 16px;
+        transition: border-color .15s ease;
+    }
+    .boarding-pass-card:hover {
+        border-color: var(--accent);
+    }
+    .bp-header {
+        background: #0B1A12;
+        color: #B7F1CB;
+        padding: 10px 16px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .bp-header.is-urgent {
+        background: #78350F;
+        color: #FEF3C7;
+    }
+    .bp-body {
+        padding: 16px;
+    }
+    .bp-ticket-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 12px;
+        margin-top: 10px;
+        background: var(--md-surface-container, var(--bg-card-hover));
+        padding: 12px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+    }
+    .bp-ticket-cell .bp-lbl {
+        font-size: 10.5px;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        display: block;
+    }
+    .bp-ticket-cell .bp-val {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-top: 2px;
+        display: block;
+    }
+    .bp-perforated {
+        border-top: 2px dashed var(--border-color);
+        margin: 14px 0;
+        position: relative;
+    }
+    .bp-footer {
+        padding: 0 16px 16px;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    /* 6. Job Board Magazine Grid (Katalog Lowongan) */
+    .job-board-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    @media (min-width: 768px) {
+        .job-board-grid {
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        }
+    }
+    .jb-meta-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        background: var(--md-surface-container, var(--bg-card-hover));
+        padding: 10px 12px;
+        border-radius: var(--radius-md);
+        font-size: 12.5px;
+        border: 1px solid var(--border-color);
+        margin: 10px 0;
+    }
+
+    /* 7. Split-Screen Project Apply View */
+    .project-apply-split {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+        align-items: start;
+    }
+    @media (min-width: 860px) {
+        .project-apply-split {
+            grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.95fr);
+        }
+        .pas-sticky-card {
+            position: sticky;
+            top: 84px;
+        }
+    }
+
+    /* 8. Project Quota & Pipeline Summary Strip */
+    .project-quota-strip {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 14px 18px;
+        margin-bottom: 16px;
+        box-shadow: var(--md-elevation-1);
+    }
+    .pqs-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+    .pqs-progress {
+        height: 8px;
+        border-radius: 999px;
+        background: var(--border-color);
+        overflow: hidden;
+        display: flex;
+    }
+
+    /* 9. Client Quota & Review Lookbook */
+    .client-quota-banner {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 12px 16px;
+        margin-bottom: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .talent-card-approved {
+        border: 2px solid var(--accent, #15803D) !important;
+        position: relative;
+    }
+    .talent-card-approved::after {
+        content: "✓ Terpilih";
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: var(--accent, #15803D);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 12px;
+        z-index: 5;
+    }
+
+    /* 10. Mini 4-Step Pipeline Tracker (Client Dashboard) */
+    .mini-pipeline-tracker {
+        display: flex;
+        gap: 4px;
+        margin: 8px 0;
+        align-items: center;
+    }
+    .mini-pipeline-step {
+        flex: 1;
+        height: 5px;
+        border-radius: 999px;
+        background: var(--border-color);
+    }
+    .mini-pipeline-step.is-done {
+        background: var(--accent, #15803D);
+    }
+    .mini-pipeline-step.is-current {
+        background: var(--warning, #D97706);
+    }
+
+    /* 11. Structured Action Row 5-Kolom (Admin Lineup Mode Daftar) */
+    .is-daftar.xgrid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+    .is-daftar .xcard {
+        display: grid !important;
+        grid-template-columns: minmax(190px, 1.2fr) minmax(140px, 1fr) minmax(160px, 1.1fr) minmax(130px, 0.9fr) auto !important;
+        gap: 12px !important;
+        align-items: center !important;
+        padding: 10px 16px !important;
+        border-radius: var(--radius-md) !important;
+        background: var(--bg-card) !important;
+        border: 1px solid var(--border-color) !important;
+    }
+    @media (max-width: 960px) {
+        .is-daftar .xcard {
+            grid-template-columns: 1fr !important;
+            gap: 8px !important;
+        }
+    }
 </style>

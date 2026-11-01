@@ -24,57 +24,76 @@
     Tidak ada lowongan yang sesuai dengan filter atau pencarian saat ini.
 </div>
 
-<div id="casting-list">
+<div id="casting-list" class="job-board-grid">
 @forelse ($aktif as $project)
     @php
         $isFull = $project->classes->every(fn ($c) => $c->sisaKuota() === 0);
         $searchTerms = strtolower($project->nama_produksi . ' ' . $project->namaClient() . ' ' . $project->classes->pluck('nama_kelas')->join(' '));
     @endphp
-    <div class="card casting-card-item" style="margin-bottom: 14px; padding: 16px;"
+    <div class="card casting-card-item" style="margin-bottom: 0; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;"
          data-search="{{ $searchTerms }}"
          data-urgent="{{ $project->isUrgent() ? '1' : '0' }}"
          data-full="{{ $isFull ? '1' : '0' }}">
         
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
-            <div>
-                <div style="font-size: 15.5px; font-weight: 700; color: var(--text-primary);">
-                    {{ $project->nama_produksi }}
-                    @if ($project->isUrgent())
-                        <span class="badge badge-urgent" style="margin-left: 4px;">Butuh Dadakan</span>
-                    @endif
-                    @include('partials.label-nego', ['project' => $project])
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap;">
+                <div>
+                    <div style="font-size: 16px; font-weight: 700; color: var(--text-primary); line-height: 1.3;">
+                        {{ $project->nama_produksi }}
+                        @if ($project->isUrgent())
+                            <span class="badge badge-urgent" style="margin-left: 4px;">Butuh Dadakan</span>
+                        @endif
+                        @include('partials.label-nego', ['project' => $project])
+                    </div>
+                    <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">
+                        Client: <strong>{{ $project->namaClient() }}</strong>
+                        @if ($project->kode_proyek)
+                            · <span class="badge badge-netral">{{ $project->kode_proyek }}</span>
+                        @endif
+                    </div>
                 </div>
-                <div style="font-size: 13px; color: var(--text-secondary); margin-top: 3px;">
-                    Client: <strong>{{ $project->namaClient() }}</strong>
-                    @if ($project->kode_proyek)
-                        · <span class="badge badge-netral">{{ $project->kode_proyek }}</span>
-                    @endif
+                <div style="text-align: right;">
+                    <span class="badge badge-warning" style="font-size: 11.5px;"><i class="ti ti-clock"></i> Deadline: {{ $project->deadline->translatedFormat('d M Y') }}</span>
                 </div>
             </div>
-            <div style="text-align: right;">
-                <span class="badge badge-warning" style="font-size: 12px;"><i class="ti ti-clock"></i> Deadline: {{ $project->deadline->translatedFormat('d M Y') }}</span>
-            </div>
-        </div>
 
-        {{-- Metadata grid --}}
-        <div style="display: flex; gap: 16px; flex-wrap: wrap; margin: 12px 0 10px; font-size: 12.5px; color: var(--text-secondary); background: var(--md-surface-container, var(--bg-page)); padding: 8px 12px; border-radius: var(--radius-sm);">
-            <div><i class="ti ti-users"></i> <strong>{{ $project->classes->count() }}</strong> peran</div>
-            <div><i class="ti ti-user-check"></i> Kuota terisi: <strong>{{ $project->terisi }}/{{ $project->kuota }}</strong></div>
-            @if ($project->shootingDates->isNotEmpty())
-                <div><i class="ti ti-calendar"></i> Syuting: <strong>{{ $project->shootingDates->first()->tanggal->translatedFormat('d M Y') }}</strong>@if($project->shootingDates->count() > 1) (+{{ $project->shootingDates->count() - 1 }} hari)@endif</div>
+            {{-- Metadata Box 2x2 --}}
+            <div class="jb-meta-grid">
+                <div>
+                    <span style="font-size: 10.5px; text-transform: uppercase; color: var(--text-muted); display: block; font-weight: 600;">Jadwal Syuting</span>
+                    <strong style="color: var(--text-primary); font-size: 12px;">
+                        @if ($project->shootingDates->isNotEmpty())
+                            {{ $project->shootingDates->first()->tanggal->translatedFormat('d M Y') }}@if($project->shootingDates->count() > 1) (+{{ $project->shootingDates->count() - 1 }} hari)@endif
+                        @else
+                            -
+                        @endif
+                    </strong>
+                </div>
+                <div>
+                    <span style="font-size: 10.5px; text-transform: uppercase; color: var(--text-muted); display: block; font-weight: 600;">Wilayah Produksi</span>
+                    <strong style="color: var(--text-primary); font-size: 12px;">Jabodetabek</strong>
+                </div>
+                <div>
+                    <span style="font-size: 10.5px; text-transform: uppercase; color: var(--text-muted); display: block; font-weight: 600;">Sisa Kuota Peran</span>
+                    <strong style="color: var(--accent-strong); font-size: 12px;">{{ $project->terisi }}/{{ $project->kuota }} terisi</strong>
+                </div>
+                <div>
+                    <span style="font-size: 10.5px; text-transform: uppercase; color: var(--text-muted); display: block; font-weight: 600;">Pilihan Peran</span>
+                    <strong style="color: var(--text-primary); font-size: 12px;">{{ $project->classes->count() }} peran dibuka</strong>
+                </div>
+            </div>
+
+            @if ($project->classes->isNotEmpty())
+                <div style="margin-bottom: 14px;">@include('partials.peran-lowongan', ['classes' => $project->classes])</div>
             @endif
         </div>
 
-        @if ($project->classes->isNotEmpty())
-            <div style="margin-bottom: 14px;">@include('partials.peran-lowongan', ['classes' => $project->classes])</div>
-        @endif
-
-        <div style="display: flex; justify-content: flex-end;">
-            <a href="{{ route('extras.projects.show', $project) }}" class="btn btn-brand" style="justify-content: center;">Lihat Detail & Daftar &rarr;</a>
+        <div style="display: flex; justify-content: flex-end; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+            <a href="{{ route('extras.projects.show', $project) }}" class="btn btn-brand" style="justify-content: center; width: 100%;">Lihat Detail &amp; Lamar &rarr;</a>
         </div>
     </div>
 @empty
-    <p style="color: var(--text-muted);">Belum ada lowongan yang dibuka saat ini.</p>
+    <p style="color: var(--text-muted); grid-column: 1 / -1;">Belum ada lowongan yang dibuka saat ini.</p>
 @endforelse
 
 @if ($selesai->isNotEmpty())

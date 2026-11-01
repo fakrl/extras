@@ -22,8 +22,12 @@
     $tombolUndang = ($undang ?? false) && $bisaAdmin && $user?->extrasProfile && ! $user->diblokir() && $user->extrasProfile->profilLengkap();
     $tombolWa = ($wa ?? false) && $bisaAdmin && $user?->nomorWaInternasional();
     $perluTindakanAdmin = $aplikasi && in_array($aplikasi->status_partisipasi, ['diajukan', 'direview_admin', 'nego_fee']);
+    $gradeTampil = $bisaAdmin ? ($profile?->grade_saat_ini ?? $aplikasi?->grade) : null;
 @endphp
-<article {{ (new \Illuminate\View\ComponentAttributeBag($attrs ?? []))->class(['xcard', 'is-highlight' => $highlight ?? false, 'has-ring' => $persen !== null, 'perlu-tindakan-admin' => $perluTindakanAdmin]) }}>
+<article {{ (new \Illuminate\View\ComponentAttributeBag($attrs ?? []))->class(['xcard', 'ecard-v2', 'is-highlight' => $highlight ?? false, 'has-ring' => $persen !== null, 'perlu-tindakan-admin' => $perluTindakanAdmin]) }}>
+    @if ($aplikasi)
+        <div class="ecard-top-bar status-{{ $aplikasi->status_partisipasi }}"></div>
+    @endif
     <div class="xcard-ph" style="--h: {{ crc32((string) $nama) % 360 }};">
         <{{ $lihatTag }} {{ new \Illuminate\View\ComponentAttributeBag($lihatAttr) }} class="xcard-ph-btn" aria-label="Lihat profil {{ $label }}">
             @if ($profile?->foto_profil_path)
@@ -32,6 +36,9 @@
                 <span class="xcard-inisial" aria-hidden="true">{{ $nama ? strtoupper(mb_substr($nama, 0, 2)) : '?' }}</span>
             @endif
         </{{ $lihatTag }}>
+        @if ($gradeTampil)
+            <span class="ecard-grade-pill">Grade {{ $gradeTampil }}</span>
+        @endif
         @if ($badge)
             <span class="badge {{ $badge[1] }} xcard-st">{{ $badge[0] }}</span>
         @endif
@@ -59,11 +66,27 @@
         @if (! empty($sub))
             <div class="xcard-sub">{{ $sub }}</div>
         @endif
+
+        {{-- Spesifikasi Fisik 3-Kotak --}}
+        @if ($profile)
+            <div class="ecard-specs-grid">
+                <div class="ecard-spec-item">
+                    <span class="spec-lbl">Usia</span>
+                    <span class="spec-val">{{ $profile->usia ? $profile->usia.' th' : '-' }}</span>
+                </div>
+                <div class="ecard-spec-item">
+                    <span class="spec-lbl">Tinggi</span>
+                    <span class="spec-val">{{ $profile->tinggi_badan ? $profile->tinggi_badan.' cm' : '-' }}</span>
+                </div>
+                <div class="ecard-spec-item">
+                    <span class="spec-lbl">Gender</span>
+                    <span class="spec-val">{{ $profile->gender === 'pria' ? 'L' : ($profile->gender === 'wanita' ? 'P' : '-') }}</span>
+                </div>
+            </div>
+        @endif
+
         @if ($peran)
             <div class="xcard-line"><i class="ti ti-masks-theater" aria-hidden="true"></i><span>{{ $peran }}</span></div>
-        @endif
-        @if ($fisik)
-            <div class="xcard-line"><i class="ti ti-ruler-2" aria-hidden="true"></i><span>{{ implode(' · ', $fisik) }}</span></div>
         @endif
         @if ($tags->isNotEmpty())
             <div class="xcard-tags">

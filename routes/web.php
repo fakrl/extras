@@ -284,6 +284,9 @@ Route::middleware(['auth', 'role:admin,super_admin'])->prefix('admin')->group(fu
         ->name('admin.expenses.destroy');
 });
 
+Route::middleware('auth')->patch('/projects/{castingProject}/pengelola', [AdminCastingProjectController::class, 'updatePengelola'])
+    ->name('admin.projects.pengelola');
+
 // CM.3.3: penggajian staf tetap tugas SA langsung, bukan dikelolaOleh - murni role:super_admin
 // supaya tidak ikut digerbang CheckRole sebagai "aksi admin" (SA tanpa mode tetap bisa).
 Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->group(function () {

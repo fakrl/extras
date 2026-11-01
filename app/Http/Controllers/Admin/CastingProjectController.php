@@ -9,11 +9,13 @@ use App\Models\ExtrasCategory;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use App\Models\User;
+use App\Notifications\InAppNotification;
 use App\Services\KeuanganService;
 use App\Support\AdminRingkasan;
 use App\Support\PerHalaman;
 use App\Support\Periode;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -450,6 +452,108 @@ class CastingProjectController extends Controller
         }
 
         return redirect()->route('admin.projects.index')->with('status', 'Proyek casting berhasil diperbarui.');
+    }
+
+    /**
+     * Pembaruan cepat tim pengelola (Client, PIC, Korlap) langsung dari modal ringkasan proyek.
+     */
+    public function updatePengelola(Request $request, CastingProject $castingProject): RedirectResponse|JsonResponse
+    {
+        abort_unless($request->user()->isSuperAdmin() || $request->user()->isAdmin(), 403);
+
+        $data = $request->validate([
+            'admin_id' => ['nullable', 'integer', $this->akunAktif(User::ROLE_ADMIN)],
+            'korlap_id' => ['nullable', 'integer', $this->akunAktif(User::ROLE_KORLAP)],
+            'client_id' => ['nullable', 'integer', $this->akunAktif(User::ROLE_CLIENT)],
+        ]);
+
+        $castingProject->loadMissing(['admin', 'client', 'adminAssignments.user']);
+        $perubahan = [];
+
+        // 1. Update Client
+        if ($request->has('client_id')) {
+            $newClientId = $data['client_id'] ?: null;
+            if ((int) $castingProject->client_id !== (int) $newClientId) {
+                $clientLama = $castingProject->client?->name ?? 'Belum ada Client';
+                $clientBaru = $newClientId ? User::find($newClientId)?->name : 'Dikosongkan';
+                $castingProject->update(['client_id' => $newClientId]);
+                $perubahan[] = "Client: {$clientLama} → {$clientBaru}";
+            }
+        }
+
+        // 2. Update Admin PIC
+        if ($request->has('admin_id')) {
+            $newAdminId = $data['admin_id'] ?: null;
+            if ((int) $castingProject->admin_id !== (int) $newAdminId) {
+                $picLama = $castingProject->admin?->name ?? 'Belum ada PIC';
+                $picBaru = $newAdminId ? User::find($newAdminId)?->name : 'Dikosongkan';
+                $castingProject->update(['admin_id' => $newAdminId]);
+                if ($newAdminId) {
+                    $castingProject->adminAssignments()->firstOrCreate(
+                        ['user_id' => $newAdminId],
+                        ['assigned_by' => $request->user()->id, 'status_log' => 'berjalan']
+                    );
+                    try {
+                        User::find($newAdminId)?->notify(new InAppNotification('Ditugaskan sebagai PIC Proyek', "Anda ditetapkan sebagai Admin PIC proyek '{$castingProject->namaKode()}'.", route('admin.projects.show', $castingProject)));
+                    } catch (\Throwable) {
+                    }
+                }
+                $perubahan[] = "PIC: {$picLama} → {$picBaru}";
+            }
+        }
+
+        // 3. Update Korlap
+        if ($request->has('korlap_id')) {
+            $newKorlapId = $data['korlap_id'] ?: null;
+            $currentKorlap = $castingProject->korlap();
+            if ((int) $currentKorlap?->id !== (int) $newKorlapId) {
+                $korlapLama = $currentKorlap?->name ?? 'Belum ada Korlap';
+                $korlapBaru = $newKorlapId ? User::find($newKorlapId)?->name : 'Dikosongkan';
+
+                $castingProject->adminAssignments()
+                    ->whereHas('user', fn ($u) => $u->where('role', User::ROLE_KORLAP))
+                    ->delete();
+
+                if ($newKorlapId) {
+                    $castingProject->adminAssignments()->create([
+                        'user_id' => $newKorlapId,
+                        'assigned_by' => $request->user()->id,
+                        'status_log' => 'berjalan',
+                    ]);
+                    try {
+                        User::find($newKorlapId)?->notify(new InAppNotification('Ditugaskan sebagai Korlap Proyek', "Anda ditetapkan sebagai Koordinator Lapangan proyek '{$castingProject->namaKode()}'.", route('admin.projects.show', $castingProject)));
+                    } catch (\Throwable) {
+                    }
+                }
+                $perubahan[] = "Korlap: {$korlapLama} → {$korlapBaru}";
+            }
+        }
+
+        if (! empty($perubahan)) {
+            ActivityLog::record(
+                'UPDATE_PROJECT_PIC',
+                "{$request->user()->label()} {$request->user()->name} memperbarui pengelola proyek '{$castingProject->nama_produksi}': ".implode(', ', $perubahan),
+                $castingProject
+            );
+        }
+
+        $pesan = ! empty($perubahan)
+            ? 'Pengelola proyek berhasil diperbarui: '.implode(', ', $perubahan)
+            : 'Tidak ada perubahan pengelola.';
+
+        if ($request->wantsJson() || $request->ajax()) {
+            $castingProject->refresh();
+
+            return response()->json([
+                'success' => true,
+                'message' => $pesan,
+                'client_name' => $castingProject->namaClient(),
+                'pic_name' => $castingProject->admin?->name ?? 'Belum ada PIC',
+                'korlap_name' => $castingProject->korlap()?->name ?? 'Belum ada Korlap',
+            ]);
+        }
+
+        return back()->with('status', $pesan);
     }
 
     /** AD-30: deadline tidak di masa lalu (saat buat baru) dan tidak lewat tanggal shooting pertama. */

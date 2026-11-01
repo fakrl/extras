@@ -6,10 +6,91 @@
 <style>
     .akun-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: var(--space-3); }
     .akun-head-btn { display: flex; gap: 8px; flex-wrap: wrap; }
-    .akun-row { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-top: 1px solid var(--border-color); border-radius: var(--radius-md); transition: background .15s ease; }
+    .akun-row { display: flex; gap: 12px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--border-color); border-radius: var(--radius-md); transition: background .15s ease; }
     .akun-row:hover { background: var(--bg-card-hover); }
     .akun-row:first-of-type { border-top: 0; }
-    .akun-row > input[type=checkbox] { margin-top: 4px; flex-shrink: 0; }
+    .akun-row.is-selected { background: var(--bg-nav-active); }
+
+    .akun-avatar-wrap {
+        position: relative;
+        width: 38px;
+        height: 38px;
+        flex-shrink: 0;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+    }
+    .akun-avatar-wrap .bulk-cb {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+        margin: 0;
+        pointer-events: none;
+    }
+    .akun-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: var(--bg-nav-active);
+        color: var(--accent-strong);
+        border: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+        flex-shrink: 0;
+        transition: all .15s ease;
+    }
+    .akun-avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+    .akun-avatar-initial {
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 1;
+    }
+    .akun-avatar-check {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.45);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        opacity: 0;
+        transition: opacity .15s ease, background .15s ease;
+    }
+    .akun-row:hover .akun-avatar-wrap:not(.is-checked) .akun-avatar-check {
+        opacity: 0.85;
+    }
+    .akun-avatar-wrap.is-checked .akun-avatar,
+    .akun-avatar-wrap:has(.bulk-cb:checked) .akun-avatar {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+    }
+    .akun-avatar-wrap.is-checked .akun-avatar-img,
+    .akun-avatar-wrap.is-checked .akun-avatar-initial,
+    .akun-avatar-wrap:has(.bulk-cb:checked) .akun-avatar-img,
+    .akun-avatar-wrap:has(.bulk-cb:checked) .akun-avatar-initial {
+        opacity: 0;
+    }
+    .akun-avatar-wrap.is-checked .akun-avatar-check,
+    .akun-avatar-wrap:has(.bulk-cb:checked) .akun-avatar-check {
+        opacity: 1;
+        background: var(--accent);
+        color: #fff;
+    }
+
     .akun-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
     .akun-nama { font-weight: 600; font-size: var(--fs-md); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
     .akun-nama a { color: inherit; text-decoration: none; overflow-wrap: anywhere; }
@@ -183,9 +264,27 @@
         @forelse ($users as $u)
             <div class="akun-row" style="cursor: pointer;" onclick="document.getElementById('modal-akun-preview-{{ $u->id }}').showModal()">
                 @if (! $u->is_protected && ! $u->trashed())
-                    <input type="checkbox" name="user_ids[]" value="{{ $u->id }}" class="bulk-cb" form="bulk-form" aria-label="Pilih {{ $u->name }}" onclick="event.stopPropagation()">
+                    <label class="akun-avatar-wrap" onclick="event.stopPropagation()" title="Pilih {{ $u->name }}">
+                        <input type="checkbox" name="user_ids[]" value="{{ $u->id }}" class="bulk-cb" form="bulk-form" aria-label="Pilih {{ $u->name }}">
+                        <div class="akun-avatar">
+                            @if ($u->role === 'extras' && $u->extrasProfile?->foto_profil_path)
+                                <img src="{{ route('extras.media.foto', $u->extrasProfile) }}" alt="" class="akun-avatar-img">
+                            @else
+                                <span class="akun-avatar-initial">{{ strtoupper(substr($u->name, 0, 1)) }}</span>
+                            @endif
+                            <div class="akun-avatar-check">
+                                <i class="ti ti-check"></i>
+                            </div>
+                        </div>
+                    </label>
                 @else
-                    <span style="width: 15px; flex-shrink: 0;"></span>
+                    <div class="akun-avatar" style="opacity: 0.65;" title="{{ $u->name }}">
+                        @if ($u->role === 'extras' && $u->extrasProfile?->foto_profil_path)
+                            <img src="{{ route('extras.media.foto', $u->extrasProfile) }}" alt="" class="akun-avatar-img">
+                        @else
+                            <span class="akun-avatar-initial">{{ strtoupper(substr($u->name, 0, 1)) }}</span>
+                        @endif
+                    </div>
                 @endif
                 <div class="akun-main">
                     <div class="akun-nama">
@@ -280,6 +379,12 @@
             ctx.style.color = n > 0 ? 'var(--accent-strong)' : 'var(--text-muted)';
             ctx.style.fontWeight = n > 0 ? '600' : '400';
         }
+        document.querySelectorAll('.bulk-cb').forEach(function (cb) {
+            var wrap = cb.closest('.akun-avatar-wrap');
+            var row = cb.closest('.akun-row');
+            if (wrap) wrap.classList.toggle('is-checked', cb.checked);
+            if (row) row.classList.toggle('is-selected', cb.checked);
+        });
     }
     document.addEventListener('change', function (e) {
         if (e.target.id === 'select-all-cb') {

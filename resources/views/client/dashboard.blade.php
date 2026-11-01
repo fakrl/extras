@@ -170,12 +170,35 @@
     <div class="card">
         <div class="card-title">Proyek Berjalan</div>
         @forelse ($proyekBerjalan as $p)
-            @php $tahapP = $p->tahap(); @endphp
-            <div class="dash-row">
-                <span>{{ $p->nama_produksi }} <span class="kode-proyek">{{ $p->kode_proyek }}</span>
-                    @if ($tahapP)<span class="badge {{ \App\Models\CastingProject::TAHAP_BADGES[$tahapP] }}">{{ \App\Models\CastingProject::TAHAP[$tahapP] }}</span>@endif
-                </span>
-                <span class="dash-sub">Batas pendaftaran: {{ \Carbon\Carbon::parse($p->deadline)->translatedFormat('d M Y') }}</span>
+            @php
+                $tahapP = $p->tahap();
+                $stepIndex = match ($tahapP) {
+                    'menunggu_acc' => 1,
+                    'mendatang' => 2,
+                    'berjalan' => 3,
+                    'selesai' => 4,
+                    default => 2,
+                };
+            @endphp
+            <div class="dash-row" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                    <span>{{ $p->nama_produksi }} <span class="kode-proyek">{{ $p->kode_proyek }}</span>
+                        @if ($tahapP)<span class="badge {{ \App\Models\CastingProject::TAHAP_BADGES[$tahapP] }}">{{ \App\Models\CastingProject::TAHAP[$tahapP] }}</span>@endif
+                    </span>
+                    <span class="dash-sub">Batas pendaftaran: {{ \Carbon\Carbon::parse($p->deadline)->translatedFormat('d M Y') }}</span>
+                </div>
+                <div class="mini-pipeline-tracker" aria-label="Pipeline Tahapan Proyek">
+                    <div class="mini-pipeline-step {{ $stepIndex > 1 ? 'is-done' : ($stepIndex === 1 ? 'is-current' : '') }}" title="1. Brief Diajukan"></div>
+                    <div class="mini-pipeline-step {{ $stepIndex > 2 ? 'is-done' : ($stepIndex === 2 ? 'is-current' : '') }}" title="2. Seleksi & Pemilihan"></div>
+                    <div class="mini-pipeline-step {{ $stepIndex > 3 ? 'is-done' : ($stepIndex === 3 ? 'is-current' : '') }}" title="3. Shooting"></div>
+                    <div class="mini-pipeline-step {{ $stepIndex >= 4 ? 'is-done' : '' }}" title="4. Selesai & Invoice"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
+                    <span>1. Brief</span>
+                    <span style="{{ $stepIndex === 2 ? 'font-weight: 600; color: var(--accent);' : '' }}">2. Seleksi</span>
+                    <span style="{{ $stepIndex === 3 ? 'font-weight: 600; color: var(--accent);' : '' }}">3. Shooting</span>
+                    <span style="{{ $stepIndex === 4 ? 'font-weight: 600; color: var(--accent);' : '' }}">4. Selesai</span>
+                </div>
             </div>
         @empty
             <p style="color: var(--text-muted); font-size: 13px;">Tidak ada proyek yang sedang berjalan.</p>
