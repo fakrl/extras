@@ -70,4 +70,31 @@ class BeEditClientPicTest extends TestCase
         $this->actingAs($sa)->get(route('admin.projects.index', ['tanpa_client' => 1]))
             ->assertSee('Proyek Yatim')->assertSee('Tanpa PIC/Client')->assertDontSee('Proyek Lengkap');
     }
+
+    public function test_super_admin_bisa_update_proyek_dan_pic_tanpa_harus_mode_monitoring(): void
+    {
+        $sa = User::factory()->create(['role' => 'super_admin']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $client = User::factory()->create(['role' => 'client']);
+        $project = CastingProject::factory()->create(['admin_id' => null, 'client_id' => null]);
+
+        $response = $this->actingAs($sa)->patch(route('admin.projects.update', $project), $this->payload([
+            'nama_produksi' => 'Proyek Diupdate SA',
+            'admin_id' => $admin->id,
+            'client_id' => $client->id,
+            'kelas' => [
+                [
+                    'nama_kelas' => 'Peran Utama',
+                    'budget_client' => 500000,
+                    'kuota_kelas' => 3,
+                ],
+            ],
+        ]));
+
+        $response->assertRedirect(route('admin.projects.index'));
+        $fresh = $project->fresh();
+        $this->assertSame('Proyek Diupdate SA', $fresh->nama_produksi);
+        $this->assertSame($admin->id, $fresh->admin_id);
+        $this->assertSame($client->id, $fresh->client_id);
+    }
 }

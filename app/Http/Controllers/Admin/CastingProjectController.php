@@ -343,7 +343,7 @@ class CastingProjectController extends Controller
      */
     public function update(Request $request, CastingProject $castingProject): RedirectResponse
     {
-        $this->authorize('kelola', $castingProject);
+        abort_unless($request->user()->isSuperAdmin() || $request->user()->can('kelola', $castingProject), 403, 'Proyek ini bukan tanggung jawab Anda.');
 
         $data = $request->validate([
             'nama_produksi' => ['required', 'string', 'max:255'],
