@@ -17,8 +17,10 @@ use Carbon\Carbon;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -38,6 +40,10 @@ class DemoLengkapSeeder extends Seeder
     {
         if (app()->environment('production')) {
             throw new \RuntimeException('DemoLengkapSeeder tidak boleh dijalankan di production.');
+        }
+
+        if (! app()->runningUnitTests()) {
+            $this->bersihkanDatabase();
         }
 
         $this->password = Hash::make('password');
@@ -792,5 +798,25 @@ class DemoLengkapSeeder extends Seeder
         Storage::disk('local')->put($path, $data);
 
         return $path;
+    }
+
+    private function bersihkanDatabase(): void
+    {
+        Schema::disableForeignKeyConstraints();
+
+        $tabel = [
+            'activity_logs', 'admin_project_assignments', 'attendances', 'cancellations',
+            'casting_project_class_extras_category', 'casting_project_classes', 'casting_projects',
+            'client_reviews', 'contracts', 'event_shooting_dates', 'extras_category_extras_profile',
+            'extras_profiles', 'fee_negotiations', 'field_notes', 'invoices', 'notifications',
+            'payment_addons', 'payments', 'project_applications', 'project_attachments',
+            'project_expenses', 'staff_payrolls', 'users',
+        ];
+
+        foreach ($tabel as $t) {
+            DB::table($t)->truncate();
+        }
+
+        Schema::enableForeignKeyConstraints();
     }
 }
