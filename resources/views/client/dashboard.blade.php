@@ -5,11 +5,24 @@
 @section('content')
 <div class="card-header-row" style="margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
     <div>
-        <div style="font-size: 18px; font-weight: 700;">Dashboard Client</div>
-        <div style="font-size: 13.5px; color: var(--text-secondary);">Halo, {{ auth()->user()->name }} · Pantau proses casting dan pengajuan proyek Anda.</div>
+        <span class="label-editorial-sm">Ruang Kerja Produksi</span>
+        <div class="font-editorial" style="font-size: 22px; font-weight: 700;">Dashboard Client</div>
+        <div style="font-size: 13.5px; color: var(--text-secondary); margin-top: 2px;">Halo, <strong class="font-editorial">{{ auth()->user()->name }}</strong>{{ auth()->user()->nama_perusahaan ? ' · '.auth()->user()->nama_perusahaan : '' }} · Pantau proses casting dan pengajuan proyek Anda.</div>
     </div>
     <a href="{{ route('client.projects.request') }}" class="btn btn-brand"><i class="ti ti-plus"></i> Ajukan Proyek Baru</a>
 </div>
+
+@if ($perluDireview > 0)
+    <div class="greenlight-banner">
+        <div style="display: flex; align-items: center; gap: 10px; font-size: 13.5px;">
+            <i class="ti ti-sparkles" style="font-size: 20px; color: var(--accent-strong, #15803D);"></i>
+            <div>
+                <strong>{{ $perluDireview }} Kandidat Menunggu Keputusan Pemilihan Anda</strong> · Tinjau lookbook portofolio kandidat yang telah dikurasi tim Admin JBTB.
+            </div>
+        </div>
+        <a href="{{ route('client.reviews.index') }}" class="btn btn-brand btn-sm">Buka Review Kandidat <i class="ti ti-arrow-right"></i></a>
+    </div>
+@endif
 
 @php
     $statusPengajuan = ['draft' => ['Draft', 'badge-netral'], 'menunggu_acc' => ['Menunggu ACC tim JBTB', 'badge-pending'], 'disetujui' => ['Disetujui', 'badge-aktif'], 'ditolak' => ['Ditolak', 'badge-tolak'], 'perlu_revisi' => ['Perlu Revisi', 'badge-pending']];

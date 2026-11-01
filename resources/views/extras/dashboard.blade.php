@@ -54,8 +54,9 @@
 
 <div class="dash-kolom exd-grid">
 <div style="grid-column: 1 / -1; margin: -8px 0 4px;">
+    <span class="label-editorial-sm" style="display: block; margin-bottom: 2px;">Ruang Kerja Talenta &middot; Portofolio &amp; Panggilan</span>
     <p style="color: var(--text-secondary); margin: 0 0 14px; font-size: 13.5px;">
-        Halo, {{ auth()->user()->name }}! Cek lowongan casting terbaru dan pantau status pendaftaran kamu di sini.
+        Halo, <strong class="font-editorial" style="font-size: 16px;">{{ auth()->user()->name }}</strong>! Cek lowongan casting terbaru dan pantau status pendaftaran kamu di sini.
     </p>
 
     {{-- Strip 4 Kartu Ringkasan Karir & Honor Saya --}}
@@ -595,8 +596,8 @@
             @endif
         </div>
     </div>
-    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4;">
-        Klasifikasi Grade (A/B/C) ditentukan oleh Admin Casting berdasarkan penampilan/look fisik talenta dan divalidasi oleh Client. Riwayat aktivitas dan perubahan status akun kamu tercatat secara transparan di bawah ini.
+    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.45;">
+        Klasifikasi Grade ditentukan oleh tim Casting berdasarkan kelengkapan portofolio, kesesuaian karakter, dan kedisiplinan kehadiran di lokasi syuting. Riwayat aktivitas dan status akun kamu tercatat secara transparan di bawah ini.
     </p>
 
     @if ($aktivitasSaya->isNotEmpty())

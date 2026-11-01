@@ -162,7 +162,7 @@
                 $totInv = max(1, $statKeuangan['total_invoice']);
                 $persenLunas = round(($statKeuangan['invoice_lunas'] / $totInv) * 100);
                 $persenPiutang = max(0, 100 - $persenLunas);
-                $totBeban = $statKeuangan['payout_extras'] + $statKeuangan['biaya_operasional'] + $statKeuangan['payroll_staf'];
+                $totBeban = $statKeuangan['payout_extras'] + $statKeuangan['biaya_operasional'];
                 $persenBeban = min(100, round(($totBeban / $totInv) * 100));
                 $persenMarginKotor = min(100, max(0, $statKeuangan['persen_margin']));
             @endphp
@@ -207,7 +207,6 @@
             <div class="popover-row"><span>Piutang Client (Belum Lunas)</span><strong style="color: #D97706;">{{ $rp($statKeuangan['invoice_piutang']) }}</strong></div>
             <div class="popover-row"><span>Total Payout Extras</span><strong>{{ $rp($statKeuangan['payout_extras']) }}</strong></div>
             <div class="popover-row"><span>Pengeluaran Proyek</span><strong>{{ $rp($statKeuangan['biaya_operasional']) }}</strong></div>
-            <div class="popover-row"><span>Payroll Staf & Korlap</span><strong>Rp&nbsp;{{ number_format($statKeuangan['payroll_staf'], 0, ',', '.') }}</strong></div>
             <div class="popover-row"><span>Estimasi Margin Kotor</span><strong>{{ $rp($statKeuangan['margin_kotor']) }} ({{ $statKeuangan['persen_margin'] }}%)</strong></div>
             <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border-color);">
                 <a href="{{ route('admin.projects.index') }}" class="btn btn-sm btn-tonal" style="width: 100%; justify-content: center; font-size: 12px; gap: 6px;">Lihat Proyek & Tagihan <i class="ti ti-arrow-right"></i></a>

@@ -9,10 +9,11 @@
 
 <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
     <div>
-        <div style="font-size: 16px; font-weight: 600; margin-bottom: 2px;">
+        <span class="label-editorial-sm">Kurasi Talenta · Pilih Kandidat & Lookbook</span>
+        <div class="font-editorial" style="font-size: 20px; font-weight: 600; margin-bottom: 2px;">
             {{ $castingProject->nama_produksi }}
             @if ($castingProject->kode_proyek)
-                <span class="kode-proyek" style="margin-left: 6px;">{{ $castingProject->kode_proyek }}</span>
+                <span class="kode-proyek" style="margin-left: 6px; font-family: 'Inter', sans-serif;">{{ $castingProject->kode_proyek }}</span>
             @endif
         </div>
         <p style="color: var(--text-secondary); margin: 0; font-size: 13.5px;">Semua kandidat di proyek ini (menunggu keputusan Anda dan yang sudah diputus).</p>
@@ -142,6 +143,7 @@
                     ->count();
             @endphp
             @include('partials.extras-card', [
+                'lookbook' => true,
                 'profile' => $app->extras,
                 'aplikasi' => $app,
                 'badge' => $badge,

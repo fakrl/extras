@@ -12,7 +12,6 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\ProjectApplication;
 use App\Models\ProjectExpense;
-use App\Models\StaffPayroll;
 use App\Models\User;
 use App\Notifications\InAppNotification;
 use App\Services\KeuanganService;
@@ -190,8 +189,8 @@ class DashboardController extends Controller
 
         $payoutExtras = (float) Payment::with(['projectApplication', 'addons'])->get()->sum(fn ($p) => $p->nominalTotal());
         $biayaOperasional = (float) ProjectExpense::sum('nominal');
-        $payrollStaf = (float) StaffPayroll::with('addons')->get()->sum(fn ($p) => $p->nominalTotal());
-        $totalBiaya = $payoutExtras + $biayaOperasional + $payrollStaf;
+        // CR.2: Honor/payroll staf dikeluarkan dari dashboard SA (hanya ada di halaman payroll/riwayat staf)
+        $totalBiaya = $payoutExtras + $biayaOperasional;
         $marginKotor = $totalInvoice - $totalBiaya;
         $persenMargin = $totalInvoice > 0 ? (int) round(($marginKotor / $totalInvoice) * 100) : 0;
 
@@ -201,7 +200,6 @@ class DashboardController extends Controller
             'invoice_piutang' => $invoicePiutang,
             'payout_extras' => $payoutExtras,
             'biaya_operasional' => $biayaOperasional,
-            'payroll_staf' => $payrollStaf,
             'margin_kotor' => $marginKotor,
             'persen_margin' => $persenMargin,
         ];

@@ -89,37 +89,40 @@
         .btn-outline { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 20px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; background: transparent; color: var(--hp-fg); border: 1px solid var(--hp-line); }
         .btn-outline:hover { background: var(--hp-card); }
 
-        /* ── Hero (AK.1 + AK.6) ── */
+        /* ── Hero (AK.1 + AK.6 + Stitch 2-Kolom Hybrid) ── */
         .hero {
             position: relative; overflow: hidden;
             border-top: 1px solid var(--hp-accent);
             min-height: 560px;
             display: flex; align-items: center;
+            background: var(--hp-bg);
             background-image:
-                linear-gradient(90deg,
-                    var(--hp-bg) 0%,
-                    color-mix(in srgb, var(--hp-bg) 82%, transparent) 52%,
-                    color-mix(in srgb, var(--hp-bg) 50%, transparent) 100%),
-                url('/images/homepage-hero-bg.webp');
-            background-size: cover;
-            background-position: center;
+                linear-gradient(180deg,
+                    color-mix(in srgb, var(--hp-bg) 96%, transparent) 0%,
+                    var(--hp-bg) 100%),
+                radial-gradient(ellipse at 50% -20%, color-mix(in srgb, var(--hp-accent) 12%, transparent), transparent 70%);
         }
-        .hero-inner { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto; width: 100%; padding: 96px 32px 88px; }
+        .hero-inner { position: relative; z-index: 2; max-width: 1140px; margin: 0 auto; width: 100%; padding: 64px 32px 56px; }
         .hero-headline {
-            font-family: Georgia, 'Times New Roman', serif;
-            font-size: clamp(3rem, 11vw, 9rem);
-            line-height: 0.85;
-            letter-spacing: -0.04em;
-            font-weight: 400;
-            margin: 10px 0 40px;
+            font-family: var(--font-editorial, 'Newsreader', Georgia, 'Times New Roman', serif);
+            font-size: clamp(2.5rem, 5.2vw, 4.2rem);
+            line-height: 1.08;
+            letter-spacing: -0.03em;
+            font-weight: 500;
+            margin: 0 0 16px;
             color: var(--hp-fg);
+        }
+        .hero-headline em {
+            font-style: italic;
+            color: var(--hp-accent);
         }
         .hero-h-indent { display: inline-block; margin-left: 10vw; }
         .hero-h-italic { font-style: italic; color: var(--hp-muted); }
         .hero-h-accent { color: var(--hp-accent); }
         @media (max-width: 767px) {
-            .hero { min-height: 480px; background-position: 68% center; }
-            .hero-inner { padding: 64px 20px 56px; }
+            .hero { min-height: 480px; }
+            .hero-inner { padding: 48px 20px 40px; }
+            .hero-headline { font-size: clamp(2.1rem, 7.8vw, 3rem); }
         }
 
         /* ── Carousel (BH.2/BH.3): geser manual (drag mouse/trackpad/swipe), bukan auto-animasi ── */
@@ -140,21 +143,21 @@
             .marquee-nav:hover { background: var(--hp-accent); color: var(--hp-accent-on); }
         }
         .hp-sec-head { max-width: 1100px; margin: 0 auto 2.5rem; padding: 0 32px; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px 24px; flex-wrap: wrap; }
-        .hp-sec-title { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2.2rem, 5.5vw, 3.75rem); font-weight: 400; line-height: 1; letter-spacing: -0.04em; margin: 0; color: var(--hp-fg); }
+        .hp-sec-title { font-family: var(--font-editorial, 'Newsreader', Georgia, 'Times New Roman', serif); font-size: clamp(2.2rem, 5.5vw, 3.75rem); font-weight: 400; line-height: 1; letter-spacing: -0.04em; margin: 0; color: var(--hp-fg); }
         .hp-sec-note { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--hp-muted); }
 
         /* ── Cast (BH.2) ── */
         .cast-section { padding-block: 7rem; border-top: 1px solid var(--hp-line); overflow: hidden; }
         .cast-card { flex: 0 0 210px; display: block; color: inherit; text-decoration: none; }
         .cast-card:focus-visible { outline: 2px solid var(--hp-accent); outline-offset: 4px; }
-        .cast-photo-wrap { aspect-ratio: 0.78; overflow: hidden; background: var(--hp-card); position: relative; border-radius: 4px; transition: box-shadow .3s ease; }
+        .cast-photo-wrap { aspect-ratio: 2 / 3; overflow: hidden; background: var(--hp-card); position: relative; border-radius: 4px; transition: box-shadow .3s ease; }
         .cast-card:hover .cast-photo-wrap { box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25); }
         .cast-photo { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s cubic-bezier(0.2, 0, 0, 1), filter .3s ease; }
         .cast-card:hover .cast-photo, .cast-card:focus-visible .cast-photo { transform: scale(1.06); filter: brightness(1.04); }
         .cast-no { position: absolute; left: 12px; top: 10px; font-size: 12px; color: rgba(255, 255, 255, 0.8); text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6); }
         .cast-view { position: absolute; right: 12px; bottom: 12px; border-radius: 999px; background: var(--hp-accent); color: var(--hp-accent-on); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; opacity: 0; transition: opacity .3s; }
         .cast-card:hover .cast-view, .cast-card:focus-visible .cast-view { opacity: 1; }
-        .cast-name { font-family: Georgia, 'Times New Roman', serif; font-size: 1.3rem; letter-spacing: -0.03em; margin-top: 14px; color: var(--hp-fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cast-name { font-family: var(--font-editorial, 'Newsreader', Georgia, 'Times New Roman', serif); font-size: 1.3rem; letter-spacing: -0.03em; margin-top: 14px; color: var(--hp-fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cast-tag { margin-top: 4px; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hp-muted); }
         @media (prefers-reduced-motion: reduce) { .cast-photo, .cast-view { transition: none; } .cast-card:hover .cast-photo { transform: none; } }
         @media (max-width: 767px) { .cast-card { flex-basis: 160px; } }
@@ -162,18 +165,19 @@
         .section-title { font-size: 18px; font-weight: 700; margin: 0 0 16px; color: var(--hp-fg); }
         .section-body { font-size: 14px; color: var(--hp-muted); line-height: 1.75; margin: 0; }
 
-        /* ── Cara Kerja (CK.2.3) ── */
-        .services-section { padding-block: 7rem; border-top: 1px solid var(--hp-line); }
-        .services-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: grid; grid-template-columns: 1fr 2fr; gap: 56px; align-items: start; }
-        .services-left-title { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 400; line-height: 1.1; letter-spacing: -0.02em; margin: 8px 0 0; color: var(--hp-fg); }
+        /* ── Cara Kerja (CK.2.3 + Stitch 3-Langkah) ── */
+        .services-section { padding-block: 6rem; border-top: 1px solid var(--hp-line); }
+        .services-inner { max-width: 1140px; margin: 0 auto; padding: 0 32px; }
+        .services-split-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; margin-bottom: 8px; }
+        .services-left-title { font-family: var(--font-editorial, 'Newsreader', Georgia, 'Times New Roman', serif); font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 400; line-height: 1.1; letter-spacing: -0.02em; margin: 8px 0 0; color: var(--hp-fg); }
         .services-list { border-top: 1px solid var(--hp-line); }
         .services-item { display: flex; gap: 20px; align-items: flex-start; padding: 20px 0; border-bottom: 1px solid var(--hp-line); }
-        .services-num { font-family: Georgia, 'Times New Roman', serif; font-size: 13px; color: var(--hp-muted); flex-shrink: 0; padding-top: 2px; letter-spacing: 1px; min-width: 28px; }
+        .services-num { font-family: var(--font-editorial, 'Newsreader', Georgia, 'Times New Roman', serif); font-size: 13px; color: var(--hp-muted); flex-shrink: 0; padding-top: 2px; letter-spacing: 1px; min-width: 28px; }
         .services-body p { font-size: 13.5px; color: var(--hp-muted); margin: 0; line-height: 1.65; }
 
-        /* ── Lowongan list ala loker (AK.9) ── */
-        .lowongan-section { padding-block: 7rem; border-top: 1px solid var(--hp-line); }
-        .lowongan-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+        /* ── Lowongan list ala loker & kartu editorial (AK.9 + Stitch) ── */
+        .lowongan-section { padding-block: 6rem; border-top: 1px solid var(--hp-line); }
+        .lowongan-inner { max-width: 1140px; margin: 0 auto; padding: 0 32px; }
         .lowongan-list { display: flex; flex-direction: column; border-top: 1px solid var(--hp-line); margin-top: 2.5rem; }
         .lowongan-item { border-bottom: 1px solid var(--hp-line); }
         .lowongan-summary {
@@ -224,7 +228,7 @@
         /* ── Kontak (AK.10) ── */
         .contact-section { padding-block: 7rem; border-top: 1px solid var(--hp-line); }
         .contact-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: grid; grid-template-columns: 1fr 2fr; gap: 56px; align-items: start; }
-        .contact-left-title { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 400; line-height: 1.1; letter-spacing: -0.02em; margin: 8px 0 0; color: var(--hp-fg); }
+        .contact-left-title { font-family: var(--font-editorial, 'Newsreader', Georgia, 'Times New Roman', serif); font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 400; line-height: 1.1; letter-spacing: -0.02em; margin: 8px 0 0; color: var(--hp-fg); }
         .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px 40px; }
         .contact-block strong { display: block; font-size: var(--fs-xs); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--hp-muted); margin-bottom: 8px; }
         .contact-block p { font-size: 14px; color: var(--hp-fg); margin: 0; line-height: 1.6; }
@@ -239,7 +243,7 @@
         .porto-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s cubic-bezier(0.2, 0, 0, 1), filter .3s ease; }
         .porto-card:hover .porto-img img { transform: scale(1.06); filter: brightness(1.04); }
         .porto-img .ti { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 44px; color: var(--hp-muted); }
-        .porto-title { font-family: Georgia, 'Times New Roman', serif; font-size: 1.5rem; font-weight: 400; letter-spacing: -0.03em; line-height: 1.15; margin: 16px 0 0; color: var(--hp-fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .porto-title { font-family: var(--font-editorial, 'Newsreader', Georgia, 'Times New Roman', serif); font-size: 1.5rem; font-weight: 400; letter-spacing: -0.03em; line-height: 1.15; margin: 16px 0 0; color: var(--hp-fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .porto-sub { margin-top: 6px; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hp-muted); }
         @media (prefers-reduced-motion: reduce) { .porto-img img { transition: none; } .porto-card:hover .porto-img img { transform: none; } }
         @media (max-width: 767px) { .porto-card { flex-basis: 280px; } }
@@ -324,50 +328,130 @@
     </nav>
 
     <main>
-    {{-- Hero (AK.1 + AK.6) --}}
+    {{-- Hero 2-Kolom (Stitch Bagian 1: Teks + Strip Stat Kiri, Showcase Card + Floating Trust Kanan) --}}
     <div class="hero">
         <div class="hero-inner">
-            <span class="section-eyebrow">Sistem Manajemen Casting Extras</span>
-            <h1 class="hero-headline">
-                Casting extras<br>
-                <span class="hero-h-indent hero-h-italic">film &amp; iklan</span><br>
-                <span class="hero-h-accent">yang dipercaya.</span>
-            </h1>
-            <p class="section-body" style="max-width: 440px; margin: -16px 0 32px;">Daftar jadi extras, lamar casting yang sedang buka, kontrak dan honor tercatat jelas di satu tempat.</p>
-            <div class="cta-row">
-                @guest
-                    <a href="{{ route('register') }}" class="btn-brand">Daftar jadi Extras</a>
-                    <a href="#lowongan" class="btn-outline">Lihat lowongan</a>
-                @else
-                    @if (auth()->user()->role === 'extras')
-                        <a href="#lowongan" class="btn-brand">Lihat lowongan</a>
-                    @else
-                        <a href="/dashboard" class="btn-brand">Buka Dashboard</a>
-                    @endif
-                @endguest
+            <div class="lp-hero-grid">
+                <div>
+                    <span class="lp-eyebrow-pill"><span class="lp-dot-live"></span> SISTEM MANAJEMEN CASTING EXTRAS &amp; TALENTA</span>
+                    <h1 class="hero-headline font-editorial">
+                        Casting extras<br>
+                        <span class="hero-h-indent hero-h-italic">film &amp; iklan</span><br>
+                        <span class="hero-h-accent">yang dipercaya.</span>
+                    </h1>
+                    <p class="section-body" style="max-width: 500px; margin: -12px 0 28px; font-size: 15px; line-height: 1.65;">
+                        Daftar jadi extras, lamar casting yang sedang buka, tanda tangan kontrak kerja digital, dan pantau pencairan honor transparan di satu tempat.
+                    </p>
+                    <div class="cta-row" style="margin-bottom: 28px;">
+                        @guest
+                            <a href="{{ route('register') }}" class="btn-brand">Daftar jadi Extras <i class="ti ti-arrow-right"></i></a>
+                            <a href="#lowongan" class="btn-outline"><i class="ti ti-briefcase"></i> Lihat Lowongan</a>
+                        @else
+                            @if (auth()->user()->role === 'extras')
+                                <a href="#lowongan" class="btn-brand">Lihat Lowongan <i class="ti ti-arrow-right"></i></a>
+                            @else
+                                <a href="/dashboard" class="btn-brand">Buka Dashboard <i class="ti ti-arrow-right"></i></a>
+                            @endif
+                        @endguest
+                    </div>
+                    <div class="lp-hero-stats">
+                        <div class="lp-stat-box">
+                            <span class="lp-stat-num">{{ $proyekTerbuka->count() > 0 ? $proyekTerbuka->count() : '0' }}</span>
+                            <span class="lp-stat-label">Lowongan Aktif</span>
+                            <span class="lp-stat-sub">Film &amp; Iklan Terbuka</span>
+                        </div>
+                        <div class="lp-stat-box">
+                            <span class="lp-stat-num">500+</span>
+                            <span class="lp-stat-label">Talenta Roster</span>
+                            <span class="lp-stat-sub">Extras Terverifikasi</span>
+                        </div>
+                        <div class="lp-stat-box">
+                            <span class="lp-stat-num">100%</span>
+                            <span class="lp-stat-label">Transparan</span>
+                            <span class="lp-stat-sub">Kontrak &amp; Slip Resmi</span>
+                        </div>
+                        <div class="lp-stat-box">
+                            <span class="lp-stat-num"><i class="ti ti-shield-check" style="color: var(--hp-accent); font-size: 22px;"></i></span>
+                            <span class="lp-stat-label">Anti-Poaching</span>
+                            <span class="lp-stat-sub">Privasi &amp; GPS Aman</span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Kolom Kanan: Visual Production Showcase Card --}}
+                <div class="lp-hero-visual-card">
+                    <img src="{{ asset('images/logo-jbtb.jpg') }}" alt="SIM Casting JBTB" class="lp-visual-img" style="background: #0B1A12; object-fit: cover;">
+                    <div class="lp-visual-overlay">
+                        <span class="badge badge-urgent" style="align-self: flex-start; text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px;"><i class="ti ti-sparkles"></i> Produksi Terkualifikasi</span>
+                        <div style="color: #FFFFFF; font-size: 15px; font-weight: 700; font-family: var(--font-editorial, 'Newsreader', Georgia, serif);">Standar Produksi Film &amp; Komersial</div>
+                        <div style="color: rgba(255,255,255,0.75); font-size: 12px; line-height: 1.4;">Kurasi talenta terarah, verifikasi fisik, dan koordinasi lapangan profesional.</div>
+                    </div>
+                    <div class="lp-floating-trust">
+                        <div class="lp-trust-icon"><i class="ti ti-shield-check"></i></div>
+                        <div>
+                            <div class="lp-trust-title">Kontrak Digital &amp; Presensi GPS</div>
+                            <div class="lp-trust-sub">Honor &amp; jadwal panggilan tercatat resmi</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    {{-- Cara Kerja (CK.2.3): 3 langkah ringkas, menggantikan Services --}}
+    {{-- Cara Kerja (Stitch Bagian 2: 3 Langkah Mudah Jadi Extras) --}}
     <div class="services-section" id="cara-kerja">
         <div class="services-inner">
-            <div>
-                <span class="section-eyebrow">Cara Kerja</span>
-                <div class="services-left-title">3 Langkah<br>Mudah</div>
+            <div class="services-split-head">
+                <div>
+                    <span class="section-eyebrow">PROSES TRANSPARAN</span>
+                    <h2 class="services-left-title font-editorial">3 Langkah Mudah Jadi Extras</h2>
+                </div>
+                <p class="section-body" style="max-width: 440px; margin: 0; font-size: 14.5px;">Sistem mandiri tanpa calo. Dari pendaftaran, seleksi, hingga honor cair langsung ke rekeningmu.</p>
             </div>
-            <div class="services-list">
-                <div class="services-item">
-                    <div class="services-num"><i class="ti ti-user-plus" aria-hidden="true" style="font-size: 20px; color: var(--hp-accent);"></i></div>
-                    <div class="services-body"><p>Daftar &amp; lengkapi profil: foto, tinggi badan, kategori.</p></div>
+            <div class="lp-steps-grid">
+                <div class="lp-step-card">
+                    <div>
+                        <div class="lp-step-top">
+                            <span class="lp-step-num font-editorial">01</span>
+                            <div class="lp-step-icon"><i class="ti ti-id-badge-2"></i></div>
+                        </div>
+                        <h3 class="lp-step-title">Daftar &amp; Lengkapi Profil</h3>
+                        <p class="lp-step-desc">Daftar akun gratis, lengkapi foto lookbook alami, tinggi badan, kategori usia, dan spesifikasi fisikmu.</p>
+                    </div>
+                    <div class="lp-step-bot">
+                        <span>Gratis tanpa biaya admin</span>
+                        <i class="ti ti-circle-check"></i>
+                    </div>
                 </div>
-                <div class="services-item">
-                    <div class="services-num"><i class="ti ti-camera" aria-hidden="true" style="font-size: 20px; color: var(--hp-accent);"></i></div>
-                    <div class="services-body"><p>Lamar casting yang sedang buka.</p></div>
+
+                <div class="lp-step-card">
+                    <div>
+                        <div class="lp-step-top">
+                            <span class="lp-step-num font-editorial">02</span>
+                            <div class="lp-step-icon"><i class="ti ti-movie"></i></div>
+                        </div>
+                        <h3 class="lp-step-title">Lamar Casting Terbuka</h3>
+                        <p class="lp-step-desc">Pilih lowongan proyek film atau iklan yang sedang dibuka sesuai kriteria kelas peran dan jadwal syutingmu.</p>
+                    </div>
+                    <div class="lp-step-bot">
+                        <span>Filter peran sesuai fisik</span>
+                        <i class="ti ti-adjustments-horizontal"></i>
+                    </div>
                 </div>
-                <div class="services-item">
-                    <div class="services-num"><i class="ti ti-signature" aria-hidden="true" style="font-size: 20px; color: var(--hp-accent);"></i></div>
-                    <div class="services-body"><p>Terpilih? Tanda tangan kontrak dan pantau honormu.</p></div>
+
+                <div class="lp-step-card">
+                    <div>
+                        <div class="lp-step-top">
+                            <span class="lp-step-num font-editorial">03</span>
+                            <div class="lp-step-icon"><i class="ti ti-wallet"></i></div>
+                        </div>
+                        <h3 class="lp-step-title">Kontrak Digital &amp; Honor</h3>
+                        <p class="lp-step-desc">Jika terpilih, tanda tangan kontrak kerja digital secara resmi, presensi selfie GPS di lokasi, dan pantau pencairan honor.</p>
+                    </div>
+                    <div class="lp-step-bot">
+                        <span>Pencairan langsung ke rekening</span>
+                        <i class="ti ti-shield-check"></i>
+                    </div>
                 </div>
             </div>
         </div>
@@ -375,59 +459,73 @@
 
     <div class="film-strip-divider" aria-hidden="true"></div>
 
-    {{-- Lowongan Casting (AK.9: list ringkas ala loker) --}}
+    {{-- Lowongan Casting (Stitch Bagian 3: Quick Filter + Grid Kartu Editorial) --}}
     <div class="lowongan-section" id="lowongan">
         <div class="lowongan-inner">
-            <span class="section-eyebrow">Sedang Tayang</span>
-            <div class="section-title">Lowongan Casting Terbuka</div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; margin-bottom: 24px;">
+                <div>
+                    <span class="lp-eyebrow-pill" style="margin-bottom: 8px;"><span class="lp-dot-live"></span> SEDANG TAYANG</span>
+                    <h2 class="section-title font-editorial" style="font-size: 26px; margin: 0;">Lowongan Casting Terbuka</h2>
+                </div>
+                <div class="lp-filter-pills" style="display: flex; gap: 8px; flex-wrap: wrap;" role="tablist">
+                    <button type="button" class="lp-filter-pill is-active" data-filter="all">Semua Lowongan</button>
+                    <button type="button" class="lp-filter-pill" data-filter="urgent"><i class="ti ti-bolt"></i> Butuh Dadakan</button>
+                </div>
+            </div>
+
             @if ($proyekTerbuka->isEmpty())
                 <div class="lowongan-empty">Belum ada lowongan casting yang terbuka saat ini.</div>
             @else
-                <div class="lowongan-list">
+                <div class="lp-jobs-grid">
                     @foreach ($proyekTerbuka as $proyek)
-                        <details class="lowongan-item">
-                            <summary class="lowongan-summary">
-                                {{-- Thumbnail: poster → monogram PH --}}
-                                <div class="lowongan-thumb">
-                                    @if ($proyek->poster_path)
-                                        <img src="{{ Storage::url($proyek->poster_path) }}" alt="">
-                                    @else
-                                        <div class="lowongan-thumb-mono">{{ strtoupper(mb_substr($proyek->tampilkan_nama_client && $proyek->client ? $proyek->namaClient() : $proyek->nama_produksi, 0, 1)) }}</div>
+                        <div class="lp-job-card" data-urgent="{{ $proyek->isUrgent() ? '1' : '0' }}">
+                            <div>
+                                <div class="lp-job-top">
+                                    <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                                        <span class="badge-dibuka">Dibuka</span>
+                                        @if ($proyek->isUrgent())
+                                            <span class="badge badge-urgent"><i class="ti ti-bolt"></i> Butuh Dadakan</span>
+                                        @endif
+                                    </div>
+                                    <span style="font-size: 11.5px; color: var(--hp-muted); display: inline-flex; align-items: center; gap: 4px;">
+                                        <i class="ti ti-calendar-event"></i> Deadline {{ $proyek->deadline->translatedFormat('d M Y') }}
+                                    </span>
+                                </div>
+                                <h3 class="lp-job-title font-editorial">{{ $proyek->nama_produksi }}</h3>
+                                <div class="lp-job-meta">
+                                    <span class="lp-job-meta-item"><i class="ti ti-users"></i> Kuota: {{ $proyek->kuota }} orang</span>
+                                    @if ($proyek->shootingDates->isNotEmpty())
+                                        <span class="lp-job-meta-item"><i class="ti ti-video"></i> {{ $proyek->shootingDates->count() }} Hari Syuting</span>
                                     @endif
                                 </div>
-                                <div class="lowongan-summary-info">
-                                    <div class="lowongan-summary-title">{{ $proyek->nama_produksi }}</div>
-                                    <div class="lowongan-summary-meta">Deadline {{ $proyek->deadline->translatedFormat('d M Y') }}</div>
-                                </div>
-                                <div class="lowongan-summary-badges">
-                                    <span class="badge-dibuka">Dibuka</span>
-                                    @if ($proyek->isUrgent())
-                                        <span class="badge badge-urgent">Butuh Dadakan</span>
-                                    @endif
-                                </div>
-                                <span class="lowongan-chevron" aria-hidden="true">+</span>
-                            </summary>
-                            <div class="lowongan-detail">
                                 @if ($proyek->classes->isNotEmpty())
-                                    <ul class="lowongan-roles">
+                                    <div class="lp-job-roles">
                                         @foreach ($proyek->classes as $kelas)
-                                            <li>
+                                            <span class="lp-role-pill">
                                                 <span>{{ $kelas->nama_kelas }}</span>
-                                                <span style="color: var(--hp-muted); flex-shrink:0;">{{ $kelas->kuota_kelas }} orang</span>
-                                            </li>
+                                                <span style="color: var(--hp-muted); margin-left: 4px;">({{ $kelas->kuota_kelas }} orang)</span>
+                                            </span>
                                         @endforeach
-                                    </ul>
+                                    </div>
                                 @endif
+                            </div>
+                            <div style="margin-top: auto; padding-top: 14px; border-top: 1px solid var(--md-outline-hairline, var(--hp-line));">
                                 @guest
-                                    <a href="{{ route('register') }}" class="btn-brand" style="font-size: 13px; min-height: 38px; align-self: flex-start;">Daftar untuk Apply</a>
+                                    <a href="{{ route('register') }}" class="btn-brand" style="display: flex; justify-content: center; align-items: center; width: 100%; font-size: 13px; min-height: 38px; text-decoration: none;">
+                                        Daftar untuk Apply <i class="ti ti-arrow-right" style="margin-left: 6px;"></i>
+                                    </a>
                                 @endguest
                                 @auth
                                     @if (auth()->user()->role === 'extras')
-                                        <a href="{{ route('extras.projects.show', $proyek) }}" class="btn-brand" style="font-size: 13px; min-height: 38px; align-self: flex-start;">Lihat &amp; Apply</a>
+                                        <a href="{{ route('extras.projects.show', $proyek) }}" class="btn-brand" style="display: flex; justify-content: center; align-items: center; width: 100%; font-size: 13px; min-height: 38px; text-decoration: none;">
+                                            Lihat &amp; Apply <i class="ti ti-arrow-right" style="margin-left: 6px;"></i>
+                                        </a>
+                                    @else
+                                        <span style="font-size: 12px; color: var(--hp-muted); display: block; text-align: center; padding: 6px 0;">Login sebagai Extras untuk apply</span>
                                     @endif
                                 @endauth
                             </div>
-                        </details>
+                        </div>
                     @endforeach
                 </div>
                 @if ($adaLebih)
@@ -446,16 +544,18 @@
         </div>
     </div>
 
-    {{-- Cast (BH.2): cuma Extras yang izin + disetujui Admin, minimal 4. Carousel geser manual (drag/scroll/swipe), bukan auto-animasi. --}}
+    {{-- Cast (Stitch Bagian 4: Kenalan dengan Roster Cast) --}}
     @if ($castExtras->isNotEmpty())
     <div class="film-strip-divider" aria-hidden="true"></div>
     <section class="cast-section" id="cast" aria-labelledby="cast-judul">
         <div class="hp-sec-head">
             <div>
-                <span class="section-eyebrow">Cast</span>
-                <h2 class="hp-sec-title" id="cast-judul">Kenalan dengan cast</h2>
+                <span class="section-eyebrow">TALENT LOOKBOOK</span>
+                <h2 class="hp-sec-title font-editorial" id="cast-judul">Kenalan dengan Roster Cast</h2>
             </div>
-            <span class="hp-sec-note">Geser untuk lihat semua &#x2194;</span>
+            <span class="hp-sec-note" style="display: inline-flex; align-items: center; gap: 4px;">
+                <i class="ti ti-rosette-discount-check" style="color: var(--hp-accent);"></i> Terverifikasi identitas &amp; kedisiplinan set &#x2194;
+            </span>
         </div>
         <div class="marquee-wrap">
             <button type="button" class="marquee-nav prev" data-dir="-1" aria-label="Sebelumnya">&#8249;</button>
@@ -479,14 +579,14 @@
     </section>
     @endif
 
-    {{-- Portofolio (BH.3): cuma proyek selesai yang dicentang Admin/SA. Carousel geser manual, sama seperti Cast. --}}
+    {{-- Portofolio (Stitch Bagian 5: Pernah Dikerjakan) --}}
     @if ($portofolio->isNotEmpty())
     <div class="film-strip-divider" aria-hidden="true"></div>
     <section class="porto-section" id="portofolio" aria-labelledby="porto-judul">
         <div class="hp-sec-head">
             <div>
-                <span class="section-eyebrow">Portofolio</span>
-                <h2 class="hp-sec-title" id="porto-judul">Pernah dikerjakan</h2>
+                <span class="section-eyebrow">PORTOFOLIO</span>
+                <h2 class="hp-sec-title font-editorial" id="porto-judul">Pernah Dikerjakan</h2>
             </div>
             <span class="hp-sec-note">Geser untuk lihat semua &#x2194;</span>
         </div>
@@ -505,7 +605,7 @@
                                     <i class="ti ti-movie" aria-hidden="true"></i>
                                 @endif
                             </div>
-                            <h3 class="porto-title">{{ $p->portofolio_judul ?: $p->nama_produksi }}</h3>
+                            <h3 class="porto-title font-editorial">{{ $p->portofolio_judul ?: $p->nama_produksi }}</h3>
                             <div class="porto-sub">{{ implode(' · ', array_filter([$p->portofolio_jenis, $p->portofolio_tahun, $p->tampilkan_nama_client ? $p->namaClient() : null])) }}</div>
                         </article>
                     @endforeach
@@ -515,11 +615,13 @@
     </section>
     @endif
 
-    {{-- FAQ (CK.2.6): reuse struktur accordion lowongan-item/lowongan-summary --}}
+    {{-- FAQ (Stitch Bagian 5: 4 Accordion Bersih Terpusat) --}}
     <div class="lowongan-section" id="faq" aria-label="Pertanyaan umum">
-        <div class="lowongan-inner">
-            <span class="section-eyebrow">Sering Ditanyakan</span>
-            <div class="section-title">FAQ</div>
+        <div class="lowongan-inner" style="max-width: 780px;">
+            <div style="text-align: center; margin-bottom: 28px;">
+                <span class="section-eyebrow">Sering Ditanyakan</span>
+                <h2 class="section-title font-editorial" style="font-size: 26px; margin: 4px 0 0;">Pertanyaan Umum (FAQ)</h2>
+            </div>
             <div class="lowongan-list">
                 <details class="lowongan-item">
                     <summary class="lowongan-summary">
@@ -561,12 +663,72 @@
         </div>
     </div>
 
+    {{-- Dual-Audience Split CTA Cards (Stitch Bagian 6) --}}
+    <div class="lp-dual-section" style="padding: 0 32px 56px;">
+        <div style="max-width: 1100px; margin: 0 auto;">
+            <div class="lp-dual-cta-grid">
+                {{-- Kartu Kiri: Extras --}}
+                <div class="lp-dual-card-extras">
+                    <div>
+                        <div class="lp-dual-icon" style="background: var(--md-surface-container, rgba(0,0,0,0.05)); color: var(--hp-accent);">
+                            <i class="ti ti-sparkles"></i>
+                        </div>
+                        <span class="section-eyebrow" style="margin-bottom: 6px;">UNTUK CALON EXTRAS</span>
+                        <h3 class="font-editorial" style="font-size: 24px; font-weight: 700; color: var(--hp-fg); margin: 0 0 10px; line-height: 1.25;">
+                            Siap Tampil di Depan Layar Kaca?
+                        </h3>
+                        <p class="section-body" style="font-size: 14px; margin: 0; line-height: 1.6;">
+                            Bergabung bersama ribuan talenta extras lainnya. Pendaftaran 100% gratis, proses seleksi terbuka, kontrak kerja digital resmi, dan honor cair tepat waktu.
+                        </p>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        @guest
+                            <a href="{{ route('register') }}" class="btn-brand" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+                                Daftar Jadi Extras Sekarang <i class="ti ti-arrow-right"></i>
+                            </a>
+                        @else
+                            <a href="#lowongan" class="btn-brand" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+                                Lihat Lowongan Casting <i class="ti ti-arrow-right"></i>
+                            </a>
+                        @endguest
+                    </div>
+                </div>
+
+                {{-- Kartu Kanan: Production House --}}
+                <div class="lp-dual-card-ph">
+                    <div>
+                        <div class="lp-dual-icon" style="background: rgba(255,255,255,0.08); color: #4ADE80;">
+                            <i class="ti ti-video"></i>
+                        </div>
+                        <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #4ADE80; display: block; margin-bottom: 6px; text-transform: uppercase;">
+                            UNTUK PRODUCTION HOUSE &amp; SUTRADARA
+                        </span>
+                        <h3 class="font-editorial" style="font-size: 24px; font-weight: 700; color: #FFFFFF; margin: 0 0 10px; line-height: 1.25;">
+                            Butuh Extras Siap Set Tepat Waktu?
+                        </h3>
+                        <p style="font-size: 14px; color: rgba(242, 241, 235, 0.75); margin: 0; line-height: 1.6;">
+                            Dapatkan akses kurasi lookbook talent tanpa calo, perlindungan anti-poaching, koordinator lapangan on-site, presensi GPS, dan efisiensi kontrak digital.
+                        </p>
+                    </div>
+                    <div style="margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
+                        <a href="{{ route('login') }}" class="btn-brand" style="background: #22C55E; color: #052E16; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; border-color: #22C55E;">
+                            <i class="ti ti-send"></i> Ajukan Proyek / Masuk Client
+                        </a>
+                        <a href="#kontak" class="btn-outline" style="color: #F2F1EB; border-color: rgba(255,255,255,0.25); text-decoration: none;">
+                            Hubungi Tim Kami
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Contact Section (AK.10): WA/email tampil hanya bila JBTB_WA / JBTB_EMAIL diisi --}}
     @php
         $kontakWa = config('app.kontak.wa');
         $kontakEmail = config('app.kontak.email');
     @endphp
-    <section class="contact-section" aria-label="Hubungi kami">
+    <section class="contact-section" id="kontak" aria-label="Hubungi kami">
         <div class="contact-inner">
             <div>
                 <span class="section-eyebrow">Hubungi Kami</span>
@@ -710,6 +872,24 @@
         var userMenu = document.getElementById('navbar-user-menu');
         if (userMenu) {
             document.addEventListener('click', function (e) { if (!userMenu.contains(e.target)) userMenu.removeAttribute('open'); });
+        }
+
+        var filterPills = document.querySelectorAll('.lp-filter-pill');
+        if (filterPills.length > 0) {
+            filterPills.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    filterPills.forEach(function (b) { b.classList.remove('is-active'); });
+                    btn.classList.add('is-active');
+                    var filter = btn.getAttribute('data-filter');
+                    document.querySelectorAll('.lp-job-card').forEach(function (card) {
+                        if (filter === 'all') {
+                            card.style.display = '';
+                        } else if (filter === 'urgent') {
+                            card.style.display = card.getAttribute('data-urgent') === '1' ? '' : 'none';
+                        }
+                    });
+                });
+            });
         }
     })();
     </script>

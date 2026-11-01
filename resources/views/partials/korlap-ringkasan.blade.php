@@ -20,6 +20,18 @@
     ];
 @endphp
 
+@if (!empty($menunggu) && $menunggu->isNotEmpty())
+    <div class="korlap-alert-strip">
+        <span style="display: inline-flex; align-items: center; gap: 8px;">
+            <i class="ti ti-camera-check" style="font-size: 18px;"></i>
+            <strong>{{ $menunggu->count() }} Presensi Selfie Menunggu Validasi Lapangan</strong>
+        </span>
+        <span class="label-editorial-sm" style="background: rgba(0,0,0,0.06); padding: 3px 8px; border-radius: 999px;">
+            Prioritas Set
+        </span>
+    </div>
+@endif
+
 {{-- 4 Kartu Metrik Lapangan Korlap --}}
 <div class="dash-pulse-strip">
     <div class="dash-stat-card" tabindex="0">
@@ -142,13 +154,18 @@
                         <strong>{{ $sd->castingProject->nama_produksi }}</strong>
                         <div class="dash-sub">
                             <i class="ti ti-map-pin"></i> {{ $sd->lokasi ?: 'Lokasi belum diisi' }}
-                            &bull; <i class="ti ti-clock"></i> {{ $sd->jam_mulai ? substr($sd->jam_mulai, 0, 5) : '--:--' }}{{ $sd->jam_selesai ? '–'.substr($sd->jam_selesai, 0, 5) : '' }}
+                            &bull; <i class="ti ti-clock"></i> {{ $sd->jam_mulai ? substr($sd->jam_mulai, 0, 5) : '--:--' }}{{ $sd->jam_selesai ? '-'.substr($sd->jam_selesai, 0, 5) : '' }}
                             &bull; Korlap: {{ $korlap->isNotEmpty() ? $korlap->join(', ') : 'belum ditugaskan' }}
                         </div>
                         <div style="font-size: 13px; margin-top: 4px;">
                             <strong>{{ $r['hadir'] }}/{{ $r['total'] }} hadir</strong> &middot; {{ $r['menunggu_validasi'] }} menunggu validasi &middot; {{ $r['tidak_hadir'] }} tidak hadir
                             @if ($r['belum'])<span class="dash-sub">&middot; {{ $r['belum'] }} belum diabsen</span>@endif
                         </div>
+                        @if ($r['total'] > 0)
+                            <div class="dash-sub" style="margin-top: 3px; font-size: 11.5px;">
+                                <i class="ti ti-activity"></i> Kesiapan Set: <strong>{{ $pct($r['hadir']) }}%</strong> Siap
+                            </div>
+                        @endif
                         <div class="mon-bar" aria-hidden="true">
                             <span class="is-hadir" style="width: {{ $pct($r['hadir']) }}%;"></span>
                             <span class="is-tunggu" style="width: {{ $pct($r['menunggu_validasi']) }}%;"></span>
@@ -180,25 +197,30 @@
     <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0;">
         <div class="card" style="margin: 0;">
             <div class="card-title">Menunggu validasi @if ($menunggu->isNotEmpty())<span class="badge badge-netral" style="margin-left: 8px;">{{ $menunggu->count() }}</span>@endif</div>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
             @forelse ($menunggu as $a)
-                <{{ $tag }} {!! $klik($absensi($a->projectApplication?->casting_project_id, $a->event_shooting_date_id).'#app-'.$a->project_application_id) !!} class="dash-row mon-row" style="justify-content: flex-start; flex-wrap: nowrap; gap: 10px; align-items: center;">
+                <{{ $tag }} {!! $klik($absensi($a->projectApplication?->casting_project_id, $a->event_shooting_date_id).'#app-'.$a->project_application_id) !!} class="dash-row mon-row korlap-selfie-card" style="justify-content: flex-start; flex-wrap: nowrap; gap: 12px; align-items: center; text-decoration: none; padding: 12px;">
                     @if ($a->foto_path)
-                        <img src="{{ route('admin.absensi.foto', $a) }}" alt="Selfie" class="mon-foto" loading="lazy">
+                        <img src="{{ route('admin.absensi.foto', $a) }}" alt="Selfie" class="mon-foto" loading="lazy" style="border-radius: var(--radius-sm); border: 1px solid var(--md-outline-hairline); flex-shrink: 0;">
                     @else
-                        <span class="mon-foto" style="display: flex; align-items: center; justify-content: center; color: var(--text-muted);"><i class="ti ti-user"></i></span>
+                        <span class="mon-foto" style="display: flex; align-items: center; justify-content: center; color: var(--text-muted); border-radius: var(--radius-sm); border: 1px solid var(--md-outline-hairline); flex-shrink: 0;"><i class="ti ti-user"></i></span>
                     @endif
                     <div style="min-width: 0; flex: 1;">
-                        <strong>{{ $a->projectApplication?->extras?->user?->name ?? 'Extras' }}</strong>
-                        <div class="dash-sub">{{ $a->projectApplication?->castingProject?->nama_produksi }}</div>
+                        <strong style="color: var(--text-primary); display: block; font-size: 13.5px;">{{ $a->projectApplication?->extras?->user?->name ?? 'Extras' }}</strong>
+                        <div class="dash-sub" style="font-size: 12px;">{{ $a->projectApplication?->castingProject?->nama_produksi }}</div>
+                        <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span class="badge badge-netral" style="font-size: 10.5px; padding: 1px 6px;"><i class="ti ti-map-pin"></i> GPS Match</span>
+                            <span class="dash-sub" style="font-size: 11px;">{{ $a->created_at->format('H:i') }} &middot; {{ $a->created_at->translatedFormat('d M') }}</span>
+                        </div>
                     </div>
                     <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0;">
-                        <span class="dash-sub" style="white-space: nowrap;">{{ $a->created_at->format('H:i') }} &middot; {{ $a->created_at->translatedFormat('d M') }}</span>
-                        <span class="btn btn-sm btn-tonal" style="font-size: var(--fs-xs); padding: 2px 8px; pointer-events: none;">Buka &amp; Validasi Absensi <i class="ti ti-arrow-right"></i></span>
+                        <span class="btn btn-sm btn-tonal" style="min-height: 44px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; padding: 0 12px; pointer-events: none;">Validasi <i class="ti ti-arrow-right" style="margin-left: 4px;"></i></span>
                     </div>
                 </{{ $tag }}>
             @empty
                 <div class="dash-aman" role="status"><i class="ti ti-circle-check"></i> Tidak ada selfie yang menunggu validasi.</div>
             @endforelse
+            </div>
         </div>
 
         <div class="card" style="margin: 0;">

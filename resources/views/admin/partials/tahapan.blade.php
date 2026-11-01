@@ -7,7 +7,7 @@
         @foreach ($tahapan as $key => $t)
             <button type="button" role="tab" class="step-bar-item tahap-tab {{ $key === $tabAwal ? 'is-active' : '' }}" id="tahap-tab-{{ $key }}" aria-controls="tahap-panel-{{ $key }}" aria-selected="{{ $key === $tabAwal ? 'true' : 'false' }}" tabindex="{{ $key === $tabAwal ? 0 : -1 }}" data-tahap="{{ $key }}">
                 <span class="step-bar-circle">{{ $t['jumlah'] }}</span>
-                <span class="step-bar-label">{{ $t['label'] }}</span>
+                <span class="step-bar-label"><small class="label-editorial-sm" style="display:block; margin-bottom:1px; font-size:10px;">T{{ $loop->iteration }}</small>{{ $t['label'] }}</span>
                 @if ($t['perlu'])
                     <span class="tahap-perlu">{{ $t['perlu'] }} {{ $monitor ? 'perlu tindakan' : 'perlu kamu' }}</span>
                 @endif

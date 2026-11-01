@@ -1,4 +1,6 @@
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap');
+
     /* Seed: #15803D (brand JBTB hijau, sumber: UI-GUIDELINES.md) — nilai M3 diturunkan manual sesuai Material Theme Builder algorithm */
 
     /* ─── M3 tokens — Light ─────────────────────────────────────────────── */
@@ -75,6 +77,13 @@
         --urgent-on: #FFFFFF;
         --info: #1D4ED8;
         --highlight-cream: #f3ebd6;
+
+        /* Cinematic Editorial Tokens — Light */
+        --md-surface-dim: #dbdad5;
+        --md-tertiary-dark: #0b1a12;
+        --md-outline-hairline: rgba(11, 26, 18, 0.08);
+        --md-shadow-ambient: 0 4px 16px -2px rgba(11, 26, 18, 0.06), 0 1px 3px 0 rgba(11, 26, 18, 0.04);
+        --font-editorial: 'Newsreader', Georgia, 'Times New Roman', serif;
     }
 
     /* ─── M3 tokens — Dark ──────────────────────────────────────────────── */
@@ -151,6 +160,13 @@
         --urgent-on: #1a0f05;
         --info: #60A5FA;
         --highlight-cream: #f3ebd6;
+
+        /* Cinematic Editorial Tokens — Dark */
+        --md-surface-dim: #070d0b;
+        --md-tertiary-dark: #0b1a12;
+        --md-outline-hairline: rgba(255, 255, 255, 0.08);
+        --md-shadow-ambient: 0 4px 16px -2px rgba(0, 0, 0, 0.35);
+        --font-editorial: 'Newsreader', Georgia, 'Times New Roman', serif;
     }
 
     /* ─── Skala tidak tergantung tema ───────────────────────────────────── */
@@ -1415,5 +1431,589 @@
             border-radius: 16px !important;
             border: 1px solid var(--border-color) !important;
         }
+    }
+
+    /* ==========================================================================
+       CINEMATIC EDITORIAL M3 DESIGN SYSTEM (FILTERED ADAPTATION FROM STITCH)
+       ========================================================================== */
+    .font-editorial {
+        font-family: var(--font-editorial, 'Newsreader', Georgia, serif);
+        font-weight: 500;
+        letter-spacing: -0.015em;
+    }
+
+    .label-editorial-sm {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+    }
+
+    /* 2:3 Cinematic Portrait Card Framing (Lookbook & Comp Card) */
+    .lookbook-card {
+        background: var(--md-surface-container-lowest, var(--bg-card));
+        border: 1px solid var(--md-outline-hairline, var(--border-color));
+        border-radius: var(--radius-md);
+        box-shadow: var(--md-shadow-ambient, 0 4px 16px -2px rgba(0,0,0,0.06));
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .lookbook-card:hover {
+        box-shadow: 0 10px 24px -4px rgba(11, 26, 18, 0.1);
+    }
+
+    .lookbook-media-2-3 {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 2 / 3;
+        background: var(--md-surface-container-high, var(--bg-card-hover));
+        overflow: hidden;
+    }
+
+    .lookbook-media-2-3 img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.45s ease;
+    }
+
+    .lookbook-card:hover .lookbook-media-2-3 img {
+        transform: scale(1.025);
+    }
+
+    .lookbook-overlay-top {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    .lookbook-overlay-bottom {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        z-index: 2;
+    }
+
+    .lookbook-glass-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(250, 249, 244, 0.92);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        color: var(--text-primary);
+        font-size: 11.5px;
+        font-weight: 600;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    [data-theme="dark"] .lookbook-glass-pill {
+        background: rgba(14, 23, 19, 0.9);
+        color: var(--text-primary);
+    }
+
+    /* Client Greenlight Callout Banner */
+    .greenlight-banner {
+        background: var(--md-secondary-container, #fef3c7);
+        color: var(--md-on-secondary-container, #904d00);
+        border: 1px solid rgba(217, 119, 6, 0.25);
+        border-radius: var(--radius-md);
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    /* Admin 5-Stage Pipeline Board (T1-T5) */
+    .pipeline-5stage-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    @media (max-width: 960px) {
+        .pipeline-5stage-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 540px) {
+        .pipeline-5stage-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .pipeline-stage-box {
+        background: var(--md-surface-container-low, var(--bg-card));
+        border: 1px solid var(--md-outline-hairline, var(--border-color));
+        border-radius: var(--radius-md);
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    /* Korlap Set Command Strip & Selfie Validation Card */
+    .korlap-alert-strip {
+        background: var(--md-secondary-container, #fef3c7);
+        color: var(--md-on-secondary-container, #904d00);
+        padding: 10px 14px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 14px;
+    }
+
+    .korlap-selfie-card {
+        background: var(--md-surface-container-lowest, var(--bg-card));
+        border: 1px solid var(--md-outline-hairline, var(--border-color));
+        border-radius: var(--radius-md);
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        box-shadow: var(--md-shadow-ambient, 0 4px 16px -2px rgba(0,0,0,0.06));
+    }
+
+    /* ── Landing Page Stitch Hybrid Components ── */
+    .lp-eyebrow-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 12px;
+        border-radius: 999px;
+        background: var(--md-surface-container, rgba(0,0,0,0.05));
+        border: 1px solid var(--md-outline-hairline, rgba(0,0,0,0.1));
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--hp-accent, var(--accent));
+        margin-bottom: 18px;
+    }
+
+    .lp-dot-live {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #16A34A;
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.25);
+        display: inline-block;
+    }
+
+    .lp-hero-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 48px;
+        align-items: center;
+    }
+
+    @media (max-width: 960px) {
+        .lp-hero-grid {
+            grid-template-columns: 1fr;
+            gap: 36px;
+        }
+    }
+
+    .lp-hero-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-top: 10px;
+    }
+
+    @media (max-width: 640px) {
+        .lp-hero-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    .lp-stat-box {
+        background: var(--md-surface-container-lowest, var(--hp-card, #FFFFFF));
+        border: 1px solid var(--md-outline-hairline, var(--hp-line));
+        border-radius: var(--radius-md, 10px);
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .lp-stat-num {
+        font-family: var(--font-editorial, 'Newsreader', Georgia, serif);
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--hp-fg, var(--text-primary));
+        line-height: 1.1;
+    }
+
+    .lp-stat-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--hp-accent, var(--accent));
+        margin-top: 2px;
+    }
+
+    .lp-stat-sub {
+        font-size: 11px;
+        color: var(--hp-muted, var(--text-muted));
+        line-height: 1.3;
+    }
+
+    .lp-hero-visual-card {
+        position: relative;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid var(--md-outline-hairline, var(--hp-line));
+        box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.18);
+        aspect-ratio: 4 / 3;
+        background: var(--hp-card);
+    }
+
+    .lp-visual-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.5s ease;
+    }
+
+    .lp-hero-visual-card:hover .lp-visual-img {
+        transform: scale(1.03);
+    }
+
+    .lp-visual-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 45%, rgba(10,24,16,0.92) 100%);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        gap: 8px;
+        z-index: 2;
+    }
+
+    .lp-floating-trust {
+        position: absolute;
+        left: 18px;
+        bottom: 18px;
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 12px;
+        padding: 10px 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        z-index: 3;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+
+    [data-theme="dark"] .lp-floating-trust {
+        background: rgba(20, 30, 24, 0.92);
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .lp-trust-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: #DCFCE7;
+        color: #15803D;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    [data-theme="dark"] .lp-trust-icon {
+        background: rgba(22, 163, 74, 0.25);
+        color: #4ADE80;
+    }
+
+    .lp-trust-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-primary, #111311);
+    }
+
+    [data-theme="dark"] .lp-trust-title {
+        color: #F2F1EB;
+    }
+
+    .lp-trust-sub {
+        font-size: 10.5px;
+        color: var(--text-secondary, #52564E);
+    }
+
+    [data-theme="dark"] .lp-trust-sub {
+        color: rgba(242, 241, 235, 0.65);
+    }
+
+    /* ── 3 Langkah Jadi Extras (Stitch Bagian 2) ── */
+    .lp-steps-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-top: 32px;
+    }
+
+    @media (max-width: 860px) {
+        .lp-steps-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+    }
+
+    .lp-step-card {
+        background: var(--md-surface-container-lowest, var(--hp-card, #FFFFFF));
+        border: 1px solid var(--md-outline-hairline, var(--hp-line));
+        border-radius: 14px;
+        padding: 22px 20px 18px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 18px;
+        box-shadow: var(--md-shadow-ambient, 0 4px 16px -2px rgba(0,0,0,0.04));
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .lp-step-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.08);
+    }
+
+    .lp-step-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .lp-step-num {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--hp-accent, var(--accent));
+        opacity: 0.85;
+        line-height: 1;
+    }
+
+    .lp-step-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: var(--md-surface-container, rgba(0,0,0,0.05));
+        color: var(--hp-accent, var(--accent));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .lp-step-title {
+        font-size: 16px;
+        font-weight: 700;
+        margin: 0 0 8px;
+        color: var(--hp-fg, var(--text-primary));
+    }
+
+    .lp-step-desc {
+        font-size: 13.5px;
+        color: var(--hp-muted, var(--text-secondary));
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    .lp-step-bot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding-top: 14px;
+        border-top: 1px solid var(--md-outline-hairline, var(--hp-line));
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--hp-accent, var(--accent));
+    }
+
+    /* ── Lowongan Editorial Grid (Stitch Bagian 3) ── */
+    .lp-jobs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 20px;
+        margin-top: 28px;
+    }
+
+    @media (max-width: 680px) {
+        .lp-jobs-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .lp-job-card {
+        background: var(--md-surface-container-lowest, var(--hp-card, #FFFFFF));
+        border: 1px solid var(--md-outline-hairline, var(--hp-line));
+        border-radius: 14px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 16px;
+        box-shadow: var(--md-shadow-ambient, 0 4px 16px -2px rgba(0,0,0,0.04));
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .lp-job-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.08);
+    }
+
+    .lp-job-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .lp-job-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--hp-fg, var(--text-primary));
+        margin: 4px 0 2px;
+        line-height: 1.3;
+    }
+
+    .lp-job-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        font-size: 12.5px;
+        color: var(--hp-muted, var(--text-muted));
+        margin-top: 6px;
+    }
+
+    .lp-job-meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .lp-job-roles {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+    }
+
+    .lp-role-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: var(--md-surface-container, rgba(0,0,0,0.04));
+        border: 1px solid var(--md-outline-hairline, var(--hp-line));
+        font-size: 11.5px;
+        font-weight: 600;
+        color: var(--hp-fg, var(--text-primary));
+    }
+
+    .lp-filter-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 12px;
+        border-radius: 999px;
+        background: var(--md-surface-container, var(--hp-card));
+        border: 1px solid var(--md-outline-hairline, var(--hp-line));
+        color: var(--hp-muted);
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .lp-filter-pill.is-active, .lp-filter-pill:hover {
+        background: var(--hp-accent);
+        color: var(--hp-accent-on);
+        border-color: var(--hp-accent);
+    }
+
+    /* ── Dual Audience Split CTA (Stitch Bagian 6) ── */
+    .lp-dual-cta-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    @media (max-width: 860px) {
+        .lp-dual-cta-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .lp-dual-card-extras {
+        background: var(--md-surface-container-lowest, var(--hp-card, #FFFFFF));
+        border: 1px solid var(--md-outline-hairline, var(--hp-line));
+        border-radius: 16px;
+        padding: 32px 28px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 20px;
+        box-shadow: var(--md-shadow-ambient);
+    }
+
+    .lp-dual-card-ph {
+        background: #0B1A12;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 32px 28px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 20px;
+        color: #F2F1EB;
+        box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.35);
+    }
+
+    .lp-dual-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        margin-bottom: 12px;
     }
 </style>

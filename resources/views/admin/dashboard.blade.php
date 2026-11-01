@@ -7,6 +7,11 @@
 @section('content')
 @php $tampilAdmin = auth()->user()->bisaSebagaiAdmin() && auth()->user()->modeSa() !== 'korlap'; @endphp
 @if ($tampilAdmin)
+    <div style="margin-bottom: 20px;">
+        <span class="label-editorial-sm">Studio Operasional Proyek</span>
+        <h1 class="font-editorial" style="font-size: 22px; font-weight: 700; margin: 0 0 4px;">Dashboard Operasional Admin · {{ auth()->user()->name }}</h1>
+        <div style="font-size: 13.5px; color: var(--text-secondary);">Pantau jadwal syuting, tindak lanjuti kasus mendesak, dan koordinasikan lineup talenta.</div>
+    </div>
     @php $tindakan = array_filter($ringkasan, fn ($r) => $r['jumlah'] > 0); $jumlahTindakan = $urgentProjects->count() + $pembayaranSengketa + array_sum(array_column($tindakan, 'jumlah')); @endphp
     <div class="dash-tiga">
         <div class="card">

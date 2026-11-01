@@ -23,12 +23,14 @@
     $tombolWa = ($wa ?? false) && $bisaAdmin && $user?->nomorWaInternasional();
     $perluTindakanAdmin = $aplikasi && in_array($aplikasi->status_partisipasi, ['diajukan', 'direview_admin', 'nego_fee']);
     $gradeTampil = $bisaAdmin ? ($profile?->grade_saat_ini ?? $aplikasi?->grade) : null;
+    $lookbook = $lookbook ?? false;
+    $clientReviewGrade = $aplikasi?->clientReviews?->first()?->grade_client;
 @endphp
-<article {{ (new \Illuminate\View\ComponentAttributeBag($attrs ?? []))->class(['xcard', 'ecard-v2', 'is-highlight' => $highlight ?? false, 'has-ring' => $persen !== null, 'perlu-tindakan-admin' => $perluTindakanAdmin]) }}>
+<article {{ (new \Illuminate\View\ComponentAttributeBag($attrs ?? []))->class(['xcard', 'ecard-v2', 'lookbook-card' => $lookbook, 'is-highlight' => $highlight ?? false, 'has-ring' => $persen !== null, 'perlu-tindakan-admin' => $perluTindakanAdmin]) }}>
     @if ($aplikasi)
         <div class="ecard-top-bar status-{{ $aplikasi->status_partisipasi }}"></div>
     @endif
-    <div class="xcard-ph" style="--h: {{ crc32((string) $nama) % 360 }};">
+    <div class="xcard-ph {{ $lookbook ? 'lookbook-media-2-3' : '' }}" style="--h: {{ crc32((string) $nama) % 360 }};">
         <{{ $lihatTag }} {{ new \Illuminate\View\ComponentAttributeBag($lihatAttr) }} class="xcard-ph-btn" aria-label="Lihat profil {{ $label }}">
             @if ($profile?->foto_profil_path)
                 <img src="{{ route('extras.media.foto', $profile) }}" alt="" loading="lazy">
@@ -36,8 +38,35 @@
                 <span class="xcard-inisial" aria-hidden="true">{{ $nama ? strtoupper(mb_substr($nama, 0, 2)) : '?' }}</span>
             @endif
         </{{ $lihatTag }}>
-        @if ($gradeTampil)
-            <span class="ecard-grade-pill">Grade {{ $gradeTampil }}</span>
+        @if ($lookbook)
+            <div class="lookbook-overlay-top">
+                @if ($clientReviewGrade)
+                    <span class="lookbook-glass-pill"><i class="ti ti-certificate"></i> Grade {{ strtoupper($clientReviewGrade) }}</span>
+                @elseif ($gradeTampil)
+                    <span class="lookbook-glass-pill"><i class="ti ti-certificate"></i> Grade {{ $gradeTampil }}</span>
+                @else
+                    <span></span>
+                @endif
+                @if ($persen !== null)
+                    <span class="lookbook-glass-pill">{{ $persen }}% cocok</span>
+                @endif
+            </div>
+            <div class="lookbook-overlay-bottom">
+                <span class="lookbook-glass-pill" title="Identitas dan kontak pribadi dilindungi sistem JBTB">
+                    <span class="font-editorial">{{ $label }}</span>
+                    <i class="ti ti-lock" style="font-size: 13px; color: var(--text-muted);" aria-hidden="true"></i>
+                </span>
+                @if ($profile?->video_profil_path)
+                    <span class="lookbook-glass-pill"><i class="ti ti-player-play"></i> Video</span>
+                @endif
+            </div>
+        @else
+            @if ($gradeTampil)
+                <span class="ecard-grade-pill">Grade {{ $gradeTampil }}</span>
+            @endif
+            @if ($persen !== null)
+                <div class="xcard-ring" style="--p: {{ $persen }}%;" role="img" aria-label="Cocok {{ $persen }}% dengan tag peran"><span>{{ $persen }}%</span></div>
+            @endif
         @endif
         @if ($badge)
             <span class="badge {{ $badge[1] }} xcard-st">{{ $badge[0] }}</span>
@@ -55,9 +84,6 @@
                         aria-label="{{ $profile->apresiasi ? 'Hapus '.$label.' dari Favorit' : 'Jadikan '.$label.' Favorit' }}"
                         title="{{ $profile->apresiasi ? 'Favorit'.($profile->apresiasi_catatan ? ': '.$profile->apresiasi_catatan : '') : 'Jadikan Favorit' }}">@if ($profile->apresiasi)<i class="ti ti-star-filled" style="color: #f59e0b;" aria-hidden="true"></i>@else<i class="ti ti-star" aria-hidden="true"></i>@endif</button>
             </form>
-        @endif
-        @if ($persen !== null)
-            <div class="xcard-ring" style="--p: {{ $persen }}%;" role="img" aria-label="Cocok {{ $persen }}% dengan tag peran"><span>{{ $persen }}%</span></div>
         @endif
     </div>
 
@@ -82,6 +108,12 @@
                     <span class="spec-lbl">Gender</span>
                     <span class="spec-val">{{ $profile->gender === 'pria' ? 'L' : ($profile->gender === 'wanita' ? 'P' : '-') }}</span>
                 </div>
+                @if ($lookbook && $profile->ukuran_baju)
+                    <div class="ecard-spec-item">
+                        <span class="spec-lbl">Baju</span>
+                        <span class="spec-val">{{ $profile->ukuran_baju }}</span>
+                    </div>
+                @endif
             </div>
         @endif
 
