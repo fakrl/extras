@@ -67,7 +67,7 @@
                     </div>
                     <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0;">
                         <span class="dash-sub" style="white-space: nowrap;">{{ $a->created_at->format('H:i') }} &middot; {{ $a->created_at->translatedFormat('d M') }}</span>
-                        <span class="btn btn-sm btn-tonal" style="font-size: var(--fs-xs); padding: 2px 8px; pointer-events: none;">Buka &amp; Validasi Absensi &rarr;</span>
+                        <span class="btn btn-sm btn-tonal" style="font-size: var(--fs-xs); padding: 2px 8px; pointer-events: none;">Buka &amp; Validasi Absensi <i class="ti ti-arrow-right"></i></span>
                     </div>
                 </{{ $tag }}>
             @empty
@@ -82,7 +82,7 @@
                     <div style="min-width: 0; flex: 1;">
                         <span class="badge {{ $c->jenis === 'sanksi' ? 'badge-tolak' : 'badge-info' }}">{{ ucfirst($c->jenis) }}</span>
                         {{ \Illuminate\Support\Str::limit($c->isi, 90) }}
-                        <div class="dash-sub">{{ $c->korlap?->name ?? 'Staf' }} &rarr; {{ $c->projectApplication?->extras?->user?->name ?? 'Extras' }} &bull; {{ $c->projectApplication?->castingProject?->nama_produksi }} &bull; {{ $c->created_at->diffForHumans() }}</div>
+                        <div class="dash-sub">{{ $c->korlap?->name ?? 'Staf' }} <i class="ti ti-arrow-right"></i> {{ $c->projectApplication?->extras?->user?->name ?? 'Extras' }} &bull; {{ $c->projectApplication?->castingProject?->nama_produksi }} &bull; {{ $c->created_at->diffForHumans() }}</div>
                     </div>
                 </div>
             @empty

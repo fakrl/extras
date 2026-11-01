@@ -37,10 +37,10 @@
                             <strong>{{ $p->nama_produksi }}</strong>
                             <div class="dash-sub">{{ collect([$p->client ? $p->namaClient() : null, $p->rentangShooting()])->filter(fn ($x) => $x && $x !== "-")->implode(" • ") }}</div>
                         </div>
-                        <span class="dash-sub">Buka &rarr;</span>
+                        <span class="dash-sub">Buka <i class="ti ti-arrow-right"></i></span>
                     </a>
                 @endforeach
-                <a href="{{ route('admin.projects.index', ['urgent' => 1]) }}" class="dash-row" style="color: var(--accent); font-weight: 600;">Lihat Proyek Urgent &rarr;</a>
+                <a href="{{ route('admin.projects.index', ['urgent' => 1]) }}" class="dash-row" style="color: var(--accent); font-weight: 600;">Lihat Proyek Urgent <i class="ti ti-arrow-right"></i></a>
             @endif
 
             @if ($pembayaranSengketa > 0)
@@ -50,19 +50,19 @@
                         <strong>{{ $pembayaranSengketa }} kasus</strong>
                         <div class="dash-sub">Extras menyengketakan pembayaran</div>
                     </div>
-                    <span class="dash-sub">Tinjau Pembayaran &rarr;</span>
+                    <span class="dash-sub">Tinjau Pembayaran <i class="ti ti-arrow-right"></i></span>
                 </a>
             @endif
 
             @foreach ($tindakan as $r)
                 <a href="{{ $r['url'] }}" class="dash-row">
                     <div><strong>{{ $r['jumlah'] }}</strong> {{ $r['label'] }}</div>
-                    <span class="dash-sub">Buka &rarr;</span>
+                    <span class="dash-sub">Buka <i class="ti ti-arrow-right"></i></span>
                 </a>
             @endforeach
 
             @unless ($jumlahTindakan)
-                <div class="dash-aman" role="status"><i class="ti ti-circle-check"></i> Semua aman &mdash; tidak ada yang perlu ditindak.</div>
+                <div class="dash-aman" role="status"><i class="ti ti-circle-check"></i> Semua aman · tidak ada yang perlu ditindak.</div>
             @endunless
         </div>
 
@@ -82,10 +82,10 @@
                     <div class="metric-value">{{ $perluDinego }}</div>
                 </a>
             </div>
-            <a href="{{ route('admin.projects.index') }}" class="dash-row"><span><i class="ti ti-folder"></i> Kelola Proyek</span><span class="dash-sub">&rarr;</span></a>
-            <a href="{{ route('admin.akun.extras') }}" class="dash-row"><span><i class="ti ti-users"></i> Kelola Akun Extras &amp; Rekap</span><span class="dash-sub">&rarr;</span></a>
-            <a href="{{ route('admin.attendance.index') }}" class="dash-row"><span><i class="ti ti-camera"></i> Absensi Lapangan</span><span class="dash-sub">&rarr;</span></a>
-            <a href="{{ route('admin.work-history') }}" class="dash-row"><span><i class="ti ti-wallet"></i> Riwayat & Honor Saya</span><span class="dash-sub">&rarr;</span></a>
+            <a href="{{ route('admin.projects.index') }}" class="dash-row"><span><i class="ti ti-folder"></i> Kelola Proyek</span><span class="dash-sub"><i class="ti ti-arrow-right"></i></span></a>
+            <a href="{{ route('admin.akun.extras') }}" class="dash-row"><span><i class="ti ti-users"></i> Kelola Akun Extras &amp; Rekap</span><span class="dash-sub"><i class="ti ti-arrow-right"></i></span></a>
+            <a href="{{ route('admin.attendance.index') }}" class="dash-row"><span><i class="ti ti-camera"></i> Absensi Lapangan</span><span class="dash-sub"><i class="ti ti-arrow-right"></i></span></a>
+            <a href="{{ route('admin.work-history') }}" class="dash-row"><span><i class="ti ti-wallet"></i> Riwayat & Honor Saya</span><span class="dash-sub"><i class="ti ti-arrow-right"></i></span></a>
         </div>
     </div>
 

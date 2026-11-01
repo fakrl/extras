@@ -14,6 +14,9 @@
             <label>Nama Admin <span class="wajib" aria-hidden="true">*</span></label>
             <input type="text" name="name" value="{{ old('_form') === 'admin-baru' ? old('name') : '' }}" required maxlength="255" placeholder="Nama lengkap admin">
 
+            <label>Username</label>
+            <input type="text" name="username" value="{{ old('_form') === 'admin-baru' ? old('username') : '' }}" maxlength="50" placeholder="username">
+
             <label>Email <span class="wajib" aria-hidden="true">*</span></label>
             <input type="email" name="email" value="{{ old('_form') === 'admin-baru' ? old('email') : '' }}" required placeholder="email@contoh.com">
 
@@ -59,6 +62,7 @@
             var body = {
                 role: 'admin',
                 name: form.querySelector('input[name="name"]').value,
+                username: form.querySelector('input[name="username"]').value || null,
                 email: form.querySelector('input[name="email"]').value,
                 nomor_wa: form.querySelector('input[name="nomor_wa"]').value || null,
                 honor_nominal: form.querySelector('input[name="honor_nominal"]').value || null,

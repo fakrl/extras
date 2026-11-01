@@ -13,7 +13,7 @@
 
 <div style="margin-bottom: 12px;">
     <a href="{{ route('admin.projects.index') }}" class="btn btn-sm btn-tonal" style="display: inline-flex; align-items: center; gap: 6px;">
-        <i class="ti ti-arrow-left"></i> Kembali ke Daftar Proyek
+        <i class="ti ti-arrow-left"></i> Daftar Proyek
     </a>
 </div>
 
@@ -34,17 +34,17 @@
         @can('kelola', $p)
         <a href="{{ route('admin.projects.edit', $p) }}" class="btn btn-sm btn-tonal"><i class="ti ti-pencil"></i> Edit Proyek</a>
         @endcan
-        <a href="{{ route('admin.projects.applicants', $p) }}" class="btn btn-sm btn-brand"><i class="ti ti-users-group"></i> Buka Workspace Lineup Penuh &rarr;</a>
-        <a href="{{ route('invoices.show', $p) }}" class="btn btn-sm btn-tonal"><i class="ti ti-receipt"></i> Lihat Dokumen Invoice</a>
+        <a href="{{ route('admin.projects.applicants', $p) }}" class="btn btn-sm btn-brand"><i class="ti ti-users-group"></i> Kelola Lineup <i class="ti ti-arrow-right"></i></a>
+        <a href="{{ route('invoices.show', $p) }}" class="btn btn-sm btn-tonal"><i class="ti ti-receipt"></i> Dokumen Invoice</a>
     </div>
 </div>
 
 @php $bolehKelola = auth()->user()->can('kelola', $p); @endphp
 @unless ($bolehKelola)
     <div role="status" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-left: 4px solid var(--warning); border-radius: var(--radius-md); background: var(--md-custom-warning-container, rgba(245,158,11,0.12)); color: var(--text-primary); font-size: var(--fs-sm); margin-bottom: 14px;">
-        <i class="ti ti-eye" style="font-size: 18px; color: var(--warning);"></i>
+        <i class="ti ti-lock" style="font-size: 18px; color: var(--warning);"></i>
         <div>
-            <strong>Mode Lihat saja</strong> &mdash; Anda sedang dalam mode baca karena proyek ini ditugaskan kepada {{ $p->admin?->name ?? 'belum ada PIC' }}.
+            <strong>Mode Lihat saja:</strong> Proyek ini ditugaskan kepada {{ $p->admin?->name ?? 'belum ada PIC' }}.
         </div>
     </div>
 @endunless
@@ -221,10 +221,10 @@
         <div>
             <div style="font-size: 13.5px; font-weight: 600; color: var(--text-primary);"><i class="ti ti-info-circle"></i> Ringkasan Pendaftar ({{ $listPendaftar->count() }} orang / kuota {{ $p->kuota }})</div>
             <div style="font-size: var(--fs-xs); color: var(--text-secondary); margin-top: 2px;">
-                Menampilkan ringkasan pendaftar. Untuk memfilter tag, mengatur grade, dan memproses seleksi massal, gunakan tombol <strong>[Buka Workspace Lineup Penuh]</strong>.
+                Menampilkan ringkasan pendaftar. Untuk memfilter tag, mengatur grade, dan memproses seleksi massal, gunakan tombol <strong>[Kelola Lineup]</strong>.
             </div>
         </div>
-        <a href="{{ route('admin.projects.applicants', $p) }}" class="btn btn-sm btn-brand">Buka Workspace Lineup Penuh &rarr;</a>
+        <a href="{{ route('admin.projects.applicants', $p) }}" class="btn btn-sm btn-brand"><i class="ti ti-users-group"></i> Kelola Lineup <i class="ti ti-arrow-right"></i></a>
     </div>
 
     @if ($listPendaftar->isNotEmpty())
@@ -300,7 +300,7 @@
                                     <button type="submit" class="btn btn-sm">Simpan Nominal</button>
                                 </form>
                             @else
-                                <span class="tp-kosong">Rahasia — bukan proyek Anda</span>
+                                <span class="tp-kosong">Rahasia · bukan proyek Anda</span>
                             @endif
                         </td>
                         <td>

@@ -32,7 +32,7 @@
         <div>
             <strong>Lengkapi dulu:</strong> {{ implode(', ', $warnings) }}.
             @if ($bolehKelola)
-                <a href="{{ route('admin.projects.edit', $castingProject) }}" style="display: block; margin-top: 2px;">Buka form edit proyek &rarr;</a>
+                <a href="{{ route('admin.projects.edit', $castingProject) }}" style="display: block; margin-top: 2px;">Buka form edit proyek <i class="ti ti-arrow-right"></i></a>
             @endif
         </div>
     </div>
@@ -53,7 +53,7 @@
     @if ($mapsUrl)
         <div class="entity-card-row">
             <span class="entity-card-row-label">Google Maps</span>
-            <span class="entity-card-row-value"><a href="{{ $mapsUrl }}" target="_blank" rel="noopener">Buka lokasi &rarr;</a></span>
+            <span class="entity-card-row-value"><a href="{{ $mapsUrl }}" target="_blank" rel="noopener">Buka lokasi <i class="ti ti-arrow-right"></i></a></span>
         </div>
     @endif
 </div>
@@ -138,7 +138,7 @@
                 <i class="ti ti-copy"></i> Salin format WA
             </button>
             <a href="https://api.whatsapp.com/send?text={{ rawurlencode($teksWa) }}" target="_blank" rel="noopener" class="btn btn-sm btn-brand callsheet-btn-wa" data-log-url="{{ route('admin.callsheet.salin', [$castingProject, $shootingDate->tanggal->toDateString()]) }}" style="display: inline-flex; align-items: center; gap: 6px;">
-                <i class="ti ti-brand-whatsapp"></i> Share ke WA &rarr;
+                <i class="ti ti-brand-whatsapp"></i> Share ke WA <i class="ti ti-arrow-right"></i>
             </a>
         </div>
     </div>

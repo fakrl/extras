@@ -45,7 +45,7 @@
             @endif
             <div style="margin-top: 10px;">
                 <a href="{{ route('extras.projects.index') }}" class="btn btn-sm btn-tonal" style="display: inline-flex; align-items: center; gap: 4px;">
-                    <i class="ti ti-search"></i> Cari Lowongan Casting Lainnya &rarr;
+                    <i class="ti ti-search"></i> Cari Lowongan Casting Lainnya <i class="ti ti-arrow-right"></i>
                 </a>
             </div>
         </div>
@@ -86,7 +86,7 @@
                 <div class="nac-title"><i class="ti ti-cash"></i> Giliranmu: Kesepakatan Honor</div>
                 <div class="nac-desc">Admin mengajukan penawaran honor untukmu. Silakan tinjau nominalnya, setujui, atau ajukan penawaran balik.</div>
             @elseif (in_array($app->status_partisipasi, ['deal', 'diajukan_ke_client']))
-                <div class="nac-title"><i class="ti ti-sparkles"></i> Honor Deal &mdash; Menunggu Keputusan Client</div>
+                <div class="nac-title"><i class="ti ti-sparkles"></i> Honor Disepakati · Menunggu Keputusan Client</div>
                 <div class="nac-desc">Nominal honor sudah disepakati! Profilmu sedang diajukan ke pihak PH/Client untuk pemilihan akhir. Mohon tunggu pengumuman hasilnya.</div>
             @elseif ($app->status_partisipasi === 'lolos' && ! $hasNik)
                 <div class="nac-title"><i class="ti ti-id"></i> Selamat, Kamu Terpilih! (Langkah 1 dari 2)</div>

@@ -4,7 +4,7 @@
 
 @section('content')
 <div style="margin-bottom: 12px;">
-    <a href="{{ route('client.reviews.index') }}" class="btn btn-sm btn-tonal" style="display: inline-flex; align-items: center; gap: 6px;"><i class="ti ti-arrow-left"></i> Kembali ke Pilih Kandidat</a>
+    <a href="{{ route('client.reviews.index') }}" class="btn btn-sm btn-tonal" style="display: inline-flex; align-items: center; gap: 6px;"><i class="ti ti-arrow-left"></i> Daftar Proyek Review</a>
 </div>
 
 <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
@@ -30,7 +30,7 @@
 <div style="background: var(--md-surface-container, var(--bg-card)); border-left: 4px solid var(--accent); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: flex-start; gap: 10px;">
     <i class="ti ti-info-circle" style="font-size: 18px; color: var(--accent); margin-top: 1px;"></i>
     <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.45;">
-        <strong>Panduan Pemilihan Kandidat:</strong> Pilih kandidat yang sesuai dengan kriteria produksi Anda. Kandidat yang Anda setujui akan langsung diproses tanda tangan kontraknya oleh tim Admin JBTB.
+        <strong>Panduan Pemilihan:</strong> Pilih kandidat yang sesuai dengan kebutuhan produksi Anda. Kandidat yang disetujui akan langsung dijadwalkan untuk tanda tangan kontrak oleh tim Admin JBTB.
     </div>
 </div>
 

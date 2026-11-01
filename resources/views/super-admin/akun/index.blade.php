@@ -199,7 +199,7 @@
     <span>{{ $users->total() }} akun</span>
     @unless ($modeExtras)
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <span id="select-all-context" style="color: var(--text-muted); font-size: var(--fs-xs);">0 dipilih — Centang akun untuk aksi massal</span>
+            <span id="select-all-context" style="color: var(--text-muted); font-size: var(--fs-xs);">0 dipilih · Centang akun untuk aksi massal</span>
             <label style="display: flex; align-items: center; gap: 6px; margin: 0; cursor: pointer; color: var(--text-primary); font-weight: 500;"><input type="checkbox" id="select-all-cb" style="min-height: 0;"> Pilih semua di halaman ini</label>
         </div>
     @endunless
@@ -302,7 +302,7 @@
                     </div>
                 </div>
                 <details class="akun-kebab" onclick="event.stopPropagation()">
-                    <summary aria-label="Aksi {{ $u->name }}"><i class="ti ti-adjustments"></i> Kelola &blacktriangledown;</summary>
+                    <summary aria-label="Aksi {{ $u->name }}"><i class="ti ti-adjustments"></i> Kelola <i class="ti ti-chevron-down"></i></summary>
                     <div class="akun-kebab-isi">
                         @include('super-admin.akun.aksi-menu', ['u' => $u])
                     </div>
@@ -375,7 +375,7 @@
         if (ctx) {
             ctx.textContent = n > 0 
                 ? n + ' akun dipilih untuk aksi massal' 
-                : '0 dipilih — Centang akun untuk aksi massal';
+                : '0 dipilih · Centang akun untuk aksi massal';
             ctx.style.color = n > 0 ? 'var(--accent-strong)' : 'var(--text-muted)';
             ctx.style.fontWeight = n > 0 ? '600' : '400';
         }

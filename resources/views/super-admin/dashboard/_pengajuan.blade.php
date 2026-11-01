@@ -17,14 +17,14 @@
             <div class="pu-detail-blok"><strong>Peran ({{ $req->kuota }} orang):</strong>
                 <ul class="pu-detail-list">
                     @foreach ($req->classes as $kls)
-                        <li>{{ $kls->nama_kelas }} &times; {{ $kls->kuota_kelas }} orang @if ($kls->kriteria) &mdash; {{ $kls->kriteria }} @endif</li>
+                        <li>{{ $kls->nama_kelas }} &times; {{ $kls->kuota_kelas }} orang @if ($kls->kriteria) · {{ $kls->kriteria }} @endif</li>
                     @endforeach
                 </ul>
             </div>
             <div class="pu-detail-blok"><strong>Tanggal shooting:</strong>
                 <ul class="pu-detail-list">
                     @foreach ($req->shootingDates as $tgl)
-                        <li>{{ $tgl->tanggal->translatedFormat('d M Y') }} @if ($tgl->lokasi) &mdash; {{ $tgl->lokasi }} @endif</li>
+                        <li>{{ $tgl->tanggal->translatedFormat('d M Y') }} @if ($tgl->lokasi) · {{ $tgl->lokasi }} @endif</li>
                     @endforeach
                 </ul>
             </div>

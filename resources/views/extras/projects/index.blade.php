@@ -16,8 +16,8 @@
 {{-- Quick Filter Pills --}}
 <div class="quick-filter-bar" id="quick-filters" style="margin-bottom: 16px;">
     <button type="button" class="quick-filter-chip is-active" data-filter="all">Semua Lowongan ({{ $aktif->count() }})</button>
-    <button type="button" class="quick-filter-chip" data-filter="urgent">⚡ Butuh Dadakan ({{ $aktif->filter->isUrgent()->count() }})</button>
-    <button type="button" class="quick-filter-chip" data-filter="kuota">🎯 Masih Ada Kuota</button>
+    <button type="button" class="quick-filter-chip" data-filter="urgent"><i class="ti ti-bolt"></i> Butuh Dadakan ({{ $aktif->filter->isUrgent()->count() }})</button>
+    <button type="button" class="quick-filter-chip" data-filter="kuota"><i class="ti ti-users"></i> Kuota Tersedia</button>
 </div>
 
 <div id="no-casting-match" class="card" style="display: none; text-align: center; color: var(--text-muted); padding: 24px;">
@@ -46,9 +46,12 @@
                         @include('partials.label-nego', ['project' => $project])
                     </div>
                     <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">
-                        Client: <strong>{{ $project->namaClient() }}</strong>
+                        @if ($project->namaClient() && $project->namaClient() !== '-')
+                            Client: <strong>{{ $project->namaClient() }}</strong>
+                            @if ($project->kode_proyek) · @endif
+                        @endif
                         @if ($project->kode_proyek)
-                            · <span class="badge badge-netral">{{ $project->kode_proyek }}</span>
+                            <span class="badge badge-netral">{{ $project->kode_proyek }}</span>
                         @endif
                     </div>
                 </div>
@@ -89,7 +92,7 @@
         </div>
 
         <div style="display: flex; justify-content: flex-end; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border-color);">
-            <a href="{{ route('extras.projects.show', $project) }}" class="btn btn-brand" style="justify-content: center; width: 100%;">Lihat Detail &amp; Lamar &rarr;</a>
+            <a href="{{ route('extras.projects.show', $project) }}" class="btn btn-brand" style="justify-content: center; width: 100%;">Lihat Detail &amp; Lamar <i class="ti ti-arrow-right"></i></a>
         </div>
     </div>
 @empty
@@ -104,7 +107,9 @@
                 <div style="font-size: 15px; font-weight: 600;">{{ $project->nama_produksi }}</div>
                 <x-status-badge :model="$project" />
             </div>
-            <p style="margin: 8px 0 4px; font-size: 13.5px;">Client: {{ $project->namaClient() }}</p>
+            @if ($project->namaClient() && $project->namaClient() !== '-')
+                <p style="margin: 8px 0 4px; font-size: 13.5px;">Client: {{ $project->namaClient() }}</p>
+            @endif
             <p style="margin: 0 0 12px; font-size: 12.5px; color: var(--text-muted);">
                 Kuota terisi: {{ $project->terisi }}/{{ $project->kuota }}
             </p>

@@ -24,7 +24,7 @@
                 @endif
             </span>
             @if ($peran === 'korlap')
-                <button type="submit" form="mon-masuk" name="ke" value="{{ $keAmbilAlih }}" class="btn btn-sm btn-tonal" onclick="event.stopPropagation();" title="Masuk ke mode Korlap untuk staf {{ $u->name }}">Masuk Mode Korlap Ini &rarr;</button>
+                <button type="submit" form="mon-masuk" name="ke" value="{{ $keAmbilAlih }}" class="btn btn-sm btn-tonal" onclick="event.stopPropagation();" title="Masuk ke mode Korlap untuk staf {{ $u->name }}">Masuk Mode Korlap Ini <i class="ti ti-arrow-right"></i></button>
             @endif
         </div>
     </summary>

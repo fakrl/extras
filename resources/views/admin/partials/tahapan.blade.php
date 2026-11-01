@@ -47,9 +47,9 @@
             <p class="dash-sub tahap-kosong">Belum ada kandidat di tahap ini.</p>
         @endforelse
         @if ($monitor)
-            <button type="submit" form="mon-masuk" name="ke" value="{{ $t['url'] }}" class="tahap-semua">Lihat semua di tahap ini &rarr;</button>
+            <button type="submit" form="mon-masuk" name="ke" value="{{ $t['url'] }}" class="tahap-semua">Lihat semua di tahap ini <i class="ti ti-arrow-right"></i></button>
         @else
-            <a href="{{ $t['url'] }}" class="tahap-semua">Lihat semua di tahap ini &rarr;</a>
+            <a href="{{ $t['url'] }}" class="tahap-semua">Lihat semua di tahap ini <i class="ti ti-arrow-right"></i></a>
         @endif
     </div>
 @endforeach

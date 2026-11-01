@@ -110,7 +110,7 @@
                 @endif
             </div>
         </div>
-        <a href="{{ route('extras.profile.show') }}" class="btn btn-tonal" title="Lihat seperti Client &mdash; Lihat bagaimana profil dan fotomu tampil saat dinilai oleh Client/PH"><i class="ti ti-eye"></i> Pratinjau Portofolio Publik <span style="display:none;">Lihat seperti Client</span></a>
+        <a href="{{ route('extras.profile.show') }}" class="btn btn-tonal" title="Pratinjau tampilan portofoliomu saat dilihat oleh Client"><i class="ti ti-eye"></i> Pratinjau Portofolio Publik <span style="display:none;">Lihat seperti Client</span></a>
     </div>
 
     {{-- ===== 1. Foto & Video (upload AJAX, tidak lewat tombol Ubah) ===== --}}
@@ -121,7 +121,7 @@
     <div class="profile-section" id="bagian-foto">
         <div class="profile-section-title">Foto</div>
         <button type="button" class="btn btn-sm" style="margin-bottom: 12px;" onclick="document.getElementById('dialog-contoh-foto').showModal()">Contoh foto</button>
-        <p id="foto-hint" @class(['foto-hint', 'is-kosong' => ! $jumlahGaleri])>💡 Profil dengan 3+ foto (close-up, setengah badan, seluruh badan) lebih sering dipilih Client.</p>
+        <p id="foto-hint" @class(['foto-hint', 'is-kosong' => ! $jumlahGaleri])><i class="ti ti-bulb"></i> Profil dengan 3+ foto (close-up, setengah badan, seluruh badan) lebih sering dipilih Client.</p>
 
         <div class="foto-grid">
             <div class="foto-tile">

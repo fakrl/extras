@@ -102,8 +102,10 @@ class AdminManagementController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'username' => ['nullable', 'alpha_dash', 'max:50', 'unique:users,username,'.$user->id],
             'email' => ['nullable', 'required_unless:role,client', 'email', 'unique:users,email,'.$user->id],
             'role' => ['required', 'in:'.implode(',', $allowedRoles)],
+            'honor_nominal' => ['nullable', 'numeric', 'min:0'],
             'konfirmasi_role' => ['nullable', 'boolean'],
         ]);
 
@@ -112,11 +114,21 @@ class AdminManagementController extends Controller
             return back()->with('error', 'Mengganti role perlu konfirmasi: centang pernyataan dampak di dialog edit akun.');
         }
 
-        $user->update([
+        $updateData = [
             'name' => $data['name'],
             'email' => $data['email'],
             'role' => $data['role'],
-        ]);
+        ];
+
+        if ($request->has('username')) {
+            $updateData['username'] = $data['username'] ?: null;
+        }
+
+        if (in_array($data['role'], ['admin', 'korlap']) && $request->has('honor_nominal')) {
+            $updateData['honor_nominal'] = $data['honor_nominal'] !== null && $data['honor_nominal'] !== '' ? (float) $data['honor_nominal'] : null;
+        }
+
+        $user->update($updateData);
 
         if ($user->role === 'extras') {
             ExtrasProfile::firstOrCreate(['user_id' => $user->id]);
@@ -227,6 +239,7 @@ class AdminManagementController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'username' => ['nullable', 'alpha_dash', 'max:50', 'unique:users,username'],
             'email' => ['required', 'email', 'unique:users,email'],
             'role' => ['required', 'in:'.implode(',', $allowedRoles)],
             'honor_nominal' => ['nullable', 'numeric', 'min:0'],
@@ -236,6 +249,7 @@ class AdminManagementController extends Controller
         $password = self::passwordSementara();
         $user = User::create([
             'name' => $data['name'],
+            'username' => $data['username'] ?? null,
             'email' => $data['email'],
             'password' => $password,
             'wajib_ganti_password' => true,

@@ -1,142 +1,87 @@
-# Master Prompt V2: Rombak Total Arsitektur Layout & Visual (Macro Layout Overhaul) — SIM Casting JBTB (`fakrl/extras`)
+# Master Prompt V3 (Final Polish): Pembersihan Total "AI-Slop" (Emoji, Em-Dash, Panah Mentah) & Penyempurnaan Visual — SIM Casting JBTB (`fakrl/extras`)
 
-## 1. Evaluasi Iterasi Sebelumnya & Mengapa Perlu Rombak Makro (Macro Overhaul)
+> **Cara Pakai Dokumen Ini di Antigravity:**
+> *Copy-paste* seluruh isi dokumen ini ke Antigravity (atau timpa ke file `docs/prompt_refactor_ui_ux_jbtb.md` di repo lokalmu), lalu perintahkan Antigravity:
+> *"Struktur layout makro dari perubahan terakhir sudah jauh lebih bagus, tapi dari hasil inspeksi visual langsung di browser masih banyak jejak 'AI-slop' seperti emoji Unicode mentah (`⚡`, `🔔`, `📅`, `👁`, `👥`, `🎯`, `💡`, `🔒`), tanda em-dash (`—` / `&mdash;`), panah teks mentah (`→`, `←`, `↓`, `▾`, `&#blacktriangledown;`), copywriting kaku/typo, dan placeholder `Client: -`. Eksekusi seluruh instruksi pembersihan dan penyempurnaan di `docs/prompt_refactor_ui_ux_jbtb.md` ini sampai bersih 100%, lalu jalankan `php artisan test`."*
 
-Pada eksekusi tahap pertama, perubahan yang terjadi di banyak file utama masih terlalu kecil secara struktural (misalnya `partials/extras-card.blade.php` hanya berubah 3 baris, `super-admin/dashboard` hanya 6 baris, `client/dashboard.blade.php` hanya 16 baris, dan `admin/projects/show.blade.php` hanya 24 baris). Akibatnya, pengguna hanya melihat perubahan teks tombol atau tambahan chip kecil, sementara **kerangka tata letak (layout), bentuk kartu, posisi kolom, dan pengalaman visual halamannya masih terasa 90% sama seperti sebelumnya**.
+## 1. Evaluasi Visual Saat Ini (Apa yang Sudah Bagus vs Apa yang Harus Dibersihkan)
 
-Pada **Iterasi V2 (Macro Layout Overhaul)** ini, kamu **WAJIB merombak struktur tata letak (HTML Grid/Flexbox, arsitektur kartu, Slide-Over Drawer, Split-Screen Workspace, dan Hero Boarding-Pass Card)** sehingga perbedaan sebelum dan sesudah langsung terlihat drastis, modern, dan memandu pengguna awam secara instan.
+Berdasarkan pengecekan visual langsung di seluruh halaman untuk ke-5 role (`super_admin`, `admin`, `korlap`, `client`, `extras`):
+* **Yang Sudah Beres & Bagus**:
+  - Layout 2 kolom asimetris di Dashboard Super Admin (panel keputusan di kiri, agenda shooting di kanan) dan *accent bar* warna pada 4 kartu KPI sudah proporsional dan rapi.
+  - Halaman Lineup Pendaftar (`/admin/projects/{id}/applicants`) baik di Mode Kartu maupun Mode Daftar, serta pembukaan *drawer/modal* detail pendaftar sudah berjalan mulus dan jelas zonasinya.
+  - Timeline progres proyek di Dashboard Client & Extras, *Quick Filter Chips*, *Sticky Mobile CTA*, serta penghapusan efek *grayscale* pada foto profil talent sudah membuat tampilan jauh lebih hidup.
+* **Masalah Utama yang Masih Mengganggu ("AI-Slop" & Detail Visual)**:
+  1. **Banjir Emoji Unicode Mentah**: Padahal aplikasi JBTB sejak awal menggunakan **Tabler Icons (`<i class="ti ti-..."></i>`)** yang bersih dan monokrom/senada tema, pada kode baru justru banyak disisipkan emoji Unicode warna-warni (`⚡`, `🔔`, `📅`, `👁`, `👥`, `🎯`, `💡`, `🔒`, `🔴`, `🎭`, `💬`, `📸`, `🧾`, `📍`). Ini merusak estetika editorial JBTB dan terlihat sangat buatan AI.
+  2. **Kebanyakan Em-Dash (`—` dan `&mdash;`)**: Banyak judul banner, keterangan *bulk action*, dan *callout* menggunakan tanda pisah panjang `—` khas tulisan AI, padahal gaya asli JBTB menggunakan titik tengah (`·`), titik dua (`:`), atau pemisahan baris sub-teks.
+  3. **Simbol Panah & Segitiga Teks Mentah (`→`, `←`, `↓`, `▾`, `>`, `&rarr;`, `&darr;`, `&#blacktriangledown;`)**: Di banyak tombol dan menu dropdown (termasuk bug `&#blacktriangledown;` di Manajemen Akun), masih dipakai simbol panah teks mentah alih-alih ikon `<i class="ti ti-..."></i>`.
+  4. **Copywriting Kaku/Typo & Teks Placeholder Mentah (`Client: -`)**: Ada kata hubung salah konteks (`"Kendati"` di halaman review Client), judul terlalu mendramatisir (`"Prioritas Utama: Butuh Keputusan Anda"`), serta tampilan `Client: - · JBTB-2026-008` saat nama client kosong/disembunyikan.
 
-## 2. Aturan Emas & Strategi Menjaga `962 Test Suite` Tetap Hijau 100%
+## 2. Aturan Ketat "Zero AI-Slop" (Wajib Dipatuhi di Seluruh File Blade)
 
-Agar kamu **berani merombak layout HTML & CSS secara besar-besaran** tanpa takut merusak *automated test* (`CpUiTest`, `CallinganCardTest`, `SuperAdminAdminManagementTest`, dll.), ikuti strategi teknis ini:
+1. **DILARANG Menggunakan Emoji Unicode di Seluruh File `.blade.php` & `.php`**:
+   - Hapus semua karakter emoji (`⚡`, `🔔`, `📅`, `👁`, `👥`, `🎯`, `💡`, `🔒`, `🔴`, `🎭`, `💬`, `📸`, `✍️`, `🧾`, `📍`, `💰`, `✨`, `🔥`, `📋`) dan ganti dengan **Tabler Icons (`<i class="ti ti-..."></i>`)** yang sudah terpasang di proyek.
+   - Jangan pernah menumpuk `<i class="ti ti-..."></i>` dengan emoji dalam satu elemen yang sama.
+2. **DILARANG Menggunakan Em-Dash (`—` maupun `&mdash;`) di Teks Antarmuka**:
+   - Ganti seluruh `—` dan `&mdash;` pada teks UI, banner, badge, *callout*, atribut `title="..."`, dan string JavaScript dengan titik tengah (`·`), titik dua (`:`), tanda koma, atau pecah menjadi elemen judul `<strong>` dan `<span class="text-muted">` terpisah.
+3. **DILARANG Menggunakan Panah/Segitiga Teks Mentah di Dalam Tombol & Link**:
+   - Ganti seluruh `→`, `&rarr;`, `←`, `&larr;`, `↓`, `&darr;`, `▾`, dan `&#blacktriangledown;` dengan Tabler Icons:
+     - Panah kanan: `<i class="ti ti-arrow-right"></i>`
+     - Panah kiri: `<i class="ti ti-arrow-left"></i>`
+     - Panah bawah: `<i class="ti ti-arrow-down"></i>`
+     - Dropdown/chevron bawah: `<i class="ti ti-chevron-down"></i>`
+     - Chevron kanan: `<i class="ti ti-chevron-right"></i>`
+4. **Pertahankan 100% Kelulusan Test (`php artisan test`)**:
+   - Jangan mengubah nama route, method form, atribut `name` input, atau selector hook yang diuji di `tests/Feature/` (seperti `.xaksi` atau `id="detail-{{ $app->id }}"`). Jika ada unit test yang secara spesifik mengecek potongan string teks lama yang mengandung emoji/em-dash, sesuaikan string ekspektasi di test tersebut agar selaras dengan teks bersih tanpa emoji/em-dash.
 
-1. **Pertahankan Hook Selector yang Diuji Test**:
-   - Sebelum merombak `resources/views/admin/projects/applicants.blade.php`, `resources/views/partials/extras-card.blade.php`, dan `resources/views/partials/application-progress.blade.php`, periksa selector yang diuji di `tests/Feature/CpUiTest.php` dan `tests/Feature/CallinganCardTest.php`.
-   - **Tetap pasang class/atribut hook tersebut pada struktur HTML baru** (contoh: tetap pertahankan `<dialog class="xmodal xdrawer-right" id="detail-{{ $app->id }}">`, tetap pertahankan class `.xaksi` pada kontainer aksi, dan pastikan tidak ada duplikasi URL link negosiasi yang melanggar `CallinganCardTest`).
-   - Jangan pernah mengubah URL `route(...)`, HTTP method (`POST`/`PATCH`/`DELETE`), atau atribut `name="..."` pada input form.
-2. **Gunakan Sistem Token & Palet Warna JBTB**:
-   - Latar halaman tetap krem hangat (`#f5f4ef` / `#EEF2EA` di Light Mode, `#0B1310` di Dark Mode), warna aksen hijau JBTB (`#15803D`), dan header gelap (`#0B1A12`).
-   - Tambahkan class layout makro baru di `resources/views/partials/theme-style.blade.php` (mulai dari `.sa-command-grid`, `.lineup-stage-strip`, `.ecard-v2`, `.xdrawer-right`, `.boarding-pass-card`, `.job-board-grid`, hingga `.project-apply-split`).
+## 3. Daftar Perbaikan Eksak Per File (Before vs After)
 
-## 3. Spesifikasi Rombak Layout Makro Per Halaman (Wajib Dieksekusi Penuh)
+Lakukan pembersihan dan perbaikan pada seluruh file berikut:
 
-### A. Rombak Layout 1: Dashboard Super Admin — "Action-First Asymmetric Command Center"
+### A. Portal Super Admin (`resources/views/super-admin/...` & Sidebar)
 
-* **File Target**:
-  - `resources/views/super-admin/dashboard.blade.php` (atau `resources/views/super-admin/index.blade.php`)
-  - `resources/views/super-admin/dashboard/_butuh-keputusan.blade.php`
-  - `resources/views/super-admin/dashboard/_diingatkan.blade.php`
-  - `resources/views/partials/theme-style.blade.php`
-* **Masalah Layout Saat Ini**:
-  - Layout masih berupa tumpukan vertikal standar: 4 kotak KPI di atas $\rightarrow$ Kalender lebar penuh di tengah $\rightarrow$ 2 kotak daftar (*"Butuh keputusan Anda"* & *"Staf perlu diingatkan"*) tersembunyi di bagian paling bawah layar. Saat Super Admin login, mereka harus *scroll* ke bawah dulu untuk melihat pekerjaan terpenting mereka.
-* **Arsitektur Layout Baru yang Wajib Dibangun**:
-  1. **Baris 1 — Interactive KPI Strip (4 Kolom dengan Accent Border)**:
-     - Ubah ke-4 kartu KPI di bagian atas agar memiliki **Left Accent Bar (`border-left: 5px solid ...`)** sesuai tingkat urgensi:
-       - *Menunggu keputusan*: Aksen Amber/Kuning tegas (`#D97706`) + ikon menonjol.
-       - *Tugas staf tertunda*: Aksen Merah/Oranye (`#DC2626`).
-       - *Proyek berjalan*: Aksen Hijau JBTB (`#15803D`).
-       - *Invoice belum lunas*: Aksen Biru/Slate (`#2563EB`).
-  2. **Baris 2 — Asymmetric 2-Column Command Grid (`.sa-command-grid`) — NAIK KE ATAS**:
-     - Ubah susunan di bawah KPI menjadi **Grid 2 Kolom Asimetris (`grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 20px; align-items: start;`)** di layar desktop (otomatis 1 kolom di mobile):
-     - **Kolom Kiri Utama (60% Lebar — Panel Tindakan Prioritas)**:
-       - Tempatkan kartu **"⚡ Prioritas Utama: Butuh Keputusan Anda"** (`_butuh-keputusan.blade.php`) **paling atas di kolom kiri** (sehingga langsung terlihat begitu login tanpa perlu scroll!). Beri header kartu beraksen kontras lembut dan tata setiap item proyek yang butuh ACC/PIC seperti **Action Ticket Row** (Kiri: Judul Proyek + Client + Tanggal Shooting + Badge; Kanan: Tombol `.btn-brand` `[Tetapkan PIC / Tinjau]`).
-       - Tepat di bawahnya (masih di kolom kiri), tempatkan kartu **"🔔 Staf Perlu Diingatkan"** (`_diingatkan.blade.php`) dengan desain kartu baris yang rapi dan tombol sekunder `.btn-tonal` `[🔔 Ingatkan]`.
-     - **Kolom Kanan Pendamping (40% Lebar — Panel Kalender & Jadwal Sticky)**:
-       - Tempatkan widget **Jadwal / Agenda Shooting** di kolom kanan dengan `position: sticky; top: 84px;` pada desktop, sehingga Super Admin bisa mengambil keputusan proyek di kiri sambil melirik jadwal shooting di kanan secara berdampingan!
+| File Target | Teks / Kode Saat Ini (Mengandung AI-Slop) | Ubah Menjadi (Bersih & Konsisten Tabler Icons) |
+| :--- | :--- | :--- |
+| `resources/views/super-admin/index.blade.php` & `dashboard/_butuh-keputusan.blade.php` | Judul dengan emoji `⚡ Prioritas Utama: Butuh Keputusan Anda` | `<i class="ti ti-alert-circle"></i> Butuh Keputusan Anda` *(lugas dan sesuai gaya asli JBTB)* |
+| `resources/views/super-admin/dashboard/_diingatkan.blade.php` | Judul atau tombol dengan emoji `🔔 Staf perlu diingatkan` / `🔔 Ingatkan` | Gunakan `<i class="ti ti-bell"></i> Staf Perlu Diingatkan` dan `<i class="ti ti-bell"></i> Ingatkan` |
+| `resources/views/super-admin/index.blade.php` (Widget Jadwal) | Header dengan emoji `📅 Jadwal & Agenda Shooting` | `<i class="ti ti-calendar-event"></i> Jadwal & Agenda Shooting` |
+| `resources/views/partials/sidebar-super_admin.blade.php` | Indikator `Monitoring 🔴 >` (menggunakan lingkaran emoji merah / siku mentah `>`) | Gunakan `<span class="sb-dot"></span>` (atau `.sb-badge-count`) dan ikon `<i class="ti ti-chevron-right"></i>` |
+| `resources/views/super-admin/akun/index.blade.php` & `aksi-menu.blade.php` | • Baris 121 & 279 (JS): `0 dipilih — Centang akun untuk aksi massal`<br>• Baris 206: `<i class="ti ti-adjustments"></i> Kelola &#blacktriangledown;` atau `Kelola ▾` | • Ubah teks di HTML & JS menjadi: `0 dipilih · Centang akun untuk aksi massal` *(pakai titik tengah `·`, bukan em-dash `—`)*<br>• Ubah tombol menu aksi menjadi: `<i class="ti ti-adjustments"></i> Kelola <i class="ti ti-chevron-down"></i>` *(hapus `&#blacktriangledown;` dan `▾`)* |
+| `resources/views/super-admin/monitoring/admin.blade.php` & `korlap.blade.php` & `partials/korlap-ringkasan.blade.php` | • Banner dengan emoji `👁 Pratinjau pekerjaan Admin, lihat saja — Klik kartu...` / `👁 Pratinjau lapangan...`<br>• Tombol dengan panah mentah `Masuk Mode Korlap Ini →` dan `Buka & Validasi Absensi →` | • Ganti `👁` dengan `<i class="ti ti-eye"></i>` dan ganti em-dash `—` dengan titik tengah `·` atau kalimat terpisah: `Pratinjau pekerjaan Admin (Mode baca). Klik baris untuk melihat rincian.`<br>• Ganti panah teks `→` dengan `<i class="ti ti-arrow-right"></i>` |
+| `resources/views/partials/switch-role-banner.blade.php` | Emoji `👁 Super Admin · sebagai Client` dan tombol `↩ Kembali ke Super Admin` | Gunakan `<i class="ti ti-eye"></i> Super Admin · Mode {{ $roleLabel }}` dan `<i class="ti ti-arrow-back-up"></i> Kembali ke Super Admin` |
 
-### B. Rombak Layout 2: Halaman Lineup & Kartu Kandidat Admin — "Pipeline Stage Strip + Card V2 + Slide-Over Drawer"
+### B. Portal Admin & Korlap (`resources/views/admin/...` & Partials)
 
-* **File Target**:
-  - `resources/views/admin/projects/applicants.blade.php` (`/admin/projects/{id}/applicants`)
-  - `resources/views/partials/extras-card.blade.php`
-  - `resources/views/admin/projects/show.blade.php` (`/admin/projects/{id}`)
-  - `resources/views/partials/theme-style.blade.php`
-* **Masalah Layout Saat Ini**:
-  - File `partials/extras-card.blade.php` sebelumnya hanya berubah 3 baris, sehingga tampilan grid 4 kolom kartu pendaftar masih identik dengan tampilan lama.
-  - Mode Daftar (`?tampil=daftar`) hanya berupa baris polos berisi avatar, username, badge status, dan bintang favorit tanpa informasi fisik ringkas maupun tombol aksi `[Proses Kandidat]`.
-  - Saat Admin mengklik kandidat, yang terbuka adalah `<dialog class="xmodal">` pop-up kecil di tengah layar yang sempit, padahal di dalamnya ada banyak informasi dan form keputusan.
-* **Arsitektur Layout Baru yang Wajib Dibangun**:
-  1. **Visual Pipeline Stage Strip di Atas Lineup (`applicants.blade.php`)**:
-     - Ganti deretan chip filter biasa menjadi **6 Kotak Tahapan Pipeline Interaktif (`.lineup-stage-strip`)** yang tersusun dalam grid horizontal (`grid-template-columns: repeat(6, minmax(130px, 1fr)); gap: 10px;`):
-       1. `Semua Pendaftar`
-       2. `Perlu Direview` (aksen kuning/amber jika $>0$)
-       3. `Sedang Nego Fee` (aksen biru/amber)
-       4. `Siap ke Client` (aksen hijau muda)
-       5. `Lolos / Kontrak` (aksen hijau solid)
-       6. `Ditolak / Batal` (aksen abu-abu/merah)
-     - Setiap kotak menampilkan **Angka Metrik Besar (`20px bold`)** di atas dan **Label Tahap** di bawahnya, serta memberikan state aktif (`.is-active`) yang jelas saat dipilih.
-  2. **Rombak Total Desain Kartu Pendaftar (`resources/views/partials/extras-card.blade.php`)**:
-     - Ubah struktur visual kartu pendaftar (`.ecard-v2`) agar tampak jauh lebih terstruktur dan informatif:
-       - **Top Status Bar**: Tambahkan pita tipis (`height: 4px`) di bagian paling atas kartu yang warnanya mengikuti status kandidat (Amber untuk *Diajukan/Direview/Nego*, Hijau untuk *Deal/Lolos*, Merah/Abu untuk *Ditolak*).
-       - **Area Foto & Floating Badges**: Pertahankan foto profil/inisial, badge status di kiri atas, tombol bintang favorit, dan lingkaran persentase *match* (`33%/67%/100%`). Jika kandidat sudah memiliki Grade (`Grade A/B/C`), tampilkan sebagai *pill badge* tegas di pojok kanan atas foto.
-       - **Blok Spesifikasi Fisik 3-Kotak (`.ecard-specs-grid`)**: Alih-alih menampilkan umur, tinggi, dan gender hanya sebagai teks sebaris `20 th · 157 cm · Perempuan`, bungkus ke dalam **Grid 3 Kotak Mikro Berlatar Tonal (`background: var(--surface-2); border-radius: 6px; padding: 6px; text-align: center;`)**:
-         - Kotak 1: Label kecil `USIA` $\rightarrow$ Nilai tebal `20 th`
-         - Kotak 2: Label kecil `TINGGI` $\rightarrow$ Nilai tebal `157 cm`
-         - Kotak 3: Label kecil `GENDER` $\rightarrow$ Nilai tebal `P / L`
-       - **Blok Peran & Pengalaman**: Tampilkan peran yang dilamar dalam kotak *badge* berikon (`🎭 Peran: Mahasiswa kampus`), diikuti deretan tag `#...` dan jumlah proyek selesai.
-       - **Footer Kartu Terpadu**: Susun footer kartu dengan 1 tombol aksi utama yang jelas untuk membuka panel kandidat (`[⚡ Proses / Detail]` atau `[Lihat Profil]`) didampingi tombol ikon ringkas WhatsApp (`[💬 WA]`). *(Pastikan semua class/selector yang dibutuhkan `CpUiTest` seperti `.xaksi` tetap dipertahankan!)*
-  3. **Rombak Mode Daftar (`?tampil=daftar`) di `applicants.blade.php`**:
-     - Pada tampilan daftar (`$tampil === 'daftar'`), ubah setiap baris kandidat dari baris kosong menjadi **Structured Action Row 5-Kolom** yang rapi:
-       - **Kolom 1 (Identitas)**: Avatar + Nama Lengkap + `@username` + Badge Grade.
-       - **Kolom 2 (Peran & Kecocokan)**: Nama peran yang dilamar + pill persentase Match (`100% Match`).
-       - **Kolom 3 (Ciri Fisik Ringkas)**: Pill tonal `20 th` · `157 cm` · `Perempuan` + 3 tag utama.
-       - **Kolom 4 (Status & Honor)**: Badge Status pendaftaran + info singkat nominal nego/deal jika ada.
-       - **Kolom 5 (Tombol Aksi)**: Tombol **`[⚡ Proses / Detail]`** (pemicu `<dialog id="detail-{{ $app->id }}">`), tombol ikon **`[💬 WA]`**, dan tombol bintang favorit.
-  4. **Ubah `<dialog class="xmodal" id="detail-{{ $app->id }}">` Menjadi Slide-Over Right Drawer / Split-View Studio**:
-     - Tetap gunakan elemen `<dialog class="xmodal xdrawer-right" id="detail-{{ $app->id }}">` agar seluruh fungsi JS `.showModal()` dan pengujian `CpUiTest` berjalan 100% tanpa error.
-     - Namun di CSS (`theme-style.blade.php`), ubah `.xmodal.xdrawer-right` agar tampil sebagai **Slide-Over Panel Samping Kanan Tinggi Penuh** (`margin: 0 0 0 auto; height: 100dvh; max-height: 100dvh; width: min(680px, 96vw); border-radius: 16px 0 0 16px; display: flex; flex-direction: column;`):
-       - **Sticky Drawer Header**: Foto avatar kandidat, Nama Lengkap, `@username`, Badge Status Saat Ini, dan tombol tutup `[✕]` di kanan atas.
-       - **Scrollable Drawer Body dengan 2 Zona Tegas**:
-         - **Zona 1 (Kotak Keputusan Utama Tahap Ini — `.decision-console-box`)**: Kotak berbingkai hijau/amber tegas di paling atas drawer yang menampilkan posisi tahapan kandidat saat ini dan tombol aksi utama (Terima / Nego Fee / Ajukan ke Client / Tolak).
-         - **Zona 2 (Profil Fisik, Galeri, & Penilaian Internal Admin)**: Menampilkan kartu atribut fisik, pencocokan tag proyek vs tag kandidat, tombol *Set Grade (A/B/C)*, dan riwayat lamaran.
-  5. **Tambahkan Visual Funnel Bar di `admin/projects/show.blade.php`**:
-     - Di halaman detail proyek (`/admin/projects/{id}`), tambahkan **Project Quota & Pipeline Summary Strip** tepat di atas deretan tab (`Info`, `Pendaftar`, `Keuangan`, `Lampiran`, `Riwayat`) yang menampilkan perbandingan visual antara **Total Kuota Dicari**, **Total Pendaftar Masuk**, **Sedang Diproses/Nego**, dan **Sudah Lolos/Deal**, lengkap dengan progress bar visual.
+| File Target | Teks / Kode Saat Ini (Mengandung AI-Slop) | Ubah Menjadi (Bersih & Konsisten Tabler Icons) |
+| :--- | :--- | :--- |
+| `resources/views/admin/projects/show.blade.php` | • Tombol kanan atas dengan emoji/panah mentah: `👥 Buka Workspace Lineup Penuh &rarr;` dan `🧾 Lihat Dokumen Invoice`<br>• Banner mode baca (Baris 47): `👁` / `🔒` `<strong>Mode Lihat saja</strong> &mdash; Anda sedang dalam mode baca karena proyek ini ditugaskan kepada {{ $p->admin->name ?? 'belum ada PIC' }}.`<br>• Tombol kembali: `← Kembali ke Daftar Proyek` | • Tombol Lineup: `<i class="ti ti-users-group"></i> Kelola Lineup <i class="ti ti-arrow-right"></i>` (tanpa emoji `👥` dan tanpa `&rarr;`)<br>• Tombol Invoice: `<i class="ti ti-receipt"></i> Dokumen Invoice` (tanpa emoji `🧾`)<br>• Banner mode baca: `<i class="ti ti-lock"></i> <strong>Mode Baca:</strong> Proyek ini ditugaskan kepada {{ $p->admin->name ?? 'belum ada PIC' }}.` (tanpa emoji `👁`/`🔒`, tanpa `&mdash;`, kalimat lugas)<br>• Tombol kembali: `<i class="ti ti-arrow-left"></i> Daftar Proyek` |
+| `resources/views/admin/projects/applicants.blade.php` & `resources/views/partials/extras-card.blade.php` | • Toggle tampilan dengan emoji `[ 🌁 Kartu ]` dan `[ ☰ Daftar ]`<br>• Emoji di dalam kartu/modal seperti `🎭`, `💬`, `⚡`, atau panah `← Kembali ke Proyek` | • Toggle tampilan: `<i class="ti ti-layout-grid"></i> Kartu` dan `<i class="ti ti-list"></i> Daftar`<br>• Gunakan `<i class="ti ti-brand-whatsapp"></i>` untuk tombol WA, `<i class="ti ti-user"></i>` untuk profil, dan `<i class="ti ti-arrow-left"></i>` untuk tombol kembali. |
 
-### C. Rombak Layout 3: Portal Extras — "Boarding-Pass Hero Card + 2-Column Job Board + Split Application View"
+### C. Portal Extras (`resources/views/extras/...` & `partials/application-progress.blade.php`)
 
-* **File Target**:
-  - `resources/views/extras/dashboard.blade.php` (`/extras/dashboard`)
-  - `resources/views/partials/application-progress.blade.php`
-  - `resources/views/extras/projects/index.blade.php` (`/extras/lowongan`)
-  - `resources/views/extras/projects/show.blade.php` (`/extras/lowongan/{id}`)
-  - `resources/views/partials/theme-style.blade.php`
-* **Masalah Layout Saat Ini**:
-  - Halaman `/extras/dashboard` masih berupa daftar kartu satu kolom standar dari atas ke bawah.
-  - Halaman `/extras/lowongan` masih menampilkan kartu-kartu besar satu kolom yang memakan banyak ruang vertikal.
-  - Halaman detail lowongan (`/extras/lowongan/{id}`) menaruh pilihan peran dan tombol daftar di bagian paling bawah setelah seluruh deskripsi.
-* **Arsitektur Layout Baru yang Wajib Dibangun**:
-  1. **Desain "Boarding-Pass / Tiket Shooting" di `/extras/dashboard` (`extras/dashboard.blade.php`)**:
-     - Ubah kartu jadwal shooting terdekat dan kartu **"Perlu Tindakan Segera"** menjadi komponen **`.boarding-pass-card`**:
-       - Memiliki header pita gelap/hijau JBTB (`#0B1A12` / `#15803D`) dengan label `🎬 JADWAL SHOOTING AKTIF` atau `⚡ TINDAKAN DIPERLUKAN SEGERA`.
-       - Bagian badan kartu dibagi menjadi **Grid Info Tiket** (Nama Proyek, Peran, Tanggal & Jam Kumpul, Lokasi Venue) yang dipisahkan oleh garis putus-putus horizontal/vertikal ala tiket (*perforated ticket divider* `border-top: 2px dashed var(--border)`).
-       - Bagian kaki tiket menampilkan **1 Tombol Aksi Utama Besar (`.btn-brand`)** (misalnya `[📸 Absen Selfie Sekarang]`, `[✍️ Tanda Tangani Kontrak]`, `[💬 Jawab Nego Honor]`, atau `[📍 Buka Google Maps]`).
-  2. **Rombak Katalog Lowongan `/extras/lowongan` Menjadi 2-Column Magazine Job Grid (`extras/projects/index.blade.php`)**:
-     - Di layar tablet/desktop (`min-width: 768px`), ubah daftar kartu lowongan menjadi **Grid 2 Kolom (`.job-board-grid` — `display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px;`)**.
-     - Di dalam setiap kartu lowongan, gunakan **Metadata Box 2x2** berlatar tonal lembut untuk menampilkan: `📅 Tanggal Shooting`, `📍 Lokasi`, `⏳ Deadline Daftar`, dan `👥 Total Kuota Peran`, diikuti daftar *pill* peran yang dibuka dan footer kartu berisi tombol `.btn-brand` `[Lihat Detail & Lamar →]`.
-  3. **Rombak Detail Lowongan `/extras/lowongan/{id}` Menjadi Split-Screen 2 Kolom di Desktop + Sticky Bottom Sheet di Mobile (`extras/projects/show.blade.php`)**:
-     - Bungkus konten halaman `extras/projects/show.blade.php` ke dalam **Grid 2 Kolom (`.project-apply-split` — `grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.9fr); gap: 24px; align-items: start;`)** di layar desktop:
-       - **Kolom Kiri**: Header proyek, deskripsi lengkap, jadwal tanggal syuting per hari, dan lampiran/ketentuan.
-       - **Kolom Kanan (Sticky di Desktop — `position: sticky; top: 84px;`)**: Kartu **"Pilih Peran & Kirim Lamaran"** langsung tampil di sebelah kanan atas tanpa perlu *scroll* ke bawah! Di layar HP (`< 768px`), kolom kanan berada di bawah namun dipandu oleh `.sticky-mobile-cta` yang menggulung layar langsung ke kotak pilihan peran.
+| File Target | Teks / Kode Saat Ini (Mengandung AI-Slop / Kurang Rapi) | Ubah Menjadi (Bersih & Konsisten Tabler Icons) |
+| :--- | :--- | :--- |
+| `resources/views/extras/projects/index.blade.php` (`/extras/lowongan`) | • Chip filter dengan emoji: `⚡ Butuh Dadakan`, `💰 Fee Tinggi (>500rb)`, `🎯 Sesuai Usia & Gender`, `🎯 Masih Ada Kuota`<br>• Teks meta proyek saat nama client kosong menampilkan strip mentah: `Client: - · JBTB-2026-008`<br>• Tombol dengan panah mentah: `Lihat Detail & Lamar →`<br>• Banyak `style="..."` inline yang menumpuk di tiap elemen kartu | • Ganti semua emoji di chip filter dengan Tabler Icons: `<i class="ti ti-bolt"></i> Butuh Dadakan`, `<i class="ti ti-coin"></i> Fee Tinggi`, `<i class="ti ti-user-check"></i> Sesuai Profil`, `<i class="ti ti-users"></i> Kuota Tersedia`<br>• **Perbaiki `Client: -`**: Jika nama client kosong/null/strip, jangan tampilkan teks `Client: - ·`; langsung tampilkan kode proyek `{{ $project->kode_proyek }}` atau jenis produksinya saja!<br>• Ganti `→` dengan `<i class="ti ti-arrow-right"></i>`<br>• Pindahkan inline `style="..."` yang berulang ke class CSS rapi di `theme-style.blade.php`. |
+| `resources/views/extras/projects/show.blade.php` (`/extras/lowongan/{id}`) | • Emoji `📅 Tanggal Shooting`, `👥 Peran yang Dibutuhkan`, `📍 Lokasi`<br>• Sticky Mobile CTA memakai panah HTML mentah: `Pilih Peran &darr;`<br>• Teks `Client: -` jika client kosong | • Ganti emoji dengan `<i class="ti ti-calendar-event"></i>`, `<i class="ti ti-users"></i>`, `<i class="ti ti-map-pin"></i>`<br>• Ubah tombol Sticky CTA menjadi: `Pilih Peran <i class="ti ti-arrow-down"></i>`<br>• Sembunyikan label `Client: -` jika nama client tidak ditampilkan ke publik. |
+| `resources/views/extras/profile-edit.blade.php` & `profile-show.blade.php` | • Tombol dengan emoji `👁 Pratinjau Portofolio Publik`<br>• Atribut title (Baris 113) memakai `&mdash;`: `title="Lihat seperti Client &mdash; Lihat bagaimana profil dan fotomu tampil saat dinilai oleh Client/PH"`<br>• Kotak tips dengan emoji `💡 Profil dengan 3+ foto...` | • Tombol: `<i class="ti ti-eye"></i> Pratinjau Portofolio Publik`<br>• Atribut title: `title="Pratinjau tampilan portofoliomu saat dilihat oleh Client"` (singkat, tanpa `&mdash;`)<br>• Kotak tips: gunakan `<i class="ti ti-bulb"></i>` (hapus emoji `💡`). |
+| `resources/views/partials/application-progress.blade.php` & `extras/dashboard.blade.php` | • Judul callout status `deal`/`diajukan_ke_client`: `Honor Deal — Menunggu Keputusan Client` (memakai em-dash `—`)<br>• Emoji `📍 Buka Maps` pada kartu jadwal<br>• Saat status `ditolak` / `dibatalkan`, belum ada tombol pintas untuk mencari lowongan lain<br>• Saat status `kontrak_ditandatangani`, tombol callout hanya mengarah ke `Rincian Honor` | • Ubah judul menjadi: `Honor Disepakati · Menunggu Keputusan Client` (gunakan titik tengah `·`)<br>• Ganti `📍` dengan `<i class="ti ti-map-pin"></i>`<br>• Tambahkan blok callout `.nac-danger` / `.nac-info` untuk status `ditolak` dengan tombol `.btn-tonal` `<a href="{{ route('extras.projects.index') }}">Cari Lowongan Lain <i class="ti ti-arrow-right"></i></a>`<br>• Pada status `kontrak_ditandatangani`, pastikan informasi jadwal syuting/absensi tampil jelas bersama tautan rincian honor. |
 
-### D. Rombak Layout 4: Portal Client & Halaman Monitoring Super Admin
+### D. Portal Client (`resources/views/client/...` & `invoices/index-client.blade.php`)
 
-* **File Target**:
-  - `resources/views/client/dashboard.blade.php` (`/client/dashboard`)
-  - `resources/views/client/reviews/show.blade.php` (`/client/reviews/{id}`)
-  - `resources/views/invoices/index-client.blade.php` (`/invoice`)
-  - `resources/views/super-admin/monitoring/admin.blade.php`, `korlap.blade.php`, `_gaya.blade.php`
-* **Arsitektur Layout Baru yang Wajib Dibangun**:
-  1. **Sticky Quota Progress Header & Lookbook Card di `client/reviews/show.blade.php`**:
-     - Tambahkan **Quota Fulfillment Banner** di bagian atas halaman pemilihan kandidat Client yang menampilkan bar progres keterisian kandidat terpilih dibandingkan kuota peran yang dibutuhkan.
-     - Berikan bingkai visual kontras (border hijau `2px solid #15803D` + badge sudut `"✓ Kandidat Terpilih"`) pada kartu talent yang sudah disetujui oleh Client agar langsung terlihat bedanya dengan kandidat yang masih menunggu keputusan.
-  2. **Visual Pipeline Tracker pada Proyek Berjalan di `client/dashboard.blade.php`**:
-     - Pada daftar proyek berjalan di Dashboard Client, tambahkan **4-Step Mini Progress Bar** (*1. Brief Diajukan $\rightarrow$ 2. Seleksi & Pemilihan $\rightarrow$ 3. Shooting $\rightarrow$ 4. Selesai & Invoice*) di setiap kartu proyek sehingga Client langsung melihat posisi proyeknya secara visual.
+| File Target | Teks / Kode Saat Ini (Mengandung AI-Slop / Typo) | Ubah Menjadi (Bersih & Natural) |
+| :--- | :--- | :--- |
+| `resources/views/client/reviews/show.blade.php` | • Kalimat kaku/salah kata hubung: *"&lt;strong&gt;Panduan Pemilihan Kandidat:&lt;/strong&gt; Pilih kandidat yang sesuai dengan kriteria produksi Anda. &lt;strong&gt;Kendati&lt;/strong&gt; kandidat yang Anda setujui akan langsung diproses tanda tangan kontraknya oleh tim Admin JBTB."*<br>• Tombol kembali: `← Kembali ke Pilih Kandidat` | • Perbaiki copywriting menjadi natural & lugas: *"&lt;strong&gt;Panduan Pemilihan:&lt;/strong&gt; Pilih kandidat yang sesuai dengan kebutuhan produksi Anda. Kandidat yang disetujui akan langsung dijadwalkan untuk tanda tangan kontrak oleh tim Admin JBTB."* (hapus kata `"Kendati"`)<br>• Tombol kembali: `<i class="ti ti-arrow-left"></i> Daftar Proyek Review` |
+| `resources/views/client/dashboard.blade.php` & `invoices/index-client.blade.php` | Cek seluruh link seperti `Lihat semua →` atau emoji pada tombol | Pastikan seluruh ikon menggunakan `<i class="ti ti-..."></i>` dan tidak ada satu pun emoji Unicode atau em-dash `—`. |
 
-## 4. Prosedur Eksekusi & Verifikasi Wajib untuk Antigravity
+## 4. Verifikasi Otomatis Wajib Sebelum Selesai
 
-1. **Baca Test Terlebih Dahulu**: Cek isi `tests/Feature/CpUiTest.php` dan `tests/Feature/CallinganCardTest.php` agar semua class/id/route yang di-assert oleh test tetap ada di dalam struktur HTML baru.
-2. **Tambahkan CSS Layout Makro di `resources/views/partials/theme-style.blade.php`**: Definisikan dengan rapi `.sa-command-grid`, `.lineup-stage-strip`, `.ecard-v2`, `.ecard-specs-grid`, `.xdrawer-right`, `.decision-console-box`, `.boarding-pass-card`, `.job-board-grid`, dan `.project-apply-split` lengkap dengan `@media (max-width: 768px)` responsif dan dukungan Dark Mode (`[data-theme="dark"]`).
-3. **Terapkan Rombak Layout di Seluruh Blade View Target** (bukan sekadar mengganti teks tombol, melainkan benar-benar menyusun ulang struktur Grid, Kartu, Drawer, dan Split-View sesuai Spesifikasi Bagian 3A–3D).
-4. **Jalankan Verifikasi Penuh**:
-   - `php artisan view:clear`
-   - `php artisan test` (Pastikan seluruh **962 tests** tetap **PASS 100%**).
+Setelah seluruh perubahan di atas selesai dikerjakan, jalankan langkah audit otomatis berikut di terminal:
+
+1. **Audit Zero Emoji & Zero Em-Dash di Folder Views**:
+   - Cari di seluruh `resources/views/` untuk memastikan **TIDAK ADA LAGI**:
+     - String `&mdash;` atau karakter `—` pada teks UI yang baru ditambahkan.
+     - String `&#blacktriangledown;`, `&rarr;`, `&larr;`, `&darr;`, atau karakter panah mentah `→`, `←`, `↓`, `▾` di dalam tombol/link.
+     - Emoji Unicode (`⚡`, `🔔`, `📅`, `👁`, `👥`, `🎯`, `💡`, `🔒`, `🔴`, `🎭`, `💬`, `📸`, `🧾`, `📍`, `💰`).
+2. **Bersihkan Cache & Jalankan Full Test Suite**:
+   - Jalankan `php artisan view:clear`
+   - Jalankan `php artisan test` dan pastikan **100% test suite (962+ tests) tetap PASS (Hijau)** tanpa error.

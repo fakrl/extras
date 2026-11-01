@@ -109,12 +109,12 @@
             <div style="display: flex; gap: 8px;">
                 @if ($url)
                     <a href="{{ $url }}" class="btn btn-sm btn-tonal" style="display: inline-flex; align-items: center; gap: 5px;">
-                        Buka Proyek &rarr;
+                        Buka Proyek <i class="ti ti-arrow-right"></i>
                     </a>
                 @endif
                 @if (! empty($e->url_absensi))
                     <a href="{{ $e->url_absensi }}" class="btn btn-sm btn-brand" style="display: inline-flex; align-items: center; gap: 5px;">
-                        <i class="ti ti-clipboard-check"></i> Absensi &rarr;
+                        <i class="ti ti-clipboard-check"></i> Absensi <i class="ti ti-arrow-right"></i>
                     </a>
                 @endif
             </div>

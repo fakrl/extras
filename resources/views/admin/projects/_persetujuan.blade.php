@@ -53,7 +53,7 @@
     @forelse ($akunPerhatianList as $user)
         <a href="{{ route('super-admin.admins.show', $user) }}" class="dash-row">
             <div><strong>{{ $user->name }}</strong><div class="dash-sub">Belum ganti password lebih dari 7 hari</div></div>
-            <span class="dash-sub">Buka &rarr;</span>
+            <span class="dash-sub">Buka <i class="ti ti-arrow-right"></i></span>
         </a>
     @empty
         <x-kosong teks="Tidak ada akun yang perlu perhatian." />

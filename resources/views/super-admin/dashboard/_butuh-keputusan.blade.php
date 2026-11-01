@@ -33,14 +33,14 @@
 
             <form method="POST" action="{{ route('super-admin.projects.minta-revisi', $req) }}" class="dash-dialog-bagian">
                 @csrf @method('PATCH')
-                <label for="dash-revisi-{{ $req->id }}">Minta revisi &mdash; catatan untuk Client <span class="wajib" aria-hidden="true">*</span></label>
+                <label for="dash-revisi-{{ $req->id }}">Minta revisi: catatan untuk Client <span class="wajib" aria-hidden="true">*</span></label>
                 <textarea name="alasan_tolak" id="dash-revisi-{{ $req->id }}" rows="2" required maxlength="500" class="dash-dialog-field"></textarea>
                 <button type="submit" class="btn">Kirim Minta Revisi</button>
             </form>
 
             <form method="POST" action="{{ route('super-admin.projects.reject', $req) }}">
                 @csrf @method('PATCH')
-                <label for="dash-tolak-{{ $req->id }}">Tolak &mdash; alasan (dikirim ke Client) <span class="wajib" aria-hidden="true">*</span></label>
+                <label for="dash-tolak-{{ $req->id }}">Tolak: alasan (dikirim ke Client) <span class="wajib" aria-hidden="true">*</span></label>
                 <textarea name="alasan_tolak" id="dash-tolak-{{ $req->id }}" rows="2" required maxlength="500" class="dash-dialog-field"></textarea>
                 <button type="submit" class="btn btn-danger-outline">Tolak Pengajuan</button>
             </form>

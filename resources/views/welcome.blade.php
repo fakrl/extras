@@ -7,11 +7,11 @@
     <meta name="color-scheme" content="dark light">
     <meta name="theme-color" content="#f1f0e9">
     <link rel="icon" href="{{ asset('images/logo-jbtb.jpg') }}" type="image/jpeg">
-    <title>JBTB Casting — Agensi Extras & Talent Jakarta</title>
+    <title>JBTB Casting · Agensi Extras & Talent Jakarta</title>
     <link rel="canonical" href="{{ url('/') }}">
     @include('partials.og-meta', [
         'noindex' => false,
-        'ogTitle' => 'JBTB Casting — Agensi Extras & Talent Jakarta',
+        'ogTitle' => 'JBTB Casting · Agensi Extras & Talent Jakarta',
         'ogDesc' => 'Daftar jadi extras, lamar casting yang sedang buka, kontrak dan honor tercatat jelas di satu tempat di JBTB Casting.',
         'ogImage' => asset('images/hero-clapboard.jpg'),
     ])

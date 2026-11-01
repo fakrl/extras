@@ -635,7 +635,7 @@
                 <strong>PT. JBTB Casting Creative Group</strong> &middot; NIB terdaftar OSS
             </div>
             <div>
-                <a href="{{ route('home') }}" style="color: var(--priv-muted); text-decoration: none;">&larr; Kembali ke Beranda JBTB</a>
+                <a href="{{ route('home') }}" style="color: var(--priv-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;"><i class="ti ti-arrow-left"></i> Kembali ke Beranda JBTB</a>
             </div>
         </div>
     </footer>

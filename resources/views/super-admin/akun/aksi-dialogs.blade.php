@@ -53,6 +53,10 @@
                     <div class="akun-dialog-judul">Edit akun · {{ $u->name }}</div>
                     <label>Nama <span class="wajib" aria-hidden="true">*</span></label>
                     <input type="text" name="name" value="{{ $u->name }}" required>
+
+                    <label>Username</label>
+                    <input type="text" name="username" value="{{ $u->username }}" placeholder="username">
+
                     <label>Email @unless ($u->isClient())<span class="wajib" aria-hidden="true">*</span>@endunless</label>
                     <input type="email" name="email" value="{{ $u->email }}" @required(! $u->isClient())>
                     
@@ -68,6 +72,11 @@
                             <input type="checkbox" name="konfirmasi_role" value="1" style="width: auto;">
                             Saya paham: mengganti peran staf akan mengubah hak akses penugasan akun ini.
                         </label>
+
+                        @if (in_array($u->role, ['admin', 'korlap']))
+                            <label style="margin-top: 8px;">Honor per Event (Rp)</label>
+                            <input type="number" name="honor_nominal" value="{{ $u->honor_nominal }}" min="0" placeholder="Rp 0">
+                        @endif
                     @endif
 
                     <div class="akun-dialog-btn">

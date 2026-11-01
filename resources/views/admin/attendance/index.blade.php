@@ -228,13 +228,13 @@
         @if ($perluValidasi->isNotEmpty())
             <a href="#app-{{ $perluValidasi->first()->id }}" class="dash-row">
                 <div><span class="badge badge-pending">Menunggu validasi</span> <strong>{{ $perluValidasi->count() }} selfie</strong></div>
-                <span class="dash-sub">Cek &rarr;</span>
+                <span class="dash-sub">Cek <i class="ti ti-arrow-right"></i></span>
             </a>
         @endif
         @if ($belumDiabsen->isNotEmpty())
             <a href="#app-{{ $belumDiabsen->first()->id }}" class="dash-row">
                 <div><span class="badge badge-netral">Belum diabsen</span> <strong>{{ $belumDiabsen->count() }} Extras</strong></div>
-                <span class="dash-sub">Cek &rarr;</span>
+                <span class="dash-sub">Cek <i class="ti ti-arrow-right"></i></span>
             </a>
         @endif
         @unless ($rekap['menunggu'])

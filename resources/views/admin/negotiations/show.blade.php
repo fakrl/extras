@@ -4,7 +4,7 @@
 
 @section('content')
 @php $bolehKelola = auth()->user()->can('kelola', $application->castingProject); @endphp
-<p style="margin: -8px 0 8px;"><a href="{{ route('admin.projects.applicants', $application->castingProject) }}" style="color: var(--accent); font-size: 13px;">&larr; Kembali ke pendaftar</a></p>
+<p style="margin: -8px 0 8px;"><a href="{{ route('admin.projects.applicants', $application->castingProject) }}" style="color: var(--accent); font-size: 13px; display: inline-flex; align-items: center; gap: 4px;"><i class="ti ti-arrow-left"></i> Kembali ke Lineup</a></p>
 <p style="color: var(--text-secondary); margin: 0 0 20px; font-size: 13.5px;">
     <strong>{{ '@'.$application->extras->user->username }}</strong> · {{ $application->castingProjectClass?->nama_kelas ?? 'Peran belum dipilih' }} · {{ $application->extras->user->name }}<br>
     Proyek: {{ $application->castingProject->nama_produksi }} ·

@@ -33,7 +33,7 @@
                 <span class="badge badge-netral" style="margin-left: 8px;">{{ $jumlahTindakan }}</span>
             @endif
         </div>
-        <div class="dash-aman" role="status" @if ($jumlahTindakan) hidden @endif><i class="ti ti-circle-check"></i> Semua aman &mdash; tidak ada yang perlu ditindak.</div>
+        <div class="dash-aman" role="status" @if ($jumlahTindakan) hidden @endif><i class="ti ti-circle-check"></i> Semua aman · tidak ada yang perlu ditindak.</div>
 
         @if ($perluDireview)
             <a href="{{ route('client.reviews.index') }}" class="dash-row">
@@ -42,7 +42,7 @@
                     <strong>{{ $perluDireview }} kandidat</strong>
                     <div class="dash-sub">Pilih kandidat yang lolos</div>
                 </div>
-                <span class="dash-sub">Buka &rarr;</span>
+                <span class="dash-sub">Buka <i class="ti ti-arrow-right"></i></span>
             </a>
         @endif
 
@@ -53,7 +53,7 @@
                     <strong>{{ $inv->castingProject?->nama_produksi }}</strong>
                     <div class="dash-sub">Invoice sudah ditandatangani JBTB, menunggu tanda tangan Anda</div>
                 </div>
-                <span class="dash-sub">Buka &rarr;</span>
+                <span class="dash-sub">Buka <i class="ti ti-arrow-right"></i></span>
             </a>
         @endforeach
 
@@ -64,7 +64,7 @@
                     <strong>{{ $daftarJadwal->first()->castingProject?->nama_produksi }}</strong>
                     <div class="dash-sub">{{ $daftarJadwal->count() }} tanggal shooting belum ada lokasinya</div>
                 </div>
-                <span class="dash-sub">Buka &rarr;</span>
+                <span class="dash-sub">Buka <i class="ti ti-arrow-right"></i></span>
             </a>
         @endforeach
 

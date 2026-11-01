@@ -110,16 +110,24 @@
             </div>
 
             <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                @if ($u->role === 'extras' && $u->extrasProfile)
-                    <a href="{{ route('admin.extras.profil', $u) }}" class="btn btn-sm btn-tonal" data-profil-modal data-aksi-url="{{ route('super-admin.admins.show', $u) }}" data-aksi-label="Buka Akun Penuh" onclick="this.closest('dialog').close()">
-                        <i class="ti ti-user"></i> Portofolio
-                    </a>
+                @if ($u->role === 'extras')
+                    @if ($u->extrasProfile)
+                        <a href="{{ route('admin.extras.profil', $u) }}" class="btn btn-sm btn-brand" target="_blank">
+                            <i class="ti ti-id"></i> Buka Profil Extras <i class="ti ti-external-link"></i>
+                        </a>
+                    @endif
+                    @unless ($u->trashed() || $u->is_protected)
+                        <a href="{{ route('super-admin.admins.show', $u) }}" class="btn btn-sm btn-tonal" title="Detail Akun & Log">
+                            Detail Akun
+                        </a>
+                    @endunless
+                @else
+                    @unless ($u->trashed() || $u->is_protected)
+                        <a href="{{ route('super-admin.admins.show', $u) }}" class="btn btn-sm btn-brand">
+                            Buka Akun Penuh <i class="ti ti-arrow-right"></i>
+                        </a>
+                    @endunless
                 @endif
-                @unless ($u->trashed() || $u->is_protected)
-                    <a href="{{ route('super-admin.admins.show', $u) }}" class="btn btn-sm btn-brand">
-                        Buka Akun Penuh &rarr;
-                    </a>
-                @endunless
             </div>
         </div>
     </div>

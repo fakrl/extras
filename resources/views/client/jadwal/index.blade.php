@@ -18,7 +18,7 @@
                     {{ $project->shootingDates->count() }} tanggal shooting
                     @php $kosong = $project->shootingDates->whereNull('lokasi')->count(); @endphp
                     @if ($kosong > 0)
-                        &mdash; <span style="color: var(--color-warning, #b45309);">{{ $kosong }} belum diisi jadwal</span>
+                        · <span style="color: var(--color-warning, #b45309);">{{ $kosong }} belum diisi jadwal</span>
                     @endif
                 </div>
             @endif

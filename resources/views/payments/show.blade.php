@@ -5,7 +5,7 @@
 @section('content')
 @php $admin = auth()->user()->bisaSebagaiAdmin(); @endphp
 @php $bolehKelola = auth()->user()->can('kelola', $application->castingProject); @endphp
-<p style="margin: -8px 0 8px;"><a href="{{ $admin ? route('admin.projects.applicants', $application->castingProject) : route('extras.dashboard') }}" style="color: var(--accent); font-size: 13px;">&larr; {{ $admin ? 'Kembali ke pendaftar' : 'Kembali ke dashboard' }}</a></p>
+<p style="margin: -8px 0 8px;"><a href="{{ $admin ? route('admin.projects.applicants', $application->castingProject) : route('extras.dashboard') }}" style="color: var(--accent); font-size: 13px; display: inline-flex; align-items: center; gap: 4px;"><i class="ti ti-arrow-left"></i> {{ $admin ? 'Kembali ke Lineup' : 'Kembali ke Dashboard' }}</a></p>
 <p style="color: var(--text-secondary); margin: 0 0 20px; font-size: 13.5px;">
     @if ($admin)
         Extras: <strong>{{ $application->extras->user->name }}</strong> ·

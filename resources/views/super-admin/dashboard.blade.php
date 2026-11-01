@@ -31,7 +31,7 @@
     <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0;">
         <div class="card sa-card" style="border-top: 4px solid var(--warning, #D97706); margin: 0;">
             <div class="card-title" style="display: flex; align-items: center; gap: 6px;">
-                <span>⚡ Prioritas Utama: Butuh Keputusan Anda</span>
+                <span><i class="ti ti-alert-circle"></i> Butuh keputusan Anda</span>
                 @if ($jumlahTindakan)
                     <span class="badge badge-urgent" style="margin-left: auto;">{{ $jumlahTindakan }} perlu tindakan</span>
                 @endif
@@ -42,13 +42,13 @@
                 <x-kosong ikon="circle-check" teks="Tidak ada yang perlu diputuskan." />
             @endforelse
             @if ($jumlahTindakan)
-                <a href="{{ route('admin.projects.index', ['tahap' => 'menunggu_acc']) }}" class="sa-lihat-semua">Lihat semua ({{ $jumlahTindakan }}) &rarr;</a>
+                <a href="{{ route('admin.projects.index', ['tahap' => 'menunggu_acc']) }}" class="sa-lihat-semua">Lihat semua ({{ $jumlahTindakan }}) <i class="ti ti-arrow-right"></i></a>
             @endif
         </div>
 
         <div class="card sa-card" style="border-top: 4px solid var(--accent, #15803D); margin: 0;">
             <div class="card-title" style="display: flex; align-items: center; gap: 6px;">
-                <span>🔔 Staf perlu diingatkan</span>
+                <span><i class="ti ti-bell"></i> Staf perlu diingatkan</span>
                 @if ($stafTertunda)
                     <span class="badge badge-netral" style="margin-left: auto;">{{ $stafTertunda }} tugas</span>
                 @endif
@@ -60,7 +60,7 @@
             @endforelse
             @if ($stafTertunda)
                 @php $tujuanStaf = ($diingatkan->first()['peran'] ?? 'admin') === 'korlap' ? 'super-admin.monitoring.korlap' : 'super-admin.monitoring.admin'; @endphp
-                <a href="{{ route($tujuanStaf) }}" class="sa-lihat-semua">Lihat semua &rarr;</a>
+                <a href="{{ route($tujuanStaf) }}" class="sa-lihat-semua">Lihat semua <i class="ti ti-arrow-right"></i></a>
             @endif
         </div>
     </div>
@@ -68,10 +68,10 @@
     {{-- Kolom Kanan Pendamping: Panel Kalender & Jadwal Sticky --}}
     <div class="sa-sticky-panel">
         <div class="card sa-card" style="margin: 0;">
-            <div class="card-title"><i class="ti ti-calendar"></i> Jadwal &amp; Agenda Shooting</div>
+            <div class="card-title"><i class="ti ti-calendar-event"></i> Jadwal &amp; Agenda Shooting</div>
             <x-navigasi-timeline :dari="$dariJadwal" :sampai="$sampaiJadwal" :skala="$skala" :action="route('super-admin.dashboard')" />
             <x-agenda :events="$agendaEvents" />
-            <a href="{{ route('admin.projects.index') }}" class="sa-lihat-semua">Lihat semua &rarr;</a>
+            <a href="{{ route('admin.projects.index') }}" class="sa-lihat-semua">Lihat semua <i class="ti ti-arrow-right"></i></a>
         </div>
     </div>
 </div>

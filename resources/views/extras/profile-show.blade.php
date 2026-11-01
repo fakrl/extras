@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
 @php $mode ??= 'pemilik'; @endphp
-@section('title', ['admin' => 'Profil Extras — '.$profile->user->name, 'client' => 'Profil @'.$profile->user->username][$mode] ?? 'Profil Saya')
+@section('title', ['admin' => 'Profil Extras · '.$profile->user->name, 'client' => 'Profil @'.$profile->user->username][$mode] ?? 'Profil Saya')
 
 @section('content')
 @if ($mode === 'client')
-    <p style="margin: 0 0 10px;"><a href="{{ route('client.reviews.index') }}" style="color: var(--accent); font-size: 13px;">&larr; Kembali ke Pilih Kandidat</a></p>
+    <p style="margin: 0 0 10px;"><a href="{{ route('client.reviews.index') }}" style="color: var(--accent); font-size: 13px;"><i class="ti ti-arrow-left"></i> Daftar Proyek Review</a></p>
 @endif
 @include('partials.profil-extras-app')
 

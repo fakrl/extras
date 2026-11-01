@@ -1208,7 +1208,7 @@
                     <div class="alert-info">{{ session('info') }}</div>
                 @endif
                 @if (session('error'))
-                    <div class="alert-danger">{{ session('error') }} @if (session('bentrok_link')) <a href="{{ session('bentrok_link') }}" style="color: inherit; font-weight: 600;">Lihat pendaftaran yang bentrok &rarr;</a> @endif</div>
+                    <div class="alert-danger">{{ session('error') }} @if (session('bentrok_link')) <a href="{{ session('bentrok_link') }}" style="color: inherit; font-weight: 600;">Lihat pendaftaran yang bentrok <i class="ti ti-arrow-right"></i></a> @endif</div>
                 @endif
                 @if ($errors->any())
                     <div class="alert-danger">

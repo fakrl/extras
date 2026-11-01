@@ -4,7 +4,7 @@
 
 @section('content')
 <div style="margin-bottom: 16px;">
-    <a href="{{ route('client.jadwal.index') }}" style="font-size: 13px; color: var(--text-muted);">&larr; Kembali</a>
+    <a href="{{ route('client.jadwal.index') }}" style="font-size: 13px; color: var(--text-muted); display: inline-flex; align-items: center; gap: 4px;"><i class="ti ti-arrow-left"></i> Kembali ke Daftar Jadwal</a>
 </div>
 
 <div style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">{{ $project->nama_produksi }}</div>
@@ -79,7 +79,7 @@
                                 <div style="font-size: var(--fs-xs); color: var(--text-secondary); margin-top: 2px;">{{ $absen->projectApplication?->extras?->user?->username }}</div>
                                 <div style="font-size: var(--fs-xs); color: var(--text-muted);">
                                     @if ($absen->status_validasi === 'tervalidasi' && $absen->status === 'hadir')
-                                        <span style="color: var(--accent);">✓ Hadir</span>
+                                        <span style="color: var(--accent);"><i class="ti ti-check"></i> Hadir</span>
                                     @elseif ($absen->status_validasi === 'tervalidasi' && $absen->status === 'tidak_hadir')
                                         <span style="color: var(--danger, #d9534f);">Tidak hadir</span>
                                     @else

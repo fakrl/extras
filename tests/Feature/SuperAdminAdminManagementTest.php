@@ -303,4 +303,46 @@ class SuperAdminAdminManagementTest extends TestCase
         $response->assertSessionHas('error');
         $this->assertSame('extras', $extras->fresh()->role);
     }
+
+    public function test_super_admin_bisa_update_username_dan_honor_staf(): void
+    {
+        $superAdmin = User::factory()->create(['role' => 'super_admin']);
+        $korlap = User::factory()->create([
+            'role' => 'korlap',
+            'username' => 'korlap_lama',
+            'honor_nominal' => 150000,
+        ]);
+
+        $response = $this->actingAs($superAdmin)->patch(route('super-admin.admins.update', $korlap), [
+            'name' => 'Korlap Update',
+            'username' => 'korlap_baru',
+            'email' => $korlap->email,
+            'role' => 'korlap',
+            'honor_nominal' => 250000,
+        ]);
+
+        $response->assertSessionHas('status');
+        $fresh = $korlap->fresh();
+        $this->assertSame('Korlap Update', $fresh->name);
+        $this->assertSame('korlap_baru', $fresh->username);
+        $this->assertEquals(250000, $fresh->honor_nominal);
+    }
+
+    public function test_staf_dengan_username_bisa_login_pakai_username(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+            'username' => 'admin_super_kece',
+            'email' => 'adminkece@example.com',
+            'password' => bcrypt('password123'),
+        ]);
+
+        $response = $this->post(route('login'), [
+            'email' => 'admin_super_kece', // Identifier input name="email" di form login
+            'password' => 'password123',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertAuthenticatedAs($admin);
+    }
 }

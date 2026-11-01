@@ -18,7 +18,7 @@
 
 @if ($castingProject->brief_catatan && $castingProject->classes->isEmpty())
     <div style="background: #fef9c3; border: 1px solid #ca8a04; color: #713f12; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
-        <strong>Proyek dari Client — Breakdown belum lengkap.</strong> Peran &amp; jadwal syuting belum diisi. Lengkapi di bagian bawah halaman ini sebelum mulai buka pendaftaran.
+        <strong>Proyek dari Client · Breakdown belum lengkap.</strong> Peran &amp; jadwal syuting belum diisi. Lengkapi di bagian bawah halaman ini sebelum mulai buka pendaftaran.
     </div>
 @endif
 
@@ -128,7 +128,7 @@
             @endif
         @else
             <div style="background: var(--bg-muted, #f8fafc); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; font-size: 13px; color: var(--text-muted);">
-                Budget rahasia — bukan proyek Anda.
+                Budget rahasia · bukan proyek Anda.
             </div>
         @endcan
         <div style="font-size: 14px; font-weight: 500; margin-bottom: 8px;">

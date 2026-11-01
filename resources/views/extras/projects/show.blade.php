@@ -9,8 +9,10 @@
         <div>
             <div class="pch-title">{{ $castingProject->nama_produksi }}</div>
             <div class="pch-meta">
-                <span>Client: {{ $castingProject->namaClient() }}</span>
-                <span>&bull;</span>
+                @if ($castingProject->namaClient() && $castingProject->namaClient() !== '-')
+                    <span>Client: {{ $castingProject->namaClient() }}</span>
+                    <span>&bull;</span>
+                @endif
                 <span>Deadline: {{ $castingProject->deadline->translatedFormat('d M Y') }}</span>
                 @if ($castingProject->kode_proyek)
                     <span class="badge badge-netral">{{ $castingProject->kode_proyek }}</span>
@@ -30,7 +32,7 @@
     {{-- Kolom Kiri: Informasi & Rincian Proyek --}}
     <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0;">
         <div class="card" style="margin: 0;">
-            <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;"><i class="ti ti-calendar"></i> Tanggal Shooting</div>
+            <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;"><i class="ti ti-calendar-event"></i> Tanggal Shooting</div>
             <ul style="margin: 0; padding-left: 18px; font-size: 13.5px;">
                 @foreach ($castingProject->shootingDates as $date)
                     @php($kena = $bentrok->filter(fn ($b) => $b->tanggalBentrok->contains($date->tanggal->toDateString())))
@@ -114,7 +116,7 @@
         <div style="font-size: 11px; color: var(--text-muted);">Deadline: {{ $castingProject->deadline->translatedFormat('d M') }}</div>
         <div style="font-size: 13px; font-weight: 700;">{{ $castingProject->nama_produksi }}</div>
     </div>
-    <a href="#kartu-pilih-peran" class="btn btn-brand" onclick="document.getElementById('kartu-pilih-peran')?.scrollIntoView({behavior:'smooth'}); return false;">Pilih Peran &darr;</a>
+    <a href="#kartu-pilih-peran" class="btn btn-brand" onclick="document.getElementById('kartu-pilih-peran')?.scrollIntoView({behavior:'smooth'}); return false;">Pilih Peran <i class="ti ti-arrow-down"></i></a>
 </div>
 
 @if (session('konfirmasi_bentrok'))

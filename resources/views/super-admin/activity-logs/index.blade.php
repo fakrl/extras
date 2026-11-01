@@ -185,12 +185,12 @@
                         <div style="display: flex; flex-direction: column; gap: 8px;">
                             @if (isset($log->properties['role_lama']) && isset($log->properties['role_baru']))
                                 <div style="font-size: var(--fs-xs); padding: 8px 10px; background: var(--bg-card-hover); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-                                    <strong>Perubahan Role:</strong> <span class="badge badge-netral">{{ $log->properties['role_lama'] }}</span> &rarr; <span class="badge badge-brand">{{ $log->properties['role_baru'] }}</span>
+                                    <strong>Perubahan Role:</strong> <span class="badge badge-netral">{{ $log->properties['role_lama'] }}</span> <i class="ti ti-arrow-right"></i> <span class="badge badge-brand">{{ $log->properties['role_baru'] }}</span>
                                 </div>
                             @endif
                             @if (isset($log->properties['grade_lama']) || isset($log->properties['grade_baru']))
                                 <div style="font-size: var(--fs-xs); padding: 8px 10px; background: var(--bg-card-hover); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-                                    <strong>Perubahan Grade:</strong> <span class="badge badge-netral">{{ $log->properties['grade_lama'] ?? 'Belum dinilai' }}</span> &rarr; <span class="badge badge-brand">{{ $log->properties['grade_baru'] ?? 'Belum dinilai' }}</span>
+                                    <strong>Perubahan Grade:</strong> <span class="badge badge-netral">{{ $log->properties['grade_lama'] ?? 'Belum dinilai' }}</span> <i class="ti ti-arrow-right"></i> <span class="badge badge-brand">{{ $log->properties['grade_baru'] ?? 'Belum dinilai' }}</span>
                                 </div>
                             @endif
                             <pre style="background: var(--bg-page); padding: 10px; border-radius: var(--radius-sm); margin: 0; font-size: 12px; font-family: monospace; overflow-x: auto; white-space: pre-wrap; word-break: break-all; border: 1px solid var(--border-color);">{{ json_encode($log->properties, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
@@ -209,7 +209,7 @@
                     </button>
                     @if ($url)
                         <a href="{{ $url }}" class="btn btn-sm btn-brand">
-                            Buka {{ ['User' => 'Akun', 'ExtrasProfile' => 'Profil Extras', 'CastingProject' => 'Proyek', 'ProjectApplication' => 'Pendaftaran', 'Attendance' => 'Absensi', 'Contract' => 'Kontrak', 'Invoice' => 'Invoice', 'FeeNegotiation' => 'Nego'][class_basename($log->subject_type)] ?? 'Subjek' }} &rarr;
+                            Buka {{ ['User' => 'Akun', 'ExtrasProfile' => 'Profil Extras', 'CastingProject' => 'Proyek', 'ProjectApplication' => 'Pendaftaran', 'Attendance' => 'Absensi', 'Contract' => 'Kontrak', 'Invoice' => 'Invoice', 'FeeNegotiation' => 'Nego'][class_basename($log->subject_type)] ?? 'Subjek' }} <i class="ti ti-arrow-right"></i>
                         </a>
                     @endif
                 </div>

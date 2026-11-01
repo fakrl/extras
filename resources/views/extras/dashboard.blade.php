@@ -65,7 +65,7 @@
             <div class="dash-sub" style="margin-bottom: 4px;">Profil {{ $persenProfil }}% lengkap</div>
             <progress value="{{ $persenProfil }}" max="100" class="profil-persen-bar"></progress>
         </div>
-        <span class="dash-sub">Lengkapi &rarr;</span>
+        <span class="dash-sub">Lengkapi <i class="ti ti-arrow-right"></i></span>
     </a>
 @endif
 
@@ -136,7 +136,7 @@
                 <div style="min-width: 0; flex: 1;">
                     <span class="badge {{ $t['badge'] }}">{{ $t['label'] }}</span>
                     @isset($t['app'])
-                        <a href="#pendaftaran-{{ $t['app'] }}" class="dash-sub" style="display: block; margin-top: 4px; color: inherit;">{!! $t['teks'] !!} <span style="color: var(--accent);">&darr;</span></a>
+                        <a href="#pendaftaran-{{ $t['app'] }}" class="dash-sub" style="display: block; margin-top: 4px; color: inherit;">{!! $t['teks'] !!} <i class="ti ti-arrow-down" style="color: var(--accent);"></i></a>
                     @else
                         <div class="dash-sub" style="margin-top: 4px;">{!! $t['teks'] !!}</div>
                     @endisset
@@ -332,7 +332,7 @@
 
 @if ($riwayatPendaftaran->isNotEmpty())
     <details class="card" data-dash="riwayat" style="margin-bottom: 14px;">
-        <summary style="list-style: none; cursor: pointer; font-size: 13.5px; font-weight: 600;">Riwayat ({{ $riwayatPendaftaran->count() }}) &#9662;</summary>
+        <summary style="list-style: none; cursor: pointer; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; justify-content: space-between;"><span>Riwayat ({{ $riwayatPendaftaran->count() }})</span> <i class="ti ti-chevron-down"></i></summary>
         @foreach ($riwayatPendaftaran as $app)
             <div class="dash-row" id="pendaftaran-{{ $app->id }}">
                 <div style="min-width: 0; flex: 1;">
@@ -340,9 +340,9 @@
                     <x-status-badge :model="$app" style="margin-top: 4px; display: inline-block;" />
                 </div>
                 @if ($app->status_partisipasi === 'selesai_produksi')
-                    <a href="{{ route('payments.show', $app) }}" style="font-size: 12.5px; color: var(--accent);">Pembayaran &rarr;</a>
+                    <a href="{{ route('payments.show', $app) }}" style="font-size: 12.5px; color: var(--accent);">Pembayaran <i class="ti ti-arrow-right"></i></a>
                 @else
-                    <a href="{{ route('extras.projects.show', $app->castingProject) }}" style="font-size: 12.5px; color: var(--accent);">Lihat proyek &rarr;</a>
+                    <a href="{{ route('extras.projects.show', $app->castingProject) }}" style="font-size: 12.5px; color: var(--accent);">Lihat proyek <i class="ti ti-arrow-right"></i></a>
                 @endif
             </div>
         @endforeach
@@ -354,7 +354,7 @@
 <div class="card" data-dash="casting-call">
     <div class="card-header-row" style="margin-bottom: 4px;">
         <div class="card-title" style="margin: 0;"><i class="ti ti-microphone"></i> Lowongan Terbuka</div>
-        <a href="{{ route('extras.projects.index') }}" style="font-size: 12.5px; color: var(--accent);">Lihat semua &rarr;</a>
+        <a href="{{ route('extras.projects.index') }}" style="font-size: 12.5px; color: var(--accent);">Lihat semua <i class="ti ti-arrow-right"></i></a>
     </div>
     @forelse ($castingCallTerbuka as $project)
         @php $peran = $project->peranCocok; @endphp
