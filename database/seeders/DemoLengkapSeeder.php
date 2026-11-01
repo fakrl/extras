@@ -75,6 +75,13 @@ class DemoLengkapSeeder extends Seeder
                 $user->update(['honor_nominal' => $s[5]]);
             }
         }
+
+        $sa = $this->u['fakrul'];
+        $this->log($sa, 'CREATE_USER', 'Super Admin membuat akun Admin Rina Kartika (@admin_rina)', $this->u['admin_rina'], -120);
+        $this->log($sa, 'CREATE_USER', 'Super Admin membuat akun Admin Yoga Pratama (@admin_yoga)', $this->u['admin_yoga'], -120);
+        $this->log($sa, 'CREATE_USER', 'Super Admin membuat akun Korlap Bambang Susilo (@korlap_bambang)', $this->u['korlap_bambang'], -120);
+        $this->log($sa, 'UPDATE_HONOR', 'Super Admin menetapkan honor Admin Rina Kartika sebesar Rp 1.500.000', $this->u['admin_rina'], -100);
+        $this->log($sa, 'TOGGLE_USER_STATUS', 'Super Admin menonaktifkan akun staf Hendra Wijaya (@admin_hendra)', $this->u['admin_hendra'], -20);
     }
 
     private function extras(): void
@@ -117,6 +124,7 @@ class DemoLengkapSeeder extends Seeder
                 'tinggi_badan' => $tinggi,
                 'ukuran_baju' => $baju[$g],
                 'berat_badan' => $tinggi - ($g === 'pria' ? 105 : 110),
+                'foto_profil_path' => $this->fotoDemo($username, $no, $g),
                 'riwayat_pengalaman' => collect(explode('. ', rtrim($pengalaman, '.')))->map(fn ($judul, $k) => [
                     'judul' => $judul, 'keterangan' => null, 'tahun' => now()->year - $k - $no % 3,
                 ])->all(),
@@ -127,6 +135,7 @@ class DemoLengkapSeeder extends Seeder
                 'grade_diberikan_at' => $grade ? now()->subDays(30) : null,
                 'created_at' => now()->subDays($daftar),
             ]);
+            $profile->generateShareToken();
             $profile->categories()->sync($tag->only([...$tags, $usia > 50 ? 'Sawo matang' : 'Kuning langsat'])->values());
         }
 
@@ -138,34 +147,61 @@ class DemoLengkapSeeder extends Seeder
         $this->u['putri_a']->update(['status' => 'nonaktif']);
         $this->u['lama_dihapus']->delete();
 
-        // BH.2: 8 Extras izin + tampil di beranda (foto placeholder SVG), arga_p izin tapi belum di-ACC Admin.
-        foreach (['dimas_rk', 'sari_mei', 'bagas22', 'citra_ay', 'pak_harto', 'kevin_t', 'yohanes_m', 'clara_b', 'arga_p'] as $i => $un) {
-            $profile = $this->u[$un]->extrasProfile;
-            $profile->forceFill([
-                'foto_profil_path' => $this->fotoDemo($un, $i, $profile->gender),
+        // BH.2: Extras izin + tampil di beranda (maks 12), arga_p izin tapi belum di-ACC Admin.
+        $berandaExtras = ['dimas_rk', 'sari_mei', 'bagas22', 'citra_ay', 'pak_harto', 'kevin_t', 'yohanes_m', 'clara_b', 'aisyah_f', 'nadia_pu', 'tono_g', 'wulan_s'];
+        foreach ($berandaExtras as $idx => $un) {
+            $this->u[$un]->extrasProfile->forceFill([
                 'izin_tampil_publik' => true,
-                'tampil_di_beranda' => $un !== 'arga_p',
-                'tampil_di_beranda_at' => $un !== 'arga_p' ? now()->subDays($i) : null,
+                'tampil_di_beranda' => true,
+                'tampil_di_beranda_at' => now()->subDays($idx),
             ])->save();
-            $profile->generateShareToken();
         }
+        $this->u['arga_p']->extrasProfile->forceFill([
+            'izin_tampil_publik' => true,
+            'tampil_di_beranda' => false,
+            'tampil_di_beranda_at' => null,
+        ])->save();
 
-        // CL/BJ: tautan tambahan (sosmed/portofolio) & galeri foto tambahan, contoh profil terisi penuh.
+        // CL/BJ: tautan tambahan (sosmed/portofolio) & galeri foto tambahan multi-angle.
         $this->u['dimas_rk']->extrasProfile->forceFill([
             'tautan_tambahan' => [
                 ['label' => 'Instagram', 'url' => 'https://instagram.com/dimas.rk'],
                 ['label' => 'Portofolio', 'url' => 'https://dimasrk.my.canva.site'],
             ],
-            'foto_tambahan' => [1 => $this->fotoDemo('dimas_rk-slot1', 1, 'pria'), 2 => $this->fotoDemo('dimas_rk-slot2', 2, 'pria')],
+            'foto_tambahan' => [1 => $this->fotoDemo('dimas_rk-slot1', 25, 'pria'), 2 => $this->fotoDemo('dimas_rk-slot2', 26, 'pria')],
         ])->save();
         $this->u['yohanes_m']->extrasProfile->forceFill([
-            'foto_tambahan' => [1 => $this->fotoDemo('yohanes_m-slot1', 3, 'pria'), 2 => $this->fotoDemo('yohanes_m-slot2', 4, 'pria'), 3 => $this->fotoDemo('yohanes_m-slot3', 5, 'pria')],
+            'foto_tambahan' => [1 => $this->fotoDemo('yohanes_m-slot1', 27, 'pria'), 2 => $this->fotoDemo('yohanes_m-slot2', 28, 'pria'), 3 => $this->fotoDemo('yohanes_m-slot3', 29, 'pria')],
         ])->save();
-        $this->u['clara_b']->extrasProfile->update(['tautan_tambahan' => [['label' => 'LinkedIn', 'url' => 'https://linkedin.com/in/clarabennett']]]);
-        $this->u['kevin_t']->extrasProfile->update(['tautan_tambahan' => [
-            ['label' => 'Instagram', 'url' => 'https://instagram.com/kevin.tanoto'],
-            ['label' => 'TikTok', 'url' => 'https://tiktok.com/@kevint'],
-        ]]);
+        $this->u['sari_mei']->extrasProfile->forceFill([
+            'foto_tambahan' => [1 => $this->fotoDemo('sari_mei-slot1', 30, 'wanita'), 2 => $this->fotoDemo('sari_mei-slot2', 31, 'wanita')],
+        ])->save();
+        $this->u['bagas22']->extrasProfile->forceFill([
+            'foto_tambahan' => [1 => $this->fotoDemo('bagas22-slot1', 32, 'pria'), 2 => $this->fotoDemo('bagas22-slot2', 33, 'pria')],
+        ])->save();
+        $this->u['citra_ay']->extrasProfile->forceFill([
+            'foto_tambahan' => [1 => $this->fotoDemo('citra_ay-slot1', 34, 'wanita'), 2 => $this->fotoDemo('citra_ay-slot2', 35, 'wanita')],
+        ])->save();
+        $this->u['kevin_t']->extrasProfile->forceFill([
+            'tautan_tambahan' => [
+                ['label' => 'Instagram', 'url' => 'https://instagram.com/kevin.tanoto'],
+                ['label' => 'TikTok', 'url' => 'https://tiktok.com/@kevint'],
+            ],
+            'foto_tambahan' => [1 => $this->fotoDemo('kevin_t-slot1', 36, 'pria'), 2 => $this->fotoDemo('kevin_t-slot2', 37, 'pria')],
+        ])->save();
+        $this->u['clara_b']->extrasProfile->forceFill([
+            'tautan_tambahan' => [['label' => 'LinkedIn', 'url' => 'https://linkedin.com/in/clarabennett']],
+            'foto_tambahan' => [1 => $this->fotoDemo('clara_b-slot1', 38, 'wanita'), 2 => $this->fotoDemo('clara_b-slot2', 39, 'wanita')],
+        ])->save();
+        $this->u['pak_harto']->extrasProfile->forceFill([
+            'foto_tambahan' => [1 => $this->fotoDemo('pak_harto-slot1', 40, 'pria')],
+        ])->save();
+        $this->u['aisyah_f']->extrasProfile->forceFill([
+            'foto_tambahan' => [1 => $this->fotoDemo('aisyah_f-slot1', 41, 'wanita'), 2 => $this->fotoDemo('aisyah_f-slot2', 42, 'wanita')],
+        ])->save();
+        $this->u['wulan_s']->extrasProfile->forceFill([
+            'foto_tambahan' => [1 => $this->fotoDemo('wulan_s-slot1', 43, 'wanita')],
+        ])->save();
 
         $ghost = $this->akun('extras', 'ghost01', 'ghost01', 'ghost01@extras.test', now()->subDays(40));
         $ghost->extrasProfile()->create(['created_at' => now()->subDays(40)]);
@@ -184,12 +220,15 @@ class DemoLengkapSeeder extends Seeder
 
         // P1: selesai
         $p1 = $this->project('Film "Rumah di Ujung Senja"', $rina, -45, ['deadline' => today()->subDays(35), 'kuota' => 7, 'status' => 'ditutup', 'client_id' => $andini->id]);
+        $this->log($rina, 'CREATE_PROJECT', "Admin Rina Kartika membuat proyek '{$p1->nama_produksi}'", $p1, -45);
+        $this->log($fakrul, 'UPDATE_PROJECT_PIC', "Super Admin menugaskan Rina Kartika sebagai PIC proyek '{$p1->nama_produksi}'", $p1, -45);
         $tgl1 = $this->jadwal($p1, [-30, -29, -28], 'Desa Cibodas, Lembang');
         $warga = $this->kelas($p1, 'Warga kampung', 4, 300000, ['Orang Tua', 'Jawa']);
         $mhsKos = $this->kelas($p1, 'Mahasiswa kos', 3, 350000, ['Dewasa muda', 'Mahasiswa']);
 
         foreach ([['pak_harto', $warga, 200000], ['bu_ningsih', $warga, 200000], ['tono_g', $warga, 200000], ['joko_s', $warga, 200000], ['dimas_rk', $mhsKos, 250000], ['bagas22', $mhsKos, 250000], ['sari_mei', $mhsKos, 225000]] as [$un, $kelas, $fee]) {
             $a = $this->daftar($p1, $kelas, $un, 'selesai_produksi', -40);
+            $this->log($this->u[$un], 'APPLY_PROJECT', "Extras {$this->u[$un]->name} mendaftar untuk kelas '{$kelas->nama_kelas}' di proyek '{$p1->nama_produksi}'", $a, -40);
             $this->deal($a, $fee, -38);
             $this->greenlight($a, $andini, -36);
             if ($un === 'joko_s') {
@@ -215,6 +254,7 @@ class DemoLengkapSeeder extends Seeder
         $this->app($p1, 'pak_harto')->tambahCatatan($bambang, 'catatan', 'Datang paling pagi tiap hari, bantu arahkan extras lain.');
         $this->app($p1, 'dimas_rk')->tambahCatatan($bambang, 'catatan', 'Improvisasi bagus di scene warung kopi.');
         $this->app($p1, 'joko_s')->tambahCatatan($bambang, 'sanksi', 'Batal H-1 tanpa pengganti, pembatalan mendadak ke-3.');
+        $this->log($rina, 'CALLSHEET_EXPORT', "Admin Rina Kartika mengekspor callsheet untuk lokasi Desa Cibodas, Lembang di proyek '{$p1->nama_produksi}'", $p1, -30);
         $this->log($this->u['sari_mei'], 'DISPUTE_PAYMENT', "Extras Sari Meilani menandai pembayaran sebagai sengketa untuk proyek '{$p1->nama_produksi}'", $this->app($p1, 'sari_mei'), -24);
 
         $inv1 = $p1->invoices()->create([
@@ -259,10 +299,16 @@ class DemoLengkapSeeder extends Seeder
         $this->log($fakrul, 'APPROVE_PROJECT_REQUEST', "Super Admin menyetujui (ACC) permintaan proyek '{$p2->nama_produksi}' dari Client", $p2, -7);
 
         $this->daftar($p2, $mhs, 'wulan_s', 'diajukan', 0);
+        $this->log($this->u['wulan_s'], 'APPLY_PROJECT', "Extras Wulan Sari mendaftar untuk kelas '{$mhs->nama_kelas}' di proyek '{$p2->nama_produksi}'", $this->app($p2, 'wulan_s'), 0);
         $this->daftar($p2, $mhs, 'intan_r', 'direview_admin', -2)->update(['grade' => 'B']);
+        $this->log($this->u['intan_r'], 'APPLY_PROJECT', "Extras Intan Rosalina mendaftar untuk kelas '{$mhs->nama_kelas}' di proyek '{$p2->nama_produksi}'", $this->app($p2, 'intan_r'), -2);
+        $this->log($rina, 'SET_EXTRAS_GRADE', 'Admin Rina Kartika memberikan evaluasi Grade B untuk Intan Rosalina', $this->u['intan_r']->extrasProfile, -2);
         $rehan = $this->daftar($p2, $mhs, 'rehan_x', 'nego_fee', -3);
+        $this->log($this->u['rehan_x'], 'APPLY_PROJECT', "Extras Rehan Saputra mendaftar untuk kelas '{$mhs->nama_kelas}' di proyek '{$p2->nama_produksi}'", $rehan, -3);
         $rehan->feeNegotiations()->create(['round' => 1, 'diajukan_oleh' => 'admin', 'nominal' => 150000, 'aksi' => 'tawar', 'created_at' => now()->subDays(2)]);
         $rehan->feeNegotiations()->create(['round' => 2, 'diajukan_oleh' => 'extras', 'nominal' => 200000, 'aksi' => 'counter', 'catatan' => 'Lokasi jauh dari rumah, mohon dinaikkan.', 'created_at' => now()->subDay()]);
+        $this->log($rina, 'NEGOTIATE_FEE', 'Admin Rina mengajukan penawaran fee Rp 150.000 kepada Rehan Saputra', $rehan, -2);
+        $this->log($this->u['rehan_x'], 'NEGOTIATE_FEE', 'Extras Rehan Saputra mengajukan counter fee Rp 200.000', $rehan, -1);
         $arga = $this->daftar($p2, $mhs, 'arga_p', 'nego_fee', -3);
         $arga->feeNegotiations()->create(['round' => 1, 'diajukan_oleh' => 'admin', 'nominal' => 175000, 'aksi' => 'tawar', 'created_at' => now()->subDay()]);
         $this->deal($this->daftar($p2, $mhs, 'citra_ay', 'deal', -4), 175000, -2);
@@ -290,6 +336,8 @@ class DemoLengkapSeeder extends Seeder
         // P3: shooting hari ini & besok
         // CN.3.2: budget_total < alokasi (300000*6 + 400000*2 = 2.600.000) -> demo peringatan alokasi melebihi budget.
         $p3 = $this->project('Series "Kampus Biru" eps 1-2', $yoga, -20, ['deadline' => today()->subDays(5), 'kuota' => 8, 'status' => 'ditutup', 'link_grup' => 'https://chat.whatsapp.com/demo-kampus-biru', 'client_id' => $rudy->id, 'budget_total' => 2400000]);
+        $this->log($yoga, 'CREATE_PROJECT', "Admin Yoga Pratama membuat proyek '{$p3->nama_produksi}'", $p3, -20);
+        $this->log($fakrul, 'UPDATE_PROJECT_PIC', "Super Admin menugaskan Yoga Pratama sebagai PIC proyek '{$p3->nama_produksi}'", $p3, -20);
         [$hariIni] = $this->jadwal($p3, [0, 1], 'Kampus Universitas Pamulang');
         $hariIni->update([
             'catatan' => 'Bawa jas almamater sendiri kalau punya, kalau tidak dipinjamkan di lokasi.',
@@ -385,6 +433,7 @@ class DemoLengkapSeeder extends Seeder
         $this->jadwal($p6, [10], 'SCBD, Jakarta Selatan');
         $this->kelas($p6, 'Nasabah muda', 10, 450000, ['Dewasa', 'Pekerja kantoran']);
         $p6->adminAssignments()->create(['user_id' => $yoga->id, 'assigned_by' => $fakrul->id]);
+        $this->log($yoga, 'CREATE_PROJECT', "Admin Yoga Pratama membuka lowongan casting dadakan '{$p6->nama_produksi}'", $p6, -1);
 
         // P7: fee tetap (nego_terbuka=false), tetap ada pendaftar - demo badge "Fee Tetap" tanpa menghapus P6 yang sengaja kosong.
         $p7 = $this->project('Iklan "Kopi Instan Semangat"', $yoga, -3, [
@@ -622,10 +671,20 @@ class DemoLengkapSeeder extends Seeder
     private function selfie(ProjectApplication $a, EventShootingDate $tgl, ?User $korlap = null): void
     {
         $user = $a->extras->user;
+        $fotoPath = "absensi/{$a->id}/demo-selfie.png";
+        $profileFoto = $a->extras->foto_profil_path;
+        if ($profileFoto && Storage::disk('local')->exists($profileFoto)) {
+            $ext = pathinfo($profileFoto, PATHINFO_EXTENSION);
+            $fotoPath = "absensi/{$a->id}/demo-selfie.{$ext}";
+            Storage::disk('local')->put($fotoPath, Storage::disk('local')->get($profileFoto));
+        } else {
+            $this->png($fotoPath, 'Selfie Demo');
+        }
+
         $absen = $a->attendances()->create([
             'event_shooting_date_id' => $tgl->id, 'status' => 'hadir', 'dicatat_oleh' => $user->id,
-            'foto_path' => $this->png("absensi/{$a->id}/demo-selfie.png", 'Selfie Demo'),
-            'catatan' => 'Selfie Absensi Extras (Hybrid On-Site)',
+            'foto_path' => $fotoPath,
+            'catatan' => 'Selfie Absensi Extras (Hybrid On-Site GPS)',
             'status_validasi' => $korlap ? 'tervalidasi' : 'menunggu',
             'divalidasi_oleh' => $korlap?->id, 'divalidasi_at' => $korlap ? now() : null,
         ]);
@@ -639,6 +698,7 @@ class DemoLengkapSeeder extends Seeder
     {
         foreach ($rows as [$label, $nominal, $hari]) {
             $p->expenses()->create(['label' => $label, 'nominal' => $nominal, 'tanggal' => today()->addDays($hari), 'created_by' => $oleh->id]);
+            $this->log($oleh, 'ADD_EXPENSE', "{$oleh->name} mencatat beban operasional '{$label}' sebesar Rp ".number_format($nominal, 0, ',', '.')." untuk proyek '{$p->nama_produksi}'", $p, $hari);
         }
     }
 
@@ -662,46 +722,55 @@ class DemoLengkapSeeder extends Seeder
     }
 
     /**
-     * Foto demo: coba unduh foto orang asli (biar kelihatan beneran saat ditinjau),
-     * disimpan lokal sekali saat seeding (bukan hotlink - CSP cuma izinkan gambar
-     * lokal). Gagal/offline -> fallback ke SVG gradient lama, seeding tidak boleh
-     * gagal gara-gara jaringan.
+     * Foto demo: coba unduh foto potret orang asli pravatar.cc (disimpan lokal).
+     * Gagal/offline/unit-tests -> fallback ke SVG visual, seeding tidak boleh gagal.
      */
     private function fotoDemo(string $username, int $i, ?string $gender = null): string
     {
         // ponytail: test tanpa kirim keluar (DemoSeederTest::assertNothingSent) - jangan coba HTTP saat testing.
         if (app()->runningUnitTests()) {
-            return $this->fotoDemoSvg($username, $i);
+            return $this->fotoDemoSvg($username, $i, $gender);
         }
 
         $path = "demo/foto/{$username}.jpg";
-        $folder = $gender === 'wanita' ? 'female' : 'male';
-        // xsgames: 256x256 (vs randomuser.me yang cuma 128x128 - pecah kalau ditampilin besar).
-        $nomor = crc32($username) % 65;
+        if (Storage::disk('local')->exists($path)) {
+            return $path;
+        }
+
+        $maleImgs = [3, 7, 8, 11, 12, 13, 14, 18, 33, 50, 51, 52, 53, 54, 55, 59, 60, 68];
+        $femaleImgs = [1, 2, 5, 9, 10, 16, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 44, 45, 47, 48, 49];
+        $pool = $gender === 'wanita' ? $femaleImgs : $maleImgs;
+        $imgId = $pool[abs(crc32($username)) % count($pool)];
 
         try {
-            $foto = Http::timeout(3)->get("https://xsgames.co/randomusers/assets/avatars/{$folder}/{$nomor}.jpg");
+            $foto = Http::timeout(2)->get("https://i.pravatar.cc/300?img={$imgId}");
             if ($foto->successful()) {
                 Storage::disk('local')->put($path, $foto->body());
 
                 return $path;
             }
         } catch (\Throwable) {
-            // ponytail: offline/gagal jaringan, lanjut ke fallback SVG di bawah.
+            // fallback offline
         }
 
-        return $this->fotoDemoSvg($username, $i);
+        return $this->fotoDemoSvg($username, $i, $gender);
     }
 
-    private function fotoDemoSvg(string $username, int $i): string
+    private function fotoDemoSvg(string $username, int $i, ?string $gender = null): string
     {
         $h = ($i * 47) % 360;
         $path = "demo/foto/{$username}.svg";
+        $initial = strtoupper(substr($username, 0, 2));
+        $colorBg = $gender === 'wanita' ? 'hsl('.($h % 60 + 330).', 45%, 65%)' : 'hsl('.($h % 60 + 200).', 45%, 55%)';
+        $colorDark = $gender === 'wanita' ? 'hsl('.($h % 60 + 330).', 35%, 25%)' : 'hsl('.($h % 60 + 200).', 35%, 20%)';
+
         Storage::disk('local')->put($path, '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520">'
-            ."<defs><linearGradient id=\"g\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"hsl({$h},40%,66%)\"/><stop offset=\"1\" stop-color=\"hsl({$h},35%,30%)\"/></linearGradient></defs>"
-            .'<rect width="400" height="520" fill="url(#g)"/>'
-            ."<circle cx=\"200\" cy=\"205\" r=\"80\" fill=\"hsl({$h},25%,18%)\" fill-opacity=\".6\"/>"
-            ."<path d=\"M50 520c12-125 72-178 150-178s138 53 150 178z\" fill=\"hsl({$h},25%,18%)\" fill-opacity=\".6\"/></svg>");
+            ."<defs><linearGradient id=\"g{$i}\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"{$colorBg}\"/><stop offset=\"1\" stop-color=\"{$colorDark}\"/></linearGradient></defs>"
+            ."<rect width=\"400\" height=\"520\" fill=\"url(#g{$i})\"/>"
+            .'<circle cx="200" cy="195" r="80" fill="#FFFFFF" fill-opacity=".2"/>'
+            .'<path d="M50 520c15-130 75-185 150-185s135 55 150 185z" fill="#FFFFFF" fill-opacity=".2"/>'
+            ."<text x=\"200\" y=\"210\" font-family=\"sans-serif\" font-size=\"42\" font-weight=\"bold\" fill=\"#FFFFFF\" text-anchor=\"middle\">{$initial}</text>"
+            .'</svg>');
 
         return $path;
     }
