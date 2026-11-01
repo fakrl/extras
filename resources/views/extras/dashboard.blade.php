@@ -53,14 +53,115 @@
 @endpush
 
 <div class="dash-kolom exd-grid">
-<p style="color: var(--text-secondary); margin: -8px 0 0; font-size: 13.5px;">
-    Halo, {{ auth()->user()->name }}! Cek lowongan casting terbaru dan pantau status pendaftaran kamu di sini.
-</p>
+<div style="grid-column: 1 / -1; margin: -8px 0 4px;">
+    <p style="color: var(--text-secondary); margin: 0 0 14px; font-size: 13.5px;">
+        Halo, {{ auth()->user()->name }}! Cek lowongan casting terbaru dan pantau status pendaftaran kamu di sini.
+    </p>
 
+    {{-- Strip 4 Kartu Ringkasan Karir & Honor Saya --}}
+    <div class="dash-pulse-strip" style="margin-bottom: 16px;">
+        <div class="dash-stat-card" tabindex="0">
+            <div>
+                <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
+                    <i class="ti ti-movie"></i> Aktivitas &amp; Proyek
+                </div>
+                <div style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 4px 0 2px;">
+                    {{ $statKarirExtras['proyek_selesai'] }} Selesai
+                </div>
+                <div style="font-size: 12px; color: var(--text-secondary);">
+                    {{ $statKarirExtras['lamaran_aktif'] }} Lamaran Aktif Saat Ini
+                </div>
+            </div>
+            <span class="info-hint"><i class="ti ti-info-circle"></i></span>
+            <div class="dash-hover-popover">
+                <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Rincian Partisipasi Proyek</div>
+                <div class="popover-row"><span>Proses Seleksi / Nego</span><strong>{{ $statKarirExtras['proses_seleksi'] }}</strong></div>
+                <div class="popover-row"><span>Kontrak Aktif / Lolos</span><strong>{{ $statKarirExtras['kontrak_aktif'] }}</strong></div>
+                <div class="popover-row"><span>Selesai Produksi</span><strong>{{ $statKarirExtras['proyek_selesai'] }}</strong></div>
+                <div class="popover-row"><span>Total Riwayat Melamar</span><strong>{{ $statKarirExtras['total_melamar'] }}</strong></div>
+            </div>
+        </div>
+
+        <div class="dash-stat-card" tabindex="0">
+            <div>
+                <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
+                    <i class="ti ti-wallet"></i> Dompet Honor Saya
+                </div>
+                <div style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 4px 0 2px;">
+                    Rp {{ number_format($statKarirExtras['honor_cair'], 0, ',', '.') }}
+                </div>
+                <div style="font-size: 12px; color: var(--text-secondary);">
+                    @if ($statKarirExtras['honor_konfirmasi'] > 0)
+                        <span style="color: var(--warning, #D97706); font-weight: 600;">Konfirmasi: Rp {{ number_format($statKarirExtras['honor_konfirmasi'], 0, ',', '.') }}</span>
+                    @elseif ($statKarirExtras['honor_proses'] > 0)
+                        <span>Proses: Rp {{ number_format($statKarirExtras['honor_proses'], 0, ',', '.') }}</span>
+                    @else
+                        <span>Semua honor telah diterima</span>
+                    @endif
+                </div>
+            </div>
+            <span class="info-hint"><i class="ti ti-info-circle"></i></span>
+            <div class="dash-hover-popover">
+                <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Status Pencairan Honor</div>
+                <div class="popover-row"><span>Sudah Diterima (Cair)</span><strong style="color: #15803D;">Rp {{ number_format($statKarirExtras['honor_cair'], 0, ',', '.') }}</strong></div>
+                <div class="popover-row"><span>Perlu Konfirmasi Anda</span><strong style="color: #D97706;">Rp {{ number_format($statKarirExtras['honor_konfirmasi'], 0, ',', '.') }}</strong></div>
+                <div class="popover-row"><span>Dalam Proses Transfer</span><strong>Rp {{ number_format($statKarirExtras['honor_proses'], 0, ',', '.') }}</strong></div>
+            </div>
+        </div>
+
+        <div class="dash-stat-card" tabindex="0">
+            <div>
+                <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
+                    <i class="ti ti-award"></i> Skor Kehadiran
+                </div>
+                <div style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 4px 0 2px;">
+                    {{ $statKarirExtras['skor_kehadiran'] }}%
+                </div>
+                <div class="dash-segmented-bar">
+                    <div class="seg" style="width: {{ $statKarirExtras['skor_kehadiran'] }}%; background: var(--accent, #15803D);"></div>
+                    <div class="seg" style="width: {{ 100 - $statKarirExtras['skor_kehadiran'] }}%; background: var(--surface-2, rgba(0,0,0,0.06));"></div>
+                </div>
+                <div style="font-size: 12px; color: var(--text-secondary);">
+                    {{ $statKarirExtras['hadir_count'] }}/{{ $statKarirExtras['total_absen'] }} Hadir · {{ $statKarirExtras['batal_mendadak'] }} Batal
+                </div>
+            </div>
+            <span class="info-hint"><i class="ti ti-info-circle"></i></span>
+            <div class="dash-hover-popover">
+                <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Catatan Kedisiplinan &amp; Absensi</div>
+                <div class="popover-row"><span>Kehadiran Terverifikasi</span><strong>{{ $statKarirExtras['hadir_count'] }} kali</strong></div>
+                <div class="popover-row"><span>Total Panggilan Absen</span><strong>{{ $statKarirExtras['total_absen'] }} jadwal</strong></div>
+                <div class="popover-row"><span>Batal Mendadak</span><strong>{{ $statKarirExtras['batal_mendadak'] }} kali</strong></div>
+            </div>
+        </div>
+
+        <div class="dash-stat-card" tabindex="0">
+            <div>
+                <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
+                    <i class="ti ti-user-check"></i> Kesiapan Profil &amp; Kontrak
+                </div>
+                <div style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 4px 0 2px;">
+                    {{ $extrasProfile?->persenKelengkapan() ?? 0 }}%
+                </div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">
+                    {{ $statKarirExtras['siap_kontrak'] ? 'Siap Kontrak (NIK Lengkap)' : 'Belum Lengkap NIK' }}
+                </div>
+            </div>
+            <span class="info-hint"><i class="ti ti-info-circle"></i></span>
+            <div class="dash-hover-popover">
+                <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Kelengkapan Data Talent</div>
+                <div class="popover-row"><span>Data Terisi</span><strong>{{ $extrasProfile?->persenKelengkapan() ?? 0 }}%</strong></div>
+                <div class="popover-row"><span>Status Verifikasi NIK</span><strong>{{ $statKarirExtras['siap_kontrak'] ? 'Lengkap' : 'Belum Terisi' }}</strong></div>
+                <div style="margin-top: 8px; text-align: right;">
+                    <a href="{{ route('extras.profile.edit') }}" class="btn btn-sm btn-tonal" style="font-size: 11px; padding: 2px 8px;"><i class="ti ti-user-edit"></i> Edit Profil <i class="ti ti-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 @php $persenProfil = $extrasProfile?->persenKelengkapan(); @endphp
 @if ($persenProfil !== null && $persenProfil < 100)
-    <a href="{{ route('extras.profile.edit') }}" class="dash-row" style="margin-bottom: 12px;">
+    <a href="{{ route('extras.profile.edit') }}" class="dash-row" style="margin-bottom: 12px; grid-column: 1 / -1;">
         <div style="flex: 1; min-width: 0;">
             <div class="dash-sub" style="margin-bottom: 4px;">Profil {{ $persenProfil }}% lengkap</div>
             <progress value="{{ $persenProfil }}" max="100" class="profil-persen-bar"></progress>

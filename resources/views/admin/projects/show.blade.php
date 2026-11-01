@@ -30,7 +30,7 @@
             {{ $p->client?->name ?? '-' }} · PIC {{ $p->admin?->name ?? '-' }} · Shooting {{ $p->rentangShooting() }}
         </div>
     </div>
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <div class="admin-project-header-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
         @can('kelola', $p)
         <a href="{{ route('admin.projects.edit', $p) }}" class="btn btn-sm btn-tonal"><i class="ti ti-pencil"></i> Edit Proyek</a>
         @endcan

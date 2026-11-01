@@ -5,9 +5,14 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\CastingProject;
+use App\Models\CastingProjectClass;
 use App\Models\EventShootingDate;
+use App\Models\ExtrasProfile;
 use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\ProjectApplication;
+use App\Models\ProjectExpense;
+use App\Models\StaffPayroll;
 use App\Models\User;
 use App\Notifications\InAppNotification;
 use App\Services\KeuanganService;
@@ -109,6 +114,119 @@ class DashboardController extends Controller
             ->each(fn (Invoice $i) => $i->nilai = (float) ($i->nominal ?? $this->keuanganService->nilaiInvoice($i->castingProject)));
         $invoiceTotal = $invoiceBelumLunas->sum('nilai');
 
+        // Statistik Ekosistem, Kuota, Finansial & Funnel
+        $userCounts = User::query()
+            ->selectRaw("
+                COUNT(*) as total,
+                SUM(CASE WHEN role = 'extras' THEN 1 ELSE 0 END) as extras_total,
+                SUM(CASE WHEN role = 'client' THEN 1 ELSE 0 END) as client_total,
+                SUM(CASE WHEN role = 'admin' THEN 1 ELSE 0 END) as admin_total,
+                SUM(CASE WHEN role = 'korlap' THEN 1 ELSE 0 END) as korlap_total,
+                SUM(CASE WHEN role = 'super_admin' THEN 1 ELSE 0 END) as super_admin_total
+            ")->first();
+
+        $extrasStats = ExtrasProfile::query()
+            ->selectRaw("
+                SUM(CASE WHEN nik_hash IS NOT NULL THEN 1 ELSE 0 END) as siap_kontrak,
+                SUM(CASE WHEN grade_saat_ini = 'A' THEN 1 ELSE 0 END) as grade_a,
+                SUM(CASE WHEN grade_saat_ini = 'B' THEN 1 ELSE 0 END) as grade_b,
+                SUM(CASE WHEN grade_saat_ini = 'C' THEN 1 ELSE 0 END) as grade_c,
+                SUM(CASE WHEN grade_saat_ini IS NULL THEN 1 ELSE 0 END) as grade_belum
+            ")->first();
+
+        $statPopulasi = [
+            'total' => (int) ($userCounts->total ?? 0),
+            'extras_total' => (int) ($userCounts->extras_total ?? 0),
+            'siap_kontrak' => (int) ($extrasStats->siap_kontrak ?? 0),
+            'grade_a' => (int) ($extrasStats->grade_a ?? 0),
+            'grade_b' => (int) ($extrasStats->grade_b ?? 0),
+            'grade_c' => (int) ($extrasStats->grade_c ?? 0),
+            'grade_belum' => (int) ($extrasStats->grade_belum ?? 0),
+            'client_total' => (int) ($userCounts->client_total ?? 0),
+            'admin_total' => (int) ($userCounts->admin_total ?? 0),
+            'korlap_total' => (int) ($userCounts->korlap_total ?? 0),
+            'super_admin_total' => (int) ($userCounts->super_admin_total ?? 0),
+        ];
+
+        $proyekCounts = CastingProject::query()
+            ->selectRaw("
+                COUNT(*) as total,
+                SUM(CASE WHEN client_request_status = 'menunggu_acc' THEN 1 ELSE 0 END) as menunggu_acc,
+                SUM(CASE WHEN client_request_status = 'disetujui' AND status IN ('draft', 'buka_lowongan', 'proses_seleksi', 'terbuka') THEN 1 ELSE 0 END) as seleksi,
+                SUM(CASE WHEN status = 'shooting_berjalan' THEN 1 ELSE 0 END) as shooting,
+                SUM(CASE WHEN status = 'selesai' THEN 1 ELSE 0 END) as selesai,
+                SUM(CASE WHEN client_request_status = 'ditolak' OR status = 'dibatalkan' THEN 1 ELSE 0 END) as batal
+            ")->first();
+
+        $targetKuota = (int) CastingProjectClass::whereHas('castingProject', fn ($q) => $q->where('client_request_status', 'disetujui')->whereNotIn('status', ['selesai', 'dibatalkan']))->sum('kuota_kelas');
+        $terisiKuota = (int) ProjectApplication::whereIn('status_partisipasi', ['deal', 'diajukan_ke_client', 'lolos', 'kontrak_ditandatangani', 'selesai_produksi'])
+            ->whereHas('castingProject', fn ($q) => $q->where('client_request_status', 'disetujui')->whereNotIn('status', ['selesai', 'dibatalkan']))->count();
+        $fulfillmentRate = $targetKuota > 0 ? (int) round(($terisiKuota / $targetKuota) * 100) : 0;
+
+        $statProyekKuota = [
+            'total' => (int) ($proyekCounts->total ?? 0),
+            'menunggu_acc' => (int) ($proyekCounts->menunggu_acc ?? 0),
+            'seleksi' => (int) ($proyekCounts->seleksi ?? 0),
+            'shooting' => (int) ($proyekCounts->shooting ?? 0),
+            'selesai' => (int) ($proyekCounts->selesai ?? 0),
+            'batal' => (int) ($proyekCounts->batal ?? 0),
+            'target_kuota' => $targetKuota,
+            'terisi_kuota' => $terisiKuota,
+            'fulfillment_rate' => $fulfillmentRate,
+        ];
+
+        $semuaInvoice = Invoice::with('castingProject.classes')->get();
+        $invoiceLunas = 0.0;
+        $invoicePiutang = 0.0;
+        foreach ($semuaInvoice as $inv) {
+            $val = (float) ($inv->nominal ?? ($inv->castingProject ? $this->keuanganService->nilaiInvoice($inv->castingProject) : 0));
+            if ($inv->status_bayar === 'lunas') {
+                $invoiceLunas += $val;
+            } else {
+                $invoicePiutang += $val;
+            }
+        }
+        $totalInvoice = $invoiceLunas + $invoicePiutang;
+
+        $payoutExtras = (float) Payment::with(['projectApplication', 'addons'])->get()->sum(fn ($p) => $p->nominalTotal());
+        $biayaOperasional = (float) ProjectExpense::sum('nominal');
+        $payrollStaf = (float) StaffPayroll::with('addons')->get()->sum(fn ($p) => $p->nominalTotal());
+        $totalBiaya = $payoutExtras + $biayaOperasional + $payrollStaf;
+        $marginKotor = $totalInvoice - $totalBiaya;
+        $persenMargin = $totalInvoice > 0 ? (int) round(($marginKotor / $totalInvoice) * 100) : 0;
+
+        $statKeuangan = [
+            'total_invoice' => $totalInvoice,
+            'invoice_lunas' => $invoiceLunas,
+            'invoice_piutang' => $invoicePiutang,
+            'payout_extras' => $payoutExtras,
+            'biaya_operasional' => $biayaOperasional,
+            'payroll_staf' => $payrollStaf,
+            'margin_kotor' => $marginKotor,
+            'persen_margin' => $persenMargin,
+        ];
+
+        $funnelCounts = ProjectApplication::query()
+            ->selectRaw("
+                COUNT(*) as total,
+                SUM(CASE WHEN status_partisipasi IN ('diundang', 'diajukan', 'menunggu_review') THEN 1 ELSE 0 END) as tahap_awal,
+                SUM(CASE WHEN status_partisipasi = 'proses_nego' THEN 1 ELSE 0 END) as tahap_nego,
+                SUM(CASE WHEN status_partisipasi IN ('deal', 'diajukan_ke_client') THEN 1 ELSE 0 END) as tahap_review,
+                SUM(CASE WHEN status_partisipasi IN ('lolos', 'kontrak_ditandatangani') THEN 1 ELSE 0 END) as tahap_kontrak,
+                SUM(CASE WHEN status_partisipasi = 'selesai_produksi' THEN 1 ELSE 0 END) as tahap_selesai
+            ")->first();
+
+        $statFunnelKandidat = [
+            'total' => (int) ($funnelCounts->total ?? 0),
+            'tahap_awal' => (int) ($funnelCounts->tahap_awal ?? 0),
+            'tahap_nego' => (int) ($funnelCounts->tahap_nego ?? 0),
+            'tahap_review' => (int) ($funnelCounts->tahap_review ?? 0),
+            'tahap_kontrak' => (int) ($funnelCounts->tahap_kontrak ?? 0),
+            'tahap_selesai' => (int) ($funnelCounts->tahap_selesai ?? 0),
+        ];
+
+        $aktivitasTerbaru = ActivityLog::with('user')->latest()->take(6)->get();
+
         // CR.2.5: jadwal maks 5 TANGGAL berkegiatan (bukan 5 event) - agenda sendiri tidak diubah (CQ.2).
         $agendaEvents = $this->jadwalEvents($dariJadwal, $sampaiJadwal)
             ->groupBy(fn (EventShootingDate $e) => Carbon::parse($e->tanggal)->format('Y-m-d'))
@@ -125,7 +243,9 @@ class DashboardController extends Controller
             'butuhKeputusan', 'diingatkan',
             'proyekBerjalan', 'pertumbuhanBerjalan',
             'invoiceBelumLunas', 'invoiceTotal',
-            'agendaEvents'
+            'agendaEvents',
+            'statPopulasi', 'statProyekKuota', 'statKeuangan', 'statFunnelKandidat',
+            'aktivitasTerbaru'
         ));
     }
 

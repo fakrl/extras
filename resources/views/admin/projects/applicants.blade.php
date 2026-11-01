@@ -58,7 +58,7 @@
     $daftar = request('tampil') === 'daftar';
     $tampilQ = $daftar ? ['tampil' => 'daftar'] : [];
 @endphp
-<div class="xfilter">
+<div class="xfilter lineup-top-filter">
     <a href="{{ route('admin.projects.applicants', [$castingProject] + $tampilQ) }}" class="btn btn-sm {{ ($tab ?? '') !== 'client' ? 'btn-brand' : '' }}">Lineup</a>
     <a href="{{ route('admin.projects.applicants', [$castingProject, 'tab' => 'client'] + $tampilQ) }}" class="btn btn-sm {{ ($tab ?? '') === 'client' ? 'btn-brand' : '' }}">Sudah ke Client</a>
     <span style="margin-left: auto; display: inline-flex; gap: 4px;" role="group" aria-label="Tampilan">

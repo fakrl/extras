@@ -28,6 +28,47 @@ class DashboardController extends Controller
         $totalPendaftar = ProjectApplication::query()->tap($lamaranPic)->count();
         $perluDinego = ProjectApplication::where('status_partisipasi', 'nego_fee')->tap($lamaranPic)->count();
 
+        // Rincian Breakdown Hover Proyek & Pendaftar
+        $totalProyekAktifAgency = CastingProject::where('status', 'dibuka')->count();
+        $proyekBukaLowongan = CastingProject::where('status', 'dibuka')->where('client_request_status', 'disetujui')->tap($proyekPic)->where('status', 'buka_lowongan')->count();
+        $proyekSeleksi = CastingProject::where('status', 'dibuka')->where('client_request_status', 'disetujui')->tap($proyekPic)->where('status', 'proses_seleksi')->count();
+        $proyekShooting = CastingProject::diTahap('berjalan')->tap($proyekPic)->count();
+
+        $pendaftarMenungguReview = ProjectApplication::whereIn('status_partisipasi', ['diajukan', 'menunggu_review'])->tap($lamaranPic)->count();
+        $pendaftarReviewClient = ProjectApplication::whereIn('status_partisipasi', ['deal', 'diajukan_ke_client'])->tap($lamaranPic)->count();
+        $pendaftarBelumKontrak = ProjectApplication::where('status_partisipasi', 'lolos')->tap($lamaranPic)->count();
+
+        $breakdownAdmin = [
+            'proyek_pic' => $proyekAktif,
+            'proyek_agency' => $totalProyekAktifAgency,
+            'proyek_lowongan' => $proyekBukaLowongan,
+            'proyek_seleksi' => $proyekSeleksi,
+            'proyek_shooting' => $proyekShooting,
+            'pendaftar_review' => $pendaftarMenungguReview,
+            'pendaftar_nego' => $perluDinego,
+            'pendaftar_client' => $pendaftarReviewClient,
+            'pendaftar_kontrak' => $pendaftarBelumKontrak,
+        ];
+
+        // Bottleneck Kuota Proyek Aktif
+        $proyekBottleneck = CastingProject::where('status', 'dibuka')
+            ->tap($proyekPic)
+            ->with(['classes', 'shootingDates', 'applications'])
+            ->get()
+            ->map(function ($p) {
+                $target = (int) $p->classes->sum('kuota_kelas');
+                $terisi = (int) $p->applications->filter(fn ($a) => in_array($a->status_partisipasi, ['deal', 'diajukan_ke_client', 'lolos', 'kontrak_ditandatangani', 'selesai_produksi'], true))->count();
+                $persen = $target > 0 ? (int) round(($terisi / $target) * 100) : 100;
+                $p->target_kuota = $target;
+                $p->terisi_kuota = $terisi;
+                $p->persen_kuota = $persen;
+
+                return $p;
+            })
+            ->filter(fn ($p) => $p->target_kuota > 0 && $p->persen_kuota < 100)
+            ->sortBy('persen_kuota')
+            ->values();
+
         $statusPembayaran = Payment::selectRaw('status, count(*) as total')
             ->tap($bayarPic)
             ->groupBy('status')
@@ -71,12 +112,39 @@ class DashboardController extends Controller
             $id = $user->isKorlap() ? $user->id : null;
             $punyaTugas = ! $id || $user->adminProjectAssignments()->exists();
             $hari = ['Hari ini' => KorlapRingkasan::shooting(today()->toDateString(), $id), 'Besok' => KorlapRingkasan::shooting(today()->addDay()->toDateString(), $id)];
+
+            $semuaJadwalAktif = $hari['Hari ini']->concat($hari['Besok']);
+            $totalPanggilan = (int) $semuaJadwalAktif->sum(fn ($sd) => $sd->rekap['total'] ?? 0);
+            $totalHadir = (int) $semuaJadwalAktif->sum(fn ($sd) => $sd->rekap['hadir'] ?? 0);
+            $totalMenungguVal = (int) $semuaJadwalAktif->sum(fn ($sd) => $sd->rekap['menunggu_validasi'] ?? 0);
+            $totalTidakHadir = (int) $semuaJadwalAktif->sum(fn ($sd) => $sd->rekap['tidak_hadir'] ?? 0);
+            $totalBelumAbsen = (int) $semuaJadwalAktif->sum(fn ($sd) => $sd->rekap['belum'] ?? 0);
+            $tingkatKehadiran = $totalPanggilan > 0 ? (int) round(($totalHadir / $totalPanggilan) * 100) : 0;
+
+            $menungguValidasiList = KorlapRingkasan::menungguValidasi(10, $id);
+            $catatanList = KorlapRingkasan::catatanTerbaru(5, $id);
+
+            $statKorlap = [
+                'proyek_aktif_count' => $semuaJadwalAktif->count(),
+                'total_panggilan' => $totalPanggilan,
+                'total_hadir' => $totalHadir,
+                'total_menunggu_val' => $totalMenungguVal,
+                'total_tidak_hadir' => $totalTidakHadir,
+                'total_belum_absen' => $totalBelumAbsen,
+                'tingkat_kehadiran' => $tingkatKehadiran,
+                'menunggu_count' => $menungguValidasiList->count(),
+                'catatan_count' => $catatanList->count(),
+                'catatan_sanksi' => $catatanList->where('jenis', 'sanksi')->count(),
+                'catatan_info' => $catatanList->where('jenis', '!=', 'sanksi')->count(),
+            ];
+
             $korlap = [
                 'punyaTugas' => $punyaTugas,
                 'hari' => $hari,
                 'terdekat' => $hari['Hari ini']->isEmpty() ? KorlapRingkasan::shootingTerdekat($id) : null,
-                'menunggu' => KorlapRingkasan::menungguValidasi(10, $id),
-                'catatan' => KorlapRingkasan::catatanTerbaru(5, $id),
+                'menunggu' => $menungguValidasiList,
+                'catatan' => $catatanList,
+                'statKorlap' => $statKorlap,
             ];
         }
 
@@ -93,7 +161,9 @@ class DashboardController extends Controller
             'pembayaranSengketa',
             'linkSengketa',
             'ringkasan',
-            'tahapan'
+            'tahapan',
+            'breakdownAdmin',
+            'proyekBottleneck'
         ));
     }
 

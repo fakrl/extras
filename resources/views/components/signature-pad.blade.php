@@ -12,7 +12,7 @@
 <div class="signature-pad-wrap" style="text-align: center;">
     <p style="font-size: var(--fs-sm); color: var(--text-secondary); margin: 0 0 6px;">Tanda tangan di dalam kotak</p>
     <canvas id="canvas-{{ $name }}"
-            style="border:1px solid var(--border-color); border-radius:8px; background:#fff; touch-action:none; width:100%; height:180px; display:block;"></canvas>
+            style="border:1px solid var(--border-color); border-radius:8px; background:#fff; touch-action:none; width:100%; max-width:100%; height:180px; display:block; box-sizing:border-box;"></canvas>
     <input type="hidden" name="{{ $name }}" id="input-{{ $name }}">
     <div style="margin-top: 8px;">
         <button type="button" class="btn btn-sm" onclick="clearSignature('{{ $name }}')">Ulangi (Hapus Tanda Tangan)</button>

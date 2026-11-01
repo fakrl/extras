@@ -432,21 +432,30 @@
     .sticky-mobile-cta {
         display: none;
     }
-    @media (max-width: 640px) {
+    @media (max-width: 860px) {
         .sticky-mobile-cta {
             display: flex;
-            position: sticky;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            z-index: 100;
+            z-index: 48;
             background: var(--bg-card);
             border-top: 1px solid var(--border-color);
-            padding: 10px 14px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
+            padding: 10px 16px;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+            box-sizing: border-box;
+        }
+        .nav-bawah .sticky-mobile-cta {
+            bottom: 68px;
+        }
+        .nav-bawah main,
+        .nav-bawah .main-content,
+        .nav-bawah .content {
+            padding-bottom: 148px !important;
         }
     }
 
@@ -859,6 +868,293 @@
         .is-daftar .xcard {
             grid-template-columns: 1fr !important;
             gap: 8px !important;
+        }
+    }
+
+    /* 12. Dashboard Ecosystem Pulse & Hover Popover */
+    .dash-pulse-strip {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+    .dash-stat-card {
+        position: relative;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 14px 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .dash-stat-card:hover, .dash-stat-card:focus-within {
+        border-color: var(--accent, #15803D);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        z-index: 50;
+    }
+    .dash-stat-card .info-hint {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        color: var(--text-muted);
+        font-size: 14px;
+        cursor: pointer;
+    }
+    .dash-hover-popover {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        right: 0;
+        z-index: 60;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 12px 14px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.14);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(4px);
+        transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+        pointer-events: none;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    .dash-stat-card:hover .dash-hover-popover,
+    .dash-stat-card:focus-within .dash-hover-popover {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+    .popover-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12.5px;
+        padding: 5px 0;
+        border-bottom: 1px dashed var(--border-color);
+    }
+    .popover-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    .dash-segmented-bar {
+        height: 7px;
+        border-radius: 999px;
+        overflow: hidden;
+        display: flex;
+        gap: 2px;
+        background: var(--surface-2, rgba(0,0,0,0.06));
+        margin: 6px 0;
+    }
+    .dash-segmented-bar .seg {
+        height: 100%;
+        transition: width 0.3s ease;
+    }
+    .dash-mini-feed {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .dash-mini-feed-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 10px 12px;
+        border-radius: var(--radius-sm);
+        background: var(--surface-1, rgba(0,0,0,0.02));
+        border: 1px solid var(--border-color);
+        font-size: 13px;
+    }
+    .dash-mini-feed-item:hover {
+        background: var(--surface-2, rgba(0,0,0,0.04));
+    }
+    .dash-mini-feed-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 15px;
+    }
+    .sa-mode-banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px 12px;
+    }
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        max-width: 100%;
+    }
+    .signature-pad-wrap canvas {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 180px !important;
+        touch-action: none !important;
+        box-sizing: border-box !important;
+    }
+    @media (max-width: 640px) {
+        .dash-pulse-strip,
+        .dashboard-grid-2col,
+        .dash-tiga,
+        .sa-command-grid,
+        .dash-metrik {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+        }
+        .dash-stat-card {
+            cursor: pointer;
+        }
+        .dash-hover-popover {
+            position: static !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: none !important;
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background: var(--surface-2, rgba(0,0,0,0.03));
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            box-shadow: none !important;
+            width: 100%;
+            box-sizing: border-box;
+            pointer-events: auto !important;
+        }
+        .dash-stat-card:hover .dash-hover-popover,
+        .dash-stat-card:focus-within .dash-hover-popover,
+        .dash-stat-card:active .dash-hover-popover {
+            display: block;
+        }
+        .sa-mode-banner {
+            padding: 10px 12px !important;
+            font-size: 12px !important;
+            top: 4px !important;
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+        }
+        .sa-mode-banner .btn,
+        .sa-mode-banner form,
+        .sa-mode-banner a {
+            width: 100%;
+            justify-content: center;
+            text-align: center;
+        }
+        .topbar-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 160px;
+        }
+        .client-review-export-actions {
+            width: 100% !important;
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+        }
+        .client-review-export-actions .btn {
+            flex: 1 1 calc(50% - 8px) !important;
+            justify-content: center !important;
+            text-align: center !important;
+        }
+        .admin-project-header-actions,
+        .akun-head-btn {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+            width: 100% !important;
+        }
+        .admin-project-header-actions .btn-brand,
+        .akun-head-btn .btn-brand {
+            flex: 1 1 100% !important;
+            justify-content: center !important;
+            text-align: center !important;
+        }
+        .admin-project-header-actions .btn:not(.btn-brand),
+        .akun-head-btn .btn:not(.btn-brand) {
+            flex: 1 1 calc(50% - 4px) !important;
+            justify-content: center !important;
+            text-align: center !important;
+        }
+        .xtoolbar {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+        }
+        .xtoolbar .xtoolbar-cari {
+            flex: 1 1 100% !important;
+            width: 100% !important;
+        }
+        .xtoolbar .fpanel,
+        .xtoolbar .xtoolbar-more,
+        .xtoolbar select,
+        .xtoolbar .per-halaman {
+            flex: 1 1 auto !important;
+            min-width: 0 !important;
+        }
+        .xfilter.lineup-top-filter {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 10px !important;
+        }
+        .xfilter.lineup-top-filter > span[role="group"] {
+            margin-left: 0 !important;
+        }
+        .is-daftar .xcard {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            align-items: center !important;
+            gap: 8px 12px !important;
+            padding: 10px 12px !important;
+        }
+        .is-daftar .xcard-body {
+            flex: 1 1 160px !important;
+        }
+        .is-daftar .xcard-btns,
+        .is-daftar .xcard-btns-2 {
+            order: 10 !important;
+            width: 100% !important;
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 6px !important;
+            margin-top: 4px !important;
+            padding-top: 8px !important;
+            border-top: 1px dashed var(--border-color) !important;
+        }
+        .is-daftar .xcard-btns + .xcard-btns-2 {
+            border-top: none !important;
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+        .is-daftar .xcard-btns .btn,
+        .is-daftar .xcard-btns-2 .btn {
+            flex: 1 1 auto !important;
+            justify-content: center !important;
+            text-align: center !important;
+        }
+        dialog {
+            width: calc(100vw - 16px) !important;
+            max-width: 100% !important;
+            margin: auto 8px !important;
+            box-sizing: border-box !important;
+        }
+        dialog.xmodal.xdrawer-right {
+            width: calc(100vw - 16px) !important;
+            max-width: 100% !important;
+            height: calc(100dvh - 24px) !important;
+            max-height: calc(100dvh - 24px) !important;
+            margin: auto 8px !important;
+            border-radius: 16px !important;
+            border: 1px solid var(--border-color) !important;
         }
     }
 </style>

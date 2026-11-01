@@ -69,19 +69,72 @@
         <div class="card">
             <div class="card-title">Ringkasan</div>
             <div class="dash-metrik" style="margin-bottom: 14px;">
-                <a href="{{ route('admin.projects.index', ['status' => 'dibuka']) }}" class="metric-card">
-                    <div class="metric-label">Proyek Aktif</div>
-                    <div class="metric-value">{{ $proyekAktif }}</div>
-                </a>
-                <a href="{{ route('admin.projects.index') }}" class="metric-card">
-                    <div class="metric-label">Total Pendaftar</div>
-                    <div class="metric-value">{{ $totalPendaftar }}</div>
-                </a>
+                <div class="dash-stat-card metric-card" tabindex="0" style="padding: 10px 12px; cursor: pointer;">
+                    <a href="{{ route('admin.projects.index', ['status' => 'dibuka']) }}" style="text-decoration: none; color: inherit; display: block;">
+                        <div class="metric-label" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Proyek Aktif</span>
+                            <i class="ti ti-info-circle" style="font-size: 13px; color: var(--text-muted);"></i>
+                        </div>
+                        <div class="metric-value">{{ $proyekAktif }}</div>
+                    </a>
+                    <div class="dash-hover-popover">
+                        <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Distribusi Proyek Aktif</div>
+                        <div class="popover-row"><span>Proyek Saya (PIC)</span><strong>{{ $breakdownAdmin['proyek_pic'] }}</strong></div>
+                        <div class="popover-row"><span>Total Proyek Agency</span><strong>{{ $breakdownAdmin['proyek_agency'] }}</strong></div>
+                        <div class="popover-row"><span>Buka Lowongan</span><strong>{{ $breakdownAdmin['proyek_lowongan'] }}</strong></div>
+                        <div class="popover-row"><span>Proses Seleksi</span><strong>{{ $breakdownAdmin['proyek_seleksi'] }}</strong></div>
+                        <div class="popover-row"><span>Shooting Berjalan</span><strong>{{ $breakdownAdmin['proyek_shooting'] }}</strong></div>
+                    </div>
+                </div>
+
+                <div class="dash-stat-card metric-card" tabindex="0" style="padding: 10px 12px; cursor: pointer;">
+                    <a href="{{ route('admin.projects.index') }}" style="text-decoration: none; color: inherit; display: block;">
+                        <div class="metric-label" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Total Pendaftar</span>
+                            <i class="ti ti-info-circle" style="font-size: 13px; color: var(--text-muted);"></i>
+                        </div>
+                        <div class="metric-value">{{ $totalPendaftar }}</div>
+                    </a>
+                    <div class="dash-hover-popover">
+                        <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Status Pendaftar</div>
+                        <div class="popover-row"><span>Menunggu Review</span><strong>{{ $breakdownAdmin['pendaftar_review'] }}</strong></div>
+                        <div class="popover-row"><span>Sedang Nego Fee</span><strong>{{ $breakdownAdmin['pendaftar_nego'] }}</strong></div>
+                        <div class="popover-row"><span>Pilihan Client</span><strong>{{ $breakdownAdmin['pendaftar_client'] }}</strong></div>
+                        <div class="popover-row"><span>Belum TTD Kontrak</span><strong>{{ $breakdownAdmin['pendaftar_kontrak'] }}</strong></div>
+                    </div>
+                </div>
+
                 <a href="{{ route('admin.projects.index', ['peserta' => 'nego_fee']) }}" class="metric-card" style="grid-column: span 2;">
                     <div class="metric-label">Sedang nego</div>
                     <div class="metric-value">{{ $perluDinego }}</div>
                 </a>
             </div>
+
+            @if ($proyekBottleneck->isNotEmpty())
+                <div style="margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px dashed var(--border-color);">
+                    <div style="font-size: 12.5px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; color: var(--text-primary);">
+                        <i class="ti ti-users-group"></i> Peringatan Kuota Proyek
+                    </div>
+                    @foreach ($proyekBottleneck->take(3) as $pb)
+                        <div style="background: var(--surface-1, rgba(0,0,0,0.02)); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 10px; margin-bottom: 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 4px;">
+                                <strong style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px;">{{ $pb->nama_produksi }}</strong>
+                                <span style="font-size: 11px; font-weight: 600;">{{ $pb->terisi_kuota }}/{{ $pb->target_kuota }} ({{ $pb->persen_kuota }}%)</span>
+                            </div>
+                            <div class="dash-segmented-bar" style="height: 6px; margin: 4px 0 6px;">
+                                <div class="seg" style="width: {{ $pb->persen_kuota }}%; background: {{ $pb->persen_kuota < 50 ? '#DC2626' : '#D97706' }};"></div>
+                                <div class="seg" style="width: {{ 100 - $pb->persen_kuota }}%; background: var(--surface-2, rgba(0,0,0,0.06));"></div>
+                            </div>
+                            <div style="display: flex; justify-content: flex-end;">
+                                <a href="{{ route('admin.projects.applicants', $pb) }}" class="btn btn-sm btn-tonal" style="font-size: 11px; padding: 2px 8px;">
+                                    <i class="ti ti-users-group"></i> Penuhi Lineup <i class="ti ti-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+
             <a href="{{ route('admin.projects.index') }}" class="dash-row"><span><i class="ti ti-folder"></i> Kelola Proyek</span><span class="dash-sub"><i class="ti ti-arrow-right"></i></span></a>
             <a href="{{ route('admin.akun.extras') }}" class="dash-row"><span><i class="ti ti-users"></i> Kelola Akun Extras &amp; Rekap</span><span class="dash-sub"><i class="ti ti-arrow-right"></i></span></a>
             <a href="{{ route('admin.attendance.index') }}" class="dash-row"><span><i class="ti ti-camera"></i> Absensi Lapangan</span><span class="dash-sub"><i class="ti ti-arrow-right"></i></span></a>

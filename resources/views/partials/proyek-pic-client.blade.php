@@ -1,41 +1,41 @@
-<div class="form-row">
+<div class="form-row" style="margin-bottom: 16px;">
     <div>
-        <label for="admin_id">Admin PIC @if ($adminWajib)<span class="wajib" aria-hidden="true">*</span>@endif</label>
-        <input type="search" placeholder="Cari admin..." data-cari-select="admin_id" style="margin-bottom: 6px;">
-        <select name="admin_id" id="admin_id" @required($adminWajib)>
-            <option value="">{{ $adminKosong }}</option>
-            @foreach ($admins as $a)
-                <option value="{{ $a->id }}" @selected((string) old('admin_id', session('admin_baru_id', $adminId)) === (string) $a->id)>{{ $a->name }}{{ $a->username ? ' (@'.$a->username.')' : '' }}</option>
-            @endforeach
-        </select>
-        @if (auth()->user()->isSuperAdmin())
-            <div style="margin-top: 8px;">
-                <button type="button" class="btn btn-sm btn-tonal" onclick="document.getElementById('admin-baru-dialog').showModal()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label for="admin_id" style="margin: 0; font-weight: 600;">Admin PIC @if ($adminWajib)<span class="wajib" aria-hidden="true">*</span>@endif</label>
+            @if (auth()->user()->isSuperAdmin())
+                <button type="button" class="btn btn-sm btn-tonal" style="padding: 2px 8px; font-size: 11px; height: auto;" onclick="document.getElementById('admin-baru-dialog').showModal()">
                     <i class="ti ti-plus"></i> Admin baru
                 </button>
-            </div>
-            <p style="font-size: var(--fs-xs); color: var(--text-muted); margin: 4px 0 0;">Admin belum ada? Tambahkan akun Admin baru di sini.</p>
-        @endif
+            @endif
+        </div>
+        <div style="position: relative;">
+            <input type="search" placeholder="Cari nama admin / @username..." data-cari-select="admin_id" style="margin-bottom: 6px; font-size: 12.5px; padding: 6px 10px;">
+            <select name="admin_id" id="admin_id" @required($adminWajib)>
+                <option value="">{{ $adminKosong }}</option>
+                @foreach ($admins as $a)
+                    <option value="{{ $a->id }}" @selected((string) old('admin_id', session('admin_baru_id', $adminId)) === (string) $a->id)>{{ $a->name }}{{ $a->username ? ' (@'.$a->username.')' : '' }}</option>
+                @endforeach
+            </select>
+        </div>
     </div>
     <div>
-        <label for="client_id">Akun Client <span class="wajib" aria-hidden="true">*</span></label>
-        <input type="search" placeholder="Cari client..." data-cari-select="client_id" style="margin-bottom: 6px;">
-        <select name="client_id" id="client_id" required>
-            <option value="">- Pilih Client -</option>
-            @foreach ($clients as $c)
-                <option value="{{ $c->id }}" @selected((string) old('client_id', session('client_baru_id', $clientId)) === (string) $c->id)>{{ $c->name }}{{ $c->username ? ' (@'.$c->username.')' : '' }}</option>
-            @endforeach
-        </select>
-        @if (auth()->user()->isSuperAdmin())
-            <div style="margin-top: 8px;">
-                <button type="button" class="btn btn-sm btn-tonal" onclick="document.getElementById('client-baru-dialog').showModal()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label for="client_id" style="margin: 0; font-weight: 600;">Akun Client <span class="wajib" aria-hidden="true">*</span></label>
+            @if (auth()->user()->isSuperAdmin())
+                <button type="button" class="btn btn-sm btn-tonal" style="padding: 2px 8px; font-size: 11px; height: auto;" onclick="document.getElementById('client-baru-dialog').showModal()">
                     <i class="ti ti-plus"></i> Client baru
                 </button>
-            </div>
-            <p style="font-size: var(--fs-xs); color: var(--text-muted); margin: 4px 0 0;">Client belum ada? Tambahkan akun Client baru di sini.</p>
-        @else
-            <p style="font-size: var(--fs-xs); color: var(--text-muted); margin: 4px 0 0;">Client belum ada? Minta Super Admin membuatkan akunnya.</p>
-        @endif
+            @endif
+        </div>
+        <div style="position: relative;">
+            <input type="search" placeholder="Cari nama client / @username..." data-cari-select="client_id" style="margin-bottom: 6px; font-size: 12.5px; padding: 6px 10px;">
+            <select name="client_id" id="client_id" required>
+                <option value="">- Pilih Client -</option>
+                @foreach ($clients as $c)
+                    <option value="{{ $c->id }}" @selected((string) old('client_id', session('client_baru_id', $clientId)) === (string) $c->id)>{{ $c->name }}{{ $c->username ? ' (@'.$c->username.')' : '' }}</option>
+                @endforeach
+            </select>
+        </div>
     </div>
 </div>
 @once

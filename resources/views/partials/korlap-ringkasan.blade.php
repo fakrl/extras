@@ -2,7 +2,101 @@
     $absensi = fn ($projectId, $tanggalId) => route('admin.attendance.index', ['project' => $projectId, 'tanggal' => $tanggalId], false);
     $tag = $masuk ? 'button' : 'a';
     $klik = fn ($url) => $masuk ? 'type="submit" form="mon-masuk" name="ke" value="'.e($url).'"' : 'href="'.e($url).'"';
+
+    $statKorlap = $statKorlap ?? [
+        'proyek_aktif_count' => ($hari['Hari ini'] ?? collect())->concat($hari['Besok'] ?? collect())->count(),
+        'total_panggilan' => (int) ($hari['Hari ini'] ?? collect())->concat($hari['Besok'] ?? collect())->sum(fn ($sd) => $sd->rekap['total'] ?? 0),
+        'total_hadir' => (int) ($hari['Hari ini'] ?? collect())->concat($hari['Besok'] ?? collect())->sum(fn ($sd) => $sd->rekap['hadir'] ?? 0),
+        'total_menunggu_val' => (int) ($hari['Hari ini'] ?? collect())->concat($hari['Besok'] ?? collect())->sum(fn ($sd) => $sd->rekap['menunggu_validasi'] ?? 0),
+        'total_tidak_hadir' => (int) ($hari['Hari ini'] ?? collect())->concat($hari['Besok'] ?? collect())->sum(fn ($sd) => $sd->rekap['tidak_hadir'] ?? 0),
+        'total_belum_absen' => (int) ($hari['Hari ini'] ?? collect())->concat($hari['Besok'] ?? collect())->sum(fn ($sd) => $sd->rekap['belum'] ?? 0),
+        'tingkat_kehadiran' => (($hari['Hari ini'] ?? collect())->concat($hari['Besok'] ?? collect())->sum(fn ($sd) => $sd->rekap['total'] ?? 0) > 0)
+            ? (int) round((($hari['Hari ini'] ?? collect())->concat($hari['Besok'] ?? collect())->sum(fn ($sd) => $sd->rekap['hadir'] ?? 0) / ($hari['Hari ini'] ?? collect())->concat($hari['Besok'] ?? collect())->sum(fn ($sd) => $sd->rekap['total'] ?? 0)) * 100)
+            : 0,
+        'menunggu_count' => count($menunggu ?? []),
+        'catatan_count' => count($catatan ?? []),
+        'catatan_sanksi' => collect($catatan ?? [])->where('jenis', 'sanksi')->count(),
+        'catatan_info' => collect($catatan ?? [])->where('jenis', '!=', 'sanksi')->count(),
+    ];
 @endphp
+
+{{-- 4 Kartu Metrik Lapangan Korlap --}}
+<div class="dash-pulse-strip">
+    <div class="dash-stat-card" tabindex="0">
+        <div>
+            <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
+                <i class="ti ti-movie"></i> Proyek Lapangan Aktif
+            </div>
+            <div style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 4px 0 2px;">
+                {{ $statKorlap['proyek_aktif_count'] }} Jadwal
+            </div>
+            <div style="font-size: 12px; color: var(--text-secondary);">
+                Hari ini &amp; besok ditugaskan
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-stat-card" tabindex="0">
+        <div>
+            <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
+                <i class="ti ti-user-check"></i> Tingkat Kehadiran
+            </div>
+            <div style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 4px 0 2px;">
+                {{ $statKorlap['tingkat_kehadiran'] }}%
+            </div>
+            <div class="dash-segmented-bar">
+                <div class="seg" style="width: {{ $statKorlap['tingkat_kehadiran'] }}%; background: var(--accent, #15803D);"></div>
+                <div class="seg" style="width: {{ 100 - $statKorlap['tingkat_kehadiran'] }}%; background: var(--surface-2, rgba(0,0,0,0.06));"></div>
+            </div>
+            <div style="font-size: 12px; color: var(--text-secondary);">
+                {{ $statKorlap['total_hadir'] }}/{{ $statKorlap['total_panggilan'] }} talent hadir
+            </div>
+        </div>
+        <span class="info-hint"><i class="ti ti-info-circle"></i></span>
+        <div class="dash-hover-popover">
+            <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Rincian Kehadiran Lapangan</div>
+            <div class="popover-row"><span>Hadir Tervalidasi</span><strong>{{ $statKorlap['total_hadir'] }}</strong></div>
+            <div class="popover-row"><span>Menunggu Validasi</span><strong>{{ $statKorlap['total_menunggu_val'] }}</strong></div>
+            <div class="popover-row"><span>Tidak Hadir</span><strong>{{ $statKorlap['total_tidak_hadir'] }}</strong></div>
+            <div class="popover-row"><span>Belum Diabsen</span><strong>{{ $statKorlap['total_belum_absen'] }}</strong></div>
+        </div>
+    </div>
+
+    <div class="dash-stat-card" tabindex="0" style="{{ $statKorlap['menunggu_count'] > 0 ? 'border-color: var(--warning, #D97706);' : '' }}">
+        <div>
+            <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
+                <i class="ti ti-camera"></i> Antrean Validasi Selfie
+            </div>
+            <div style="font-size: 22px; font-weight: 700; color: {{ $statKorlap['menunggu_count'] > 0 ? 'var(--warning, #D97706)' : 'var(--text-primary)' }}; margin: 4px 0 2px;">
+                {{ $statKorlap['menunggu_count'] }}
+            </div>
+            <div style="font-size: 12px; color: var(--text-secondary);">
+                {{ $statKorlap['menunggu_count'] > 0 ? 'Perlu diverifikasi sekarang' : 'Semua presensi beres' }}
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-stat-card" tabindex="0">
+        <div>
+            <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
+                <i class="ti ti-notes"></i> Catatan Lapangan
+            </div>
+            <div style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 4px 0 2px;">
+                {{ $statKorlap['catatan_count'] }}
+            </div>
+            <div style="font-size: 12px; color: var(--text-secondary);">
+                {{ $statKorlap['catatan_sanksi'] }} Peringatan/Sanksi · {{ $statKorlap['catatan_info'] }} Info
+            </div>
+        </div>
+        <span class="info-hint"><i class="ti ti-info-circle"></i></span>
+        <div class="dash-hover-popover">
+            <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Distribusi Catatan Lapangan</div>
+            <div class="popover-row"><span>Peringatan / Sanksi</span><strong>{{ $statKorlap['catatan_sanksi'] }}</strong></div>
+            <div class="popover-row"><span>Informasi / Catatan Umum</span><strong>{{ $statKorlap['catatan_info'] }}</strong></div>
+        </div>
+    </div>
+</div>
+
 <div class="mon-dua">
     <div class="card">
         <div class="card-title">Shooting hari ini &amp; besok</div>
@@ -36,8 +130,13 @@
                     </div>
                 </{{ $tag }}>
                 @unless ($masuk)
-                    <div style="padding: 0 0 10px; text-align: right;">
-                        <a href="{{ route('admin.callsheet.show', [$sd->castingProject, $sd->tanggal->toDateString()]) }}" class="btn btn-sm">Callsheet</a>
+                    <div style="padding: 0 0 10px; display: flex; justify-content: flex-end; gap: 8px;">
+                        <a href="{{ route('admin.attendance.index', ['project' => $sd->casting_project_id, 'tanggal' => $sd->id]) }}" class="btn btn-sm btn-brand">
+                            <i class="ti ti-clipboard-check"></i> Kelola Absensi
+                        </a>
+                        <a href="{{ route('admin.callsheet.show', [$sd->castingProject, $sd->tanggal->toDateString()]) }}" class="btn btn-sm">
+                            <i class="ti ti-file-text"></i> Callsheet
+                        </a>
                     </div>
                 @endunless
             @empty

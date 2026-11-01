@@ -91,6 +91,55 @@ class DashboardController extends Controller
 
         $jumlahBatalMendadak = $extrasProfile?->batalMendadak()->count() ?? 0;
 
+        // Hitung Ringkasan Karir & Honor Extras
+        $semuaAplikasi = $extrasProfile
+            ? ProjectApplication::where('extras_id', $extrasProfile->id)->with(['payment.addons', 'castingProject'])->get()
+            : collect();
+
+        $appSelesai = $semuaAplikasi->where('status_partisipasi', 'selesai_produksi')->count();
+        $appSeleksi = $semuaAplikasi->filter(fn ($a) => in_array($a->status_partisipasi, ['diajukan', 'menunggu_review', 'nego_fee', 'deal', 'diajukan_ke_client'], true))->count();
+        $appKontrak = $semuaAplikasi->filter(fn ($a) => in_array($a->status_partisipasi, ['lolos', 'kontrak_ditandatangani'], true))->count();
+        $appAktifCount = $appSeleksi + $appKontrak;
+        $appTotalCount = $semuaAplikasi->count();
+
+        // Dompet Honor (Payments)
+        $semuaPayment = $semuaAplikasi->pluck('payment')->filter();
+        $honorCair = 0.0;
+        $honorProses = 0.0;
+        $honorMenungguKonfirmasi = 0.0;
+
+        foreach ($semuaPayment as $pm) {
+            $nom = (float) $pm->nominalTotal();
+            if ($pm->status === 'dikonfirmasi_diterima') {
+                $honorCair += $nom;
+            } elseif ($pm->status === 'ditransfer') {
+                $honorMenungguKonfirmasi += $nom;
+            } else {
+                $honorProses += $nom;
+            }
+        }
+
+        // Skor Kehadiran
+        $totalAbsen = $riwayatAbsensi->count();
+        $hadirPositif = $riwayatAbsensi->where('status', 'hadir')->count();
+        $skorKehadiran = $totalAbsen > 0 ? (int) round(($hadirPositif / $totalAbsen) * 100) : 100;
+
+        $statKarirExtras = [
+            'proyek_selesai' => $appSelesai,
+            'lamaran_aktif' => $appAktifCount,
+            'proses_seleksi' => $appSeleksi,
+            'kontrak_aktif' => $appKontrak,
+            'total_melamar' => $appTotalCount,
+            'honor_cair' => $honorCair,
+            'honor_proses' => $honorProses,
+            'honor_konfirmasi' => $honorMenungguKonfirmasi,
+            'skor_kehadiran' => $skorKehadiran,
+            'total_absen' => $totalAbsen,
+            'hadir_count' => $hadirPositif,
+            'batal_mendadak' => $jumlahBatalMendadak,
+            'siap_kontrak' => ! empty($extrasProfile?->nik_hash),
+        ];
+
         // CS.3: satu kartu callingan paling atas, H-1/H saja, hari ini diutamakan dari besok.
         $callinganCard = null;
         foreach ($pendaftaranAktif as $app) {
@@ -107,6 +156,6 @@ class DashboardController extends Controller
             }
         }
 
-        return view('extras.dashboard', compact('jumlahBatalMendadak', 'extrasProfile', 'pendaftaranAktif', 'riwayatPendaftaran', 'bentrokPer', 'aktivitasSaya', 'agendaEvents', 'dari', 'sampai', 'skala', 'castingCallTerbuka', 'riwayatAbsensi', 'callinganCard'));
+        return view('extras.dashboard', compact('jumlahBatalMendadak', 'extrasProfile', 'pendaftaranAktif', 'riwayatPendaftaran', 'bentrokPer', 'aktivitasSaya', 'agendaEvents', 'dari', 'sampai', 'skala', 'castingCallTerbuka', 'riwayatAbsensi', 'callinganCard', 'statKarirExtras'));
     }
 }

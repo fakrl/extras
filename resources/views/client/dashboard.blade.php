@@ -141,6 +141,33 @@
             <span style="width: {{ $reject / $kpTotal * 100 }}%; background: #ef4444;"></span>
         </div>
         <a href="{{ route('client.reviews.index') }}" class="btn btn-brand" style="width: 100%; margin-top: 12px;">Buka Pemilihan Kandidat</a>
+
+        {{-- Ringkasan Tagihan & Kontrak --}}
+        <div style="margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--border-color);">
+            <div class="dash-stat-card" tabindex="0" style="padding: 10px 12px; cursor: pointer;">
+                <a href="{{ route('invoices.index-client') }}" style="text-decoration: none; color: inherit; display: block;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">
+                        <span><i class="ti ti-receipt-2"></i> Ringkasan Tagihan &amp; Kontrak</span>
+                        <i class="ti ti-info-circle"></i>
+                    </div>
+                    <div style="font-size: 16px; font-weight: 700; margin: 4px 0 2px; color: var(--text-primary);">
+                        {{ $statBillingClient['total_invoice_count'] }} Dokumen Tagihan
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">
+                        {{ $statBillingClient['lunas_count'] }} Lunas · {{ $statBillingClient['belum_lunas_count'] }} Menunggu Pembayaran
+                    </div>
+                </a>
+                <div class="dash-hover-popover">
+                    <div style="font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">Status Tagihan Proyek</div>
+                    <div class="popover-row"><span>Invoice Lunas ({{ $statBillingClient['lunas_count'] }})</span><strong style="color: #15803D;">Rp {{ number_format($statBillingClient['lunas_nominal'], 0, ',', '.') }}</strong></div>
+                    <div class="popover-row"><span>Menunggu Bayar ({{ $statBillingClient['belum_lunas_count'] }})</span><strong style="color: #D97706;">Rp {{ number_format($statBillingClient['belum_lunas_nominal'], 0, ',', '.') }}</strong></div>
+                    <div class="popover-row"><span>Belum Terbit</span><strong>{{ $statBillingClient['belum_terbit_count'] }} Proyek</strong></div>
+                    <div style="margin-top: 8px; text-align: right;">
+                        <a href="{{ route('invoices.index-client') }}" class="btn btn-sm btn-tonal" style="font-size: 11px; padding: 2px 8px;">Lihat Semua Tagihan <i class="ti ti-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -198,6 +225,24 @@
                     <span style="{{ $stepIndex === 2 ? 'font-weight: 600; color: var(--accent);' : '' }}">2. Seleksi</span>
                     <span style="{{ $stepIndex === 3 ? 'font-weight: 600; color: var(--accent);' : '' }}">3. Shooting</span>
                     <span style="{{ $stepIndex === 4 ? 'font-weight: 600; color: var(--accent);' : '' }}">4. Selesai</span>
+                </div>
+                {{-- Indikator Kuota & Shortcut Review --}}
+                <div style="margin-top: 4px; padding: 6px 10px; background: var(--surface-1, rgba(0,0,0,0.02)); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 4px;">
+                        <span>Kebutuhan Talent: <strong>{{ $p->kuota_terpilih }}/{{ $p->kuota_target }} Terpilih</strong></span>
+                        <span style="font-size: 11.5px; font-weight: 600;">{{ $p->persen_kuota }}%</span>
+                    </div>
+                    <div class="dash-segmented-bar" style="height: 6px; margin: 3px 0 6px;">
+                        <div class="seg" style="width: {{ $p->persen_kuota }}%; background: var(--accent, #15803D);"></div>
+                        <div class="seg" style="width: {{ 100 - $p->persen_kuota }}%; background: var(--surface-2, rgba(0,0,0,0.06));"></div>
+                    </div>
+                    @if ($p->kandidat_menunggu > 0)
+                        <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
+                            <a href="{{ route('client.reviews.show', $p) }}" class="btn btn-sm btn-brand" style="font-size: 11.5px; padding: 3px 10px;">
+                                <i class="ti ti-user-check"></i> Pilih Kandidat ({{ $p->kandidat_menunggu }}) <i class="ti ti-arrow-right"></i>
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
         @empty

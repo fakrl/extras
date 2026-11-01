@@ -20,7 +20,7 @@
             <a href="{{ $castingProject->link_grup }}" target="_blank" style="font-size: 12.5px;">Link Grup Koordinasi</a>
         @endif
     </div>
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <div class="client-review-export-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
         <a href="{{ route('client.riwayat.export.xlsx', $castingProject) }}" class="btn btn-sm">Ekspor Excel</a>
         <a href="{{ route('client.riwayat.export.pdf', [$castingProject, 'preview' => 1]) }}" target="_blank" class="btn btn-sm btn-tonal"><i class="ti ti-eye"></i> Pratinjau PDF</a>
         <a href="{{ route('client.riwayat.export.pdf', $castingProject) }}" class="btn btn-sm"><i class="ti ti-download"></i> Ekspor PDF</a>

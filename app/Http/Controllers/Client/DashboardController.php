@@ -30,7 +30,45 @@ class DashboardController extends Controller
         // CL-11: berjalan = lowongan masih dibuka atau shooting sedang berlangsung.
         $proyekBerjalan = CastingProject::whereIn('id', $proyekIds)
             ->where(fn ($q) => $q->where('status', 'dibuka')->orWhere(fn ($t) => $t->diTahap('berjalan')))
-            ->get();
+            ->with(['classes', 'shootingDates', 'applications.clientReviews'])
+            ->get()
+            ->each(function ($p) use ($klienId) {
+                $target = (int) $p->classes->sum('kuota_kelas');
+                $terpilih = (int) $p->applications->filter(fn ($a) => $a->clientReviews->where('client_id', $klienId)->where('keputusan', 'approve')->isNotEmpty())->count();
+                $menunggu = (int) $p->applications->where('status_partisipasi', 'diajukan_ke_client')->count();
+                $p->kuota_target = $target;
+                $p->kuota_terpilih = $terpilih;
+                $p->kandidat_menunggu = $menunggu;
+                $p->persen_kuota = $target > 0 ? (int) round(($terpilih / $target) * 100) : 0;
+            });
+
+        // Hitung Ringkasan Tagihan Client
+        $invoicesClient = Invoice::whereIn('casting_project_id', $proyekIds)->with('castingProject.classes')->get();
+        $invLunasCount = 0;
+        $invLunasNominal = 0.0;
+        $invBelumLunasCount = 0;
+        $invBelumLunasNominal = 0.0;
+
+        foreach ($invoicesClient as $inv) {
+            $val = (float) ($inv->nominal ?? 0);
+            if ($inv->status_bayar === 'lunas') {
+                $invLunasCount++;
+                $invLunasNominal += $val;
+            } else {
+                $invBelumLunasCount++;
+                $invBelumLunasNominal += $val;
+            }
+        }
+        $proyekTanpaInvoice = max(0, $proyekIds->count() - $invoicesClient->count());
+
+        $statBillingClient = [
+            'total_invoice_count' => $invoicesClient->count(),
+            'lunas_count' => $invLunasCount,
+            'lunas_nominal' => $invLunasNominal,
+            'belum_lunas_count' => $invBelumLunasCount,
+            'belum_lunas_nominal' => $invBelumLunasNominal,
+            'belum_terbit_count' => $proyekTanpaInvoice,
+        ];
 
         // CL-10: tugas Client sendiri, bukan tugas tim JBTB.
         $invoiceMenungguTtd = Invoice::whereIn('casting_project_id', $proyekIds)
@@ -66,7 +104,8 @@ class DashboardController extends Controller
 
         return view('client.dashboard', compact(
             'perluDireview', 'approve', 'reject', 'proyekBerjalan', 'pengajuan', 'karakterPendaftar',
-            'agendaEvents', 'dari', 'sampai', 'skala', 'invoiceMenungguTtd', 'jadwalKosong'
+            'agendaEvents', 'dari', 'sampai', 'skala', 'invoiceMenungguTtd', 'jadwalKosong',
+            'statBillingClient'
         ));
     }
 }
