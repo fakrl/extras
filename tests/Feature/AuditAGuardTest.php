@@ -12,6 +12,7 @@ use App\Models\StaffPayroll;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -358,18 +359,30 @@ class AuditAGuardTest extends TestCase
         return StaffPayroll::create(['admin_project_assignment_id' => $a->id, 'nominal_pokok' => 300000]);
     }
 
-    public function test_admin_tidak_bisa_tandai_honor_sendiri_dibayar(): void
+    public function test_rute_admin_tandai_dibayar_sudah_dihapus_cm33(): void
     {
-        $admin = $this->user('admin');
-        $milikSendiri = $this->payroll($admin);
+        $this->assertFalse(Route::has('admin.payrolls.tandai-dibayar'));
+
+        $pic = $this->user('admin');
+        $proyek = $this->proyek($pic);
         $milikLain = $this->payroll($this->user('korlap'));
 
-        $this->actingAs($admin)->patch(route('admin.payrolls.tandai-dibayar', $milikSendiri))->assertSessionHas('error');
-        $this->assertFalse($milikSendiri->fresh()->isDibayar());
-        $this->actingAs($admin)->patch(route('admin.payrolls.tandai-dibayar', $milikLain))->assertSessionHas('status');
-        $this->assertTrue($milikLain->fresh()->isDibayar());
+        // Admin PIC proyek pun tidak bisa akses path lama secara langsung.
+        $this->actingAs($pic)->patch('/admin/payrolls/'.$milikLain->id.'/tandai-dibayar')->assertNotFound();
+        $this->assertFalse($milikLain->fresh()->isDibayar());
 
-        $this->actingAs($this->user('super_admin'))->patch(route('super-admin.payrolls.tandai-dibayar', $milikSendiri))->assertSessionHas('status');
+        $this->actingAs($this->user('super_admin'))->patch(route('super-admin.payrolls.tandai-dibayar', $milikLain))->assertSessionHas('status');
+        $this->assertTrue($milikLain->fresh()->isDibayar());
+    }
+
+    public function test_super_admin_tidak_bisa_tandai_honor_sendiri_dibayar_lewat_rute_sendiri(): void
+    {
+        $sa = $this->user('super_admin');
+        $milikSendiri = $this->payroll($sa);
+
+        // Controller tandaiDibayar() membebaskan Super Admin dari cek "honor sendiri"
+        // (lihat KeuanganProyekController::tandaiDibayar) - perilaku lama dipertahankan.
+        $this->actingAs($sa)->patch(route('super-admin.payrolls.tandai-dibayar', $milikSendiri))->assertSessionHas('status');
         $this->assertTrue($milikSendiri->fresh()->isDibayar());
     }
 

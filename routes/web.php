@@ -272,8 +272,6 @@ Route::middleware(['auth', 'role:admin,korlap,super_admin'])
 
 // SPEC AV/BD.2/BV: pencatatan keuangan proyek - Admin & Super Admin.
 Route::middleware(['auth', 'role:admin,super_admin'])->prefix('admin')->group(function () {
-    Route::patch('/payrolls/{staffPayroll}/tandai-dibayar', [KeuanganProyekController::class, 'tandaiDibayar'])
-        ->name('admin.payrolls.tandai-dibayar');
     Route::patch('/projects/{castingProject}/invoice-lunas', [KeuanganProyekController::class, 'tandaiLunas'])
         ->name('admin.projects.invoice-lunas');
     Route::patch('/projects/{castingProject}/invoice-nominal', [KeuanganProyekController::class, 'simpanNominal'])

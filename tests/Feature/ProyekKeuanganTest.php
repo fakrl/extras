@@ -14,6 +14,7 @@ use App\Support\AdminRingkasan;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -442,18 +443,23 @@ class ProyekKeuanganTest extends TestCase
 
     public function test_detail_proyek_empat_tab_dan_tandai_dibayar_honor_staf(): void
     {
-        ['admin' => $admin, 'project' => $project, 'payroll' => $payroll] = $this->proyekLengkap();
+        ['sa' => $sa, 'admin' => $admin, 'project' => $project, 'payroll' => $payroll] = $this->proyekLengkap();
 
         $this->actingAs($admin)->get(route('admin.projects.show', $project))->assertOk()->assertSee('Korlap Budi')->assertSee('Warga');
         $this->actingAs($admin)->get(route('admin.projects.show', [$project, 'tab' => 'pendaftar']))->assertOk()->assertSee('xcard', false);
         $this->actingAs($admin)->get(route('admin.projects.show', [$project, 'tab' => 'keuangan']))
             ->assertOk()
             ->assertSee('Konsumsi')
-            ->assertSee(route('admin.payrolls.tandai-dibayar', $payroll), false);
+            ->assertDontSee('Tandai Dibayar');
 
-        $this->actingAs($admin)->patch(route('admin.payrolls.tandai-dibayar', $payroll))->assertSessionHas('status');
+        // CM.3.3: honor staf murni tugas Super Admin, PIC proyek tidak bisa tandai dibayar.
+        $this->assertFalse(Route::has('admin.payrolls.tandai-dibayar'));
+        $this->actingAs($admin)->patch('/admin/payrolls/'.$payroll->id.'/tandai-dibayar')->assertNotFound();
+        $this->assertFalse($payroll->fresh()->isDibayar());
+
+        $this->actingAs($sa)->patch(route('super-admin.payrolls.tandai-dibayar', $payroll))->assertSessionHas('status');
         $this->assertTrue($payroll->fresh()->isDibayar());
-        $this->actingAs($admin)->patch(route('admin.payrolls.tandai-dibayar', $payroll))->assertSessionHas('error');
+        $this->actingAs($sa)->patch(route('super-admin.payrolls.tandai-dibayar', $payroll))->assertSessionHas('error');
     }
 
     #[DataProvider('roleDitolak')]

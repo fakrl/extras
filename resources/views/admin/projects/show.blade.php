@@ -379,8 +379,8 @@
                                 @unless ($payroll->isDibayar())
                                     @if ($payroll->assignment?->user_id === auth()->id() && ! auth()->user()->isSuperAdmin())
                                         <span style="font-size: var(--fs-xs); color: var(--text-muted);">Honor sendiri, dibayar oleh Super Admin.</span>
-                                    @elseif ($bolehKelola || auth()->user()->isSuperAdmin())
-                                        <x-confirm-form :action="route(auth()->user()->isSuperAdmin() ? 'super-admin.payrolls.tandai-dibayar' : 'admin.payrolls.tandai-dibayar', $payroll)" method="PATCH" message="Tandai honor {{ $staf?->name }} sebesar {{ $rp($payroll->nominalTotal()) }} sudah dibayarkan?">
+                                    @elseif (auth()->user()->isSuperAdmin())
+                                        <x-confirm-form :action="route('super-admin.payrolls.tandai-dibayar', $payroll)" method="PATCH" message="Tandai honor {{ $staf?->name }} sebesar {{ $rp($payroll->nominalTotal()) }} sudah dibayarkan?">
                                             <button type="submit" class="btn btn-sm btn-brand">Tandai Dibayar</button>
                                         </x-confirm-form>
                                     @endif
