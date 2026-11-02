@@ -175,6 +175,7 @@ class InvoiceController extends Controller
         $this->pastikanBolehLihat($request, $castingProject);
 
         if (! $request->user()->isClient()) {
+            abort_unless($request->user()->modeSa() !== 'korlap', 403, 'Hanya Admin yang bisa melakukan aksi ini.');
             $this->authorize('kelola', $castingProject);
         }
     }

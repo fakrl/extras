@@ -37,6 +37,7 @@ class ContractController extends Controller
     {
         abort_unless($application->bolehDilihatOleh($request->user()), 403);
         if ($request->user()->role !== 'extras') {
+            abort_unless($request->user()->bisaSebagaiAdmin() && $request->user()->modeSa() !== 'korlap', 403, 'Hanya Admin yang bisa menandatangani kontrak ini.');
             $this->authorize('kelola', $application->castingProject);
         }
 

@@ -17,6 +17,14 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class PaymentController extends Controller
 {
+    // Admin PIC/assigned-admin, atau SA dalam mode Monitoring Admin - bukan Korlap/SA-mode-korlap.
+    private function pastikanAdminBolehTulis(Request $request, ProjectApplication $application): void
+    {
+        $user = $request->user();
+        abort_unless($user->bisaSebagaiAdmin() && $user->modeSa() !== 'korlap', 403, 'Hanya Admin yang bisa melakukan aksi ini.');
+        $this->authorize('kelola', $application->castingProject);
+    }
+
     private function guardStatusLolos(ProjectApplication $application): void
     {
         abort_unless(
@@ -42,7 +50,7 @@ class PaymentController extends Controller
      */
     public function tandaiTransfer(Request $request, ProjectApplication $application): RedirectResponse
     {
-        $this->authorize('kelola', $application->castingProject);
+        $this->pastikanAdminBolehTulis($request, $application);
         $this->guardStatusLolos($application);
 
         if (! $application->payment) {
@@ -116,7 +124,7 @@ class PaymentController extends Controller
      */
     public function addAddon(Request $request, ProjectApplication $application): RedirectResponse
     {
-        $this->authorize('kelola', $application->castingProject);
+        $this->pastikanAdminBolehTulis($request, $application);
         $this->guardStatusLolos($application);
 
         if ($application->payment?->status !== 'belum_dibayar') {
@@ -154,7 +162,9 @@ class PaymentController extends Controller
         $isExtrasOwner = $request->user()->role === 'extras'
             && $application->extras_id === $request->user()->extrasProfile?->id;
 
-        abort_unless($isExtrasOwner || $application->castingProject->dikelolaOleh($request->user()), 403, 'Proyek ini bukan tanggung jawab Anda.');
+        $user = $request->user();
+        $isAdminPengelola = $user->bisaSebagaiAdmin() && $user->modeSa() !== 'korlap' && $application->castingProject->dikelolaOleh($user);
+        abort_unless($isExtrasOwner || $isAdminPengelola, 403, 'Proyek ini bukan tanggung jawab Anda.');
         $this->guardStatusLolos($application);
 
         if (! ($application->payment->status === 'ditransfer')) {
@@ -186,7 +196,7 @@ class PaymentController extends Controller
 
     public function selesaikanSengketa(Request $request, ProjectApplication $application): RedirectResponse
     {
-        $this->authorize('kelola', $application->castingProject);
+        $this->pastikanAdminBolehTulis($request, $application);
         $this->guardStatusLolos($application);
 
         if ($application->payment?->status !== 'disengketakan') {

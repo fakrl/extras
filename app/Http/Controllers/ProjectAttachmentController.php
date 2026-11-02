@@ -24,6 +24,7 @@ class ProjectAttachmentController extends Controller
         $user = $request->user();
         abort_unless(self::bolehAkses($user, $castingProject), 403);
         if (! $castingProject->milikClient($user)) {
+            abort_unless($user->modeSa() !== 'korlap', 403, 'Hanya Admin yang bisa mengunggah lampiran.');
             $this->authorize('kelola', $castingProject);
         }
 
