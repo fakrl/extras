@@ -237,12 +237,12 @@ class ActivityLogAndEnhancementsTest extends TestCase
         // Extras visits dashboard
         $response = $this->actingAs($extrasUser)->get(route('extras.dashboard'));
         $response->assertOk();
-        $response->assertSee('Grade A');
-        $response->assertSee('Perubahan Grade Talenta');
+        // Grade tidak boleh tampil ke Extras (D22): dashboard, log, maupun profil sendiri.
+        $response->assertDontSee('Grade A');
+        $response->assertDontSee('Perubahan Grade Talenta');
 
-        // Extras visits profile show
         $profileResponse = $this->actingAs($extrasUser)->get(route('extras.profile.show'));
         $profileResponse->assertOk();
-        $profileResponse->assertSee('Grade A');
+        $profileResponse->assertDontSee('Grade A');
     }
 }

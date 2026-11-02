@@ -1263,7 +1263,7 @@ Berlaku untuk **3 tampilan yang sama datanya**: Profil Saya (`extras/profile-sho
 
 Struktur (urut seperti moodboard):
 1. **Header profil:** label kecil "Profil Talent / #ID", kanan: Bagikan + Edit profil (**hanya pemilik**).
-2. **Hero 2 kolom:** kiri foto utama rasio ±0.82, **grayscale, berwarna saat hover**; badge status di pojok (Aktif / Sedang di proyek / Tidak aktif — dari data asli, bukan "Available" statis). Kanan: kategori kecil ("Extras" + tag Usia tampilan), **username besar serif** dengan akhiran accent, chip (kota/domisili kalau ada, bahasa), baris grade ("Grade A" / "Grade belum dinilai" — grade **cuma** pemilik & admin).
+2. **Hero 2 kolom:** kiri foto utama rasio ±0.82, **grayscale, berwarna saat hover**; badge status di pojok (Aktif / Sedang di proyek / Tidak aktif — dari data asli, bukan "Available" statis). Kanan: kategori kecil ("Extras" + tag Usia tampilan), **username besar serif** dengan akhiran accent, chip (kota/domisili kalau ada, bahasa), baris grade ("Grade A" / "Grade belum dinilai" — ~~grade **cuma** pemilik & admin~~ **DITINJAU ULANG 2 Nov 2026 (D22):** grade internal admin, Extras TIDAK boleh lihat grade-nya sendiri (konsisten `docs/CLAUDE.md` §4 "Extras cuma lihat hasil ... bukan catatan admin"). Berlaku **cuma admin**, mode pemilik ikut disembunyikan).
 3. **01 / Data diri & ciri fisik:** grid 2 kolom label kecil + nilai serif (usia, gender, tinggi, ukuran baju, warna kulit). Publik: usia **rentang**.
 4. **02 / Pengalaman & kemampuan:** pengalaman, bahasa, tag Tipe & Kemampuan (chip), tautan tambahan (pemilik & admin saja).
 5. **03 / Showreel (video)** — publik: kotak terkunci "Tersedia untuk Client & Admin".

@@ -588,16 +588,9 @@
         <div class="exd-judul" style="font-size: 14px; font-weight: 600;">
             <i class="ti ti-activity"></i> Status Talenta & Linimasa Aktivitas
         </div>
-        <div>
-            @if ($extrasProfile?->grade_saat_ini)
-                <span class="badge badge-aktif" style="font-weight: 600; font-size: 12px;">Grade {{ $extrasProfile->grade_saat_ini }}</span>
-            @else
-                <span class="badge badge-netral" style="font-size: var(--fs-xs);">Grade: Belum Dinilai</span>
-            @endif
-        </div>
     </div>
     <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.45;">
-        Klasifikasi Grade ditentukan oleh tim Casting berdasarkan kelengkapan portofolio, kesesuaian karakter, dan kedisiplinan kehadiran di lokasi syuting. Riwayat aktivitas dan status akun kamu tercatat secara transparan di bawah ini.
+        Riwayat aktivitas dan status akun kamu tercatat di bawah ini.
     </p>
 
     @if ($aktivitasSaya->isNotEmpty())
@@ -606,11 +599,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 10px; background: var(--bg-secondary, rgba(0,0,0,.03)); border-radius: 6px; font-size: 12.5px; gap: 10px;">
                     <div>
                         <div style="font-weight: 500;">
-                            @if ($log->action === 'SET_EXTRAS_GRADE')
-                                <span style="color: var(--accent);"><i class="ti ti-star"></i> Perubahan Grade Talenta</span>
-                            @else
-                                <i class="ti ti-point"></i> <span title="{{ $log->action }}">{{ \App\Models\ActivityLog::actionLabel($log->action) }}</span>
-                            @endif
+                            <i class="ti ti-point"></i> <span title="{{ $log->action }}">{{ \App\Models\ActivityLog::actionLabel($log->action) }}</span>
                         </div>
                         <div style="font-size: var(--fs-xs); color: var(--text-secondary); margin-top: 2px;">{{ $log->description }}</div>
                     </div>

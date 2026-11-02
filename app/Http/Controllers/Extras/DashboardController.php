@@ -52,7 +52,8 @@ class DashboardController extends Controller
                         $sq->where('subject_type', ExtrasProfile::class)
                             ->where('subject_id', $extrasProfile->id);
                     });
-            })->latest('created_at')->take(5)->get();
+            })->where('action', '!=', 'SET_EXTRAS_GRADE') // grade tidak boleh tampil ke Extras (D22)
+                ->latest('created_at')->take(5)->get();
         }
 
         $proyekLolos = $extrasProfile

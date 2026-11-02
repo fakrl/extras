@@ -63,13 +63,14 @@ class BhProfilEditorialTest extends TestCase
             ->assertDontSee(route('extras.media.foto', $this->profile), false);
     }
 
-    public function test_mode_pemilik_ada_edit_tarif_grade(): void
+    public function test_mode_pemilik_ada_edit_tarif_tanpa_grade(): void
     {
+        // D22 (2 Nov 2026): grade internal admin, pemilik TIDAK boleh lihat grade-nya sendiri.
         $this->actingAs($this->profile->user)->get(route('extras.profile.show'))->assertOk()
             ->assertSee('Edit profil')
             ->assertSee('Bagikan')
             ->assertSee('Rp 350.000')
-            ->assertSee('Grade A')
+            ->assertDontSee('Grade A')
             ->assertSee('27 tahun')
             ->assertSee('#Jawa')
             ->assertSee('instagram.com/dimasrahasia')

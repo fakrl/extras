@@ -145,7 +145,8 @@ a.pe-exp { display: block; color: inherit; text-decoration: none; }
                         @endforeach
                     </div>
                 @endif
-                @unless ($terbatas)
+                {{-- Grade tidak boleh tampil ke Extras di profilnya sendiri (D22) --}}
+                @unless ($terbatas || $mode === 'pemilik')
                     <div class="pe-grade">@if ($profile->grade_saat_ini)<strong>Grade {{ $profile->grade_saat_ini }}</strong>@else Grade belum dinilai @endif</div>
                 @endunless
             </div>
