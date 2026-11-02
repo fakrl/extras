@@ -44,3 +44,8 @@ docs/AKUN-DEMO.md
 /screenshots/
 /screenshots.zip
 /ct-screenshots/
+
+# Prompt draft & catatan sesi tool eksternal (Antigravity/Gemini) — bukan dokumen resmi proyek
+docs/prompt_*.md
+CT-CATATAN.md
+GEMINI.md
