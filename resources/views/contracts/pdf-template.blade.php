@@ -58,7 +58,6 @@
         <tr><td>Nama Talent (sesuai KTP)</td><td>: {{ $application->extras->nama_asli }}</td></tr>
         <tr><td>Nama Panggung (Alias)</td><td>: {{ $application->extras->user->username ?? '-' }}</td></tr>
         <tr><td>Fee Disepakati</td><td>: Rp {{ number_format($application->fee_final, 0, ',', '.') }}</td></tr>
-        <tr><td>Grade</td><td>: {{ $application->grade }}</td></tr>
     </table>
 
     <p style="margin-top:20px">
