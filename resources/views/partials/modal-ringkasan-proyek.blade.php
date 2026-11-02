@@ -5,7 +5,7 @@
     $tahapProyek = $project->tahap();
     $kuota = (int) $project->kuota;
     $ket = $project->keteranganShooting();
-    $bisaKelola = auth()->user()?->isSuperAdmin() || auth()->user()?->isAdmin();
+    $bisaKelola = auth()->user()?->isSuperAdmin() || (auth()->user()?->isAdmin() && $project->dikelolaOleh(auth()->user()));
     $pics = $pics ?? \App\Models\User::where('role', \App\Models\User::ROLE_ADMIN)->where('status', 'aktif')->orderBy('name')->get();
     $korlaps = $korlaps ?? \App\Models\User::where('role', \App\Models\User::ROLE_KORLAP)->where('status', 'aktif')->orderBy('name')->get();
     $clients = $clients ?? \App\Models\User::where('role', \App\Models\User::ROLE_CLIENT)->where('status', 'aktif')->orderBy('name')->get();

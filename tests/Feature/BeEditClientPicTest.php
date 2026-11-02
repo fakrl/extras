@@ -71,14 +71,17 @@ class BeEditClientPicTest extends TestCase
             ->assertSee('Proyek Yatim')->assertSee('Tanpa PIC/Client')->assertDontSee('Proyek Lengkap');
     }
 
-    public function test_super_admin_bisa_update_proyek_dan_pic_tanpa_harus_mode_monitoring(): void
+    public function test_super_admin_wajib_masuk_mode_admin_untuk_update_proyek(): void
     {
         $sa = User::factory()->create(['role' => 'super_admin']);
         $admin = User::factory()->create(['role' => 'admin']);
         $client = User::factory()->create(['role' => 'client']);
         $project = CastingProject::factory()->create(['admin_id' => null, 'client_id' => null]);
 
-        $response = $this->actingAs($sa)->patch(route('admin.projects.update', $project), $this->payload([
+        $this->actingAs($sa)->patch(route('admin.projects.update', $project), $this->payload(['nama_produksi' => 'Tanpa Mode']))->assertForbidden();
+        $this->assertNotSame('Tanpa Mode', $project->fresh()->nama_produksi);
+
+        $response = $this->actingAs($sa)->withSession(['sa_mode' => 'admin'])->patch(route('admin.projects.update', $project), $this->payload([
             'nama_produksi' => 'Proyek Diupdate SA',
             'admin_id' => $admin->id,
             'client_id' => $client->id,

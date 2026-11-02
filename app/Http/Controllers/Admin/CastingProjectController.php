@@ -343,7 +343,7 @@ class CastingProjectController extends Controller
      */
     public function update(Request $request, CastingProject $castingProject): RedirectResponse
     {
-        abort_unless($request->user()->isSuperAdmin() || $request->user()->can('kelola', $castingProject), 403, 'Proyek ini bukan tanggung jawab Anda.');
+        $this->authorize('kelola', $castingProject);
 
         $data = $request->validate([
             'nama_produksi' => ['required', 'string', 'max:255'],
@@ -459,7 +459,9 @@ class CastingProjectController extends Controller
      */
     public function updatePengelola(Request $request, CastingProject $castingProject): RedirectResponse|JsonResponse
     {
-        abort_unless($request->user()->isSuperAdmin() || $request->user()->isAdmin(), 403);
+        // SA boleh semua proyek; Admin hanya proyek yang dia pegang (PIC/penugasan) lewat gate `kelola`.
+        $user = $request->user();
+        abort_unless($user->isSuperAdmin() || ($user->isAdmin() && $user->can('kelola', $castingProject)), 403, 'Proyek ini bukan tanggung jawab Anda.');
 
         $data = $request->validate([
             'admin_id' => ['nullable', 'integer', $this->akunAktif(User::ROLE_ADMIN)],

@@ -71,6 +71,19 @@ class CastingProjectPengelolaTest extends TestCase
         $this->assertSame($korlap->id, $project->korlap()?->id);
     }
 
+    public function test_admin_bukan_pic_dilarang_ubah_pengelola_proyek_orang_lain(): void
+    {
+        $pic = User::factory()->create(['role' => 'admin']);
+        $penyusup = User::factory()->create(['role' => 'admin']);
+        $project = CastingProject::factory()->create(['admin_id' => $pic->id]);
+
+        $this->actingAs($penyusup)->patch(route('admin.projects.pengelola', $project), [
+            'admin_id' => $penyusup->id,
+        ])->assertForbidden();
+
+        $this->assertSame($pic->id, $project->fresh()->admin_id);
+    }
+
     public function test_extras_dan_client_dilarang_akses_update_pengelola(): void
     {
         $extras = User::factory()->create(['role' => 'extras']);

@@ -172,7 +172,7 @@ class BdMonitoringModeTest extends TestCase
     {
         $extrasUser = $this->aplikasi('lolos')->extras->user;
         $extrasUser->update(['name' => 'Dimas <b>R</b>']);
-        $kalimat = 'Mode lihat saja — tampilan ini persis yang dilihat Dimas <b>R</b>, tapi nggak bisa diubah.';
+        $kalimat = 'Mode lihat saja: tampilan ini persis yang dilihat Dimas <b>R</b>, tapi nggak bisa diubah.';
 
         $this->sebagai($extrasUser)->get(route('extras.profile.edit'))->assertOk()
             ->assertSee($kalimat)->assertSee('data-sa-lock', false)->assertDontSee('Dimas <b>R</b>', false)

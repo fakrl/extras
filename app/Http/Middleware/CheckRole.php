@@ -23,15 +23,10 @@ class CheckRole
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 
-        // CM.3: godmode SA dicabut untuk aksi tulis lapangan/operasional. GET/HEAD tetap lolos (lihat-saja);
-        // non-GET hanya lolos kalau sedang mode Monitoring Admin/Korlap (session sa_mode),
-        // KECUALI manajemen proyek inti (buka proyek & update proyek/PIC) yang merupakan wewenang sah Super Admin.
+        // CM.3: godmode SA dicabut untuk aksi tulis. GET/HEAD tetap lolos (lihat-saja);
+        // non-GET hanya lolos kalau sedang mode Monitoring Admin/Korlap (session sa_mode). Tanpa pengecualian rute.
         if ($user->role === 'super_admin' && (in_array('admin', $roles, true) || in_array('korlap', $roles, true))) {
             if (in_array($request->method(), ['GET', 'HEAD'], true)) {
-                return $next($request);
-            }
-
-            if ($request->routeIs('admin.projects.update', 'admin.projects.store', 'admin.projects.pengelola')) {
                 return $next($request);
             }
 
