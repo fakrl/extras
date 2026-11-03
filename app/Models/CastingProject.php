@@ -79,6 +79,12 @@ class CastingProject extends Model
         return $this->client?->nama_perusahaan ?: ($this->client?->name ?? '-');
     }
 
+    /** CJ.1: Extras tidak boleh lihat nama Client/PH kecuali tampilkan_nama_client diaktifkan. */
+    public function namaClientUntukExtras(): ?string
+    {
+        return $this->tampilkan_nama_client ? $this->namaClient() : null;
+    }
+
     /** BN.1: JBTB-{tahun dibuat}-{id 3 digit}, tanpa kolom. */
     protected function kodeProyek(): Attribute
     {

@@ -8,7 +8,7 @@
 
 {{-- Search Input --}}
 <div style="position: relative; margin-bottom: 10px;">
-    <input type="text" id="search-casting-call" placeholder="Cari judul proyek, peran, nama PH/Client..."
+    <input type="text" id="search-casting-call" placeholder="Cari judul proyek, peran..."
            style="width: 100%; max-width: 480px; padding: 10px 14px 10px 38px; border: 1px solid var(--border-color); border-radius: 8px; font-size: var(--fs-md); background: var(--bg-card); color: var(--text-primary); margin-bottom: 0;">
     <i class="ti ti-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px;"></i>
 </div>
@@ -28,7 +28,7 @@
 @forelse ($aktif as $project)
     @php
         $isFull = $project->classes->every(fn ($c) => $c->sisaKuota() === 0);
-        $searchTerms = strtolower($project->nama_produksi . ' ' . $project->namaClient() . ' ' . $project->classes->pluck('nama_kelas')->join(' '));
+        $searchTerms = strtolower($project->nama_produksi . ' ' . $project->classes->pluck('nama_kelas')->join(' '));
     @endphp
     <div class="card casting-card-item" style="margin-bottom: 0; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;"
          data-search="{{ $searchTerms }}"
@@ -46,8 +46,8 @@
                         @include('partials.label-nego', ['project' => $project])
                     </div>
                     <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">
-                        @if ($project->namaClient() && $project->namaClient() !== '-')
-                            Client: <strong>{{ $project->namaClient() }}</strong>
+                        @if ($project->namaClientUntukExtras())
+                            Client: <strong>{{ $project->namaClientUntukExtras() }}</strong>
                             @if ($project->kode_proyek) · @endif
                         @endif
                         @if ($project->kode_proyek)
@@ -102,13 +102,13 @@
 @if ($selesai->isNotEmpty())
     <div style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin: 24px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border-color);">Sudah Selesai</div>
     @foreach ($selesai->take(5) as $project)
-        <div class="card casting-card-item" style="margin-bottom: 14px; opacity: 0.7;" data-search="{{ strtolower($project->nama_produksi . ' ' . $project->namaClient()) }}" data-urgent="0" data-full="1">
+        <div class="card casting-card-item" style="margin-bottom: 14px; opacity: 0.7;" data-search="{{ strtolower($project->nama_produksi) }}" data-urgent="0" data-full="1">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div style="font-size: 15px; font-weight: 600;">{{ $project->nama_produksi }}</div>
                 <x-status-badge :model="$project" />
             </div>
-            @if ($project->namaClient() && $project->namaClient() !== '-')
-                <p style="margin: 8px 0 4px; font-size: 13.5px;">Client: {{ $project->namaClient() }}</p>
+            @if ($project->namaClientUntukExtras())
+                <p style="margin: 8px 0 4px; font-size: 13.5px;">Client: {{ $project->namaClientUntukExtras() }}</p>
             @endif
             <p style="margin: 0 0 12px; font-size: 12.5px; color: var(--text-muted);">
                 Kuota terisi: {{ $project->terisi }}/{{ $project->kuota }}

@@ -9,8 +9,8 @@
         <div>
             <div class="pch-title">{{ $castingProject->nama_produksi }}</div>
             <div class="pch-meta">
-                @if ($castingProject->namaClient() && $castingProject->namaClient() !== '-')
-                    <span>Client: {{ $castingProject->namaClient() }}</span>
+                @if ($castingProject->namaClientUntukExtras())
+                    <span>Client: {{ $castingProject->namaClientUntukExtras() }}</span>
                     <span>&bull;</span>
                 @endif
                 <span>Deadline: {{ $castingProject->deadline->translatedFormat('d M Y') }}</span>
