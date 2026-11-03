@@ -34,7 +34,7 @@ class ContractPdfGradeTest extends TestCase
             'extras_id' => $extras->id,
             'status_partisipasi' => 'lolos',
             'fee_final' => 200000,
-            'grade' => 'A+',
+            'grade' => 'A',
         ]);
     }
 
