@@ -125,6 +125,11 @@ class GoogleController extends Controller
 
     private function login(Request $request, GoogleUser $google): RedirectResponse
     {
+        $emailVerified = $google->user['email_verified'] ?? null;
+        if ($emailVerified !== null && ! filter_var($emailVerified, FILTER_VALIDATE_BOOLEAN)) {
+            return $this->gagal($request, false, self::PESAN_BELUM_TERHUBUNG);
+        }
+
         $user = User::withTrashed()->where('google_id', $google->getId())->first();
 
         if (! $user && $google->getEmail()) {
@@ -155,6 +160,9 @@ class GoogleController extends Controller
         }
 
         if (! $user->google_id) {
+            if ($user->password && ! $user->email_verified_at) {
+                return $this->gagal($request, false, self::PESAN_BELUM_TERHUBUNG);
+            }
             $user->forceFill(['google_id' => $google->getId()])->save();
         }
 

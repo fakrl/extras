@@ -23,9 +23,10 @@ class BoLoginGoogleTest extends TestCase
         config(['services.google.client_id' => 'id-tes', 'services.google.client_secret' => 'rahasia']);
     }
 
-    private function mockGoogle(string $id = 'g-1', string $email = 'baru@gmail.com', string $name = 'Budi Google'): void
+    private function mockGoogle(string $id = 'g-1', string $email = 'baru@gmail.com', string $name = 'Budi Google', ?bool $emailVerified = null): void
     {
-        $user = (new SocialiteUser)->map(['id' => $id, 'email' => $email, 'name' => $name]);
+        $user = (new SocialiteUser)->setRaw($emailVerified === null ? [] : ['email_verified' => $emailVerified])
+            ->map(['id' => $id, 'email' => $email, 'name' => $name]);
         Socialite::shouldReceive('driver->user')->andReturn($user);
     }
 
@@ -191,6 +192,41 @@ class BoLoginGoogleTest extends TestCase
 
         $this->assertNull($admin->fresh()->google_id);
         $this->assertTrue(ActivityLog::where('action', 'PUTUS_GOOGLE')->exists());
+    }
+
+    public function test_akun_tak_terverifikasi_dengan_password_tidak_ditautkan_otomatis(): void
+    {
+        $korban = User::factory()->create(['role' => 'extras', 'email' => 'korban@gmail.com', 'email_verified_at' => null]);
+        ExtrasProfile::create(['user_id' => $korban->id]);
+        $this->mockGoogle('g-1', 'korban@gmail.com');
+
+        $this->get('/auth/google/callback')->assertRedirect('/login')
+            ->assertSessionHasErrors(['email' => GoogleController::PESAN_BELUM_TERHUBUNG]);
+        $this->assertGuest();
+        $this->assertNull($korban->fresh()->google_id);
+    }
+
+    public function test_akun_extras_sudah_terverifikasi_tetap_bisa_ditautkan_otomatis(): void
+    {
+        $extras = User::factory()->create(['role' => 'extras', 'email' => 'verified@gmail.com', 'email_verified_at' => now()]);
+        ExtrasProfile::create(['user_id' => $extras->id]);
+        $this->mockGoogle('g-1', 'verified@gmail.com');
+
+        $this->get('/auth/google/callback')->assertRedirect('/extras/dashboard');
+        $this->assertAuthenticatedAs($extras);
+        $this->assertSame('g-1', $extras->fresh()->google_id);
+    }
+
+    public function test_google_klaim_email_belum_terverifikasi_ditolak(): void
+    {
+        $extras = User::factory()->create(['role' => 'extras', 'email' => 'verified@gmail.com', 'email_verified_at' => now()]);
+        ExtrasProfile::create(['user_id' => $extras->id]);
+        $this->mockGoogle('g-1', 'verified@gmail.com', emailVerified: false);
+
+        $this->get('/auth/google/callback')->assertRedirect('/login')
+            ->assertSessionHasErrors(['email' => GoogleController::PESAN_BELUM_TERHUBUNG]);
+        $this->assertGuest();
+        $this->assertNull($extras->fresh()->google_id);
     }
 
     public function test_akun_tanpa_password_bisa_buat_password_pertama(): void
