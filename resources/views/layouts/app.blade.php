@@ -1198,7 +1198,7 @@
                         </form>
                     </div>
                     @if ($saMonitoring['target'])
-                        <p class="sa-lock-note" data-sa-lock hidden><i class="ti ti-lock"></i> Mode lihat saja — tampilan ini persis yang dilihat {{ $saMonitoring['target']->name }}, tapi nggak bisa diubah.</p>
+                        <p class="sa-lock-note" data-sa-lock hidden><i class="ti ti-lock"></i> Mode lihat saja: tampilan ini persis yang dilihat {{ $saMonitoring['target']->name }}, tapi nggak bisa diubah.</p>
                     @endif
                 @endisset
                 @if (session('status'))
