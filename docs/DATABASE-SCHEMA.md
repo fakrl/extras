@@ -2,6 +2,8 @@
 
 > Skema FINAL per 1 Okt 2026, diturunkan dari migrasi aktual di `database/migrations/` (bukan lagi blueprint). Setelah BM.1–BM.3 jumlah tabel turun dari 36 ke **31** (23 bisnis + 8 framework, belum termasuk tabel internal `migrations`). Kalau skema berubah, update file ini di commit yang sama dengan migrasinya.
 >
+> Pembaruan 3 Nov 2026: `casting_projects.budget_total`, `client_request_status` + `perlu_revisi`, `casting_project_classes.budget_client` nullable (CN), dan `admin_project_assignments.dicabut_at` (audit keamanan). Tidak ada tabel baru.
+>
 > Catatan: `users.role` bertipe ENUM hanya di MySQL; di SQLite (test) jadi string tanpa constraint.
 
 ## Ringkasan Tabel Bisnis (23)
@@ -91,9 +93,10 @@ Semua tabel punya `created_at`/`updated_at` kecuali dinyatakan lain. `cascade` =
 | nama_produksi | string | kode proyek `JBTB-{tahun}-{id 3 digit}` dihitung (accessor), bukan kolom |
 | deadline | date | |
 | kuota | unsigned int | |
+| budget_total | decimal(14,2) null | total budget Client untuk proyek (CN). Selisih dengan jumlah `budget_client` per peran = margin agensi; hanya terlihat SA dan Admin/Korlap pengelola |
 | is_urgent | bool | |
 | status | enum | `dibuka`, `ditutup` |
-| client_request_status | enum | `draft`, `menunggu_acc`, `disetujui`, `ditolak` (pengajuan brief Client, perlu ACC Super Admin) |
+| client_request_status | enum | `draft`, `menunggu_acc`, `disetujui`, `ditolak`, `perlu_revisi` (pengajuan brief Client, perlu ACC Super Admin; `perlu_revisi` = SA minta Client memperbaiki, CN) |
 | brief_catatan, alasan_tolak | text null, string(500) null | |
 | poster_path | string null | satu-satunya file di disk public |
 | link_grup | string null | tautan grup WA proyek |
@@ -103,7 +106,7 @@ Semua tabel punya `created_at`/`updated_at` kecuali dinyatakan lain. `cascade` =
 | nego_terbuka | bool, default true | fee dapat dinegosiasikan; false = penawaran Admin final (Extras hanya terima/tolak). Dikunci setelah ada penawaran pertama |
 
 ### 4. `casting_project_classes`
-`casting_project_id` (FK, cascade), `nama_kelas`, `kriteria` (text), `budget_client` (decimal), `kuota_kelas`, `jam_callsheet`, `jam_callingan`, `keterangan_scene`, `tipe_continuity` (`continuity`/`free`). Kuota antrian dihitung per peran dari semua aplikasi selain `ditolak`/`dibatalkan`.
+`casting_project_id` (FK, cascade), `nama_kelas`, `kriteria` (text), `budget_client` (decimal, **nullable** sejak CN: Admin menetapkan per orang setelah pengajuan disetujui; lowongan tidak bisa dibuka sebelum semua peran terisi), `kuota_kelas`, `jam_callsheet`, `jam_callingan`, `keterangan_scene`, `tipe_continuity` (`continuity`/`free`). Kuota antrian dihitung per peran dari semua aplikasi selain `ditolak`/`dibatalkan`.
 
 ### 5. `event_shooting_dates`
 `casting_project_id` (FK, cascade), `tanggal`, `lokasi`, `jam_mulai`, `jam_selesai`, `catatan`, `panggilan` (json). Index `(casting_project_id, tanggal)`. Satu baris per tanggal, dasar deteksi bentrok jadwal.
@@ -141,7 +144,7 @@ Semua tabel punya `created_at`/`updated_at` kecuali dinyatakan lain. `cascade` =
 `casting_project_id` (FK, cascade), `pdf_path`, `template_type`, `custom_doc_path`, `ttd_admin_signature_path`, `ttd_client_signature_path`, `nominal` (decimal(15,2)), `status_bayar` (`belum`/`lunas`), `dibayar_at`.
 
 ### 13. `admin_project_assignments`
-`casting_project_id` (FK, cascade), `user_id` (FK → users), `assigned_by` (FK → users), `status_log` (`berjalan`/`selesai`), `completed_at`. Unique `(casting_project_id, user_id)`.
+`casting_project_id` (FK, cascade), `user_id` (FK → users), `assigned_by` (FK → users), `status_log` (`berjalan`/`selesai`), `completed_at`, `dicabut_at` (timestamp null; diisi saat PIC/Korlap digeser lewat modal Pengelola: baris dan payroll-nya tetap ada sebagai riwayat, tetapi akses `dikelolaOleh` dicabut). Unique `(casting_project_id, user_id)`.
 
 ### 14. `staff_payrolls`
 `admin_project_assignment_id` (FK, **unique**, cascade), `nominal_pokok`, `pdf_slip_path`, `generated_at`, `status_bayar` (`belum`/`sudah`), `dibayar_at`.

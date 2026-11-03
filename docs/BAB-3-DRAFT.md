@@ -15,9 +15,9 @@ Sistem ini melibatkan lima aktor: dua aktor eksternal (Client dan Extras) serta 
 
 | Aktor | Deskripsi Peran | Cara Masuk Sistem |
 |---|---|---|
-| Super Admin | Pemilik/pimpinan agensi. Memantau seluruh operasional melalui dashboard (ringkasan perlu tindakan, status proyek, honor staf dan invoice yang belum selesai, kalender), mengelola seluruh akun (Admin, Korlap, Client), menyetujui atau menolak pengajuan proyek dari Client, menugaskan Admin pada proyek, menetapkan honor staf, serta melihat log aktivitas. Dapat memasuki mode pemantauan: sebagai Admin atau Korlap dengan aksi penuh (setiap aksi tercatat atas nama Super Admin), dan sebagai Client atau Extras dengan tampilan lihat-saja. | Akun tunggal terproteksi, dibuat saat inisialisasi sistem |
-| Admin | Menjalankan operasional inti: membuat dan mengelola proyek casting, menyeleksi kandidat, menetapkan grade, menjalankan negosiasi fee, mengajukan kandidat kepada Client, mengelola kontrak, invoice, pembayaran Extras, keuangan proyek (cashflow), serta kelola akun Extras. Dapat berjumlah lebih dari satu; setiap proyek memiliki satu Admin PIC. | Dibuat oleh Super Admin |
-| Koordinator Lapangan (Korlap) | Mengawasi Extras di lokasi produksi: mencatat kehadiran, memvalidasi atau menolak foto absensi Extras, serta mencatat catatan atau sanksi lapangan. Melihat riwayat kerja dan status honor miliknya sendiri. Tidak memiliki akses keuangan maupun pengelolaan akun. | Dibuat oleh Super Admin, ditugaskan per proyek |
+| Super Admin | Pemilik/pimpinan agensi. Berperan sebagai pengawas dan penghubung dengan Client, bukan pelaksana operasional harian. Memantau seluruh operasional melalui dashboard yang ringkas (hanya tugas yang memang menunggu keputusan Super Admin, status proyek, dan staf yang perlu diingatkan), mengelola seluruh akun (Admin, Korlap, Client), memutuskan pengajuan proyek dari Client (menyetujui sambil memilih Admin PIC, meminta revisi, atau menolak), menetapkan honor staf, serta melihat log aktivitas. Super Admin tidak memiliki hak akses penuh (godmode): aksi tulis operasional hanya dapat dilakukan setelah memasuki mode Admin atau Korlap secara sadar (setiap aksi tercatat atas nama Super Admin), sedangkan mode Client dan Extras bersifat lihat-saja. | Akun tunggal terproteksi, dibuat saat inisialisasi sistem |
+| Admin | Menjalankan operasional inti: membuat dan mengelola proyek casting, menyeleksi kandidat, menetapkan grade, menjalankan negosiasi fee, mengajukan kandidat kepada Client, mengelola kontrak, invoice, pembayaran Extras, keuangan proyek (cashflow), serta kelola akun Extras. Admin dapat membuat proyek sendiri tanpa persetujuan Super Admin, dan menetapkan budget per orang setelah pengajuan Client disetujui. Dapat berjumlah lebih dari satu; setiap proyek memiliki satu Admin PIC yang bertanggung jawab, dan hanya PIC (atau Admin yang ditugaskan) yang dapat mengelola proyek tersebut. | Dibuat oleh Super Admin |
+| Koordinator Lapangan (Korlap) | Mengawasi Extras di lokasi produksi: mencatat kehadiran, memvalidasi atau menolak foto absensi Extras, serta mencatat catatan atau sanksi lapangan. Melihat riwayat kerja dan status honor miliknya sendiri. Tidak memiliki akses keuangan (termasuk transfer dan pembayaran Extras) maupun pengelolaan akun. | Dibuat oleh Super Admin, ditugaskan per proyek |
 | Client | Mewakili Production House (PH). Mengajukan kebutuhan proyek (brief) untuk disetujui Super Admin, melakukan Greenlight (lock atau tolak) terhadap kandidat yang diajukan Admin, melengkapi jadwal shooting, melihat dan menandatangani invoice, serta mengunduh riwayat pilihannya. Seorang Client dapat memiliki lebih dari satu proyek dengan satu akun. | Dibuat oleh Super Admin dengan kata sandi sementara dan wajib ganti kata sandi pada login pertama; registrasi publik Client ditutup |
 | Extras | Mendaftar mandiri, melengkapi profil dan portofolio, mendaftar pada peran proyek, bernegosiasi fee, menandatangani kontrak, melakukan absensi selfie, serta mengonfirmasi penerimaan honor. | Registrasi mandiri (formulir atau akun Google) |
 
@@ -35,13 +35,13 @@ Modul Autentikasi dan Manajemen Akun
 | RF-04 | Validasi duplikasi NIK (satu NIK untuk satu akun) melalui pengecekan pada basis data tanpa integrasi Dukcapil; NIK dilengkapi Extras sebelum penandatanganan kontrak | Sistem |
 | RF-05 | Admin menonaktifkan atau mengaktifkan akun Extras yang bermasalah. Pengelolaan akun Client menjadi wewenang Super Admin | Admin |
 | RF-54 | Admin menandai Extras sebagai Favorit sebagai catatan internal yang tidak terlihat oleh Client maupun Extras (pengembangan dari badge Apresiasi) | Admin |
-| RF-55 | Halaman beranda publik menampilkan perkenalan agensi, alur pendaftaran, jumlah proyek yang membuka pendaftaran, cast terkurasi, dan portofolio proyek terkurasi; budget dan data sensitif tidak pernah ditampilkan | Publik |
+| RF-55 | Halaman beranda publik bersifat ringkas dan menjelaskan fungsi sistem serta cara pakainya: satu ajakan utama (mendaftar sebagai Extras), alur tiga langkah, lowongan yang sedang dibuka, cast terkurasi, dan pertanyaan umum; tidak memuat profil perusahaan, visi, misi, maupun angka yang tidak berasal dari data sistem. Budget dan data sensitif tidak pernah ditampilkan | Publik |
 | RF-57 | Super Admin mengelola seluruh akun (Admin, Korlap, Client, Extras) melalui satu menu Manajemen Akun: pencarian, filter, aksi massal, nonaktifkan, hapus, pulihkan; akun sistem terproteksi dan akun sendiri tidak dapat dihapus | Super Admin |
 | RF-58 | Hanya akun Super Admin terproteksi yang dapat membuat Super Admin baru | Super Admin |
 | RF-59 | Super Admin membuat akun Client dengan kata sandi sementara; email bersifat opsional; Client wajib mengganti kata sandi pada login pertama | Super Admin |
 | RF-60 | Login dengan akun Google; pendaftaran baru hanya untuk Extras, peran lain harus menghubungkan akun Google lebih dahulu; fitur nonaktif otomatis bila konfigurasi Google belum diisi | Semua |
 | RF-61 | Sistem menghapus otomatis akun Extras yang tidak pernah melengkapi profil dan tidak pernah mendaftar selama 30 hari, didahului peringatan H-7; Admin dapat memangkas secara manual | Sistem/Admin |
-| RF-62 | Super Admin dapat masuk mode pemantauan per peran: Admin dan Korlap (aksi penuh, tercatat sebagai aksi Super Admin), Client dan Extras (lihat-saja, seluruh aksi tulis ditolak) | Super Admin |
+| RF-62 | Super Admin dapat masuk mode pemantauan per peran: Admin dan Korlap (aksi tulis hanya diizinkan selama mode aktif dan tercatat sebagai aksi Super Admin; di luar mode seluruh aksi tulis operasional ditolak), Client dan Extras (lihat-saja, seluruh aksi tulis ditolak) | Super Admin |
 | RF-63 | Sistem mencatat log aktivitas (aktor, peran, aksi, waktu) yang dapat dicari dan difilter oleh Super Admin | Sistem/Super Admin |
 
 Modul Profil Extras
@@ -72,7 +72,7 @@ Modul Manajemen Proyek Casting
 | RF-10 | Admin mengedit, membuka, atau menutup proyek; lampiran file proyek (naskah, moodboard) disimpan pada penyimpanan privat | Admin |
 | RF-11 | Extras melihat daftar proyek yang dibuka beserta tingkat kecocokan tag, kuota tersisa, dan status Penuh | Extras |
 | RF-56 | Admin membagikan tautan publik per proyek; pengunjung dapat melihat kriteria dan kuota tanpa nama client lalu diarahkan ke pendaftaran; proyek tertutup menampilkan halaman pemberitahuan | Admin/Extras/Publik |
-| RF-66 | Client mengajukan brief proyek; proyek baru aktif setelah disetujui Super Admin, dan penolakan disertai alasan serta notifikasi | Client/Super Admin |
+| RF-66 | Client mengajukan brief proyek lengkap (peran, kriteria, jumlah, tanggal, dan total budget); Super Admin menyetujui (sambil memilih Admin PIC), meminta revisi, atau menolak dengan alasan, disertai notifikasi. Budget per orang ditetapkan Admin setelah persetujuan; selisihnya dengan total budget Client menjadi margin agensi dan hanya terlihat oleh Super Admin dan Admin pengelola. Lowongan tidak dapat dibuka sebelum seluruh peran memiliki budget | Client/Super Admin |
 | RF-67 | Admin dapat mengaitkan proyek dengan portofolio terkurasi untuk beranda publik | Admin |
 
 Modul Pendaftaran dan Seleksi
@@ -96,6 +96,9 @@ Negosiasi fee dilakukan saat Admin menyeleksi kandidat, sebelum kandidat diajuka
 | RF-16 | Admin mengajukan penawaran fee awal berdasarkan rate card dan budget peran | Admin |
 | RF-17 | Extras menerima penawaran atau, bila proyek terbuka untuk negosiasi, mengajukan counter tanpa batas jumlah putaran. Pada proyek berfee tetap, penawaran Admin bersifat final dan Extras hanya dapat menerima atau menolak | Extras |
 | RF-77 | Admin menentukan saat membuat proyek apakah fee dapat dinegosiasikan; pilihan ini dapat diubah hanya sebelum penawaran pertama diajukan, dan lowongan menampilkan keterangan "Terbuka untuk nego fee" atau "Fee tetap" tanpa menampilkan nominal | Admin |
+| RF-78 | Grade (A/B/C) dan nama Client atau Production House tidak ditampilkan kepada Extras pada dashboard, profil, portofolio, daftar dan detail proyek, maupun dokumen kontrak; keduanya hanya terlihat oleh Admin, Client (untuk grade), dan Super Admin | Sistem |
+| RF-79 | Aksi keuangan Extras (pencatatan transfer, add-on honor, penyelesaian sengketa, invoice, kontrak) hanya dapat dilakukan Admin pengelola proyek tersebut atau Super Admin dalam mode Admin; Korlap tidak dapat melakukannya. Pergantian PIC atau Korlap mencabut akses pengelola lama tanpa menghapus riwayat honor | Sistem |
+| RF-80 | Penautan akun Google ke akun yang sudah ada melalui kecocokan email hanya dilakukan pada akun yang emailnya terverifikasi; akun lain harus masuk dengan kata sandi lalu menautkan secara manual | Sistem |
 | RF-18 | Admin menerima counter, mengajukan counter balik, atau menghentikan negosiasi dengan alasan | Admin |
 | RF-19 | Sistem mencatat setiap putaran (pengaju, nominal, waktu, catatan) sebagai riwayat | Sistem |
 | RF-20 | Saat disepakati, status menjadi "Deal" dan fee terkunci pada nominal tersebut | Sistem |
@@ -164,8 +167,8 @@ Modul Dashboard dan Laporan
 
 | Kode | Kebutuhan | Aktor |
 |---|---|---|
-| RF-39 | Dashboard sesuai kebutuhan tiap peran, termasuk kalender jadwal bergaya mobile dan tahapan partisipasi kandidat | Semua |
-| RF-50 | Dashboard Super Admin berisi ringkasan "perlu tindakan" (termasuk honor staf belum dibayar dan invoice belum lunas), status proyek, dan kalender; pemantauan per peran melalui RF-62 | Super Admin |
+| RF-39 | Dashboard sesuai kebutuhan tiap peran, termasuk agenda jadwal dengan filter periode (hari ini, 7 hari, 30 hari, bulan ini, bulan lalu, tahun ini, atau rentang kustom) dan tahapan partisipasi kandidat | Semua |
+| RF-50 | Dashboard Super Admin berisi ringkasan "perlu tindakan" (hanya yang menunggu keputusan Super Admin), status proyek, dan staf yang perlu diingatkan; pemantauan per peran melalui RF-62 dan halaman Monitoring | Super Admin |
 | RF-51 | Admin melihat rekap Extras (sering dipilih, sering batal) pada satu halaman Kelola Akun Extras dengan opsi pengurutan | Admin |
 | RF-52 | Admin dan Client mengekspor data ke Excel (rekap Extras sesuai filter; riwayat pilihan Client, juga PDF) | Admin/Client |
 

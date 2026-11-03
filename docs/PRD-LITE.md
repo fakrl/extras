@@ -14,7 +14,7 @@ Ganti proses rekrutmen dan pembayaran Extras/figuran PT. JBTB Casting Creative G
 
 | Role | Ringkas |
 |---|---|
-| Super Admin | Pimpinan. Dashboard + monitoring, kelola semua akun, ACC proyek Client, tugaskan Admin, honor staf, log aktivitas. Mode pantau: sebagai Admin/Korlap (aksi penuh), sebagai Client/Extras (lihat-saja) |
+| Super Admin | Pimpinan. Dashboard + monitoring, kelola semua akun, ACC proyek Client, tugaskan Admin, honor staf, log aktivitas. Mode pantau: sebagai Admin/Korlap (aksi tulis HANYA di dalam mode, tanpa godmode), sebagai Client/Extras (lihat-saja) |
 | Admin | Operasional inti: proyek, seleksi, grade, nego, ajukan ke Client, kontrak, invoice, pembayaran, keuangan, Kelola Akun Extras/Client |
 | Korlap | Lapangan: absensi, validasi selfie, catatan/sanksi, riwayat kerja sendiri |
 | Client | Wakil PH. Ajukan brief, Greenlight (lock/tolak), jadwal, invoice. Akun dibuat Super Admin |
