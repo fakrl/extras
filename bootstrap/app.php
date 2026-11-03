@@ -26,11 +26,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // BD.6: setelah WajibGantiPassword (cek pakai SA asli), sebelum CheckRole route (role dicek pakai akun target).
         $middleware->appendToGroup('web', ViewAs::class);
 
-        // Percaya semua proxy di depan aplikasi (ngrok, dsb) supaya Laravel
-        // baca header X-Forwarded-Proto dengan benar dan tahu request aslinya
-        // HTTPS - tanpa ini, request lewat ngrok bisa memicu redirect loop
-        // karena Laravel salah kira koneksinya HTTP biasa.
-        $middleware->trustProxies(at: '*');
+        // Percaya proxy dari TRUSTED_PROXIES (nginx/load balancer asli) supaya
+        // Laravel baca X-Forwarded-Proto/For dengan benar. Kosong = tidak
+        // percaya siapa pun - $request->ip() pakai koneksi asli, bukan header
+        // yang bisa dipalsukan siapa saja (penting buat throttle login/register).
+        $middleware->trustProxies(at: array_filter(explode(',', (string) env('TRUSTED_PROXIES', ''))) ?: null);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
