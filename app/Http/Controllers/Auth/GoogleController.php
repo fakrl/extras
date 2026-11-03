@@ -38,7 +38,7 @@ class GoogleController extends Controller
             if ($this->modeLihat($request)) {
                 return back()->with('error', 'Mode lihat saja: tidak bisa menghubungkan Google atas nama akun lain.');
             }
-            $request->session()->put('google_kembali', url()->previous());
+            $request->session()->put('google_kembali', self::kembaliAman(url()->previous()));
         } elseif ($request->user()) {
             return redirect($request->user()->dashboardUrl());
         }
@@ -205,6 +205,13 @@ class GoogleController extends Controller
     private function modeLihat(Request $request): bool
     {
         return in_array($request->session()->get('sa_mode'), ViewAs::MODES_LIHAT, true);
+    }
+
+    private static function kembaliAman(string $url): string
+    {
+        return parse_url($url, PHP_URL_HOST) === parse_url(url('/'), PHP_URL_HOST)
+            ? $url
+            : route('ubah-password');
     }
 
     private static function usernameDari(string $email): string

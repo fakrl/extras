@@ -172,6 +172,48 @@ class BoLoginGoogleTest extends TestCase
         $this->assertNull($sa->fresh()->google_id);
     }
 
+    public function test_hubungkan_referer_eksternal_tidak_dipakai_redirect(): void
+    {
+        $client = User::factory()->create(['role' => 'client']);
+        $this->actingAs($client);
+
+        Socialite::shouldReceive('driver->redirect')->andReturn(redirect('https://accounts.google.com/x'));
+        $this->from('https://evil.example.com/phish')->get('/auth/google/redirect?mode=hubungkan')
+            ->assertRedirect('https://accounts.google.com/x');
+
+        $this->mockGoogle('g-9', 'pic@gmail.com');
+        $this->get('/auth/google/callback')->assertRedirect('/ubah-password')->assertSessionHas('status');
+    }
+
+    public function test_hubungkan_referer_internal_tetap_dipakai_redirect(): void
+    {
+        $client = User::factory()->create(['role' => 'client']);
+        $this->actingAs($client);
+
+        Socialite::shouldReceive('driver->redirect')->andReturn(redirect('https://accounts.google.com/x'));
+        $this->from('/extras/profil')->get('/auth/google/redirect?mode=hubungkan')
+            ->assertRedirect('https://accounts.google.com/x');
+
+        $this->mockGoogle('g-9', 'pic@gmail.com');
+        $this->get('/auth/google/callback')->assertRedirect('/extras/profil')->assertSessionHas('status');
+    }
+
+    public function test_hubungkan_gagal_dengan_referer_eksternal_tetap_redirect_aman(): void
+    {
+        $lain = User::factory()->create(['role' => 'client']);
+        $lain->forceFill(['google_id' => 'g-9'])->save();
+        $client = User::factory()->create(['role' => 'client']);
+        $this->actingAs($client);
+
+        Socialite::shouldReceive('driver->redirect')->andReturn(redirect('https://accounts.google.com/x'));
+        $this->from('https://evil.example.com/phish')->get('/auth/google/redirect?mode=hubungkan')
+            ->assertRedirect('https://accounts.google.com/x');
+
+        $this->mockGoogle('g-9', 'pic@gmail.com');
+        $this->get('/auth/google/callback')->assertRedirect('/ubah-password')->assertSessionHas('error');
+        $this->assertNull($client->fresh()->google_id);
+    }
+
     public function test_putus_google_tanpa_password_ditolak(): void
     {
         $extras = User::factory()->create(['role' => 'extras', 'password' => null]);
