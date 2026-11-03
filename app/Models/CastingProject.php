@@ -174,7 +174,10 @@ class CastingProject extends Model
     /** CV.2: Korlap proyek ini (dari adminAssignments, bukan kolom baru) - butuh eager load adminAssignments.user. */
     public function korlap(): ?User
     {
-        return $this->adminAssignments->first(fn (AdminProjectAssignment $a) => $a->user?->isKorlap())?->user;
+        return $this->adminAssignments
+            ->whereNull('dicabut_at')
+            ->first(fn (AdminProjectAssignment $a) => $a->user?->isKorlap())
+            ?->user;
     }
 
     /** BM.1: 1 proyek = 1 akun Client; satu-satunya cek akses Client ke proyek. */
@@ -199,7 +202,8 @@ class CastingProject extends Model
             return $user->modeSa() !== null;
         }
 
-        return (int) $this->admin_id === $user->id || $this->adminAssignments()->where('user_id', $user->id)->exists();
+        return (int) $this->admin_id === $user->id
+            || $this->adminAssignments()->where('user_id', $user->id)->whereNull('dicabut_at')->exists();
     }
 
     public function scopeDikelolaOleh($query, User $user)
@@ -209,7 +213,7 @@ class CastingProject extends Model
         }
 
         return $query->where(fn ($w) => $w->where('casting_projects.admin_id', $user->id)
-            ->orWhereHas('adminAssignments', fn ($a) => $a->where('user_id', $user->id)));
+            ->orWhereHas('adminAssignments', fn ($a) => $a->where('user_id', $user->id)->whereNull('dicabut_at')));
     }
 
     public function invoices(): HasMany

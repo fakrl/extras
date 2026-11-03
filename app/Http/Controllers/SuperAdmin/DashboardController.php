@@ -586,14 +586,14 @@ class DashboardController extends Controller
 
         $castingProject->update(['admin_id' => $data['admin_id'], ...$tambahan]);
 
-        $castingProject->adminAssignments()->firstOrCreate(
+        $castingProject->adminAssignments()->updateOrCreate(
             ['user_id' => $data['admin_id']],
-            ['assigned_by' => $request->user()->id, 'status_log' => 'berjalan']
+            ['assigned_by' => $request->user()->id, 'dicabut_at' => null]
         );
         if (! empty($data['korlap_id'])) {
-            $castingProject->adminAssignments()->firstOrCreate(
+            $castingProject->adminAssignments()->updateOrCreate(
                 ['user_id' => $data['korlap_id']],
-                ['assigned_by' => $request->user()->id, 'status_log' => 'berjalan']
+                ['assigned_by' => $request->user()->id, 'dicabut_at' => null]
             );
         }
 

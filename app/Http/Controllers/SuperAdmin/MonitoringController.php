@@ -99,7 +99,7 @@ class MonitoringController extends Controller
     {
         $ids = $staf->pluck('id');
         $dariPic = CastingProject::whereIn('admin_id', $ids)->get(['id', 'admin_id'])->map(fn ($p) => ['id' => $p->id, 'user_id' => $p->admin_id]);
-        $dariAssign = AdminProjectAssignment::whereIn('user_id', $ids)->get(['casting_project_id', 'user_id'])->map(fn ($a) => ['id' => $a->casting_project_id, 'user_id' => $a->user_id]);
+        $dariAssign = AdminProjectAssignment::whereIn('user_id', $ids)->whereNull('dicabut_at')->get(['casting_project_id', 'user_id'])->map(fn ($a) => ['id' => $a->casting_project_id, 'user_id' => $a->user_id]);
 
         return $dariPic->concat($dariAssign)->groupBy('user_id')->map(fn ($g) => $g->pluck('id')->unique()->count());
     }

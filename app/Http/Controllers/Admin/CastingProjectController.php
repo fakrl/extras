@@ -487,14 +487,12 @@ class CastingProjectController extends Controller
         if ($request->has('admin_id')) {
             $newAdminId = $data['admin_id'] ?: null;
             if ((int) $castingProject->admin_id !== (int) $newAdminId) {
+                $oldAdminId = $castingProject->admin_id;
                 $picLama = $castingProject->admin?->name ?? 'Belum ada PIC';
                 $picBaru = $newAdminId ? User::find($newAdminId)?->name : 'Dikosongkan';
                 $castingProject->update(['admin_id' => $newAdminId]);
+                $this->gantiPenugasan($castingProject, $oldAdminId, $newAdminId, $request->user()->id);
                 if ($newAdminId) {
-                    $castingProject->adminAssignments()->firstOrCreate(
-                        ['user_id' => $newAdminId],
-                        ['assigned_by' => $request->user()->id, 'status_log' => 'berjalan']
-                    );
                     try {
                         User::find($newAdminId)?->notify(new InAppNotification('Ditugaskan sebagai PIC Proyek', "Anda ditetapkan sebagai Admin PIC proyek '{$castingProject->namaKode()}'.", route('admin.projects.show', $castingProject)));
                     } catch (\Throwable) {
@@ -512,16 +510,9 @@ class CastingProjectController extends Controller
                 $korlapLama = $currentKorlap?->name ?? 'Belum ada Korlap';
                 $korlapBaru = $newKorlapId ? User::find($newKorlapId)?->name : 'Dikosongkan';
 
-                $castingProject->adminAssignments()
-                    ->whereHas('user', fn ($u) => $u->where('role', User::ROLE_KORLAP))
-                    ->delete();
+                $this->gantiPenugasan($castingProject, $currentKorlap?->id, $newKorlapId, $request->user()->id);
 
                 if ($newKorlapId) {
-                    $castingProject->adminAssignments()->create([
-                        'user_id' => $newKorlapId,
-                        'assigned_by' => $request->user()->id,
-                        'status_log' => 'berjalan',
-                    ]);
                     try {
                         User::find($newKorlapId)?->notify(new InAppNotification('Ditugaskan sebagai Korlap Proyek', "Anda ditetapkan sebagai Koordinator Lapangan proyek '{$castingProject->namaKode()}'.", route('admin.projects.show', $castingProject)));
                     } catch (\Throwable) {
@@ -556,6 +547,26 @@ class CastingProjectController extends Controller
         }
 
         return back()->with('status', $pesan);
+    }
+
+    /**
+     * Audit item 4: ganti PIC/Korlap tidak boleh hapus baris adminAssignments lama
+     * (StaffPayroll turunannya bisa kecabut cascade), tapi orang lama juga wajib
+     * langsung kehilangan akses `dikelolaOleh` - ditandai `dicabut_at`, bukan dihapus.
+     * Satu jalur yang sama dipakai untuk PIC maupun Korlap.
+     */
+    private function gantiPenugasan(CastingProject $castingProject, ?int $oldUserId, ?int $newUserId, int $assignedBy): void
+    {
+        if ($oldUserId && $oldUserId !== $newUserId) {
+            $castingProject->adminAssignments()->where('user_id', $oldUserId)->whereNull('dicabut_at')->update(['dicabut_at' => now()]);
+        }
+
+        if ($newUserId) {
+            $castingProject->adminAssignments()->updateOrCreate(
+                ['user_id' => $newUserId],
+                ['assigned_by' => $assignedBy, 'dicabut_at' => null]
+            );
+        }
     }
 
     /** AD-30: deadline tidak di masa lalu (saat buat baru) dan tidak lewat tanggal shooting pertama. */

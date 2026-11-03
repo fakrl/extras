@@ -7,13 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['casting_project_id', 'user_id', 'assigned_by', 'status_log', 'completed_at'])]
+#[Fillable(['casting_project_id', 'user_id', 'assigned_by', 'status_log', 'completed_at', 'dicabut_at'])]
 class AdminProjectAssignment extends Model
 {
     protected function casts(): array
     {
         return [
             'completed_at' => 'datetime',
+            'dicabut_at' => 'datetime',
         ];
     }
 

@@ -30,11 +30,11 @@ class ProjectAssignmentController extends Controller
             return back()->with('error', 'Hanya bisa menugaskan akun bertipe Admin.');
         }
 
-        $castingProject->adminAssignments()->firstOrCreate([
+        $castingProject->adminAssignments()->updateOrCreate([
             'user_id' => $user->id,
         ], [
             'assigned_by' => $request->user()->id,
-            'status_log' => 'berjalan',
+            'dicabut_at' => null,
         ]);
 
         return back()->with('status', "{$user->name} berhasil ditugaskan ke proyek ini.");
