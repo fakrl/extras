@@ -8,6 +8,7 @@ use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 /**
@@ -114,5 +115,15 @@ class BhProfilEditorialTest extends TestCase
             ->assertDontSee('Belum ada foto');
         $this->actingAs($this->profile->user)->get(route('extras.profile.show'))
             ->assertSee(route('extras.media.foto-tambahan', [$this->profile, 1]), false);
+    }
+
+    // Audit item 5: video profil terkunci untuk mode publik - rute streaming publiknya harus 404, bukan backdoor.
+    public function test_video_profil_tidak_bisa_diakses_lewat_rute_publik(): void
+    {
+        $this->profile->forceFill(['video_profil_path' => 'extras/video/x.mp4'])->save();
+        $token = $this->profile->fresh()->share_token;
+
+        $this->assertFalse(Route::has('public.extras.video'));
+        $this->get('/p/extras/'.$token.'/video')->assertNotFound();
     }
 }

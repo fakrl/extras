@@ -59,7 +59,6 @@ Route::get('/event/{token}', [PublicEventController::class, 'show'])->name('publ
 // Tembok visibilitas ditegakkan di controller & view (tanpa nik/nama_asli/rekening/rate_card/tautan_tambahan).
 Route::get('/p/extras/{token}', [PublicExtrasProfileController::class, 'show'])->name('public.extras.profile');
 Route::get('/p/extras/{token}/foto', [PublicExtrasProfileController::class, 'foto'])->name('public.extras.foto');
-Route::get('/p/extras/{token}/video', [PublicExtrasProfileController::class, 'video'])->name('public.extras.video');
 Route::get('/p/extras/{token}/foto-tambahan/{slot}', [PublicExtrasProfileController::class, 'fotoTambahan'])->whereNumber('slot')->name('public.extras.foto-tambahan');
 
 // Pintu masuk universal setelah login (dipakai mis. link "kembali ke
