@@ -22,8 +22,8 @@
 <div class="kpi-grid">
     <x-kpi label="Menunggu keputusan" :angka="$menungguKeputusan" :href="route('admin.projects.index', ['tahap' => 'menunggu_acc'])" :mendesak="$menungguKeputusan > 0 && $pengajuanMendesak" :accent="'#D97706'" />
     <x-kpi label="Tugas staf tertunda" :angka="$stafTertunda" :sub="'di '.($pantauAdmin->count() + $tugasKorlap->count()).' staf'" :href="route('super-admin.monitoring.admin')" :mendesak="$stafMendesak" :accent="'#DC2626'" />
-    <x-kpi label="Proyek berjalan" :angka="$proyekBerjalan" :pertumbuhan="$pertumbuhanBerjalan" :href="route('admin.projects.index', ['tahap' => 'berjalan', 'dari' => $dari->format('Y-m-d'), 'sampai' => $sampai->format('Y-m-d')])" :accent="'#15803D'" />
-    <x-kpi label="Invoice belum lunas" :angka="$invoiceBelumLunas->count()" :sub="$rp($invoiceTotal)" :href="route('admin.projects.index')" :mendesak="$invoiceBelumLunas->isNotEmpty()" :accent="'#2563EB'" />
+    <x-kpi label="Proyek berjalan" :angka="$proyekBerjalan" :pertumbuhan="$pertumbuhanBerjalan" :href="route('admin.projects.index', ['tahap' => 'berjalan', 'dari' => $dari->format('Y-m-d'), 'sampai' => $sampai->format('Y-m-d')])" />
+    <x-kpi label="Invoice belum lunas" :angka="$invoiceBelumLunas->count()" :sub="$rp($invoiceTotal)" :href="route('admin.projects.index')" />
 </div>
 
 {{-- Ikhtisar Ekosistem & Finansial Sistem --}}
@@ -155,9 +155,6 @@
                     Margin {{ $statKeuangan['persen_margin'] }}%
                 </span>
             </div>
-            <div style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 2px 0 6px;">
-                {{ $rp($statKeuangan['total_invoice']) }}
-            </div>
             @php
                 $totInv = max(1, $statKeuangan['total_invoice']);
                 $persenLunas = round(($statKeuangan['invoice_lunas'] / $totInv) * 100);
@@ -166,11 +163,17 @@
                 $persenBeban = min(100, round(($totBeban / $totInv) * 100));
                 $persenMarginKotor = min(100, max(0, $statKeuangan['persen_margin']));
             @endphp
+            <div style="font-size: var(--fs-xl, 22px); font-weight: 700; color: #16A34A; margin: 2px 0 1px;">
+                {{ $rp($statKeuangan['margin_kotor']) }}
+            </div>
+            <div style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 6px;">
+                Omset {{ $rp($statKeuangan['total_invoice']) }} &middot; Beban {{ $rp($totBeban) }}
+            </div>
             <div class="viz-fin-bars">
                 <div class="viz-fin-item">
                     <div class="viz-fin-head">
                         <span style="color: var(--text-secondary);">Tagihan Client</span>
-                        <strong style="color: #15803D;">{{ $persenLunas }}% lunas</strong>
+                        <strong style="color: var(--text-muted);">{{ $persenLunas }}% lunas</strong>
                     </div>
                     <div class="viz-fin-track" title="Lunas: {{ $persenLunas }}%, Piutang: {{ $persenPiutang }}%">
                         <div class="viz-fin-fill" style="width: {{ $persenLunas }}%; background: #15803D;"></div>
@@ -180,19 +183,10 @@
                 <div class="viz-fin-item">
                     <div class="viz-fin-head">
                         <span style="color: var(--text-secondary);">Beban Produksi</span>
-                        <strong style="color: #EA580C;">{{ $rp($totBeban) }}</strong>
+                        <strong style="color: var(--text-muted);">{{ $rp($totBeban) }}</strong>
                     </div>
                     <div class="viz-fin-track">
                         <div class="viz-fin-fill" style="width: {{ $persenBeban }}%; background: #EA580C;"></div>
-                    </div>
-                </div>
-                <div class="viz-fin-item">
-                    <div class="viz-fin-head">
-                        <span style="color: var(--text-secondary);">Estimasi Margin</span>
-                        <strong style="color: #16A34A;">{{ $rp($statKeuangan['margin_kotor']) }}</strong>
-                    </div>
-                    <div class="viz-fin-track">
-                        <div class="viz-fin-fill" style="width: {{ $persenMarginKotor }}%; background: #16A34A;"></div>
                     </div>
                 </div>
             </div>
@@ -278,53 +272,47 @@
     </div>
 </div>
 
-<div class="sa-command-grid">
-    {{-- Kolom Kiri Utama: Panel Tindakan Prioritas --}}
-    <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0;">
-        <div class="card sa-card" style="border-top: 4px solid var(--warning, #D97706); margin: 0;">
-            <div class="card-title" style="display: flex; align-items: center; gap: 6px;">
-                <span><i class="ti ti-alert-circle"></i> Butuh keputusan Anda</span>
-                @if ($jumlahTindakan)
-                    <span class="badge badge-urgent" style="margin-left: auto;">{{ $jumlahTindakan }} perlu tindakan</span>
-                @endif
-            </div>
-            @forelse ($butuhKeputusan as $item)
-                @include('super-admin.dashboard._butuh-keputusan', ['item' => $item])
-            @empty
-                <x-kosong ikon="circle-check" teks="Tidak ada yang perlu diputuskan." />
-            @endforelse
-            @if ($jumlahTindakan)
-                <a href="{{ route('admin.projects.index', ['tahap' => 'menunggu_acc']) }}" class="sa-lihat-semua">Lihat semua ({{ $jumlahTindakan }}) <i class="ti ti-arrow-right"></i></a>
-            @endif
-        </div>
+<div class="card sa-card" style="border-top: 4px solid var(--warning, #D97706); margin: 16px 0 0;">
+    <div class="card-title" style="display: flex; align-items: center; gap: 6px;">
+        <span><i class="ti ti-alert-circle"></i> Butuh keputusan Anda</span>
+        @if ($jumlahTindakan)
+            <span class="badge badge-urgent" style="margin-left: auto;">{{ $jumlahTindakan }} perlu tindakan</span>
+        @endif
+    </div>
+    @forelse ($butuhKeputusan as $item)
+        @include('super-admin.dashboard._butuh-keputusan', ['item' => $item])
+    @empty
+        <x-kosong ikon="circle-check" teks="Tidak ada yang perlu diputuskan." />
+    @endforelse
+    @if ($jumlahTindakan)
+        <a href="{{ route('admin.projects.index', ['tahap' => 'menunggu_acc']) }}" class="sa-lihat-semua">Lihat semua ({{ $jumlahTindakan }}) <i class="ti ti-arrow-right"></i></a>
+    @endif
+</div>
 
-        <div class="card sa-card" style="border-top: 4px solid var(--accent, #15803D); margin: 0;">
-            <div class="card-title" style="display: flex; align-items: center; gap: 6px;">
-                <span><i class="ti ti-bell"></i> Staf perlu diingatkan</span>
-                @if ($stafTertunda)
-                    <span class="badge badge-netral" style="margin-left: auto;">{{ $stafTertunda }} tugas</span>
-                @endif
-            </div>
-            @forelse ($diingatkan as $o)
-                @include('super-admin.dashboard._diingatkan', ['o' => $o])
-            @empty
-                <x-kosong teks="Semua Admin dan Korlap sesuai jadwal." />
-            @endforelse
+<div class="sa-command-grid">
+    <div class="card sa-card" style="border-top: 4px solid var(--accent, #15803D); margin: 0;">
+        <div class="card-title" style="display: flex; align-items: center; gap: 6px;">
+            <span><i class="ti ti-bell"></i> Staf perlu diingatkan</span>
             @if ($stafTertunda)
-                @php $tujuanStaf = ($diingatkan->first()['peran'] ?? 'admin') === 'korlap' ? 'super-admin.monitoring.korlap' : 'super-admin.monitoring.admin'; @endphp
-                <a href="{{ route($tujuanStaf) }}" class="sa-lihat-semua">Lihat semua <i class="ti ti-arrow-right"></i></a>
+                <span class="badge badge-netral" style="margin-left: auto;">{{ $stafTertunda }} tugas</span>
             @endif
         </div>
+        @forelse ($diingatkan as $o)
+            @include('super-admin.dashboard._diingatkan', ['o' => $o])
+        @empty
+            <x-kosong teks="Semua Admin dan Korlap sesuai jadwal." />
+        @endforelse
+        @if ($stafTertunda)
+            @php $tujuanStaf = ($diingatkan->first()['peran'] ?? 'admin') === 'korlap' ? 'super-admin.monitoring.korlap' : 'super-admin.monitoring.admin'; @endphp
+            <a href="{{ route($tujuanStaf) }}" class="sa-lihat-semua">Lihat semua ({{ $stafTertunda }}) <i class="ti ti-arrow-right"></i></a>
+        @endif
     </div>
 
-    {{-- Kolom Kanan Pendamping: Panel Kalender & Jadwal Sticky --}}
-    <div class="sa-sticky-panel">
-        <div class="card sa-card" style="margin: 0;">
-            <div class="card-title"><i class="ti ti-calendar-event"></i> Jadwal &amp; Agenda Shooting</div>
-            <x-navigasi-timeline :dari="$dariJadwal" :sampai="$sampaiJadwal" :skala="$skala" :action="route('super-admin.dashboard')" />
-            <x-agenda :events="$agendaEvents" />
-            <a href="{{ route('admin.projects.index') }}" class="sa-lihat-semua">Lihat semua <i class="ti ti-arrow-right"></i></a>
-        </div>
+    <div class="card sa-card" style="margin: 0;">
+        <div class="card-title"><i class="ti ti-calendar-event"></i> Jadwal &amp; Agenda Shooting</div>
+        <x-navigasi-timeline :dari="$dariJadwal" :sampai="$sampaiJadwal" :skala="$skala" :action="route('super-admin.dashboard')" />
+        <x-agenda :events="$agendaEvents" />
+        <a href="{{ route('admin.projects.index') }}" class="sa-lihat-semua">Lihat semua{{ $totalHariJadwal > 5 ? ' ('.$totalHariJadwal.')' : '' }} <i class="ti ti-arrow-right"></i></a>
     </div>
 </div>
 

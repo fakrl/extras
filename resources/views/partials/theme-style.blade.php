@@ -482,14 +482,22 @@
         display: grid;
         grid-template-columns: 1fr;
         gap: 20px;
-        align-items: start;
         margin-top: 16px;
     }
     @media (min-width: 992px) {
         .sa-command-grid {
             grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+            align-items: stretch;
+        }
+        .sa-command-grid > .sa-card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
     }
+    .korlap-validasi-aksi { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .korlap-validasi-aksi .btn { min-height: 48px; }
+
     .sa-action-ticket {
         display: flex;
         justify-content: space-between;
@@ -504,15 +512,6 @@
     }
     .sa-action-ticket:hover {
         background: var(--bg-card-hover);
-    }
-    .sa-sticky-panel {
-        position: static;
-    }
-    @media (min-width: 992px) {
-        .sa-sticky-panel {
-            position: sticky;
-            top: 84px;
-        }
     }
 
     /* 2. Visual Pipeline Stage Strip (Admin Lineup) */

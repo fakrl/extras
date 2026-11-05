@@ -226,10 +226,10 @@ class DashboardController extends Controller
         $aktivitasTerbaru = ActivityLog::with('user')->latest()->take(6)->get();
 
         // CR.2.5: jadwal maks 5 TANGGAL berkegiatan (bukan 5 event) - agenda sendiri tidak diubah (CQ.2).
-        $agendaEvents = $this->jadwalEvents($dariJadwal, $sampaiJadwal)
-            ->groupBy(fn (EventShootingDate $e) => Carbon::parse($e->tanggal)->format('Y-m-d'))
-            ->take(5)
-            ->flatten(1);
+        $jadwalPerHari = $this->jadwalEvents($dariJadwal, $sampaiJadwal)
+            ->groupBy(fn (EventShootingDate $e) => Carbon::parse($e->tanggal)->format('Y-m-d'));
+        $totalHariJadwal = $jadwalPerHari->count();
+        $agendaEvents = $jadwalPerHari->take(5)->flatten(1);
 
         return view('super-admin.dashboard', compact(
             'dari', 'sampai', 'preset', 'jumlahHari',
@@ -241,7 +241,7 @@ class DashboardController extends Controller
             'butuhKeputusan', 'diingatkan',
             'proyekBerjalan', 'pertumbuhanBerjalan',
             'invoiceBelumLunas', 'invoiceTotal',
-            'agendaEvents',
+            'agendaEvents', 'totalHariJadwal',
             'statPopulasi', 'statProyekKuota', 'statKeuangan', 'statFunnelKandidat',
             'aktivitasTerbaru'
         ));
