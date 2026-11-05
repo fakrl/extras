@@ -892,7 +892,7 @@
         .table-container { overflow-x: auto; position: relative; }
 
         /* Pagination (markup pagination::bootstrap-4, lihat AppServiceProvider) */
-        .pagination { display: flex; flex-wrap: wrap; gap: 4px; list-style: none; padding: 0; margin: 0; }
+        .pagination { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 0; }
         .pagination .page-link { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; min-height: 40px; padding: 0 10px; border: 1px solid var(--border-color); border-radius: var(--radius-md, 8px); background: var(--bg-card); color: var(--text-primary); text-decoration: none; font-size: var(--fs-sm, 13px); }
         .pagination a.page-link:hover { background: var(--bg-card-hover); }
         .pagination .active .page-link { background: var(--accent); border-color: var(--accent); color: var(--accent-on); font-weight: 600; }
