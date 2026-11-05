@@ -40,4 +40,27 @@ class RegistrationRoleTest extends TestCase
 
         $this->assertDatabaseMissing('users', ['email' => 'client@example.com']);
     }
+
+    /** SPEC.md Bagian CY.3b: centang persetujuan sekarang mewakili Privasi + S&K sekaligus, field tetap sama. */
+    public function test_registrasi_extras_ditolak_tanpa_centang_privasi(): void
+    {
+        $response = $this->post('/register', [
+            'name' => 'Test Extras',
+            'email' => 'extras-nocheck@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $response->assertSessionHasErrors('setuju_privasi');
+        $this->assertDatabaseMissing('users', ['email' => 'extras-nocheck@example.com']);
+    }
+
+    public function test_halaman_registrasi_extras_tautkan_privasi_dan_syarat_ketentuan(): void
+    {
+        $response = $this->get('/register');
+
+        $response->assertOk();
+        $response->assertSee(route('privacy-policy'), false);
+        $response->assertSee(route('syarat-ketentuan'), false);
+    }
 }
