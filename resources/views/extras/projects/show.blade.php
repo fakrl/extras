@@ -14,6 +14,8 @@
                     <span>&bull;</span>
                 @endif
                 <span>Deadline: {{ $castingProject->deadline->translatedFormat('d M Y') }}</span>
+                <span>&bull;</span>
+                <span>Fee yang kamu terima sudah setelah potongan jasa agensi 25%.</span>
                 @if ($castingProject->kode_proyek)
                     <span class="badge badge-netral">{{ $castingProject->kode_proyek }}</span>
                 @endif

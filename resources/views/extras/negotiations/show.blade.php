@@ -3,9 +3,10 @@
 @section('title', 'Negosiasi Fee')
 
 @section('content')
-<p style="color: var(--text-secondary); margin: -8px 0 20px; font-size: 13.5px;">
+<p style="color: var(--text-secondary); margin: -8px 0 4px; font-size: 13.5px;">
     Proyek: {{ $application->castingProject->nama_produksi }}
 </p>
+<p style="color: var(--text-muted); margin: 0 0 20px; font-size: 12px;">Fee yang kamu terima sudah setelah potongan jasa agensi 25%.</p>
 
 <div class="card" style="margin-bottom: 16px;">
     <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px;">Riwayat Tawar-Menawar</div>
