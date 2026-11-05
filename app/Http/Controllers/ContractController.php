@@ -62,8 +62,12 @@ class ContractController extends Controller
                 ->with('bentrok_link', route('extras.dashboard').'#pendaftaran-'.$bentrok->id);
         }
 
-        $data = $request->validate([
-            'signature' => ['required', 'string'],
+        $rules = ['signature' => ['required', 'string']];
+        if ($role === 'extras') {
+            $rules['setuju_kuasa_potongan'] = ['accepted'];
+        }
+        $data = $request->validate($rules, [
+            'setuju_kuasa_potongan.accepted' => 'Centang dulu persetujuan klausul kuasa dan potongan jasa agensi.',
         ]);
 
         $filename = "contracts/signatures/{$application->id}-{$role}-".Str::random(8).'.png';

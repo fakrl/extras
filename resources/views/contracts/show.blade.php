@@ -74,10 +74,17 @@
         </div>
         @if ($bolehKelola)
         <x-confirm-form action="{{ route('contracts.sign', $application) }}" message="Simpan tanda tangan ini? Kontrak akan mengikat begitu kedua pihak sudah TTD dan tidak bisa diubah lagi.">
+            @php($cekSyarat = "var f=this.closest('form'); f.querySelector('[type=submit]').disabled = Array.from(f.querySelectorAll('.syarat-ttd')).some(function(c){return !c.checked;});")
             <label style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px; font-weight: 500;">
-                <input type="checkbox" style="width: auto; min-height: auto; margin: 0;" onchange="this.closest('form').querySelector('[type=submit]').disabled = !this.checked">
+                <input type="checkbox" class="syarat-ttd" style="width: auto; min-height: auto; margin: 0;" onchange="{{ $cekSyarat }}">
                 Saya sudah membaca kontrak (PDF) di atas
             </label>
+            @if ($role === 'extras')
+            <label style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px; font-weight: 500;">
+                <input type="checkbox" name="setuju_kuasa_potongan" class="syarat-ttd" style="width: auto; min-height: auto; margin: 0;" onchange="{{ $cekSyarat }}">
+                Saya membaca dan menyetujui klausul kuasa dan potongan jasa agensi
+            </label>
+            @endif
             <x-signature-pad name="signature" />
             <button type="submit" class="btn btn-brand" style="margin-top: 10px;" disabled>Simpan Tanda Tangan</button>
         </x-confirm-form>
