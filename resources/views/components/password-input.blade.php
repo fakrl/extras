@@ -14,6 +14,7 @@
             @if ($required) required @endif
             @if ($minlength) minlength="{{ $minlength }}" @endif
             @if ($hint) aria-describedby="{{ $inputId }}-hint" @endif
+            @class(['input-error' => $errors->has($name)])
             {{ $attributes }}
         >
         <button type="button" class="password-toggle" onclick="togglePasswordField(this)" aria-label="Tampilkan kata sandi" aria-pressed="false">
@@ -21,6 +22,7 @@
         </button>
     </div>
 </div>
+@error($name)<span class="field-error">{{ $message }}</span>@enderror
 @if ($hint)
     <p class="field-hint" id="{{ $inputId }}-hint">{{ $hint }}</p>
 @endif

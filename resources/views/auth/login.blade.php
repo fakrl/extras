@@ -10,21 +10,14 @@
     <div class="alert-success">{{ session('status') }}</div>
 @endif
 
-@if ($errors->any())
-    <div class="alert-danger">
-        @foreach ($errors->all() as $error)
-            <div>{{ $error }}</div>
-        @endforeach
-    </div>
-@endif
-
 @include('partials.google-tombol')
 
-<form method="POST" action="{{ route('login') }}">
+<form method="POST" action="{{ route('login') }}" novalidate>
     @csrf
     <label for="login-email">Email atau Username <span class="wajib" aria-hidden="true">*</span></label>
     <input type="text" id="login-email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"
-           placeholder="email@contoh.com atau username">
+           placeholder="email@contoh.com atau username" @class(['input-error' => $errors->has('email')])>
+    @error('email')<span class="field-error">{{ $message }}</span>@enderror
 
     <x-password-input name="password" label="Kata Sandi" autocomplete="current-password" />
 

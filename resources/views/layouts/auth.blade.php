@@ -48,6 +48,8 @@
         input:focus { border-color: var(--accent); }
         :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
         .field-hint { font-size: var(--fs-xs); color: var(--text-muted); margin: -10px 0 14px; }
+        .field-error { color: var(--danger); font-size: 12px; margin: -10px 0 14px; display: block; }
+        .input-error { border-color: var(--danger) !important; }
         .btn-brand {
             width: 100%; min-height: 46px;
             background: var(--accent); color: var(--accent-on);
