@@ -36,6 +36,8 @@ class RegisterController extends Controller
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'confirmed', 'min:8'],
             'setuju_privasi' => ['accepted'],
+        ], [
+            'setuju_privasi.accepted' => 'Centang persetujuan Kebijakan Privasi dan Syarat & Ketentuan dulu.',
         ]);
 
         $user = User::create([

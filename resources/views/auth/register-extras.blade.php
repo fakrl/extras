@@ -24,7 +24,7 @@
     <div class="checkbox-row">
         <label for="setuju_privasi">
             <input type="checkbox" name="setuju_privasi" id="setuju_privasi" required>
-            <span>Saya sudah membaca dan menyetujui <a href="{{ route('privacy-policy') }}" target="_blank">Kebijakan Privasi</a>. <span class="wajib" aria-hidden="true">*</span></span>
+            <span>Saya sudah membaca dan menyetujui <a href="{{ route('privacy-policy') }}" target="_blank">Kebijakan Privasi</a> dan <a href="{{ route('syarat-ketentuan') }}" target="_blank">Syarat &amp; Ketentuan</a>. <span class="wajib" aria-hidden="true">*</span></span>
         </label>
         @error('setuju_privasi')<span class="field-error">{{ $message }}</span>@enderror
     </div>
