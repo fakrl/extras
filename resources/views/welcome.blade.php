@@ -328,148 +328,81 @@
     </nav>
 
     <main>
-    {{-- Hero 2-Kolom (Stitch Bagian 1: Teks + Strip Stat Kiri, Showcase Card + Floating Trust Kanan) --}}
+    {{-- Hero 2-Kolom (Faktual, Bahasa Sehari-hari, Foto Roster Nyata) --}}
     <div class="hero">
         <div class="hero-inner">
             <div class="lp-hero-grid">
                 <div>
-                    <span class="lp-eyebrow-pill"><span class="lp-dot-live"></span> SISTEM MANAJEMEN CASTING EXTRAS &amp; TALENTA</span>
-                    <h1 class="hero-headline font-editorial">
-                        Casting extras<br>
-                        <span class="hero-h-indent hero-h-italic">film &amp; iklan</span><br>
-                        <span class="hero-h-accent">yang dipercaya.</span>
-                    </h1>
-                    <p class="section-body" style="max-width: 500px; margin: -12px 0 28px; font-size: 15px; line-height: 1.65;">
-                        Daftar jadi extras, lamar casting yang sedang buka, tanda tangan kontrak kerja digital, dan pantau pencairan honor transparan di satu tempat.
+                    <h1 class="lp-hero-title">Casting extras film dan iklan di Jabodetabek</h1>
+                    <p class="lp-hero-desc">
+                        JBTB Casting menghubungkan rumah produksi dengan talenta extras di Jabodetabek. Pendaftaran profil gratis, kontrak kerja digital, presensi di lokasi syuting dengan foto selfie dan GPS, serta catatan honor transparan di satu tempat.
                     </p>
-                    <div class="cta-row" style="margin-bottom: 28px;">
+                    <div class="cta-row">
                         @guest
-                            <a href="{{ route('register') }}" class="btn-brand">Daftar jadi Extras <i class="ti ti-arrow-right"></i></a>
-                            <a href="#lowongan" class="btn-outline"><i class="ti ti-briefcase"></i> Lihat Lowongan</a>
+                            <a href="{{ route('register') }}" class="btn-brand">Daftar jadi extras <i class="ti ti-arrow-right"></i></a>
+                            <a href="#lowongan" class="btn-outline">Lihat lowongan <i class="ti ti-arrow-down"></i></a>
                         @else
                             @if (auth()->user()->role === 'extras')
-                                <a href="#lowongan" class="btn-brand">Lihat Lowongan <i class="ti ti-arrow-right"></i></a>
+                                <a href="#lowongan" class="btn-brand">Lihat lowongan <i class="ti ti-arrow-right"></i></a>
                             @else
-                                <a href="/dashboard" class="btn-brand">Buka Dashboard <i class="ti ti-arrow-right"></i></a>
+                                <a href="/dashboard" class="btn-brand">Buka dashboard <i class="ti ti-arrow-right"></i></a>
                             @endif
                         @endguest
                     </div>
-                    <div class="lp-hero-stats">
-                        <div class="lp-stat-box">
-                            <span class="lp-stat-num">{{ $proyekTerbuka->count() > 0 ? $proyekTerbuka->count() : '0' }}</span>
-                            <span class="lp-stat-label">Lowongan Aktif</span>
-                            <span class="lp-stat-sub">Film &amp; Iklan Terbuka</span>
-                        </div>
-                        <div class="lp-stat-box">
-                            <span class="lp-stat-num">500+</span>
-                            <span class="lp-stat-label">Talenta Roster</span>
-                            <span class="lp-stat-sub">Extras Terverifikasi</span>
-                        </div>
-                        <div class="lp-stat-box">
-                            <span class="lp-stat-num">100%</span>
-                            <span class="lp-stat-label">Transparan</span>
-                            <span class="lp-stat-sub">Kontrak &amp; Slip Resmi</span>
-                        </div>
-                        <div class="lp-stat-box">
-                            <span class="lp-stat-num"><i class="ti ti-shield-check" style="color: var(--hp-accent); font-size: 22px;"></i></span>
-                            <span class="lp-stat-label">Anti-Poaching</span>
-                            <span class="lp-stat-sub">Privasi &amp; GPS Aman</span>
-                        </div>
-                    </div>
                 </div>
 
-                {{-- Kolom Kanan: Visual Production Showcase Card --}}
-                <div class="lp-hero-visual-card">
-                    <img src="{{ asset('images/logo-jbtb.jpg') }}" alt="SIM Casting JBTB" class="lp-visual-img" style="background: #0B1A12; object-fit: cover;">
-                    <div class="lp-visual-overlay">
-                        <span class="badge badge-urgent" style="align-self: flex-start; text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px;"><i class="ti ti-sparkles"></i> Produksi Terkualifikasi</span>
-                        <div style="color: #FFFFFF; font-size: 15px; font-weight: 700; font-family: var(--font-editorial, 'Newsreader', Georgia, serif);">Standar Produksi Film &amp; Komersial</div>
-                        <div style="color: rgba(255,255,255,0.75); font-size: 12px; line-height: 1.4;">Kurasi talenta terarah, verifikasi fisik, dan koordinasi lapangan profesional.</div>
+                @if ($castExtras->isNotEmpty())
+                    <div class="lp-hero-collage" aria-label="Foto talenta roster extras">
+                        @foreach ($castExtras->take(4) as $cast)
+                            <div class="lp-collage-item">
+                                <img src="{{ route('public.extras.foto', $cast->share_token) }}" alt="Foto talent extras {{ '@'.$cast->user->username }}" class="lp-collage-img" loading="eager">
+                            </div>
+                        @endforeach
                     </div>
-                    <div class="lp-floating-trust">
-                        <div class="lp-trust-icon"><i class="ti ti-shield-check"></i></div>
-                        <div>
-                            <div class="lp-trust-title">Kontrak Digital &amp; Presensi GPS</div>
-                            <div class="lp-trust-sub">Honor &amp; jadwal panggilan tercatat resmi</div>
-                        </div>
-                    </div>
-                </div>
+                @endif
             </div>
         </div>
     </div>
 
-    {{-- Cara Kerja (Stitch Bagian 2: 3 Langkah Mudah Jadi Extras) --}}
+    {{-- Cara Kerja (3 Kolom Faktual) --}}
     <div class="services-section" id="cara-kerja">
         <div class="services-inner">
             <div class="services-split-head">
                 <div>
-                    <span class="section-eyebrow">PROSES TRANSPARAN</span>
-                    <h2 class="services-left-title font-editorial">3 Langkah Mudah Jadi Extras</h2>
+                    <h2 class="services-left-title font-editorial">Cara kerja casting extras</h2>
                 </div>
-                <p class="section-body" style="max-width: 440px; margin: 0; font-size: 14.5px;">Sistem mandiri tanpa calo. Dari pendaftaran, seleksi, hingga honor cair langsung ke rekeningmu.</p>
+                <p class="section-body">Alur dari pendaftaran sampai penerimaan honor syuting.</p>
             </div>
-            <div class="lp-steps-grid">
-                <div class="lp-step-card">
-                    <div>
-                        <div class="lp-step-top">
-                            <span class="lp-step-num font-editorial">01</span>
-                            <div class="lp-step-icon"><i class="ti ti-id-badge-2"></i></div>
-                        </div>
-                        <h3 class="lp-step-title">Daftar &amp; Lengkapi Profil</h3>
-                        <p class="lp-step-desc">Daftar akun gratis, lengkapi foto lookbook alami, tinggi badan, kategori usia, dan spesifikasi fisikmu.</p>
-                    </div>
-                    <div class="lp-step-bot">
-                        <span>Gratis tanpa biaya admin</span>
-                        <i class="ti ti-circle-check"></i>
-                    </div>
+            <div class="lp-chapters-grid">
+                <div class="lp-chapter-col">
+                    <h3 class="lp-chapter-title">Lengkapi profil lookbook</h3>
+                    <p class="lp-chapter-desc">Daftar akun gratis dan lengkapi data fisik: foto lookbook polos tampak depan dan samping, tinggi badan, perkiraan umur, dan nomor WhatsApp aktif.</p>
                 </div>
 
-                <div class="lp-step-card">
-                    <div>
-                        <div class="lp-step-top">
-                            <span class="lp-step-num font-editorial">02</span>
-                            <div class="lp-step-icon"><i class="ti ti-movie"></i></div>
-                        </div>
-                        <h3 class="lp-step-title">Lamar Casting Terbuka</h3>
-                        <p class="lp-step-desc">Pilih lowongan proyek film atau iklan yang sedang dibuka sesuai kriteria kelas peran dan jadwal syutingmu.</p>
-                    </div>
-                    <div class="lp-step-bot">
-                        <span>Filter peran sesuai fisik</span>
-                        <i class="ti ti-adjustments-horizontal"></i>
-                    </div>
+                <div class="lp-chapter-col">
+                    <h3 class="lp-chapter-title">Lamar lowongan yang cocok</h3>
+                    <p class="lp-chapter-desc">Pilih peran yang sesuai dengan fisik dan jadwalmu di halaman lowongan. Jika sutradara atau pengarah peran memilih profilmu, kamu akan menerima panggilan jadwal syuting.</p>
                 </div>
 
-                <div class="lp-step-card">
-                    <div>
-                        <div class="lp-step-top">
-                            <span class="lp-step-num font-editorial">03</span>
-                            <div class="lp-step-icon"><i class="ti ti-wallet"></i></div>
-                        </div>
-                        <h3 class="lp-step-title">Kontrak Digital &amp; Honor</h3>
-                        <p class="lp-step-desc">Jika terpilih, tanda tangan kontrak kerja digital secara resmi, presensi selfie GPS di lokasi, dan pantau pencairan honor.</p>
-                    </div>
-                    <div class="lp-step-bot">
-                        <span>Pencairan langsung ke rekening</span>
-                        <i class="ti ti-shield-check"></i>
-                    </div>
+                <div class="lp-chapter-col">
+                    <h3 class="lp-chapter-title">Syuting dan pencairan honor</h3>
+                    <p class="lp-chapter-desc">Tanda tangani kontrak kerja digital sebelum syuting. Hadir di lokasi dengan presensi foto selfie dan GPS. Setelah produksi selesai, pantau status pembayaran dan konfirmasi penerimaan honor di aplikasi.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="film-strip-divider" aria-hidden="true"></div>
-
-    {{-- Lowongan Casting (Stitch Bagian 3: Quick Filter + Grid Kartu Editorial) --}}
+    {{-- Lowongan Casting --}}
     <div class="lowongan-section" id="lowongan">
         <div class="lowongan-inner">
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; margin-bottom: 24px;">
+            <div class="lp-lowongan-header">
                 <div>
-                    <span class="lp-eyebrow-pill" style="margin-bottom: 8px;"><span class="lp-dot-live"></span> SEDANG TAYANG</span>
-                    <h2 class="section-title font-editorial" style="font-size: 26px; margin: 0;">Lowongan Casting Terbuka</h2>
+                    <h2 class="section-title font-editorial">Lowongan casting terbuka</h2>
+                    <div class="lp-lowongan-count">{{ $proyekTerbuka->count() }} lowongan sedang menerima pendaftaran</div>
                 </div>
-                <div class="lp-filter-pills" style="display: flex; gap: 8px; flex-wrap: wrap;" role="tablist">
-                    <button type="button" class="lp-filter-pill is-active" data-filter="all">Semua Lowongan</button>
-                    <button type="button" class="lp-filter-pill" data-filter="urgent"><i class="ti ti-bolt"></i> Butuh Dadakan</button>
+                <div class="lp-filter-pills" role="tablist">
+                    <button type="button" class="lp-filter-pill is-active" data-filter="all">Semua lowongan</button>
+                    <button type="button" class="lp-filter-pill" data-filter="urgent"><i class="ti ti-bolt"></i> Butuh mendadak</button>
                 </div>
             </div>
 
@@ -481,21 +414,21 @@
                         <div class="lp-job-card" data-urgent="{{ $proyek->isUrgent() ? '1' : '0' }}">
                             <div>
                                 <div class="lp-job-top">
-                                    <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                                    <div class="lp-job-meta-item">
                                         <span class="badge-dibuka">Dibuka</span>
                                         @if ($proyek->isUrgent())
-                                            <span class="badge badge-urgent"><i class="ti ti-bolt"></i> Butuh Dadakan</span>
+                                            <span class="badge badge-urgent"><i class="ti ti-bolt"></i> Butuh mendadak</span>
                                         @endif
                                     </div>
-                                    <span style="font-size: 11.5px; color: var(--hp-muted); display: inline-flex; align-items: center; gap: 4px;">
-                                        <i class="ti ti-calendar-event"></i> Deadline {{ $proyek->deadline->translatedFormat('d M Y') }}
+                                    <span class="lp-lowongan-count">
+                                        <i class="ti ti-calendar"></i> Batas {{ $proyek->deadline->translatedFormat('d M Y') }}
                                     </span>
                                 </div>
-                                <h3 class="lp-job-title font-editorial">{{ $proyek->nama_produksi }}</h3>
+                                <h3 class="lp-job-title">{{ $proyek->nama_produksi }}</h3>
                                 <div class="lp-job-meta">
-                                    <span class="lp-job-meta-item"><i class="ti ti-users"></i> Kuota: {{ $proyek->kuota }} orang</span>
+                                    <span class="lp-job-meta-item"><i class="ti ti-users"></i> Kebutuhan: {{ $proyek->kuota }} orang</span>
                                     @if ($proyek->shootingDates->isNotEmpty())
-                                        <span class="lp-job-meta-item"><i class="ti ti-video"></i> {{ $proyek->shootingDates->count() }} Hari Syuting</span>
+                                        <span class="lp-job-meta-item"><i class="ti ti-video"></i> {{ $proyek->shootingDates->count() }} hari syuting</span>
                                     @endif
                                 </div>
                                 @if ($proyek->classes->isNotEmpty())
@@ -509,19 +442,19 @@
                                     </div>
                                 @endif
                             </div>
-                            <div style="margin-top: auto; padding-top: 14px; border-top: 1px solid var(--md-outline-hairline, var(--hp-line));">
+                            <div class="lp-job-footer">
                                 @guest
-                                    <a href="{{ route('register') }}" class="btn-brand" style="display: flex; justify-content: center; align-items: center; width: 100%; font-size: 13px; min-height: 38px; text-decoration: none;">
-                                        Daftar untuk Apply <i class="ti ti-arrow-right" style="margin-left: 6px;"></i>
+                                    <a href="{{ route('register') }}" class="btn-brand lp-btn-block">
+                                        Daftar untuk melamar <i class="ti ti-arrow-right"></i>
                                     </a>
                                 @endguest
                                 @auth
                                     @if (auth()->user()->role === 'extras')
-                                        <a href="{{ route('extras.projects.show', $proyek) }}" class="btn-brand" style="display: flex; justify-content: center; align-items: center; width: 100%; font-size: 13px; min-height: 38px; text-decoration: none;">
-                                            Lihat &amp; Apply <i class="ti ti-arrow-right" style="margin-left: 6px;"></i>
+                                        <a href="{{ route('extras.projects.show', $proyek) }}" class="btn-brand lp-btn-block">
+                                            Lihat detail lowongan <i class="ti ti-arrow-right"></i>
                                         </a>
                                     @else
-                                        <span style="font-size: 12px; color: var(--hp-muted); display: block; text-align: center; padding: 6px 0;">Login sebagai Extras untuk apply</span>
+                                        <span style="font-size: 12px; color: var(--hp-muted); display: block; text-align: center; padding: 6px 0;">Masuk sebagai extras untuk melamar</span>
                                     @endif
                                 @endauth
                             </div>
@@ -531,11 +464,11 @@
                 @if ($adaLebih)
                     <div style="text-align: center; margin-top: 24px;">
                         @guest
-                            <a href="{{ route('register') }}" class="btn-outline" style="font-size: 13px;">Daftar untuk lihat semua lowongan</a>
+                            <a href="{{ route('register') }}" class="btn-outline">Daftar untuk melihat semua lowongan</a>
                         @endguest
                         @auth
                             @if (auth()->user()->role === 'extras')
-                                <a href="{{ route('extras.projects.index') }}" class="btn-outline" style="font-size: 13px;">Lihat semua lowongan</a>
+                                <a href="{{ route('extras.projects.index') }}" class="btn-outline">Lihat semua lowongan</a>
                             @endif
                         @endauth
                     </div>
@@ -544,22 +477,20 @@
         </div>
     </div>
 
-    {{-- Cast (Stitch Bagian 4: Kenalan dengan Roster Cast) --}}
+    {{-- Cast (Roster Talent Extras) --}}
     @if ($castExtras->isNotEmpty())
-    <div class="film-strip-divider" aria-hidden="true"></div>
     <section class="cast-section" id="cast" aria-labelledby="cast-judul">
         <div class="hp-sec-head">
             <div>
-                <span class="section-eyebrow">TALENT LOOKBOOK</span>
-                <h2 class="hp-sec-title font-editorial" id="cast-judul">Kenalan dengan Roster Cast</h2>
+                <h2 class="hp-sec-title font-editorial" id="cast-judul">Roster talent extras</h2>
             </div>
-            <span class="hp-sec-note" style="display: inline-flex; align-items: center; gap: 4px;">
-                <i class="ti ti-rosette-discount-check" style="color: var(--hp-accent);"></i> Terverifikasi identitas &amp; kedisiplinan set &#x2194;
+            <span class="hp-sec-note">
+                Geser untuk melihat roster <i class="ti ti-arrows-left-right"></i>
             </span>
         </div>
         <div class="marquee-wrap">
-            <button type="button" class="marquee-nav prev" data-dir="-1" aria-label="Sebelumnya">&#8249;</button>
-            <button type="button" class="marquee-nav next" data-dir="1" aria-label="Berikutnya">&#8250;</button>
+            <button type="button" class="marquee-nav prev" data-dir="-1" aria-label="Sebelumnya"><i class="ti ti-chevron-left"></i></button>
+            <button type="button" class="marquee-nav next" data-dir="1" aria-label="Berikutnya"><i class="ti ti-chevron-right"></i></button>
             <div class="marquee" data-carousel tabindex="0" aria-label="Daftar cast, geser untuk lihat semua">
                 <div class="marquee-track">
                     @foreach ($castExtras as $i => $ex)
@@ -567,7 +498,7 @@
                             <div class="cast-photo-wrap">
                                 <img src="{{ route('public.extras.foto', $ex->share_token) }}" alt="Foto {{ '@'.$ex->user->username }}" class="cast-photo" loading="lazy">
                                 <span class="cast-no" aria-hidden="true">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</span>
-                                <span class="cast-view" aria-hidden="true">Lihat &#x2197;</span>
+                                <span class="cast-view" aria-hidden="true">Lihat profil <i class="ti ti-arrow-up-right"></i></span>
                             </div>
                             <div class="cast-name">{{ '@'.$ex->user->username }}</div>
                             <div class="cast-tag">{{ $ex->categories->first()?->nama ?? 'Extras' }}</div>
@@ -579,20 +510,18 @@
     </section>
     @endif
 
-    {{-- Portofolio (Stitch Bagian 5: Pernah Dikerjakan) --}}
+    {{-- Portofolio --}}
     @if ($portofolio->isNotEmpty())
-    <div class="film-strip-divider" aria-hidden="true"></div>
     <section class="porto-section" id="portofolio" aria-labelledby="porto-judul">
         <div class="hp-sec-head">
             <div>
-                <span class="section-eyebrow">PORTOFOLIO</span>
-                <h2 class="hp-sec-title font-editorial" id="porto-judul">Pernah Dikerjakan</h2>
+                <h2 class="hp-sec-title font-editorial" id="porto-judul">Proyek yang pernah dikerjakan</h2>
             </div>
-            <span class="hp-sec-note">Geser untuk lihat semua &#x2194;</span>
+            <span class="hp-sec-note">Geser untuk melihat proyek <i class="ti ti-arrows-left-right"></i></span>
         </div>
         <div class="marquee-wrap">
-            <button type="button" class="marquee-nav prev" data-dir="-1" aria-label="Sebelumnya">&#8249;</button>
-            <button type="button" class="marquee-nav next" data-dir="1" aria-label="Berikutnya">&#8250;</button>
+            <button type="button" class="marquee-nav prev" data-dir="-1" aria-label="Sebelumnya"><i class="ti ti-chevron-left"></i></button>
+            <button type="button" class="marquee-nav next" data-dir="1" aria-label="Berikutnya"><i class="ti ti-chevron-right"></i></button>
             <div class="marquee" data-carousel tabindex="0" aria-label="Daftar portofolio, geser untuk lihat semua">
                 <div class="marquee-track">
                     @foreach ($portofolio as $p)
@@ -615,18 +544,17 @@
     </section>
     @endif
 
-    {{-- FAQ (Stitch Bagian 5: 4 Accordion Bersih Terpusat) --}}
+    {{-- FAQ (4 Accordion Bersih) --}}
     <div class="lowongan-section" id="faq" aria-label="Pertanyaan umum">
         <div class="lowongan-inner" style="max-width: 780px;">
             <div style="text-align: center; margin-bottom: 28px;">
-                <span class="section-eyebrow">Sering Ditanyakan</span>
-                <h2 class="section-title font-editorial" style="font-size: 26px; margin: 4px 0 0;">Pertanyaan Umum (FAQ)</h2>
+                <h2 class="section-title font-editorial" style="font-size: 26px; margin: 4px 0 0;">Pertanyaan yang sering ditanyakan</h2>
             </div>
             <div class="lowongan-list">
                 <details class="lowongan-item">
                     <summary class="lowongan-summary">
                         <span style="flex: 1; font-size: 15px; font-weight: 600; color: var(--hp-fg);">Daftarnya bayar?</span>
-                        <span class="lowongan-chevron" aria-hidden="true">+</span>
+                        <span class="lowongan-chevron" aria-hidden="true"><i class="ti ti-plus"></i></span>
                     </summary>
                     <div class="lowongan-detail" style="padding-left: 0;">
                         <p class="section-body" style="margin: 0;">Gratis.</p>
@@ -635,7 +563,7 @@
                 <details class="lowongan-item">
                     <summary class="lowongan-summary">
                         <span style="flex: 1; font-size: 15px; font-weight: 600; color: var(--hp-fg);">Kapan honor dibayar?</span>
-                        <span class="lowongan-chevron" aria-hidden="true">+</span>
+                        <span class="lowongan-chevron" aria-hidden="true"><i class="ti ti-plus"></i></span>
                     </summary>
                     <div class="lowongan-detail" style="padding-left: 0;">
                         <p class="section-body" style="margin: 0;">Setelah kontrak ditandatangani dan produksi berjalan; status transfer bisa kamu cek dan konfirmasi di aplikasi.</p>
@@ -644,7 +572,7 @@
                 <details class="lowongan-item">
                     <summary class="lowongan-summary">
                         <span style="flex: 1; font-size: 15px; font-weight: 600; color: var(--hp-fg);">Kalau batal ikut gimana?</span>
-                        <span class="lowongan-chevron" aria-hidden="true">+</span>
+                        <span class="lowongan-chevron" aria-hidden="true"><i class="ti ti-plus"></i></span>
                     </summary>
                     <div class="lowongan-detail" style="padding-left: 0;">
                         <p class="section-body" style="margin: 0;">Batal kurang dari 2 hari sebelum shooting dihitung batal mendadak; 3 kali batal mendadak membuat akun dinonaktifkan.</p>
@@ -653,7 +581,7 @@
                 <details class="lowongan-item">
                     <summary class="lowongan-summary">
                         <span style="flex: 1; font-size: 15px; font-weight: 600; color: var(--hp-fg);">Data KTP dan rekening aman?</span>
-                        <span class="lowongan-chevron" aria-hidden="true">+</span>
+                        <span class="lowongan-chevron" aria-hidden="true"><i class="ti ti-plus"></i></span>
                     </summary>
                     <div class="lowongan-detail" style="padding-left: 0;">
                         <p class="section-body" style="margin: 0;">Disimpan terenkripsi dan hanya dipakai untuk kontrak dan pembayaran; tidak terlihat oleh Client.</p>
@@ -663,67 +591,59 @@
         </div>
     </div>
 
-    {{-- Dual-Audience Split CTA Cards (Stitch Bagian 6) --}}
+    {{-- Kolaborasi (Dua Jalur Inquiries) --}}
     <div class="lp-dual-section" style="padding: 0 32px 56px;">
         <div style="max-width: 1100px; margin: 0 auto;">
-            <div class="lp-dual-cta-grid">
-                {{-- Kartu Kiri: Extras --}}
-                <div class="lp-dual-card-extras">
-                    <div>
-                        <div class="lp-dual-icon" style="background: var(--md-surface-container, rgba(0,0,0,0.05)); color: var(--hp-accent);">
-                            <i class="ti ti-sparkles"></i>
+            <div class="lp-inquiry-box">
+                <div class="lp-inquiry-grid">
+                    {{-- Kolom Kiri: Calon Extras --}}
+                    <div class="lp-inquiry-col lp-inquiry-col-left">
+                        <div>
+                            <h3 class="lp-inquiry-title">
+                                Ingin ikut syuting film atau iklan?
+                            </h3>
+                            <p class="lp-inquiry-desc">
+                                Daftar akun gratis, lengkapi foto lookbook profil, dan lamar peran casting yang sedang buka. Kontrak kerja tercatat di aplikasi dan pencairan honor ditransfer langsung ke rekening bank kamu.
+                            </p>
                         </div>
-                        <span class="section-eyebrow" style="margin-bottom: 6px;">UNTUK CALON EXTRAS</span>
-                        <h3 class="font-editorial" style="font-size: 24px; font-weight: 700; color: var(--hp-fg); margin: 0 0 10px; line-height: 1.25;">
-                            Siap Tampil di Depan Layar Kaca?
-                        </h3>
-                        <p class="section-body" style="font-size: 14px; margin: 0; line-height: 1.6;">
-                            Bergabung bersama ribuan talenta extras lainnya. Pendaftaran 100% gratis, proses seleksi terbuka, kontrak kerja digital resmi, dan honor cair tepat waktu.
-                        </p>
+                        <div>
+                            @guest
+                                <a href="{{ route('register') }}" class="btn-brand" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+                                    Daftar jadi extras <i class="ti ti-arrow-right"></i>
+                                </a>
+                            @else
+                                <a href="#lowongan" class="btn-brand" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+                                    Lihat lowongan casting <i class="ti ti-arrow-right"></i>
+                                </a>
+                            @endguest
+                        </div>
                     </div>
-                    <div style="margin-top: 20px;">
-                        @guest
-                            <a href="{{ route('register') }}" class="btn-brand" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
-                                Daftar Jadi Extras Sekarang <i class="ti ti-arrow-right"></i>
-                            </a>
-                        @else
-                            <a href="#lowongan" class="btn-brand" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
-                                Lihat Lowongan Casting <i class="ti ti-arrow-right"></i>
-                            </a>
-                        @endguest
-                    </div>
-                </div>
 
-                {{-- Kartu Kanan: Production House --}}
-                <div class="lp-dual-card-ph">
-                    <div>
-                        <div class="lp-dual-icon" style="background: rgba(255,255,255,0.08); color: #4ADE80;">
-                            <i class="ti ti-video"></i>
+                    {{-- Kolom Kanan: Production House & Client --}}
+                    <div class="lp-inquiry-col">
+                        <div>
+                            <h3 class="lp-inquiry-title">
+                                Kebutuhan extras untuk produksi film?
+                            </h3>
+                            <p class="lp-inquiry-desc">
+                                Dapatkan data talent dengan spesifikasi fisik jelas, koordinasi lapangan oleh korlap di lokasi set, presensi kehadiran berbasis selfie dan GPS, serta administrasi kontrak kerja terpusat.
+                            </p>
                         </div>
-                        <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #4ADE80; display: block; margin-bottom: 6px; text-transform: uppercase;">
-                            UNTUK PRODUCTION HOUSE &amp; SUTRADARA
-                        </span>
-                        <h3 class="font-editorial" style="font-size: 24px; font-weight: 700; color: #FFFFFF; margin: 0 0 10px; line-height: 1.25;">
-                            Butuh Extras Siap Set Tepat Waktu?
-                        </h3>
-                        <p style="font-size: 14px; color: rgba(242, 241, 235, 0.75); margin: 0; line-height: 1.6;">
-                            Dapatkan akses kurasi lookbook talent tanpa calo, perlindungan anti-poaching, koordinator lapangan on-site, presensi GPS, dan efisiensi kontrak digital.
-                        </p>
-                    </div>
-                    <div style="margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
-                        <a href="{{ route('login') }}" class="btn-brand" style="background: #22C55E; color: #052E16; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; border-color: #22C55E;">
-                            <i class="ti ti-send"></i> Ajukan Proyek / Masuk Client
-                        </a>
-                        <a href="#kontak" class="btn-outline" style="color: #F2F1EB; border-color: rgba(255,255,255,0.25); text-decoration: none;">
-                            Hubungi Tim Kami
-                        </a>
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                            <a href="{{ route('login') }}" class="btn-brand" style="background: #22C55E; color: #052E16; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; border-color: #22C55E;">
+                                <i class="ti ti-user-check"></i> Masuk portal client
+                            </a>
+                            <a href="#kontak" class="btn-outline" style="color: #F4F3EE; border-color: rgba(255,255,255,0.25); text-decoration: none;">
+                                Hubungi agensi
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Contact Section (AK.10): WA/email tampil hanya bila JBTB_WA / JBTB_EMAIL diisi --}}
+    {{-- Contact Section --}}
     @php
         $kontakWa = config('app.kontak.wa');
         $kontakEmail = config('app.kontak.email');
@@ -731,8 +651,7 @@
     <section class="contact-section" id="kontak" aria-label="Hubungi kami">
         <div class="contact-inner">
             <div>
-                <span class="section-eyebrow">Hubungi Kami</span>
-                <div class="contact-left-title">Production house?<br>Hubungi kami</div>
+                <div class="contact-left-title">Hubungi kami</div>
             </div>
             <div class="contact-grid">
                 <div class="contact-block">

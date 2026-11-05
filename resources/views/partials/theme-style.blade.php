@@ -1602,35 +1602,10 @@
         box-shadow: var(--md-shadow-ambient, 0 4px 16px -2px rgba(0,0,0,0.06));
     }
 
-    /* ── Landing Page Stitch Hybrid Components ── */
-    .lp-eyebrow-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 5px 12px;
-        border-radius: 999px;
-        background: var(--md-surface-container, rgba(0,0,0,0.05));
-        border: 1px solid var(--md-outline-hairline, rgba(0,0,0,0.1));
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--hp-accent, var(--accent));
-        margin-bottom: 18px;
-    }
-
-    .lp-dot-live {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: #16A34A;
-        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.25);
-        display: inline-block;
-    }
-
+    /* ── Landing Page (Clean, Non-AI, Native Platform First) ── */
     .lp-hero-grid {
         display: grid;
-        grid-template-columns: 1.15fr 0.85fr;
+        grid-template-columns: 1.2fr 0.8fr;
         gap: 48px;
         align-items: center;
     }
@@ -1638,239 +1613,109 @@
     @media (max-width: 960px) {
         .lp-hero-grid {
             grid-template-columns: 1fr;
-            gap: 36px;
+            gap: 32px;
         }
     }
 
-    .lp-hero-stats {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 12px;
-        margin-top: 10px;
-    }
-
-    @media (max-width: 640px) {
-        .lp-hero-stats {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    .lp-stat-box {
-        background: var(--md-surface-container-lowest, var(--hp-card, #FFFFFF));
-        border: 1px solid var(--md-outline-hairline, var(--hp-line));
-        border-radius: var(--radius-md, 10px);
-        padding: 12px 14px;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .lp-stat-num {
+    .lp-hero-title {
         font-family: var(--font-editorial, 'Newsreader', Georgia, serif);
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--hp-fg, var(--text-primary));
+        font-size: clamp(2.2rem, 4.8vw, 3.8rem);
         line-height: 1.1;
+        letter-spacing: -0.02em;
+        font-weight: 500;
+        margin: 0 0 16px;
+        color: var(--hp-fg);
     }
 
-    .lp-stat-label {
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: var(--hp-accent, var(--accent));
-        margin-top: 2px;
+    .lp-hero-desc {
+        font-size: 15px;
+        color: var(--hp-muted);
+        line-height: 1.65;
+        margin: 0 0 28px;
+        max-width: 520px;
     }
 
-    .lp-stat-sub {
-        font-size: 11px;
-        color: var(--hp-muted, var(--text-muted));
-        line-height: 1.3;
+    /* Collage foto talent nyata dari database (tanpa grayscale, tanpa placeholder frame) */
+    .lp-hero-collage {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
     }
 
-    .lp-hero-visual-card {
-        position: relative;
-        border-radius: 18px;
+    .lp-collage-item {
+        aspect-ratio: 4 / 5;
+        border-radius: 8px;
         overflow: hidden;
-        border: 1px solid var(--md-outline-hairline, var(--hp-line));
-        box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.18);
-        aspect-ratio: 4 / 3;
+        border: 1px solid var(--hp-line);
         background: var(--hp-card);
     }
 
-    .lp-visual-img {
+    .lp-collage-img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         display: block;
-        transition: transform 0.5s ease;
     }
 
-    .lp-hero-visual-card:hover .lp-visual-img {
-        transform: scale(1.03);
-    }
-
-    .lp-visual-overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 45%, rgba(10,24,16,0.92) 100%);
-        padding: 24px;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        gap: 8px;
-        z-index: 2;
-    }
-
-    .lp-floating-trust {
-        position: absolute;
-        left: 18px;
-        bottom: 18px;
-        background: rgba(255, 255, 255, 0.94);
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.6);
-        border-radius: 12px;
-        padding: 10px 14px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        z-index: 3;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-    }
-
-    [data-theme="dark"] .lp-floating-trust {
-        background: rgba(20, 30, 24, 0.92);
-        border-color: rgba(255, 255, 255, 0.12);
-    }
-
-    .lp-trust-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        background: #DCFCE7;
-        color: #15803D;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        flex-shrink: 0;
-    }
-
-    [data-theme="dark"] .lp-trust-icon {
-        background: rgba(22, 163, 74, 0.25);
-        color: #4ADE80;
-    }
-
-    .lp-trust-title {
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--text-primary, #111311);
-    }
-
-    [data-theme="dark"] .lp-trust-title {
-        color: #F2F1EB;
-    }
-
-    .lp-trust-sub {
-        font-size: 10.5px;
-        color: var(--text-secondary, #52564E);
-    }
-
-    [data-theme="dark"] .lp-trust-sub {
-        color: rgba(242, 241, 235, 0.65);
-    }
-
-    /* ── 3 Langkah Jadi Extras (Stitch Bagian 2) ── */
-    .lp-steps-grid {
+    /* ── Cara Kerja: 3 Kolom Faktual ── */
+    .lp-chapters-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-        margin-top: 32px;
+        gap: 32px;
+        margin-top: 36px;
     }
 
     @media (max-width: 860px) {
-        .lp-steps-grid {
+        .lp-chapters-grid {
             grid-template-columns: 1fr;
-            gap: 16px;
+            gap: 24px;
         }
     }
 
-    .lp-step-card {
-        background: var(--md-surface-container-lowest, var(--hp-card, #FFFFFF));
-        border: 1px solid var(--md-outline-hairline, var(--hp-line));
-        border-radius: 14px;
-        padding: 22px 20px 18px;
+    .lp-chapter-col {
+        border-top: 1px solid var(--hp-line);
+        padding-top: 20px;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
-        gap: 18px;
-        box-shadow: var(--md-shadow-ambient, 0 4px 16px -2px rgba(0,0,0,0.04));
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        gap: 10px;
     }
 
-    .lp-step-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.08);
-    }
-
-    .lp-step-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .lp-step-num {
-        font-size: 32px;
-        font-weight: 700;
-        color: var(--hp-accent, var(--accent));
-        opacity: 0.85;
-        line-height: 1;
-    }
-
-    .lp-step-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        background: var(--md-surface-container, rgba(0,0,0,0.05));
-        color: var(--hp-accent, var(--accent));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-    }
-
-    .lp-step-title {
+    .lp-chapter-title {
         font-size: 16px;
         font-weight: 700;
-        margin: 0 0 8px;
-        color: var(--hp-fg, var(--text-primary));
-    }
-
-    .lp-step-desc {
-        font-size: 13.5px;
-        color: var(--hp-muted, var(--text-secondary));
+        color: var(--hp-fg);
         margin: 0;
-        line-height: 1.6;
+        line-height: 1.35;
     }
 
-    .lp-step-bot {
+    .lp-chapter-desc {
+        font-size: 13.5px;
+        color: var(--hp-muted);
+        margin: 0;
+        line-height: 1.65;
+    }
+
+    /* ── Lowongan Casting ── */
+    .lp-lowongan-header {
         display: flex;
-        align-items: center;
         justify-content: space-between;
-        gap: 8px;
-        padding-top: 14px;
-        border-top: 1px solid var(--md-outline-hairline, var(--hp-line));
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--hp-accent, var(--accent));
+        align-items: flex-end;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
     }
 
-    /* ── Lowongan Editorial Grid (Stitch Bagian 3) ── */
+    .lp-lowongan-count {
+        font-size: 13px;
+        color: var(--hp-muted);
+        margin-top: 4px;
+    }
+
     .lp-jobs-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 20px;
-        margin-top: 28px;
+        gap: 24px;
+        margin-top: 24px;
     }
 
     @media (max-width: 680px) {
@@ -1880,21 +1725,19 @@
     }
 
     .lp-job-card {
-        background: var(--md-surface-container-lowest, var(--hp-card, #FFFFFF));
-        border: 1px solid var(--md-outline-hairline, var(--hp-line));
-        border-radius: 14px;
-        padding: 20px;
+        background: var(--hp-card);
+        border: 1px solid var(--hp-line);
+        border-radius: 8px;
+        padding: 24px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        gap: 16px;
-        box-shadow: var(--md-shadow-ambient, 0 4px 16px -2px rgba(0,0,0,0.04));
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        gap: 20px;
+        transition: border-color 0.2s ease;
     }
 
     .lp-job-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.08);
+        border-color: var(--hp-accent);
     }
 
     .lp-job-top {
@@ -1906,113 +1749,144 @@
     }
 
     .lp-job-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--hp-fg, var(--text-primary));
-        margin: 4px 0 2px;
-        line-height: 1.3;
+        font-family: var(--font-editorial, 'Newsreader', Georgia, serif);
+        font-size: 20px;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        color: var(--hp-fg);
+        margin: 8px 0 4px;
+        line-height: 1.25;
     }
 
     .lp-job-meta {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 12px;
         font-size: 12.5px;
-        color: var(--hp-muted, var(--text-muted));
-        margin-top: 6px;
+        color: var(--hp-muted);
+        margin-top: 8px;
     }
 
     .lp-job-meta-item {
         display: inline-flex;
         align-items: center;
-        gap: 4px;
+        gap: 5px;
     }
 
     .lp-job-roles {
         display: flex;
         flex-wrap: wrap;
         gap: 6px;
-        margin-top: 8px;
+        margin-top: 10px;
     }
 
     .lp-role-pill {
         display: inline-flex;
         align-items: center;
-        padding: 3px 8px;
-        border-radius: 6px;
-        background: var(--md-surface-container, rgba(0,0,0,0.04));
-        border: 1px solid var(--md-outline-hairline, var(--hp-line));
+        padding: 4px 9px;
+        border-radius: 4px;
+        background: var(--hp-bg);
+        border: 1px solid var(--hp-line);
         font-size: 11.5px;
-        font-weight: 600;
-        color: var(--hp-fg, var(--text-primary));
+        font-weight: 500;
+        color: var(--hp-fg);
     }
 
     .lp-filter-pill {
         display: inline-flex;
         align-items: center;
-        padding: 5px 12px;
-        border-radius: 999px;
-        background: var(--md-surface-container, var(--hp-card));
-        border: 1px solid var(--md-outline-hairline, var(--hp-line));
+        gap: 5px;
+        padding: 6px 14px;
+        border-radius: 6px;
+        background: transparent;
+        border: 1px solid var(--hp-line);
         color: var(--hp-muted);
-        font-size: 12px;
+        font-size: 12.5px;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s ease;
     }
 
     .lp-filter-pill.is-active, .lp-filter-pill:hover {
-        background: var(--hp-accent);
-        color: var(--hp-accent-on);
+        background: var(--hp-card);
+        color: var(--hp-fg);
         border-color: var(--hp-accent);
     }
 
-    /* ── Dual Audience Split CTA (Stitch Bagian 6) ── */
-    .lp-dual-cta-grid {
+    .lp-job-footer {
+        margin-top: auto;
+        padding-top: 14px;
+        border-top: 1px solid var(--hp-line);
+    }
+
+    .lp-btn-block {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        width: 100%;
+        min-height: 40px;
+        font-size: 13px;
+        text-decoration: none;
+    }
+
+    /* ── Split Inquiry Kolaborasi ── */
+    .lp-inquiry-box {
+        background: #09120D;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 10px;
+        overflow: hidden;
+        color: #F4F3EE;
+    }
+
+    .lp-inquiry-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 24px;
     }
 
     @media (max-width: 860px) {
-        .lp-dual-cta-grid {
+        .lp-inquiry-grid {
             grid-template-columns: 1fr;
         }
     }
 
-    .lp-dual-card-extras {
-        background: var(--md-surface-container-lowest, var(--hp-card, #FFFFFF));
-        border: 1px solid var(--md-outline-hairline, var(--hp-line));
-        border-radius: 16px;
-        padding: 32px 28px;
+    .lp-inquiry-col {
+        padding: 40px 36px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        gap: 20px;
-        box-shadow: var(--md-shadow-ambient);
+        gap: 22px;
     }
 
-    .lp-dual-card-ph {
-        background: #0B1A12;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        padding: 32px 28px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        gap: 20px;
-        color: #F2F1EB;
-        box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.35);
+    .lp-inquiry-col-left {
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .lp-dual-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 10px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 22px;
-        margin-bottom: 12px;
+    @media (max-width: 860px) {
+        .lp-inquiry-col-left {
+            border-right: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px 22px;
+        }
+        .lp-inquiry-col {
+            padding: 30px 22px;
+        }
+    }
+
+    .lp-inquiry-title {
+        font-family: var(--font-editorial, 'Newsreader', Georgia, serif);
+        font-size: clamp(1.5rem, 2.3vw, 1.9rem);
+        font-weight: 500;
+        line-height: 1.25;
+        letter-spacing: -0.02em;
+        margin: 0 0 12px;
+        color: #F4F3EE;
+    }
+
+    .lp-inquiry-desc {
+        font-size: 13.5px;
+        line-height: 1.65;
+        color: rgba(244, 243, 238, 0.72);
+        margin: 0;
     }
 </style>
