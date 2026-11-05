@@ -328,9 +328,10 @@
     <div class="card cf-seksi">
         <div class="card-title">Honor Extras</div>
         <p style="font-size: var(--fs-xs); color: var(--text-muted); margin: 0 0 8px;">{{ $p->payments->whereNotNull('ditransfer_at')->count() }} dari {{ $p->payments->count() }} sudah ditransfer · Total {{ $rp($p->payments->sum(fn ($x) => $x->nominalTotal())) }}</p>
+        @php $shootingTerakhir = $p->shootingDates->max('tanggal'); @endphp
         <div class="table-container">
             <table>
-                <thead><tr><th>Extras</th><th>Peran</th><th>Nominal (pokok + add-on)</th><th>Status</th><th></th></tr></thead>
+                <thead><tr><th>Extras</th><th>Peran</th><th>Nominal (pokok + add-on)</th><th>Status</th><th>Usia</th><th></th></tr></thead>
                 <tbody>
                     @forelse ($p->payments as $pay)
                         @php $app = $pay->projectApplication; @endphp
@@ -339,10 +340,18 @@
                             <td>{{ $app?->castingProjectClass?->nama_kelas ?: ($app?->karakter ?: '-') }}</td>
                             <td>{{ $rp($pay->nominalTotal()) }}</td>
                             <td><x-status-badge :model="$pay" /></td>
+                            <td>
+                                @if ($pay->status === 'belum_dibayar' && $shootingTerakhir)
+                                    @php $usiaHari = max(0, \Illuminate\Support\Carbon::parse($shootingTerakhir)->diffInDays(now())); @endphp
+                                    <span class="badge {{ $usiaHari >= 14 ? 'badge-urgent' : ($usiaHari >= 7 ? 'badge-pending' : 'badge-netral') }}">H+{{ $usiaHari }}</span>
+                                @else
+                                    <span style="color: var(--text-muted);">-</span>
+                                @endif
+                            </td>
                             <td>@if ($app)<a href="{{ route('payments.show', $app) }}" class="btn btn-sm {{ $pay->bisaDitransfer() && $bolehKelola ? 'btn-brand' : '' }}">{{ $pay->bisaDitransfer() && $bolehKelola ? 'Transfer' : 'Lihat' }}</a>@endif</td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Belum ada honor Extras.</td></tr>
+                        <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Belum ada honor Extras.</td></tr>
                     @endforelse
                 </tbody>
             </table>
