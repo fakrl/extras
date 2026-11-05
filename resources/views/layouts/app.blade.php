@@ -178,6 +178,12 @@
         }
         .navbar-user-menu-dropdown a:hover,
         .navbar-user-menu-dropdown button:hover { background: var(--bg-card-hover); }
+        .navbar-user-menu-info {
+            padding: 8px 12px 10px; margin-bottom: 4px; border-bottom: 1px solid var(--border-color);
+            display: flex; flex-direction: column; gap: 2px;
+        }
+        .navbar-user-menu-info strong { font-size: 13.5px; color: var(--text-primary); }
+        .navbar-user-menu-info span { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
 
         .content { padding: 24px 28px; flex: 1; }
 
@@ -1165,6 +1171,13 @@
                                 @endif
                             </summary>
                             <div class="navbar-user-menu-dropdown">
+                                <div class="navbar-user-menu-info">
+                                    <strong>{{ auth()->user()->name }}</strong>
+                                    <span>{{ auth()->user()->label() }}</span>
+                                    @isset($saMonitoring)
+                                        <span><i class="ti ti-eye"></i> Mode: {{ \App\Models\User::LABELS[$saMonitoring['mode']] }}</span>
+                                    @endisset
+                                </div>
                                 @if (auth()->user()->role === 'extras')
                                     <a href="{{ route('extras.profile.edit') }}"><i class="ti ti-user"></i> Edit Profil</a>
                                 @endif
