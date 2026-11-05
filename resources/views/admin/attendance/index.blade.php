@@ -128,11 +128,13 @@
                 <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
                     @if ($bolehKelola)
                     @if ($absen && $absen->status_validasi === 'menunggu')
+                        <div class="korlap-validasi-aksi">
                         <form method="POST" action="{{ route('admin.absensi.validasi', $absen) }}">
                             @csrf
                             <button class="btn btn-brand" title="Setujui selfie kehadiran extras"><i class="ti ti-check"></i> Setujui Hadir</button>
                         </form>
-                        <button type="button" class="btn btn-danger-outline" style="margin-left: 12px;" onclick="document.getElementById('tolak-dialog-{{ $absen->id }}').showModal()"><i class="ti ti-x"></i> Tolak (tidak hadir)</button>
+                        <button type="button" class="btn btn-danger-outline" onclick="document.getElementById('tolak-dialog-{{ $absen->id }}').showModal()"><i class="ti ti-x"></i> Tolak (tidak hadir)</button>
+                        </div>
                         <dialog id="tolak-dialog-{{ $absen->id }}" style="border: 1px solid var(--border-color); border-radius: 10px; padding: 0; max-width: 360px; width: 90%;">
                             <form method="POST" action="{{ route('admin.absensi.tolak', $absen) }}" style="padding: 18px;">
                                 @csrf

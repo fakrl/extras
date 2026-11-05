@@ -2,6 +2,7 @@
     $absensi = fn ($projectId, $tanggalId) => route('admin.attendance.index', ['project' => $projectId, 'tanggal' => $tanggalId], false);
     $tag = $masuk ? 'button' : 'a';
     $klik = fn ($url) => $masuk ? 'type="submit" form="mon-masuk" name="ke" value="'.e($url).'"' : 'href="'.e($url).'"';
+    $adaAntrean = ! empty($menunggu) && $menunggu->isNotEmpty();
 
     $statKorlap = $statKorlap ?? [
         'proyek_aktif_count' => ($hari['Hari ini'] ?? collect())->concat($hari['Besok'] ?? collect())->count(),
@@ -20,7 +21,36 @@
     ];
 @endphp
 
-@if (!empty($menunggu) && $menunggu->isNotEmpty())
+@once
+@push('styles')
+<style>
+.korlap-dash-grid { display: grid; gap: 16px; grid-template-areas: "stats" "shooting" "menunggu" "catatan"; }
+.korlap-dash-grid.has-antrean { grid-template-areas: "menunggu" "stats" "shooting" "catatan"; }
+.korlap-dash-grid > * { min-width: 0; }
+@media (min-width: 1100px) {
+    .korlap-dash-grid, .korlap-dash-grid.has-antrean {
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+        grid-template-areas: "stats stats" "shooting menunggu" "shooting catatan";
+    }
+}
+@media (max-width: 640px) {
+    .korlap-pulse-strip {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        gap: 10px !important;
+        padding-bottom: 4px !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    .korlap-pulse-strip > .dash-stat-card {
+        flex: 0 0 230px !important;
+    }
+}
+</style>
+@endpush
+@endonce
+
+@if ($adaAntrean)
     <div class="korlap-alert-strip">
         <span style="display: inline-flex; align-items: center; gap: 8px;">
             <i class="ti ti-camera-check" style="font-size: 18px;"></i>
@@ -32,8 +62,9 @@
     </div>
 @endif
 
+<div class="korlap-dash-grid {{ $adaAntrean ? 'has-antrean' : '' }}">
 {{-- 4 Kartu Metrik Lapangan Korlap --}}
-<div class="dash-pulse-strip">
+<div class="dash-pulse-strip korlap-pulse-strip" style="grid-area: stats; margin-bottom: 0;">
     <div class="dash-stat-card" tabindex="0">
         <div>
             <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
@@ -136,8 +167,7 @@
     </div>
 </div>
 
-<div class="mon-dua">
-    <div class="card">
+    <div class="card" style="grid-area: shooting; margin: 0;">
         <div class="card-title">Shooting hari ini &amp; besok</div>
         @foreach ($hari as $judul => $jadwal)
             <div style="font-size: 13px; font-weight: 600; margin: {{ $loop->first ? '0' : '14px' }} 0 4px;">
@@ -176,7 +206,7 @@
                 @unless ($masuk)
                     <div style="padding: 0 0 10px; display: flex; justify-content: flex-end; gap: 8px;">
                         <a href="{{ route('admin.attendance.index', ['project' => $sd->casting_project_id, 'tanggal' => $sd->id]) }}" class="btn btn-sm btn-brand">
-                            <i class="ti ti-clipboard-check"></i> Kelola Absensi
+                            <i class="ti ti-clipboard-check"></i> Kelola Absensi Extras
                         </a>
                         <a href="{{ route('admin.callsheet.show', [$sd->castingProject, $sd->tanggal->toDateString()]) }}" class="btn btn-sm">
                             <i class="ti ti-file-text"></i> Callsheet
@@ -194,8 +224,7 @@
         @endforeach
     </div>
 
-    <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0;">
-        <div class="card" style="margin: 0;">
+    <div class="card" style="grid-area: menunggu; margin: 0;">
             <div class="card-title">Menunggu validasi @if ($menunggu->isNotEmpty())<span class="badge badge-netral" style="margin-left: 8px;">{{ $menunggu->count() }}</span>@endif</div>
             <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
             @forelse ($menunggu as $a)
@@ -223,7 +252,7 @@
             </div>
         </div>
 
-        <div class="card" style="margin: 0;">
+        <div class="card" style="grid-area: catatan; margin: 0;">
             <div class="card-title">Catatan lapangan terbaru</div>
             @forelse ($catatan as $c)
                 <div class="dash-row">
@@ -237,5 +266,4 @@
                 <div class="dash-sub" style="padding: 8px 0;">Belum ada catatan lapangan.</div>
             @endforelse
         </div>
-    </div>
 </div>
