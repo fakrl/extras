@@ -72,6 +72,6 @@ class JadwalController extends Controller
             ]
         );
 
-        return redirect()->route('client.jadwal.show', $project)->with('success', 'Jadwal disimpan.');
+        return redirect()->route('client.jadwal.show', $project)->with('status', 'Jadwal disimpan.');
     }
 }

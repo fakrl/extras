@@ -10,10 +10,6 @@
 <div style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">{{ $project->nama_produksi }}</div>
 <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Isi jadwal per tanggal shooting</div>
 
-@if (session('success'))
-    <div class="alert-success" style="margin-bottom: 16px;">{{ session('success') }}</div>
-@endif
-
 @forelse ($project->shootingDates->sortBy('tanggal') as $date)
     <div class="card" style="margin-bottom: 16px;">
         <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">
