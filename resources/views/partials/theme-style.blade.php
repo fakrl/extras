@@ -236,28 +236,27 @@
     .wajib { color: var(--danger); font-weight: 600; margin-left: 2px; }
     .wajib-ket { font-size: var(--fs-xs); color: var(--text-muted); margin: 0 0 12px; }
 
-    /* Alert / snackbar M3 */
-    .alert-success {
-        background: var(--md-primary-container, rgba(183,241,203,0.6));
-        color: var(--md-on-primary-container, var(--accent-strong));
-        border-left: 3px solid var(--md-primary, var(--accent));
-        border-radius: var(--md-shape-sm, var(--radius-md));
-        padding: 12px 16px; margin-bottom: 16px; font-size: var(--fs-base);
-    }
-    .alert-danger {
-        background: var(--md-error-container, rgba(239,68,68,0.12));
-        color: var(--md-on-error-container, var(--danger));
-        border-left: 3px solid var(--md-error, var(--danger));
-        border-radius: var(--md-shape-sm, var(--radius-md));
-        padding: 12px 16px; margin-bottom: 16px; font-size: var(--fs-base);
-    }
+    /* Alert / snackbar M3 — permukaan netral, warna lewat border + ikon */
+    .alert-success,
+    .alert-danger,
     .alert-info {
-        background: var(--md-custom-info-container, rgba(59,130,246,0.12));
-        color: var(--md-custom-on-info-container, var(--info));
-        border-left: 3px solid var(--md-custom-info, var(--info));
+        background: var(--md-surface-container, var(--bg-card));
+        color: var(--text-primary);
         border-radius: var(--md-shape-sm, var(--radius-md));
         padding: 12px 16px; margin-bottom: 16px; font-size: var(--fs-base);
     }
+    .alert-success { border-left: 3px solid var(--md-primary, var(--accent)); }
+    .alert-danger { border-left: 3px solid var(--md-error, var(--danger)); }
+    .alert-info { border-left: 3px solid var(--md-custom-info, var(--info)); }
+
+    .flash-banner { display: flex; align-items: flex-start; gap: 10px; }
+    .flash-banner > i:first-child { flex-shrink: 0; margin-top: 2px; }
+    .flash-banner > .flash-msg { flex: 1; }
+    .flash-close {
+        flex-shrink: 0; border: none; background: transparent; cursor: pointer;
+        color: inherit; opacity: 0.6; font-size: 18px; line-height: 1; padding: 0;
+    }
+    .flash-close:hover { opacity: 1; }
 
     /* Badge → Chip M3 */
     .badge { display: inline-flex; padding: 4px 12px; border-radius: var(--md-shape-sm); border: 1px solid transparent; font-size: var(--fs-xs); font-weight: 500; }
@@ -1890,3 +1889,14 @@
         margin: 0;
     }
 </style>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.flash-banner').forEach(function (el) {
+            var tutup = el.querySelector('[data-flash-close]');
+            if (tutup) tutup.addEventListener('click', function () { el.remove(); });
+            if (el.getAttribute('role') !== 'alert') {
+                setTimeout(function () { el.remove(); }, 5000);
+            }
+        });
+    });
+</script>

@@ -1215,21 +1215,35 @@
                     @endif
                 @endisset
                 @if (session('status'))
-                    <div class="alert-success">{{ session('status') }}</div>
+                    <div class="alert-success flash-banner" role="status" aria-live="polite">
+                        <i class="ti ti-circle-check" aria-hidden="true"></i>
+                        <span class="flash-msg">{{ session('status') }}</span>
+                        <button type="button" class="flash-close" aria-label="Tutup" data-flash-close>&times;</button>
+                    </div>
                 @endif
                 @if (session('info'))
-                    <div class="alert-info">{{ session('info') }}</div>
+                    <div class="alert-info flash-banner" role="status" aria-live="polite">
+                        <i class="ti ti-info-circle" aria-hidden="true"></i>
+                        <span class="flash-msg">{{ session('info') }}</span>
+                        <button type="button" class="flash-close" aria-label="Tutup" data-flash-close>&times;</button>
+                    </div>
                 @endif
                 @if (session('error'))
-                    <div class="alert-danger">{{ session('error') }} @if (session('bentrok_link')) <a href="{{ session('bentrok_link') }}" style="color: inherit; font-weight: 600;">Lihat pendaftaran yang bentrok <i class="ti ti-arrow-right"></i></a> @endif</div>
+                    <div class="alert-danger flash-banner" role="alert">
+                        <i class="ti ti-alert-circle" aria-hidden="true"></i>
+                        <span class="flash-msg">{{ session('error') }} @if (session('bentrok_link')) <a href="{{ session('bentrok_link') }}" style="color: inherit; font-weight: 600;">Lihat pendaftaran yang bentrok <i class="ti ti-arrow-right"></i></a> @endif</span>
+                        <button type="button" class="flash-close" aria-label="Tutup" data-flash-close>&times;</button>
+                    </div>
                 @endif
                 @if ($errors->any())
-                    <div class="alert-danger">
-                        <ul style="margin: 0; padding-left: 18px;">
+                    <div class="alert-danger flash-banner" role="alert">
+                        <i class="ti ti-alert-circle" aria-hidden="true"></i>
+                        <ul class="flash-msg" style="margin: 0; padding-left: 18px;">
                             @foreach ($errors->all() as $pesan)
                                 <li>{{ $pesan }}</li>
                             @endforeach
                         </ul>
+                        <button type="button" class="flash-close" aria-label="Tutup" data-flash-close>&times;</button>
                     </div>
                 @endif
 
