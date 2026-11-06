@@ -376,7 +376,7 @@
             <div class="lp-chapters-grid">
                 <div class="lp-chapter-col">
                     <h3 class="lp-chapter-title">Lengkapi profil lookbook</h3>
-                    <p class="lp-chapter-desc">Daftar akun gratis dan lengkapi data fisik: foto lookbook polos tampak depan dan samping, tinggi badan, perkiraan umur, dan nomor WhatsApp aktif.</p>
+                    <p class="lp-chapter-desc">Daftar akun gratis dan lengkapi data fisik: foto lookbook (disarankan tiga foto: close-up, setengah badan, seluruh badan), tinggi badan, usia, dan nomor WhatsApp aktif.</p>
                 </div>
 
                 <div class="lp-chapter-col">
