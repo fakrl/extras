@@ -150,7 +150,7 @@
                 'highlight' => $isPending,
                 'check' => $isPending ? ['name' => 'application_ids[]', 'class' => 'app-checkbox'] : null,
                 'lihat' => ['href' => route('client.extras.profil', $app->extras->user_id), 'data-profil-modal' => true, 'data-aksi-fungsi' => 'bukaModalKandidat', 'data-aksi-arg' => $app->id, 'data-aksi-label' => $isPending ? 'Pilih / Tolak' : 'Detail review'],
-                'aksi' => $isPending ? ['label' => 'Pilih', 'onclick' => "bukaModalKandidat({$app->id}, true)"] : null,
+                'aksi' => $isPending ? ['label' => 'Beri keputusan', 'onclick' => "bukaModalKandidat({$app->id}, true)"] : null,
                 'attrs' => [
                     'class' => 'kandidat-card' . ($isApproved ? ' talent-card-approved' : ''),
                     'data-appid' => $app->id,
@@ -371,6 +371,7 @@
                 '<option value="C">C</option>' +
                 '</select>' +
                 '<div style="flex-basis: 100%; font-size: var(--fs-xs); color: var(--text-muted);">A = terbaik/paling sesuai, B = sesuai, C = cukup (cadangan).</div>' +
+                '<div style="flex-basis: 100%; font-size: 11px; color: var(--text-muted);">Grade Anda ditampilkan ke Admin sebagai bahan pertimbangan, tidak mengubah fee.</div>' +
                 '<button type="button" class="btn btn-danger-outline" onclick="submitSingle(' + appId + ', \'reject\')">Tolak</button>' +
                 '<button type="button" class="btn btn-brand" onclick="submitSingle(' + appId + ', \'approve\')">Pilih</button>';
         } else if (kartu.dataset.reviewKeputusan) {
