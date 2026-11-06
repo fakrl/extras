@@ -63,7 +63,7 @@ class DemoLengkapSeeder extends Seeder
     private function staf(): void
     {
         foreach ([
-            ['super_admin', 'Fakhrul Mukhlisin', 'fakrul', 'fahrulmukhlisin13@gmail.com', ['is_protected' => true]],
+            ['super_admin', 'Fakhrul Mukhlisin', 'fakrul', 'fakrul@jbtb.test', ['is_protected' => true]],
             ['super_admin', 'Jessica Tanubrata', 'owner_jbtb', 'owner@jbtb.test'],
             ['admin', 'Rina Kartika', 'admin_rina', 'rina@jbtb.test', [], 1500000],
             ['admin', 'Yoga Pratama', 'admin_yoga', 'yoga@jbtb.test', [], 1500000],
@@ -79,6 +79,11 @@ class DemoLengkapSeeder extends Seeder
             $user = $this->akun($role, $nama, $username, $email, now()->subDays(120), $s[4] ?? []);
             if (isset($s[5])) {
                 $user->update(['honor_nominal' => $s[5]]);
+            }
+            if ($role === 'super_admin') {
+                $passwordAsli = Str::password(16);
+                $user->forceFill(['password' => Hash::make($passwordAsli)])->save();
+                $this->command?->info("Password Super Admin @{$username}: {$passwordAsli}");
             }
         }
 
@@ -330,6 +335,11 @@ class DemoLengkapSeeder extends Seeder
         $this->greenlight($aisyah, $andini, -4);
         $this->kontrak($pdf, $aisyah, $rina, true, -2);
         $this->bayar($aisyah, 'belum_dibayar', -2, $rina);
+        // QA: lolos, kontrak sengaja TIDAK dibuat manual lewat kontrak() - diisi otomatis oleh
+        // siapkanKontrakDanPembayaran() di akhir run(), hasilnya kontrak kosong, belum ada TTD sama sekali.
+        $tono2 = $this->daftar($p2, $kantor, 'tono_g', 'lolos', -4);
+        $this->deal($tono2, 300000, -3);
+        $this->greenlight($tono2, $andini, -2);
         $this->daftar($p2, $mhs, 'nadia_pu', 'ditolak', -5)->update(['alasan_tolak' => 'Tinggi tidak sesuai kriteria.']);
         $this->daftar($p2, $mhs, 'sari_mei', 'diundang', -1)->update(['diundang_at' => now()->subDay()]);
         $this->log($rina, 'INVITE_EXTRAS', "Admin Rina mengundang @sari_mei ke proyek '{$p2->nama_produksi}'", $this->app($p2, 'sari_mei'), -1);
@@ -357,13 +367,13 @@ class DemoLengkapSeeder extends Seeder
             $p3->adminAssignments()->create(['user_id' => $staf->id, 'assigned_by' => $fakrul->id, 'created_at' => now()->subDays(20)]);
         }
         $intanApp = null;
-        foreach (['yohanes_m', 'clara_b', 'melati_k', 'intan_r', 'pak_harto', 'wulan_s'] as $un) {
+        foreach (['yohanes_m', 'clara_b', 'melati_k', 'intan_r', 'pak_harto', 'wulan_s', 'bagas22'] as $un) {
             $a = $this->daftar($p3, $un === 'pak_harto' ? $dosen : $mhs3, $un, 'kontrak_ditandatangani', -15);
             $this->deal($a, $un === 'pak_harto' ? 300000 : 200000, -12);
             $this->greenlight($a, $rudy, -10);
             $this->kontrak($pdf, $a, $yoga, true, -7);
             $status = match ($un) {
-                'clara_b' => 'ditransfer', 'melati_k' => 'disengketakan', default => 'belum_dibayar'
+                'clara_b', 'bagas22' => 'ditransfer', 'melati_k' => 'disengketakan', default => 'belum_dibayar'
             };
             $pay = $this->bayar($a, $status, 0, $yoga);
             if ($un === 'intan_r') {
@@ -382,6 +392,7 @@ class DemoLengkapSeeder extends Seeder
                 'yohanes_m', 'clara_b' => $this->selfie($a, $hariIni, $bambang),
                 'melati_k', 'intan_r' => $this->selfie($a, $hariIni),
                 'pak_harto' => $a->attendances()->create(['event_shooting_date_id' => $hariIni->id, 'status' => 'tidak_hadir', 'dicatat_oleh' => $bambang->id, 'catatan' => 'Izin sakit, dikabari via telepon jam 06.00.', 'status_validasi' => 'tervalidasi', 'divalidasi_oleh' => $bambang->id, 'divalidasi_at' => now()]),
+                'bagas22' => $this->selfieDitolak($a, $hariIni, $bambang),
                 default => null,
             };
         }
@@ -470,6 +481,22 @@ class DemoLengkapSeeder extends Seeder
             $this->deal($a, 250000, $hari - 12);
             $this->kontrak($pdf, $a, $pic, true, $hari - 9);
             $this->bayar($a, 'dikonfirmasi_diterima', $hari + 5, $pic);
+
+            if ($kode === 'P9') {
+                // RF-08: batal mendadak ke-2 Fajar Nugroho di proyek berbeda, belum sampai ambang 3x (belum melanggar).
+                $batalFajar = $this->daftar($ev, $kelasEv, 'fajar_n', 'dibatalkan', $hari - 14);
+                $batalFajar->cancellations()->create(['dibatalkan_oleh' => 'extras', 'alasan' => 'Demam tinggi mendadak H-1.', 'is_mendadak' => true, 'created_at' => now()->addDays($hari - 13)]);
+                $this->u['fajar_n']->extrasProfile->recordCancellation();
+
+                // Audit item 4: Lestari pernah jadi PIC proyek ini, dicabut & diganti $pic, honor lamanya tetap tersimpan.
+                $asgLama = $ev->adminAssignments()->create(['user_id' => $this->u['admin_lestari']->id, 'assigned_by' => $fakrul->id, 'created_at' => now()->addDays($hari - 10)]);
+                $payrollLama = $asgLama->tandaiSelesai();
+                $asgLama->update(['completed_at' => now()->addDays($hari - 9)]);
+                $payrollLama->tandaiDibayar();
+                $asgLama->update(['dicabut_at' => now()->addDays($hari - 4)]);
+                $ev->adminAssignments()->create(['user_id' => $pic->id, 'assigned_by' => $fakrul->id, 'created_at' => now()->addDays($hari - 4)]);
+                $this->log($fakrul, 'UPDATE_PROJECT_PIC', "Super Admin mengganti PIC proyek '{$ev->nama_produksi}' dari Lestari Wulan ke {$pic->name}, riwayat honor Lestari tetap tersimpan", $ev, $hari - 4);
+            }
         }
         foreach ([
             ['P11', 'Series "Jalan Pulang" eps 1', $yoga, $andini, 45, 'Shooting 1,5 bulan lagi'],
@@ -480,8 +507,15 @@ class DemoLengkapSeeder extends Seeder
                 'brief_catatan' => "{$catatan} ({$kode} evergreen).", 'budget_total' => 2000000,
             ]);
             $this->jadwal($ev, [$hari], 'Jakarta');
-            $this->kelas($ev, 'Pemeran Pendukung', 6, 250000, ['Dewasa']);
+            $kelasEv = $this->kelas($ev, 'Pemeran Pendukung', 6, 250000, ['Dewasa']);
             $ev->adminAssignments()->create(['user_id' => $pic->id, 'assigned_by' => $fakrul->id]);
+
+            if ($kode === 'P11') {
+                // RF-08: batal mendadak ke-1 Fajar Nugroho (genap jadi 2 bareng P9, masih di bawah ambang 3x).
+                $batalFajar = $this->daftar($ev, $kelasEv, 'fajar_n', 'dibatalkan', -2);
+                $batalFajar->cancellations()->create(['dibatalkan_oleh' => 'extras', 'alasan' => 'Kecelakaan motor ringan menuju lokasi survei.', 'is_mendadak' => true, 'created_at' => now()->subDays(1)]);
+                $this->u['fajar_n']->extrasProfile->recordCancellation();
+            }
         }
 
         // BH.3: portofolio beranda, P1 + 2 arsip lama (satu izinkan nama client)
@@ -698,6 +732,20 @@ class DemoLengkapSeeder extends Seeder
         if ($korlap) {
             $this->log($korlap, 'VALIDATE_ATTENDANCE', "Korlap {$korlap->name} memvalidasi kehadiran extras {$user->name} di lokasi shooting", $absen, 0);
         }
+    }
+
+    /** Selfie dikirim lalu DITOLAK Korlap (beda dari selfie() yang cuma menunggu/divalidasi). */
+    private function selfieDitolak(ProjectApplication $a, EventShootingDate $tgl, User $korlap): void
+    {
+        $user = $a->extras->user;
+        $fotoPath = $this->png("absensi/{$a->id}/demo-selfie-ditolak.png", 'Selfie Demo');
+        $absen = $a->attendances()->create([
+            'event_shooting_date_id' => $tgl->id, 'status' => 'tidak_hadir', 'dicatat_oleh' => $user->id,
+            'foto_path' => $fotoPath, 'catatan' => 'Foto buram dan lokasi tidak terlihat jelas, mohon kirim ulang.',
+            'status_validasi' => 'tervalidasi', 'divalidasi_oleh' => $korlap->id, 'divalidasi_at' => now(),
+        ]);
+        $this->log($user, 'SUBMIT_SELFIE_ATTENDANCE', "Extras {$user->name} mengirimkan selfie absensi di lokasi shooting untuk proyek {$a->castingProject->nama_produksi}", $absen, 0);
+        $this->log($korlap, 'REJECT_ATTENDANCE', "Korlap {$korlap->name} menolak validasi absensi extras {$user->name}", $absen, 0);
     }
 
     private function biaya(CastingProject $p, User $oleh, array $rows): void

@@ -2,14 +2,20 @@
 
 namespace Tests\Feature;
 
+use App\Models\ActivityLog;
+use App\Models\Attendance;
 use App\Models\CastingProject;
 use App\Models\ClientReview;
+use App\Models\Contract;
 use App\Models\ExtrasProfile;
+use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\ProjectApplication;
 use App\Models\User;
 use Database\Seeders\DemoLengkapSeeder;
 use Database\Seeders\ExtrasCategorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
@@ -38,13 +44,13 @@ class DemoSeederTest extends TestCase
             ['admin' => 4, 'client' => 5, 'extras' => 24, 'korlap' => 2, 'super_admin' => 2],
             User::withTrashed()->selectRaw('role, count(*) c')->groupBy('role')->orderBy('role')->pluck('c', 'role')->all()
         );
-        $this->assertTrue(User::where('email', 'fahrulmukhlisin13@gmail.com')->value('is_protected'));
+        $this->assertTrue(User::where('email', 'fakrul@jbtb.test')->value('is_protected'));
         $this->assertSoftDeleted('users', ['username' => 'lama_dihapus']);
 
         $p = fn (string $awalan) => CastingProject::where('nama_produksi', 'like', $awalan.'%')->firstOrFail();
 
         $this->assertEquals(
-            ['deal' => 1, 'dibatalkan' => 1, 'diajukan' => 1, 'diundang' => 1, 'diajukan_ke_client' => 2, 'direview_admin' => 1, 'ditolak' => 1, 'kontrak_ditandatangani' => 1, 'lolos' => 1, 'nego_fee' => 2],
+            ['deal' => 1, 'dibatalkan' => 1, 'diajukan' => 1, 'diundang' => 1, 'diajukan_ke_client' => 2, 'direview_admin' => 1, 'ditolak' => 1, 'kontrak_ditandatangani' => 1, 'lolos' => 2, 'nego_fee' => 2],
             ProjectApplication::where('casting_project_id', $p('Iklan "Minuman')->id)
                 ->selectRaw('status_partisipasi, count(*) c')->groupBy('status_partisipasi')->orderBy('status_partisipasi')->pluck('c', 'status_partisipasi')->all()
         );
@@ -88,7 +94,7 @@ class DemoSeederTest extends TestCase
         Storage::fake('local');
         $this->seed([ExtrasCategorySeeder::class, DemoLengkapSeeder::class]);
 
-        foreach (['fakrul', 'admin_rina', 'korlap_bambang', 'client_andini', 'dimas_rk'] as $username) {
+        foreach (['admin_rina', 'korlap_bambang', 'client_andini', 'dimas_rk'] as $username) {
             $user = User::where('username', $username)->firstOrFail();
 
             $this->post('/login', ['email' => $username, 'password' => 'password'])->assertRedirect($user->dashboardUrl());
@@ -96,6 +102,68 @@ class DemoSeederTest extends TestCase
 
             $this->post('/logout');
         }
+    }
+
+    /** Super Admin TIDAK boleh pakai password demo bersama, harus random per seed. */
+    public function test_super_admin_password_random_bukan_password_bersama(): void
+    {
+        Storage::fake('local');
+        $this->seed([ExtrasCategorySeeder::class, DemoLengkapSeeder::class]);
+
+        $sa = User::where('role', 'super_admin')->get();
+        $this->assertCount(2, $sa);
+        $sa->each(fn ($u) => $this->assertFalse(Hash::check('password', $u->password)));
+        $this->assertNotSame($sa[0]->password, $sa[1]->password);
+    }
+
+    /** QA: tiap tahap pipeline casting harus ada minimal 1 data demo, biar QA bisa langsung navigasi. */
+    public function test_sepuluh_tahap_pipeline_casting_ada_datanya(): void
+    {
+        Storage::fake('local');
+        $this->seed([ExtrasCategorySeeder::class, DemoLengkapSeeder::class]);
+
+        // 1. Lowongan dibuka, belum ada pendaftar.
+        $this->assertTrue(CastingProject::where('status', 'dibuka')->whereDoesntHave('applications')->exists());
+
+        // 2. Satu proyek punya pendaftar diajukan DAN ditolak sekaligus.
+        $p2 = CastingProject::where('nama_produksi', 'like', 'Iklan "Minuman%')->firstOrFail();
+        $this->assertTrue($p2->applications()->where('status_partisipasi', 'diajukan')->exists());
+        $this->assertTrue($p2->applications()->where('status_partisipasi', 'ditolak')->exists());
+
+        // 3. Kandidat diajukan_ke_client, Client belum bertindak sama sekali (belum ada clientReviews).
+        $this->assertTrue(ProjectApplication::where('status_partisipasi', 'diajukan_ke_client')->whereDoesntHave('clientReviews')->exists());
+
+        // 4. nego_fee dengan riwayat >= 2 ronde untuk 1 pendaftaran, belum deal.
+        $this->assertTrue(ProjectApplication::where('status_partisipasi', 'nego_fee')->has('feeNegotiations', '>=', 2)->exists());
+
+        // 5. Kontrak lolos, belum ada TTD sama sekali (bukan separuh TTD).
+        $this->assertTrue(Contract::whereNull('ttd_admin_signature_path')->whereNull('ttd_extras_signature_path')
+            ->whereHas('projectApplication', fn ($q) => $q->where('status_partisipasi', 'lolos'))->exists());
+
+        // 6. Kontrak TTD lengkap dengan fee_final terisi (klausul kuasa butuh nominal valid).
+        $this->assertTrue(Contract::whereNotNull('ttd_admin_signature_path')->whereNotNull('ttd_extras_signature_path')
+            ->whereHas('projectApplication', fn ($q) => $q->where('fee_final', '>', 0))->exists());
+
+        // 7. Absensi 3 state sekaligus di 1 proyek: menunggu, tervalidasi-hadir, tervalidasi-tolak.
+        $p3 = CastingProject::where('nama_produksi', 'like', 'Series "Kampus Biru"%')->firstOrFail();
+        $absensiP3 = Attendance::whereHas('projectApplication', fn ($q) => $q->where('casting_project_id', $p3->id));
+        $this->assertTrue((clone $absensiP3)->where('status_validasi', 'menunggu')->exists());
+        $this->assertTrue((clone $absensiP3)->where('status_validasi', 'tervalidasi')->where('status', 'hadir')->exists());
+        $this->assertTrue((clone $absensiP3)->where('status_validasi', 'tervalidasi')->where('status', 'tidak_hadir')->exists());
+        $this->assertTrue(ActivityLog::where('action', 'REJECT_ATTENDANCE')->exists());
+
+        // 8. Payment 3 state: belum_dibayar, ditransfer, dikonfirmasi_diterima.
+        $this->assertTrue(Payment::where('status', 'belum_dibayar')->exists());
+        $this->assertTrue(Payment::where('status', 'ditransfer')->exists());
+        $this->assertTrue(Payment::where('status', 'dikonfirmasi_diterima')->exists());
+
+        // 9. Invoice belum lunas dan lunas.
+        $this->assertTrue(Invoice::where('status_bayar', '!=', 'lunas')->exists());
+        $this->assertTrue(Invoice::where('status_bayar', 'lunas')->exists());
+
+        // 10. Proyek ditutup dengan pendaftaran selesai_produksi (riwayat arsip).
+        $this->assertTrue(CastingProject::where('status', 'ditutup')
+            ->whereHas('applications', fn ($q) => $q->where('status_partisipasi', 'selesai_produksi'))->exists());
     }
 
     public function test_guard_production(): void
