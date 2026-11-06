@@ -216,7 +216,7 @@
             <a href="{{ route('admin.projects.index') }}" class="dash-row"><span><i class="ti ti-folder"></i> Kelola Proyek</span><span class="dash-sub"><i class="ti ti-arrow-right"></i></span></a>
             <a href="{{ route('admin.akun.extras') }}" class="dash-row"><span><i class="ti ti-users"></i> Kelola Akun Extras &amp; Rekap</span><span class="dash-sub"><i class="ti ti-arrow-right"></i></span></a>
             <a href="{{ route('admin.attendance.index') }}" class="dash-row"><span><i class="ti ti-camera"></i> Absensi Lapangan</span><span class="dash-sub"><i class="ti ti-arrow-right"></i></span></a>
-            <a href="{{ route('admin.work-history') }}" class="dash-row"><span><i class="ti ti-wallet"></i> Riwayat & Honor Saya</span><span class="dash-sub"><i class="ti ti-arrow-right"></i></span></a>
+            <a href="{{ route('admin.work-history') }}" class="dash-row"><span><i class="ti ti-wallet"></i> Honor & Reimburse Saya</span><span class="dash-sub"><i class="ti ti-arrow-right"></i></span></a>
         </div>
     </div>
 
@@ -233,7 +233,7 @@
 @elseif (auth()->user()->bisaSebagaiKorlap())
     <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
         <a href="{{ route('admin.attendance.index') }}" class="btn btn-brand"><i class="ti ti-camera"></i> Absensi Lapangan</a>
-        <a href="{{ route('admin.work-history') }}" class="btn">Riwayat & Honor Saya</a>
+        <a href="{{ route('admin.work-history') }}" class="btn">Honor & Reimburse Saya</a>
     </div>
     @if ($punyaTugas)
         @include('partials.korlap-ringkasan', ['masuk' => false])
@@ -244,7 +244,7 @@
     <div class="alert-info">
         Akses kamu sebagai {{ auth()->user()->role }} terbatas ke pencatatan penugasan & riwayat kerja.
     </div>
-    <a href="{{ route('admin.work-history') }}" class="btn">Riwayat & Honor Saya</a>
+    <a href="{{ route('admin.work-history') }}" class="btn">Honor & Reimburse Saya</a>
 @endif
 @endsection
 

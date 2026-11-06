@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Riwayat & Honor Saya')
+@section('title', 'Honor & Reimburse Saya')
 
 @section('content')
 @if (auth()->user()->isSuperAdmin() && ! auth()->user()->modeSa())

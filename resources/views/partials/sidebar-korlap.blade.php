@@ -10,5 +10,5 @@
     <i class="ti ti-clipboard-check"></i> Absensi Lapangan
 </a>
 <a href="{{ url('/admin/riwayat-kerja') }}" class="sidebar-link {{ str_starts_with($route, 'admin/riwayat-kerja') ? 'active' : '' }}">
-    <i class="ti ti-history"></i> Riwayat &amp; Honor
+    <i class="ti ti-history"></i> Honor &amp; Reimburse
 </a>
