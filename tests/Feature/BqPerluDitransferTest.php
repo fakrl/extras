@@ -45,7 +45,7 @@ class BqPerluDitransferTest extends TestCase
             ->assertViewHas('ringkasan', fn ($r) => $r['bayar']['jumlah'] === $jumlahRina)
             ->assertViewHas('tahapan', fn ($t) => $t['selesai']['perlu'] === $jumlahRina);
 
-        $sa = User::where('username', 'fakrul')->firstOrFail();
+        $sa = User::where('username', 'owner_jbtb')->firstOrFail();
         $this->actingAs($sa)->get(route('super-admin.monitoring.admin'))->assertOk()
             ->assertViewHas('ringkasan', fn ($r) => $r['bayar']['jumlah'] === $jumlah)
             ->assertViewHas('tahapan', fn ($t) => $t['selesai']['perlu'] === $jumlah);

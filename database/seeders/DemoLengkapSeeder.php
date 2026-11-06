@@ -63,8 +63,7 @@ class DemoLengkapSeeder extends Seeder
     private function staf(): void
     {
         foreach ([
-            ['super_admin', 'Fakhrul Mukhlisin', 'fakrul', 'fakrul@jbtb.test', ['is_protected' => true]],
-            ['super_admin', 'Jessica Tanubrata', 'owner_jbtb', 'owner@jbtb.test'],
+            ['super_admin', 'Jessica Tanubrata', 'owner_jbtb', 'owner@jbtb.test', ['is_protected' => true]],
             ['admin', 'Rina Kartika', 'admin_rina', 'rina@jbtb.test', [], 1500000],
             ['admin', 'Yoga Pratama', 'admin_yoga', 'yoga@jbtb.test', [], 1500000],
             ['admin', 'Lestari Wulan', 'admin_lestari', 'lestari@jbtb.test', [], 1000000],
@@ -80,14 +79,13 @@ class DemoLengkapSeeder extends Seeder
             if (isset($s[5])) {
                 $user->update(['honor_nominal' => $s[5]]);
             }
-            if ($role === 'super_admin') {
-                $passwordAsli = Str::password(16);
-                $user->forceFill(['password' => Hash::make($passwordAsli)])->save();
-                $this->command?->info("Password Super Admin @{$username}: {$passwordAsli}");
-            }
         }
 
-        $sa = $this->u['fakrul'];
+        if ($email = config('demo.sa_email')) {
+            $this->akun('super_admin', 'Developer', config('demo.sa_username'), $email, now()->subDays(120), ['is_protected' => true]);
+        }
+
+        $sa = $this->u['owner_jbtb'];
         $this->log($sa, 'CREATE_USER', 'Super Admin membuat akun Admin Rina Kartika (@admin_rina)', $this->u['admin_rina'], -120);
         $this->log($sa, 'CREATE_USER', 'Super Admin membuat akun Admin Yoga Pratama (@admin_yoga)', $this->u['admin_yoga'], -120);
         $this->log($sa, 'CREATE_USER', 'Super Admin membuat akun Korlap Bambang Susilo (@korlap_bambang)', $this->u['korlap_bambang'], -120);
@@ -226,7 +224,7 @@ class DemoLengkapSeeder extends Seeder
 
     private function proyek(PdfGeneratorService $pdf, KeuanganService $keuangan): void
     {
-        [$fakrul, $rina, $yoga, $bambang, $dedi] = [$this->u['fakrul'], $this->u['admin_rina'], $this->u['admin_yoga'], $this->u['korlap_bambang'], $this->u['korlap_dedi']];
+        [$fakrul, $rina, $yoga, $bambang, $dedi] = [$this->u['owner_jbtb'], $this->u['admin_rina'], $this->u['admin_yoga'], $this->u['korlap_bambang'], $this->u['korlap_dedi']];
         [$andini, $rudy, $maya] = [$this->u['client_andini'], $this->u['client_rudy'], $this->u['client_maya']];
 
         // P1: selesai
@@ -543,8 +541,7 @@ class DemoLengkapSeeder extends Seeder
         $nego = fn (string $un) => route('extras.negotiations.show', $this->app($p2, $un));
 
         foreach ([
-            ['fakrul', 'Pengajuan Proyek Baru', "Client Maya mengajukan proyek '{$p4->nama_produksi}', menunggu ACC.", route('super-admin.dashboard'), false],
-            ['fakrul', 'Pembayaran Disengketakan', "Sari Meilani menyengketakan honor proyek '{$p1->nama_produksi}'.", $bayar($p1, 'sari_mei'), false],
+            ['owner_jbtb', 'Pembayaran Disengketakan', "Sari Meilani menyengketakan honor proyek '{$p1->nama_produksi}'.", $bayar($p1, 'sari_mei'), false],
             ['owner_jbtb', 'Pengajuan Proyek Baru', "Client Maya mengajukan proyek '{$p4->nama_produksi}', menunggu ACC.", route('super-admin.dashboard'), false],
             ['admin_rina', 'Counter Fee dari Extras', "rehan_x mengajukan counter Rp 200.000 di proyek '{$p2->nama_produksi}'. Giliran kamu.", route('admin.negotiations.show', $this->app($p2, 'rehan_x')), false],
             ['admin_rina', 'Pembayaran Disengketakan', "Sari Meilani: \"nominal kurang 1 hari\" di proyek '{$p1->nama_produksi}'.", $bayar($p1, 'sari_mei'), false],

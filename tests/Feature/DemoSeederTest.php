@@ -41,10 +41,10 @@ class DemoSeederTest extends TestCase
         Http::assertNothingSent();
 
         $this->assertEquals(
-            ['admin' => 4, 'client' => 5, 'extras' => 24, 'korlap' => 2, 'super_admin' => 2],
+            ['admin' => 4, 'client' => 5, 'extras' => 24, 'korlap' => 2, 'super_admin' => 1],
             User::withTrashed()->selectRaw('role, count(*) c')->groupBy('role')->orderBy('role')->pluck('c', 'role')->all()
         );
-        $this->assertTrue(User::where('email', 'fakrul@jbtb.test')->value('is_protected'));
+        $this->assertTrue(User::where('email', 'owner@jbtb.test')->value('is_protected'));
         $this->assertSoftDeleted('users', ['username' => 'lama_dihapus']);
 
         $p = fn (string $awalan) => CastingProject::where('nama_produksi', 'like', $awalan.'%')->firstOrFail();
@@ -104,16 +104,37 @@ class DemoSeederTest extends TestCase
         }
     }
 
-    /** Super Admin TIDAK boleh pakai password demo bersama, harus random per seed. */
-    public function test_super_admin_password_random_bukan_password_bersama(): void
+    /** Semua akun demo, termasuk Super Admin, pakai password bersama 'password' - gampang diakses buat QA/Gemini. */
+    public function test_super_admin_password_sama_seperti_akun_demo_lain(): void
     {
         Storage::fake('local');
         $this->seed([ExtrasCategorySeeder::class, DemoLengkapSeeder::class]);
 
         $sa = User::where('role', 'super_admin')->get();
-        $this->assertCount(2, $sa);
-        $sa->each(fn ($u) => $this->assertFalse(Hash::check('password', $u->password)));
-        $this->assertNotSame($sa[0]->password, $sa[1]->password);
+        $this->assertCount(1, $sa);
+        $sa->each(fn ($u) => $this->assertTrue(Hash::check('password', $u->password)));
+    }
+
+    /** Tanpa DEMO_SA_EMAIL, akun SA pribadi developer tidak dibuat sama sekali (default/paling umum). */
+    public function test_akun_sa_dari_env_tidak_dibuat_kalau_config_kosong(): void
+    {
+        Storage::fake('local');
+        $this->seed([ExtrasCategorySeeder::class, DemoLengkapSeeder::class]);
+
+        $this->assertDatabaseMissing('users', ['email' => 'dev@example.test']);
+    }
+
+    /** DEMO_SA_EMAIL diisi -> akun SA tambahan dibuat, is_protected, password 'password' seperti akun demo lain. */
+    public function test_akun_sa_dari_env_dibuat_kalau_config_diisi(): void
+    {
+        Storage::fake('local');
+        config(['demo.sa_email' => 'dev@example.test', 'demo.sa_username' => 'dev_local']);
+        $this->seed([ExtrasCategorySeeder::class, DemoLengkapSeeder::class]);
+
+        $user = User::where('email', 'dev@example.test')->firstOrFail();
+        $this->assertSame('dev_local', $user->username);
+        $this->assertTrue($user->is_protected);
+        $this->assertTrue(Hash::check('password', $user->password));
     }
 
     /** QA: tiap tahap pipeline casting harus ada minimal 1 data demo, biar QA bisa langsung navigasi. */
