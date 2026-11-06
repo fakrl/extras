@@ -6,10 +6,6 @@
 <h1 class="auth-title">Lupa Kata Sandi</h1>
 <p class="auth-subtitle">Masukkan email atau username akunmu, kami kirim link untuk atur ulang kata sandi.</p>
 
-@if (session('status'))
-    <div class="alert-success">{{ session('status') }}</div>
-@endif
-
 <form method="POST" action="{{ route('password.email') }}" novalidate>
     @csrf
     <label for="forgot-email">Email atau username <span class="wajib" aria-hidden="true">*</span></label>

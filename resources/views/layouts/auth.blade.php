@@ -85,6 +85,20 @@
             <img src="{{ asset('images/logo-jbtb.jpg') }}" alt="Logo JBTB" class="logo">
             <span>JBTB Casting</span>
         </a>
+        @if (session('status'))
+            <div class="alert-success flash-banner" role="status" aria-live="polite">
+                <i class="ti ti-circle-check" aria-hidden="true"></i>
+                <span class="flash-msg">{{ session('status') }}</span>
+                <button type="button" class="flash-close" aria-label="Tutup" data-flash-close>&times;</button>
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="alert-danger flash-banner" role="alert">
+                <i class="ti ti-alert-circle" aria-hidden="true"></i>
+                <span class="flash-msg">{{ session('error') }}</span>
+                <button type="button" class="flash-close" aria-label="Tutup" data-flash-close>&times;</button>
+            </div>
+        @endif
         @yield('content')
     </main>
     @stack('scripts')

@@ -6,10 +6,6 @@
 <h1 class="auth-title">Masuk</h1>
 <p class="auth-subtitle">Masuk ke akunmu untuk melanjutkan.</p>
 
-@if (session('status'))
-    <div class="alert-success">{{ session('status') }}</div>
-@endif
-
 @include('partials.google-tombol')
 
 <form method="POST" action="{{ route('login') }}" novalidate>
