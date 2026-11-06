@@ -724,7 +724,7 @@ class DemoLengkapSeeder extends Seeder
         $absen = $a->attendances()->create([
             'event_shooting_date_id' => $tgl->id, 'status' => 'hadir', 'dicatat_oleh' => $user->id,
             'foto_path' => $fotoPath,
-            'catatan' => 'Selfie Absensi Extras (Hybrid On-Site GPS)',
+            'catatan' => 'Selfie absensi kehadiran Extras di lokasi shooting',
             'status_validasi' => $korlap ? 'tervalidasi' : 'menunggu',
             'divalidasi_oleh' => $korlap?->id, 'divalidasi_at' => $korlap ? now() : null,
         ]);
