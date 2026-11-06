@@ -30,7 +30,7 @@
 <div class="dash-pulse-strip">
     <div class="dash-stat-card" tabindex="0">
         <div>
-            <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
+            <div style="font-size: 11.5px; letter-spacing: 0.02em; color: var(--text-muted); font-weight: 600;">
                 <i class="ti ti-users"></i> Populasi Akun
             </div>
             @php
@@ -88,7 +88,7 @@
 
     <div class="dash-stat-card" tabindex="0">
         <div>
-            <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
+            <div style="font-size: 11.5px; letter-spacing: 0.02em; color: var(--text-muted); font-weight: 600;">
                 <i class="ti ti-movie"></i> Ekosistem Proyek
             </div>
             @php
@@ -148,7 +148,7 @@
     <div class="dash-stat-card" tabindex="0">
         <div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
+                <div style="font-size: 11.5px; letter-spacing: 0.02em; color: var(--text-muted); font-weight: 600;">
                     <i class="ti ti-receipt-2"></i> Finansial &amp; Margin
                 </div>
                 <span class="badge" style="background: rgba(21, 128, 61, 0.12); color: #15803D; font-weight: 700; font-size: 11px; padding: 2px 7px;">
@@ -211,7 +211,7 @@
     <div class="dash-stat-card is-right-aligned" tabindex="0">
         <div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
+                <div style="font-size: 11.5px; letter-spacing: 0.02em; color: var(--text-muted); font-weight: 600;">
                     <i class="ti ti-filter"></i> Funnel Partisipasi
                 </div>
                 <span style="font-size: 11px; font-weight: 700; color: var(--text-secondary);">
