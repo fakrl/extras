@@ -252,6 +252,7 @@
                    autocomplete="name" placeholder="Contoh: Rina Wulandari"
                    @class(['input-error' => $errors->has('nama_asli')])>
             @error('nama_asli')<span class="field-error">{{ $message }}</span>@enderror
+            <p class="field-hint">NIK dan data rekening diperlukan saat kontrak kerja dibuat, bukan saat melamar.</p>
             <p class="field-hint">Dipakai di kontrak, tidak tampil ke publik</p>
 
             <label for="username">Nama Panggung / Username <span class="wajib" aria-hidden="true">*</span></label>

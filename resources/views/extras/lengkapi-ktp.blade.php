@@ -17,6 +17,8 @@
     <form method="POST" action="{{ route('extras.kontrak.simpan-ktp', $application) }}">
         @csrf
 
+        <p class="field-hint">NIK dan data rekening diperlukan saat kontrak kerja dibuat, bukan saat melamar.</p>
+
         <div class="form-row">
             <div>
                 <label>NIK (16 digit) <span class="wajib" aria-hidden="true">*</span></label>
