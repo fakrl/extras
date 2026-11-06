@@ -202,7 +202,7 @@
             $app->status_partisipasi === 'lolos' && $app->contract?->ttd_admin_signature_path => ['label' => 'Lihat Kontrak', 'href' => route('contracts.show', $app)],
             $app->status_partisipasi === 'lolos' && $app->contract => ['label' => 'Tanda Tangan Kontrak', 'href' => route('contracts.show', $app)],
             $app->status_partisipasi === 'kontrak_ditandatangani' || (bool) $app->payment => ['label' => 'Pembayaran', 'href' => route('payments.show', $app)],
-            default => null,
+            default => ['label' => 'Lihat detail', 'onclick' => "document.getElementById('detail-{$app->id}').showModal()"],
         };
     @endphp
     @include('partials.extras-card', [

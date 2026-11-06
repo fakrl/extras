@@ -57,6 +57,23 @@ class BaKartuExtrasTest extends TestCase
             ->assertSee('ti-circle-check', false);
     }
 
+    public function test_status_tanpa_aksi_khusus_dapat_tombol_lihat_detail(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $project = CastingProject::factory()->create(['admin_id' => $admin->id]);
+        $ditolak = $this->lamaran($project, 'kandidat_ditolak', [], 'ditolak');
+        $dibatalkan = $this->lamaran($project, 'kandidat_batal', [], 'dibatalkan');
+        $selesai = $this->lamaran($project, 'kandidat_selesai', [], 'selesai_produksi');
+
+        $response = $this->actingAs($admin)->get(route('admin.projects.applicants', $project));
+
+        $response->assertOk();
+        $this->assertSame(3, substr_count($response->getContent(), '>Lihat detail<'));
+        foreach ([$ditolak, $dibatalkan, $selesai] as $app) {
+            $response->assertSee('id="detail-'.$app->id.'"', false);
+        }
+    }
+
     public function test_lineup_filter_tag_dan_urut_paling_cocok_lintas_halaman(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
