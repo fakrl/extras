@@ -238,7 +238,6 @@
                         <strong style="color: var(--text-primary); display: block; font-size: 13.5px;">{{ $a->projectApplication?->extras?->user?->name ?? 'Extras' }}</strong>
                         <div class="dash-sub" style="font-size: 12px;">{{ $a->projectApplication?->castingProject?->nama_produksi }}</div>
                         <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
-                            <span class="badge badge-netral" style="font-size: 10.5px; padding: 1px 6px;"><i class="ti ti-map-pin"></i> GPS Match</span>
                             <span class="dash-sub" style="font-size: 11px;">{{ $a->created_at->format('H:i') }} &middot; {{ $a->created_at->translatedFormat('d M') }}</span>
                         </div>
                     </div>

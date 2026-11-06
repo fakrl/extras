@@ -335,7 +335,7 @@
                 <div>
                     <h1 class="lp-hero-title">Casting extras film dan iklan di Jabodetabek</h1>
                     <p class="lp-hero-desc">
-                        JBTB Casting menghubungkan rumah produksi dengan talenta extras di Jabodetabek. Pendaftaran profil gratis, kontrak kerja digital, presensi di lokasi syuting dengan foto selfie dan GPS, serta catatan honor transparan di satu tempat.
+                        JBTB Casting menghubungkan rumah produksi dengan talenta extras di Jabodetabek. Pendaftaran profil gratis, kontrak kerja digital, presensi kehadiran di lokasi syuting dengan foto selfie, serta catatan honor transparan di satu tempat.
                     </p>
                     <div class="cta-row">
                         @guest
@@ -386,7 +386,7 @@
 
                 <div class="lp-chapter-col">
                     <h3 class="lp-chapter-title">Syuting dan pencairan honor</h3>
-                    <p class="lp-chapter-desc">Tanda tangani kontrak kerja digital sebelum syuting. Hadir di lokasi dengan presensi foto selfie dan GPS. Setelah produksi selesai, pantau status pembayaran dan konfirmasi penerimaan honor di aplikasi.</p>
+                    <p class="lp-chapter-desc">Tanda tangani kontrak kerja digital sebelum syuting. Hadir di lokasi dan lakukan presensi dengan foto selfie. Setelah produksi selesai, pantau status pembayaran dan konfirmasi penerimaan honor di aplikasi.</p>
                 </div>
             </div>
         </div>
@@ -626,7 +626,7 @@
                                 Kebutuhan extras untuk produksi film?
                             </h3>
                             <p class="lp-inquiry-desc">
-                                Dapatkan data talent dengan spesifikasi fisik jelas, koordinasi lapangan oleh korlap di lokasi set, presensi kehadiran berbasis selfie dan GPS, serta administrasi kontrak kerja terpusat.
+                                Dapatkan data talent dengan spesifikasi fisik jelas, koordinasi lapangan oleh korlap di lokasi set, presensi kehadiran berbasis foto selfie, serta administrasi kontrak kerja terpusat.
                             </p>
                         </div>
                         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
