@@ -72,6 +72,9 @@
                 <li>Tanggal syuting: {{ $application->castingProject->shootingDates->sortBy('tanggal')->map(fn ($d) => $d->tanggal->translatedFormat('d M Y'))->implode(', ') ?: '-' }}</li>
             </ul>
         </div>
+        <div class="card" style="margin-bottom: 12px; font-size: 13.5px;">
+            @include('contracts._klausul-kuasa', ['application' => $application])
+        </div>
         @if ($bolehKelola)
         <x-confirm-form action="{{ route('contracts.sign', $application) }}" message="Simpan tanda tangan ini? Kontrak akan mengikat begitu kedua pihak sudah TTD dan tidak bisa diubah lagi.">
             @php($cekSyarat = "var f=this.closest('form'); f.querySelector('[type=submit]').disabled = Array.from(f.querySelectorAll('.syarat-ttd')).some(function(c){return !c.checked;});")

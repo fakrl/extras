@@ -90,6 +90,20 @@ class CyKlausulKuasaPotonganTest extends TestCase
         $this->assertSame($isiLama, Storage::disk('local')->get($path));
     }
 
+    public function test_halaman_kontrak_menampilkan_klausul_kuasa_sebelum_ttd(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $application = $this->aplikasiLolos($admin);
+        $application->contract()->create([]);
+
+        $response = $this->actingAs($application->extras->user)->get(route('contracts.show', $application));
+
+        $response->assertOk();
+        $response->assertSee('Kuasa dan Imbalan Jasa Agensi');
+        $response->assertSee('25%');
+        $response->assertSee('375.000');
+    }
+
     public function test_extras_tanda_tangan_ditolak_tanpa_centang_kuasa(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
