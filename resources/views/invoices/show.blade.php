@@ -19,6 +19,10 @@
     Client / PH: <strong>{{ $castingProject->namaClient() }}</strong>
 </p>
 
+@if ($isClient)
+    <div class="alert-info" style="margin-bottom: 16px;">Pembayaran dilakukan di luar sistem. Setelah pembayaran diterima, Admin JBTB mencatat pelunasan dan statusnya berubah di halaman ini.</div>
+@endif
+
 @if (! $invoice)
     <div class="card">
         <div style="font-size: 14px; font-weight: 500; margin-bottom: 6px;">Invoice belum tersedia</div>
