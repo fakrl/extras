@@ -9,6 +9,14 @@
     $tahap = $p->tahap();
     $korlap = $p->adminAssignments->filter(fn ($a) => $a->user?->isKorlap());
     $stafLain = $p->adminAssignments->reject(fn ($a) => $a->user?->isKorlap());
+    // QA: "Lowongan: Dibuka" bisa menyesatkan kalau sebenarnya tidak tampil ke Extras.
+    $alasanLowonganTakTerima = match (true) {
+        $p->status !== 'dibuka' => null,
+        $p->client_request_status !== 'disetujui' => 'client belum menyetujui',
+        $p->deadline && $p->deadline->isBefore(today()) => 'deadline sudah lewat',
+        $p->kuotaPenuh() => 'kuota penuh',
+        default => null,
+    };
 @endphp
 
 <div style="margin-bottom: 12px;">
@@ -110,7 +118,12 @@
             ] as $label => $value)
                 <div class="entity-card-row">
                     <span class="entity-card-row-label">{{ $label }}</span>
-                    <span class="entity-card-row-value">{{ $value }}</span>
+                    <span class="entity-card-row-value">
+                        {{ $value }}
+                        @if ($label === 'Lowongan' && $alasanLowonganTakTerima)
+                            <span style="font-size: var(--fs-xs); color: var(--text-muted);">({{ $alasanLowonganTakTerima }})</span>
+                        @endif
+                    </span>
                 </div>
             @endforeach
             @foreach (['Grup koordinasi' => $p->link_grup] as $label => $link)
