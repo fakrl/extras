@@ -29,6 +29,9 @@
     @php
         $isFull = $project->classes->every(fn ($c) => $c->sisaKuota() === 0);
         $searchTerms = strtolower($project->nama_produksi . ' ' . $project->classes->pluck('nama_kelas')->join(' '));
+        // Samakan definisi "sisa" dengan baris per-peran (sisaKuota()/kuota_kelas), bukan terisi/kuota level-proyek.
+        $kuotaPeran = $project->classes->isNotEmpty() ? $project->classes->sum('kuota_kelas') : $project->kuota;
+        $sisaPeran = $project->classes->isNotEmpty() ? $project->classes->sum(fn ($c) => $c->sisaKuota()) : max(0, $project->kuota - $project->terisi);
     @endphp
     <div class="card casting-card-item" style="margin-bottom: 0; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;"
          data-search="{{ $searchTerms }}"
@@ -78,7 +81,7 @@
                 </div>
                 <div>
                     <span style="font-size: 10.5px; text-transform: uppercase; color: var(--text-muted); display: block; font-weight: 600;">Sisa Kuota Peran</span>
-                    <strong style="color: var(--accent-strong); font-size: 12px;">{{ $project->terisi }}/{{ $project->kuota }} terisi</strong>
+                    <strong style="color: var(--accent-strong); font-size: 12px;">{{ $sisaPeran }}/{{ $kuotaPeran }} tersisa</strong>
                 </div>
                 <div>
                     <span style="font-size: 10.5px; text-transform: uppercase; color: var(--text-muted); display: block; font-weight: 600;">Pilihan Peran</span>

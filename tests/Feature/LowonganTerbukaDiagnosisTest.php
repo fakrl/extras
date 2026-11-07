@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\CastingProject;
+use App\Models\ExtrasProfile;
+use App\Models\ProjectApplication;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -59,9 +61,46 @@ class LowonganTerbukaDiagnosisTest extends TestCase
 
         // Extras benar-benar melihatnya di halaman /extras/lowongan.
         $extrasUser = User::factory()->create(['role' => 'extras']);
-        \App\Models\ExtrasProfile::create(['user_id' => $extrasUser->id]);
+        ExtrasProfile::create(['user_id' => $extrasUser->id]);
         $this->actingAs($extrasUser)->get(route('extras.projects.index'))
             ->assertOk()
             ->assertSee('Iklan Mahasiswa Layar Senja');
+    }
+
+    /**
+     * BUG QA: kartu lowongan Extras berlabel "Sisa Kuota Peran" tapi nilainya "terisi/kuota"
+     * (project-level), kontradiksi dengan baris per-peran "Sisa X dari Y" (sisaKuota()/kuota_kelas).
+     * Kartu sekarang pakai definisi sama: jumlah sisaKuota() semua kelas / jumlah kuota_kelas.
+     */
+    public function test_kartu_lowongan_tidak_kontradiksi_dengan_baris_sisa_per_peran(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $client = User::factory()->create(['role' => 'client']);
+
+        $project = CastingProject::create([
+            'admin_id' => $admin->id,
+            'client_id' => $client->id,
+            'nama_produksi' => 'Proyek Kuota Konsisten',
+            'client_request_status' => 'disetujui',
+            'status' => 'dibuka',
+            'deadline' => today()->addDays(5),
+            'kuota' => 99,
+        ]);
+        $kelas = $project->classes()->create(['nama_kelas' => 'Figuran A', 'kuota_kelas' => 3]);
+
+        ProjectApplication::create([
+            'casting_project_id' => $project->id,
+            'casting_project_class_id' => $kelas->id,
+            'extras_id' => ExtrasProfile::factory()->create()->id,
+            'status_partisipasi' => 'lolos',
+        ]);
+
+        $extrasUser = User::factory()->create(['role' => 'extras']);
+        ExtrasProfile::create(['user_id' => $extrasUser->id]);
+
+        $this->actingAs($extrasUser)->get(route('extras.projects.index'))
+            ->assertOk()
+            ->assertSee('2/3 tersisa')
+            ->assertSee('Sisa 2 dari 3');
     }
 }
