@@ -21,6 +21,13 @@ class AdminRingkasan
         $url = fn (array $q) => route('admin.projects.index', $q, false);
 
         return [
+            'pelamar_baru' => [
+                'label' => 'Pelamar baru menunggu review',
+                'jumlah' => ProjectApplication::whereIn('status_partisipasi', ['diajukan', 'direview_admin'])->tap($proyek)->count(),
+                // peserta=diajukan match persis satu status (CastingProjectController::index() pakai where(), bukan whereIn);
+                // sama seperti TAHAP['ajuan'] di bawah (hitung 2 status, filter cuma 'diajukan') - pola yang sudah ada di file ini.
+                'url' => $url(['peserta' => 'diajukan']),
+            ],
             'nego' => [
                 'label' => 'Nego menunggu balasan Admin',
                 'jumlah' => ProjectApplication::where('status_partisipasi', 'nego_fee')
