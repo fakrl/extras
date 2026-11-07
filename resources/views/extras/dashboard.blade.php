@@ -332,7 +332,7 @@
                 <div style="min-width: 0; flex: 1;">
                     <span class="badge {{ $t['badge'] }}">{{ $t['label'] }}</span>
                     @isset($t['app'])
-                        <a href="#pendaftaran-{{ $t['app'] }}" class="dash-sub" style="display: block; margin-top: 4px; color: inherit;">{!! $t['teks'] !!} <i class="ti ti-arrow-down" style="color: var(--accent);"></i></a>
+                        <a href="#pendaftaran-{{ $t['app'] }}" class="dash-sub" style="display: block; margin-top: 4px; color: inherit;">{!! $t['teks'] !!}</a>
                     @else
                         <div class="dash-sub" style="margin-top: 4px;">{!! $t['teks'] !!}</div>
                     @endisset
