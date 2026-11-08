@@ -48,8 +48,12 @@ class CastingProjectController extends Controller
             ->where('casting_project_id', '!=', $castingProject->id) ?? collect();
         $undangan = $request->user()->extrasProfile?->applications()->with('castingProjectClass')
             ->where('casting_project_id', $castingProject->id)->where('status_partisipasi', 'diundang')->first();
+        // Lamaran aktif (bukan diundang/ditolak/dibatalkan) - kalau ada, tampilkan status, bukan form daftar lagi.
+        $lamaranAktif = $request->user()->extrasProfile?->applications()->with('castingProjectClass')
+            ->where('casting_project_id', $castingProject->id)
+            ->whereNotIn('status_partisipasi', ['diundang', 'ditolak', 'dibatalkan'])->first();
 
-        return view('extras.projects.show', compact('castingProject', 'tagSaya', 'bentrok', 'undangan'));
+        return view('extras.projects.show', compact('castingProject', 'tagSaya', 'bentrok', 'undangan', 'lamaranAktif'));
     }
 
     private function tagSaya(Request $request): array

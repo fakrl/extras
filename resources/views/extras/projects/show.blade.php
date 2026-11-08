@@ -71,6 +71,18 @@
             @endif
             @include('partials.undangan-aksi', ['app' => $undangan, 'alasan' => true, 'konfirmasi' => session()->has('konfirmasi_bentrok')])
         </div>
+        @elseif ($lamaranAktif)
+        <div class="card" style="margin: 0;">
+            <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Kamu sudah mendaftar ke proyek ini</div>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
+                <x-status-badge :model="$lamaranAktif" />
+                @if ($lamaranAktif->castingProjectClass)
+                    <span class="badge badge-netral">Peran: {{ $lamaranAktif->castingProjectClass->nama_kelas }}</span>
+                @endif
+            </div>
+            <p style="margin: 0 0 12px; font-size: 12.5px; color: var(--text-muted);">Mendaftar {{ $lamaranAktif->created_at->translatedFormat('d M Y') }}</p>
+            <a href="{{ route('extras.dashboard') }}#pendaftaran-{{ $lamaranAktif->id }}" class="btn btn-brand">Lihat Status Pendaftaran</a>
+        </div>
         @elseif (! $castingProject->menerimaPendaftaran())
         <div class="alert-info" style="margin: 0;"><i class="ti ti-info-circle"></i> Proyek ini sudah tidak menerima pendaftaran (ditutup, kuota penuh, atau lewat deadline).</div>
         @else
