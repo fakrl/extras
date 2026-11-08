@@ -248,8 +248,8 @@
                     'aplikasi' => $app,
                     'favorit' => true,
                     'sub' => implode(' · ', array_filter([$app->extras->user->name ?? null, $app->grade ? 'Grade '.$app->grade : null])),
-                    'lihat' => ['href' => route('admin.extras.profil', $app->extras->user_id), 'data-profil-modal' => true, 'data-aksi-url' => $diLineup = route('admin.projects.applicants', [$p, 'status' => $app->status_partisipasi]).'#app-'.$app->id, 'data-aksi-label' => 'Di Lineup'],
-                    'aksi' => ['label' => 'Di Lineup', 'href' => $diLineup],
+                    'lihat' => ['href' => route('admin.extras.profil', $app->extras->user_id), 'data-profil-modal' => true, 'data-aksi-url' => $diLineup = route('admin.projects.applicants', [$p, 'status' => $app->status_partisipasi]).'#app-'.$app->id, 'data-aksi-label' => 'Proses'],
+                    'aksi' => ['label' => 'Proses', 'href' => $diLineup],
                 ])
             @endforeach
         </div>
