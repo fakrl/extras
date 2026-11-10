@@ -12,6 +12,7 @@ class PublicExtrasProfileController extends Controller
     {
         $profile = ExtrasProfile::where('share_token', $token)->firstOrFail();
         $profile->load(['categories', 'user']);
+        $this->abortUnlessAktif($profile);
 
         $fotosArr = $profile->fotoTambahan()->keys()->map(fn ($slot) => [
             'url' => route('public.extras.foto-tambahan', [$token, $slot]),
@@ -24,6 +25,7 @@ class PublicExtrasProfileController extends Controller
     public function foto(string $token): StreamedResponse
     {
         $profile = ExtrasProfile::where('share_token', $token)->firstOrFail();
+        $this->abortUnlessAktif($profile);
         abort_unless($profile->foto_profil_path, 404);
 
         return Storage::disk('local')->response($profile->foto_profil_path);
@@ -32,9 +34,19 @@ class PublicExtrasProfileController extends Controller
     public function fotoTambahan(string $token, int $slot): StreamedResponse
     {
         $profile = ExtrasProfile::where('share_token', $token)->firstOrFail();
+        $this->abortUnlessAktif($profile);
         $path = $profile->fotoTambahan()->get($slot);
         abort_unless($path, 404);
 
         return Storage::disk('local')->response($path);
+    }
+
+    /**
+     * Akun nonaktif/melanggar/soft-deleted TIDAK boleh tampil publik lewat token share.
+     * User::user() soft-deleted otomatis null (global scope SoftDeletes), jadi ikut ter-404 di sini.
+     */
+    private function abortUnlessAktif(ExtrasProfile $profile): void
+    {
+        abort_unless($profile->user?->status === 'aktif', 404);
     }
 }
