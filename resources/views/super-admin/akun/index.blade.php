@@ -204,6 +204,7 @@
         </div>
     @endunless
 </div>
+<p style="font-size: var(--fs-xs); color: var(--text-muted); margin: 0 0 8px;">Akun Anda tidak ditampilkan di tabel ini.</p>
 
 @if ($modeExtras)
     <div class="xgrid">
