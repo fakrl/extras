@@ -59,6 +59,15 @@
         Halo, <strong class="font-editorial" style="font-size: 16px;">{{ auth()->user()->name }}</strong>! Cek lowongan casting terbaru dan pantau status pendaftaran kamu di sini.
     </p>
 
+    @if ($jumlahBatalMendadak >= 2)
+        <div class="next-action-callout nac-warning" style="margin: 0 0 14px;">
+            <div class="nac-content">
+                <div class="nac-title"><i class="ti ti-alert-triangle"></i> Peringatan Batal Mendadak</div>
+                <div class="nac-desc">Kamu tercatat {{ $jumlahBatalMendadak }} kali batal mendadak. Batal mendadak ke-3 menandai akunmu melanggar dan akunmu akan diblokir.</div>
+            </div>
+        </div>
+    @endif
+
     {{-- Strip 4 Kartu Ringkasan Karir & Honor Saya --}}
     <div class="dash-pulse-strip" style="margin-bottom: 16px;">
         <div class="dash-stat-card" tabindex="0">
@@ -166,33 +175,39 @@
                 <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
                     <i class="ti ti-award"></i> Skor Kehadiran
                 </div>
-                @php
-                    $skorHadir = min(100, max(0, $statKarirExtras['skor_kehadiran']));
-                    $ringHadirLen = round(($skorHadir / 100) * 188.5, 1);
-                    $colorHadir = $skorHadir >= 80 ? '#15803D' : ($skorHadir >= 50 ? '#D97706' : '#DC2626');
-                @endphp
-                <div class="dash-viz-body">
-                    <div class="viz-ring-wrap" title="Skor Kehadiran: {{ $skorHadir }}%">
-                        <svg class="viz-ring-svg" viewBox="0 0 76 76" aria-hidden="true">
-                            <circle cx="38" cy="38" r="30" stroke="var(--surface-2, rgba(0,0,0,0.06))" stroke-width="7" fill="none" />
-                            <circle cx="38" cy="38" r="30" stroke="{{ $colorHadir }}" stroke-width="7" stroke-dasharray="{{ $ringHadirLen }} 188.5" stroke-linecap="round" fill="none" />
-                        </svg>
-                        <div class="viz-center-label">
-                            <span class="viz-center-num">{{ $skorHadir }}%</span>
-                            <span class="viz-center-sub">Hadir</span>
+                @if ($statKarirExtras['skor_kehadiran'] === null)
+                    <div class="dash-viz-body">
+                        <div class="dash-sub" style="padding: 10px 0; color: var(--text-muted);">Belum ada data</div>
+                    </div>
+                @else
+                    @php
+                        $skorHadir = min(100, max(0, $statKarirExtras['skor_kehadiran']));
+                        $ringHadirLen = round(($skorHadir / 100) * 188.5, 1);
+                        $colorHadir = $skorHadir >= 80 ? '#15803D' : ($skorHadir >= 50 ? '#D97706' : '#DC2626');
+                    @endphp
+                    <div class="dash-viz-body">
+                        <div class="viz-ring-wrap" title="Skor Kehadiran: {{ $skorHadir }}%">
+                            <svg class="viz-ring-svg" viewBox="0 0 76 76" aria-hidden="true">
+                                <circle cx="38" cy="38" r="30" stroke="var(--surface-2, rgba(0,0,0,0.06))" stroke-width="7" fill="none" />
+                                <circle cx="38" cy="38" r="30" stroke="{{ $colorHadir }}" stroke-width="7" stroke-dasharray="{{ $ringHadirLen }} 188.5" stroke-linecap="round" fill="none" />
+                            </svg>
+                            <div class="viz-center-label">
+                                <span class="viz-center-num">{{ $skorHadir }}%</span>
+                                <span class="viz-center-sub">Hadir</span>
+                            </div>
+                        </div>
+                        <div class="viz-legend">
+                            <div class="viz-legend-row">
+                                <span class="viz-legend-label"><span class="viz-dot" style="background: #15803D;"></span>Hadir</span>
+                                <strong class="viz-legend-val">{{ $statKarirExtras['hadir_count'] }}/{{ $statKarirExtras['total_absen'] }}</strong>
+                            </div>
+                            <div class="viz-legend-row">
+                                <span class="viz-legend-label"><span class="viz-dot" style="background: #DC2626;"></span>Batal</span>
+                                <strong class="viz-legend-val">{{ $statKarirExtras['batal_mendadak'] }}</strong>
+                            </div>
                         </div>
                     </div>
-                    <div class="viz-legend">
-                        <div class="viz-legend-row">
-                            <span class="viz-legend-label"><span class="viz-dot" style="background: #15803D;"></span>Hadir</span>
-                            <strong class="viz-legend-val">{{ $statKarirExtras['hadir_count'] }}/{{ $statKarirExtras['total_absen'] }}</strong>
-                        </div>
-                        <div class="viz-legend-row">
-                            <span class="viz-legend-label"><span class="viz-dot" style="background: #DC2626;"></span>Batal</span>
-                            <strong class="viz-legend-val">{{ $statKarirExtras['batal_mendadak'] }}</strong>
-                        </div>
-                    </div>
-                </div>
+                @endif
             </div>
             <span class="info-hint" title="Klik untuk rincian / kunci pop-up"><i class="ti ti-info-circle"></i></span>
             <div class="dash-hover-popover">

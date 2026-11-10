@@ -123,7 +123,7 @@ class DashboardController extends Controller
         // Skor Kehadiran
         $totalAbsen = $riwayatAbsensi->count();
         $hadirPositif = $riwayatAbsensi->where('status', 'hadir')->count();
-        $skorKehadiran = $totalAbsen > 0 ? (int) round(($hadirPositif / $totalAbsen) * 100) : 100;
+        $skorKehadiran = $totalAbsen > 0 ? (int) round(($hadirPositif / $totalAbsen) * 100) : null;
 
         $statKarirExtras = [
             'proyek_selesai' => $appSelesai,
