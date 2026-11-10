@@ -449,4 +449,21 @@ class CastingProject extends Model
 
         return false;
     }
+
+    /** Versi query-level dari isUrgent(), dipakai supaya hitungan tab & hasil paginasi selalu konsisten. */
+    public function scopeUrgent($query)
+    {
+        $belumPenuh = fn ($q) => $q->where(fn ($w) => $w
+            ->whereHas('classes', fn ($c) => $c->whereRaw(
+                '(select count(*) from project_applications pa where pa.casting_project_class_id = casting_project_classes.id and pa.status_partisipasi not in (\'ditolak\', \'dibatalkan\')) < casting_project_classes.kuota_kelas'
+            ))
+            ->orWhere(fn ($o) => $o->whereDoesntHave('classes')->whereRaw(
+                '(select count(*) from project_applications pa2 where pa2.casting_project_id = casting_projects.id and pa2.status_partisipasi not in (\'ditolak\', \'dibatalkan\')) < casting_projects.kuota'
+            )));
+
+        return $query->where(fn ($w) => $w->where('is_urgent', true)
+            ->orWhere(fn ($w2) => $w2
+                ->whereHas('shootingDates', fn ($d) => $d->whereDate('tanggal', '>=', today())->whereDate('tanggal', '<=', today()->addDays(3)))
+                ->where($belumPenuh)));
+    }
 }

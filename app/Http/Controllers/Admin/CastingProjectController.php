@@ -140,8 +140,7 @@ class CastingProjectController extends Controller
             ->when($cari !== '', fn ($q) => $q->where(fn ($w) => $w->where('nama_produksi', 'like', "%{$cari}%")
                 ->orWhereHas('client', fn ($c) => $c->where('name', 'like', "%{$cari}%")->orWhere('nama_perusahaan', 'like', "%{$cari}%"))
                 ->orWhere(fn ($k) => $k->cariKode($cari))))
-            ->when($request->boolean('urgent'), fn ($q) => $q->where(fn ($w) => $w->where('is_urgent', true)
-                ->orWhereHas('shootingDates', fn ($d) => $d->whereDate('tanggal', '>=', today())->whereDate('tanggal', '<=', today()->addDays(3)))));
+            ->when($request->boolean('urgent'), fn ($q) => $q->urgent());
         $diTahap = fn ($q, string $t) => $t === 'menunggu_acc'
             ? $q->whereIn('client_request_status', ['menunggu_acc', 'ditolak'])
             : $q->diTahap($t);
@@ -173,10 +172,6 @@ class CastingProjectController extends Controller
         $projects = $dasar->orderByDesc('is_urgent')
             ->paginate(PerHalaman::dari($request, PerHalaman::KARTU))
             ->withQueryString();
-
-        if ($request->boolean('urgent')) {
-            $projects->setCollection($projects->getCollection()->filter(fn ($p) => $p->isUrgent())->values());
-        }
 
         $perlu = AdminRingkasan::perluPerProyek($projects->pluck('id')->all());
 
