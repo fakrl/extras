@@ -147,15 +147,17 @@ class DashboardController extends Controller
             'super_admin_total' => (int) ($userCounts->super_admin_total ?? 0),
         ];
 
-        $proyekCounts = CastingProject::query()
-            ->selectRaw("
-                COUNT(*) as total,
-                SUM(CASE WHEN client_request_status = 'menunggu_acc' THEN 1 ELSE 0 END) as menunggu_acc,
-                SUM(CASE WHEN client_request_status = 'disetujui' AND status IN ('draft', 'buka_lowongan', 'proses_seleksi', 'terbuka') THEN 1 ELSE 0 END) as seleksi,
-                SUM(CASE WHEN status = 'shooting_berjalan' THEN 1 ELSE 0 END) as shooting,
-                SUM(CASE WHEN status = 'selesai' THEN 1 ELSE 0 END) as selesai,
-                SUM(CASE WHEN client_request_status = 'ditolak' OR status = 'dibatalkan' THEN 1 ELSE 0 END) as batal
-            ")->first();
+        // CastingProject::scopeDiTahap() = satu-satunya sumber kebenaran tahap siklus
+        // proyek (sama dengan yang dipakai tab admin/projects) - kolom `status` cuma
+        // enum dibuka/ditutup, BUKAN status siklus, jadi tidak bisa dicek raw seperti dulu.
+        $proyekCounts = (object) [
+            'total' => CastingProject::count(),
+            'menunggu_acc' => CastingProject::diTahap('menunggu_acc')->count(),
+            'seleksi' => CastingProject::diTahap('mendatang')->count(),
+            'shooting' => CastingProject::diTahap('berjalan')->count(),
+            'selesai' => CastingProject::diTahap('selesai')->count(),
+            'batal' => CastingProject::where('client_request_status', 'ditolak')->count(),
+        ];
 
         $targetKuota = (int) CastingProjectClass::whereHas('castingProject', fn ($q) => $q->where('client_request_status', 'disetujui')->whereNotIn('status', ['selesai', 'dibatalkan']))->sum('kuota_kelas');
         $terisiKuota = (int) ProjectApplication::whereIn('status_partisipasi', ['deal', 'diajukan_ke_client', 'lolos', 'kontrak_ditandatangani', 'selesai_produksi'])
