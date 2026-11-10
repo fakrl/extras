@@ -29,9 +29,9 @@ class DashboardController extends Controller
         $perluDinego = ProjectApplication::where('status_partisipasi', 'nego_fee')->tap($lamaranPic)->count();
 
         // Rincian Breakdown Hover Proyek & Pendaftar
+        // Tahap proyek dari scopeDiTahap(), sama persis dengan kartu Ekosistem Proyek Super Admin.
         $totalProyekAktifAgency = CastingProject::where('status', 'dibuka')->count();
-        $proyekBukaLowongan = CastingProject::where('status', 'dibuka')->where('client_request_status', 'disetujui')->tap($proyekPic)->where('status', 'buka_lowongan')->count();
-        $proyekSeleksi = CastingProject::where('status', 'dibuka')->where('client_request_status', 'disetujui')->tap($proyekPic)->where('status', 'proses_seleksi')->count();
+        $proyekLowonganSeleksi = CastingProject::diTahap('mendatang')->tap($proyekPic)->count();
         $proyekShooting = CastingProject::diTahap('berjalan')->tap($proyekPic)->count();
 
         $pendaftarMenungguReview = ProjectApplication::whereIn('status_partisipasi', ['diajukan', 'menunggu_review'])->tap($lamaranPic)->count();
@@ -41,8 +41,7 @@ class DashboardController extends Controller
         $breakdownAdmin = [
             'proyek_pic' => $proyekAktif,
             'proyek_agency' => $totalProyekAktifAgency,
-            'proyek_lowongan' => $proyekBukaLowongan,
-            'proyek_seleksi' => $proyekSeleksi,
+            'proyek_lowongan_seleksi' => $proyekLowonganSeleksi,
             'proyek_shooting' => $proyekShooting,
             'pendaftar_review' => $pendaftarMenungguReview,
             'pendaftar_nego' => $perluDinego,

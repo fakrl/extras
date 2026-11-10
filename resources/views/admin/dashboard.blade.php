@@ -115,8 +115,7 @@
                         </div>
                         <div class="popover-row"><span>Proyek Saya (PIC)</span><strong>{{ $breakdownAdmin['proyek_pic'] }}</strong></div>
                         <div class="popover-row"><span>Total Proyek Agency</span><strong>{{ $breakdownAdmin['proyek_agency'] }}</strong></div>
-                        <div class="popover-row"><span>Buka Lowongan</span><strong>{{ $breakdownAdmin['proyek_lowongan'] }}</strong></div>
-                        <div class="popover-row"><span>Proses Seleksi</span><strong>{{ $breakdownAdmin['proyek_seleksi'] }}</strong></div>
+                        <div class="popover-row"><span>Buka Lowongan & Seleksi</span><strong>{{ $breakdownAdmin['proyek_lowongan_seleksi'] }}</strong></div>
                         <div class="popover-row"><span>Shooting Berjalan</span><strong>{{ $breakdownAdmin['proyek_shooting'] }}</strong></div>
                         <div style="margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--border-color);">
                             <a href="{{ route('admin.projects.index', ['status' => 'dibuka']) }}" class="btn btn-sm btn-tonal" style="width: 100%; justify-content: center; font-size: 11.5px; gap: 4px;">Buka Proyek Aktif <i class="ti ti-arrow-right"></i></a>
