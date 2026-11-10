@@ -355,7 +355,7 @@
                             <td><x-status-badge :model="$pay" /></td>
                             <td>
                                 @if ($pay->status === 'belum_dibayar' && $shootingTerakhir)
-                                    @php $usiaHari = max(0, \Illuminate\Support\Carbon::parse($shootingTerakhir)->diffInDays(now())); @endphp
+                                    @php $usiaHari = (int) floor(max(0, \Illuminate\Support\Carbon::parse($shootingTerakhir)->diffInDays(now()))); @endphp
                                     <span class="badge {{ $usiaHari >= 14 ? 'badge-urgent' : ($usiaHari >= 7 ? 'badge-pending' : 'badge-netral') }}">H+{{ $usiaHari }}</span>
                                 @else
                                     <span style="color: var(--text-muted);">-</span>

@@ -42,5 +42,7 @@ class HonorExtrasUsiaBadgeTest extends TestCase
         $r = $this->actingAs($admin)->get(route('admin.projects.show', [$project, 'tab' => 'keuangan']))->assertOk();
 
         $r->assertSee('H+10');
+        $this->assertMatchesRegularExpression('/H\+\d+(?!\.\d)/', $r->getContent());
+        $this->assertDoesNotMatchRegularExpression('/H\+\d+\.\d+/', $r->getContent());
     }
 }
