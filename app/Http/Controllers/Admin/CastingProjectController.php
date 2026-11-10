@@ -554,6 +554,15 @@ class CastingProjectController extends Controller
     {
         if ($oldUserId && $oldUserId !== $newUserId) {
             $castingProject->adminAssignments()->where('user_id', $oldUserId)->whereNull('dicabut_at')->update(['dicabut_at' => now()]);
+
+            $namaBaru = $newUserId ? User::find($newUserId)?->name : null;
+            $pesan = $namaBaru
+                ? "Penugasanmu di proyek '{$castingProject->namaKode()}' dialihkan ke {$namaBaru}."
+                : "Penugasanmu di proyek '{$castingProject->namaKode()}' telah dicabut.";
+            try {
+                User::find($oldUserId)?->notify(new InAppNotification('Penugasan Proyek Dialihkan', $pesan, route('admin.projects.show', $castingProject)));
+            } catch (\Throwable) {
+            }
         }
 
         if ($newUserId) {

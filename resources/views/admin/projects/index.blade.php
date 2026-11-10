@@ -114,7 +114,11 @@
 @else
 @if ($projects->isEmpty())
     <div class="card" style="text-align:center; color: var(--text-muted); padding: 30px 0;">
-        {{ array_filter(request()->except(['per', 'page'])) ? 'Tidak ada proyek yang sesuai filter.' : 'Belum ada proyek casting. Klik "+ Buat Proyek" untuk membuat yang pertama.' }}
+        {{ array_filter(request()->except(['per', 'page']))
+            ? 'Tidak ada proyek yang sesuai filter.'
+            : ($isSuperAdmin
+                ? 'Belum ada proyek casting. Klik "+ Buat Proyek" untuk membuat yang pertama.'
+                : 'Belum ada proyek yang kamu kelola. Proyek yang sebelumnya kamu pegang mungkin sudah dialihkan.') }}
     </div>
 @else
     <div class="table-container tp-wrap @if (! $tahap) sembunyi-selesai @endif" id="projects-grid">
