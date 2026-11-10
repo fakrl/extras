@@ -159,9 +159,15 @@ class DashboardController extends Controller
             'batal' => CastingProject::where('client_request_status', 'ditolak')->count(),
         ];
 
-        $targetKuota = (int) CastingProjectClass::whereHas('castingProject', fn ($q) => $q->where('client_request_status', 'disetujui')->whereNotIn('status', ['selesai', 'dibatalkan']))->sum('kuota_kelas');
+        // Target/terisi kuota: proyek disetujui yang BELUM di tahap 'selesai' (scopeDiTahap(),
+        // sama dengan kartu Ekosistem Proyek) - kolom `status` cuma enum dibuka/ditutup, bukan
+        // status siklus, jadi whereNotIn('status', [...]) lama no-op dan tidak exclude apa pun.
+        $targetKuota = (int) CastingProjectClass::whereHas('castingProject', fn ($q) => $q->where('client_request_status', 'disetujui'))
+            ->whereDoesntHave('castingProject', fn ($q) => $q->diTahap('selesai'))
+            ->sum('kuota_kelas');
         $terisiKuota = (int) ProjectApplication::whereIn('status_partisipasi', ['deal', 'diajukan_ke_client', 'lolos', 'kontrak_ditandatangani', 'selesai_produksi'])
-            ->whereHas('castingProject', fn ($q) => $q->where('client_request_status', 'disetujui')->whereNotIn('status', ['selesai', 'dibatalkan']))->count();
+            ->whereHas('castingProject', fn ($q) => $q->where('client_request_status', 'disetujui'))
+            ->whereDoesntHave('castingProject', fn ($q) => $q->diTahap('selesai'))->count();
         $fulfillmentRate = $targetKuota > 0 ? (int) round(($terisiKuota / $targetKuota) * 100) : 0;
 
         $statProyekKuota = [
