@@ -100,28 +100,28 @@ class DemoLengkapSeeder extends Seeder
 
         // username, nama, email, gender, usia, tinggi, tags, grade, daftar (hari lalu), bahasa, pengalaman, rate card
         foreach ([
-            ['dimas_rk', 'Dimas Rizky Kurniawan', 'dimas', 'pria', 23, 172, ['Dewasa muda', 'Mahasiswa', 'Naik motor', 'Sunda'], 'A', 90, 'Indonesia, Sunda', 'Aktif teater kampus. Pernah jadi figuran mahasiswa di 3 FTV.', 250000],
-            ['sari_mei', 'Sari Meilani', 'sari', 'wanita', 21, 160, ['Dewasa muda', 'Berhijab', 'Mahasiswa'], 'B', 90, 'Indonesia', 'Model katalog hijab untuk brand lokal.', 225000],
-            ['bagas22', 'Bagas Pratama', 'bagas', 'pria', 22, 175, ['Dewasa muda', 'Atlet', 'Naik motor', 'Jawa'], 'A', 90, 'Indonesia, Jawa', 'Atlet futsal kampus. Pernah jadi extras iklan minuman olahraga.', 250000],
-            ['nadia_pu', 'Nadia Putri', 'nadia', 'wanita', 24, 158, ['Dewasa muda', 'Rambut panjang', 'Menari'], 'C', 60, 'Indonesia', 'Penari tradisional sanggar. Baru mulai casting figuran.', 200000],
-            ['rehan_x', 'Rehan Saputra', 'rehan', 'pria', 19, 169, ['Remaja', 'Mahasiswa', 'Naik motor'], null, 60, 'Indonesia', 'Baru pertama ikut casting, aktif konten TikTok.', 200000],
-            ['citra_ay', 'Citra Ayu', 'citra', 'wanita', 25, 163, ['Dewasa muda', 'Berhijab', 'Menari'], 'B', 60, 'Indonesia', 'Pernah jadi extras video klip dan iklan ramadan.', 200000],
-            ['pak_harto', 'Suharto Wibowo', 'harto', 'pria', 58, 168, ['Orang Tua', 'Jawa', 'Nyetir mobil'], 'A', 90, 'Indonesia, Jawa', 'Pensiunan guru. Sering jadi bapak-bapak warga di film layar lebar.', 300000],
-            ['bu_ningsih', 'Ningsih Rahayu', 'ningsih', 'wanita', 52, 155, ['Orang Tua', 'Berhijab', 'Jawa'], null, 90, 'Indonesia, Jawa', 'Ibu rumah tangga, pernah jadi pedagang pasar di sinetron.', 200000],
-            ['opa_liem', 'Liem Hok Tjoan', 'liem', 'pria', 67, 165, ['Lansia', 'Chinese/Tionghoa'], null, 20, 'Indonesia, Mandarin', 'Pemilik toko kelontong, baru daftar karena diajak cucu.', 300000],
-            ['kevin_t', 'Kevin Tanoto', 'kevin', 'pria', 27, 178, ['Dewasa', 'Chinese/Tionghoa', 'Pekerja kantoran'], 'B', 60, 'Indonesia, Inggris', 'Karyawan swasta. Pernah jadi extras iklan bank dan properti.', 250000],
-            ['aisyah_f', 'Aisyah Fauziah', 'aisyah', 'wanita', 30, 162, ['Dewasa', 'Berhijab', 'Pekerja kantoran', 'Timur Tengah'], null, 60, 'Indonesia, Arab', 'Guru les privat. Pernah jadi extras iklan ramadan.', 250000],
-            ['yohanes_m', 'Yohanes Mote', 'yohanes', 'pria', 28, 176, ['Dewasa', 'Indonesia Timur', 'Atlet', 'Berenang'], 'A', 60, 'Indonesia', 'Pelatih renang. Pernah jadi stunt ringan di film aksi.', 300000],
-            ['clara_b', 'Clara Bennett', 'clara', 'wanita', 26, 170, ['Dewasa', 'Kaukasia/Bule', 'Berenang'], null, 60, 'Inggris, Indonesia', 'Guru bahasa Inggris, tinggal di Jakarta 5 tahun.', 350000],
-            ['fajar_n', 'Fajar Nugroho', 'fajar', 'pria', 33, 171, ['Dewasa', 'Bertato', 'Naik motor'], null, 60, 'Indonesia', 'Ojek online. Cocok peran preman/pengendara.', 200000],
-            ['wulan_s', 'Wulan Sari', 'wulan', 'wanita', 20, 157, ['Remaja', 'Mahasiswa', 'Sunda'], null, 45, 'Indonesia, Sunda', 'Mahasiswi semester 3, anggota paduan suara.', 200000],
-            ['tono_g', 'Tono Gunawan', 'tono', 'pria', 45, 170, ['Dewasa', 'Pekerja kantoran', 'Nyetir mobil'], 'B', 90, 'Indonesia', 'Sopir kantor. Sering jadi figuran bapak kantoran.', 200000],
-            ['melati_k', 'Melati Kusuma', 'melati', 'wanita', 35, 160, ['Dewasa', 'Melayu', 'Menari'], null, 60, 'Indonesia, Melayu', 'Pelatih tari zapin. Pernah tampil di acara TV daerah.', 250000],
-            ['arga_p', 'Arga Permana', 'arga', 'pria', 24, 180, ['Dewasa muda', 'Atlet', 'Berenang'], null, 60, 'Indonesia', 'Personal trainer gym. Pernah jadi extras iklan suplemen.', 250000],
-            ['intan_r', 'Intan Rosalina', 'intan', 'wanita', 22, 165, ['Dewasa muda', 'Rambut panjang', 'Mahasiswa'], null, 60, 'Indonesia', 'Mahasiswi komunikasi, aktif jadi MC acara kampus.', 200000],
-            ['joko_s', 'Joko Santoso', 'joko', 'pria', 40, 167, ['Dewasa', 'Jawa', 'Naik motor'], null, 90, 'Indonesia, Jawa', 'Pedagang bakso keliling. Pernah jadi warga di 2 film.', 200000],
-            ['putri_a', 'Putri Anggraini', 'putri', 'wanita', 23, 161, ['Dewasa muda', 'Berhijab'], null, 15, 'Indonesia', 'Karyawan toko baju.', 200000],
-            ['lama_dihapus', 'Rahmat Hidayat', 'rahmat', 'pria', 29, 170, ['Dewasa'], null, 50, 'Indonesia', 'Pernah ikut 1 produksi FTV.', 200000],
+            ['spiderman', 'Tom Holland', 'dimas', 'pria', 23, 173, ['Dewasa muda', 'Mahasiswa', 'Naik motor', 'Sunda'], 'A', 90, 'Indonesia, Inggris', 'Aktor teater musikal West End & pemeran aksi akrobatik. Berpengalaman di film layar lebar dan komersial.', 250000],
+            ['goyounjung', 'Go Youn-jung', 'sari', 'wanita', 21, 163, ['Dewasa muda', 'Berhijab', 'Mahasiswa'], 'B', 90, 'Indonesia, Korea', 'Model editorial majalah fashion dan aktris drama series. Berpengalaman di pemotretan komersial.', 225000],
+            ['bruce_lee', 'Bruce Lee', 'bagas', 'pria', 22, 172, ['Dewasa muda', 'Atlet', 'Naik motor', 'Jawa'], 'A', 90, 'Indonesia, Inggris', 'Praktisi seni bela diri dan koreografer aksi laga. Berpengalaman di film aksi dan pertunjukan stunt.', 250000],
+            ['zendaya', 'Zendaya', 'nadia', 'wanita', 24, 178, ['Dewasa muda', 'Rambut panjang', 'Menari'], 'C', 60, 'Indonesia, Inggris', 'Aktris musikal, penari profesional, dan model fashion global. Berpengalaman di panggung teater.', 200000],
+            ['chalamet', 'Timothee Chalamet', 'rehan', 'pria', 19, 178, ['Remaja', 'Mahasiswa', 'Naik motor'], null, 60, 'Indonesia, Prancis', 'Aktor panggung teater off-Broadway dan film drama independen.', 200000],
+            ['wonder_woman', 'Gal Gadot', 'citra', 'wanita', 25, 178, ['Dewasa muda', 'Berhijab', 'Menari'], 'B', 60, 'Indonesia, Ibrani', 'Model komersial internasional dan aktris film aksi laga. Pelatih kebugaran bersertifikat.', 200000],
+            ['jackie_chan', 'Jackie Chan', 'harto', 'pria', 58, 174, ['Orang Tua', 'Jawa', 'Nyetir mobil'], 'A', 90, 'Indonesia, Mandarin', 'Aktor komedi laga legendaris, sutradara stunt, dan seniman bela diri akrobatik.', 300000],
+            ['michelle_yeoh', 'Michelle Yeoh', 'ningsih', 'wanita', 52, 163, ['Orang Tua', 'Berhijab', 'Jawa'], null, 90, 'Indonesia, Melayu', 'Aktris laga internasional, penari balet, dan pemenang penghargaan film dunia.', 200000],
+            ['chow_yun_fat', 'Chow Yun-fat', 'liem', 'pria', 67, 182, ['Lansia', 'Chinese/Tionghoa'], null, 20, 'Indonesia, Kantonis', 'Aktor legendaris perfilman Hong Kong dan drama aksi komersial.', 300000],
+            ['zuckerberg', 'Mark Zuckerberg', 'kevin', 'pria', 27, 171, ['Dewasa', 'Chinese/Tionghoa', 'Pekerja kantoran'], 'B', 60, 'Indonesia, Inggris', 'Spesialis teknologi, praktisi Brazilian Jiu-Jitsu, dan pembicara konferensi digital.', 250000],
+            ['bella_hadid', 'Bella Hadid', 'aisyah', 'wanita', 30, 175, ['Dewasa', 'Berhijab', 'Pekerja kantoran', 'Timur Tengah'], null, 60, 'Indonesia, Arab', 'Model runway internasional dan ikon kampanye brand kecantikan global.', 250000],
+            ['iron_man', 'Robert Downey Jr', 'yohanes', 'pria', 28, 174, ['Dewasa', 'Indonesia Timur', 'Atlet', 'Berenang'], 'A', 60, 'Indonesia, Inggris', 'Aktor watak serbabisa dan produser film komersial layar lebar.', 300000],
+            ['emma_watson', 'Emma Watson', 'clara', 'wanita', 26, 165, ['Dewasa', 'Kaukasia/Bule', 'Berenang'], null, 60, 'Inggris, Indonesia', 'Aktris lulusan sastra Brown University, aktivis, dan model kampanye mode.', 350000],
+            ['batman', 'Christian Bale', 'fajar', 'pria', 33, 183, ['Dewasa', 'Bertato', 'Naik motor'], null, 60, 'Indonesia, Inggris', 'Aktor metode dengan transformasi fisik ekstrem untuk berbagai peran film intens.', 200000],
+            ['song_hyekyo', 'Song Hye-kyo', 'wulan', 'wanita', 20, 161, ['Remaja', 'Mahasiswa', 'Sunda'], null, 45, 'Indonesia, Korea', 'Bintang drama televisi dan model komersial internasional brand kosmetik.', 200000],
+            ['keanu_reeves', 'Keanu Reeves', 'tono', 'pria', 45, 186, ['Dewasa', 'Pekerja kantoran', 'Nyetir mobil'], 'B', 90, 'Indonesia, Inggris', 'Aktor film aksi bela diri, penggemar motor kustom, dan musisi.', 200000],
+            ['black_widow', 'Scarlett Johansson', 'melati', 'wanita', 35, 160, ['Dewasa', 'Melayu', 'Menari'], null, 60, 'Indonesia, Inggris', 'Aktris panggung teater Broadway dan pengisi suara animasi komersial.', 250000],
+            ['thor', 'Chris Hemsworth', 'arga', 'pria', 24, 190, ['Dewasa muda', 'Atlet', 'Berenang'], null, 60, 'Indonesia, Inggris', 'Aktor film laga, atlet kebugaran, dan praktisi olahraga selancar.', 250000],
+            ['catwoman', 'Anne Hathaway', 'intan', 'wanita', 22, 173, ['Dewasa muda', 'Rambut panjang', 'Mahasiswa'], null, 60, 'Indonesia, Inggris', 'Aktris musikal pemenang piala Oscar dan penyanyi teater panggung.', 200000],
+            ['dicaprio', 'Leonardo DiCaprio', 'joko', 'pria', 40, 183, ['Dewasa', 'Jawa', 'Naik motor'], null, 90, 'Indonesia, Inggris', 'Aktor drama watak papan atas dan pemeran karakter intens.', 200000],
+            ['sydney_sweeney', 'Sydney Sweeney', 'putri', 'wanita', 23, 161, ['Dewasa muda', 'Berhijab'], null, 15, 'Indonesia, Inggris', 'Aktris drama televisi dan praktisi bela diri campuran (MMA).', 200000],
+            ['brad_pitt', 'Brad Pitt', 'rahmat', 'pria', 29, 180, ['Dewasa'], null, 50, 'Indonesia, Inggris', 'Aktor film layar lebar dan produser pemenang penghargaan perfilman.', 200000],
         ] as $i => [$username, $nama, $mail, $g, $usia, $tinggi, $tags, $grade, $daftar, $bahasa, $pengalaman, $rate]) {
             $no = $i + 1;
             $user = $this->akun('extras', $nama, $username, "{$mail}@extras.test", now()->subDays($daftar), ['nomor_wa' => sprintf('08120000%04d', $no)]);
@@ -149,15 +149,15 @@ class DemoLengkapSeeder extends Seeder
         }
 
         // BN.3: Favorit (kolom apresiasi).
-        $this->u['dimas_rk']->extrasProfile->update(['apresiasi' => true, 'apresiasi_catatan' => 'Disukai Client, selalu on-time & gampang diarahkan.']);
-        $this->u['pak_harto']->extrasProfile->update(['apresiasi' => true, 'apresiasi_catatan' => 'Cocok peran bapak-bapak kantoran, on time.']);
-        $this->u['sari_mei']->extrasProfile->update(['apresiasi' => true]);
-        $this->u['joko_s']->extrasProfile->forceFill(['status' => 'melanggar'])->save();
-        $this->u['putri_a']->update(['status' => 'nonaktif']);
-        $this->u['lama_dihapus']->delete();
+        $this->u['spiderman']->extrasProfile->update(['apresiasi' => true, 'apresiasi_catatan' => 'Disukai Client, selalu on-time & gampang diarahkan.']);
+        $this->u['jackie_chan']->extrasProfile->update(['apresiasi' => true, 'apresiasi_catatan' => 'Cocok peran bapak-bapak kantoran, on time.']);
+        $this->u['goyounjung']->extrasProfile->update(['apresiasi' => true]);
+        $this->u['dicaprio']->extrasProfile->forceFill(['status' => 'melanggar'])->save();
+        $this->u['sydney_sweeney']->update(['status' => 'nonaktif']);
+        $this->u['brad_pitt']->delete();
 
-        // BH.2: Extras izin + tampil di beranda (maks 12), arga_p izin tapi belum di-ACC Admin.
-        $berandaExtras = ['dimas_rk', 'sari_mei', 'bagas22', 'citra_ay', 'pak_harto', 'kevin_t', 'yohanes_m', 'clara_b', 'aisyah_f', 'nadia_pu', 'tono_g', 'wulan_s'];
+        // BH.2: Extras izin + tampil di beranda (maks 12), thor izin tapi belum di-ACC Admin.
+        $berandaExtras = ['spiderman', 'goyounjung', 'bruce_lee', 'wonder_woman', 'jackie_chan', 'zuckerberg', 'iron_man', 'emma_watson', 'bella_hadid', 'zendaya', 'keanu_reeves', 'song_hyekyo'];
         foreach ($berandaExtras as $idx => $un) {
             $this->u[$un]->extrasProfile->forceFill([
                 'izin_tampil_publik' => true,
@@ -165,60 +165,193 @@ class DemoLengkapSeeder extends Seeder
                 'tampil_di_beranda_at' => now()->subDays($idx),
             ])->save();
         }
-        $this->u['arga_p']->extrasProfile->forceFill([
+        $this->u['thor']->extrasProfile->forceFill([
             'izin_tampil_publik' => true,
             'tampil_di_beranda' => false,
             'tampil_di_beranda_at' => null,
         ])->save();
 
-        // CL/BJ: tautan tambahan (sosmed/portofolio) & galeri foto tambahan multi-angle.
-        $this->u['dimas_rk']->extrasProfile->forceFill([
-            'tautan_tambahan' => [
-                ['label' => 'Instagram', 'url' => 'https://instagram.com/dimas.rk'],
-                ['label' => 'Portofolio', 'url' => 'https://dimasrk.my.canva.site'],
+        // CL/BJ: tautan tambahan (sosmed/portofolio/YouTube trailer) & galeri foto tambahan 4 slot multi-angle.
+        $extrasMeta = [
+            'spiderman' => [
+                'gender' => 'pria',
+                'tautan' => [
+                    ['label' => 'Trailer Spider-Man: No Way Home', 'url' => 'https://www.youtube.com/watch?v=JfVOs4VSpmA'],
+                    ['label' => 'Instagram', 'url' => 'https://instagram.com/tomholland2013'],
+                ],
             ],
-            'foto_tambahan' => [1 => $this->fotoDemo('dimas_rk-slot1', 25, 'pria'), 2 => $this->fotoDemo('dimas_rk-slot2', 26, 'pria')],
-        ])->save();
-        $this->u['yohanes_m']->extrasProfile->forceFill([
-            'foto_tambahan' => [1 => $this->fotoDemo('yohanes_m-slot1', 27, 'pria'), 2 => $this->fotoDemo('yohanes_m-slot2', 28, 'pria'), 3 => $this->fotoDemo('yohanes_m-slot3', 29, 'pria')],
-        ])->save();
-        $this->u['sari_mei']->extrasProfile->forceFill([
-            'foto_tambahan' => [1 => $this->fotoDemo('sari_mei-slot1', 30, 'wanita'), 2 => $this->fotoDemo('sari_mei-slot2', 31, 'wanita')],
-        ])->save();
-        $this->u['bagas22']->extrasProfile->forceFill([
-            'foto_tambahan' => [1 => $this->fotoDemo('bagas22-slot1', 32, 'pria'), 2 => $this->fotoDemo('bagas22-slot2', 33, 'pria')],
-        ])->save();
-        $this->u['citra_ay']->extrasProfile->forceFill([
-            'foto_tambahan' => [1 => $this->fotoDemo('citra_ay-slot1', 34, 'wanita'), 2 => $this->fotoDemo('citra_ay-slot2', 35, 'wanita')],
-        ])->save();
-        $this->u['kevin_t']->extrasProfile->forceFill([
-            'tautan_tambahan' => [
-                ['label' => 'Instagram', 'url' => 'https://instagram.com/kevin.tanoto'],
-                ['label' => 'TikTok', 'url' => 'https://tiktok.com/@kevint'],
+            'goyounjung' => [
+                'gender' => 'wanita',
+                'tautan' => [
+                    ['label' => 'Trailer Moving', 'url' => 'https://www.youtube.com/watch?v=O15d9yH4L3I'],
+                    ['label' => 'Instagram', 'url' => 'https://instagram.com/goyounjung'],
+                ],
             ],
-            'foto_tambahan' => [1 => $this->fotoDemo('kevin_t-slot1', 36, 'pria'), 2 => $this->fotoDemo('kevin_t-slot2', 37, 'pria')],
-        ])->save();
-        $this->u['clara_b']->extrasProfile->forceFill([
-            'tautan_tambahan' => [['label' => 'LinkedIn', 'url' => 'https://linkedin.com/in/clarabennett']],
-            'foto_tambahan' => [1 => $this->fotoDemo('clara_b-slot1', 38, 'wanita'), 2 => $this->fotoDemo('clara_b-slot2', 39, 'wanita')],
-        ])->save();
-        $this->u['pak_harto']->extrasProfile->forceFill([
-            'foto_tambahan' => [1 => $this->fotoDemo('pak_harto-slot1', 40, 'pria')],
-        ])->save();
-        $this->u['aisyah_f']->extrasProfile->forceFill([
-            'foto_tambahan' => [1 => $this->fotoDemo('aisyah_f-slot1', 41, 'wanita'), 2 => $this->fotoDemo('aisyah_f-slot2', 42, 'wanita')],
-        ])->save();
-        $this->u['wulan_s']->extrasProfile->forceFill([
-            'foto_tambahan' => [1 => $this->fotoDemo('wulan_s-slot1', 43, 'wanita')],
-        ])->save();
+            'bruce_lee' => [
+                'gender' => 'pria',
+                'tautan' => [
+                    ['label' => 'Trailer Enter the Dragon', 'url' => 'https://www.youtube.com/watch?v=tB_7kK9r_QY'],
+                    ['label' => 'Official Site', 'url' => 'https://brucelee.com'],
+                ],
+            ],
+            'zendaya' => [
+                'gender' => 'wanita',
+                'tautan' => [
+                    ['label' => 'Trailer Dune: Part Two', 'url' => 'https://www.youtube.com/watch?v=Way9Dexny3w'],
+                    ['label' => 'Instagram', 'url' => 'https://instagram.com/zendaya'],
+                ],
+            ],
+            'chalamet' => [
+                'gender' => 'pria',
+                'tautan' => [
+                    ['label' => 'Trailer Wonka', 'url' => 'https://www.youtube.com/watch?v=otNh9bTjXWg'],
+                    ['label' => 'Instagram', 'url' => 'https://instagram.com/tchalamet'],
+                ],
+            ],
+            'wonder_woman' => [
+                'gender' => 'wanita',
+                'tautan' => [
+                    ['label' => 'Trailer Wonder Woman', 'url' => 'https://www.youtube.com/watch?v=1Q8fG9mpZZ8'],
+                    ['label' => 'Instagram', 'url' => 'https://instagram.com/gal_gadot'],
+                ],
+            ],
+            'jackie_chan' => [
+                'gender' => 'pria',
+                'tautan' => [
+                    ['label' => 'Trailer Police Story', 'url' => 'https://www.youtube.com/watch?v=Xk4r1Mph1b0'],
+                    ['label' => 'Instagram', 'url' => 'https://instagram.com/jackiechan'],
+                ],
+            ],
+            'michelle_yeoh' => [
+                'gender' => 'wanita',
+                'tautan' => [
+                    ['label' => 'Trailer Everything Everywhere All at Once', 'url' => 'https://www.youtube.com/watch?v=wxN1T1uxQ2g'],
+                    ['label' => 'Instagram', 'url' => 'https://instagram.com/michelleyeoh_official'],
+                ],
+            ],
+            'chow_yun_fat' => [
+                'gender' => 'pria',
+                'tautan' => [
+                    ['label' => 'Trailer Crouching Tiger, Hidden Dragon', 'url' => 'https://www.youtube.com/watch?v=gL790G_wRrk'],
+                    ['label' => 'IMDb', 'url' => 'https://www.imdb.com/name/nm0000334/'],
+                ],
+            ],
+            'zuckerberg' => [
+                'gender' => 'pria',
+                'tautan' => [
+                    ['label' => 'Trailer The Social Network', 'url' => 'https://www.youtube.com/watch?v=lB95KLmp1l4'],
+                    ['label' => 'Instagram', 'url' => 'https://instagram.com/zuck'],
+                ],
+            ],
+            'bella_hadid' => [
+                'gender' => 'wanita',
+                'tautan' => [
+                    ['label' => 'Vogue Fashion Runway', 'url' => 'https://www.youtube.com/watch?v=q6c8p8PkWtQ'],
+                    ['label' => 'Instagram', 'url' => 'https://instagram.com/bellahadid'],
+                ],
+            ],
+            'iron_man' => [
+                'gender' => 'pria',
+                'tautan' => [
+                    ['label' => 'Trailer Iron Man', 'url' => 'https://www.youtube.com/watch?v=8ugaeA-nMTc'],
+                    ['label' => 'Instagram', 'url' => 'https://instagram.com/robertdowneyjr'],
+                ],
+            ],
+            'emma_watson' => [
+                'gender' => 'wanita',
+                'tautan' => [
+                    ['label' => 'Trailer Beauty and the Beast', 'url' => 'https://www.youtube.com/watch?v=e3Nl_TCQXuw'],
+                    ['label' => 'Instagram', 'url' => 'https://instagram.com/emmawatson'],
+                ],
+            ],
+            'batman' => [
+                'gender' => 'pria',
+                'tautan' => [
+                    ['label' => 'Trailer The Dark Knight', 'url' => 'https://www.youtube.com/watch?v=EXeTwQWrcwY'],
+                    ['label' => 'IMDb', 'url' => 'https://www.imdb.com/name/nm0000288/'],
+                ],
+            ],
+            'song_hyekyo' => [
+                'gender' => 'wanita',
+                'tautan' => [
+                    ['label' => 'Trailer The Glory', 'url' => 'https://www.youtube.com/watch?v=tqFFKDCSimA'],
+                    ['label' => 'Instagram', 'url' => 'https://instagram.com/kyo1122'],
+                ],
+            ],
+            'keanu_reeves' => [
+                'gender' => 'pria',
+                'tautan' => [
+                    ['label' => 'Trailer John Wick: Chapter 4', 'url' => 'https://www.youtube.com/watch?v=qEVUtrk8_B4'],
+                    ['label' => 'IMDb', 'url' => 'https://www.imdb.com/name/nm0000206/'],
+                ],
+            ],
+            'black_widow' => [
+                'gender' => 'wanita',
+                'tautan' => [
+                    ['label' => 'Trailer Black Widow', 'url' => 'https://www.youtube.com/watch?v=ybji16u608U'],
+                    ['label' => 'IMDb', 'url' => 'https://www.imdb.com/name/nm0424060/'],
+                ],
+            ],
+            'thor' => [
+                'gender' => 'pria',
+                'tautan' => [
+                    ['label' => 'Trailer Thor: Ragnarok', 'url' => 'https://www.youtube.com/watch?v=ue80QwXMRHg'],
+                    ['label' => 'Instagram', 'url' => 'https://instagram.com/chrishemsworth'],
+                ],
+            ],
+            'catwoman' => [
+                'gender' => 'wanita',
+                'tautan' => [
+                    ['label' => 'Trailer The Intern', 'url' => 'https://www.youtube.com/watch?v=ZU3Xban0Y6A'],
+                    ['label' => 'Instagram', 'url' => 'https://instagram.com/annehathaway'],
+                ],
+            ],
+            'dicaprio' => [
+                'gender' => 'pria',
+                'tautan' => [
+                    ['label' => 'Trailer Inception', 'url' => 'https://www.youtube.com/watch?v=YoHD9XEInc0'],
+                    ['label' => 'Instagram', 'url' => 'https://instagram.com/leonardodicaprio'],
+                ],
+            ],
+            'sydney_sweeney' => [
+                'gender' => 'wanita',
+                'tautan' => [
+                    ['label' => 'Trailer Anyone But You', 'url' => 'https://www.youtube.com/watch?v=0h0971eL0f8'],
+                    ['label' => 'Instagram', 'url' => 'https://instagram.com/sydney_sweeney'],
+                ],
+            ],
+            'brad_pitt' => [
+                'gender' => 'pria',
+                'tautan' => [
+                    ['label' => 'Trailer Fight Club', 'url' => 'https://www.youtube.com/watch?v=qtRKdV9EIgw'],
+                    ['label' => 'IMDb', 'url' => 'https://www.imdb.com/name/nm0000093/'],
+                ],
+            ],
+        ];
+
+        foreach ($extrasMeta as $un => $meta) {
+            if (! isset($this->u[$un]) || ! $this->u[$un]->extrasProfile) {
+                continue;
+            }
+            $g = $meta['gender'];
+            $this->u[$un]->extrasProfile->forceFill([
+                'tautan_tambahan' => $meta['tautan'],
+                'foto_tambahan' => [
+                    1 => $this->fotoDemo("{$un}-slot1", 20 + abs(crc32($un)) % 30, $g),
+                    2 => $this->fotoDemo("{$un}-slot2", 21 + abs(crc32($un)) % 30, $g),
+                    3 => $this->fotoDemo("{$un}-slot3", 22 + abs(crc32($un)) % 30, $g),
+                    4 => $this->fotoDemo("{$un}-slot4", 23 + abs(crc32($un)) % 30, $g),
+                ],
+            ])->save();
+        }
 
         $ghost = $this->akun('extras', 'ghost01', 'ghost01', 'ghost01@extras.test', now()->subDays(40));
         $ghost->extrasProfile()->create(['created_at' => now()->subDays(40)]);
         $tglHapus = now()->addDays(4)->translatedFormat('d F Y');
         $this->notif($ghost, 'Akun Akan Dihapus', "Profilmu belum lengkap. Lengkapi sebelum {$tglHapus} supaya akunmu nggak dihapus otomatis.", route('extras.profile.edit'), false, now()->subDays(3), ['jenis' => 'peringatan_mangkrak', 'kunci' => 'peringatan_mangkrak']);
 
-        $rizka = $this->akun('extras', 'Rizka Amelia', 'baru_daftar', 'rizka@extras.test', now()->subDays(2));
-        $rizka->extrasProfile()->create(['nama_asli' => 'Rizka Amelia', 'usia' => 21, 'gender' => 'wanita', 'tinggi_badan' => 159])
+        $rizka = $this->akun('extras', 'Anya Taylor-Joy', 'anya_taylor', 'rizka@extras.test', now()->subDays(2));
+        $rizka->extrasProfile()->create(['nama_asli' => 'Anya Taylor-Joy', 'usia' => 21, 'gender' => 'wanita', 'tinggi_badan' => 173])
             ->categories()->sync($tag->only(['Dewasa muda'])->values());
     }
 
@@ -235,12 +368,12 @@ class DemoLengkapSeeder extends Seeder
         $warga = $this->kelas($p1, 'Warga kampung', 4, 300000, ['Orang Tua', 'Jawa']);
         $mhsKos = $this->kelas($p1, 'Mahasiswa kos', 3, 350000, ['Dewasa muda', 'Mahasiswa']);
 
-        foreach ([['pak_harto', $warga, 200000], ['bu_ningsih', $warga, 200000], ['tono_g', $warga, 200000], ['joko_s', $warga, 200000], ['dimas_rk', $mhsKos, 250000], ['bagas22', $mhsKos, 250000], ['sari_mei', $mhsKos, 225000]] as [$un, $kelas, $fee]) {
+        foreach ([['jackie_chan', $warga, 200000], ['michelle_yeoh', $warga, 200000], ['keanu_reeves', $warga, 200000], ['dicaprio', $warga, 200000], ['spiderman', $mhsKos, 250000], ['bruce_lee', $mhsKos, 250000], ['goyounjung', $mhsKos, 225000]] as [$un, $kelas, $fee]) {
             $a = $this->daftar($p1, $kelas, $un, 'selesai_produksi', -40);
             $this->log($this->u[$un], 'APPLY_PROJECT', "Extras {$this->u[$un]->name} mendaftar untuk kelas '{$kelas->nama_kelas}' di proyek '{$p1->nama_produksi}'", $a, -40);
             $this->deal($a, $fee, -38);
             $this->greenlight($a, $andini, -36);
-            if ($un === 'joko_s') {
+            if ($un === 'dicaprio') {
                 $a->update(['status_partisipasi' => 'dibatalkan']);
                 $a->cancellations()->create(['dibatalkan_oleh' => 'extras', 'alasan' => 'Ada acara keluarga mendadak.', 'is_mendadak' => true, 'created_at' => now()->subDays(31)]);
 
@@ -251,20 +384,20 @@ class DemoLengkapSeeder extends Seeder
                 $a->attendances()->create(['event_shooting_date_id' => $t->id, 'status' => 'hadir', 'dicatat_oleh' => $bambang->id, 'status_validasi' => 'tervalidasi', 'divalidasi_oleh' => $bambang->id, 'divalidasi_at' => $t->tanggal->copy()->setTime(7, 30)]);
             }
             $status = match ($un) {
-                'tono_g' => 'ditransfer',
-                'sari_mei' => 'disengketakan',
+                'keanu_reeves' => 'ditransfer',
+                'goyounjung' => 'disengketakan',
                 default => 'dikonfirmasi_diterima',
             };
             $pay = $this->bayar($a, $status, -25, $rina);
-            if ($un === 'dimas_rk') {
+            if ($un === 'spiderman') {
                 $pay->addons()->create(['label' => 'Transport', 'nominal' => 50000, 'created_by' => $rina->id]);
             }
         }
-        $this->app($p1, 'pak_harto')->tambahCatatan($bambang, 'catatan', 'Datang paling pagi tiap hari, bantu arahkan extras lain.');
-        $this->app($p1, 'dimas_rk')->tambahCatatan($bambang, 'catatan', 'Improvisasi bagus di scene warung kopi.');
-        $this->app($p1, 'joko_s')->tambahCatatan($bambang, 'sanksi', 'Batal H-1 tanpa pengganti, pembatalan mendadak ke-3.');
+        $this->app($p1, 'jackie_chan')->tambahCatatan($bambang, 'catatan', 'Datang paling pagi tiap hari, bantu arahkan extras lain.');
+        $this->app($p1, 'spiderman')->tambahCatatan($bambang, 'catatan', 'Improvisasi bagus di scene warung kopi.');
+        $this->app($p1, 'dicaprio')->tambahCatatan($bambang, 'sanksi', 'Batal H-1 tanpa pengganti, pembatalan mendadak ke-3.');
         $this->log($rina, 'CALLSHEET_EXPORT', "Admin Rina Kartika mengekspor callsheet untuk lokasi Desa Cibodas, Lembang di proyek '{$p1->nama_produksi}'", $p1, -30);
-        $this->log($this->u['sari_mei'], 'DISPUTE_PAYMENT', "Extras Sari Meilani menandai pembayaran sebagai sengketa untuk proyek '{$p1->nama_produksi}'", $this->app($p1, 'sari_mei'), -24);
+        $this->log($this->u['goyounjung'], 'DISPUTE_PAYMENT', "Extras Sari Meilani menandai pembayaran sebagai sengketa untuk proyek '{$p1->nama_produksi}'", $this->app($p1, 'goyounjung'), -24);
 
         $inv1 = $p1->invoices()->create([
             'ttd_admin_signature_path' => $this->png("invoices/signatures/{$p1->id}-admin-demo.png"),
@@ -307,41 +440,41 @@ class DemoLengkapSeeder extends Seeder
         $this->log($andini, 'SUBMIT_PROJECT_REQUEST', "Client Andini Prameswari mengajukan proyek '{$p2->nama_produksi}'", $p2, -8);
         $this->log($fakrul, 'APPROVE_PROJECT_REQUEST', "Super Admin menyetujui (ACC) permintaan proyek '{$p2->nama_produksi}' dari Client", $p2, -7);
 
-        $this->daftar($p2, $mhs, 'wulan_s', 'diajukan', 0);
-        $this->log($this->u['wulan_s'], 'APPLY_PROJECT', "Extras Wulan Sari mendaftar untuk kelas '{$mhs->nama_kelas}' di proyek '{$p2->nama_produksi}'", $this->app($p2, 'wulan_s'), 0);
-        $this->daftar($p2, $mhs, 'intan_r', 'direview_admin', -2)->update(['grade' => 'B']);
-        $this->log($this->u['intan_r'], 'APPLY_PROJECT', "Extras Intan Rosalina mendaftar untuk kelas '{$mhs->nama_kelas}' di proyek '{$p2->nama_produksi}'", $this->app($p2, 'intan_r'), -2);
-        $this->log($rina, 'SET_EXTRAS_GRADE', 'Admin Rina Kartika memberikan evaluasi Grade B untuk Intan Rosalina', $this->u['intan_r']->extrasProfile, -2);
-        $rehan = $this->daftar($p2, $mhs, 'rehan_x', 'nego_fee', -3);
-        $this->log($this->u['rehan_x'], 'APPLY_PROJECT', "Extras Rehan Saputra mendaftar untuk kelas '{$mhs->nama_kelas}' di proyek '{$p2->nama_produksi}'", $rehan, -3);
+        $this->daftar($p2, $mhs, 'song_hyekyo', 'diajukan', 0);
+        $this->log($this->u['song_hyekyo'], 'APPLY_PROJECT', "Extras Wulan Sari mendaftar untuk kelas '{$mhs->nama_kelas}' di proyek '{$p2->nama_produksi}'", $this->app($p2, 'song_hyekyo'), 0);
+        $this->daftar($p2, $mhs, 'catwoman', 'direview_admin', -2)->update(['grade' => 'B']);
+        $this->log($this->u['catwoman'], 'APPLY_PROJECT', "Extras Intan Rosalina mendaftar untuk kelas '{$mhs->nama_kelas}' di proyek '{$p2->nama_produksi}'", $this->app($p2, 'catwoman'), -2);
+        $this->log($rina, 'SET_EXTRAS_GRADE', 'Admin Rina Kartika memberikan evaluasi Grade B untuk Intan Rosalina', $this->u['catwoman']->extrasProfile, -2);
+        $rehan = $this->daftar($p2, $mhs, 'chalamet', 'nego_fee', -3);
+        $this->log($this->u['chalamet'], 'APPLY_PROJECT', "Extras Rehan Saputra mendaftar untuk kelas '{$mhs->nama_kelas}' di proyek '{$p2->nama_produksi}'", $rehan, -3);
         $rehan->feeNegotiations()->create(['round' => 1, 'diajukan_oleh' => 'admin', 'nominal' => 150000, 'aksi' => 'tawar', 'created_at' => now()->subDays(2)]);
         $rehan->feeNegotiations()->create(['round' => 2, 'diajukan_oleh' => 'extras', 'nominal' => 200000, 'aksi' => 'counter', 'catatan' => 'Lokasi jauh dari rumah, mohon dinaikkan.', 'created_at' => now()->subDay()]);
         $this->log($rina, 'NEGOTIATE_FEE', 'Admin Rina mengajukan penawaran fee Rp 150.000 kepada Rehan Saputra', $rehan, -2);
-        $this->log($this->u['rehan_x'], 'NEGOTIATE_FEE', 'Extras Rehan Saputra mengajukan counter fee Rp 200.000', $rehan, -1);
-        $arga = $this->daftar($p2, $mhs, 'arga_p', 'nego_fee', -3);
+        $this->log($this->u['chalamet'], 'NEGOTIATE_FEE', 'Extras Rehan Saputra mengajukan counter fee Rp 200.000', $rehan, -1);
+        $arga = $this->daftar($p2, $mhs, 'thor', 'nego_fee', -3);
         $arga->feeNegotiations()->create(['round' => 1, 'diajukan_oleh' => 'admin', 'nominal' => 175000, 'aksi' => 'tawar', 'created_at' => now()->subDay()]);
-        $this->deal($this->daftar($p2, $mhs, 'citra_ay', 'deal', -4), 175000, -2);
-        $this->log($this->u['citra_ay'], 'DEAL_FEE', "Extras Citra Ayu menyetujui fee Rp 175.000 untuk proyek '{$p2->nama_produksi}'", $this->app($p2, 'citra_ay'), -2);
-        $this->deal($this->daftar($p2, $mhs, 'dimas_rk', 'diajukan_ke_client', -5), 250000, -3);
-        $this->deal($this->daftar($p2, $kantor, 'kevin_t', 'diajukan_ke_client', -5), 250000, -3);
-        $bagas = $this->daftar($p2, $mhs, 'bagas22', 'lolos', -6);
+        $this->deal($this->daftar($p2, $mhs, 'wonder_woman', 'deal', -4), 175000, -2);
+        $this->log($this->u['wonder_woman'], 'DEAL_FEE', "Extras Citra Ayu menyetujui fee Rp 175.000 untuk proyek '{$p2->nama_produksi}'", $this->app($p2, 'wonder_woman'), -2);
+        $this->deal($this->daftar($p2, $mhs, 'spiderman', 'diajukan_ke_client', -5), 250000, -3);
+        $this->deal($this->daftar($p2, $kantor, 'zuckerberg', 'diajukan_ke_client', -5), 250000, -3);
+        $bagas = $this->daftar($p2, $mhs, 'bruce_lee', 'lolos', -6);
         $this->deal($bagas, 250000, -5);
         $this->greenlight($bagas, $andini, -4);
         $this->kontrak($pdf, $bagas, $rina, false, -1);
-        $aisyah = $this->daftar($p2, $kantor, 'aisyah_f', 'kontrak_ditandatangani', -6);
+        $aisyah = $this->daftar($p2, $kantor, 'bella_hadid', 'kontrak_ditandatangani', -6);
         $this->deal($aisyah, 250000, -5);
         $this->greenlight($aisyah, $andini, -4);
         $this->kontrak($pdf, $aisyah, $rina, true, -2);
         $this->bayar($aisyah, 'belum_dibayar', -2, $rina);
         // QA: lolos, kontrak sengaja TIDAK dibuat manual lewat kontrak() - diisi otomatis oleh
         // siapkanKontrakDanPembayaran() di akhir run(), hasilnya kontrak kosong, belum ada TTD sama sekali.
-        $tono2 = $this->daftar($p2, $kantor, 'tono_g', 'lolos', -4);
+        $tono2 = $this->daftar($p2, $kantor, 'keanu_reeves', 'lolos', -4);
         $this->deal($tono2, 300000, -3);
         $this->greenlight($tono2, $andini, -2);
-        $this->daftar($p2, $mhs, 'nadia_pu', 'ditolak', -5)->update(['alasan_tolak' => 'Tinggi tidak sesuai kriteria.']);
-        $this->daftar($p2, $mhs, 'sari_mei', 'diundang', -1)->update(['diundang_at' => now()->subDay()]);
-        $this->log($rina, 'INVITE_EXTRAS', "Admin Rina mengundang @sari_mei ke proyek '{$p2->nama_produksi}'", $this->app($p2, 'sari_mei'), -1);
-        $fajar = $this->daftar($p2, $kantor, 'fajar_n', 'dibatalkan', -6);
+        $this->daftar($p2, $mhs, 'zendaya', 'ditolak', -5)->update(['alasan_tolak' => 'Tinggi tidak sesuai kriteria.']);
+        $this->daftar($p2, $mhs, 'goyounjung', 'diundang', -1)->update(['diundang_at' => now()->subDay()]);
+        $this->log($rina, 'INVITE_EXTRAS', "Admin Rina mengundang @goyounjung ke proyek '{$p2->nama_produksi}'", $this->app($p2, 'goyounjung'), -1);
+        $fajar = $this->daftar($p2, $kantor, 'batman', 'dibatalkan', -6);
         $this->deal($fajar, 200000, -5);
         $fajar->cancellations()->create(['dibatalkan_oleh' => 'extras', 'alasan' => 'Bentrok jadwal kerja.', 'is_mendadak' => false, 'created_at' => now()->subDays(3)]);
         $p2->invoices()->create([]);
@@ -365,32 +498,32 @@ class DemoLengkapSeeder extends Seeder
             $p3->adminAssignments()->create(['user_id' => $staf->id, 'assigned_by' => $fakrul->id, 'created_at' => now()->subDays(20)]);
         }
         $intanApp = null;
-        foreach (['yohanes_m', 'clara_b', 'melati_k', 'intan_r', 'pak_harto', 'wulan_s', 'bagas22'] as $un) {
-            $a = $this->daftar($p3, $un === 'pak_harto' ? $dosen : $mhs3, $un, 'kontrak_ditandatangani', -15);
-            $this->deal($a, $un === 'pak_harto' ? 300000 : 200000, -12);
+        foreach (['iron_man', 'emma_watson', 'black_widow', 'catwoman', 'jackie_chan', 'song_hyekyo', 'bruce_lee'] as $un) {
+            $a = $this->daftar($p3, $un === 'jackie_chan' ? $dosen : $mhs3, $un, 'kontrak_ditandatangani', -15);
+            $this->deal($a, $un === 'jackie_chan' ? 300000 : 200000, -12);
             $this->greenlight($a, $rudy, -10);
             $this->kontrak($pdf, $a, $yoga, true, -7);
             $status = match ($un) {
-                'clara_b', 'bagas22' => 'ditransfer', 'melati_k' => 'disengketakan', default => 'belum_dibayar'
+                'emma_watson', 'bruce_lee' => 'ditransfer', 'black_widow' => 'disengketakan', default => 'belum_dibayar'
             };
             $pay = $this->bayar($a, $status, 0, $yoga);
-            if ($un === 'intan_r') {
+            if ($un === 'catwoman') {
                 $intanApp = $a;
                 // CS.1: demo override jam kumpul per pendaftaran, beda dari default peran (06:00).
                 $a->update(['jam_callingan_override' => '05:30']);
             }
-            if ($un === 'melati_k') {
-                // CA: contoh sengketa yang SUDAH diselesaikan (beda dari sari_mei di P1 yang sengaja dibiarkan belum selesai).
+            if ($un === 'black_widow') {
+                // CA: contoh sengketa yang SUDAH diselesaikan (beda dari goyounjung di P1 yang sengaja dibiarkan belum selesai).
                 $this->log($this->u[$un], 'DISPUTE_PAYMENT', "Extras Melati Kusuma menandai pembayaran sebagai sengketa untuk proyek '{$p3->nama_produksi}'", $a, 0);
                 $pay->selesaikanSengketa('Sudah dicek ulang ke rekap keuangan, nominal sudah sesuai kesepakatan awal.');
                 $this->log($yoga, 'RESOLVE_DISPUTE', "Admin Yoga Pratama menyelesaikan sengketa pembayaran proyek '{$p3->nama_produksi}'", $a, 0);
             }
 
             match ($un) {
-                'yohanes_m', 'clara_b' => $this->selfie($a, $hariIni, $bambang),
-                'melati_k', 'intan_r' => $this->selfie($a, $hariIni),
-                'pak_harto' => $a->attendances()->create(['event_shooting_date_id' => $hariIni->id, 'status' => 'tidak_hadir', 'dicatat_oleh' => $bambang->id, 'catatan' => 'Izin sakit, dikabari via telepon jam 06.00.', 'status_validasi' => 'tervalidasi', 'divalidasi_oleh' => $bambang->id, 'divalidasi_at' => now()]),
-                'bagas22' => $this->selfieDitolak($a, $hariIni, $bambang),
+                'iron_man', 'emma_watson' => $this->selfie($a, $hariIni, $bambang),
+                'black_widow', 'catwoman' => $this->selfie($a, $hariIni),
+                'jackie_chan' => $a->attendances()->create(['event_shooting_date_id' => $hariIni->id, 'status' => 'tidak_hadir', 'dicatat_oleh' => $bambang->id, 'catatan' => 'Izin sakit, dikabari via telepon jam 06.00.', 'status_validasi' => 'tervalidasi', 'divalidasi_oleh' => $bambang->id, 'divalidasi_at' => now()]),
+                'bruce_lee' => $this->selfieDitolak($a, $hariIni, $bambang),
                 default => null,
             };
         }
@@ -457,8 +590,8 @@ class DemoLengkapSeeder extends Seeder
         $this->jadwal($p7, [12], 'Senayan, Jakarta Pusat');
         $kelasP7 = $this->kelas($p7, 'Pekerja Kantoran', 5, 275000, ['Dewasa', 'Pekerja kantoran']);
         $p7->adminAssignments()->create(['user_id' => $yoga->id, 'assigned_by' => $fakrul->id]);
-        $this->daftar($p7, $kelasP7, 'tono_g', 'diajukan', -2);
-        $this->deal($this->daftar($p7, $kelasP7, 'melati_k', 'deal', -3), 275000, -1);
+        $this->daftar($p7, $kelasP7, 'keanu_reeves', 'diajukan', -2);
+        $this->deal($this->daftar($p7, $kelasP7, 'black_widow', 'deal', -3), 275000, -1);
 
         // CQ: proyek "evergreen" tersebar beberapa bulan ke belakang & ke depan (relatif ke tanggal seed
         // dijalankan), biar filter periode (7/14/30/60/90/365 hari, +7/+30, custom) beneran kelihatan
@@ -475,16 +608,16 @@ class DemoLengkapSeeder extends Seeder
             ]);
             $this->jadwal($ev, [$hari], 'Jakarta');
             $kelasEv = $this->kelas($ev, 'Pemeran Pendukung', 6, 250000, ['Dewasa']);
-            $a = $this->daftar($ev, $kelasEv, 'wulan_s', 'selesai_produksi', $hari - 15);
+            $a = $this->daftar($ev, $kelasEv, 'song_hyekyo', 'selesai_produksi', $hari - 15);
             $this->deal($a, 250000, $hari - 12);
             $this->kontrak($pdf, $a, $pic, true, $hari - 9);
             $this->bayar($a, 'dikonfirmasi_diterima', $hari + 5, $pic);
 
             if ($kode === 'P9') {
                 // RF-08: batal mendadak ke-2 Fajar Nugroho di proyek berbeda, belum sampai ambang 3x (belum melanggar).
-                $batalFajar = $this->daftar($ev, $kelasEv, 'fajar_n', 'dibatalkan', $hari - 14);
+                $batalFajar = $this->daftar($ev, $kelasEv, 'batman', 'dibatalkan', $hari - 14);
                 $batalFajar->cancellations()->create(['dibatalkan_oleh' => 'extras', 'alasan' => 'Demam tinggi mendadak H-1.', 'is_mendadak' => true, 'created_at' => now()->addDays($hari - 13)]);
-                $this->u['fajar_n']->extrasProfile->recordCancellation();
+                $this->u['batman']->extrasProfile->recordCancellation();
 
                 // Audit item 4: Lestari pernah jadi PIC proyek ini, dicabut & diganti $pic, honor lamanya tetap tersimpan.
                 $asgLama = $ev->adminAssignments()->create(['user_id' => $this->u['admin_lestari']->id, 'assigned_by' => $fakrul->id, 'created_at' => now()->addDays($hari - 10)]);
@@ -510,9 +643,9 @@ class DemoLengkapSeeder extends Seeder
 
             if ($kode === 'P11') {
                 // RF-08: batal mendadak ke-1 Fajar Nugroho (genap jadi 2 bareng P9, masih di bawah ambang 3x).
-                $batalFajar = $this->daftar($ev, $kelasEv, 'fajar_n', 'dibatalkan', -2);
+                $batalFajar = $this->daftar($ev, $kelasEv, 'batman', 'dibatalkan', -2);
                 $batalFajar->cancellations()->create(['dibatalkan_oleh' => 'extras', 'alasan' => 'Kecelakaan motor ringan menuju lokasi survei.', 'is_mendadak' => true, 'created_at' => now()->subDays(1)]);
-                $this->u['fajar_n']->extrasProfile->recordCancellation();
+                $this->u['batman']->extrasProfile->recordCancellation();
             }
         }
 
@@ -525,8 +658,8 @@ class DemoLengkapSeeder extends Seeder
                 'portofolio_jenis' => $jenis, 'portofolio_tahun' => today()->addDays($hari)->year, 'tampilkan_nama_client' => $client,
             ]);
             $this->jadwal($arsip, [$hari], 'Jakarta');
-            // RF-08: 2 batal mendadak lama joko_s (yang ke-3 di P1) -> hitungan dari tabel cancellations.
-            $this->daftar($arsip, $this->kelas($arsip, 'Warga', 10, 300000, ['Dewasa']), 'joko_s', 'dibatalkan', $hari - 10)
+            // RF-08: 2 batal mendadak lama dicaprio (yang ke-3 di P1) -> hitungan dari tabel cancellations.
+            $this->daftar($arsip, $this->kelas($arsip, 'Warga', 10, 300000, ['Dewasa']), 'dicaprio', 'dibatalkan', $hari - 10)
                 ->cancellations()->create(['dibatalkan_oleh' => 'extras', 'alasan' => 'Sakit mendadak.', 'is_mendadak' => true, 'created_at' => now()->addDays($hari - 1)]);
             $this->notif($klien, 'Proyek Selesai', "Proyek '{$nama}' selesai. Terima kasih sudah bekerja sama.", null, true, now()->addDays($hari + 1));
         }
@@ -541,16 +674,16 @@ class DemoLengkapSeeder extends Seeder
         $nego = fn (string $un) => route('extras.negotiations.show', $this->app($p2, $un));
 
         foreach ([
-            ['owner_jbtb', 'Pembayaran Disengketakan', "Sari Meilani menyengketakan honor proyek '{$p1->nama_produksi}'.", $bayar($p1, 'sari_mei'), false],
+            ['owner_jbtb', 'Pembayaran Disengketakan', "Sari Meilani menyengketakan honor proyek '{$p1->nama_produksi}'.", $bayar($p1, 'goyounjung'), false],
             ['owner_jbtb', 'Pengajuan Proyek Baru', "Client Maya mengajukan proyek '{$p4->nama_produksi}', menunggu ACC.", route('super-admin.dashboard'), false],
-            ['admin_rina', 'Counter Fee dari Extras', "rehan_x mengajukan counter Rp 200.000 di proyek '{$p2->nama_produksi}'. Giliran kamu.", route('admin.negotiations.show', $this->app($p2, 'rehan_x')), false],
-            ['admin_rina', 'Pembayaran Disengketakan', "Sari Meilani: \"nominal kurang 1 hari\" di proyek '{$p1->nama_produksi}'.", $bayar($p1, 'sari_mei'), false],
+            ['admin_rina', 'Counter Fee dari Extras', "chalamet mengajukan counter Rp 200.000 di proyek '{$p2->nama_produksi}'. Giliran kamu.", route('admin.negotiations.show', $this->app($p2, 'chalamet')), false],
+            ['admin_rina', 'Pembayaran Disengketakan', "Sari Meilani: \"nominal kurang 1 hari\" di proyek '{$p1->nama_produksi}'.", $bayar($p1, 'goyounjung'), false],
             ['admin_rina', 'Honor Dibayar', "Honor kamu untuk proyek '{$p1->nama_produksi}' sudah dibayar.", null, true],
             ['admin_yoga', 'Selfie Menunggu Validasi', "2 selfie absensi '{$p3->nama_produksi}' hari ini menunggu validasi Korlap.", route('admin.attendance.index', ['project' => $p3->id]), false],
             ['admin_yoga', 'Lowongan Dibuka', "Lowongan '{$p6->nama_produksi}' sudah tayang, belum ada pendaftar.", route('admin.projects.applicants', $p6), true],
             ['admin_lestari', 'Akun Admin Dibuat', 'Akun admin kamu sudah aktif. Tunggu penugasan proyek dari Super Admin.', null, false],
             ['admin_hendra', 'Akun Dinonaktifkan', 'Akun kamu dinonaktifkan Super Admin.', null, false],
-            ['korlap_bambang', 'Selfie Menunggu Validasi', "melati_k & intan_r mengirim selfie absensi '{$p3->nama_produksi}'.", route('admin.attendance.index', ['project' => $p3->id]), false],
+            ['korlap_bambang', 'Selfie Menunggu Validasi', "black_widow & catwoman mengirim selfie absensi '{$p3->nama_produksi}'.", route('admin.attendance.index', ['project' => $p3->id]), false],
             ['korlap_bambang', 'Honor Tercatat', "Slip honor proyek '{$p1->nama_produksi}' sudah dibuat, menunggu pembayaran.", null, true],
             ['korlap_dedi', 'Penugasan Proyek', "Kamu ditugaskan sebagai Korlap di proyek '{$p2->nama_produksi}'.", null, false],
             ['client_andini', 'Kandidat Menunggu Greenlight', "2 kandidat proyek '{$p2->nama_produksi}' menunggu keputusan kamu.", route('client.reviews.show', $p2), false],
@@ -559,40 +692,40 @@ class DemoLengkapSeeder extends Seeder
             ['client_rudy', 'Pengajuan Proyek Ditolak', "Pengajuan proyek '{$p5->nama_produksi}' ditolak. Alasan: {$p5->alasan_tolak}", route('client.dashboard'), false],
             ['client_rudy', 'Shooting Hari Ini', "Shooting '{$p3->nama_produksi}' berlangsung hari ini, pantau foto kehadiran.", route('client.jadwal.show', $p3), false],
             ['client_maya', 'Pengajuan Terkirim', "Pengajuan proyek '{$p4->nama_produksi}' terkirim, menunggu ACC Super Admin.", route('client.dashboard'), true],
-            ['dimas_rk', 'Pembayaran Ditransfer', "Honor proyek '{$p1->nama_produksi}' sudah ditransfer.", $bayar($p1, 'dimas_rk'), true],
-            ['dimas_rk', 'Diajukan ke Client', "Kamu diajukan ke Client untuk proyek '{$p2->nama_produksi}'.", route('extras.dashboard'), false],
-            ['sari_mei', 'Pembayaran Ditransfer', "Honor proyek '{$p1->nama_produksi}' sudah ditransfer.", $bayar($p1, 'sari_mei'), true],
-            ['sari_mei', 'Sengketa Dicatat', 'Laporan sengketa kamu sudah diterima Admin.', $bayar($p1, 'sari_mei'), false],
-            ['bagas22', 'Pembayaran Ditransfer', "Honor proyek '{$p1->nama_produksi}' sudah ditransfer.", $bayar($p1, 'bagas22'), true],
-            ['bagas22', 'Kontrak Siap Ditandatangani', "Kontrak proyek '{$p2->nama_produksi}' sudah ditandatangani Admin. Giliran kamu.", $kontrak($p2, 'bagas22'), false, ['jenis' => 'kontrak_siap_ttd', 'email' => 'terkirim', 'wa' => 'terkirim', 'wa_dikirim_at' => now()->toDateTimeString()]],
-            ['nadia_pu', 'Hasil Seleksi', "Mohon maaf, kamu belum lolos seleksi proyek '{$p2->nama_produksi}' kali ini.", route('extras.dashboard'), false, ['jenis' => 'hasil_seleksi', 'email' => 'terkirim', 'wa' => 'gagal', 'wa_dikirim_at' => now()->toDateTimeString()]],
-            ['rehan_x', 'Penawaran Fee', "Admin menawarkan Rp 150.000 untuk proyek '{$p2->nama_produksi}'.", $nego('rehan_x'), true, ['jenis' => 'nego_fee', 'email' => 'terkirim']],
-            ['arga_p', 'Penawaran Fee', "Admin menawarkan Rp 175.000 untuk proyek '{$p2->nama_produksi}'. Terima atau ajukan counter.", $nego('arga_p'), false],
-            ['citra_ay', 'Fee Deal', "Fee Rp 175.000 untuk proyek '{$p2->nama_produksi}' sudah deal.", $nego('citra_ay'), false],
-            ['pak_harto', 'Pembayaran Ditransfer', "Honor proyek '{$p1->nama_produksi}' sudah ditransfer.", $bayar($p1, 'pak_harto'), true],
-            ['pak_harto', 'Kontrak Ditandatangani', "Kontrak proyek '{$p3->nama_produksi}' sudah lengkap.", $kontrak($p3, 'pak_harto'), true],
-            ['bu_ningsih', 'Pembayaran Ditransfer', "Honor proyek '{$p1->nama_produksi}' sudah ditransfer.", $bayar($p1, 'bu_ningsih'), true],
-            ['kevin_t', 'Diajukan ke Client', "Kamu diajukan ke Client untuk proyek '{$p2->nama_produksi}'.", route('extras.dashboard'), false],
-            ['aisyah_f', 'Kontrak Ditandatangani', "Kontrak proyek '{$p2->nama_produksi}' sudah lengkap.", $kontrak($p2, 'aisyah_f'), false],
-            ['yohanes_m', 'Absensi Tervalidasi', "Kehadiran kamu di '{$p3->nama_produksi}' hari ini sudah divalidasi Korlap.", route('extras.dashboard'), false],
-            ['clara_b', 'Pembayaran Ditransfer', "Honor proyek '{$p3->nama_produksi}' sudah ditransfer. Silakan konfirmasi.", $bayar($p3, 'clara_b'), false],
-            ['fajar_n', 'Pembatalan Tercatat', "Pembatalan kamu untuk proyek '{$p2->nama_produksi}' sudah tercatat.", route('extras.dashboard'), true],
-            ['wulan_s', 'Pendaftaran Diterima', "Pendaftaran proyek '{$p2->nama_produksi}' berhasil, Admin akan mereview.", route('extras.dashboard'), true, ['jenis' => 'konfirmasi_apply', 'wa' => 'terkirim', 'wa_dikirim_at' => now()->toDateTimeString()]],
-            ['wulan_s', 'Shooting Hari Ini', "Shooting '{$p3->nama_produksi}' hari ini. Jangan lupa selfie absensi.", route('extras.dashboard'), false],
-            ['tono_g', 'Pembayaran Ditransfer', "Honor proyek '{$p1->nama_produksi}' sudah ditransfer. Silakan konfirmasi.", $bayar($p1, 'tono_g'), false],
-            ['melati_k', 'Selfie Terkirim', 'Selfie absensi kamu menunggu validasi Korlap.', route('extras.dashboard'), false],
-            ['intan_r', 'Selfie Terkirim', 'Selfie absensi kamu menunggu validasi Korlap.', route('extras.dashboard'), false],
-            ['joko_s', 'Status Akun Melanggar', 'Akun kamu berstatus Melanggar karena 3x batal mendadak.', null, false],
-            ['putri_a', 'Akun Dinonaktifkan', 'Akun kamu dinonaktifkan Admin.', null, false],
+            ['spiderman', 'Pembayaran Ditransfer', "Honor proyek '{$p1->nama_produksi}' sudah ditransfer.", $bayar($p1, 'spiderman'), true],
+            ['spiderman', 'Diajukan ke Client', "Kamu diajukan ke Client untuk proyek '{$p2->nama_produksi}'.", route('extras.dashboard'), false],
+            ['goyounjung', 'Pembayaran Ditransfer', "Honor proyek '{$p1->nama_produksi}' sudah ditransfer.", $bayar($p1, 'goyounjung'), true],
+            ['goyounjung', 'Sengketa Dicatat', 'Laporan sengketa kamu sudah diterima Admin.', $bayar($p1, 'goyounjung'), false],
+            ['bruce_lee', 'Pembayaran Ditransfer', "Honor proyek '{$p1->nama_produksi}' sudah ditransfer.", $bayar($p1, 'bruce_lee'), true],
+            ['bruce_lee', 'Kontrak Siap Ditandatangani', "Kontrak proyek '{$p2->nama_produksi}' sudah ditandatangani Admin. Giliran kamu.", $kontrak($p2, 'bruce_lee'), false, ['jenis' => 'kontrak_siap_ttd', 'email' => 'terkirim', 'wa' => 'terkirim', 'wa_dikirim_at' => now()->toDateTimeString()]],
+            ['zendaya', 'Hasil Seleksi', "Mohon maaf, kamu belum lolos seleksi proyek '{$p2->nama_produksi}' kali ini.", route('extras.dashboard'), false, ['jenis' => 'hasil_seleksi', 'email' => 'terkirim', 'wa' => 'gagal', 'wa_dikirim_at' => now()->toDateTimeString()]],
+            ['chalamet', 'Penawaran Fee', "Admin menawarkan Rp 150.000 untuk proyek '{$p2->nama_produksi}'.", $nego('chalamet'), true, ['jenis' => 'nego_fee', 'email' => 'terkirim']],
+            ['thor', 'Penawaran Fee', "Admin menawarkan Rp 175.000 untuk proyek '{$p2->nama_produksi}'. Terima atau ajukan counter.", $nego('thor'), false],
+            ['wonder_woman', 'Fee Deal', "Fee Rp 175.000 untuk proyek '{$p2->nama_produksi}' sudah deal.", $nego('wonder_woman'), false],
+            ['jackie_chan', 'Pembayaran Ditransfer', "Honor proyek '{$p1->nama_produksi}' sudah ditransfer.", $bayar($p1, 'jackie_chan'), true],
+            ['jackie_chan', 'Kontrak Ditandatangani', "Kontrak proyek '{$p3->nama_produksi}' sudah lengkap.", $kontrak($p3, 'jackie_chan'), true],
+            ['michelle_yeoh', 'Pembayaran Ditransfer', "Honor proyek '{$p1->nama_produksi}' sudah ditransfer.", $bayar($p1, 'michelle_yeoh'), true],
+            ['zuckerberg', 'Diajukan ke Client', "Kamu diajukan ke Client untuk proyek '{$p2->nama_produksi}'.", route('extras.dashboard'), false],
+            ['bella_hadid', 'Kontrak Ditandatangani', "Kontrak proyek '{$p2->nama_produksi}' sudah lengkap.", $kontrak($p2, 'bella_hadid'), false],
+            ['iron_man', 'Absensi Tervalidasi', "Kehadiran kamu di '{$p3->nama_produksi}' hari ini sudah divalidasi Korlap.", route('extras.dashboard'), false],
+            ['emma_watson', 'Pembayaran Ditransfer', "Honor proyek '{$p3->nama_produksi}' sudah ditransfer. Silakan konfirmasi.", $bayar($p3, 'emma_watson'), false],
+            ['batman', 'Pembatalan Tercatat', "Pembatalan kamu untuk proyek '{$p2->nama_produksi}' sudah tercatat.", route('extras.dashboard'), true],
+            ['song_hyekyo', 'Pendaftaran Diterima', "Pendaftaran proyek '{$p2->nama_produksi}' berhasil, Admin akan mereview.", route('extras.dashboard'), true, ['jenis' => 'konfirmasi_apply', 'wa' => 'terkirim', 'wa_dikirim_at' => now()->toDateTimeString()]],
+            ['song_hyekyo', 'Shooting Hari Ini', "Shooting '{$p3->nama_produksi}' hari ini. Jangan lupa selfie absensi.", route('extras.dashboard'), false],
+            ['keanu_reeves', 'Pembayaran Ditransfer', "Honor proyek '{$p1->nama_produksi}' sudah ditransfer. Silakan konfirmasi.", $bayar($p1, 'keanu_reeves'), false],
+            ['black_widow', 'Selfie Terkirim', 'Selfie absensi kamu menunggu validasi Korlap.', route('extras.dashboard'), false],
+            ['catwoman', 'Selfie Terkirim', 'Selfie absensi kamu menunggu validasi Korlap.', route('extras.dashboard'), false],
+            ['dicaprio', 'Status Akun Melanggar', 'Akun kamu berstatus Melanggar karena 3x batal mendadak.', null, false],
+            ['sydney_sweeney', 'Akun Dinonaktifkan', 'Akun kamu dinonaktifkan Admin.', null, false],
             ['ghost01', 'Lengkapi Profil', 'Profil kamu masih kosong, lengkapi supaya bisa daftar lowongan.', route('extras.profile.edit'), false],
-            ['baru_daftar', 'Lengkapi Profil', 'Upload foto profil supaya bisa daftar lowongan.', route('extras.profile.edit'), false],
+            ['anya_taylor', 'Lengkapi Profil', 'Upload foto profil supaya bisa daftar lowongan.', route('extras.profile.edit'), false],
         ] as $baris) {
             [$un, $judul, $pesan, $url, $dibaca, $kirim] = $baris + [5 => []];
             $this->notif($this->u[$un], $judul, $pesan, $url, $dibaca, kirim: $kirim);
         }
 
         foreach ($this->u as $un => $user) {
-            if ($user->isExtras() && ! in_array($un, ['ghost01', 'baru_daftar'], true)) {
+            if ($user->isExtras() && ! in_array($un, ['ghost01', 'anya_taylor'], true)) {
                 $this->notif($user, 'Lowongan Butuh Dadakan', "Lowongan '{$p6->nama_produksi}' butuh extras segera. Daftar sebelum {$p6->deadline->format('d M')}.", route('extras.projects.show', $p6), false);
             }
         }

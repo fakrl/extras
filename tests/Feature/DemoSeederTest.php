@@ -45,7 +45,7 @@ class DemoSeederTest extends TestCase
             User::withTrashed()->selectRaw('role, count(*) c')->groupBy('role')->orderBy('role')->pluck('c', 'role')->all()
         );
         $this->assertTrue(User::where('email', 'owner@jbtb.test')->value('is_protected'));
-        $this->assertSoftDeleted('users', ['username' => 'lama_dihapus']);
+        $this->assertSoftDeleted('users', ['username' => 'brad_pitt']);
 
         $p = fn (string $awalan) => CastingProject::where('nama_produksi', 'like', $awalan.'%')->firstOrFail();
 
@@ -67,12 +67,12 @@ class DemoSeederTest extends TestCase
         $this->assertSame(['ghost01'], User::mangkrak()->pluck('username')->all());
         $this->assertSame(['ghost01'], User::akanDihapus()->pluck('username')->all());
         $this->assertSame(3, ExtrasProfile::where('apresiasi', true)->count());
-        $this->get('/')->assertOk()->assertSee('@dimas_rk')->assertDontSee('@arga_p')
+        $this->get('/')->assertOk()->assertSee('@spiderman')->assertDontSee('@thor')
             ->assertSee('Rumah di Ujung Senja')->assertSee('PT Kopi Pagi Nusantara')->assertDontSee('Sinar Rumah Produksi')->assertDontSee('PT Layar Senja Films');
 
         $dimas = ProjectApplication::with('castingProjectClass.categories', 'extras.categories')
             ->where('casting_project_id', $p('Iklan "Minuman')->id)
-            ->whereHas('extras.user', fn ($q) => $q->where('username', 'dimas_rk'))->firstOrFail();
+            ->whereHas('extras.user', fn ($q) => $q->where('username', 'spiderman'))->firstOrFail();
         $this->assertSame(100, $dimas->persenCocok());
 
         User::withTrashed()->withCount('notifications')->get()
@@ -80,9 +80,9 @@ class DemoSeederTest extends TestCase
         $this->assertDatabaseHas('notifications', ['read_at' => null]);
 
         // BM: data demo pakai skema baru
-        $joko = User::where('username', 'joko_s')->firstOrFail()->extrasProfile;
+        $joko = User::where('username', 'dicaprio')->firstOrFail()->extrasProfile;
         $this->assertSame([3, 'melanggar'], [$joko->cancel_count, $joko->status]);
-        $this->assertSame('gagal', User::where('username', 'nadia_pu')->firstOrFail()->notifications()->where('data->jenis', 'hasil_seleksi')->sole()->data['wa']);
+        $this->assertSame('gagal', User::where('username', 'zendaya')->firstOrFail()->notifications()->where('data->jenis', 'hasil_seleksi')->sole()->data['wa']);
         $this->assertSame(6, User::whereNotNull('honor_nominal')->count());
         $this->assertSame(0, CastingProject::whereNull('client_id')->where('nama_produksi', 'not like', 'Iklan "Bank%')->count());
         $this->assertTrue(ClientReview::whereNotNull('grade_client')->exists());
@@ -94,7 +94,7 @@ class DemoSeederTest extends TestCase
         Storage::fake('local');
         $this->seed([ExtrasCategorySeeder::class, DemoLengkapSeeder::class]);
 
-        foreach (['admin_rina', 'korlap_bambang', 'client_andini', 'dimas_rk'] as $username) {
+        foreach (['admin_rina', 'korlap_bambang', 'client_andini', 'spiderman'] as $username) {
             $user = User::where('username', $username)->firstOrFail();
 
             $this->post('/login', ['email' => $username, 'password' => 'password'])->assertRedirect($user->dashboardUrl());

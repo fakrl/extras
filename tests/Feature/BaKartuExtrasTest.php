@@ -42,7 +42,7 @@ class BaKartuExtrasTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $project = CastingProject::factory()->create(['admin_id' => $admin->id]);
         $t = $this->tags();
-        $app = $this->lamaran($project, 'dimas_rk', [$t[0], $t[1]]);
+        $app = $this->lamaran($project, 'spiderman', [$t[0], $t[1]]);
         $app->castingProjectClass->categories()->sync($t);
         ExtrasProfile::find($app->extras_id)->applications()->create(['casting_project_id' => CastingProject::factory()->create()->id, 'status_partisipasi' => 'selesai_produksi']);
 
@@ -134,13 +134,13 @@ class BaKartuExtrasTest extends TestCase
     public function test_data_extras_admin_pakai_kartu_tanpa_aplikasi(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $extras = User::factory()->create(['role' => 'extras', 'username' => 'sari_mei']);
+        $extras = User::factory()->create(['role' => 'extras', 'username' => 'goyounjung']);
         ExtrasProfile::create(['user_id' => $extras->id]);
         User::factory()->create(['role' => 'extras', 'username' => null]);
 
         $this->actingAs($admin)->get(route('admin.akun.extras'))
             ->assertOk()
-            ->assertSee('@sari_mei')
+            ->assertSee('@goyounjung')
             ->assertSee('Kelola')
             ->assertSee(route('admin.users.kategori', $extras), false)
             ->assertDontSee('class="xcard-ring"', false);

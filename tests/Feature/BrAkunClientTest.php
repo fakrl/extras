@@ -35,11 +35,11 @@ class BrAkunClientTest extends TestCase
         $client = User::factory()->create(['role' => 'client', 'name' => 'Client Andini', 'nama_perusahaan' => 'PT Andini Film']);
         User::factory()->create(['role' => 'client', 'name' => 'Client Budi', 'nama_perusahaan' => 'Budi Pictures']);
         $p = CastingProject::factory()->create(['client_id' => $client->id, 'nama_produksi' => 'Iklan Minuman']);
-        $this->app($p, 'dimas_rk', 'lolos', 'approve', 'A', 5);
+        $this->app($p, 'spiderman', 'lolos', 'approve', 'A', 5);
         $this->app($p, 'sari_tolak', 'ditolak', 'reject', null, 10);
         $this->app($p, 'rina_tunggu', 'diajukan_ke_client');
         $this->app($p, 'admin_tolak', 'ditolak');
-        $this->app($p, 'baru_daftar', 'diajukan');
+        $this->app($p, 'anya_taylor', 'diajukan');
 
         return [$client, $p];
     }
@@ -54,8 +54,8 @@ class BrAkunClientTest extends TestCase
             ->assertSee('Client Andini')->assertSee('PT Andini Film')->assertSee('1 proyek')->assertSee('terakhir: Iklan Minuman')
             ->assertSee($p->kode_proyek)
             ->assertSeeInOrder(['3 diajukan', '1 lock', '1 ditolak'])
-            ->assertSee('@dimas_rk')->assertSee('Lock · Grade A')->assertSee('@rina_tunggu')->assertSee('Menunggu keputusan')->assertSee('@sari_tolak')
-            ->assertDontSee('@admin_tolak')->assertDontSee('@baru_daftar')
+            ->assertSee('@spiderman')->assertSee('Lock · Grade A')->assertSee('@rina_tunggu')->assertSee('Menunggu keputusan')->assertSee('@sari_tolak')
+            ->assertDontSee('@admin_tolak')->assertDontSee('@anya_taylor')
             ->assertSee('data-profil-modal', false)
             ->assertDontSee('Keputusan Client terbaru')->assertDontSee('data-feed-keputusan', false)->assertDontSee('akc-kanan', false);
 
