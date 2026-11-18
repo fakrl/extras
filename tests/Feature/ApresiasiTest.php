@@ -99,6 +99,18 @@ class ApresiasiTest extends TestCase
         }
     }
 
+    public function test_kartu_extras_favorit_pakai_svg_bukan_class_ikon_rusak(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $extras = ExtrasProfile::factory()->create(['apresiasi' => true]);
+
+        $response = $this->actingAs($admin)->get(route('admin.akun.extras'));
+
+        $response->assertOk();
+        $response->assertSee('<svg', false);
+        $response->assertDontSee('ti-star-filled');
+    }
+
     public function test_apresiasi_tidak_muncul_di_halaman_profil_extras_sendiri(): void
     {
         $application = $this->buatAplikasi();

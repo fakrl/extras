@@ -82,7 +82,7 @@
                 @csrf @method('PATCH')
                 <button type="submit" @class(['is-on' => $profile->apresiasi]) aria-pressed="{{ $profile->apresiasi ? 'true' : 'false' }}"
                         aria-label="{{ $profile->apresiasi ? 'Hapus '.$label.' dari Favorit' : 'Jadikan '.$label.' Favorit' }}"
-                        title="{{ $profile->apresiasi ? 'Favorit'.($profile->apresiasi_catatan ? ': '.$profile->apresiasi_catatan : '') : 'Jadikan Favorit' }}">@if ($profile->apresiasi)<i class="ti ti-star-filled" style="color: #f59e0b;" aria-hidden="true"></i>@else<i class="ti ti-star" aria-hidden="true"></i>@endif</button>
+                        title="{{ $profile->apresiasi ? 'Favorit'.($profile->apresiasi_catatan ? ': '.$profile->apresiasi_catatan : '') : 'Jadikan Favorit' }}">@if ($profile->apresiasi)<svg width="1em" height="1em" viewBox="0 0 24 24" fill="#f59e0b" aria-hidden="true"><path d="M12 1.5l3.09 6.26 6.91 1-5 4.87 1.18 6.88L12 17.27l-6.18 3.24L7 13.63l-5-4.87 6.91-1z"/></svg>@else<i class="ti ti-star" aria-hidden="true"></i>@endif</button>
             </form>
         @endif
     </div>
