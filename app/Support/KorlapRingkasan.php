@@ -35,7 +35,7 @@ class KorlapRingkasan
 
         return [
             'total' => $peserta->count(),
-            'hadir' => $hitung(fn ($x) => $x?->status === 'hadir' && $x->status_validasi === 'tervalidasi'),
+            'hadir' => $hitung(fn ($x) => $x?->hadirTervalidasi() === true),
             'menunggu_validasi' => $validasi,
             'belum' => $belum,
             'menunggu' => $validasi + $belum,

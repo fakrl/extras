@@ -8,6 +8,7 @@ use App\Models\ExtrasProfile;
 use App\Models\Payment;
 use App\Models\ProjectApplication;
 use App\Models\User;
+use App\Support\KorlapRingkasan;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -232,6 +233,24 @@ class SuperAdminDashboardTest extends TestCase
             ->assertDontSee('<img src=x', false)
             ->assertSee(e(route('admin.attendance.index', ['project' => $p->id, 'tanggal' => $tgl->id])), false)
             ->assertSee(e(route('admin.projects.show', $p)), false);
+    }
+
+    /** DI.1: hadir_count dashboard SA harus pakai definisi sama dengan KorlapRingkasan::rekap() - cuma hadir yang sudah tervalidasi. */
+    public function test_agenda_hadir_count_cuma_hitung_yang_tervalidasi(): void
+    {
+        $p = CastingProject::factory()->create(['client_request_status' => 'disetujui', 'nama_produksi' => 'Proyek Validasi']);
+        $tgl = $p->shootingDates()->create(['tanggal' => '2026-06-16', 'lokasi' => 'Studio B']);
+        $tervalidasi = $this->aplikasi($p);
+        $menunggu = $this->aplikasi($p);
+        Attendance::create(['project_application_id' => $tervalidasi->id, 'event_shooting_date_id' => $tgl->id, 'status' => 'hadir', 'status_validasi' => 'tervalidasi', 'dicatat_oleh' => $this->sa->id]);
+        Attendance::create(['project_application_id' => $menunggu->id, 'event_shooting_date_id' => $tgl->id, 'status' => 'hadir', 'status_validasi' => 'menunggu', 'dicatat_oleh' => $this->sa->id]);
+
+        $r = $this->actingAs($this->sa)->get(route('super-admin.dashboard'));
+
+        $r->assertOk()->assertSee('1/2 hadir')->assertDontSee('2/2 hadir');
+
+        $rekap = KorlapRingkasan::rekap(KorlapRingkasan::peserta($p, $tgl));
+        $this->assertSame(1, $rekap['hadir']);
     }
 
     public function test_ingatkan_semua_staf_mengirim_pengingat_dan_mencatat_log(): void

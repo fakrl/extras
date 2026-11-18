@@ -262,7 +262,7 @@ class DashboardController extends Controller
             ->whereHas('castingProject', fn ($q) => $q->where('client_request_status', 'disetujui'))
             ->with(['castingProject' => fn ($q) => $q->select('id', 'nama_produksi')->withCount(['applications as extras_count' => fn ($a) => $a
                 ->whereIn('status_partisipasi', [...ProjectApplication::STATUS_AKTIF, 'selesai_produksi'])])])
-            ->withCount(['attendances as hadir_count' => fn ($q) => $q->where('status', 'hadir')])
+            ->withCount(['attendances as hadir_count' => fn ($q) => $q->hadirValidasi()])
             ->orderBy('tanggal')
             ->get()
             ->each(function (EventShootingDate $e) {
