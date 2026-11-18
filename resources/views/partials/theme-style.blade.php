@@ -630,7 +630,7 @@
     }
 
     /* 4. Slide-Over Right Drawer Modal */
-    dialog.xmodal.xdrawer-right {
+    dialog.xmodal.xdrawer-right[open] {
         margin: 0 0 0 auto !important;
         height: 100dvh !important;
         max-height: 100dvh !important;
