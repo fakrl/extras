@@ -133,7 +133,13 @@ class ExtrasProfile extends Model
     /** EX-16/17: rekening milik sendiri, hanya 4 karakter terakhir yang terlihat. */
     public function rekeningTersamar(): ?string
     {
-        return $this->rekening ? '•••• '.substr($this->rekening, -4) : null;
+        if (! $this->rekening) {
+            return null;
+        }
+
+        $digit = preg_replace('/\D/', '', (string) $this->rekening);
+
+        return '•••• '.(strlen($digit) >= 4 ? substr($digit, -4) : '••••');
     }
 
     public function profilLengkap(): bool
