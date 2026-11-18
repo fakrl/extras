@@ -12,6 +12,9 @@
     <div>
         <div style="font-size: 18px; font-weight: 700;">Callsheet · {{ $shootingDate->tanggal->translatedFormat('l, d F Y') }}</div>
         <div style="font-size: var(--fs-sm); color: var(--text-secondary);">{{ $castingProject->nama_produksi }} <span class="kode-proyek">{{ $castingProject->kode_proyek }}</span></div>
+        @if ($bolehKelola)
+            <a href="{{ route('admin.projects.edit', $castingProject) }}#tanggal-wrap" style="font-size: var(--fs-xs);">Ubah jadwal dan jam panggil <i class="ti ti-arrow-right"></i></a>
+        @endif
     </div>
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
         <button type="button" class="btn btn-brand" onclick="document.getElementById('modal-callsheet-wa').showModal()" style="display: inline-flex; align-items: center; gap: 6px;">

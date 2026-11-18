@@ -260,4 +260,18 @@ class CallsheetTest extends TestCase
         $d = $this->buatProyekLengkap();
         $this->actingAs($d['admin'])->get($this->url($d['project'], today()->addYears(5)))->assertNotFound();
     }
+
+    /** Item 12: hint "Ubah jadwal dan jam panggil" ke form edit proyek, cuma buat yang boleh kelola. */
+    public function test_hint_ubah_jadwal_tampil_untuk_admin_tidak_untuk_korlap(): void
+    {
+        $d = $this->buatProyekLengkap();
+        $linkEdit = route('admin.projects.edit', $d['project']);
+
+        $this->actingAs($d['admin'])->get($this->url($d['project'], $d['shootingDate']->tanggal))
+            ->assertSee('Ubah jadwal dan jam panggil')
+            ->assertSee($linkEdit, false);
+
+        $this->actingAs($d['korlap'])->get($this->url($d['project'], $d['shootingDate']->tanggal))
+            ->assertDontSee('Ubah jadwal dan jam panggil');
+    }
 }
