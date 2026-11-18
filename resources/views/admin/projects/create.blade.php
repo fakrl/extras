@@ -11,7 +11,7 @@
 <div class="card">
     <div style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Buka Lowongan Casting Baru</div>
 
-    <form method="POST" action="{{ route('admin.projects.store') }}" enctype="multipart/form-data">
+    <form method="POST" action="{{ route('admin.projects.store') }}" enctype="multipart/form-data" novalidate>
         @csrf
         <p class="wajib-ket"><span class="wajib">*</span> wajib diisi</p>
 

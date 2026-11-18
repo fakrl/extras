@@ -176,10 +176,10 @@ class ProfileController extends Controller
                 'required', 'string', 'alpha_dash', 'max:50',
                 Rule::unique('users', 'username')->ignore($request->user()->id),
             ],
-            'usia' => ['nullable', 'integer', 'min:1', 'max:120'],
+            'usia' => ['nullable', 'integer', 'min:17', 'max:70'],
             'gender' => ['nullable', 'in:pria,wanita'],
-            'tinggi_badan' => ['nullable', 'integer', 'min:1'],
-            'berat_badan' => ['nullable', 'integer', 'min:20', 'max:250'],
+            'tinggi_badan' => ['nullable', 'integer', 'min:140', 'max:210'],
+            'berat_badan' => ['nullable', 'integer', 'min:35', 'max:150'],
             'ukuran_baju' => ['nullable', 'string'],
         ]);
 

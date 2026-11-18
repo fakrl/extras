@@ -242,7 +242,7 @@
                 <div class="baca-value @if ($belum($profile->ukuran_baju)) is-kosong @endif">{{ $profile->ukuran_baju ?: '–' }}</div>
             </div>
         </div>
-        <form method="POST" action="{{ route('extras.profile.update') }}" id="form-data_diri" class="bagian-form">
+        <form method="POST" action="{{ route('extras.profile.update') }}" id="form-data_diri" class="bagian-form" novalidate>
             @csrf
             @method('PUT')
             <input type="hidden" name="bagian" value="data_diri">
@@ -264,7 +264,7 @@
 
             <label for="usia">Usia</label>
             <input type="number" name="usia" id="usia" value="{{ old('usia', $profile->usia) }}"
-                   placeholder="Contoh: 28" inputmode="numeric" min="1" max="120"
+                   placeholder="Contoh: 28" inputmode="numeric" min="17" max="70"
                    @class(['input-error' => $errors->has('usia')])>
             @error('usia')<span class="field-error">{{ $message }}</span>@enderror
 
@@ -283,14 +283,14 @@
                 <div style="min-width: 130px;">
                     <label for="tinggi_badan">Tinggi Badan (cm)</label>
                     <input type="number" name="tinggi_badan" id="tinggi_badan" value="{{ old('tinggi_badan', $profile->tinggi_badan) }}"
-                           placeholder="Contoh: 165" inputmode="numeric" min="1"
+                           placeholder="Contoh: 165" inputmode="numeric" min="140" max="210"
                            @class(['input-error' => $errors->has('tinggi_badan')])>
                     @error('tinggi_badan')<span class="field-error">{{ $message }}</span>@enderror
                 </div>
                 <div style="min-width: 130px;">
                     <label for="berat_badan">Berat Badan (kg)</label>
                     <input type="number" name="berat_badan" id="berat_badan" value="{{ old('berat_badan', $profile->berat_badan) }}"
-                           placeholder="Contoh: 55" inputmode="numeric" min="20" max="250"
+                           placeholder="Contoh: 55" inputmode="numeric" min="35" max="150"
                            @class(['input-error' => $errors->has('berat_badan')])>
                     @error('berat_badan')<span class="field-error">{{ $message }}</span>@enderror
                 </div>
@@ -323,7 +323,7 @@
                 </div>
             @endif
         </div>
-        <form method="POST" action="{{ route('extras.profile.update') }}" id="form-kontak" class="bagian-form">
+        <form method="POST" action="{{ route('extras.profile.update') }}" id="form-kontak" class="bagian-form" novalidate>
             @csrf
             @method('PUT')
             <input type="hidden" name="bagian" value="kontak">
@@ -355,7 +355,7 @@
                 <div class="baca-value @if ($belum($profile->bahasa)) is-kosong @endif">{{ $profile->bahasa ?: '–' }}</div>
             </div>
         </div>
-        <form method="POST" action="{{ route('extras.profile.update') }}" id="form-tentang" class="bagian-form">
+        <form method="POST" action="{{ route('extras.profile.update') }}" id="form-tentang" class="bagian-form" novalidate>
             @csrf
             @method('PUT')
             <input type="hidden" name="bagian" value="tentang">
@@ -408,7 +408,7 @@
                 @endif
             </div>
         </div>
-        <form method="POST" action="{{ route('extras.profile.update') }}" id="form-pengalaman" class="bagian-form">
+        <form method="POST" action="{{ route('extras.profile.update') }}" id="form-pengalaman" class="bagian-form" novalidate>
             @csrf
             @method('PUT')
             <input type="hidden" name="bagian" value="pengalaman">
@@ -486,7 +486,7 @@
                 <div class="baca-value @if ($belum($profile->rate_card)) is-kosong @endif">{{ $profile->rate_card ? 'Rp '.number_format($profile->rate_card, 0, ',', '.') : '–' }}</div>
             </div>
         </div>
-        <form method="POST" action="{{ route('extras.profile.update') }}" id="form-tautan" class="bagian-form">
+        <form method="POST" action="{{ route('extras.profile.update') }}" id="form-tautan" class="bagian-form" novalidate>
             @csrf
             @method('PUT')
             <input type="hidden" name="bagian" value="tautan">
@@ -549,7 +549,7 @@
                 <div class="baca-value">{{ $profile->izin_tampil_publik ? 'Diizinkan' : 'Tidak diizinkan' }}</div>
             </div>
         </div>
-        <form method="POST" action="{{ route('extras.profile.update') }}" id="form-privasi" class="bagian-form">
+        <form method="POST" action="{{ route('extras.profile.update') }}" id="form-privasi" class="bagian-form" novalidate>
             @csrf
             @method('PUT')
             <input type="hidden" name="bagian" value="privasi">

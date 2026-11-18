@@ -7,7 +7,7 @@
     <h2 style="margin-bottom:20px; font-size:18px; font-weight:600;">Ubah Kata Sandi</h2>
 
     <div class="card" style="padding:24px;">
-        <form method="POST" action="{{ route('ubah-password.update') }}">
+        <form method="POST" action="{{ route('ubah-password.update') }}" novalidate>
             @csrf
 
             @if (auth()->user()->password)

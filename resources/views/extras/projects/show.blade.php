@@ -86,7 +86,7 @@
         @elseif (! $castingProject->menerimaPendaftaran())
         <div class="alert-info" style="margin: 0;"><i class="ti ti-info-circle"></i> Proyek ini sudah tidak menerima pendaftaran (ditutup, kuota penuh, atau lewat deadline).</div>
         @else
-        <form method="POST" action="{{ route('extras.projects.apply', $castingProject) }}" style="margin: 0;">
+        <form method="POST" action="{{ route('extras.projects.apply', $castingProject) }}" style="margin: 0;" novalidate>
             @csrf
             @if ($castingProject->classes->isNotEmpty())
                 <div class="card" id="kartu-pilih-peran" style="margin-bottom: 16px; border: 2px solid var(--accent);">
