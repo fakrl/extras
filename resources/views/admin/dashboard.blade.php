@@ -123,7 +123,7 @@
                     </div>
                 </div>
 
-                <div class="dash-stat-card metric-card" tabindex="0" style="padding: 10px 12px; cursor: pointer;">
+                <div class="dash-stat-card metric-card is-right-aligned" tabindex="0" style="padding: 10px 12px; cursor: pointer;">
                     <div>
                         <div class="metric-label" style="display: flex; justify-content: space-between; align-items: center;">
                             <span>Total Pendaftar</span>
