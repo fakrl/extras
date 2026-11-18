@@ -157,6 +157,10 @@ class DashboardController extends Controller
             'shooting' => CastingProject::diTahap('berjalan')->count(),
             'selesai' => CastingProject::diTahap('selesai')->count(),
             'batal' => CastingProject::where('client_request_status', 'ditolak')->count(),
+            // Item 5: client_request_status bisa 'perlu_revisi' (Admin minta Client revisi
+            // pengajuan) - bukan menunggu_acc/disetujui/ditolak, supaya kategori di atas selalu
+            // menjumlah ke total, bukan nyisain proyek yang "hilang" tak terhitung di kartu ini.
+            'perlu_revisi' => CastingProject::where('client_request_status', 'perlu_revisi')->count(),
         ];
 
         // Target/terisi kuota: proyek disetujui yang BELUM di tahap 'selesai' (scopeDiTahap(),
@@ -165,7 +169,8 @@ class DashboardController extends Controller
         $targetKuota = (int) CastingProjectClass::whereHas('castingProject', fn ($q) => $q->where('client_request_status', 'disetujui'))
             ->whereDoesntHave('castingProject', fn ($q) => $q->diTahap('selesai'))
             ->sum('kuota_kelas');
-        $terisiKuota = (int) ProjectApplication::whereIn('status_partisipasi', ['deal', 'diajukan_ke_client', 'lolos', 'kontrak_ditandatangani', 'selesai_produksi'])
+        // BD.7: terisi = semua status KECUALI ditolak/dibatalkan (sama dgn CastingProject::terisiKuota()).
+        $terisiKuota = (int) ProjectApplication::whereNotIn('status_partisipasi', ['ditolak', 'dibatalkan'])
             ->whereHas('castingProject', fn ($q) => $q->where('client_request_status', 'disetujui'))
             ->whereDoesntHave('castingProject', fn ($q) => $q->diTahap('selesai'))->count();
         $fulfillmentRate = $targetKuota > 0 ? (int) round(($terisiKuota / $targetKuota) * 100) : 0;
@@ -177,6 +182,7 @@ class DashboardController extends Controller
             'shooting' => (int) ($proyekCounts->shooting ?? 0),
             'selesai' => (int) ($proyekCounts->selesai ?? 0),
             'batal' => (int) ($proyekCounts->batal ?? 0),
+            'perlu_revisi' => (int) ($proyekCounts->perlu_revisi ?? 0),
             'target_kuota' => $targetKuota,
             'terisi_kuota' => $terisiKuota,
             'fulfillment_rate' => $fulfillmentRate,

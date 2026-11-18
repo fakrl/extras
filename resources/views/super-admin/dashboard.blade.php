@@ -22,7 +22,7 @@
 <div class="kpi-grid">
     <x-kpi label="Menunggu keputusan" :angka="$menungguKeputusan" :href="route('admin.projects.index', ['tahap' => 'menunggu_acc'])" :mendesak="$menungguKeputusan > 0 && $pengajuanMendesak" :accent="'#D97706'" />
     <x-kpi label="Tugas staf tertunda" :angka="$stafTertunda" :sub="'di '.($pantauAdmin->count() + $tugasKorlap->count()).' staf'" :href="route('super-admin.monitoring.admin')" :mendesak="$stafMendesak" :accent="'#DC2626'" />
-    <x-kpi label="Proyek berjalan" :angka="$proyekBerjalan" :pertumbuhan="$pertumbuhanBerjalan" :href="route('admin.projects.index', ['tahap' => 'berjalan', 'dari' => $dari->format('Y-m-d'), 'sampai' => $sampai->format('Y-m-d')])" />
+    <x-kpi label="Proyek berjalan" :angka="$proyekBerjalan" :sub="'shooting dalam '.\App\Support\Periode::label($dari, $sampai, $preset)" :pertumbuhan="$pertumbuhanBerjalan" :href="route('admin.projects.index', ['tahap' => 'berjalan', 'dari' => $dari->format('Y-m-d'), 'sampai' => $sampai->format('Y-m-d')])" />
     <x-kpi label="Invoice belum lunas" :angka="$invoiceBelumLunas->count()" :sub="$rp($invoiceTotal)" :href="route('admin.projects.index')" />
 </div>
 
@@ -133,6 +133,7 @@
                 <span class="dash-popover-title">Status Siklus Proyek</span>
                 <button type="button" class="dash-popover-close" aria-label="Tutup"><i class="ti ti-x"></i></button>
             </div>
+            <div class="popover-row"><span>Perlu Revisi Client</span><strong>{{ $statProyekKuota['perlu_revisi'] }}</strong></div>
             <div class="popover-row"><span>Menunggu ACC Super Admin</span><strong>{{ $statProyekKuota['menunggu_acc'] }}</strong></div>
             <div class="popover-row"><span>Buka Lowongan & Seleksi</span><strong>{{ $statProyekKuota['seleksi'] }}</strong></div>
             <div class="popover-row"><span>Shooting Berjalan</span><strong>{{ $statProyekKuota['shooting'] }}</strong></div>
