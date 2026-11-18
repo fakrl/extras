@@ -44,9 +44,14 @@ class CastingProjectPengelolaTest extends TestCase
         $this->assertSame($client->id, $project->client_id);
         $this->assertSame($korlap->id, $project->korlap()?->id);
 
-        $this->assertTrue(ActivityLog::where('action', 'UPDATE_PROJECT_PIC')
+        $log = ActivityLog::where('action', 'UPDATE_PROJECT_PIC')
             ->where('description', 'like', '%Iklan Kopi Segar%')
-            ->exists());
+            ->first();
+        $this->assertNotNull($log);
+        $this->assertStringContainsString('Client: Belum ada Client menjadi Client Rudi', $log->description);
+        $this->assertStringContainsString('PIC: Belum ada PIC menjadi Admin Budi', $log->description);
+        $this->assertStringContainsString('Korlap: Belum ada Korlap menjadi Korlap Joko', $log->description);
+        $this->assertStringNotContainsString('→', $log->description);
     }
 
     public function test_admin_biasa_bisa_update_pengelola_proyek(): void

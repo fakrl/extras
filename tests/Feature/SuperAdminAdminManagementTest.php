@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\ActivityLog;
 use App\Models\CastingProject;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -220,6 +221,24 @@ class SuperAdminAdminManagementTest extends TestCase
         $this->assertSame('Nama Baru', $target->name);
         $this->assertSame('baru@example.com', $target->email);
         $this->assertSame('korlap', $target->role);
+
+        $log = ActivityLog::where('action', 'UPDATE_USER')->latest('id')->first();
+        $this->assertStringContainsString('Role: admin menjadi korlap', $log->description);
+        $this->assertStringNotContainsString('→', $log->description);
+    }
+
+    public function test_update_honor_pakai_menjadi_bukan_panah_di_activity_log(): void
+    {
+        $superAdmin = User::factory()->create(['role' => 'super_admin']);
+        $admin = User::factory()->create(['role' => 'admin', 'name' => 'Admin Honor', 'honor_nominal' => 100000]);
+
+        $this->actingAs($superAdmin)->patch(route('super-admin.admins.honor', $admin), [
+            'honor_nominal' => 150000,
+        ])->assertSessionHas('status');
+
+        $log = ActivityLog::where('action', 'UPDATE_HONOR')->latest('id')->first();
+        $this->assertStringContainsString('Rp 100.000 menjadi Rp 150.000', $log->description);
+        $this->assertStringNotContainsString('→', $log->description);
     }
 
     public function test_super_admin_biasa_tidak_bisa_ubah_role_menjadi_super_admin(): void

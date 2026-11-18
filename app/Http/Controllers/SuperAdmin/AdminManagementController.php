@@ -134,7 +134,7 @@ class AdminManagementController extends Controller
             ExtrasProfile::firstOrCreate(['user_id' => $user->id]);
         }
 
-        $keteranganRole = $roleLama !== $user->role ? "Role: {$roleLama} → {$user->role}" : "Role: {$user->role}";
+        $keteranganRole = $roleLama !== $user->role ? "Role: {$roleLama} menjadi {$user->role}" : "Role: {$user->role}";
         ActivityLog::record('UPDATE_USER', "Super Admin mengubah data akun {$user->name} ({$keteranganRole}).", $user, $roleLama !== $user->role ? ['role_lama' => $roleLama, 'role_baru' => $user->role] : []);
 
         return redirect()->back(fallback: route('super-admin.akun.index'))->with('status', "Data akun {$user->name} berhasil diperbarui.");
@@ -289,7 +289,7 @@ class AdminManagementController extends Controller
 
         $lama = $user->honor_nominal;
         $user->update(['honor_nominal' => $data['honor_nominal']]);
-        ActivityLog::record('UPDATE_HONOR', "Honor {$user->name}: Rp ".number_format((float) $lama, 0, ',', '.').' → Rp '.number_format((float) $data['honor_nominal'], 0, ',', '.'), $user, ['lama' => $lama, 'baru' => $data['honor_nominal']]);
+        ActivityLog::record('UPDATE_HONOR', "Honor {$user->name}: Rp ".number_format((float) $lama, 0, ',', '.').' menjadi Rp '.number_format((float) $data['honor_nominal'], 0, ',', '.'), $user, ['lama' => $lama, 'baru' => $data['honor_nominal']]);
 
         return back()->with('status', 'Nominal honor diperbarui.');
     }

@@ -10,7 +10,7 @@
             <div id="cmd-empty" style="padding:20px 16px;text-align:center;color:var(--text-muted);font-size:13.5px;">Ketik minimal 2 karakter untuk mencari...</div>
         </div>
         <div style="padding:8px 14px;border-top:1px solid var(--border-color);display:flex;gap:12px;font-size: var(--fs-xs);color:var(--text-muted);">
-            <span><kbd style="border:1px solid var(--border-color);border-radius:3px;padding:1px 4px;">↑↓</kbd> navigasi</span>
+            <span><kbd style="border:1px solid var(--border-color);border-radius:3px;padding:1px 4px;">panah atas/bawah</kbd> navigasi</span>
             <span><kbd style="border:1px solid var(--border-color);border-radius:3px;padding:1px 4px;">Enter</kbd> buka</span>
             <span><kbd style="border:1px solid var(--border-color);border-radius:3px;padding:1px 4px;">Esc</kbd> tutup</span>
             <span><kbd style="border:1px solid var(--border-color);border-radius:3px;padding:1px 4px;">Ctrl+K</kbd> toggle</span>

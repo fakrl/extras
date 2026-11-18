@@ -392,8 +392,8 @@ class CastingProjectController extends Controller
         $client = User::find($data['client_id']);
 
         $perubahan = array_filter([
-            (int) $castingProject->admin_id !== $adminId ? 'Admin PIC '.($castingProject->admin?->name ?? '-').' → '.User::find($adminId)->name : null,
-            (int) $castingProject->client_id !== $client->id ? 'Client '.($castingProject->client?->name ?? '-').' → '.$client->name.($castingProject->client_id ? ', akses Client lama dicabut' : '') : null,
+            (int) $castingProject->admin_id !== $adminId ? 'Admin PIC '.($castingProject->admin?->name ?? '-').' menjadi '.User::find($adminId)->name : null,
+            (int) $castingProject->client_id !== $client->id ? 'Client '.($castingProject->client?->name ?? '-').' menjadi '.$client->name.($castingProject->client_id ? ', akses Client lama dicabut' : '') : null,
         ]);
 
         $updateData = [
@@ -474,7 +474,7 @@ class CastingProjectController extends Controller
                 $clientLama = $castingProject->client?->name ?? 'Belum ada Client';
                 $clientBaru = $newClientId ? User::find($newClientId)?->name : 'Dikosongkan';
                 $castingProject->update(['client_id' => $newClientId]);
-                $perubahan[] = "Client: {$clientLama} → {$clientBaru}";
+                $perubahan[] = "Client: {$clientLama} menjadi {$clientBaru}";
             }
         }
 
@@ -493,7 +493,7 @@ class CastingProjectController extends Controller
                     } catch (\Throwable) {
                     }
                 }
-                $perubahan[] = "PIC: {$picLama} → {$picBaru}";
+                $perubahan[] = "PIC: {$picLama} menjadi {$picBaru}";
             }
         }
 
@@ -513,7 +513,7 @@ class CastingProjectController extends Controller
                     } catch (\Throwable) {
                     }
                 }
-                $perubahan[] = "Korlap: {$korlapLama} → {$korlapBaru}";
+                $perubahan[] = "Korlap: {$korlapLama} menjadi {$korlapBaru}";
             }
         }
 
