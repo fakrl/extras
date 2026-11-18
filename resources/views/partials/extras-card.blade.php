@@ -33,7 +33,7 @@
     <div class="xcard-ph {{ $lookbook ? 'lookbook-media-2-3' : '' }}" style="--h: {{ crc32((string) $nama) % 360 }};">
         <{{ $lihatTag }} {{ new \Illuminate\View\ComponentAttributeBag($lihatAttr) }} class="xcard-ph-btn" aria-label="Lihat profil {{ $label }}">
             @if ($profile?->foto_profil_path)
-                <img src="{{ route('extras.media.foto', $profile) }}" alt="" loading="lazy">
+                <img src="{{ route('extras.media.foto', $profile) }}?thumb=1" alt="" loading="lazy">
             @else
                 <span class="xcard-inisial" aria-hidden="true">{{ $nama ? strtoupper(mb_substr($nama, 0, 2)) : '?' }}</span>
             @endif

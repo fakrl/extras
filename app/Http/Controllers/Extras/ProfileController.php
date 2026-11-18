@@ -464,7 +464,9 @@ class ProfileController extends Controller
         $path = $extrasProfile->fotoTambahan()->get($slot);
         abort_unless($path, 404);
 
-        return Storage::disk('local')->response($path);
+        return Storage::disk('local')->response($this->resolveFotoPath($path, $request->boolean('thumb')), null, [
+            'Cache-Control' => 'private, max-age=21600',
+        ]);
     }
 
     /**
@@ -479,7 +481,28 @@ class ProfileController extends Controller
 
         abort_unless($extrasProfile->foto_profil_path, 404);
 
-        return Storage::disk('local')->response($extrasProfile->foto_profil_path);
+        return Storage::disk('local')->response($this->resolveFotoPath($extrasProfile->foto_profil_path, $request->boolean('thumb')), null, [
+            'Cache-Control' => 'private, max-age=21600',
+        ]);
+    }
+
+    /**
+     * RF-06 (perluasan): ?thumb=1 minta varian 400px. Foto lama (sebelum fitur resize ada)
+     * belum punya thumbnail di disk - generate sekali di sini (lazy), bukan migrasi massal,
+     * biar nggak ada proses artisan terpisah yang harus dijalankan buat foto lama.
+     */
+    private function resolveFotoPath(string $path, bool $thumb): string
+    {
+        if (! $thumb) {
+            return $path;
+        }
+
+        $thumbPath = ExtrasProfile::thumbPath($path);
+        if (! Storage::disk('local')->exists($thumbPath)) {
+            Storage::disk('local')->put($thumbPath, ExtrasProfile::buatThumbDariPath($path));
+        }
+
+        return $thumbPath;
     }
 
     /**

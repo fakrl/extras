@@ -333,10 +333,54 @@ class ExtrasProfile extends Model
     {
         if ($this->{$field}) {
             Storage::disk('local')->delete($this->{$field});
+            Storage::disk('local')->delete(self::thumbPath($this->{$field}));
         }
 
-        $path = $file->store('extras/'.$this->id.'/'.$folder, 'local');
+        $path = $folder === 'foto'
+            ? self::simpanFotoDiresize($file, 'extras/'.$this->id.'/'.$folder)
+            : $file->store('extras/'.$this->id.'/'.$folder, 'local');
         $this->update([$field => $path]);
+    }
+
+    /**
+     * RF-06 (perluasan): foto diresize max 1200px sisi terpanjang (kualitas JPEG 80) biar
+     * storage nggak membengkak, sekalian bikin thumbnail 400px buat tampilan kartu/grid.
+     */
+    private static function simpanFotoDiresize(UploadedFile $file, string $folder): string
+    {
+        $path = $folder.'/'.Str::random(40).'.jpg';
+        $asli = file_get_contents($file->getRealPath());
+        Storage::disk('local')->put($path, self::skalaJpeg($asli, 1200));
+        Storage::disk('local')->put(self::thumbPath($path), self::skalaJpeg($asli, 400));
+
+        return $path;
+    }
+
+    /** Lazy-generate thumbnail 400px dari foto lama (sebelum fitur resize ada) yang disk-nya belum punya. */
+    public static function buatThumbDariPath(string $path): string
+    {
+        return self::skalaJpeg(Storage::disk('local')->get($path), 400);
+    }
+
+    private static function skalaJpeg(string $isiAsli, int $sisiMaksimal): string
+    {
+        $gambar = imagecreatefromstring($isiAsli);
+        $lebar = imagesx($gambar);
+        $tinggi = imagesy($gambar);
+        if (max($lebar, $tinggi) > $sisiMaksimal) {
+            $skala = $sisiMaksimal / max($lebar, $tinggi);
+            $gambar = imagescale($gambar, (int) round($lebar * $skala), (int) round($tinggi * $skala));
+        }
+        ob_start();
+        imagejpeg($gambar, null, 80);
+
+        return ob_get_clean();
+    }
+
+    /** Path thumbnail (400px) untuk sebuah path foto, dipakai juga buat lazy-generate foto lama. */
+    public static function thumbPath(string $path): string
+    {
+        return preg_replace('/\.[^.\/]+$/', '', $path).'-thumb.jpg';
     }
 
     /**
@@ -352,9 +396,10 @@ class ExtrasProfile extends Model
         $foto = $this->fotoTambahan();
         if ($foto->has($slot)) {
             Storage::disk('local')->delete($foto[$slot]);
+            Storage::disk('local')->delete(self::thumbPath($foto[$slot]));
         }
 
-        $foto[$slot] = $file->store('extras/'.$this->id.'/foto-tambahan', 'local');
+        $foto[$slot] = self::simpanFotoDiresize($file, 'extras/'.$this->id.'/foto-tambahan');
         $this->forceFill(['foto_tambahan' => $foto->sortKeys()->all()])->save();
     }
 
@@ -367,6 +412,7 @@ class ExtrasProfile extends Model
         $foto = $this->fotoTambahan();
         if ($foto->has($slot)) {
             Storage::disk('local')->delete($foto[$slot]);
+            Storage::disk('local')->delete(self::thumbPath($foto[$slot]));
             $this->forceFill(['foto_tambahan' => $foto->forget($slot)->all() ?: null])->save();
         }
     }
