@@ -3,9 +3,14 @@
 <head>
     <meta charset="utf-8">
     <script>try { document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme-v2') || 'light'); } catch (e) {}</script>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="color-scheme" content="dark light">
-    <meta name="theme-color" content="#f1f0e9">
+    <meta name="theme-color" content="#15803D" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0f9a4c" media="(prefers-color-scheme: dark)">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="apple-touch-icon" href="{{ asset('images/icons/icon-192.png') }}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="icon" href="{{ asset('images/logo-jbtb.jpg') }}" type="image/jpeg">
     <title>JBTB Casting · Agensi Extras & Talent Jakarta</title>
     <link rel="canonical" href="{{ url('/') }}">
@@ -811,6 +816,11 @@
             });
         }
     })();
+    </script>
+    <script>
+        if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+            navigator.serviceWorker.register('/sw.js');
+        }
     </script>
 </body>
 </html>

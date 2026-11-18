@@ -2,9 +2,15 @@
 <html lang="id" data-theme="light">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="robots" content="noindex, nofollow">
     <meta name="color-scheme" content="dark light">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#15803D" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0f9a4c" media="(prefers-color-scheme: dark)">
+    <link rel="apple-touch-icon" href="{{ asset('images/icons/icon-192.png') }}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>@yield('title', 'SIM Casting JBTB')</title>
     <link rel="icon" href="{{ asset('images/logo-jbtb.jpg') }}" type="image/jpeg">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -102,5 +108,10 @@
         @yield('content')
     </main>
     @stack('scripts')
+    <script>
+        if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+            navigator.serviceWorker.register('/sw.js');
+        }
+    </script>
 </body>
 </html>
