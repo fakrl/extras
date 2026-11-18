@@ -50,6 +50,12 @@ use Illuminate\Support\Facades\Route;
 // status login user, konten CTA-nya saja yang beda (lihat HomeController).
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
+// PWA: manifest via route (bukan cuma static file) biar Content-Type pasti benar
+// terlepas dari konfigurasi mime-type web server.
+Route::get('/manifest.webmanifest', function () {
+    return response()->file(public_path('manifest.webmanifest'), ['Content-Type' => 'application/manifest+json']);
+})->name('pwa.manifest');
+
 // RF-56: link publik pendaftaran per event, dibagikan Admin lewat WA.
 // Sengaja di luar grup middleware auth/guest - guest maupun user login
 // (extras/admin/Client) manapun boleh buka, otorisasi granular di controller.
