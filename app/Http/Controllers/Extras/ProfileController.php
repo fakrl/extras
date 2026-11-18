@@ -170,7 +170,8 @@ class ProfileController extends Controller
     private function simpanDataDiri(Request $request): ExtrasProfile
     {
         $data = $request->validate([
-            'nama_asli' => ['required', 'string', 'max:255'],
+            // Field legal (dasar kontrak/KTP): cuma huruf, spasi, titik, apostrof, strip.
+            'nama_asli' => ['required', 'string', 'max:255', "regex:/^[\\pL\\s.'-]+$/u"],
             // Identifier login alternatif: alpha_dash saja (tanpa spasi).
             'username' => [
                 'required', 'string', 'alpha_dash', 'max:50',
@@ -181,6 +182,8 @@ class ProfileController extends Controller
             'tinggi_badan' => ['nullable', 'integer', 'min:140', 'max:210'],
             'berat_badan' => ['nullable', 'integer', 'min:35', 'max:150'],
             'ukuran_baju' => ['nullable', 'string'],
+        ], [
+            'nama_asli.regex' => 'Nama asli hanya boleh berisi huruf, spasi, titik, apostrof, dan strip.',
         ]);
 
         $profile = $this->profilAtauBaru($request);
