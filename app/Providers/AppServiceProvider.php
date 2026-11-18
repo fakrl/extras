@@ -33,6 +33,9 @@ class AppServiceProvider extends ServiceProvider
         // Arahkan user yang sudah login ke dashboard role-nya, bukan /home.
         RedirectIfAuthenticated::redirectUsing(fn () => Auth::user()?->dashboardUrl() ?? '/login');
 
+        // Default Laravel 400 hari (576000 menit) kelamaan untuk cookie "Ingat saya" -> 30 hari.
+        Auth::guard('web')->setRememberDuration(60 * 24 * 30);
+
         Model::preventSilentlyDiscardingAttributes(! app()->isProduction());
 
         if ($this->app->isProduction()) {
