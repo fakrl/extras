@@ -224,10 +224,10 @@ class AdminRingkasan
         $rp = fn ($n) => 'Rp '.number_format((float) $n, 0, ',', '.');
 
         [$teks, $perlu, $sejak, $tombol, $url, $jenis] = match ($a->status_partisipasi) {
-            'diajukan' => ['Belum direview — beri grade / tolak', true, $a->updated_at, 'Review', $lineup, 'review_awal'],
-            'direview_admin' => ['Sudah di-grade — ajukan fee awal', true, $a->updated_at, 'Ajukan fee', $lineup, 'ajukan_fee'],
+            'diajukan' => ['Belum direview, beri grade / tolak', true, $a->updated_at, 'Review', $lineup, 'review_awal'],
+            'direview_admin' => ['Sudah di-grade, ajukan fee awal', true, $a->updated_at, 'Ajukan fee', $lineup, 'ajukan_fee'],
             'nego_fee' => $nego?->diajukan_oleh === 'extras'
-                ? ['Extras counter '.$rp($nego->nominal).' — balas', true, $nego->created_at, 'Balas nego', route('admin.negotiations.show', $a, false), 'balas_nego']
+                ? ['Extras counter '.$rp($nego->nominal).', balas', true, $nego->created_at, 'Balas nego', route('admin.negotiations.show', $a, false), 'balas_nego']
                 : ['Menunggu balasan Extras', false, $nego?->created_at ?? $a->updated_at, 'Lihat nego', route('admin.negotiations.show', $a, false), 'nego_menunggu'],
             'deal' => ['Siap diajukan ke Client', true, $a->updated_at, 'Ajukan', $lineup, 'ajukan_client'],
             'diundang' => ['Menunggu persetujuan Extras', false, $a->diundang_at ?? $a->updated_at, 'Lihat', $lineup, 'undangan_menunggu'],
@@ -240,7 +240,7 @@ class AdminRingkasan
             'kontrak_ditandatangani' => match ($bayar?->status) {
                 'dikonfirmasi_diterima' => [null, false, null, null, null, null],
                 'ditransfer' => ['Menunggu konfirmasi Extras', false, $bayar->ditransfer_at ?? $bayar->updated_at, 'Lihat', route('payments.show', $a, false), 'konfirmasi_menunggu'],
-                'disengketakan' => ['Extras menyengketakan pembayaran — tinjau', true, $bayar->updated_at, 'Tinjau', route('payments.show', $a, false), 'sengketa_bayar'],
+                'disengketakan' => ['Extras menyengketakan pembayaran, tinjau', true, $bayar->updated_at, 'Tinjau', route('payments.show', $a, false), 'sengketa_bayar'],
                 'belum_dibayar' => ['Honor belum ditransfer', true, $kontrak?->signed_at ?? $bayar->created_at, 'Transfer', route('payments.show', $a, false), 'honor_belum_transfer'],
                 default => ['Data pembayaran belum dibuat', false, $a->updated_at, 'Lihat', route('payments.show', $a, false), 'bayar_belum_ada'],
             },

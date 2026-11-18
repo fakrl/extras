@@ -82,8 +82,8 @@ class BpTahapanKandidatTest extends TestCase
             $this->assertSame($teks, $i['teks']);
             $this->assertSame($perlu, $i['perlu']);
         });
-        $cek('ajuan', 'ajuan1', 'Belum direview — beri grade / tolak', true);
-        $cek('nego', 'negoextras', 'Extras counter Rp 200.000 — balas', true);
+        $cek('ajuan', 'ajuan1', 'Belum direview, beri grade / tolak', true);
+        $cek('nego', 'negoextras', 'Extras counter Rp 200.000, balas', true);
         $cek('nego', 'negoadmin', 'Menunggu balasan Extras', false);
         $cek('nego', 'deal1', 'Siap diajukan ke Client', true);
         $cek('client', 'client1', 'Menunggu keputusan Client', false);
@@ -133,7 +133,7 @@ class BpTahapanKandidatTest extends TestCase
             ->assertSee('id="tahap-panel-ajuan" aria-labelledby="tahap-tab-ajuan"  hidden', false)
             ->assertSee('@negoextras')
             ->assertSee($this->proyek->kode_proyek)
-            ->assertSee('Extras counter Rp 200.000 — balas')
+            ->assertSee('Extras counter Rp 200.000, balas')
             ->assertSee('Lihat semua di tahap ini')
             ->assertDontSee('@tuntas')
             ->assertDontSee('@ditolak1');
