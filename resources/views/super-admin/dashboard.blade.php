@@ -148,7 +148,7 @@
 
     <div class="dash-stat-card" tabindex="0">
         <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; padding-right: 26px;">
                 <div style="font-size: 11.5px; letter-spacing: 0.02em; color: var(--text-muted); font-weight: 600;">
                     <i class="ti ti-receipt-2"></i> Finansial &amp; Margin
                 </div>
@@ -211,7 +211,7 @@
 
     <div class="dash-stat-card is-right-aligned" tabindex="0">
         <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; padding-right: 26px;">
                 <div style="font-size: 11.5px; letter-spacing: 0.02em; color: var(--text-muted); font-weight: 600;">
                     <i class="ti ti-filter"></i> Funnel Partisipasi
                 </div>

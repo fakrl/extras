@@ -605,6 +605,10 @@
         z-index: 3;
         box-shadow: 0 2px 6px rgba(0,0,0,0.25);
     }
+    {{-- kartu dengan checkbox (xcard-ck, 44x44 di top:2/right:2) geser pill ke bawahnya biar nggak tumpuk --}}
+    .xcard-ph:has(.xcard-ck) .ecard-grade-pill {
+        top: 54px;
+    }
     .ecard-specs-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -1120,6 +1124,7 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        min-width: 0;
     }
 
     .viz-dot {
