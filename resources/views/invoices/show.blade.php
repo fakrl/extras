@@ -134,7 +134,7 @@
 {{-- AD-27: satu sumber nominal = kolom nominal (usulan dari rincian peran bila belum diisi) --}}
 <div class="card" style="margin-bottom: 16px;">
     <div style="font-size: 12.5px; color: var(--text-secondary);">Nominal Invoice</div>
-    <div style="font-size: 22px; font-weight: 700; margin-top: 2px;">Rp {{ number_format((float) ($invoice->nominal ?? $rincian->total), 0, ',', '.') }}</div>
+    <div style="font-size: 22px; font-weight: 700; margin-top: 2px;">Rp {{ number_format((float) ($invoice->nominal ?? $nilai), 0, ',', '.') }}</div>
     <p style="font-size: 12px; color: var(--text-muted); margin: 6px 0 0;">Nominal final mengikuti kesepakatan dengan JBTB.</p>
 </div>
 

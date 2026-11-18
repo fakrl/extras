@@ -55,8 +55,9 @@ class InvoiceController extends Controller
         $castingProject->load('classes', 'applications.extras');
 
         $rincian = $this->keuangan->rincianInvoice($castingProject);
+        $nilai = $this->keuangan->nilaiInvoice($castingProject);
 
-        return view('invoices.show', compact('castingProject', 'invoice', 'rincian'));
+        return view('invoices.show', compact('castingProject', 'invoice', 'rincian', 'nilai'));
     }
 
     public function sign(Request $request, CastingProject $castingProject): RedirectResponse
