@@ -69,6 +69,21 @@
         opacity: 0;
         transition: opacity .15s ease, background .15s ease;
     }
+    .akun-avatar-lock {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--bg-nav-active);
+        border: 1px solid var(--border-color);
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+    }
     .akun-row:hover .akun-avatar-wrap:not(.is-checked) .akun-avatar-check {
         opacity: 0.85;
     }
@@ -279,12 +294,13 @@
                         </div>
                     </label>
                 @else
-                    <div class="akun-avatar" style="opacity: 0.65;" title="{{ $u->name }}">
+                    <div class="akun-avatar" style="opacity: 0.65;" title="{{ $u->trashed() ? 'Akun dihapus, tidak bisa dicentang untuk aksi massal' : 'Akun terproteksi, tidak bisa dicentang untuk aksi massal' }}">
                         @if ($u->role === 'extras' && $u->extrasProfile?->foto_profil_path)
                             <img src="{{ route('extras.media.foto', $u->extrasProfile) }}" alt="" class="akun-avatar-img">
                         @else
                             <span class="akun-avatar-initial">{{ strtoupper(substr($u->name, 0, 1)) }}</span>
                         @endif
+                        <div class="akun-avatar-lock"><i class="ti ti-lock"></i></div>
                     </div>
                 @endif
                 <div class="akun-main">
