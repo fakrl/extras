@@ -159,7 +159,7 @@ class CastingProjectController extends Controller
             $jumlahTahap['menunggu_acc'] = $menungguKeputusanCount;
         }
 
-        $dasar = $filterTindakan($saring(CastingProject::withCount('applications')->with(['client', 'admin', 'adminAssignments.user', 'shootingDates'])))
+        $dasar = $filterTindakan($saring(CastingProject::withCount('applications')->with(['client', 'admin', 'adminAssignments.user', 'shootingDates', 'classes' => fn ($q) => $q->withTerisi()])))
             ->when($tahap, fn ($q) => $diTahap($q, $tahap));
 
         $dasar = match ($urut) {

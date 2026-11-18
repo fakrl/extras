@@ -251,6 +251,28 @@ class CastingProject extends Model
         return $this->applications()->whereNotIn('status_partisipasi', ['ditolak', 'dibatalkan'])->count() >= $this->kuota;
     }
 
+    /** BD.7: total terisi untuk ditampilkan (dashboard, daftar proyek) - definisi sama dgn kuotaPenuh(). */
+    public function terisiKuota(): int
+    {
+        $classes = $this->relationLoaded('classes') && $this->classes->every(fn ($c) => array_key_exists('terisi', $c->getAttributes()))
+            ? $this->classes
+            : $this->classes()->withTerisi()->get();
+
+        if ($classes->isNotEmpty()) {
+            return (int) $classes->sum('terisi');
+        }
+
+        return $this->applications()->whereNotIn('status_partisipasi', ['ditolak', 'dibatalkan'])->count();
+    }
+
+    /** Target kuota untuk ditampilkan bareng terisiKuota(): jumlah kuota_kelas, atau kuota level-proyek. */
+    public function totalKuota(): int
+    {
+        $classes = $this->relationLoaded('classes') ? $this->classes : $this->classes()->get();
+
+        return $classes->isNotEmpty() ? (int) $classes->sum('kuota_kelas') : (int) $this->kuota;
+    }
+
     /**
      * RF-56: satu-satunya gerbang "masih bisa didaftarin" dipakai
      * PublicEventController, dan return-to-intent di ProfileController/

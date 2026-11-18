@@ -3,7 +3,8 @@
 @php
     $modalId = $id ?? 'modal-proyek-'.$project->id;
     $tahapProyek = $project->tahap();
-    $kuota = (int) $project->kuota;
+    $kuota = $project->totalKuota();
+    $terisi = $project->terisiKuota();
     $ket = $project->keteranganShooting();
     $bisaKelola = auth()->user()?->isSuperAdmin() || (auth()->user()?->isAdmin() && $project->dikelolaOleh(auth()->user()));
     $pics = $pics ?? \App\Models\User::where('role', \App\Models\User::ROLE_ADMIN)->where('status', 'aktif')->orderBy('name')->get();
@@ -124,9 +125,9 @@
             </div>
             <div class="mp-card-box" style="padding: 8px 12px;">
                 <span class="mp-label"><i class="ti ti-user-check" style="margin-right: 4px;"></i> Pendaftar / Kuota</span>
-                <div style="font-weight: 600; color: var(--text-primary); font-size: var(--fs-sm);">{{ $project->applications_count }} / {{ $kuota }} extras</div>
+                <div style="font-weight: 600; color: var(--text-primary); font-size: var(--fs-sm);">{{ $terisi }} / {{ $kuota }} extras</div>
                 @if ($kuota > 0)
-                    <div class="tp-bar" style="margin-top: 6px;"><i style="width: {{ min(100, round($project->applications_count / $kuota * 100)) }}%;"></i></div>
+                    <div class="tp-bar" style="margin-top: 6px;"><i style="width: {{ min(100, round($terisi / $kuota * 100)) }}%;"></i></div>
                 @endif
             </div>
         </div>

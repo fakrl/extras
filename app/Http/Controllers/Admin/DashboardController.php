@@ -52,11 +52,11 @@ class DashboardController extends Controller
         // Bottleneck Kuota Proyek Aktif
         $proyekBottleneck = CastingProject::where('status', 'dibuka')
             ->tap($proyekPic)
-            ->with(['classes', 'shootingDates', 'applications'])
+            ->with(['classes' => fn ($q) => $q->withTerisi(), 'shootingDates'])
             ->get()
             ->map(function ($p) {
-                $target = (int) $p->classes->sum('kuota_kelas');
-                $terisi = (int) $p->applications->filter(fn ($a) => in_array($a->status_partisipasi, ['deal', 'diajukan_ke_client', 'lolos', 'kontrak_ditandatangani', 'selesai_produksi'], true))->count();
+                $target = $p->totalKuota();
+                $terisi = $p->terisiKuota();
                 $persen = $target > 0 ? (int) round(($terisi / $target) * 100) : 100;
                 $p->target_kuota = $target;
                 $p->terisi_kuota = $terisi;

@@ -131,7 +131,8 @@
             @php
                 $tahapProyek = $project->tahap();
                 $perluTindakan = $perlu[$project->id] ?? 0;
-                $kuota = (int) $project->kuota;
+                $kuota = $project->totalKuota();
+                $terisi = $project->terisiKuota();
                 $ket = $project->keteranganShooting();
                 $ditolak = $project->client_request_status === 'ditolak';
                 $pudar = $ditolak || $tahapProyek === 'selesai';
@@ -161,9 +162,9 @@
                     @endif
                 </td>
                 <td class="tp-c-daftar">
-                    <div>{{ $project->applications_count }} / {{ $kuota }}</div>
+                    <div>{{ $terisi }} / {{ $kuota }}</div>
                     @if ($kuota > 0)
-                        <div class="tp-bar"><i style="width: {{ min(100, round($project->applications_count / $kuota * 100)) }}%;"></i></div>
+                        <div class="tp-bar"><i style="width: {{ min(100, round($terisi / $kuota * 100)) }}%;"></i></div>
                     @endif
                     @if ($ditolak || $tutup || $adaPerlu || $project->client_request_status === 'menunggu_acc')
                     <span class="tp-badges">
