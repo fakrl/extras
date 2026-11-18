@@ -131,6 +131,24 @@ class BaKartuExtrasTest extends TestCase
             ->assertDontSee($email);
     }
 
+    public function test_lookbook_badge_status_tidak_tumpang_tindih_dengan_pil_persen_cocok(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $client = User::factory()->create(['role' => 'client']);
+        $project = CastingProject::factory()->create(['admin_id' => $admin->id]);
+        $project->update(['client_id' => $client->id]);
+        $t = $this->tags();
+        $app = $this->lamaran($project, 'menunggu_22', [$t[0], $t[1]], 'diajukan_ke_client');
+        $app->castingProjectClass->categories()->sync($t);
+
+        $response = $this->actingAs($client)->get(route('client.reviews.show', $project));
+
+        $response->assertOk();
+        $response->assertSee('<div class="lookbook-overlay-top">', false);
+        $response->assertSee('lookbook-status-pill', false);
+        $response->assertSee('<div class="lookbook-overlay-top-row">', false);
+    }
+
     public function test_data_extras_admin_pakai_kartu_tanpa_aplikasi(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);

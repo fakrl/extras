@@ -1491,11 +1491,23 @@
         left: 10px;
         right: 10px;
         display: flex;
-        align-items: center;
-        justify-content: space-between;
+        flex-direction: column;
+        align-items: flex-start;
         gap: 6px;
         pointer-events: none;
         z-index: 2;
+    }
+
+    .lookbook-overlay-top-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        width: 100%;
+    }
+
+    .lookbook-status-pill {
+        pointer-events: none;
     }
 
     .lookbook-overlay-bottom {

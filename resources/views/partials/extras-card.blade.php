@@ -40,16 +40,21 @@
         </{{ $lihatTag }}>
         @if ($lookbook)
             <div class="lookbook-overlay-top">
-                @if ($clientReviewGrade)
-                    <span class="lookbook-glass-pill"><i class="ti ti-certificate"></i> Grade {{ strtoupper($clientReviewGrade) }}</span>
-                @elseif ($gradeTampil)
-                    <span class="lookbook-glass-pill"><i class="ti ti-certificate"></i> Grade {{ $gradeTampil }}</span>
-                @else
-                    <span></span>
+                @if ($badge)
+                    <span class="badge {{ $badge[1] }} lookbook-status-pill">{{ $badge[0] }}</span>
                 @endif
-                @if ($persen !== null)
-                    <span class="lookbook-glass-pill">{{ $persen }}% cocok</span>
-                @endif
+                <div class="lookbook-overlay-top-row">
+                    @if ($clientReviewGrade)
+                        <span class="lookbook-glass-pill"><i class="ti ti-certificate"></i> Grade {{ strtoupper($clientReviewGrade) }}</span>
+                    @elseif ($gradeTampil)
+                        <span class="lookbook-glass-pill"><i class="ti ti-certificate"></i> Grade {{ $gradeTampil }}</span>
+                    @else
+                        <span></span>
+                    @endif
+                    @if ($persen !== null)
+                        <span class="lookbook-glass-pill">{{ $persen }}% cocok</span>
+                    @endif
+                </div>
             </div>
             <div class="lookbook-overlay-bottom">
                 <span class="lookbook-glass-pill" title="Identitas dan kontak pribadi dilindungi sistem JBTB">
@@ -68,7 +73,7 @@
                 <div class="xcard-ring" style="--p: {{ $persen }}%;" role="img" aria-label="Cocok {{ $persen }}% dengan tag peran"><span>{{ $persen }}%</span></div>
             @endif
         @endif
-        @if ($badge)
+        @if ($badge && ! $lookbook)
             <span class="badge {{ $badge[1] }} xcard-st">{{ $badge[0] }}</span>
         @endif
         @if (! empty($check))
