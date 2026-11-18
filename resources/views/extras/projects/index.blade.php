@@ -59,7 +59,7 @@
                     </div>
                 </div>
                 <div style="text-align: right;">
-                    <span class="badge badge-warning" style="font-size: 11.5px;"><i class="ti ti-clock"></i> Deadline: {{ $project->deadline->translatedFormat('d M Y') }}</span>
+                    <span class="badge badge-warning" style="font-size: 11.5px; display: inline-flex; align-items: center; gap: 4px;"><i class="ti ti-clock"></i> Deadline: {{ $project->deadline->translatedFormat('d M Y') }}</span>
                 </div>
             </div>
 

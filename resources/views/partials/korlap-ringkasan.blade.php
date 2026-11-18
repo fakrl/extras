@@ -110,6 +110,10 @@
                         <strong class="viz-legend-val">{{ $statKorlap['total_menunggu_val'] }}</strong>
                     </div>
                     <div class="viz-legend-row">
+                        <span class="viz-legend-label"><span class="viz-dot" style="background: #DC2626;"></span>Tidak Hadir</span>
+                        <strong class="viz-legend-val">{{ $statKorlap['total_tidak_hadir'] }}</strong>
+                    </div>
+                    <div class="viz-legend-row">
                         <span class="viz-legend-label"><span class="viz-dot" style="background: #64748B;"></span>Belum Absen</span>
                         <strong class="viz-legend-val">{{ $statKorlap['total_belum_absen'] }}</strong>
                     </div>
