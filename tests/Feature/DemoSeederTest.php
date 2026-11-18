@@ -89,6 +89,20 @@ class DemoSeederTest extends TestCase
         $this->assertDatabaseHas('activity_logs', ['action' => 'DISPUTE_PAYMENT']);
     }
 
+    public function test_seeder_demo_tidak_pasang_tag_etnis_agama_ke_akun_extras(): void
+    {
+        Storage::fake('local');
+        $this->seed([ExtrasCategorySeeder::class, DemoLengkapSeeder::class]);
+
+        $tagTerlarang = ['Berhijab', 'Chinese/Tionghoa', 'Jawa', 'Sunda', 'Melayu', 'Indonesia Timur', 'Timur Tengah', 'Kaukasia/Bule'];
+
+        $terpasang = ExtrasProfile::with('categories')->get()
+            ->flatMap(fn ($p) => $p->categories->pluck('nama'))
+            ->intersect($tagTerlarang);
+
+        $this->assertTrue($terpasang->isEmpty(), 'Masih ada tag etnis/agama terpasang di akun Extras: '.$terpasang->implode(', '));
+    }
+
     public function test_login_satu_akun_per_role_sampai_dashboard(): void
     {
         Storage::fake('local');
