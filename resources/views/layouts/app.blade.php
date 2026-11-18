@@ -617,6 +617,7 @@
                 width: 100%; max-width: none; margin: 0;
                 border-radius: var(--md-shape-xl, 28px) var(--md-shape-xl, 28px) 0 0;
                 max-height: 90vh; overflow-y: auto;
+                padding-bottom: calc(24px + env(safe-area-inset-bottom));
             }
             dialog[open]:not(.dash-dialog):not(.dash-dialog-lg)::before {
                 content: '';
@@ -979,10 +980,14 @@
             body[data-role="korlap"] .sidebar {
                 position: fixed; bottom: 0; left: 0; right: 0; top: auto;
                 width: 100%; height: 68px;
+                min-height: calc(68px + env(safe-area-inset-bottom));
                 flex-direction: row; align-items: center;
                 justify-content: space-around;
                 overflow-x: auto; overflow-y: hidden;
                 padding: 6px 8px;
+                padding-bottom: calc(6px + env(safe-area-inset-bottom));
+                padding-left: calc(8px + env(safe-area-inset-left));
+                padding-right: calc(8px + env(safe-area-inset-right));
                 border-right: none;
                 border-top: 1px solid var(--md-outline-variant, var(--border-color));
                 background: var(--md-surface-container, var(--bg-card));
@@ -1034,6 +1039,7 @@
             .nav-bawah .main-area,
             body[data-role="korlap"] .main-area {
                 padding-bottom: 72px;
+                padding-bottom: calc(72px + env(safe-area-inset-bottom));
             }
 
             .nav-laci .sidebar {

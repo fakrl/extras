@@ -461,16 +461,19 @@
             background: var(--bg-card);
             border-top: 1px solid var(--border-color);
             padding: 10px 16px;
+            padding-bottom: calc(10px + env(safe-area-inset-bottom));
             box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
             box-sizing: border-box;
         }
         .nav-bawah .sticky-mobile-cta {
             bottom: 68px;
+            bottom: calc(68px + env(safe-area-inset-bottom));
         }
         .nav-bawah main,
         .nav-bawah .main-content,
         .nav-bawah .content {
             padding-bottom: 148px !important;
+            padding-bottom: calc(148px + env(safe-area-inset-bottom)) !important;
         }
     }
 
@@ -657,6 +660,7 @@
         justify-content: space-between;
         align-items: center;
         padding: 16px 20px;
+        padding-top: calc(16px + env(safe-area-inset-top));
         border-bottom: 1px solid var(--border-color);
         background: var(--bg-card);
         position: sticky;
@@ -665,6 +669,7 @@
     }
     .drawer-body-scroll {
         padding: 16px 20px 30px;
+        padding-bottom: calc(30px + env(safe-area-inset-bottom));
         overflow-y: auto;
         flex: 1;
         display: flex;
