@@ -59,7 +59,7 @@
         </div>
     </div>
     <div style="font-size: 12px; color: var(--text-muted);">
-        <i class="ti ti-check-circle"></i> Kandidat terpilih langsung maju ke proses kontrak JBTB
+        <i class="ti ti-circle-check"></i> Kandidat terpilih langsung maju ke proses kontrak JBTB
     </div>
 </div>
 
