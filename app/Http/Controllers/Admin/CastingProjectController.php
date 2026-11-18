@@ -145,22 +145,22 @@ class CastingProjectController extends Controller
             ? $q->whereIn('client_request_status', ['menunggu_acc', 'ditolak'])
             : $q->diTahap($t);
 
-        $jumlahTahap = collect(CastingProject::TAHAP)->map(fn ($label, $t) => $diTahap($saring(CastingProject::query()), $t)->count())
-            ->prepend($saring(CastingProject::query())->count(), '');
+        // CV.2.1.4: "Perlu tindakan saja" - reuse AdminRingkasan::perluPerProyek(), bukan query SQL
+        // terpisah yang bisa menyimpang dari definisi "perlu" yang sudah ada (riwayat bug CR/CU).
+        // Dihitung SEKALI dari seluruh proyek ruang lingkup PIC, dipakai lagi di badge tab & query
+        // berpaginasi, supaya "Semua"/tab lain tidak nyimpang dari toggle ini saat aktif (bug lama).
+        $idsPerlu = $tindakan ? array_keys(AdminRingkasan::perluPerProyek($saring(CastingProject::query())->pluck('id')->all())) : null;
+        $filterTindakan = fn ($q) => $tindakan ? $q->whereIn('casting_projects.id', $idsPerlu ?: [0]) : $q;
+
+        $jumlahTahap = collect(CastingProject::TAHAP)->map(fn ($label, $t) => $filterTindakan($diTahap($saring(CastingProject::query()), $t))->count())
+            ->prepend($filterTindakan($saring(CastingProject::query()))->count(), '');
 
         if ($isSuperAdmin) {
             $jumlahTahap['menunggu_acc'] = $menungguKeputusanCount;
         }
 
-        $dasar = $saring(CastingProject::withCount('applications')->with(['client', 'admin', 'adminAssignments.user', 'shootingDates']))
+        $dasar = $filterTindakan($saring(CastingProject::withCount('applications')->with(['client', 'admin', 'adminAssignments.user', 'shootingDates'])))
             ->when($tahap, fn ($q) => $diTahap($q, $tahap));
-
-        // CV.2.1.4: "Perlu tindakan saja" - reuse AdminRingkasan::perluPerProyek(), bukan query SQL
-        // terpisah yang bisa menyimpang dari definisi "perlu" yang sudah ada (riwayat bug CR/CU).
-        if ($tindakan) {
-            $idsPerlu = array_keys(AdminRingkasan::perluPerProyek((clone $dasar)->pluck('id')->all()));
-            $dasar->whereIn('casting_projects.id', $idsPerlu ?: [0]);
-        }
 
         $dasar = match ($urut) {
             'baru' => $dasar->latest(),
