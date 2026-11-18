@@ -19,11 +19,12 @@
 
     <div class="auth-opsi">
         <label for="login-remember">
-            <input type="checkbox" id="login-remember" name="remember">
+            <input type="checkbox" id="login-remember" name="remember" checked>
             Ingat saya
         </label>
         <a href="{{ route('password.request') }}">Lupa kata sandi?</a>
     </div>
+    <p class="field-hint">Dengan ini kamu tetap masuk lebih lama di perangkat ini sampai keluar manual.</p>
 
     <button type="submit" class="btn-brand">Masuk</button>
 </form>
