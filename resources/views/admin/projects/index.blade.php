@@ -151,7 +151,7 @@
                         @endif
                     </div>
 
-                    @include('partials.modal-ringkasan-proyek', ['project' => $project])
+                    @include('partials.modal-ringkasan-proyek', ['project' => $project, 'kuota' => $kuota, 'terisi' => $terisi])
                 </td>
                 <td class="tp-c-shoot">
                     @if ($ket)

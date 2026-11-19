@@ -1,10 +1,10 @@
 {{-- Modal Ringkasan Proyek (Material Design 3) --}}
-@props(['project', 'id' => null])
+@props(['project', 'id' => null, 'kuota' => null, 'terisi' => null])
 @php
     $modalId = $id ?? 'modal-proyek-'.$project->id;
     $tahapProyek = $project->tahap();
-    $kuota = $project->totalKuota();
-    $terisi = $project->terisiKuota();
+    $kuota = $kuota ?? $project->totalKuota();
+    $terisi = $terisi ?? $project->terisiKuota();
     $ket = $project->keteranganShooting();
     $bisaKelola = auth()->user()?->isSuperAdmin() || (auth()->user()?->isAdmin() && $project->dikelolaOleh(auth()->user()));
     $pics = $pics ?? \App\Models\User::where('role', \App\Models\User::ROLE_ADMIN)->where('status', 'aktif')->orderBy('name')->get();

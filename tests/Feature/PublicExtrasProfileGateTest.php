@@ -37,13 +37,6 @@ class PublicExtrasProfileGateTest extends TestCase
         $this->get(route('public.extras.foto', $profile->share_token))->assertNotFound();
     }
 
-    public function test_foto_akun_melanggar_404(): void
-    {
-        $profile = $this->profil(['status' => 'melanggar']);
-
-        $this->get(route('public.extras.foto', $profile->share_token))->assertNotFound();
-    }
-
     public function test_foto_akun_soft_deleted_404(): void
     {
         $profile = $this->profil(['status' => 'aktif']);

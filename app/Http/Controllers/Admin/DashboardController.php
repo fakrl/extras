@@ -52,6 +52,7 @@ class DashboardController extends Controller
         // Bottleneck Kuota Proyek Aktif
         $proyekBottleneck = CastingProject::where('status', 'dibuka')
             ->tap($proyekPic)
+            ->withApplicationsAktifCount()
             ->with(['classes' => fn ($q) => $q->withTerisi(), 'shootingDates'])
             ->get()
             ->map(function ($p) {

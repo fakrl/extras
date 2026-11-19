@@ -262,7 +262,17 @@ class CastingProject extends Model
             return (int) $classes->sum('terisi');
         }
 
+        if (array_key_exists('applications_aktif_count', $this->getAttributes())) {
+            return (int) $this->applications_aktif_count;
+        }
+
         return $this->applications()->whereNotIn('status_partisipasi', ['ditolak', 'dibatalkan'])->count();
+    }
+
+    /** Eager-load helper: hitung applications_aktif_count sekaligus biar terisiKuota() tak query ulang per proyek tanpa kelas. */
+    public function scopeWithApplicationsAktifCount($query)
+    {
+        return $query->withCount(['applications as applications_aktif_count' => fn ($q) => $q->whereNotIn('status_partisipasi', ['ditolak', 'dibatalkan'])]);
     }
 
     /** Target kuota untuk ditampilkan bareng terisiKuota(): jumlah kuota_kelas, atau kuota level-proyek. */

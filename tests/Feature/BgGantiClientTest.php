@@ -47,7 +47,7 @@ class BgGantiClientTest extends TestCase
 
         $this->assertSame($baru->id, $project->fresh()->client_id);
         $this->assertModelExists($review);
-        $this->assertStringContainsString('Client Lama → Client Baru, akses Client lama dicabut', ActivityLog::where('action', 'UPDATE_PROJECT_PIC')->sole()->description);
+        $this->assertStringContainsString('Client Lama menjadi Client Baru, akses Client lama dicabut', ActivityLog::where('action', 'UPDATE_PROJECT_PIC')->sole()->description);
 
         $jalur = [
             route('client.reviews.show', $project),

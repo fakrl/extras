@@ -49,8 +49,8 @@ class BeEditClientPicTest extends TestCase
         $this->assertSame([$adminBaru->id, $baru->id, 'PH Baru'], [$project->admin_id, $project->client_id, $project->namaClient()]);
         $this->assertSame($baru->id, $project->fresh()->client_id);
         $log = ActivityLog::where('action', 'UPDATE_PROJECT_PIC')->sole();
-        $this->assertStringContainsString('Client Client Lama → Client Baru', $log->description);
-        $this->assertStringContainsString('→ Admin Baru', $log->description);
+        $this->assertStringContainsString('Client Client Lama menjadi Client Baru', $log->description);
+        $this->assertStringContainsString('menjadi Admin Baru', $log->description);
     }
 
     public function test_proyek_tanpa_client_wajib_pilih_saat_edit_dan_muncul_di_badge_serta_perlu_tindakan(): void

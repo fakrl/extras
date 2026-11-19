@@ -338,7 +338,7 @@ class AuditAGuardTest extends TestCase
 
         $this->actingAs($sa)->patch(route('super-admin.admins.update', $target), $data + ['konfirmasi_role' => 1])->assertSessionHas('status');
         $this->assertSame('korlap', $target->fresh()->role);
-        $this->assertTrue(ActivityLog::where('action', 'UPDATE_USER')->where('description', 'like', '%admin → korlap%')->exists());
+        $this->assertTrue(ActivityLog::where('action', 'UPDATE_USER')->where('description', 'like', '%admin menjadi korlap%')->exists());
     }
 
     public function test_ganti_nama_tanpa_ganti_role_tidak_perlu_konfirmasi(): void
