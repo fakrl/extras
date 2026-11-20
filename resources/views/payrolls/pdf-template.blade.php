@@ -34,7 +34,7 @@
     </table>
 
     <p style="margin-top:30px; font-size:10px; color:#666;">
-        Slip ini dihasilkan otomatis oleh SIM Casting JBTB berdasarkan status penyelesaian proyek.
+        Slip ini dihasilkan otomatis oleh {{ config('brand.name') }} berdasarkan status penyelesaian proyek.
         Nominal honor bersifat per-event, bukan gaji bulanan tetap.
     </p>
 </body>
