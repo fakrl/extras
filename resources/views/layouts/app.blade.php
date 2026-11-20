@@ -9,12 +9,12 @@
     <link rel="manifest" href="/manifest.webmanifest">
     <meta name="theme-color" content="#15803D" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#0f9a4c" media="(prefers-color-scheme: dark)">
-    <link rel="apple-touch-icon" href="{{ asset('images/icons/icon-192.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/brand/icon-192.png') }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <script>document.documentElement.classList.add('no-anim'); try { document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme-v2') || 'light'); if (localStorage.getItem('jbtb-sidebar') === 'ringkas') document.documentElement.classList.add('sb-ringkas'); } catch (e) {}</script>
-    <title>@yield('title', 'SIM Casting JBTB')</title>
-    <link rel="icon" href="{{ asset('images/logo-jbtb.jpg') }}" type="image/jpeg">
+    <title>@yield('title', config('brand.name'))</title>
+    <link rel="icon" href="{{ asset('images/brand/favicon.png') }}" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
     @include('partials.theme-style')

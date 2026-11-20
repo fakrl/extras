@@ -55,7 +55,7 @@ class LoginController extends Controller
 
             return back()->withErrors([
                 'email' => $melanggar
-                    ? 'Akun Anda ditandai melanggar karena 3 kali batal mendadak (kurang dari 2 hari sebelum syuting). Hubungi admin JBTB bila ingin meminta peninjauan.'
+                    ? 'Akun Anda ditandai melanggar karena 3 kali batal mendadak (kurang dari 2 hari sebelum syuting). Hubungi admin '.config('brand.name').' bila ingin meminta peninjauan.'
                     : 'Akun Anda dinonaktifkan. Hubungi admin untuk info lebih lanjut.',
             ])->onlyInput('email');
         }

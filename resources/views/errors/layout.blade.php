@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', trim($__env->yieldContent('judul')).' | JBTB Casting')
+@section('title', trim($__env->yieldContent('judul')).' | '.config('brand.name'))
 
 @section('content')
 @php($masuk = rescue(fn () => auth()->check(), false, false))

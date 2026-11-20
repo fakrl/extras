@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Masuk | JBTB Casting')
+@section('title', 'Masuk | '.config('brand.name'))
 
 @section('content')
 <h1 class="auth-title">Masuk</h1>

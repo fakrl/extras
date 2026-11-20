@@ -2,7 +2,7 @@
 @php
     $pengirim = auth()->user();
     $tautanWa = $pengirim?->bisaSebagaiAdmin()
-        ? $user?->tautanWa($pesanWa ?? "Halo {$user->name}, saya {$pengirim->name} dari JBTB Casting. Ada kabar soal casting, apakah kamu sedang available?")
+        ? $user?->tautanWa($pesanWa ?? "Halo {$user->name}, saya {$pengirim->name} dari ".config('brand.name').". Ada kabar soal casting, apakah kamu sedang available?")
         : null;
 @endphp
 @if ($tautanWa)

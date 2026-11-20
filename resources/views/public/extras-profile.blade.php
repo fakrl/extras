@@ -5,11 +5,11 @@
     <script>try { document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme-v2') || 'light'); } catch (e) {}</script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="dark light">
-    <title>Profil {{ $profile->user->username ?? 'Extras' }} | SIM Casting JBTB</title>
+    <title>Profil {{ $profile->user->username ?? 'Extras' }} | {{ config('brand.name') }}</title>
     {{-- tanpa tag Look/etnis di description (D22) --}}
     @include('partials.og-meta', [
-        'ogTitle' => '@'.($profile->user->username ?? 'extras').' di JBTB',
-        'ogDesc' => 'Profil talent @'.($profile->user->username ?? 'extras').' di JBTB Casting.',
+        'ogTitle' => '@'.($profile->user->username ?? 'extras').' di '.config('brand.name'),
+        'ogDesc' => 'Profil talent @'.($profile->user->username ?? 'extras').' di '.config('brand.name').'.',
         'ogImage' => $profile->foto_profil_path ? route('public.extras.foto', $token) : null,
     ])
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -32,7 +32,7 @@
 </head>
 <body>
     <header class="pub-top">
-        <a href="{{ route('home') }}" class="pub-brand">JBTB Casting</a>
+        <a href="{{ route('home') }}" class="pub-brand">{{ config('brand.name') }}</a>
         <nav class="pub-nav">
             <button type="button" id="theme-toggle" aria-label="Ganti tema" aria-pressed="false"><i class="ti ti-moon" id="theme-icon" aria-hidden="true"></i></button>
             <a href="{{ route('home') }}"><i class="ti ti-arrow-left"></i> Beranda</a>
@@ -48,7 +48,7 @@
 
     <footer class="pub-foot">
         <span>Data sensitif (NIK, rekening, nama asli) hanya dilihat Admin.</span>
-        <span><a href="{{ route('privacy-policy') }}">Kebijakan Privasi</a> · <a href="{{ route('home') }}">JBTB Casting</a></span>
+        <span><a href="{{ route('privacy-policy') }}">Kebijakan Privasi</a> · <a href="{{ route('home') }}">{{ config('brand.name') }}</a></span>
     </footer>
 
     <script>

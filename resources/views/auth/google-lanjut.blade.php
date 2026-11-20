@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', 'Daftar dengan Google | JBTB Casting')
+@section('title', 'Daftar dengan Google | '.config('brand.name'))
 
 @section('content')
 <h1 class="auth-title">Satu langkah lagi</h1>

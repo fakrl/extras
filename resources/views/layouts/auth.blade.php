@@ -8,11 +8,11 @@
     <link rel="manifest" href="/manifest.webmanifest">
     <meta name="theme-color" content="#15803D" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#0f9a4c" media="(prefers-color-scheme: dark)">
-    <link rel="apple-touch-icon" href="{{ asset('images/icons/icon-192.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/brand/icon-192.png') }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>@yield('title', 'SIM Casting JBTB')</title>
-    <link rel="icon" href="{{ asset('images/logo-jbtb.jpg') }}" type="image/jpeg">
+    <title>@yield('title', config('brand.name'))</title>
+    <link rel="icon" href="{{ asset('images/brand/favicon.png') }}" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
     <script>try { document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme-v2') || 'light'); } catch (e) {}</script>
@@ -87,9 +87,9 @@
 </head>
 <body>
     <main class="auth-card">
-        <a href="{{ route('home') }}" class="auth-brand" style="text-decoration: none; color: inherit;" aria-label="JBTB Casting, ke beranda">
-            <img src="{{ asset('images/logo-jbtb.jpg') }}" alt="Logo JBTB" class="logo">
-            <span>JBTB Casting</span>
+        <a href="{{ route('home') }}" class="auth-brand" style="text-decoration: none; color: inherit;" aria-label="{{ config('brand.name') }}, ke beranda">
+            <img src="{{ asset(config('brand.logo')) }}" alt="Logo {{ config('brand.name') }}" class="logo">
+            <span>{{ config('brand.name') }}</span>
         </a>
         @if (session('status'))
             <div class="alert-success flash-banner" role="status" aria-live="polite">

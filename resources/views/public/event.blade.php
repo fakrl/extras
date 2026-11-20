@@ -5,15 +5,15 @@
     <script>try { document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme-v2') || 'light'); } catch (e) {}</script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="dark light">
-    <title>{{ $valid ? $project->nama_produksi : 'Pendaftaran Ditutup' }} | JBTB Casting</title>
+    <title>{{ $valid ? $project->nama_produksi : 'Pendaftaran Ditutup' }} | {{ config('brand.name') }}</title>
     @if ($valid)
         @include('partials.og-meta', [
             'ogTitle' => $project->nama_produksi,
-            'ogDesc' => 'Casting '.($project->classes->pluck('nama_kelas')->implode(', ') ?: 'Extras').' · deadline '.$project->deadline?->translatedFormat('d M Y').' · daftar di JBTB',
+            'ogDesc' => 'Casting '.($project->classes->pluck('nama_kelas')->implode(', ') ?: 'Extras').' · deadline '.$project->deadline?->translatedFormat('d M Y').' · daftar di '.config('brand.name'),
             'ogImage' => $project->poster_path ? asset('storage/'.$project->poster_path) : null,
         ])
     @else
-        @include('partials.og-meta', ['ogTitle' => 'Pendaftaran Ditutup', 'ogDesc' => 'Pendaftaran casting ini sudah ditutup. Cek lowongan lain di JBTB Casting.'])
+        @include('partials.og-meta', ['ogTitle' => 'Pendaftaran Ditutup', 'ogDesc' => 'Pendaftaran casting ini sudah ditutup. Cek lowongan lain di '.config('brand.name').'.'])
     @endif
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
@@ -58,7 +58,7 @@
 </head>
 <body>
     <header class="pub-top">
-        <a href="{{ route('home') }}" class="pub-brand"><span class="logo" aria-hidden="true">J</span> JBTB Casting</a>
+        <a href="{{ route('home') }}" class="pub-brand"><span class="logo" aria-hidden="true">S</span> {{ config('brand.name') }}</a>
         <nav class="pub-nav" aria-label="Menu">
             <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Ganti tema" aria-pressed="false">
                 <i class="ti ti-moon" id="theme-icon" aria-hidden="true"></i>
@@ -105,7 +105,7 @@
     </main>
 
     <footer class="pub-foot">
-        <span>&copy; {{ date('Y') }} JBTB Casting</span>
+        <span>&copy; {{ date('Y') }} {{ config('brand.name') }}</span>
         <a href="{{ route('privacy-policy') }}">Kebijakan Privasi</a>
     </footer>
 

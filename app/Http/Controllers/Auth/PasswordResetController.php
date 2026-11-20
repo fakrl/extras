@@ -28,7 +28,7 @@ class PasswordResetController extends Controller
         $user = User::where(str_contains($identitas, '@') ? 'email' : 'username', $identitas)->first();
 
         if ($user && ! $user->email) {
-            return back()->withInput()->withErrors(['email' => 'Akun ini belum punya email. Hubungi Super Admin JBTB untuk reset password.']);
+            return back()->withInput()->withErrors(['email' => 'Akun ini belum punya email. Hubungi Super Admin '.config('brand.name').' untuk reset password.']);
         }
 
         if ($user) {
