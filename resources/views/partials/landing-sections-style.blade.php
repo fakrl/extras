@@ -1,4 +1,4 @@
-{{-- Rhythm, section headers, cards, dividers, dark band, buttons, footer — dipakai welcome.blade.php & tentang.blade.php. --}}
+{{-- Rhythm, section headers, cards, dividers, dark band, buttons, footer: dipakai welcome.blade.php & tentang.blade.php. --}}
 <style>
     html { scroll-padding-top: 84px; }
     @media (max-width: 768px) { html { scroll-padding-top: 72px; } }
