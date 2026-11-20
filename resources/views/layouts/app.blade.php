@@ -18,6 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
     @include('partials.theme-style')
+    @include('partials.list-group-style')
     <style>
         body { transition: background 0.2s ease, color 0.2s ease; }
         .no-anim, .no-anim * { transition: none !important; }
@@ -1038,8 +1039,8 @@
             }
             .nav-bawah .main-area,
             body[data-role="korlap"] .main-area {
-                padding-bottom: 72px;
-                padding-bottom: calc(72px + env(safe-area-inset-bottom));
+                padding-bottom: 84px;
+                padding-bottom: calc(84px + env(safe-area-inset-bottom));
             }
 
             .nav-laci .sidebar {
@@ -1063,6 +1064,17 @@
             .content { padding: 16px; }
             .topbar { padding: 10px 16px; gap: 8px; }
             .topbar-actions { gap: 8px; }
+        }
+
+        /* Dock bawah Extras & Korlap (lihat partials/list-group-style untuk .bottom-dock):
+           gantikan sidebar/nav-bawah lama HP <=768px. 769-860px tetap pakai sidebar lama. */
+        @media (max-width: 768px) {
+            body[data-dock] .sidebar,
+            body[data-dock] .nav-burger,
+            body[data-dock] .nav-backdrop {
+                display: none !important;
+            }
+            body[data-dock] .sticky-mobile-cta { bottom: calc(78px + env(safe-area-inset-bottom)); }
         }
         /* DS-09: target sentuh >= 44px di layar kecil, tanpa ubah view */
         @media (max-width: 860px) {
@@ -1111,7 +1123,8 @@
 @php($navRole = auth()->user()?->modeSa() ?? auth()->user()?->role ?? 'guest')
 @php($laci = ! in_array($navRole, ['extras', 'guest'], true))
 @php($isCompact = in_array($navRole, ['admin', 'super_admin'], true))
-<body @if($isCompact) data-density="compact" @endif @if($navRole === 'korlap') data-role="korlap" @endif>
+@php($appDock = in_array($navRole, ['extras', 'korlap'], true) ? config('app-dock.'.$navRole) : null)
+<body @if($isCompact) data-density="compact" @endif @if($navRole === 'korlap') data-role="korlap" @endif @if($appDock) data-dock="1" @endif>
     <div class="app-shell {{ $laci ? 'nav-laci' : 'nav-bawah' }}">
         <aside class="sidebar" id="app-sidebar" aria-label="Menu utama">
             <div class="sidebar-brand">
@@ -1264,6 +1277,84 @@
         </div>
     </div>
 
+    @if ($appDock)
+        <nav class="bottom-dock" aria-label="Navigasi bawah">
+            @foreach ($appDock['items'] as $item)
+                <a href="{{ route($item['route']) }}" class="bottom-dock-item {{ request()->routeIs(...$item['active']) ? 'is-active' : '' }}">
+                    <i class="ti {{ $item['icon'] }}" aria-hidden="true"></i><span>{{ $item['label'] }}</span>
+                </a>
+            @endforeach
+            <button type="button" class="bottom-dock-item" id="app-dock-menu-btn" aria-haspopup="dialog" aria-controls="app-dock-menu"><i class="ti ti-menu-2" aria-hidden="true"></i><span>Menu</span></button>
+        </nav>
+
+        <dialog id="app-dock-menu" class="nav-sheet-dlg" aria-label="Menu">
+            <div class="nav-sheet-head">
+                <span class="nav-sheet-title">Menu</span>
+                <button type="button" class="nav-sheet-close" id="app-dock-menu-close" aria-label="Tutup menu"><i class="ti ti-x" aria-hidden="true"></i></button>
+            </div>
+            <div class="nav-sheet-body">
+                <div class="list-group">
+                    <a href="{{ route($appDock['account_route']) }}" class="list-row nav-sheet-account">
+                        @if (auth()->user()->isExtras() && auth()->user()->extrasProfile?->foto_profil_path)
+                            <img src="{{ route('extras.media.foto', auth()->user()->extrasProfile) }}" class="avatar-badge avatar-badge-img" alt="Foto profil">
+                        @else
+                            <div class="avatar-badge">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
+                        @endif
+                        <span>
+                            <span class="t">{{ auth()->user()->name }}</span>
+                            <span class="s">{{ auth()->user()->label() }}</span>
+                        </span>
+                        <i class="ti ti-chevron-right chev" aria-hidden="true"></i>
+                    </a>
+                </div>
+
+                @if (count($appDock['menu_extra']))
+                    <div class="list-group">
+                        @foreach ($appDock['menu_extra'] as $item)
+                            <a href="{{ route($item['route']) }}" class="list-row">
+                                <i class="ti {{ $item['icon'] }}" aria-hidden="true"></i>
+                                <span class="label">{{ $item['label'] }}</span>
+                                <i class="ti ti-chevron-right chev" aria-hidden="true"></i>
+                            </a>
+                        @endforeach
+                    </div>
+                @endif
+
+                <div class="list-group">
+                    <div class="list-row">
+                        <i class="ti ti-moon" aria-hidden="true"></i>
+                        <span class="label">Tema gelap</span>
+                        <button type="button" class="switch" role="switch" aria-checked="false" aria-label="Tema gelap" data-theme-toggle>
+                            <span class="switch-thumb"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="list-group">
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="list-row list-row--danger">
+                            <i class="ti ti-logout" aria-hidden="true"></i>
+                            <span class="label">Keluar</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </dialog>
+
+        <script>
+        (function () {
+            var sheet = document.getElementById('app-dock-menu');
+            var menuBtn = document.getElementById('app-dock-menu-btn');
+            var closeBtn = document.getElementById('app-dock-menu-close');
+            if (!sheet || !menuBtn) return;
+            menuBtn.addEventListener('click', function () { sheet.showModal(); });
+            sheet.addEventListener('click', function (e) { if (e.target === sheet) sheet.close(); });
+            if (closeBtn) closeBtn.addEventListener('click', function () { sheet.close(); });
+        })();
+        </script>
+    @endif
+
     <script>
         (function () {
             document.addEventListener('DOMContentLoaded', function () {
@@ -1271,6 +1362,7 @@
                 var ikon = function (t) {
                     document.querySelectorAll('[data-theme-toggle]').forEach(function (b) { b.setAttribute('aria-pressed', t === 'dark'); });
                     document.querySelectorAll('[data-theme-toggle] i').forEach(function (i) { i.className = t === 'dark' ? 'ti ti-sun' : 'ti ti-moon'; });
+                    document.querySelectorAll('.switch[data-theme-toggle]').forEach(function (b) { b.setAttribute('aria-checked', t === 'dark'); });
                 };
                 ikon(document.documentElement.getAttribute('data-theme'));
                 document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {

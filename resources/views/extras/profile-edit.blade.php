@@ -68,6 +68,10 @@
     /* Satu Simpan/Batal di bawah, bukan diulang tiap bagian - target form bagian yang sedang terbuka lewat atribut form="". */
     #bagian-save-bar { display: none; gap: 8px; position: sticky; bottom: 0; background: var(--bg-card); margin: 12px 0 0; padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border-color); }
     #bagian-save-bar.is-aktif { display: flex; }
+    /* Tumpang tindih dock bawah Extras (<=768px): naikkan posisi sticky biar tidak ketutup dock */
+    @media (max-width: 768px) {
+        body[data-dock] #bagian-save-bar { bottom: calc(78px + env(safe-area-inset-bottom)); }
+    }
 
     /* CL.3: jenis kelamin jadi 2 tombol segmen */
     .gender-segmen { display: flex; gap: 8px; margin-bottom: 14px; }
