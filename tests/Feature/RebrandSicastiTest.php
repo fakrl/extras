@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\AdminProjectAssignment;
 use App\Models\CastingProject;
 use App\Models\ExtrasProfile;
 use App\Models\ProjectApplication;
+use App\Models\StaffPayroll;
 use App\Models\User;
 use App\Services\KeuanganService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -55,6 +57,32 @@ class RebrandSicastiTest extends TestCase
         $this->assertStringContainsString('PT. JBTB Casting Creative Group', $invoiceHtml);
     }
 
+    public function test_pdf_payroll_pakai_nama_brand_baru(): void
+    {
+        $p = CastingProject::factory()->create();
+        $staf = User::factory()->create(['role' => 'korlap']);
+        $assignment = AdminProjectAssignment::create([
+            'casting_project_id' => $p->id,
+            'user_id' => $staf->id,
+            'assigned_by' => $staf->id,
+            'status_log' => 'selesai',
+            'completed_at' => now(),
+        ]);
+        $payroll = StaffPayroll::create([
+            'admin_project_assignment_id' => $assignment->id,
+            'nominal_pokok' => 500000,
+            'status_bayar' => 'belum',
+        ]);
+
+        $html = view('payrolls.pdf-template', [
+            'assignment' => $assignment->load('user', 'castingProject'),
+            'payroll' => $payroll->load('addons'),
+        ])->render();
+
+        $this->assertStringContainsString(config('brand.name'), $html);
+        $this->assertStringNotContainsString('SIM Casting JBTB', $html);
+    }
+
     public function test_manifest_name_sicasti(): void
     {
         $data = json_decode(file_get_contents(public_path('manifest.webmanifest')), true);
@@ -69,11 +97,18 @@ class RebrandSicastiTest extends TestCase
         $this->assertStringNotContainsString('menu-toggle', $html);
     }
 
+    public function test_landing_tidak_ada_dock_bawah(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('<nav class="bottom-dock"', $html);
+    }
+
     public function test_sheet_menu_berisi_baris_tema_tentang_privasi_sk_faq(): void
     {
         $html = $this->get('/')->assertOk()->getContent();
 
-        foreach (['Tema gelap', 'Tentang PT JBTB', 'Privasi', 'Syarat dan ketentuan', 'FAQ'] as $teks) {
+        foreach (['Tema gelap', 'Lowongan', 'Cara Kerja', 'FAQ', 'Tentang PT JBTB', 'Privasi', 'Syarat dan ketentuan'] as $teks) {
             $this->assertStringContainsString($teks, $html);
         }
     }
