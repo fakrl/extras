@@ -22,7 +22,7 @@ class PwaManifestTest extends TestCase
         $data = json_decode(file_get_contents(public_path('manifest.webmanifest')), true);
 
         $this->assertIsArray($data);
-        $this->assertSame('JBTB Casting', $data['name']);
+        $this->assertSame(config('brand.name'), $data['name']);
         $this->assertSame('standalone', $data['display']);
         $this->assertSame('/', $data['start_url']);
         $this->assertNotEmpty($data['icons']);

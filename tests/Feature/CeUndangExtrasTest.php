@@ -351,7 +351,7 @@ class CeUndangExtrasTest extends TestCase
         preg_match('#https://wa\.me/6281234567800\?text=([^"]+)#', $html, $m);
         $pesan = rawurldecode(html_entity_decode($m[1]));
 
-        $this->assertStringContainsString('saya Rina Admin dari JBTB Casting', $pesan);
+        $this->assertStringContainsString('saya Rina Admin dari '.config('brand.name'), $pesan);
         $this->assertStringContainsString('proyek '.$p->kode_proyek.' Film CE (peran Warga).', $pesan);
         $this->assertStringContainsString(route('extras.projects.show', $p), $pesan);
         $this->assertStringNotContainsString('PH Rahasia', $pesan);

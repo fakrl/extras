@@ -81,7 +81,7 @@ class AuditCTest extends TestCase
         ExtrasProfile::create(['user_id' => $u->id])->forceFill(['status' => 'melanggar'])->save();
 
         $this->post('/login', ['email' => 'langgar@jbtb.test', 'password' => 'rahasia123'])
-            ->assertSessionHasErrors(['email' => 'Akun Anda ditandai melanggar karena 3 kali batal mendadak (kurang dari 2 hari sebelum syuting). Hubungi admin JBTB bila ingin meminta peninjauan.']);
+            ->assertSessionHasErrors(['email' => 'Akun Anda ditandai melanggar karena 3 kali batal mendadak (kurang dari 2 hari sebelum syuting). Hubungi admin '.config('brand.name').' bila ingin meminta peninjauan.']);
     }
 
     // EX-26

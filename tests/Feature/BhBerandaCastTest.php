@@ -84,6 +84,6 @@ class BhBerandaCastTest extends TestCase
         $this->assertTrue($p->fresh()->izin_tampil_publik);
         $this->assertTrue($p->fresh()->tampil_di_beranda);
 
-        $this->actingAs($p->user)->get(route('extras.profile.edit'))->assertOk()->assertSee('Izinkan foto &amp; profil saya ditampilkan di website JBTB', false);
+        $this->actingAs($p->user)->get(route('extras.profile.edit'))->assertOk()->assertSee('Izinkan foto &amp; profil saya ditampilkan di website '.config('brand.name'), false);
     }
 }

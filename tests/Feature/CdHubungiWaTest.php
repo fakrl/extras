@@ -48,7 +48,7 @@ class CdHubungiWaTest extends TestCase
 
         foreach (['admin', 'super_admin'] as $role) {
             $a = User::factory()->create(['role' => $role, 'name' => 'Rina Admin']);
-            $pesan = rawurlencode('Halo Budi Santoso, saya Rina Admin dari JBTB Casting. Ada kabar soal casting, apakah kamu sedang available?');
+            $pesan = rawurlencode('Halo Budi Santoso, saya Rina Admin dari '.config('brand.name').'. Ada kabar soal casting, apakah kamu sedang available?');
 
             foreach ([
                 route('admin.akun.extras'),

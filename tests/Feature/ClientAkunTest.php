@@ -92,7 +92,7 @@ class ClientAkunTest extends TestCase
         User::factory()->create(['role' => 'client', 'username' => 'tanpa_email', 'email' => null]);
 
         $this->post(route('password.email'), ['email' => 'tanpa_email'])
-            ->assertSessionHasErrors(['email' => 'Akun ini belum punya email. Hubungi Super Admin JBTB untuk reset password.']);
+            ->assertSessionHasErrors(['email' => 'Akun ini belum punya email. Hubungi Super Admin '.config('brand.name').' untuk reset password.']);
 
         $this->post(route('password.email'), ['email' => 'tidak_dikenal'])
             ->assertSessionHasNoErrors()->assertSessionHas('status');
