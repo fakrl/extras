@@ -1,10 +1,11 @@
-{{-- Navbar pill mengambang (desktop) + dock bawah (mobile). Param: $page = 'home'|'tentang'. --}}
+{{-- Navbar pill mengambang (desktop) + dock bawah & sheet menu (mobile). Param: $page = 'home'|'tentang'. --}}
 @php
     $isHome = ($page ?? 'home') === 'home';
     $hrefLowongan = $isHome ? '#lowongan' : route('home').'#lowongan';
     $hrefCaraKerja = $isHome ? '#cara-kerja' : route('home').'#cara-kerja';
     $hrefFaq = $isHome ? '#faq' : route('home').'#faq';
 @endphp
+@include('partials.list-group-style')
 <style>
     main { padding-top: 84px; }
     .pill-nav { position: fixed; top: 18px; left: 0; right: 0; z-index: 200; display: flex; justify-content: center; padding: 0 16px; pointer-events: none; }
@@ -27,8 +28,17 @@
     .pill-nav :focus-visible { outline: 2px solid var(--hp-accent); outline-offset: 2px; }
 
     .bottom-dock { display: none; }
+    dialog#nav-sheet { margin: 0; width: 100%; max-width: 480px; border: none; border-radius: 24px 24px 0 0; padding: 0; background: var(--hp-bg); color: var(--hp-fg); position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); max-height: 86vh; overflow-y: auto; }
+    dialog#nav-sheet::backdrop { background: rgba(0, 0, 0, .5); }
+    .nav-sheet-head { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 10px; background: var(--hp-bg); }
+    .nav-sheet-title { font-size: 16px; font-weight: 700; }
+    .nav-sheet-close { width: 36px; height: 36px; border-radius: 50%; border: none; background: var(--hp-card); color: var(--hp-fg); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .nav-sheet-body { padding-top: 6px; padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+
     @media (max-width: 768px) {
+        .pill-brand span { display: none; }
         .pill-links { display: none; }
+        .pill-nav .theme-toggle-btn { display: none; }
         main { padding-top: 72px; }
         .bottom-dock {
             display: flex; position: fixed; left: 50%; transform: translateX(-50%);
@@ -43,6 +53,7 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
             min-width: 56px; min-height: 48px; padding: 4px 6px; border-radius: 999px;
             color: var(--hp-muted); text-decoration: none; font-size: 10.5px; font-weight: 600;
+            border: none; background: none; font-family: inherit; cursor: pointer;
         }
         .bottom-dock-item i { font-size: 19px; }
         .bottom-dock-item:hover, .bottom-dock-item.is-active { color: var(--hp-fg); background: var(--hp-card); }
@@ -98,13 +109,62 @@
     <a href="{{ route('home') }}" class="bottom-dock-item" data-section="beranda"><i class="ti ti-home" aria-hidden="true"></i><span>Beranda</span></a>
     <a href="{{ $hrefLowongan }}" class="bottom-dock-item" data-section="lowongan"><i class="ti ti-briefcase" aria-hidden="true"></i><span>Lowongan</span></a>
     <a href="{{ $hrefCaraKerja }}" class="bottom-dock-item" data-section="cara-kerja"><i class="ti ti-list-check" aria-hidden="true"></i><span>Cara Kerja</span></a>
-    <a href="{{ $hrefFaq }}" class="bottom-dock-item" data-section="faq"><i class="ti ti-help-circle" aria-hidden="true"></i><span>FAQ</span></a>
-    @auth
-        <a href="/dashboard" class="bottom-dock-item"><i class="ti ti-user" aria-hidden="true"></i><span>Akun</span></a>
-    @else
-        <a href="{{ route('login') }}" class="bottom-dock-item"><i class="ti ti-login" aria-hidden="true"></i><span>Masuk</span></a>
-    @endauth
+    <button type="button" class="bottom-dock-item" id="dock-menu-item" aria-haspopup="dialog" aria-controls="nav-sheet"><i class="ti ti-menu-2" aria-hidden="true"></i><span>Menu</span></button>
 </nav>
+
+<dialog id="nav-sheet" aria-label="Menu">
+    <div class="nav-sheet-head">
+        <span class="nav-sheet-title">Menu</span>
+        <button type="button" class="nav-sheet-close" id="nav-sheet-close" aria-label="Tutup menu"><i class="ti ti-x" aria-hidden="true"></i></button>
+    </div>
+    <div class="nav-sheet-body">
+        <span class="list-group-label">Tampilan</span>
+        <div class="list-group">
+            <div class="list-row">
+                <i class="ti ti-moon" aria-hidden="true"></i>
+                <span class="label">Tema gelap</span>
+                <button type="button" class="switch" id="sheet-theme-switch" role="switch" aria-checked="false" aria-label="Tema gelap">
+                    <span class="switch-thumb"></span>
+                </button>
+            </div>
+        </div>
+
+        <span class="list-group-label">Jelajah</span>
+        <div class="list-group">
+            <a href="{{ $hrefFaq }}" class="list-row" id="sheet-faq">
+                <i class="ti ti-help-circle" aria-hidden="true"></i>
+                <span class="label">FAQ</span>
+                <i class="ti ti-chevron-right chev" aria-hidden="true"></i>
+            </a>
+            @guest
+                <a href="{{ route('register') }}" class="list-row list-row--accent">
+                    <i class="ti ti-user-plus" aria-hidden="true"></i>
+                    <span class="label">Daftar sebagai talent</span>
+                    <i class="ti ti-chevron-right chev" aria-hidden="true"></i>
+                </a>
+            @endguest
+        </div>
+
+        <span class="list-group-label">Info</span>
+        <div class="list-group">
+            <a href="{{ route('tentang') }}" class="list-row">
+                <i class="ti ti-building" aria-hidden="true"></i>
+                <span class="label">Tentang PT JBTB</span>
+                <i class="ti ti-chevron-right chev" aria-hidden="true"></i>
+            </a>
+            <a href="{{ route('privacy-policy') }}" class="list-row">
+                <i class="ti ti-lock" aria-hidden="true"></i>
+                <span class="label">Privasi</span>
+                <i class="ti ti-chevron-right chev" aria-hidden="true"></i>
+            </a>
+            <a href="{{ route('syarat-ketentuan') }}" class="list-row">
+                <i class="ti ti-file-text" aria-hidden="true"></i>
+                <span class="label">Syarat dan ketentuan</span>
+                <i class="ti ti-chevron-right chev" aria-hidden="true"></i>
+            </a>
+        </div>
+    </div>
+</dialog>
 
 <script>
 (function () {
@@ -112,14 +172,58 @@
     var targets = ['beranda', 'lowongan', 'cara-kerja', 'faq']
         .map(function (id) { return document.getElementById(id); })
         .filter(Boolean);
-    if (!navLinks.length || !targets.length || !('IntersectionObserver' in window)) return;
-
-    function setActive(id) {
-        navLinks.forEach(function (a) { a.classList.toggle('is-active', a.getAttribute('data-section') === id); });
+    if (navLinks.length && targets.length && 'IntersectionObserver' in window) {
+        function setActive(id) {
+            navLinks.forEach(function (a) { a.classList.toggle('is-active', a.getAttribute('data-section') === id); });
+        }
+        var obs = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) { if (entry.isIntersecting) setActive(entry.target.id); });
+        }, { rootMargin: '-45% 0px -50% 0px' });
+        targets.forEach(function (t) { obs.observe(t); });
     }
-    var obs = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) { if (entry.isIntersecting) setActive(entry.target.id); });
-    }, { rootMargin: '-45% 0px -50% 0px' });
-    targets.forEach(function (t) { obs.observe(t); });
+
+    var sheet = document.getElementById('nav-sheet');
+    var menuItem = document.getElementById('dock-menu-item');
+    var closeBtn = document.getElementById('nav-sheet-close');
+    if (sheet && menuItem) {
+        menuItem.addEventListener('click', function () { sheet.showModal(); });
+        sheet.addEventListener('click', function (e) { if (e.target === sheet) sheet.close(); });
+        if (closeBtn) closeBtn.addEventListener('click', function () { sheet.close(); });
+        new MutationObserver(function () { menuItem.classList.toggle('is-active', sheet.open); })
+            .observe(sheet, { attributes: true, attributeFilter: ['open'] });
+    }
+
+    var faqLink = document.getElementById('sheet-faq');
+    if (sheet && faqLink) {
+        faqLink.addEventListener('click', function (e) {
+            var href = faqLink.getAttribute('href');
+            sheet.close();
+            if (href.charAt(0) === '#') {
+                e.preventDefault();
+                var target = document.getElementById(href.slice(1));
+                if (target) target.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    }
+
+    var themeSwitch = document.getElementById('sheet-theme-switch');
+    var themeIcon = document.getElementById('theme-icon');
+    var themeToggle = document.getElementById('theme-toggle');
+    function syncTheme() {
+        var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if (themeSwitch) themeSwitch.setAttribute('aria-checked', dark ? 'true' : 'false');
+        if (themeIcon) themeIcon.className = dark ? 'ti ti-sun' : 'ti ti-moon';
+        if (themeToggle) themeToggle.setAttribute('aria-pressed', dark ? 'true' : 'false');
+    }
+    syncTheme();
+    if (themeSwitch) {
+        themeSwitch.addEventListener('click', function () {
+            var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            try { localStorage.setItem('jbtb-theme-v2', next); } catch (e) {}
+            syncTheme();
+        });
+    }
+    new MutationObserver(syncTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 })();
 </script>
