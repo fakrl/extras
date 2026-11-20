@@ -1,4 +1,4 @@
-{{-- Navbar pill mengambang (desktop) + dock bawah & sheet menu (mobile). Param: $page = 'home'|'tentang'. --}}
+{{-- Navbar pill mengambang (desktop + mobile) & sheet menu. Param: $page = 'home'|'tentang'. --}}
 @php
     $isHome = ($page ?? 'home') === 'home';
     $hrefLowongan = $isHome ? '#lowongan' : route('home').'#lowongan';
@@ -26,42 +26,14 @@
     .pill-nav .theme-toggle-btn { width: 40px; height: 40px; }
     .pill-nav .btn-brand { min-height: 40px; padding: 0 18px; font-size: 13px; }
     .pill-nav :focus-visible { outline: 2px solid var(--hp-accent); outline-offset: 2px; }
-
-    .bottom-dock { display: none; }
-    dialog#nav-sheet { margin: 0; width: 100%; max-width: 480px; border: none; border-radius: 24px 24px 0 0; padding: 0; background: var(--hp-bg); color: var(--hp-fg); position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); max-height: 86vh; overflow-y: auto; }
-    dialog#nav-sheet::backdrop { background: rgba(0, 0, 0, .5); }
-    .nav-sheet-head { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 10px; background: var(--hp-bg); }
-    .nav-sheet-title { font-size: 16px; font-weight: 700; }
-    .nav-sheet-close { width: 36px; height: 36px; border-radius: 50%; border: none; background: var(--hp-card); color: var(--hp-fg); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-    .nav-sheet-body { padding-top: 6px; padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+    .pill-menu-btn { display: none; width: 40px; height: 40px; border-radius: 50%; border: none; background: none; color: var(--hp-fg); align-items: center; justify-content: center; cursor: pointer; font-size: 19px; }
+    .pill-menu-btn:hover { background: var(--hp-card); }
 
     @media (max-width: 768px) {
-        .pill-brand span { display: none; }
         .pill-links { display: none; }
         .pill-nav .theme-toggle-btn { display: none; }
+        .pill-menu-btn { display: flex; }
         main { padding-top: 72px; }
-        .bottom-dock {
-            display: flex; position: fixed; left: 50%; transform: translateX(-50%);
-            bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 200;
-            background: color-mix(in srgb, var(--hp-bg) 90%, transparent);
-            border: 1px solid var(--hp-line); border-radius: 999px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            padding: 4px; gap: 2px; max-width: calc(100% - 24px);
-        }
-        .bottom-dock-item {
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-            min-width: 56px; min-height: 48px; padding: 4px 6px; border-radius: 999px;
-            color: var(--hp-muted); text-decoration: none; font-size: 10.5px; font-weight: 600;
-            border: none; background: none; font-family: inherit; cursor: pointer;
-        }
-        .bottom-dock-item i { font-size: 19px; }
-        .bottom-dock-item:hover, .bottom-dock-item.is-active { color: var(--hp-fg); background: var(--hp-card); }
-        .bottom-dock-item:focus-visible { outline: 2px solid var(--hp-accent); outline-offset: -2px; }
-    }
-
-    @media (prefers-reduced-motion: no-preference) {
-        .pill-links a, .bottom-dock-item { transition: background .15s ease, color .15s ease; }
     }
 </style>
 
@@ -80,6 +52,9 @@
         <div class="pill-actions">
             <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Ganti tema" aria-pressed="false">
                 <i class="ti ti-moon" id="theme-icon"></i>
+            </button>
+            <button type="button" class="pill-menu-btn" id="pill-menu-btn" aria-haspopup="dialog" aria-controls="nav-sheet" aria-label="Buka menu">
+                <i class="ti ti-menu-2" aria-hidden="true"></i>
             </button>
             @auth
                 <details class="navbar-user-menu" id="navbar-user-menu">
@@ -105,14 +80,7 @@
     </div>
 </nav>
 
-<nav class="bottom-dock" aria-label="Navigasi bawah">
-    <a href="{{ route('home') }}" class="bottom-dock-item" data-section="beranda"><i class="ti ti-home" aria-hidden="true"></i><span>Beranda</span></a>
-    <a href="{{ $hrefLowongan }}" class="bottom-dock-item" data-section="lowongan"><i class="ti ti-briefcase" aria-hidden="true"></i><span>Lowongan</span></a>
-    <a href="{{ $hrefCaraKerja }}" class="bottom-dock-item" data-section="cara-kerja"><i class="ti ti-list-check" aria-hidden="true"></i><span>Cara Kerja</span></a>
-    <button type="button" class="bottom-dock-item" id="dock-menu-item" aria-haspopup="dialog" aria-controls="nav-sheet"><i class="ti ti-menu-2" aria-hidden="true"></i><span>Menu</span></button>
-</nav>
-
-<dialog id="nav-sheet" aria-label="Menu">
+<dialog id="nav-sheet" class="nav-sheet-dlg" aria-label="Menu">
     <div class="nav-sheet-head">
         <span class="nav-sheet-title">Menu</span>
         <button type="button" class="nav-sheet-close" id="nav-sheet-close" aria-label="Tutup menu"><i class="ti ti-x" aria-hidden="true"></i></button>
@@ -131,19 +99,38 @@
 
         <span class="list-group-label">Jelajah</span>
         <div class="list-group">
-            <a href="{{ $hrefFaq }}" class="list-row" id="sheet-faq">
+            <a href="{{ $hrefLowongan }}" class="list-row sheet-anchor">
+                <i class="ti ti-briefcase" aria-hidden="true"></i>
+                <span class="label">Lowongan</span>
+                <i class="ti ti-chevron-right chev" aria-hidden="true"></i>
+            </a>
+            <a href="{{ $hrefCaraKerja }}" class="list-row sheet-anchor">
+                <i class="ti ti-list-check" aria-hidden="true"></i>
+                <span class="label">Cara Kerja</span>
+                <i class="ti ti-chevron-right chev" aria-hidden="true"></i>
+            </a>
+            <a href="{{ $hrefFaq }}" class="list-row sheet-anchor">
                 <i class="ti ti-help-circle" aria-hidden="true"></i>
                 <span class="label">FAQ</span>
                 <i class="ti ti-chevron-right chev" aria-hidden="true"></i>
             </a>
-            @guest
+        </div>
+
+        @guest
+            <span class="list-group-label">Akun</span>
+            <div class="list-group">
+                <a href="{{ route('login') }}" class="list-row list-row--accent">
+                    <i class="ti ti-login" aria-hidden="true"></i>
+                    <span class="label">Masuk</span>
+                    <i class="ti ti-chevron-right chev" aria-hidden="true"></i>
+                </a>
                 <a href="{{ route('register') }}" class="list-row list-row--accent">
                     <i class="ti ti-user-plus" aria-hidden="true"></i>
                     <span class="label">Daftar sebagai talent</span>
                     <i class="ti ti-chevron-right chev" aria-hidden="true"></i>
                 </a>
-            @endguest
-        </div>
+            </div>
+        @endguest
 
         <span class="list-group-label">Info</span>
         <div class="list-group">
@@ -183,20 +170,17 @@
     }
 
     var sheet = document.getElementById('nav-sheet');
-    var menuItem = document.getElementById('dock-menu-item');
+    var menuBtn = document.getElementById('pill-menu-btn');
     var closeBtn = document.getElementById('nav-sheet-close');
-    if (sheet && menuItem) {
-        menuItem.addEventListener('click', function () { sheet.showModal(); });
+    if (sheet && menuBtn) {
+        menuBtn.addEventListener('click', function () { sheet.showModal(); });
         sheet.addEventListener('click', function (e) { if (e.target === sheet) sheet.close(); });
         if (closeBtn) closeBtn.addEventListener('click', function () { sheet.close(); });
-        new MutationObserver(function () { menuItem.classList.toggle('is-active', sheet.open); })
-            .observe(sheet, { attributes: true, attributeFilter: ['open'] });
     }
 
-    var faqLink = document.getElementById('sheet-faq');
-    if (sheet && faqLink) {
-        faqLink.addEventListener('click', function (e) {
-            var href = faqLink.getAttribute('href');
+    document.querySelectorAll('.sheet-anchor').forEach(function (link) {
+        link.addEventListener('click', function (e) {
+            var href = link.getAttribute('href');
             sheet.close();
             if (href.charAt(0) === '#') {
                 e.preventDefault();
@@ -204,7 +188,7 @@
                 if (target) target.scrollIntoView({ behavior: 'smooth' });
             }
         });
-    }
+    });
 
     var themeSwitch = document.getElementById('sheet-theme-switch');
     var themeIcon = document.getElementById('theme-icon');
