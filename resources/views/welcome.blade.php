@@ -239,36 +239,20 @@
         @media (prefers-reduced-motion: reduce) { .porto-img img { transition: none; } .porto-card:hover .porto-img img { transform: none; } }
         @media (max-width: 767px) { .porto-card { flex-basis: 280px; } }
 
-        /* ── Footer (AK.10 enhanced) ── */
-        footer { border-top: 1px solid var(--hp-line); padding: 24px 32px; }
-        .footer-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto auto; gap: 24px; align-items: center; }
-        .footer-brand { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 600; color: var(--hp-fg); text-decoration: none; }
-        .footer-brand img { width: 26px; height: 26px; border-radius: 6px; object-fit: contain; }
-        .footer-nav { display: flex; gap: 20px; }
-        .footer-nav a { display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; color: var(--hp-muted); text-decoration: none; white-space: nowrap; }
-        .footer-nav a:hover { color: var(--hp-fg); }
-        .footer-legal { display: flex; gap: 16px; align-items: center; font-size: 13px; color: var(--hp-muted); }
-        .footer-legal a { display: inline-flex; align-items: center; min-height: 44px; color: var(--hp-muted); text-decoration: none; }
-        .footer-legal a:hover { color: var(--hp-fg); }
-
         .cta-row { display: flex; gap: 12px; flex-wrap: wrap; }
 
         /* ── Responsive ── */
         @media (max-width: 768px) {
-            .footer-inner { padding-left: 20px; padding-right: 20px; }
             .cast-section, .services-section, .lowongan-section, .porto-section, .contact-section { padding-block: 36px; }
             .services-inner { grid-template-columns: 1fr; gap: 28px; }
             .contact-inner { grid-template-columns: 1fr; gap: 32px; }
             .contact-grid { grid-template-columns: 1fr; gap: 24px; }
             .lowongan-detail { padding-left: 0; }
-            .footer-inner { grid-template-columns: 1fr; gap: 16px; }
-            .footer-nav { flex-wrap: wrap; gap: 12px; }
-            footer { padding: 20px; padding-bottom: 96px; padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
         }
     </style>
     @include('partials.landing-sections-style')
 </head>
-<body>
+<body id="atas">
     @include('partials.pill-nav', ['page' => 'home'])
 
     <main>
@@ -277,7 +261,12 @@
         <div class="hero-inner">
             <div class="lp-hero-grid">
                 <div>
-                    <h1 class="lp-hero-title">Casting extras film dan iklan di Jabodetabek</h1>
+                    <span class="hp-eyebrow-pill"><span class="dot" aria-hidden="true"></span>Sistem casting</span>
+                    @php
+                        $heroTitleRaw = config('brand.hero_title');
+                        $heroTitleHtml = preg_replace('/\*(.+?)\*/', '<span class="hp-accent-serif">$1</span>', e($heroTitleRaw));
+                    @endphp
+                    <h1 class="lp-hero-title">{!! $heroTitleHtml !!}</h1>
                     <p class="lp-hero-desc">
                         {{ config('brand.name') }} menghubungkan rumah produksi dengan talenta extras di Jabodetabek. Pendaftaran profil gratis, kontrak kerja digital, presensi kehadiran di lokasi syuting dengan foto selfie, serta catatan honor transparan di satu tempat.
                     </p>
@@ -293,23 +282,50 @@
                             @endif
                         @endguest
                     </div>
+                    @if ($totalCastingDibuka > 0 || $totalPeranDibuka > 0 || $totalTalentTerdaftar > 0)
+                        <div class="hp-stats">
+                            @if ($totalCastingDibuka > 0)
+                                <div><span class="hp-stat-num">{{ $totalCastingDibuka }}</span><span class="hp-stat-label">Casting dibuka</span></div>
+                            @endif
+                            @if ($totalPeranDibuka > 0)
+                                <div><span class="hp-stat-num">{{ $totalPeranDibuka }}</span><span class="hp-stat-label">Peran dibuka</span></div>
+                            @endif
+                            @if ($totalTalentTerdaftar > 0)
+                                <div><span class="hp-stat-num">{{ $totalTalentTerdaftar }}</span><span class="hp-stat-label">Talent terdaftar</span></div>
+                            @endif
+                        </div>
+                    @endif
                 </div>
 
-                @if ($castExtras->isNotEmpty())
-                    <div class="lp-hero-collage" aria-label="Foto talenta roster extras">
-                        @foreach ($castExtras->take(4) as $cast)
-                            <div class="lp-collage-item">
-                                <img src="{{ route('public.extras.foto', $cast->share_token) }}" alt="Foto talent extras {{ '@'.$cast->user->username }}" class="lp-collage-img" loading="eager">
-                            </div>
-                        @endforeach
+                <div class="hp-hero-visual" aria-hidden="true">
+                    <span class="orb orb-a"></span>
+                    <span class="orb orb-b"></span>
+                    <div class="hp-mock-stack">
+                        <div class="hp-mock-card">
+                            <div class="hp-mock-card-title">Casting Iklan Minuman</div>
+                            <div class="hp-mock-card-sub">Contoh tampilan &middot; Kebutuhan: 8 orang</div>
+                            <span class="hp-mock-chip"><i class="ti ti-check"></i> Lolos</span>
+                        </div>
+                        <div class="hp-mock-card">
+                            <div class="hp-mock-card-title"><i class="ti ti-camera-selfie"></i> Presensi lokasi syuting</div>
+                            <div class="hp-mock-card-sub">Contoh tampilan &middot; Foto selfie di lokasi</div>
+                        </div>
                     </div>
-                @endif
+                    @if ($totalCastingDibuka > 0)
+                        <div class="hp-hero-float">
+                            <strong>Sedang dibuka {{ $totalCastingDibuka }} peran</strong>
+                            @if ($rentangDeadline)
+                                <span>Batas daftar {{ $rentangDeadline }}</span>
+                            @endif
+                        </div>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
 
     {{-- Cara Kerja (3 Kolom Faktual) --}}
-    <div class="services-section hp-band-dark" id="cara-kerja">
+    <div class="services-section" id="cara-kerja">
         <div class="services-inner">
             <div class="services-split-head">
                 <div>
@@ -342,11 +358,13 @@
             <div class="lp-lowongan-header">
                 <div>
                     <h2 class="section-title font-editorial">Lowongan casting terbuka</h2>
-                    <div class="lp-lowongan-count">{{ $proyekTerbuka->count() }} lowongan sedang menerima pendaftaran</div>
                 </div>
-                <div class="lp-filter-pills" role="tablist">
-                    <button type="button" class="lp-filter-pill is-active" data-filter="all">Semua lowongan</button>
-                    <button type="button" class="lp-filter-pill" data-filter="urgent"><i class="ti ti-bolt"></i> Butuh mendadak</button>
+                <div class="lp-lowongan-right">
+                    <span class="lp-count-pill">{{ $proyekTerbuka->count() }} lowongan sedang menerima pendaftaran</span>
+                    <div class="lp-filter-pills" role="tablist">
+                        <button type="button" class="lp-filter-pill is-active" data-filter="all">Semua lowongan</button>
+                        <button type="button" class="lp-filter-pill" data-filter="urgent"><i class="ti ti-bolt"></i> Butuh mendadak</button>
+                    </div>
                 </div>
             </div>
 
@@ -477,9 +495,11 @@
                                 @else
                                     <i class="ti ti-movie" aria-hidden="true"></i>
                                 @endif
+                                <div class="porto-caption">
+                                    <h3 class="porto-title font-editorial">{{ $p->portofolio_judul ?: $p->nama_produksi }}</h3>
+                                    <div class="porto-sub">{{ implode(' · ', array_filter([$p->portofolio_jenis, $p->portofolio_tahun, $p->tampilkan_nama_client ? $p->namaClient() : null])) }}</div>
+                                </div>
                             </div>
-                            <h3 class="porto-title font-editorial">{{ $p->portofolio_judul ?: $p->nama_produksi }}</h3>
-                            <div class="porto-sub">{{ implode(' · ', array_filter([$p->portofolio_jenis, $p->portofolio_tahun, $p->tampilkan_nama_client ? $p->namaClient() : null])) }}</div>
                         </article>
                     @endforeach
                 </div>
@@ -574,7 +594,7 @@
                             </p>
                         </div>
                         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                            <a href="{{ route('login') }}" class="btn-brand" style="background: #22C55E; color: #052E16; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; border-color: #22C55E;">
+                            <a href="{{ route('login') }}" class="btn-brand" style="background: #22B862; color: #04140A; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; border-color: #22B862;">
                                 <i class="ti ti-user-check"></i> Masuk portal client
                             </a>
                             <a href="#kontak" class="btn-outline" style="color: #F4F3EE; border-color: rgba(255,255,255,0.25); text-decoration: none;">
@@ -623,25 +643,7 @@
     </section>
     </main>
 
-    <footer>
-        <div class="footer-inner">
-            <a href="{{ route('home') }}" class="footer-brand">
-                <img src="{{ asset(config('brand.logo')) }}" alt="" width="26" height="26">
-                {{ config('brand.name') }}
-            </a>
-            <nav class="footer-nav" aria-label="Tautan footer">
-                <a href="#lowongan">Lowongan</a>
-                <a href="#cara-kerja">Cara Kerja</a>
-                <a href="#faq">FAQ</a>
-                <a href="{{ route('privacy-policy') }}">Privasi</a>
-            </nav>
-            <div class="footer-legal">
-                <span>&copy; {{ date('Y') }} {{ config('brand.name') }}</span>
-                <a href="{{ route('tentang') }}">Tentang PT JBTB</a>
-            </div>
-        </div>
-        <div style="max-width: 1100px; margin: 12px auto 0; padding: 0 32px; font-size: 12px; color: var(--hp-muted);">PT. JBTB Casting Creative Group &middot; NIB terdaftar OSS</div>
-    </footer>
+    @include('partials.landing-footer', ['page' => 'home'])
 
     <script>
     // Carousel geser manual: drag mouse/trackpad, swipe native di touch.

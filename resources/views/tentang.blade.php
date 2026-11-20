@@ -63,22 +63,10 @@
         .tentang-links a:hover { color: var(--hp-accent); border-color: var(--hp-accent); }
         @media (max-width: 767px) { .fact-grid { grid-template-columns: 1fr; } .tentang-wrap { padding: 32px 20px 56px; } }
 
-        footer { border-top: 1px solid var(--hp-line); padding: 24px 32px; }
-        .footer-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto auto; gap: 24px; align-items: center; }
-        .footer-brand { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 600; color: var(--hp-fg); text-decoration: none; }
-        .footer-brand img { width: 26px; height: 26px; border-radius: 6px; object-fit: contain; }
-        .footer-nav { display: flex; gap: 20px; }
-        .footer-nav a { display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; color: var(--hp-muted); text-decoration: none; white-space: nowrap; }
-        .footer-nav a:hover { color: var(--hp-fg); }
-        .footer-legal { display: flex; gap: 16px; align-items: center; font-size: 13px; color: var(--hp-muted); }
-        @media (max-width: 768px) {
-            .footer-inner { grid-template-columns: 1fr; gap: 16px; padding-left: 4px; }
-            footer { padding: 20px; padding-bottom: 96px; padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
-        }
     </style>
     @include('partials.landing-sections-style')
 </head>
-<body>
+<body id="atas">
     @include('partials.pill-nav', ['page' => 'tentang'])
 
     <main>
@@ -137,21 +125,7 @@
         </div>
     </main>
 
-    <footer>
-        <div class="footer-inner">
-            <a href="{{ route('home') }}" class="footer-brand">
-                <img src="{{ asset('images/logo-jbtb.jpg') }}" alt="Logo {{ config('brand.legal_entity') }}" width="26" height="26">
-                {{ config('brand.legal_entity') }}
-            </a>
-            <nav class="footer-nav" aria-label="Tautan footer">
-                <a href="{{ route('home') }}">Beranda {{ config('brand.name') }}</a>
-                <a href="{{ route('privacy-policy') }}">Privasi</a>
-            </nav>
-            <div class="footer-legal">
-                <span>&copy; {{ date('Y') }} {{ config('brand.legal_entity') }}</span>
-            </div>
-        </div>
-    </footer>
+    @include('partials.landing-footer', ['page' => 'tentang'])
 
     <script>
     (function () {
