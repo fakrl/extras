@@ -52,8 +52,8 @@
         .tentang-wrap { max-width: 760px; margin: 0 auto; padding: 48px 32px 72px; }
         .tentang-eyebrow { display: block; font-size: 12px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--hp-accent); margin-bottom: 10px; }
         .tentang-title { font-family: var(--font-editorial, 'Newsreader', Georgia, serif); font-size: clamp(2rem, 4.5vw, 3rem); line-height: 1.1; letter-spacing: -0.02em; font-weight: 500; margin: 0 0 20px; color: var(--hp-fg); }
-        .tentang-section { border-top: 1px solid var(--hp-line); padding-top: 28px; margin-top: 28px; }
-        .tentang-section h2 { font-family: var(--font-editorial, 'Newsreader', Georgia, serif); font-size: 1.5rem; font-weight: 500; margin: 0 0 12px; color: var(--hp-fg); }
+        .tentang-section { border-top: 1px dashed var(--hp-line); padding-top: 28px; margin-top: 28px; }
+        .tentang-section h2 { font-family: var(--font-editorial, 'Newsreader', Georgia, serif); font-size: clamp(1.8rem, 5vw, 2.6rem); line-height: 1.1; font-weight: 500; margin: 0 0 12px; color: var(--hp-fg); }
         .tentang-section p { font-size: 14.5px; line-height: 1.75; color: var(--hp-muted); margin: 0 0 12px; }
         .fact-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px 24px; margin-top: 16px; }
         .fact-item strong { display: block; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--hp-muted); margin-bottom: 4px; }
@@ -76,6 +76,7 @@
             footer { padding: 20px; padding-bottom: 96px; padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
         }
     </style>
+    @include('partials.landing-sections-style')
 </head>
 <body>
     @include('partials.pill-nav', ['page' => 'tentang'])
