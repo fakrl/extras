@@ -251,4 +251,76 @@ class ContrastTokenTest extends TestCase
         $t = self::DARK;
         $this->assertContrast($t['--md-custom-on-info-container'], $t['--md-custom-info-container'], 'dark on-info-container/info-container');
     }
+
+    // ── Token Sorot (landing-sections-style.blade.php) ─────────────────────
+
+    private const SOROT_LIGHT = [
+        '--bg' => '#FBFDFB', '--fg' => '#0F1511', '--muted-fg' => '#5A6660', '--card' => '#FFFFFF',
+        '--primary' => '#15803D', '--on-primary' => '#FFFFFF', '--accent-soft' => '#E8F5EC', '--on-accent-soft' => '#0B5E2C',
+    ];
+
+    private const SOROT_DARK = [
+        '--bg' => '#0B1410', '--fg' => '#F2F7F3', '--muted-fg' => '#9BAAA0', '--card' => '#101A14',
+        '--primary' => '#22B862', '--on-primary' => '#04140A', '--accent-soft' => '#12271B', '--on-accent-soft' => '#22B862',
+    ];
+
+    public function test_sorot_light_fg_on_bg(): void
+    {
+        $t = self::SOROT_LIGHT;
+        $this->assertContrast($t['--fg'], $t['--bg'], 'sorot light fg/bg');
+    }
+
+    public function test_sorot_light_muted_fg_on_bg(): void
+    {
+        $t = self::SOROT_LIGHT;
+        $this->assertContrast($t['--muted-fg'], $t['--bg'], 'sorot light muted-fg/bg');
+    }
+
+    public function test_sorot_light_fg_on_card(): void
+    {
+        $t = self::SOROT_LIGHT;
+        $this->assertContrast($t['--fg'], $t['--card'], 'sorot light fg/card');
+    }
+
+    public function test_sorot_light_on_primary_on_primary(): void
+    {
+        $t = self::SOROT_LIGHT;
+        $this->assertContrast($t['--on-primary'], $t['--primary'], 'sorot light on-primary/primary');
+    }
+
+    public function test_sorot_light_on_accent_soft_on_accent_soft(): void
+    {
+        $t = self::SOROT_LIGHT;
+        $this->assertContrast($t['--on-accent-soft'], $t['--accent-soft'], 'sorot light on-accent-soft/accent-soft');
+    }
+
+    public function test_sorot_dark_fg_on_bg(): void
+    {
+        $t = self::SOROT_DARK;
+        $this->assertContrast($t['--fg'], $t['--bg'], 'sorot dark fg/bg');
+    }
+
+    public function test_sorot_dark_muted_fg_on_bg(): void
+    {
+        $t = self::SOROT_DARK;
+        $this->assertContrast($t['--muted-fg'], $t['--bg'], 'sorot dark muted-fg/bg');
+    }
+
+    public function test_sorot_dark_fg_on_card(): void
+    {
+        $t = self::SOROT_DARK;
+        $this->assertContrast($t['--fg'], $t['--card'], 'sorot dark fg/card');
+    }
+
+    public function test_sorot_dark_on_primary_on_primary(): void
+    {
+        $t = self::SOROT_DARK;
+        $this->assertContrast($t['--on-primary'], $t['--primary'], 'sorot dark on-primary/primary');
+    }
+
+    public function test_sorot_dark_on_accent_soft_on_accent_soft(): void
+    {
+        $t = self::SOROT_DARK;
+        $this->assertContrast($t['--on-accent-soft'], $t['--accent-soft'], 'sorot dark on-accent-soft/accent-soft');
+    }
 }
