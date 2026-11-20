@@ -438,10 +438,11 @@
         .xcard { position: relative; display: flex; flex-direction: column; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; scroll-margin-top: 80px; transition: box-shadow .15s ease; }
         .xcard:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
         .xcard.is-highlight { border: 2px solid var(--accent); }
-        .xcard-ph { position: relative; aspect-ratio: 3/4; background: linear-gradient(160deg, hsl(var(--h) 24% 72%), hsl(var(--h) 20% 40%)); }
-        .xcard-ph-btn { display: block; width: 100%; height: 100%; padding: 0; margin: 0; border: 0; background: none; cursor: pointer; color: inherit; }
+        .xcard-ph { position: relative; aspect-ratio: 3/4; overflow: hidden; background: linear-gradient(160deg, hsl(var(--h) 24% 72%), hsl(var(--h) 20% 40%)); }
+        .xcard-ph-btn { display: block; position: absolute; inset: 0; width: 100%; height: auto; padding: 0; margin: 0; border: 0; background: none; cursor: pointer; color: inherit; }
         .xcard-ph-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
         .xcard-ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .xcard-ph:not(.lookbook-media-2-3) img { object-position: center 20%; }
         .xcard-inisial { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 48px; font-weight: 700; letter-spacing: 1px; color: rgba(255,255,255,0.92); text-shadow: 0 1px 8px rgba(0,0,0,0.18); }
         .xcard .xcard-st { position: absolute; top: 10px; left: 10px; background: var(--bg-card); font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,0.15); pointer-events: none; }
         .xcard-ck { position: absolute; top: 2px; right: 2px; width: 44px; height: 44px; margin: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
