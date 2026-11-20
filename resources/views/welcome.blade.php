@@ -133,12 +133,12 @@
             .marquee-nav.next { right: 8px; }
             .marquee-nav:hover { background: var(--hp-accent); color: var(--hp-accent-on); }
         }
-        .hp-sec-head { max-width: 1100px; margin: 0 auto 2.5rem; padding: 0 32px; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px 24px; flex-wrap: wrap; }
-        .hp-sec-title { font-family: var(--font-editorial, 'Newsreader', Georgia, 'Times New Roman', serif); font-size: clamp(2.2rem, 5.5vw, 3.75rem); font-weight: 400; line-height: 1; letter-spacing: -0.04em; margin: 0; color: var(--hp-fg); }
+        .hp-sec-head { max-width: 1080px; margin: 0 auto; padding-inline: 5%; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px 24px; flex-wrap: wrap; }
+        .hp-sec-title { font-family: var(--font-editorial, 'Newsreader', Georgia, 'Times New Roman', serif); font-weight: 400; letter-spacing: -0.04em; margin: 0; color: var(--hp-fg); }
         .hp-sec-note { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--hp-muted); }
 
         /* ── Cast (BH.2) ── */
-        .cast-section { padding-block: 7rem; border-top: 1px solid var(--hp-line); overflow: hidden; }
+        .cast-section { padding-block: 46px; border-top: 1px solid var(--hp-line); overflow: hidden; }
         .cast-card { flex: 0 0 210px; display: block; color: inherit; text-decoration: none; }
         .cast-card:focus-visible { outline: 2px solid var(--hp-accent); outline-offset: 4px; }
         .cast-photo-wrap { aspect-ratio: 2 / 3; overflow: hidden; background: var(--hp-card); position: relative; border-radius: 4px; transition: box-shadow .3s ease; }
@@ -157,20 +157,20 @@
         .section-body { font-size: 14px; color: var(--hp-muted); line-height: 1.75; margin: 0; }
 
         /* ── Cara Kerja (CK.2.3 + Stitch 3-Langkah) ── */
-        .services-section { padding-block: 6rem; border-top: 1px solid var(--hp-line); }
-        .services-inner { max-width: 1140px; margin: 0 auto; padding: 0 32px; }
-        .services-split-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; margin-bottom: 8px; }
-        .services-left-title { font-family: var(--font-editorial, 'Newsreader', Georgia, 'Times New Roman', serif); font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 400; line-height: 1.1; letter-spacing: -0.02em; margin: 8px 0 0; color: var(--hp-fg); }
+        .services-section { padding-block: 46px; border-top: 1px solid var(--hp-line); }
+        .services-inner { max-width: 1080px; margin: 0 auto; padding-inline: 5%; }
+        .services-split-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; margin-bottom: 26px; }
+        .services-left-title { font-family: var(--font-editorial, 'Newsreader', Georgia, 'Times New Roman', serif); font-weight: 400; letter-spacing: -0.02em; margin: 8px 0 0; color: var(--hp-fg); }
         .services-list { border-top: 1px solid var(--hp-line); }
         .services-item { display: flex; gap: 20px; align-items: flex-start; padding: 20px 0; border-bottom: 1px solid var(--hp-line); }
         .services-num { font-family: var(--font-editorial, 'Newsreader', Georgia, 'Times New Roman', serif); font-size: 13px; color: var(--hp-muted); flex-shrink: 0; padding-top: 2px; letter-spacing: 1px; min-width: 28px; }
         .services-body p { font-size: 13.5px; color: var(--hp-muted); margin: 0; line-height: 1.65; }
 
         /* ── Lowongan list ala loker & kartu editorial (AK.9 + Stitch) ── */
-        .lowongan-section { padding-block: 6rem; border-top: 1px solid var(--hp-line); }
-        .lowongan-inner { max-width: 1140px; margin: 0 auto; padding: 0 32px; }
+        .lowongan-section { padding-block: 46px; border-top: 1px solid var(--hp-line); }
+        .lowongan-inner { max-width: 1080px; margin: 0 auto; padding-inline: 5%; }
         .lowongan-list { display: flex; flex-direction: column; border-top: 1px solid var(--hp-line); margin-top: 2.5rem; }
-        .lowongan-item { border-bottom: 1px solid var(--hp-line); }
+        .lowongan-item { border-bottom: 1px dashed var(--hp-line); }
         .lowongan-summary {
             display: flex; align-items: center; gap: 16px;
             padding: 18px 0; cursor: pointer; list-style: none;
@@ -217,9 +217,9 @@
         .lowongan-empty { text-align: center; color: var(--hp-muted); font-size: 14px; padding: 40px; border: 1px dashed var(--hp-line); border-radius: 12px; margin-top: 2.5rem; }
 
         /* ── Kontak (AK.10) ── */
-        .contact-section { padding-block: 7rem; border-top: 1px solid var(--hp-line); }
-        .contact-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: grid; grid-template-columns: 1fr 2fr; gap: 56px; align-items: start; }
-        .contact-left-title { font-family: var(--font-editorial, 'Newsreader', Georgia, 'Times New Roman', serif); font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 400; line-height: 1.1; letter-spacing: -0.02em; margin: 8px 0 0; color: var(--hp-fg); }
+        .contact-section { padding-block: 46px; border-top: 1px solid var(--hp-line); }
+        .contact-inner { max-width: 1080px; margin: 0 auto; padding-inline: 5%; display: grid; grid-template-columns: 1fr 2fr; gap: 56px; align-items: start; }
+        .contact-left-title { font-family: var(--font-editorial, 'Newsreader', Georgia, 'Times New Roman', serif); font-weight: 400; letter-spacing: -0.02em; margin: 8px 0 0; color: var(--hp-fg); }
         .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px 40px; }
         .contact-block strong { display: block; font-size: var(--fs-xs); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--hp-muted); margin-bottom: 8px; }
         .contact-block p { font-size: 14px; color: var(--hp-fg); margin: 0; line-height: 1.6; }
@@ -227,7 +227,7 @@
         .contact-block a:hover { color: var(--hp-accent); border-color: var(--hp-accent); }
 
         /* ── Portofolio (BH.3) ── */
-        .porto-section { padding-block: 7rem; border-top: 1px solid var(--hp-line); overflow: hidden; }
+        .porto-section { padding-block: 46px; border-top: 1px solid var(--hp-line); overflow: hidden; }
         .porto-card { flex: 0 0 380px; margin: 0; }
         .porto-img { aspect-ratio: 1.28; overflow: hidden; border-radius: 4px; position: relative; background: linear-gradient(135deg, color-mix(in srgb, var(--hp-accent) 35%, var(--hp-card)), var(--hp-card) 70%); transition: box-shadow .3s ease; }
         .porto-card:hover .porto-img { box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25); }
@@ -255,11 +255,8 @@
 
         /* ── Responsive ── */
         @media (max-width: 768px) {
-            .services-inner,
-            .lowongan-inner,
-            .hp-sec-head,
             .footer-inner { padding-left: 20px; padding-right: 20px; }
-            .cast-section, .services-section, .lowongan-section, .porto-section { padding-block: 5rem; }
+            .cast-section, .services-section, .lowongan-section, .porto-section, .contact-section { padding-block: 36px; }
             .services-inner { grid-template-columns: 1fr; gap: 28px; }
             .contact-inner { grid-template-columns: 1fr; gap: 32px; }
             .contact-grid { grid-template-columns: 1fr; gap: 24px; }
@@ -269,6 +266,7 @@
             footer { padding: 20px; padding-bottom: 96px; padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
         }
     </style>
+    @include('partials.landing-sections-style')
 </head>
 <body>
     @include('partials.pill-nav', ['page' => 'home'])
@@ -311,7 +309,7 @@
     </div>
 
     {{-- Cara Kerja (3 Kolom Faktual) --}}
-    <div class="services-section" id="cara-kerja">
+    <div class="services-section hp-band-dark" id="cara-kerja">
         <div class="services-inner">
             <div class="services-split-head">
                 <div>
@@ -494,7 +492,7 @@
     <div class="lowongan-section" id="faq" aria-label="Pertanyaan umum">
         <div class="lowongan-inner" style="max-width: 780px;">
             <div style="text-align: center; margin-bottom: 28px;">
-                <h2 class="section-title font-editorial" style="font-size: 26px; margin: 4px 0 0;">Pertanyaan yang sering ditanyakan</h2>
+                <h2 class="section-title font-editorial">Pertanyaan yang sering ditanyakan</h2>
             </div>
             <div class="lowongan-list">
                 <details class="lowongan-item">
