@@ -154,21 +154,24 @@
 @php
     $tagNama = $tagGroups->flatten()->pluck('nama', 'id');
     $roleOpsi = ['' => 'Semua'] + \Illuminate\Support\Arr::except(\App\Models\User::LABELS, 'super_admin') + ['super_admin' => 'Super Admin'];
-@endphp
-<form method="GET" action="{{ route('super-admin.akun.index') }}" class="xtoolbar" id="live-form" data-live>
-    <input type="search" name="q" value="{{ $f['q'] }}" class="xtoolbar-cari" placeholder="Cari akun…" aria-label="Cari nama, username, email, atau WA">
-    <x-per-halaman :pilihan="$perPilihan" :nilai="$users->perPage()" />
-    <x-filter-panel :filter="[
+    $akunFilter = [
         $f['role'] ? ['role', 'Role: '.\App\Models\User::LABELS[$f['role']]] : null,
         $f['status'] ? ['status', 'Status: '.ucfirst($f['status'])] : null,
         $f['sedang_aktif'] ? ['sedang_aktif', 'Sedang aktif di proyek'] : null,
         $f['ganti_password'] ? ['ganti_password', 'Belum ganti password'] : null,
         $f['akan_dihapus'] ? ['akan_dihapus', 'Akan dihapus'] : null,
-        $f['favorit'] ? ['favorit', '⭐ Favorit'] : null,
+        $f['favorit'] ? ['favorit', 'Favorit'] : null,
         $f['urut'] ? ['urut', 'Urut: Favorit dulu'] : null,
         $f['grade'] ? ['grade', 'Grade: '.($f['grade'] === 'belum' ? 'Belum' : $f['grade'])] : null,
         ...array_map(fn ($id) => ['tag', 'Tag: #'.($tagNama[$id] ?? $id), $id], $f['tag']),
-    ]">
+    ];
+@endphp
+<form method="GET" action="{{ route('super-admin.akun.index') }}" class="xtoolbar" id="live-form" data-live>
+    <x-cari-chips :filter="$akunFilter">
+        <input type="search" name="q" value="{{ $f['q'] }}" class="xtoolbar-cari" placeholder="Cari akun…" aria-label="Cari nama, username, email, atau WA">
+    </x-cari-chips>
+    <x-per-halaman :pilihan="$perPilihan" :nilai="$users->perPage()" />
+    <x-filter-panel tanpaChips :filter="$akunFilter">
         <x-filter-panel.grup label="Role" name="role" :opsi="$roleOpsi" :nilai="$f['role']" baris />
         <x-filter-panel.grup label="Status" name="status" :opsi="['' => 'Semua', 'aktif' => 'Aktif', 'nonaktif' => 'Nonaktif', 'dihapus' => 'Dihapus']" :nilai="$f['status']" />
         <label class="fswitch">Sedang aktif di proyek <input type="checkbox" name="sedang_aktif" value="1" @checked($f['sedang_aktif'])></label>
@@ -176,7 +179,7 @@
         @if (in_array($f['role'], [null, 'extras'], true))
             <div class="fpanel-sub">
                 <div class="fpanel-judul">Khusus Extras</div>
-                <label class="fswitch">⭐ Favorit <input type="checkbox" name="favorit" value="1" @checked($f['favorit'])></label>
+                <label class="fswitch">Favorit <input type="checkbox" name="favorit" value="1" @checked($f['favorit'])></label>
                 <x-filter-panel.grup label="Urutkan" name="urut" :opsi="['' => 'Terbaru', 'favorit' => 'Favorit dulu']" :nilai="$f['urut']" />
                 <label class="fswitch">Akan dihapus (sudah diperingatkan) <input type="checkbox" name="akan_dihapus" value="1" @checked($f['akan_dihapus'])></label>
                 <x-filter-panel.grup label="Grade" name="grade" :opsi="['' => 'Semua', 'A' => 'A', 'B' => 'B', 'C' => 'C', 'belum' => 'Belum']" :nilai="$f['grade']" />
