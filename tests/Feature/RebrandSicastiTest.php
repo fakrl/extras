@@ -61,4 +61,58 @@ class RebrandSicastiTest extends TestCase
 
         $this->assertSame('SiCasti', $data['name']);
     }
+
+    public function test_landing_tidak_ada_hamburger_lama(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('menu-toggle', $html);
+    }
+
+    public function test_sheet_menu_berisi_baris_tema_tentang_privasi_sk_faq(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        foreach (['Tema gelap', 'Tentang PT JBTB', 'Privasi', 'Syarat dan ketentuan', 'FAQ'] as $teks) {
+            $this->assertStringContainsString($teks, $html);
+        }
+    }
+
+    public function test_guest_lihat_daftar_talent_di_sheet_dan_masuk_di_pill(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringContainsString('Daftar sebagai talent', $html);
+        $this->assertStringContainsString('Masuk', $html);
+    }
+
+    public function test_user_login_tidak_lihat_daftar_talent_dan_dropdown_akun_tetap(): void
+    {
+        $user = User::factory()->create(['role' => 'extras']);
+        $html = $this->actingAs($user)->get('/')->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('Daftar sebagai talent', $html);
+        $this->assertStringNotContainsString('class="btn-brand">Masuk<', $html);
+        $this->assertStringContainsString('id="navbar-user-menu"', $html);
+        $this->assertStringContainsString('Dashboard', $html);
+        $this->assertStringContainsString('Keluar', $html);
+    }
+
+    public function test_sheet_tidak_berisi_form_logout(): void
+    {
+        $user = User::factory()->create(['role' => 'extras']);
+        $html = $this->actingAs($user)->get('/')->assertOk()->getContent();
+
+        $sheet = substr($html, strpos($html, '<dialog id="nav-sheet"'), strpos($html, '</dialog>') - strpos($html, '<dialog id="nav-sheet"'));
+
+        $this->assertStringNotContainsString('action="'.route('logout').'"', $sheet);
+    }
+
+    public function test_halaman_tentang_render_untuk_guest_dan_user_login(): void
+    {
+        $this->get(route('tentang'))->assertOk();
+
+        $user = User::factory()->create(['role' => 'extras']);
+        $this->actingAs($user)->get(route('tentang'))->assertOk();
+    }
 }
