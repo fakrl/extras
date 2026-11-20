@@ -94,6 +94,6 @@ class BnFavoritTest extends TestCase
         $this->assertSame([$fav->user_id, $biasa->user_id], $ids(['urut' => 'favorit']));
 
         $this->actingAs($sa)->get(route('super-admin.akun.index', ['role' => 'extras', 'favorit' => 1]))
-            ->assertSee('⭐ Favorit')->assertSee('class="xcard-fav"', false)->assertSee('class="is-on"', false);
+            ->assertSee('Favorit')->assertDontSee('⭐ Favorit')->assertSee('class="xcard-fav"', false)->assertSee('class="is-on"', false);
     }
 }
