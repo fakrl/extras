@@ -8,16 +8,16 @@
     <meta name="theme-color" content="#15803D" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#0f9a4c" media="(prefers-color-scheme: dark)">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="apple-touch-icon" href="{{ asset('images/icons/icon-192.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/brand/icon-192.png') }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <link rel="icon" href="{{ asset('images/logo-jbtb.jpg') }}" type="image/jpeg">
-    <title>JBTB Casting · Agensi Extras & Talent Jakarta</title>
+    <link rel="icon" href="{{ asset('images/brand/favicon.png') }}" type="image/png">
+    <title>{{ config('brand.name') }} · Sistem Casting Extras & Talent Jakarta</title>
     <link rel="canonical" href="{{ url('/') }}">
     @include('partials.og-meta', [
         'noindex' => false,
-        'ogTitle' => 'JBTB Casting · Agensi Extras & Talent Jakarta',
-        'ogDesc' => 'Daftar jadi extras, lamar casting yang sedang buka, kontrak dan honor tercatat jelas di satu tempat di JBTB Casting.',
+        'ogTitle' => config('brand.name').' · Sistem Casting Extras & Talent Jakarta',
+        'ogDesc' => 'Daftar jadi extras, lamar casting yang sedang buka, kontrak dan honor tercatat jelas di satu tempat di '.config('brand.name').'.',
         'ogImage' => asset('images/hero-clapboard.jpg'),
     ])
 
@@ -64,21 +64,7 @@
             text-transform: uppercase; color: var(--hp-accent); margin-bottom: 10px;
         }
 
-        /* ── Navbar ── */
-        .hp-nav {
-            position: sticky; top: 0; z-index: 100;
-            background: var(--hp-bg);
-            border-bottom: 1px solid var(--hp-line);
-            padding: 0 32px;
-            display: flex; align-items: center; justify-content: space-between; height: 56px;
-        }
-        .hp-nav-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; color: var(--hp-fg); }
-        .hp-logo { width: 34px; height: 34px; border-radius: 8px; object-fit: contain; display: block; flex-shrink: 0; }
-        .hp-nav-menu { list-style: none; margin: 0; padding: 0; display: flex; gap: 2px; align-items: center; flex: 1; justify-content: center; }
-        .hp-nav-menu a { display: flex; align-items: center; min-height: 44px; font-size: 13.5px; color: var(--hp-muted); text-decoration: none; padding: 0 11px; border-radius: 7px; }
-        .hp-nav-menu a:hover { color: var(--hp-fg); background: var(--hp-card); }
-        .hp-menu-toggle { display: none; width: 44px; height: 44px; border-radius: 8px; border: none; cursor: pointer; background: var(--hp-card); color: var(--hp-fg); align-items: center; justify-content: center; font-size: 18px; }
-        .hp-nav-actions { display: flex; gap: 8px; align-items: center; }
+        /* ── Navbar: lihat partials/pill-nav.blade.php untuk pill mengambang + dock mobile ── */
         .theme-toggle-btn { width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer; background: var(--hp-card); color: var(--hp-muted); display: flex; align-items: center; justify-content: center; font-size: 15px; }
         .avatar-badge { width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer; background: var(--hp-accent); color: var(--hp-accent-on); font-size: var(--fs-xs); font-weight: 700; display: flex; align-items: center; justify-content: center; }
         .avatar-badge-img { object-fit: cover; padding: 0; }
@@ -269,11 +255,6 @@
 
         /* ── Responsive ── */
         @media (max-width: 768px) {
-            .hp-nav { padding: 0 16px; position: relative; }
-            .hp-nav-menu { display: none; position: absolute; top: 56px; left: 0; right: 0; flex-direction: column; align-items: flex-start; background: var(--hp-bg); border-bottom: 1px solid var(--hp-line); padding: 8px 0; z-index: 99; }
-            .hp-nav-menu.open { display: flex; }
-            .hp-nav-menu a { padding: 10px 20px; border-radius: 0; width: 100%; }
-            .hp-menu-toggle { display: flex; }
             .services-inner,
             .lowongan-inner,
             .hp-sec-head,
@@ -285,62 +266,22 @@
             .lowongan-detail { padding-left: 0; }
             .footer-inner { grid-template-columns: 1fr; gap: 16px; }
             .footer-nav { flex-wrap: wrap; gap: 12px; }
-            footer { padding: 20px; }
+            footer { padding: 20px; padding-bottom: 96px; padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
         }
     </style>
 </head>
 <body>
-    {{-- Navbar --}}
-    <nav class="hp-nav" aria-label="Menu utama">
-        <div class="hp-nav-brand">
-            <img src="{{ asset('images/logo-jbtb.jpg') }}" alt="Logo JBTB" class="hp-logo">
-            JBTB Casting
-        </div>
-        <ul class="hp-nav-menu" id="hp-nav-menu">
-            <li><a href="{{ route('home') }}">Beranda</a></li>
-            <li><a href="#lowongan">Lowongan</a></li>
-            <li><a href="#cara-kerja">Cara Kerja</a></li>
-            <li><a href="#faq">FAQ</a></li>
-        </ul>
-        <div class="hp-nav-actions">
-            <button type="button" class="hp-menu-toggle" id="menu-toggle" aria-label="Buka menu" aria-controls="hp-nav-menu" aria-expanded="false">
-                <i class="ti ti-menu-2"></i>
-            </button>
-            <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Ganti tema" aria-pressed="false">
-                <i class="ti ti-moon" id="theme-icon"></i>
-            </button>
-            @auth
-                <details class="navbar-user-menu" id="navbar-user-menu">
-                    <summary class="avatar-badge-summary" aria-label="Menu akun">
-                        @if (auth()->user()->extrasProfile?->foto_profil_path)
-                            <img src="{{ route('extras.media.foto', auth()->user()->extrasProfile) }}" class="avatar-badge avatar-badge-img" alt="Foto profil">
-                        @else
-                            <div class="avatar-badge">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
-                        @endif
-                    </summary>
-                    <div class="navbar-user-menu-dropdown">
-                        <a href="/dashboard"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit"><i class="ti ti-logout"></i> Keluar</button>
-                        </form>
-                    </div>
-                </details>
-            @else
-                <a href="{{ route('login') }}" class="btn-brand" style="font-size: 13px; padding: 0 16px;">Masuk</a>
-            @endauth
-        </div>
-    </nav>
+    @include('partials.pill-nav', ['page' => 'home'])
 
     <main>
     {{-- Hero 2-Kolom (Faktual, Bahasa Sehari-hari, Foto Roster Nyata) --}}
-    <div class="hero">
+    <div class="hero" id="beranda">
         <div class="hero-inner">
             <div class="lp-hero-grid">
                 <div>
                     <h1 class="lp-hero-title">Casting extras film dan iklan di Jabodetabek</h1>
                     <p class="lp-hero-desc">
-                        JBTB Casting menghubungkan rumah produksi dengan talenta extras di Jabodetabek. Pendaftaran profil gratis, kontrak kerja digital, presensi kehadiran di lokasi syuting dengan foto selfie, serta catatan honor transparan di satu tempat.
+                        {{ config('brand.name') }} menghubungkan rumah produksi dengan talenta extras di Jabodetabek. Pendaftaran profil gratis, kontrak kerja digital, presensi kehadiran di lokasi syuting dengan foto selfie, serta catatan honor transparan di satu tempat.
                     </p>
                     <div class="cta-row">
                         @guest
@@ -687,8 +628,8 @@
     <footer>
         <div class="footer-inner">
             <a href="{{ route('home') }}" class="footer-brand">
-                <img src="{{ asset('images/logo-jbtb.jpg') }}" alt="" width="26" height="26">
-                JBTB Casting
+                <img src="{{ asset(config('brand.logo')) }}" alt="" width="26" height="26">
+                {{ config('brand.name') }}
             </a>
             <nav class="footer-nav" aria-label="Tautan footer">
                 <a href="#lowongan">Lowongan</a>
@@ -697,7 +638,8 @@
                 <a href="{{ route('privacy-policy') }}">Privasi</a>
             </nav>
             <div class="footer-legal">
-                <span>&copy; {{ date('Y') }} JBTB Casting</span>
+                <span>&copy; {{ date('Y') }} {{ config('brand.name') }}</span>
+                <a href="{{ route('tentang') }}">Tentang PT JBTB</a>
             </div>
         </div>
         <div style="max-width: 1100px; margin: 12px auto 0; padding: 0 32px; font-size: 12px; color: var(--hp-muted);">PT. JBTB Casting Creative Group &middot; NIB terdaftar OSS</div>
@@ -783,16 +725,6 @@
             ikon(next);
         });
 
-        var menuToggle = document.getElementById('menu-toggle');
-        var navMenu = document.getElementById('hp-nav-menu');
-        if (menuToggle && navMenu) {
-            function menu(buka) { navMenu.classList.toggle('open', buka); menuToggle.setAttribute('aria-expanded', buka); }
-            menuToggle.addEventListener('click', function () { menu(!navMenu.classList.contains('open')); });
-            navMenu.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', function () { menu(false); }); });
-            document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape' && navMenu.classList.contains('open')) { menu(false); menuToggle.focus(); }
-            });
-        }
         var userMenu = document.getElementById('navbar-user-menu');
         if (userMenu) {
             document.addEventListener('click', function (e) { if (!userMenu.contains(e.target)) userMenu.removeAttribute('open'); });

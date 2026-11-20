@@ -116,6 +116,10 @@ Route::get('/syarat-ketentuan', function () {
     return view('syarat-ketentuan');
 })->name('syarat-ketentuan');
 
+Route::get('/tentang', function () {
+    return view('tentang');
+})->name('tentang');
+
 Route::post('/logout', [LoginController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
