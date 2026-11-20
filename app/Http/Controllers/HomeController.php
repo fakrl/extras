@@ -23,6 +23,11 @@ class HomeController extends Controller
         $proyekTerbuka = $allTerbuka->take(6)->values();
         $adaLebih = $allTerbuka->count() > 6;
 
+        $totalCastingDibuka = $allTerbuka->count();
+        $totalPeranDibuka = $allTerbuka->sum(fn ($p) => $p->totalKuota());
+        $totalTalentTerdaftar = ExtrasProfile::count();
+        $rentangDeadline = $allTerbuka->isEmpty() ? null : $this->rentangDeadline($allTerbuka->min('deadline'), $allTerbuka->max('deadline'));
+
         $portofolio = CastingProject::where('tampil_portofolio', true)
             ->select(['id', 'nama_produksi', 'client_id', 'poster_path', 'portofolio_judul', 'portofolio_jenis', 'portofolio_tahun', 'tampilkan_nama_client'])
             ->with('client:id,name,nama_perusahaan')
@@ -40,6 +45,16 @@ class HomeController extends Controller
             $castExtras = collect();
         }
 
-        return view('welcome', compact('proyekTerbuka', 'adaLebih', 'portofolio', 'castExtras'));
+        return view('welcome', compact(
+            'proyekTerbuka', 'adaLebih', 'portofolio', 'castExtras',
+            'totalCastingDibuka', 'totalPeranDibuka', 'totalTalentTerdaftar', 'rentangDeadline'
+        ));
+    }
+
+    private function rentangDeadline($min, $max): string
+    {
+        return $min->isSameDay($max)
+            ? $min->translatedFormat('d M Y')
+            : $min->translatedFormat('d M').' – '.$max->translatedFormat('d M Y');
     }
 }
