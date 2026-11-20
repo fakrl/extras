@@ -1,4 +1,4 @@
-@props(['filter' => [], 'pertahankan' => []])
+@props(['filter' => [], 'pertahankan' => [], 'tanpaChips' => false])
 @php
     $chips = \App\Support\FilterAktif::chips(request(), $filter);
     $reset = \App\Support\FilterAktif::reset(request());
@@ -17,11 +17,13 @@
         </div>
     </div>
 </details>
+@unless ($tanpaChips)
 <div class="fchips" data-live-sync="fchips">
     @if ($chips)
         @foreach ($chips as $c)
             <a href="{{ $c['url'] }}" class="fchip" aria-label="Hapus filter {{ $c['label'] }}">{{ $c['label'] }} <i class="ti ti-x"></i></a>
         @endforeach
-        <a href="{{ \App\Support\FilterAktif::hapusSemua(request(), $pertahankan) }}" class="fchips-hapus" target="_self">Hapus semua</a>
+        <a href="{{ \App\Support\FilterAktif::hapusSemua(request(), $pertahankan) }}" class="fchips-hapus" aria-label="Hapus semua filter aktif" target="_self">Hapus semua</a>
     @endif
 </div>
+@endunless
