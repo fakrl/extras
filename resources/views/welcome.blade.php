@@ -137,21 +137,25 @@
         .hp-sec-title { font-family: var(--font-editorial, 'Newsreader', Georgia, 'Times New Roman', serif); font-weight: 400; letter-spacing: -0.04em; margin: 0; color: var(--hp-fg); }
         .hp-sec-note { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--hp-muted); }
 
-        /* ── Cast (BH.2) ── */
-        .cast-section { padding-block: 46px; border-top: 1px solid var(--hp-line); overflow: hidden; }
-        .cast-card { flex: 0 0 210px; display: block; color: inherit; text-decoration: none; }
+        /* ── Cast (BH.2/BH.4): grid 6 kartu acak + chip filter kategori, tanpa carousel ── */
+        .cast-section { padding-block: 46px; border-top: 1px solid var(--hp-line); }
+        .cast-chips { display: flex; gap: 8px; align-items: center; overflow-x: auto; scrollbar-width: none; margin-bottom: 18px; }
+        .cast-chips::-webkit-scrollbar { display: none; }
+        .cast-chip { flex: 0 0 auto; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); color: var(--fg); font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+        .cast-chip.is-active { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+        .cast-shuffle { flex: 0 0 auto; margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); color: var(--fg); font-size: 13px; font-weight: 600; cursor: pointer; }
+        .cast-shuffle:hover { border-color: var(--primary); color: var(--primary); }
+        .cast-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .cast-card { display: block; color: inherit; text-decoration: none; }
         .cast-card:focus-visible { outline: 2px solid var(--hp-accent); outline-offset: 4px; }
-        .cast-photo-wrap { aspect-ratio: 2 / 3; overflow: hidden; background: var(--hp-card); position: relative; border-radius: 4px; transition: box-shadow .3s ease; }
-        .cast-card:hover .cast-photo-wrap { box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25); }
-        .cast-photo { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s cubic-bezier(0.2, 0, 0, 1), filter .3s ease; }
-        .cast-card:hover .cast-photo, .cast-card:focus-visible .cast-photo { transform: scale(1.06); filter: brightness(1.04); }
-        .cast-no { position: absolute; left: 12px; top: 10px; font-size: 12px; color: rgba(255, 255, 255, 0.8); text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6); }
-        .cast-view { position: absolute; right: 12px; bottom: 12px; border-radius: 999px; background: var(--hp-accent); color: var(--hp-accent-on); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; opacity: 0; transition: opacity .3s; }
-        .cast-card:hover .cast-view, .cast-card:focus-visible .cast-view { opacity: 1; }
-        .cast-name { font-family: var(--font-editorial, 'Newsreader', Georgia, 'Times New Roman', serif); font-size: 1.3rem; letter-spacing: -0.03em; margin-top: 14px; color: var(--hp-fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cast-tag { margin-top: 4px; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hp-muted); }
-        @media (prefers-reduced-motion: reduce) { .cast-photo, .cast-view { transition: none; } .cast-card:hover .cast-photo { transform: none; } }
-        @media (max-width: 767px) { .cast-card { flex-basis: 160px; } }
+        .cast-photo-wrap { overflow: hidden; background: var(--hp-card); position: relative; }
+        .cast-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .cast-name { font-family: var(--font-editorial, 'Newsreader', Georgia, 'Times New Roman', serif); font-size: 1.1rem; letter-spacing: -0.03em; margin-top: 12px; color: var(--hp-fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cast-tags { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+        .cast-tag-pill { padding: 3px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--on-accent-soft); font-size: 11px; font-weight: 700; }
+        .cast-empty { text-align: center; padding: 40px 0; color: var(--muted-fg); }
+        .cast-empty a { color: var(--primary); font-weight: 700; }
+        @media (max-width: 767px) { .cast-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; } }
 
         .section-title { font-size: 18px; font-weight: 700; margin: 0 0 16px; color: var(--hp-fg); }
         .section-body { font-size: 14px; color: var(--hp-muted); line-height: 1.75; margin: 0; }
@@ -440,35 +444,14 @@
     </div>
 
     {{-- Cast (Roster Talent Extras) --}}
-    @if ($castExtras->isNotEmpty())
+    @if ($castTampil)
     <section class="cast-section" id="cast" aria-labelledby="cast-judul">
         <div class="hp-sec-head">
             <div>
                 <h2 class="hp-sec-title font-editorial" id="cast-judul">Roster talent extras</h2>
             </div>
-            <span class="hp-sec-note">
-                Geser untuk melihat roster <i class="ti ti-arrows-left-right"></i>
-            </span>
         </div>
-        <div class="marquee-wrap">
-            <button type="button" class="marquee-nav prev" data-dir="-1" aria-label="Sebelumnya"><i class="ti ti-chevron-left"></i></button>
-            <button type="button" class="marquee-nav next" data-dir="1" aria-label="Berikutnya"><i class="ti ti-chevron-right"></i></button>
-            <div class="marquee" data-carousel tabindex="0" aria-label="Daftar cast, geser untuk lihat semua">
-                <div class="marquee-track">
-                    @foreach ($castExtras as $i => $ex)
-                        <a href="{{ route('public.extras.profile', $ex->share_token) }}" class="cast-card">
-                            <div class="cast-photo-wrap">
-                                <img src="{{ route('public.extras.foto', $ex->share_token) }}" alt="Foto {{ '@'.$ex->user->username }}" class="cast-photo" loading="lazy">
-                                <span class="cast-no" aria-hidden="true">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</span>
-                                <span class="cast-view" aria-hidden="true">Lihat profil <i class="ti ti-arrow-up-right"></i></span>
-                            </div>
-                            <div class="cast-name">{{ '@'.$ex->user->username }}</div>
-                            <div class="cast-tag">{{ $ex->categories->first()?->nama ?? 'Extras' }}</div>
-                        </a>
-                    @endforeach
-                </div>
-            </div>
-        </div>
+        @include('partials.cast-fragment')
     </section>
     @endif
 
@@ -710,6 +693,47 @@
             })();
         }
     });
+    </script>
+    <script>
+    // Cast (BH.4): klik chip kategori/"Acak lagi" -> fetch fragmen, ganti grid+chip tanpa reload.
+    // Gagal fetch -> fallback navigasi penuh ke href asal (chip tetap jalan sebagai <a> biasa).
+    (function () {
+        function muat(url, cariFokus) {
+            var frag = document.getElementById('cast-fragment');
+            if (!frag) { location.href = url; return; }
+            frag.style.minHeight = frag.getBoundingClientRect().height + 'px';
+            frag.setAttribute('aria-busy', 'true');
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function (r) { if (!r.ok) throw r; return r.text(); })
+                .then(function (html) {
+                    var dok = new DOMParser().parseFromString(html, 'text/html');
+                    var baru = dok.getElementById('cast-fragment');
+                    if (!baru) { location.href = url; return; }
+                    frag.replaceWith(baru);
+                    history.replaceState(null, '', url);
+                    var fokus = cariFokus(baru);
+                    if (fokus) fokus.focus();
+                })
+                .catch(function () { location.href = url; });
+        }
+
+        document.addEventListener('click', function (e) {
+            var chip = e.target.closest('[data-cast-chip]');
+            if (chip) {
+                e.preventDefault();
+                var kategori = chip.dataset.kategori;
+                muat(chip.getAttribute('href'), function (root) {
+                    var all = root.querySelectorAll('[data-cast-chip]');
+                    for (var i = 0; i < all.length; i++) if (all[i].dataset.kategori === kategori) return all[i];
+                });
+                return;
+            }
+            if (e.target.closest('[data-cast-shuffle]')) {
+                e.preventDefault();
+                muat(location.pathname + location.search, function (root) { return root.querySelector('[data-cast-shuffle]'); });
+            }
+        });
+    })();
     </script>
     <script>
     (function () {
