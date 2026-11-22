@@ -67,8 +67,11 @@ class DemoSeederTest extends TestCase
         $this->assertSame(['ghost01'], User::mangkrak()->pluck('username')->all());
         $this->assertSame(['ghost01'], User::akanDihapus()->pluck('username')->all());
         $this->assertSame(3, ExtrasProfile::where('apresiasi', true)->count());
-        $this->get('/')->assertOk()->assertSee('@spiderman')->assertDontSee('@thor')
+        // BH.4: roster beranda sekarang 6 dari pool acak (bukan 12 deterministik lagi), jadi
+        // "spiderman tampil" dicek lewat scope beranda langsung, bukan nebak render halaman.
+        $this->get('/')->assertOk()->assertDontSee('@thor')
             ->assertSee('Rumah di Ujung Senja')->assertSee('PT Kopi Pagi Nusantara')->assertDontSee('Sinar Rumah Produksi')->assertDontSee('PT Layar Senja Films');
+        $this->assertTrue(ExtrasProfile::tampilDiBeranda()->whereHas('user', fn ($q) => $q->where('username', 'spiderman'))->exists());
 
         $dimas = ProjectApplication::with('castingProjectClass.categories', 'extras.categories')
             ->where('casting_project_id', $p('Iklan "Minuman')->id)

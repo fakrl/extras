@@ -10,7 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-/** Carousel geser manual (tanpa duplikat/auto-animasi): satu set kartu asli, dibatasi CAST_MAKS/PORTO_MAKS. */
+/** Portofolio: carousel geser manual (tanpa duplikat/auto-animasi), dibatasi PORTO_MAKS. Cast: grid 6 kartu acak, tanpa carousel. */
 class CbLandingTanpaDuplikatTest extends TestCase
 {
     use RefreshDatabase;
@@ -48,7 +48,7 @@ class CbLandingTanpaDuplikatTest extends TestCase
 
     public function test_konstanta_bernama(): void
     {
-        $this->assertSame([12, 8], [HomeController::CAST_MAKS, HomeController::PORTO_MAKS]);
+        $this->assertSame([6, 8], [HomeController::CAST_TAMPIL, HomeController::PORTO_MAKS]);
     }
 
     public function test_tanpa_data_bagian_tidak_muncul_dan_cast_kurang_dari_4_tersembunyi(): void
@@ -60,25 +60,22 @@ class CbLandingTanpaDuplikatTest extends TestCase
         $this->assertStringNotContainsString('id="cast"', $this->html());
     }
 
-    public function test_cast_satu_set_tanpa_duplikat_dan_tanpa_tombol_jeda(): void
+    public function test_cast_tampil_6_tanpa_duplikat(): void
     {
         $this->cast(7);
         $html = $this->html();
-        $this->assertSame(7, $this->hitung($html, 'class="cast-card"'));
-        $this->assertSame(7, $this->hitung($html, 'class="cast-no"'));
+        $this->assertSame(6, $this->hitung($html, 'class="cast-card"'));
         $this->assertStringNotContainsString('data-dup', $html);
-        $this->assertStringNotContainsString('marquee-jeda', $html);
-        $this->assertStringNotContainsString('--marquee-durasi', $html);
-        foreach (range(1, 7) as $i) {
-            $this->assertSame(1, $this->hitung($html, "@cast_{$i}</div>"));
-        }
+        preg_match_all('/@cast_\d+</', $html, $m);
+        $this->assertCount(6, $m[0]);
+        $this->assertCount(6, array_unique($m[0]));
     }
 
-    public function test_cast_dibatasi_maksimal_12(): void
+    public function test_cast_dibatasi_maksimal_6(): void
     {
         $this->cast(20);
         $html = $this->html();
-        $this->assertSame(12, $this->hitung($html, 'class="cast-card"'));
+        $this->assertSame(6, $this->hitung($html, 'class="cast-card"'));
         $this->assertStringNotContainsString('data-dup', $html);
     }
 
@@ -97,12 +94,13 @@ class CbLandingTanpaDuplikatTest extends TestCase
 
     public function test_tombol_panah_prev_next_tampil_per_carousel(): void
     {
+        // Cast (BH.4) sudah bukan carousel lagi (grid 6 kartu acak) - cuma Portofolio yang masih marquee.
         $this->cast(5);
         $this->porto(3);
         $html = $this->html();
-        $this->assertSame(2, $this->hitung($html, 'class="marquee-wrap"'));
-        $this->assertSame(2, $this->hitung($html, 'class="marquee-nav prev" data-dir="-1"'));
-        $this->assertSame(2, $this->hitung($html, 'class="marquee-nav next" data-dir="1"'));
+        $this->assertSame(1, $this->hitung($html, 'class="marquee-wrap"'));
+        $this->assertSame(1, $this->hitung($html, 'class="marquee-nav prev" data-dir="-1"'));
+        $this->assertSame(1, $this->hitung($html, 'class="marquee-nav next" data-dir="1"'));
     }
 
     /**

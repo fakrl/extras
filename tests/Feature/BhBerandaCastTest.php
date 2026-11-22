@@ -55,7 +55,7 @@ class BhBerandaCastTest extends TestCase
         $nonaktif = $this->extras('akun_mati');
         $nonaktif->user->update(['status' => 'nonaktif']);
 
-        $html = $this->get('/')->assertOk()->assertSee('@cast_a')->assertSee('Dewasa')->assertDontSee('Berhijab')
+        $html = $this->get('/')->assertOk()->assertSee('@cast_a')->assertSee('Dewasa')->assertSee('Berhijab')
             ->assertDontSee('@belum_izin')->assertDontSee('@belum_acc')->assertDontSee('@akun_mati')->getContent();
         $this->assertStringNotContainsString('Nama Asli', $html);
         $this->assertStringNotContainsString('37 th', $html);
