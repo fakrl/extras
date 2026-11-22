@@ -23,17 +23,22 @@
         border-bottom: 0;
     }
 </style>
-@php $tgl = fn ($d) => \Illuminate\Support\Carbon::parse($d)->translatedFormat('d M Y'); @endphp
-<form method="GET" action="{{ route('super-admin.activity-logs') }}" class="xtoolbar" id="live-form" data-live>
-    <input type="search" name="q" value="{{ $f['q'] ?? '' }}" class="xtoolbar-cari" placeholder="Cari deskripsi, aktor, atau subjek…" aria-label="Cari log">
-    <x-per-halaman :pilihan="\App\Support\PerHalaman::TABEL" :nilai="$logs->perPage()" />
-    <x-filter-panel :filter="[
+@php
+    $tgl = fn ($d) => \Illuminate\Support\Carbon::parse($d)->translatedFormat('d M Y');
+    $logFilter = [
         ! empty($f['aktor']) ? ['aktor', 'Aktor: '.$f['aktor']] : null,
         ! empty($f['role']) ? ['role', 'Role: '.(\App\Models\User::LABELS[$f['role']] ?? $f['role'])] : null,
         ! empty($f['aksi']) ? ['aksi', 'Aksi: '.\App\Models\ActivityLog::actionLabel($f['aksi'])] : null,
         ! empty($f['dari']) ? ['dari', 'Dari: '.$tgl($f['dari'])] : null,
         ! empty($f['sampai']) ? ['sampai', 'Sampai: '.$tgl($f['sampai'])] : null,
-    ]">
+    ];
+@endphp
+<form method="GET" action="{{ route('super-admin.activity-logs') }}" class="xtoolbar" id="live-form" data-live>
+    <x-cari-chips :filter="$logFilter">
+        <input type="search" name="q" value="{{ $f['q'] ?? '' }}" class="xtoolbar-cari" placeholder="Cari deskripsi, aktor, atau subjek…" aria-label="Cari log">
+    </x-cari-chips>
+    <x-per-halaman :pilihan="\App\Support\PerHalaman::TABEL" :nilai="$logs->perPage()" />
+    <x-filter-panel tanpaChips :filter="$logFilter">
         <div>
             <label class="fpanel-label" for="log-aktor">Aktor</label>
             <input type="text" id="log-aktor" name="aktor" value="{{ $f['aktor'] ?? '' }}" list="log-aktor-list" placeholder="Nama atau email">

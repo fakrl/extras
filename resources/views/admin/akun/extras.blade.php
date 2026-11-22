@@ -29,6 +29,15 @@
 @php
     $tagNama = $tagGroups->flatten()->pluck('nama', 'id');
     $dasar = \Illuminate\Support\Arr::except(request()->query(), ['tampil', 'per', 'page']);
+    $extrasFilter = [
+        $f['status'] ? ['status', 'Status: '.ucfirst($f['status'])] : null,
+        $f['sedang_aktif'] ? ['sedang_aktif', 'Sedang aktif di proyek'] : null,
+        $f['akan_dihapus'] ? ['akan_dihapus', 'Akan dihapus'] : null,
+        $f['favorit'] ? ['favorit', 'Favorit'] : null,
+        $f['urut'] ? ['urut', 'Urut: '.\App\Support\FilterAkun::URUT[$f['urut']]] : null,
+        $f['grade'] ? ['grade', 'Grade: '.($f['grade'] === 'belum' ? 'Belum' : $f['grade'])] : null,
+        ...array_map(fn ($id) => ['tag', 'Tag: #'.($tagNama[$id] ?? $id), $id], $f['tag']),
+    ];
 @endphp
 
 @if (($mangkrakCount ?? 0) > 0)
@@ -60,25 +69,19 @@
 @endif
 
 <form method="GET" action="{{ route('admin.akun.extras') }}" class="xtoolbar" id="live-form" data-live>
-    <input type="search" name="q" value="{{ $f['q'] }}" class="xtoolbar-cari" placeholder="Cari nama, username, email, WA…" aria-label="Cari Extras">
+    <x-cari-chips :filter="$extrasFilter">
+        <input type="search" name="q" value="{{ $f['q'] }}" class="xtoolbar-cari" placeholder="Cari nama, username, email, WA…" aria-label="Cari Extras">
+    </x-cari-chips>
     @if ($daftar)<input type="hidden" name="tampil" value="daftar">@endif
     <div class="tampil-toggle" role="group" aria-label="Tampilan">
         <a href="{{ \App\Support\FilterAktif::url(request(), $dasar) }}" title="Kartu" aria-label="Tampilan kartu" @if (! $daftar) aria-current="true" @endif><i class="ti ti-layout-grid"></i></a>
         <a href="{{ \App\Support\FilterAktif::url(request(), $dasar + ['tampil' => 'daftar']) }}" title="Daftar" aria-label="Tampilan daftar" @if ($daftar) aria-current="true" @endif><i class="ti ti-list"></i></a>
     </div>
     <x-per-halaman :pilihan="$perPilihan" :nilai="$extras->perPage()" />
-    <x-filter-panel :filter="[
-        $f['status'] ? ['status', 'Status: '.ucfirst($f['status'])] : null,
-        $f['sedang_aktif'] ? ['sedang_aktif', 'Sedang aktif di proyek'] : null,
-        $f['akan_dihapus'] ? ['akan_dihapus', 'Akan dihapus'] : null,
-        $f['favorit'] ? ['favorit', '⭐ Favorit'] : null,
-        $f['urut'] ? ['urut', 'Urut: '.\App\Support\FilterAkun::URUT[$f['urut']]] : null,
-        $f['grade'] ? ['grade', 'Grade: '.($f['grade'] === 'belum' ? 'Belum' : $f['grade'])] : null,
-        ...array_map(fn ($id) => ['tag', 'Tag: #'.($tagNama[$id] ?? $id), $id], $f['tag']),
-    ]">
+    <x-filter-panel tanpaChips :filter="$extrasFilter">
         <x-filter-panel.grup label="Status" name="status" :opsi="['' => 'Semua', 'aktif' => 'Aktif', 'nonaktif' => 'Nonaktif']" :nilai="$f['status']" />
         <label class="fswitch">Sedang aktif di proyek <input type="checkbox" name="sedang_aktif" value="1" @checked($f['sedang_aktif'])></label>
-        <label class="fswitch">⭐ Favorit <input type="checkbox" name="favorit" value="1" @checked($f['favorit'])></label>
+        <label class="fswitch">Favorit <input type="checkbox" name="favorit" value="1" @checked($f['favorit'])></label>
         <label class="fswitch">Akan dihapus (sudah diperingatkan) <input type="checkbox" name="akan_dihapus" value="1" @checked($f['akan_dihapus'])></label>
         <x-filter-panel.grup label="Urutkan" name="urut" :opsi="\App\Support\FilterAkun::URUT" :nilai="$f['urut']" />
         <x-filter-panel.grup label="Grade" name="grade" :opsi="['' => 'Semua', 'A' => 'A', 'B' => 'B', 'C' => 'C', 'belum' => 'Belum']" :nilai="$f['grade']" />

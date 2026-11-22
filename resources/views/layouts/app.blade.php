@@ -482,6 +482,17 @@
         .xtoolbar-more[open] { flex-basis: 100%; }
         .xtoolbar-more-isi { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
         .xtoolbar:has(> .fpanel) .xtoolbar-cari { flex: 1 1 120px; min-width: 0; }
+        .cari-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; flex: 1 1 220px; min-width: 0; padding: 4px 10px; border: 1px solid var(--border-color); border-radius: var(--radius-lg); background: var(--bg-card); min-height: 40px; max-height: 112px; overflow-y: auto; cursor: text; }
+        .cari-chips:focus-within { border-color: var(--accent); }
+        .cari-chips-ikon { color: var(--text-muted); flex-shrink: 0; }
+        .cari-chips-list { display: contents; }
+        .cari-chips input { flex: 1 1 120px; min-width: 120px; width: auto; border: 0; background: transparent; padding: 2px 0; margin: 0; min-height: 30px; }
+        .cari-chips input:focus { border-width: 0; box-shadow: none; }
+        .cari-chips input:focus-visible { outline: none; }
+        .cari-chips-clear:empty { display: none; }
+        .cari-chips-clear .fchips-hapus { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin: 0; border-radius: 50%; background: var(--bg-card-hover); color: var(--text-muted); flex-shrink: 0; }
+        .cari-chips-clear .fchips-hapus:hover { background: var(--bg-nav-active); }
+        .xtoolbar:has(> .fpanel) .cari-chips { flex: 1 1 120px; min-width: 0; }
         .fpanel { position: relative; flex-shrink: 0; }
         .fpanel > summary { list-style: none; gap: 6px; }
         .fpanel > summary::-webkit-details-marker { display: none; }
@@ -1678,6 +1689,22 @@
             muat(a.href, true);
         });
         window.addEventListener('popstate', function () { if (document.querySelector('form[data-live]')) muat(location.href, 'pop'); });
+        // cari-chips: klik area kosong fokus ke input; Backspace di input kosong hapus chip terakhir (lewat link hapus yang sudah ada)
+        document.addEventListener('click', function (e) {
+            var wrap = e.target.closest('.cari-chips');
+            if (!wrap || e.target.closest('a, button, input')) return;
+            var input = wrap.querySelector('input');
+            if (input) input.focus();
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Backspace' || e.target.tagName !== 'INPUT' || e.target.value !== '') return;
+            var wrap = e.target.closest('.cari-chips');
+            if (!wrap) return;
+            var chips = wrap.querySelectorAll('.fchip');
+            if (!chips.length) return;
+            e.preventDefault();
+            chips[chips.length - 1].click();
+        });
         // BI.2 panel filter: tutup lewat klik di luar, tombol Tutup, atau Esc
         document.addEventListener('click', function (e) {
             document.querySelectorAll('details.fpanel[open]').forEach(function (d) {

@@ -15,6 +15,22 @@
     $tabsTahap['mendatang'] = ['label' => 'Mendatang', 'jumlah' => $jumlahTahap['mendatang'] ?? 0];
     $tabsTahap['berjalan'] = ['label' => 'Berjalan', 'jumlah' => $jumlahTahap['berjalan'] ?? 0];
     $tabsTahap['selesai'] = ['label' => 'Selesai', 'jumlah' => $jumlahTahap['selesai'] ?? 0];
+
+    $proyekFilter = $isTabMenungguKeputusan ? [] : [
+        $urut && $urut !== 'shooting' ? ['urut', 'Urutkan: '.['baru' => 'Terbaru dibuat', 'nama' => 'Nama'][$urut]] : null,
+        $peran ? ['peran', 'Peran: '.['pic' => 'Hanya PIC saja', 'korlap' => 'Hanya Korlap saja', 'client' => 'Hanya Client saja', 'tanpa_pic' => 'Tanpa PIC', 'tanpa_client' => 'Tanpa PIC/Client'][$peran]] : null,
+        $periode ? [['dari', 'sampai'], 'Periode: '.$periode[0]->translatedFormat($periode[0]->year === $periode[1]->year ? 'd M' : 'd M Y').'–'.$periode[1]->translatedFormat('d M Y')] : null,
+        $bayar ? ['bayar', ['staf' => 'Honor staf belum dibayar', 'sengketa' => 'Pembayaran disengketakan'][$bayar] ?? 'Honor Extras belum ditransfer'] : null,
+        request('status') ? ['status', 'Lowongan: '.(\App\Models\CastingProject::LABELS[request('status')] ?? request('status'))] : null,
+        request()->boolean('urgent') ? ['urgent', 'Urgent'] : null,
+        request()->boolean('tanpa_client') && ! $peran ? ['tanpa_client', 'Tanpa PIC/Client'] : null,
+        $peserta ? ['peserta', 'Ada kandidat '.(\App\Models\ProjectApplication::LABELS[$peserta] ?? $peserta)] : null,
+        $adminId ? ['admin_id', 'PIC: '.($pics->firstWhere('id', $adminId)->name ?? $adminId)] : null,
+        $korlapId ? ['korlap_id', 'Korlap: '.($korlaps->firstWhere('id', $korlapId)->name ?? $korlapId)] : null,
+        $clientId ? ['client_id', 'Client: '.($clients->firstWhere('id', $clientId)->name ?? $clientId)] : null,
+        $tindakan ? ['tindakan', 'Perlu tindakan saja'] : null,
+        ! auth()->user()->isSuperAdmin() && $semua ? ['semua', 'Pegangan: Semua (lihat saja)'] : null,
+    ];
 @endphp
 
 @section('title', $isTabMenungguKeputusan ? 'Persetujuan' : 'Proyek')
@@ -55,28 +71,13 @@
 {{-- Baris 2: Search Bar & Filter Toolbar --}}
 <div class="xtoolbar xtoolbar-proyek" style="margin-bottom: 16px;">
     <form method="GET" action="{{ route('admin.projects.index') }}" class="xtoolbar-search-area" role="search" id="live-form" style="display: flex; gap: 10px; align-items: center; width: 100%; margin: 0;" data-live>
-        <div style="position: relative; flex: 1; min-width: 200px;">
-            <i class="ti ti-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none;"></i>
-            <input type="search" name="q" value="{{ $cari }}" class="xtoolbar-cari" id="pu-search-input" placeholder="Cari nama, kode, atau client..." aria-label="Cari proyek" style="margin: 0; width: 100%; padding-left: 38px; height: 42px; border-radius: var(--radius-full, 9999px);">
-        </div>
+        <x-cari-chips :filter="$proyekFilter">
+            <input type="search" name="q" value="{{ $cari }}" class="xtoolbar-cari" id="pu-search-input" placeholder="Cari nama, kode, atau client..." aria-label="Cari proyek">
+        </x-cari-chips>
         @if ($tahap)<input type="hidden" name="tahap" value="{{ $tahap }}">@endif
         @unless ($isTabMenungguKeputusan)
             @if ($peserta)<input type="hidden" name="peserta" value="{{ $peserta }}">@endif
-            <x-filter-panel :filter="[
-                $urut && $urut !== 'shooting' ? ['urut', 'Urutkan: '.['baru' => 'Terbaru dibuat', 'nama' => 'Nama'][$urut]] : null,
-                $peran ? ['peran', 'Peran: '.['pic' => 'Hanya PIC saja', 'korlap' => 'Hanya Korlap saja', 'client' => 'Hanya Client saja', 'tanpa_pic' => 'Tanpa PIC', 'tanpa_client' => 'Tanpa PIC/Client'][$peran]] : null,
-                $periode ? [['dari', 'sampai'], 'Periode: '.$periode[0]->translatedFormat($periode[0]->year === $periode[1]->year ? 'd M' : 'd M Y').'–'.$periode[1]->translatedFormat('d M Y')] : null,
-                $bayar ? ['bayar', ['staf' => 'Honor staf belum dibayar', 'sengketa' => 'Pembayaran disengketakan'][$bayar] ?? 'Honor Extras belum ditransfer'] : null,
-                request('status') ? ['status', 'Lowongan: '.(\App\Models\CastingProject::LABELS[request('status')] ?? request('status'))] : null,
-                request()->boolean('urgent') ? ['urgent', 'Urgent'] : null,
-                request()->boolean('tanpa_client') && ! $peran ? ['tanpa_client', 'Tanpa PIC/Client'] : null,
-                $peserta ? ['peserta', 'Ada kandidat '.(\App\Models\ProjectApplication::LABELS[$peserta] ?? $peserta)] : null,
-                $adminId ? ['admin_id', 'PIC: '.($pics->firstWhere('id', $adminId)->name ?? $adminId)] : null,
-                $korlapId ? ['korlap_id', 'Korlap: '.($korlaps->firstWhere('id', $korlapId)->name ?? $korlapId)] : null,
-                $clientId ? ['client_id', 'Client: '.($clients->firstWhere('id', $clientId)->name ?? $clientId)] : null,
-                $tindakan ? ['tindakan', 'Perlu tindakan saja'] : null,
-                ! auth()->user()->isSuperAdmin() && $semua ? ['semua', 'Pegangan: Semua (lihat saja)'] : null,
-            ]">
+            <x-filter-panel tanpaChips :filter="$proyekFilter">
                 <x-filter-panel.grup label="Urutkan" name="urut" :opsi="[
                     'shooting' => 'Shooting terdekat',
                     'baru' => 'Terbaru dibuat',
