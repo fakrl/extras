@@ -153,7 +153,7 @@
         .cast-shuffle { flex: 0 0 auto; margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); color: var(--fg); font-size: 13px; font-weight: 600; cursor: pointer; }
         .cast-shuffle:hover { border-color: var(--primary); color: var(--primary); }
         .cast-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .cast-card { display: block; color: inherit; text-decoration: none; max-width: 180px; }
+        .cast-card { display: block; color: inherit; text-decoration: none; }
         .cast-card:focus-visible { outline: 2px solid var(--hp-accent); outline-offset: 4px; }
         .cast-photo-wrap { aspect-ratio: 3 / 4; overflow: hidden; background: var(--hp-card); position: relative; border-radius: 24px; }
         .cast-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -162,7 +162,7 @@
         .cast-tag-pill { padding: 3px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--on-accent-soft); font-size: 11px; font-weight: 700; }
         .cast-empty { text-align: center; padding: 40px 0; color: var(--muted-fg); }
         .cast-empty a { color: var(--primary); font-weight: 700; }
-        @media (max-width: 767px) { .cast-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; } .cast-card { max-width: none; } }
+        @media (max-width: 767px) { .cast-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; } }
 
         .section-title { font-size: 18px; font-weight: 700; margin: 0 0 16px; color: var(--hp-fg); }
         .section-body { font-size: 14px; color: var(--hp-muted); line-height: 1.75; margin: 0; }
