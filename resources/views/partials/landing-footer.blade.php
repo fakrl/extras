@@ -8,7 +8,7 @@
     $kontakEmail = config('app.kontak.email');
 @endphp
 <style>
-    .lp-footer { border-top: 1px solid var(--hp-line); padding: 56px 5% 28px; background: var(--bg, var(--hp-bg)); }
+    .lp-footer { border-top: 1px solid var(--hp-line); padding: 56px 5% 96px; background: var(--bg, var(--hp-bg)); }
     .lp-footer-cols { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 32px; }
     .lp-footer-brand { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 700; color: var(--hp-fg); text-decoration: none; }
     .lp-footer-brand .symbol-mark {
@@ -35,7 +35,7 @@
     .lp-footer-bottom a:hover { color: var(--hp-fg); }
     @media (max-width: 768px) {
         .lp-footer-cols { grid-template-columns: 1fr; gap: 28px; }
-        .lp-footer { padding-bottom: 40px; }
+        .lp-footer { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
     }
 </style>
 <footer class="lp-footer">
@@ -60,7 +60,7 @@
             <ul class="lp-footer-links">
                 <li><a href="{{ route('tentang') }}">Tentang PT JBTB</a></li>
                 <li><a href="{{ route('privacy-policy') }}">Privasi</a></li>
-                <li><a href="{{ route('syarat-ketentuan') }}">S&amp;K</a></li>
+                <li><a href="{{ route('syarat-ketentuan') }}">Syarat dan ketentuan</a></li>
             </ul>
         </div>
         @if ($kontakWa || $kontakEmail)
