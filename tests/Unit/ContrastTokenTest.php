@@ -5,10 +5,11 @@ namespace Tests\Unit;
 use PHPUnit\Framework\TestCase;
 
 /**
- * CT.1.4 — Test kontras WCAG 2.x untuk token M3 JBTB.
+ * CT.1.4 — Test kontras WCAG 2.x untuk token M3 SiCasti (teal rebrand).
  *
  * Memastikan semua pasangan fg/bg memenuhi rasio kontras ≥ 4.5:1
- * di tema terang (light) maupun gelap (dark).
+ * di tema terang (light) maupun gelap (dark). Pasangan non-teks
+ * (misal outline vs surface) memakai ambang 3:1 sesuai WCAG 1.4.11.
  *
  * Rumus: linearize(c) = c/12.92 jika c<=0.04045, else ((c+0.055)/1.055)^2.4
  * L = 0.2126*R + 0.7152*G + 0.0722*B
@@ -16,29 +17,32 @@ use PHPUnit\Framework\TestCase;
  */
 class ContrastTokenTest extends TestCase
 {
-    // ── Nilai M3 light ───────────────────────────────────────────────────────
+    // ── Nilai M3 light (brand-tokens.blade.php, override teal) ────────────────
     private const LIGHT = [
-        '--md-primary' => '#15803D',
+        '--md-primary' => '#0F6B73',
         '--md-on-primary' => '#FFFFFF',
-        '--md-primary-container' => '#B7F1CB',
-        '--md-on-primary-container' => '#002111',
-        '--md-secondary' => '#506353',
+        '--md-primary-container' => '#CDE9EA',
+        '--md-on-primary-container' => '#05282B',
+        '--md-secondary' => '#5A6663',
         '--md-on-secondary' => '#FFFFFF',
-        '--md-secondary-container' => '#D3E8D2',
-        '--md-on-secondary-container' => '#0E1F13',
-        '--md-tertiary' => '#3A6659',
+        '--md-secondary-container' => '#E4E9E7',
+        '--md-on-secondary-container' => '#151C1B',
+        '--md-tertiary' => '#6A5F4D',
         '--md-on-tertiary' => '#FFFFFF',
-        '--md-tertiary-container' => '#BCECDD',
-        '--md-on-tertiary-container' => '#002019',
+        '--md-tertiary-container' => '#EFE6D6',
+        '--md-on-tertiary-container' => '#241B0B',
         '--md-error' => '#BA1A1A',
         '--md-on-error' => '#FFFFFF',
         '--md-error-container' => '#FFDAD6',
         '--md-on-error-container' => '#410002',
-        '--md-surface' => '#F6FBF3',
-        '--md-surface-container-low' => '#F0F5EE',
-        '--md-surface-container' => '#EAF0E8',
-        '--md-on-surface' => '#171D17',
-        '--md-on-surface-variant' => '#404942',
+        '--md-surface' => '#F7F4EE',
+        '--md-surface-container-low' => '#F2EFE8',
+        '--md-surface-container' => '#EDEAE2',
+        '--md-on-surface' => '#1A1714',
+        '--md-on-surface-variant' => '#4A453D',
+        '--md-outline' => '#7A7367',
+        '--text-muted' => '#6A6459',
+        '--bg-card' => '#F2EFE8',
         '--md-custom-warning' => '#D97706',
         '--md-custom-warning-container' => '#FEF3C7',
         '--md-custom-on-warning-container' => '#78350F',
@@ -50,29 +54,32 @@ class ContrastTokenTest extends TestCase
         '--md-custom-on-info-container' => '#1E3A8A',
     ];
 
-    // ── Nilai M3 dark ────────────────────────────────────────────────────────
+    // ── Nilai M3 dark (brand-tokens.blade.php, override teal) ─────────────────
     private const DARK = [
-        '--md-primary' => '#6EDB96',
-        '--md-on-primary' => '#003920',
-        '--md-primary-container' => '#005230',
-        '--md-on-primary-container' => '#8CF6B1',
-        '--md-secondary' => '#B7CCBA',
-        '--md-on-secondary' => '#223526',
-        '--md-secondary-container' => '#384B3C',
-        '--md-on-secondary-container' => '#D3E8D2',
-        '--md-tertiary' => '#A0D0C1',
-        '--md-on-tertiary' => '#00382C',
-        '--md-tertiary-container' => '#1F4E41',
-        '--md-on-tertiary-container' => '#BCECDD',
+        '--md-primary' => '#5CC3CB',
+        '--md-on-primary' => '#07282B',
+        '--md-primary-container' => '#0F4A50',
+        '--md-on-primary-container' => '#BDEFF3',
+        '--md-secondary' => '#B6C4C1',
+        '--md-on-secondary' => '#1F2A28',
+        '--md-secondary-container' => '#36413F',
+        '--md-on-secondary-container' => '#D2DFDC',
+        '--md-tertiary' => '#D8CBB4',
+        '--md-on-tertiary' => '#3A2F1B',
+        '--md-tertiary-container' => '#54472F',
+        '--md-on-tertiary-container' => '#F1E6D0',
         '--md-error' => '#FFB4AB',
         '--md-on-error' => '#690005',
         '--md-error-container' => '#93000A',
         '--md-on-error-container' => '#FFDAD6',
-        '--md-surface' => '#101510',
-        '--md-surface-container-low' => '#171D17',
-        '--md-surface-container' => '#1C221C',
-        '--md-on-surface' => '#DEE4DC',
-        '--md-on-surface-variant' => '#BFC9C0',
+        '--md-surface' => '#131110',
+        '--md-surface-container-low' => '#1B1816',
+        '--md-surface-container' => '#201D1A',
+        '--md-on-surface' => '#F2EEE6',
+        '--md-on-surface-variant' => '#CFC8BB',
+        '--md-outline' => '#968F83',
+        '--text-muted' => '#A39B8E',
+        '--bg-card' => '#1B1816',
         '--md-custom-warning' => '#F59E0B',
         '--md-custom-warning-container' => '#78350F',
         '--md-custom-on-warning-container' => '#FEF3C7',
@@ -190,6 +197,36 @@ class ContrastTokenTest extends TestCase
         $this->assertContrast($t['--md-custom-on-info-container'], $t['--md-custom-info-container'], 'light on-info-container/info-container');
     }
 
+    public function test_light_primary_on_surface(): void
+    {
+        $t = self::LIGHT;
+        $this->assertContrast($t['--md-primary'], $t['--md-surface'], 'light primary/surface');
+    }
+
+    public function test_light_primary_on_surface_container_low(): void
+    {
+        $t = self::LIGHT;
+        $this->assertContrast($t['--md-primary'], $t['--md-surface-container-low'], 'light primary/surface-container-low');
+    }
+
+    public function test_light_text_muted_on_bg_card(): void
+    {
+        $t = self::LIGHT;
+        $this->assertContrast($t['--text-muted'], $t['--bg-card'], 'light text-muted/bg-card');
+    }
+
+    public function test_light_primary_on_primary_container(): void
+    {
+        $t = self::LIGHT;
+        $this->assertContrast($t['--md-primary'], $t['--md-primary-container'], 'light primary/primary-container');
+    }
+
+    public function test_light_outline_on_surface_non_text(): void
+    {
+        $t = self::LIGHT;
+        $this->assertContrast($t['--md-outline'], $t['--md-surface'], 'light outline/surface (non-text)', 3.0);
+    }
+
     // ── Tests: dark theme ────────────────────────────────────────────────────
 
     public function test_dark_on_primary_on_primary_bg(): void
@@ -252,16 +289,46 @@ class ContrastTokenTest extends TestCase
         $this->assertContrast($t['--md-custom-on-info-container'], $t['--md-custom-info-container'], 'dark on-info-container/info-container');
     }
 
+    public function test_dark_primary_on_surface(): void
+    {
+        $t = self::DARK;
+        $this->assertContrast($t['--md-primary'], $t['--md-surface'], 'dark primary/surface');
+    }
+
+    public function test_dark_primary_on_surface_container_low(): void
+    {
+        $t = self::DARK;
+        $this->assertContrast($t['--md-primary'], $t['--md-surface-container-low'], 'dark primary/surface-container-low');
+    }
+
+    public function test_dark_text_muted_on_bg_card(): void
+    {
+        $t = self::DARK;
+        $this->assertContrast($t['--text-muted'], $t['--bg-card'], 'dark text-muted/bg-card');
+    }
+
+    public function test_dark_primary_on_primary_container(): void
+    {
+        $t = self::DARK;
+        $this->assertContrast($t['--md-primary'], $t['--md-primary-container'], 'dark primary/primary-container');
+    }
+
+    public function test_dark_outline_on_surface_non_text(): void
+    {
+        $t = self::DARK;
+        $this->assertContrast($t['--md-outline'], $t['--md-surface'], 'dark outline/surface (non-text)', 3.0);
+    }
+
     // ── Token Sorot (landing-sections-style.blade.php) ─────────────────────
 
     private const SOROT_LIGHT = [
-        '--bg' => '#FBFDFB', '--fg' => '#0F1511', '--muted-fg' => '#5A6660', '--card' => '#FFFFFF',
-        '--primary' => '#15803D', '--on-primary' => '#FFFFFF', '--accent-soft' => '#E8F5EC', '--on-accent-soft' => '#0B5E2C',
+        '--bg' => '#F7F4EE', '--fg' => '#1A1714', '--muted-fg' => '#6A6459', '--card' => '#FFFDF8',
+        '--primary' => '#0F6B73', '--on-primary' => '#FFFFFF', '--accent-soft' => '#CDE9EA', '--on-accent-soft' => '#05282B',
     ];
 
     private const SOROT_DARK = [
-        '--bg' => '#0B1410', '--fg' => '#F2F7F3', '--muted-fg' => '#9BAAA0', '--card' => '#101A14',
-        '--primary' => '#22B862', '--on-primary' => '#04140A', '--accent-soft' => '#12271B', '--on-accent-soft' => '#22B862',
+        '--bg' => '#131110', '--fg' => '#F2EEE6', '--muted-fg' => '#A39B8E', '--card' => '#1B1816',
+        '--primary' => '#5CC3CB', '--on-primary' => '#07282B', '--accent-soft' => '#0F4A50', '--on-accent-soft' => '#BDEFF3',
     ];
 
     public function test_sorot_light_fg_on_bg(): void

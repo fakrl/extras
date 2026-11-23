@@ -45,7 +45,8 @@ class SeoMetaTest extends TestCase
         $this->get(route('public.extras.profile', $token))
             ->assertOk()
             ->assertSee('noindex, nofollow', false)
-            ->assertSee('@dimas.rk di '.config('brand.name'), false);
+            ->assertSee('@dimas.rk di '.config('brand.name'), false)
+            ->assertSee('og:image" content="'.asset('images/brand/icon-512.png'), false);
 
         $this->get('/')
             ->assertOk()

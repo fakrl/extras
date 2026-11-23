@@ -29,6 +29,23 @@ class PwaManifestTest extends TestCase
         $this->assertTrue(collect($data['icons'])->contains(fn ($icon) => ($icon['purpose'] ?? null) === 'maskable'));
     }
 
+    public function test_manifest_pakai_warna_teal_rebrand(): void
+    {
+        $data = json_decode(file_get_contents(public_path('manifest.webmanifest')), true);
+
+        $this->assertSame('#0F6B73', $data['theme_color']);
+        $this->assertSame('#F7F4EE', $data['background_color']);
+    }
+
+    public function test_manifest_icons_ada_di_filesystem(): void
+    {
+        $data = json_decode(file_get_contents(public_path('manifest.webmanifest')), true);
+
+        foreach ($data['icons'] as $icon) {
+            $this->assertFileExists(public_path(ltrim($icon['src'], '/')), "Icon manifest hilang: {$icon['src']}");
+        }
+    }
+
     public function test_manifest_terpasang_di_layout_app_auth_dan_welcome(): void
     {
         $this->assertStringContainsString('<link rel="manifest"', file_get_contents(resource_path('views/layouts/app.blade.php')));
