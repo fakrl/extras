@@ -35,7 +35,7 @@
             canvas.height = Math.round(rect.height * dpr);
             var ctx = canvas.getContext('2d');
             ctx.scale(dpr, dpr);
-            ctx.strokeStyle = '#0B1A12';
+            ctx.strokeStyle = '#1A1714';
             ctx.lineWidth = 2.5;
             ctx.lineCap = 'round';
             signaturePads[name] = { canvas: canvas, ctx: ctx };
@@ -58,7 +58,7 @@
                 var ctx = signaturePads[name].ctx;
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, signaturePads[name].ctx.lineWidth / 2, 0, Math.PI * 2);
-                ctx.fillStyle = '#0B1A12';
+                ctx.fillStyle = '#1A1714';
                 ctx.fill();
             }
 

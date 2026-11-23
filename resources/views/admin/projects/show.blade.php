@@ -80,7 +80,7 @@
         </div>
         <div>
             <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Deal / Lolos</div>
-            <div style="font-size: 18px; font-weight: 700; color: var(--accent-strong, #15803D);">{{ $dealLolosCount }}</div>
+            <div style="font-size: 18px; font-weight: 700; color: var(--accent-strong, #0A4F56);">{{ $dealLolosCount }}</div>
         </div>
     </div>
     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; color: var(--text-muted); margin-bottom: 4px;">
@@ -88,7 +88,7 @@
         <strong>{{ $pctFulfillment }}% ({{ $dealLolosCount }}/{{ $p->kuota }})</strong>
     </div>
     <div class="pqs-progress" aria-hidden="true">
-        <div style="width: {{ $pctFulfillment }}%; background: var(--accent, #15803D); transition: width .3s ease;"></div>
+        <div style="width: {{ $pctFulfillment }}%; background: var(--accent, #0F6B73); transition: width .3s ease;"></div>
     </div>
 </div>
 

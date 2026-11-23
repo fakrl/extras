@@ -15,9 +15,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
     @include('partials.theme-style')
+    @include('partials.brand-tokens')
     <style>
-        :root[data-theme="dark"] { --hp-bg: #111311; --hp-fg: #f2f1eb; --hp-muted: rgba(242, 241, 235, 0.55); --hp-accent: #b7ff3c; --hp-accent-on: #111311; --hp-line: rgba(255, 255, 255, 0.13); --hp-card: #1a1c1a; }
-        :root[data-theme="light"] { --hp-bg: #f1f0e9; --hp-fg: #171a16; --hp-muted: #52564e; --hp-accent: #486610; --hp-accent-on: #ffffff; --hp-line: rgba(23, 26, 22, 0.16); --hp-card: #e6e4da; }
+        :root[data-theme="dark"] { --hp-bg: #131110; --hp-fg: #F2EEE6; --hp-muted: #A39B8E; --hp-accent: #5CC3CB; --hp-accent-on: #07282B; --hp-line: rgba(242, 238, 230, 0.13); --hp-card: #1B1816; }
+        :root[data-theme="light"] { --hp-bg: #F7F4EE; --hp-fg: #1A1714; --hp-muted: #6A6459; --hp-accent: #0F6B73; --hp-accent-on: #FFFFFF; --hp-line: rgba(26, 23, 20, 0.14); --hp-card: #FFFDF8; }
         body { background: var(--hp-bg); color: var(--hp-fg); }
         .pub-top, .pub-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--hp-line); }
         .pub-foot { border-bottom: none; border-top: 1px solid var(--hp-line); font-size: 12px; color: var(--hp-muted); flex-wrap: wrap; }

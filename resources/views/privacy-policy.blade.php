@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
     @include('partials.theme-style')
+    @include('partials.brand-tokens')
     <style>
         :root[data-theme="dark"] {
             --priv-bg: #111311;
@@ -17,10 +18,10 @@
             --priv-fg: #f1f3ed;
             --priv-muted: #9aa298;
             --priv-border: rgba(255, 255, 255, 0.12);
-            --priv-accent: #6edb96;
-            --priv-accent-on: #003920;
-            --priv-chip-bg: rgba(110, 219, 150, 0.12);
-            --priv-chip-fg: #8cf6b1;
+            --priv-accent: #5CC3CB;
+            --priv-accent-on: #07282B;
+            --priv-chip-bg: rgba(92, 195, 203, 0.12);
+            --priv-chip-fg: #BDEFF3;
             --priv-warning-bg: rgba(245, 158, 11, 0.12);
             --priv-warning-fg: #fbbf24;
             --priv-warning-border: rgba(245, 158, 11, 0.25);
@@ -32,10 +33,10 @@
             --priv-fg: #171d17;
             --priv-muted: #555f54;
             --priv-border: #dfe5dc;
-            --priv-accent: #15803d;
+            --priv-accent: #0F6B73;
             --priv-accent-on: #ffffff;
-            --priv-chip-bg: #e0f2e5;
-            --priv-chip-fg: #0e5627;
+            --priv-chip-bg: #CDE9EA;
+            --priv-chip-fg: #05282B;
             --priv-warning-bg: #fffbeb;
             --priv-warning-fg: #b45309;
             --priv-warning-border: #fde68a;
@@ -78,9 +79,14 @@
             color: var(--priv-fg);
             text-decoration: none;
         }
-        .priv-brand img {
-            border-radius: 6px;
-            object-fit: cover;
+        .priv-brand .symbol-mark {
+            width: 28px; height: 28px; flex-shrink: 0; display: block;
+            -webkit-mask-image: url('{{ asset('images/brand/symbol-white.png') }}');
+            mask-image: url('{{ asset('images/brand/symbol-white.png') }}');
+            -webkit-mask-size: contain; mask-size: contain;
+            -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+            -webkit-mask-position: center; mask-position: center;
+            background-color: currentColor;
         }
         .priv-actions {
             display: flex;
@@ -336,7 +342,7 @@
     <header class="priv-header">
         <div class="priv-header-inner">
             <a href="{{ route('home') }}" class="priv-brand">
-                <img src="{{ asset('images/logo-jbtb.jpg') }}" alt="Logo JBTB" width="28" height="28">
+                <span class="symbol-mark" role="img" aria-label="SiCasti"></span>
                 <span>JBTB Casting</span>
             </a>
             <div class="priv-actions">

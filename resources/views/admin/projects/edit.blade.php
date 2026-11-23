@@ -10,8 +10,8 @@
 </div>
 
 @if ($castingProject->brief_catatan)
-    <div style="background: color-mix(in srgb, var(--accent, #15803d) 8%, var(--bg-card, #fff)); border-left: 4px solid var(--accent, #15803d); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
-        <div style="font-size: 12px; font-weight: 600; color: var(--accent, #15803d); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px;">Brief dari Client (pengajuan asli)</div>
+    <div style="background: color-mix(in srgb, var(--accent, #0F6B73) 8%, var(--bg-card, #fff)); border-left: 4px solid var(--accent, #0F6B73); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+        <div style="font-size: 12px; font-weight: 600; color: var(--accent, #0F6B73); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px;">Brief dari Client (pengajuan asli)</div>
         <div style="font-size: 13.5px; white-space: pre-line;">{{ $castingProject->brief_catatan }}</div>
     </div>
 @endif

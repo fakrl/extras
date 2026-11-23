@@ -89,7 +89,7 @@
                             <div class="viz-ring-wrap" style="width: 58px; height: 58px;" title="PIC Saya: {{ $breakdownAdmin['proyek_pic'] }} dari {{ $breakdownAdmin['proyek_agency'] }} proyek">
                                 <svg class="viz-ring-svg" viewBox="0 0 76 76" style="width: 58px; height: 58px;" aria-hidden="true">
                                     <circle cx="38" cy="38" r="30" stroke="var(--surface-2, rgba(0,0,0,0.06))" stroke-width="7" fill="none" />
-                                    <circle cx="38" cy="38" r="30" stroke="#15803D" stroke-width="7" stroke-dasharray="{{ $ringPicLen }} 188.5" stroke-linecap="round" fill="none" />
+                                    <circle cx="38" cy="38" r="30" stroke="#0F6B73" stroke-width="7" stroke-dasharray="{{ $ringPicLen }} 188.5" stroke-linecap="round" fill="none" />
                                 </svg>
                                 <div class="viz-center-label">
                                     <span class="viz-center-num" style="font-size: 14px;">{{ $proyekAktif }}</span>
@@ -98,7 +98,7 @@
                             </div>
                             <div class="viz-legend">
                                 <div class="viz-legend-row" style="font-size: 11px;">
-                                    <span class="viz-legend-label"><span class="viz-dot" style="background: #15803D;"></span>PIC Saya</span>
+                                    <span class="viz-legend-label"><span class="viz-dot" style="background: #0F6B73;"></span>PIC Saya</span>
                                     <strong class="viz-legend-val">{{ $breakdownAdmin['proyek_pic'] }}</strong>
                                 </div>
                                 <div class="viz-legend-row" style="font-size: 11px;">
@@ -143,7 +143,7 @@
                                     <circle cx="38" cy="38" r="30" stroke="#64748B" stroke-width="7" stroke-dasharray="{{ $lenReview }} 188.5" stroke-dashoffset="0" fill="none" />
                                     <circle cx="38" cy="38" r="30" stroke="#D97706" stroke-width="7" stroke-dasharray="{{ $lenNego }} 188.5" stroke-dashoffset="{{ -$lenReview }}" fill="none" />
                                     <circle cx="38" cy="38" r="30" stroke="#0284C7" stroke-width="7" stroke-dasharray="{{ $lenClient }} 188.5" stroke-dashoffset="{{ -($lenReview + $lenNego) }}" fill="none" />
-                                    <circle cx="38" cy="38" r="30" stroke="#15803D" stroke-width="7" stroke-dasharray="{{ $lenKontrak }} 188.5" stroke-dashoffset="{{ -($lenReview + $lenNego + $lenClient) }}" fill="none" />
+                                    <circle cx="38" cy="38" r="30" stroke="#0F6B73" stroke-width="7" stroke-dasharray="{{ $lenKontrak }} 188.5" stroke-dashoffset="{{ -($lenReview + $lenNego + $lenClient) }}" fill="none" />
                                 </svg>
                                 <div class="viz-center-label">
                                     <span class="viz-center-num" style="font-size: 14px;">{{ $totalPendaftar }}</span>
@@ -160,7 +160,7 @@
                                     <strong class="viz-legend-val">{{ $breakdownAdmin['pendaftar_nego'] }}</strong>
                                 </div>
                                 <div class="viz-legend-row" style="font-size: 11px;">
-                                    <span class="viz-legend-label"><span class="viz-dot" style="background: #15803D;"></span>Kontrak</span>
+                                    <span class="viz-legend-label"><span class="viz-dot" style="background: #0F6B73;"></span>Kontrak</span>
                                     <strong class="viz-legend-val">{{ $breakdownAdmin['pendaftar_kontrak'] }}</strong>
                                 </div>
                             </div>

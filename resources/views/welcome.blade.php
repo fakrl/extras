@@ -5,10 +5,11 @@
     <script>try { document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme-v2') || 'light'); } catch (e) {}</script>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="color-scheme" content="dark light">
-    <meta name="theme-color" content="#15803D" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#0f9a4c" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#0F6B73" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#131110" media="(prefers-color-scheme: dark)">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="apple-touch-icon" href="{{ asset('images/brand/icon-192.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/brand/apple-touch-icon-180.png') }}">
+    <link rel="icon" sizes="32x32" href="{{ asset('images/brand/favicon-32.png') }}" type="image/png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="icon" href="{{ asset('images/brand/favicon.png') }}" type="image/png">
@@ -24,25 +25,26 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
     @include('partials.theme-style')
+    @include('partials.brand-tokens')
     <style>
         /* ── Palet Warna Homepage (AK.7) ── */
         :root[data-theme="dark"] {
-            --hp-bg:       #111311;
-            --hp-fg:       #f2f1eb;
-            --hp-muted:    rgba(242, 241, 235, 0.55);
-            --hp-accent:   #b7ff3c;
-            --hp-accent-on:#111311;
-            --hp-line:     rgba(255, 255, 255, 0.13);
-            --hp-card:     #1a1c1a;
+            --hp-bg:       #131110;
+            --hp-fg:       #F2EEE6;
+            --hp-muted:    #A39B8E;
+            --hp-accent:   #5CC3CB;
+            --hp-accent-on:#07282B;
+            --hp-line:     rgba(242, 238, 230, 0.13);
+            --hp-card:     #1B1816;
         }
         :root[data-theme="light"] {
-            --hp-bg:       #f1f0e9;
-            --hp-fg:       #171a16;
-            --hp-muted:    #52564e;
-            --hp-accent:   #486610;
-            --hp-accent-on:#ffffff;
-            --hp-line:     rgba(23, 26, 22, 0.16);
-            --hp-card:     #e6e4da;
+            --hp-bg:       #F7F4EE;
+            --hp-fg:       #1A1714;
+            --hp-muted:    #6A6459;
+            --hp-accent:   #0F6B73;
+            --hp-accent-on:#FFFFFF;
+            --hp-line:     rgba(26, 23, 20, 0.14);
+            --hp-card:     #FFFDF8;
         }
 
         *, *::before, *::after { box-sizing: border-box; }
@@ -577,7 +579,7 @@
                             </p>
                         </div>
                         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                            <a href="{{ route('login') }}" class="btn-brand" style="background: #22B862; color: #04140A; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; border-color: #22B862;">
+                            <a href="{{ route('login') }}" class="btn-brand" style="background: var(--accent); color: var(--accent-on); display: inline-flex; align-items: center; gap: 8px; text-decoration: none; border-color: var(--accent);">
                                 <i class="ti ti-user-check"></i> Masuk portal client
                             </a>
                             <a href="#kontak" class="btn-outline" style="color: #F4F3EE; border-color: rgba(255,255,255,0.25); text-decoration: none;">

@@ -15,7 +15,7 @@
 @if ($perluDireview > 0)
     <div class="greenlight-banner">
         <div style="display: flex; align-items: center; gap: 10px; font-size: 13.5px;">
-            <i class="ti ti-sparkles" style="font-size: 20px; color: var(--accent-strong, #15803D);"></i>
+            <i class="ti ti-sparkles" style="font-size: 20px; color: var(--accent-strong, #0A4F56);"></i>
             <div>
                 <strong>{{ $perluDireview }} Kandidat Menunggu Keputusan Pemilihan Anda</strong> · Tinjau lookbook portofolio kandidat yang telah dikurasi tim Admin JBTB.
             </div>
@@ -296,7 +296,7 @@
                         <span style="font-size: 11.5px; font-weight: 600;">{{ $p->persen_kuota }}%</span>
                     </div>
                     <div class="dash-segmented-bar" style="height: 6px; margin: 3px 0 6px;">
-                        <div class="seg" style="width: {{ $p->persen_kuota }}%; background: var(--accent, #15803D);"></div>
+                        <div class="seg" style="width: {{ $p->persen_kuota }}%; background: var(--accent, #0F6B73);"></div>
                         <div class="seg" style="width: {{ 100 - $p->persen_kuota }}%; background: var(--surface-2, rgba(0,0,0,0.06));"></div>
                     </div>
                     @if ($p->kandidat_menunggu > 0)

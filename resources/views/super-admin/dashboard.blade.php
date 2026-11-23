@@ -44,7 +44,7 @@
                 <div class="viz-donut-wrap">
                     <svg class="viz-donut-svg" viewBox="0 0 76 76" aria-hidden="true">
                         <circle cx="38" cy="38" r="30" stroke="var(--surface-2, rgba(0,0,0,0.06))" stroke-width="7" fill="none" />
-                        <circle cx="38" cy="38" r="30" stroke="#15803D" stroke-width="7" stroke-dasharray="{{ $extrasLen }} 188.5" stroke-dashoffset="0" fill="none" />
+                        <circle cx="38" cy="38" r="30" stroke="#0F6B73" stroke-width="7" stroke-dasharray="{{ $extrasLen }} 188.5" stroke-dashoffset="0" fill="none" />
                         <circle cx="38" cy="38" r="30" stroke="#D97706" stroke-width="7" stroke-dasharray="{{ $clientLen }} 188.5" stroke-dashoffset="{{ -$extrasLen }}" fill="none" />
                         <circle cx="38" cy="38" r="30" stroke="#0284C7" stroke-width="7" stroke-dasharray="{{ $timLen }} 188.5" stroke-dashoffset="{{ -($extrasLen + $clientLen) }}" fill="none" />
                     </svg>
@@ -55,7 +55,7 @@
                 </div>
                 <div class="viz-legend">
                     <div class="viz-legend-row">
-                        <span class="viz-legend-label"><span class="viz-dot" style="background: #15803D;"></span>Talent</span>
+                        <span class="viz-legend-label"><span class="viz-dot" style="background: #0F6B73;"></span>Talent</span>
                         <strong class="viz-legend-val">{{ $statPopulasi['extras_total'] }}</strong>
                     </div>
                     <div class="viz-legend-row">
@@ -245,7 +245,7 @@
                 </div>
                 <div class="viz-funnel-row">
                     <span class="viz-funnel-label">Kontrak</span>
-                    <div class="viz-funnel-track"><div class="viz-funnel-bar" style="width: {{ $wKon }}%; background: #15803D;"></div></div>
+                    <div class="viz-funnel-track"><div class="viz-funnel-bar" style="width: {{ $wKon }}%; background: #0F6B73;"></div></div>
                     <span class="viz-funnel-count">{{ $statFunnelKandidat['tahap_kontrak'] }}</span>
                 </div>
                 <div class="viz-funnel-row">
@@ -291,7 +291,7 @@
 </div>
 
 <div class="sa-command-grid">
-    <div class="card sa-card" style="border-top: 4px solid var(--accent, #15803D); margin: 0;">
+    <div class="card sa-card" style="border-top: 4px solid var(--accent, #0F6B73); margin: 0;">
         <div class="card-title" style="display: flex; align-items: center; gap: 6px;">
             <span><i class="ti ti-bell"></i> Staf perlu diingatkan</span>
             @if ($stafTertunda)
@@ -327,7 +327,7 @@
         <div class="dash-mini-feed">
             @foreach ($aktivitasTerbaru as $log)
                 <div class="dash-mini-feed-item">
-                    <div class="dash-mini-feed-icon" style="background: var(--surface-2, rgba(0,0,0,0.04)); color: var(--accent, #15803D);">
+                    <div class="dash-mini-feed-icon" style="background: var(--surface-2, rgba(0,0,0,0.04)); color: var(--accent, #0F6B73);">
                         <i class="ti ti-point"></i>
                     </div>
                     <div style="flex: 1; min-width: 0;">
