@@ -1,13 +1,18 @@
 <div id="cast-fragment" aria-live="polite">
     <div class="cast-chips" aria-label="Filter kategori talent">
-        <a href="{{ route('home') }}#cast" class="cast-chip {{ $castKategoriAktif ? '' : 'is-active' }}"
-            @if (! $castKategoriAktif) aria-current="true" @endif
-            data-cast-chip data-kategori="">Semua</a>
-        @foreach ($castChips as $chip)
-            <a href="{{ route('home', ['kategori' => $chip->nama]) }}#cast" class="cast-chip {{ $castKategoriAktif === $chip->nama ? 'is-active' : '' }}"
-                @if ($castKategoriAktif === $chip->nama) aria-current="true" @endif
-                data-cast-chip data-kategori="{{ $chip->nama }}">{{ $chip->nama }}</a>
-        @endforeach
+        <details class="cast-filter">
+            <summary><i class="ti ti-filter" aria-hidden="true"></i> {{ $castKategoriAktif ?: 'Kategori' }}</summary>
+            <div class="cast-filter-menu">
+                <a href="{{ route('home') }}#cast" class="cast-chip {{ $castKategoriAktif ? '' : 'is-active' }}"
+                    @if (! $castKategoriAktif) aria-current="true" @endif
+                    data-cast-chip data-kategori="">Semua</a>
+                @foreach ($castChips as $chip)
+                    <a href="{{ route('home', ['kategori' => $chip->nama]) }}#cast" class="cast-chip {{ $castKategoriAktif === $chip->nama ? 'is-active' : '' }}"
+                        @if ($castKategoriAktif === $chip->nama) aria-current="true" @endif
+                        data-cast-chip data-kategori="{{ $chip->nama }}">{{ $chip->nama }}</a>
+                @endforeach
+            </div>
+        </details>
         <button type="button" class="cast-shuffle" data-cast-shuffle><i class="ti ti-refresh" aria-hidden="true"></i> Acak lagi</button>
     </div>
 

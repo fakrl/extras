@@ -141,23 +141,28 @@
 
         /* ── Cast (BH.2/BH.4): grid 6 kartu acak + chip filter kategori, tanpa carousel ── */
         .cast-section { padding-block: 46px; border-top: 1px solid var(--hp-line); }
-        .cast-chips { display: flex; gap: 8px; align-items: center; overflow-x: auto; scrollbar-width: none; margin-bottom: 18px; }
-        .cast-chips::-webkit-scrollbar { display: none; }
-        .cast-chip { flex: 0 0 auto; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); color: var(--fg); font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; }
-        .cast-chip.is-active { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+        .cast-chips { display: flex; gap: 8px; align-items: center; margin-bottom: 18px; }
+        .cast-filter { position: relative; flex: 0 0 auto; }
+        .cast-filter summary { list-style: none; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); color: var(--fg); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+        .cast-filter summary::-webkit-details-marker { display: none; }
+        .cast-filter[open] summary { border-color: var(--primary); color: var(--primary); }
+        .cast-filter-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 20; display: flex; flex-direction: column; gap: 2px; padding: 6px; border-radius: 14px; border: 1px solid var(--border); background: var(--card); box-shadow: var(--md-shadow-ambient, 0 8px 24px rgba(0,0,0,.12)); min-width: 180px; max-height: 280px; overflow-y: auto; }
+        .cast-chip { display: block; padding: 8px 12px; border-radius: 8px; border: none; background: none; color: var(--fg); font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+        .cast-chip:hover { background: var(--accent-soft); }
+        .cast-chip.is-active { background: var(--primary); color: var(--on-primary); }
         .cast-shuffle { flex: 0 0 auto; margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); color: var(--fg); font-size: 13px; font-weight: 600; cursor: pointer; }
         .cast-shuffle:hover { border-color: var(--primary); color: var(--primary); }
         .cast-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .cast-card { display: block; color: inherit; text-decoration: none; }
+        .cast-card { display: block; color: inherit; text-decoration: none; max-width: 180px; }
         .cast-card:focus-visible { outline: 2px solid var(--hp-accent); outline-offset: 4px; }
-        .cast-photo-wrap { overflow: hidden; background: var(--hp-card); position: relative; }
+        .cast-photo-wrap { aspect-ratio: 3 / 4; overflow: hidden; background: var(--hp-card); position: relative; border-radius: 24px; }
         .cast-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
         .cast-name { font-family: var(--font-editorial, 'Newsreader', Georgia, 'Times New Roman', serif); font-size: 1.1rem; letter-spacing: -0.03em; margin-top: 12px; color: var(--hp-fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cast-tags { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
         .cast-tag-pill { padding: 3px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--on-accent-soft); font-size: 11px; font-weight: 700; }
         .cast-empty { text-align: center; padding: 40px 0; color: var(--muted-fg); }
         .cast-empty a { color: var(--primary); font-weight: 700; }
-        @media (max-width: 767px) { .cast-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; } }
+        @media (max-width: 767px) { .cast-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; } .cast-card { max-width: none; } }
 
         .section-title { font-size: 18px; font-weight: 700; margin: 0 0 16px; color: var(--hp-fg); }
         .section-body { font-size: 14px; color: var(--hp-muted); line-height: 1.75; margin: 0; }
