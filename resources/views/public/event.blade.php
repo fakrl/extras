@@ -18,6 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
     @include('partials.theme-style')
+    @include('partials.brand-tokens')
     <style>
         a { color: var(--accent-strong); }
         :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

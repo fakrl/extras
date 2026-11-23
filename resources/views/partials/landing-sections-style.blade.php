@@ -5,16 +5,16 @@
     /* ── Token Sorot: dialiaskan ke --hp-* supaya pill-nav/list-group/style inline
        per-halaman yang sudah ada otomatis ikut ganti warna tanpa disentuh strukturnya. ── */
     :root[data-theme="light"] {
-        --bg: #FBFDFB; --fg: #0F1511; --muted-fg: #5A6660; --card: #FFFFFF;
-        --border: #E3E9E5; --section-muted: rgba(241, 246, 243, .6);
-        --primary: #15803D; --primary-hover: #0B5E2C; --on-primary: #FFFFFF; --accent-soft: #E8F5EC; --on-accent-soft: #0B5E2C;
+        --bg: #F7F4EE; --fg: #1A1714; --muted-fg: #6A6459; --card: #FFFDF8;
+        --border: rgba(26, 23, 20, .14); --section-muted: rgba(247, 244, 238, .6);
+        --primary: #0F6B73; --primary-hover: #0A4F56; --on-primary: #FFFFFF; --accent-soft: #CDE9EA; --on-accent-soft: #05282B;
         --hp-bg: var(--bg); --hp-fg: var(--fg); --hp-muted: var(--muted-fg); --hp-card: var(--card);
         --hp-line: var(--border); --hp-accent: var(--primary); --hp-accent-on: var(--on-primary);
     }
     :root[data-theme="dark"] {
-        --bg: #0B1410; --fg: #F2F7F3; --muted-fg: #9BAAA0; --card: #101A14;
-        --border: #1E2B23; --section-muted: #10201A;
-        --primary: #22B862; --primary-hover: #22B862; --on-primary: #04140A; --accent-soft: #12271B; --on-accent-soft: #22B862;
+        --bg: #131110; --fg: #F2EEE6; --muted-fg: #A39B8E; --card: #1B1816;
+        --border: rgba(242, 238, 230, .13); --section-muted: #1B1816;
+        --primary: #5CC3CB; --primary-hover: #8FDDE3; --on-primary: #07282B; --accent-soft: #0F4A50; --on-accent-soft: #BDEFF3;
         --hp-bg: var(--bg); --hp-fg: var(--fg); --hp-muted: var(--muted-fg); --hp-card: var(--card);
         --hp-line: var(--border); --hp-accent: var(--primary); --hp-accent-on: var(--on-primary);
     }
