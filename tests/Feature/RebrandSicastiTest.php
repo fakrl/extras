@@ -104,43 +104,79 @@ class RebrandSicastiTest extends TestCase
         $this->assertStringNotContainsString('<nav class="bottom-dock"', $html);
     }
 
-    public function test_sheet_menu_berisi_baris_tema_tentang_privasi_sk_faq(): void
+    public function test_landing_dan_tentang_tidak_ada_nav_sheet_dan_tema_gelap_switch(): void
     {
-        $html = $this->get('/')->assertOk()->getContent();
+        foreach (['/', route('tentang')] as $url) {
+            $html = $this->get($url)->assertOk()->getContent();
 
-        foreach (['Tema gelap', 'Lowongan', 'Cara Kerja', 'FAQ', 'Tentang PT JBTB', 'Privasi', 'Syarat dan ketentuan'] as $teks) {
-            $this->assertStringContainsString($teks, $html);
+            $this->assertStringNotContainsString('<dialog id="nav-sheet"', $html);
+            $this->assertStringNotContainsString('Tema gelap', $html);
         }
     }
 
-    public function test_guest_lihat_daftar_talent_di_sheet_dan_masuk_di_pill(): void
+    public function test_nav_berisi_link_utama_tentang_privasi_sk_hanya_di_footer(): void
     {
         $html = $this->get('/')->assertOk()->getContent();
 
-        $this->assertStringContainsString('Daftar sebagai talent', $html);
+        $nav = substr($html, strpos($html, '<nav class="pill-nav"'), strpos($html, '</nav>') + 6 - strpos($html, '<nav class="pill-nav"'));
+        foreach (['Lowongan', 'Cara Kerja', 'FAQ'] as $teks) {
+            $this->assertStringContainsString($teks, $nav);
+        }
+        foreach (['Tentang PT JBTB', 'Privasi', 'Syarat dan ketentuan'] as $teks) {
+            $this->assertStringNotContainsString($teks, $nav);
+        }
+
+        $footer = substr($html, strpos($html, '<footer'));
+        foreach (['Tentang PT JBTB', 'Privasi', 'Syarat dan ketentuan'] as $teks) {
+            $this->assertStringContainsString($teks, $footer);
+        }
+    }
+
+    public function test_theme_toggle_berada_di_luar_pill_nav(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $navEnd = strpos($html, '</nav>') + 6;
+        $this->assertStringNotContainsString('id="theme-toggle"', substr($html, 0, $navEnd));
+        $this->assertStringContainsString('id="theme-toggle"', $html);
+    }
+
+    public function test_guest_lihat_masuk_di_dropdown_mobile_dan_pill(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringContainsString('class="pill-mobile-masuk"', $html);
         $this->assertStringContainsString('Masuk', $html);
     }
 
-    public function test_user_login_tidak_lihat_daftar_talent_dan_dropdown_akun_tetap(): void
+    public function test_user_login_tidak_lihat_masuk_di_dropdown_dan_dropdown_akun_tetap(): void
     {
         $user = User::factory()->create(['role' => 'extras']);
         $html = $this->actingAs($user)->get('/')->assertOk()->getContent();
 
-        $this->assertStringNotContainsString('Daftar sebagai talent', $html);
-        $this->assertStringNotContainsString('class="btn-brand">Masuk<', $html);
+        $this->assertStringNotContainsString('class="pill-mobile-masuk"', $html);
         $this->assertStringContainsString('id="navbar-user-menu"', $html);
         $this->assertStringContainsString('Dashboard', $html);
         $this->assertStringContainsString('Keluar', $html);
     }
 
-    public function test_sheet_tidak_berisi_form_logout(): void
+    public function test_dropdown_mobile_tidak_berisi_form_logout(): void
     {
         $user = User::factory()->create(['role' => 'extras']);
         $html = $this->actingAs($user)->get('/')->assertOk()->getContent();
 
-        $sheet = substr($html, strpos($html, '<dialog id="nav-sheet"'), strpos($html, '</dialog>') - strpos($html, '<dialog id="nav-sheet"'));
+        $start = strpos($html, 'id="pill-mobile-menu"');
+        $menu = substr($html, $start, strpos($html, '</div>', $start) - $start);
 
-        $this->assertStringNotContainsString('action="'.route('logout').'"', $sheet);
+        $this->assertStringNotContainsString('action="'.route('logout').'"', $menu);
+    }
+
+    public function test_landing_render_200_untuk_semua_role(): void
+    {
+        foreach (['super_admin', 'admin', 'korlap', 'client', 'extras'] as $role) {
+            $user = User::factory()->create(['role' => $role]);
+            $this->actingAs($user)->get('/')->assertOk();
+        }
     }
 
     public function test_halaman_tentang_render_untuk_guest_dan_user_login(): void
