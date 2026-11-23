@@ -1,11 +1,16 @@
-{{-- Navbar pill mengambang (desktop + mobile) & sheet menu. Param: $page = 'home'|'tentang'. --}}
+{{-- Navbar pill mengambang (desktop + mobile). Param: $page = 'home'|'tentang'. --}}
 @php
     $isHome = ($page ?? 'home') === 'home';
     $hrefLowongan = $isHome ? '#lowongan' : route('home').'#lowongan';
     $hrefCaraKerja = $isHome ? '#cara-kerja' : route('home').'#cara-kerja';
     $hrefFaq = $isHome ? '#faq' : route('home').'#faq';
+    $navItems = [
+        ['href' => route('home'), 'section' => 'beranda', 'label' => 'Beranda'],
+        ['href' => $hrefLowongan, 'section' => 'lowongan', 'label' => 'Lowongan'],
+        ['href' => $hrefCaraKerja, 'section' => 'cara-kerja', 'label' => 'Cara Kerja'],
+        ['href' => $hrefFaq, 'section' => 'faq', 'label' => 'FAQ'],
+    ];
 @endphp
-@include('partials.list-group-style')
 <style>
     main { padding-top: 84px; }
     .pill-nav { position: fixed; top: 18px; left: 0; right: 0; z-index: 200; display: flex; justify-content: center; padding: 0 16px; pointer-events: none; }
@@ -31,17 +36,46 @@
     .pill-links a:hover, .pill-links a.is-active { color: var(--hp-fg); background: var(--hp-card); }
     .pill-links a.is-active { font-weight: 600; }
     .pill-actions { display: flex; align-items: center; gap: 8px; }
-    .pill-nav .theme-toggle-btn { width: 40px; height: 40px; }
     .pill-nav .btn-brand { min-height: 40px; padding: 0 18px; font-size: 13px; }
     .pill-nav :focus-visible { outline: 2px solid var(--hp-accent); outline-offset: 2px; }
-    .pill-menu-btn { display: none; width: 40px; height: 40px; border-radius: 50%; border: none; background: none; color: var(--hp-fg); align-items: center; justify-content: center; cursor: pointer; font-size: 19px; }
-    .pill-menu-btn:hover { background: var(--hp-card); }
+
+    .pill-burger { display: none; width: 44px; height: 44px; border-radius: 50%; border: none; background: none; color: var(--hp-fg); align-items: center; justify-content: center; cursor: pointer; }
+    .pill-burger:hover { background: var(--hp-card); }
+    .pill-burger-lines { width: 18px; height: 13px; position: relative; }
+    .pill-burger-lines span { position: absolute; left: 0; width: 100%; height: 2px; border-radius: 2px; background: currentColor; transition: transform .2s ease, opacity .2s ease, top .2s ease; }
+    .pill-burger-lines span:nth-child(1) { top: 0; }
+    .pill-burger-lines span:nth-child(2) { top: 5.5px; }
+    .pill-burger-lines span:nth-child(3) { top: 11px; }
+    .pill-burger[aria-expanded="true"] .pill-burger-lines span:nth-child(1) { top: 5.5px; transform: rotate(45deg); }
+    .pill-burger[aria-expanded="true"] .pill-burger-lines span:nth-child(2) { opacity: 0; }
+    .pill-burger[aria-expanded="true"] .pill-burger-lines span:nth-child(3) { top: 5.5px; transform: rotate(-45deg); }
+    @media (prefers-reduced-motion: reduce) { .pill-burger-lines span { transition: none; } }
+
+    .pill-mobile-menu {
+        position: fixed; top: 74px; left: 0.75rem; right: 0.75rem; z-index: 190;
+        padding: 1rem; border-radius: 18px;
+        background: color-mix(in srgb, var(--hp-bg) 94%, transparent);
+        border: 1px solid var(--hp-line); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+        opacity: 0; transform: translateY(-8px); visibility: hidden; pointer-events: none;
+        transition: opacity .18s ease, transform .18s ease, visibility .18s;
+    }
+    .pill-mobile-menu.is-open { opacity: 1; transform: translateY(0); visibility: visible; pointer-events: auto; }
+    .pill-mobile-menu :focus-visible { outline: 2px solid var(--hp-accent); outline-offset: 2px; }
+    @media (prefers-reduced-motion: reduce) { .pill-mobile-menu { transition: none; } }
+    .pill-mobile-links { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+    .pill-mobile-links a { display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 14px; border-radius: 12px; font-size: 14px; font-weight: 600; color: var(--hp-fg); text-decoration: none; text-align: center; }
+    .pill-mobile-links a:hover, .pill-mobile-links a.is-active { background: var(--hp-card); }
+    .pill-mobile-links a.is-active { font-weight: 700; }
+    .pill-mobile-masuk { margin-top: 6px; background: var(--hp-accent); color: var(--hp-accent-on); }
 
     @media (max-width: 768px) {
         .pill-links { display: none; }
-        .pill-nav .theme-toggle-btn { display: none; }
-        .pill-menu-btn { display: flex; }
+        .pill-burger { display: flex; }
         main { padding-top: 72px; }
+    }
+    @media (min-width: 769px) {
+        .pill-mobile-menu { display: none; }
     }
 </style>
 
@@ -52,17 +86,13 @@
             <span>{{ config('brand.name') }}</span>
         </a>
         <ul class="pill-links">
-            <li><a href="{{ route('home') }}" data-section="beranda">Beranda</a></li>
-            <li><a href="{{ $hrefLowongan }}" data-section="lowongan">Lowongan</a></li>
-            <li><a href="{{ $hrefCaraKerja }}" data-section="cara-kerja">Cara Kerja</a></li>
-            <li><a href="{{ $hrefFaq }}" data-section="faq">FAQ</a></li>
+            @foreach ($navItems as $item)
+                <li><a href="{{ $item['href'] }}" data-section="{{ $item['section'] }}">{{ $item['label'] }}</a></li>
+            @endforeach
         </ul>
         <div class="pill-actions">
-            <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Ganti tema" aria-pressed="false">
-                <i class="ti ti-moon" id="theme-icon"></i>
-            </button>
-            <button type="button" class="pill-menu-btn" id="pill-menu-btn" aria-haspopup="dialog" aria-controls="nav-sheet" aria-label="Buka menu">
-                <i class="ti ti-menu-2" aria-hidden="true"></i>
+            <button type="button" class="pill-burger" id="pill-burger" aria-expanded="false" aria-controls="pill-mobile-menu" aria-label="Buka menu">
+                <span class="pill-burger-lines" aria-hidden="true"><span></span><span></span><span></span></span>
             </button>
             @auth
                 <details class="navbar-user-menu" id="navbar-user-menu">
@@ -88,78 +118,16 @@
     </div>
 </nav>
 
-<dialog id="nav-sheet" class="nav-sheet-dlg" aria-label="Menu">
-    <div class="nav-sheet-head">
-        <span class="nav-sheet-title">Menu</span>
-        <button type="button" class="nav-sheet-close" id="nav-sheet-close" aria-label="Tutup menu"><i class="ti ti-x" aria-hidden="true"></i></button>
-    </div>
-    <div class="nav-sheet-body">
-        <span class="list-group-label">Tampilan</span>
-        <div class="list-group">
-            <div class="list-row">
-                <i class="ti ti-moon" aria-hidden="true"></i>
-                <span class="label">Tema gelap</span>
-                <button type="button" class="switch" id="sheet-theme-switch" role="switch" aria-checked="false" aria-label="Tema gelap">
-                    <span class="switch-thumb"></span>
-                </button>
-            </div>
-        </div>
-
-        <span class="list-group-label">Jelajah</span>
-        <div class="list-group">
-            <a href="{{ $hrefLowongan }}" class="list-row sheet-anchor">
-                <i class="ti ti-briefcase" aria-hidden="true"></i>
-                <span class="label">Lowongan</span>
-                <i class="ti ti-chevron-right chev" aria-hidden="true"></i>
-            </a>
-            <a href="{{ $hrefCaraKerja }}" class="list-row sheet-anchor">
-                <i class="ti ti-list-check" aria-hidden="true"></i>
-                <span class="label">Cara Kerja</span>
-                <i class="ti ti-chevron-right chev" aria-hidden="true"></i>
-            </a>
-            <a href="{{ $hrefFaq }}" class="list-row sheet-anchor">
-                <i class="ti ti-help-circle" aria-hidden="true"></i>
-                <span class="label">FAQ</span>
-                <i class="ti ti-chevron-right chev" aria-hidden="true"></i>
-            </a>
-        </div>
-
+<div class="pill-mobile-menu" id="pill-mobile-menu" aria-hidden="true">
+    <ul class="pill-mobile-links">
+        @foreach ($navItems as $item)
+            <li><a href="{{ $item['href'] }}" data-section="{{ $item['section'] }}">{{ $item['label'] }}</a></li>
+        @endforeach
         @guest
-            <span class="list-group-label">Akun</span>
-            <div class="list-group">
-                <a href="{{ route('login') }}" class="list-row list-row--accent">
-                    <i class="ti ti-login" aria-hidden="true"></i>
-                    <span class="label">Masuk</span>
-                    <i class="ti ti-chevron-right chev" aria-hidden="true"></i>
-                </a>
-                <a href="{{ route('register') }}" class="list-row list-row--accent">
-                    <i class="ti ti-user-plus" aria-hidden="true"></i>
-                    <span class="label">Daftar sebagai talent</span>
-                    <i class="ti ti-chevron-right chev" aria-hidden="true"></i>
-                </a>
-            </div>
+            <li><a href="{{ route('login') }}" class="pill-mobile-masuk">Masuk</a></li>
         @endguest
-
-        <span class="list-group-label">Info</span>
-        <div class="list-group">
-            <a href="{{ route('tentang') }}" class="list-row">
-                <i class="ti ti-building" aria-hidden="true"></i>
-                <span class="label">Tentang PT JBTB</span>
-                <i class="ti ti-chevron-right chev" aria-hidden="true"></i>
-            </a>
-            <a href="{{ route('privacy-policy') }}" class="list-row">
-                <i class="ti ti-lock" aria-hidden="true"></i>
-                <span class="label">Privasi</span>
-                <i class="ti ti-chevron-right chev" aria-hidden="true"></i>
-            </a>
-            <a href="{{ route('syarat-ketentuan') }}" class="list-row">
-                <i class="ti ti-file-text" aria-hidden="true"></i>
-                <span class="label">Syarat dan ketentuan</span>
-                <i class="ti ti-chevron-right chev" aria-hidden="true"></i>
-            </a>
-        </div>
-    </div>
-</dialog>
+    </ul>
+</div>
 
 <script>
 (function () {
@@ -177,45 +145,59 @@
         targets.forEach(function (t) { obs.observe(t); });
     }
 
-    var sheet = document.getElementById('nav-sheet');
-    var menuBtn = document.getElementById('pill-menu-btn');
-    var closeBtn = document.getElementById('nav-sheet-close');
-    if (sheet && menuBtn) {
-        menuBtn.addEventListener('click', function () { sheet.showModal(); });
-        sheet.addEventListener('click', function (e) { if (e.target === sheet) sheet.close(); });
-        if (closeBtn) closeBtn.addEventListener('click', function () { sheet.close(); });
+    var burger = document.getElementById('pill-burger');
+    var menu = document.getElementById('pill-mobile-menu');
+    var userMenu = document.getElementById('navbar-user-menu');
+
+    function closeMenu(restoreFocus) {
+        if (!menu.classList.contains('is-open')) return;
+        menu.classList.remove('is-open');
+        menu.setAttribute('aria-hidden', 'true');
+        burger.setAttribute('aria-expanded', 'false');
+        burger.setAttribute('aria-label', 'Buka menu');
+        if (restoreFocus) burger.focus();
+    }
+    function openMenu() {
+        if (userMenu) userMenu.removeAttribute('open');
+        menu.classList.add('is-open');
+        menu.setAttribute('aria-hidden', 'false');
+        burger.setAttribute('aria-expanded', 'true');
+        burger.setAttribute('aria-label', 'Tutup menu');
     }
 
-    document.querySelectorAll('.sheet-anchor').forEach(function (link) {
-        link.addEventListener('click', function (e) {
-            var href = link.getAttribute('href');
-            sheet.close();
-            if (href.charAt(0) === '#') {
-                e.preventDefault();
-                var target = document.getElementById(href.slice(1));
-                if (target) target.scrollIntoView({ behavior: 'smooth' });
-            }
+    if (burger && menu) {
+        burger.addEventListener('click', function () {
+            if (menu.classList.contains('is-open')) closeMenu(false); else openMenu();
         });
-    });
+        menu.querySelectorAll('a').forEach(function (link) {
+            link.addEventListener('click', function (e) {
+                var href = link.getAttribute('href');
+                closeMenu(false);
+                if (href.charAt(0) === '#') {
+                    e.preventDefault();
+                    var target = document.getElementById(href.slice(1));
+                    if (target) target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeMenu(true);
+        });
+        document.addEventListener('click', function (e) {
+            if (menu.classList.contains('is-open') && !menu.contains(e.target) && !burger.contains(e.target)) closeMenu(false);
+        });
+        if (window.matchMedia) {
+            var mq = window.matchMedia('(min-width: 769px)');
+            var onMqChange = function (e) { if (e.matches) closeMenu(false); };
+            if (mq.addEventListener) mq.addEventListener('change', onMqChange);
+            else if (mq.addListener) mq.addListener(onMqChange);
+        }
+    }
 
-    var themeSwitch = document.getElementById('sheet-theme-switch');
-    var themeIcon = document.getElementById('theme-icon');
-    var themeToggle = document.getElementById('theme-toggle');
-    function syncTheme() {
-        var dark = document.documentElement.getAttribute('data-theme') === 'dark';
-        if (themeSwitch) themeSwitch.setAttribute('aria-checked', dark ? 'true' : 'false');
-        if (themeIcon) themeIcon.className = dark ? 'ti ti-sun' : 'ti ti-moon';
-        if (themeToggle) themeToggle.setAttribute('aria-pressed', dark ? 'true' : 'false');
-    }
-    syncTheme();
-    if (themeSwitch) {
-        themeSwitch.addEventListener('click', function () {
-            var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', next);
-            try { localStorage.setItem('jbtb-theme-v2', next); } catch (e) {}
-            syncTheme();
+    if (userMenu) {
+        userMenu.addEventListener('toggle', function () {
+            if (userMenu.open) closeMenu(false);
         });
     }
-    new MutationObserver(syncTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 })();
 </script>

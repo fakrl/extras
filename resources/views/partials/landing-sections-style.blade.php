@@ -66,6 +66,8 @@
     .pill-nav .pill-links a.is-active { background: var(--accent-soft); color: var(--on-accent-soft); }
     .pill-nav .pill-actions > a.btn-brand { background: var(--fg); color: var(--bg); }
     .pill-nav .pill-actions > a.btn-brand:hover { filter: brightness(1.15); }
+    .pill-mobile-menu .pill-mobile-links a.is-active { background: var(--accent-soft); color: var(--on-accent-soft); }
+    .pill-mobile-menu .pill-mobile-masuk { background: var(--fg); color: var(--bg); }
 
     /* ── Hero ── */
     .hero { background-image: radial-gradient(ellipse at 50% -20%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 70%); }

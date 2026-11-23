@@ -66,8 +66,16 @@
             text-transform: uppercase; color: var(--hp-accent); margin-bottom: 10px;
         }
 
-        /* ── Navbar: lihat partials/pill-nav.blade.php untuk pill mengambang + dock mobile ── */
+        /* ── Navbar: lihat partials/pill-nav.blade.php untuk pill mengambang + dropdown mobile ── */
         .theme-toggle-btn { width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer; background: var(--hp-card); color: var(--hp-muted); display: flex; align-items: center; justify-content: center; font-size: 15px; }
+        .theme-toggle-float {
+            position: fixed; z-index: 100; bottom: 28px; right: 28px; width: 48px; height: 48px;
+            background: color-mix(in srgb, var(--hp-card) 85%, transparent); border: 1px solid var(--hp-line);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); font-size: 17px;
+        }
+        @media (max-width: 768px) {
+            .theme-toggle-float { right: 0.75rem; bottom: calc(1.5rem + env(safe-area-inset-bottom)); width: 42px; height: 42px; font-size: 15px; }
+        }
         .avatar-badge { width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer; background: var(--hp-accent); color: var(--hp-accent-on); font-size: var(--fs-xs); font-weight: 700; display: flex; align-items: center; justify-content: center; }
         .avatar-badge-img { object-fit: cover; padding: 0; }
         .navbar-user-menu { position: relative; list-style: none; }
@@ -267,6 +275,10 @@
 </head>
 <body id="atas">
     @include('partials.pill-nav', ['page' => 'home'])
+
+    <button type="button" class="theme-toggle-btn theme-toggle-float" id="theme-toggle" aria-label="Ganti tema" aria-pressed="false">
+        <i class="ti ti-moon" id="theme-icon"></i>
+    </button>
 
     <main>
     {{-- Hero 2-Kolom (Faktual, Bahasa Sehari-hari, Foto Roster Nyata) --}}
