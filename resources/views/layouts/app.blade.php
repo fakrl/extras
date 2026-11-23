@@ -7,9 +7,10 @@
     <meta name="color-scheme" content="dark light">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="manifest" href="/manifest.webmanifest">
-    <meta name="theme-color" content="#15803D" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#0f9a4c" media="(prefers-color-scheme: dark)">
-    <link rel="apple-touch-icon" href="{{ asset('images/brand/icon-192.png') }}">
+    <meta name="theme-color" content="#0F6B73" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#131110" media="(prefers-color-scheme: dark)">
+    <link rel="apple-touch-icon" href="{{ asset('images/brand/apple-touch-icon-180.png') }}">
+    <link rel="icon" sizes="32x32" href="{{ asset('images/brand/favicon-32.png') }}" type="image/png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <script>document.documentElement.classList.add('no-anim'); try { document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme-v2') || 'light'); if (localStorage.getItem('jbtb-sidebar') === 'ringkas') document.documentElement.classList.add('sb-ringkas'); } catch (e) {}</script>
@@ -18,6 +19,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
     @include('partials.theme-style')
+    @include('partials.brand-tokens')
     @include('partials.list-group-style')
     <style>
         body { transition: background 0.2s ease, color 0.2s ease; }
@@ -42,9 +44,14 @@
             display: flex; align-items: center; gap: 10px;
             padding: 0 10px 18px;
         }
-        .sidebar-brand .logo {
-            width: 30px; height: 30px; border-radius: 8px;
-            object-fit: contain; flex-shrink: 0; display: block;
+        .sidebar-brand .symbol-mark {
+            width: 30px; height: 30px; flex-shrink: 0; display: block;
+            -webkit-mask-image: url('{{ asset('images/brand/symbol-white.png') }}');
+            mask-image: url('{{ asset('images/brand/symbol-white.png') }}');
+            -webkit-mask-size: contain; mask-size: contain;
+            -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+            -webkit-mask-position: center; mask-position: center;
+            background-color: currentColor;
         }
         .sidebar-brand span { font-weight: 600; font-size: 15px; white-space: nowrap; }
         .sb-ikon-mr { margin-right: 6px; }
@@ -322,7 +329,7 @@
             border-color: var(--md-primary, var(--accent));
             color: var(--md-primary, var(--accent-strong));
             background: var(--md-primary-container, var(--bg-card));
-            box-shadow: 0 0 0 3px color-mix(in srgb, var(--md-primary, #15803D) 15%, transparent);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--md-primary, #0F6B73) 15%, transparent);
         }
         .step-bar-item.is-active .step-bar-label { color: var(--text-primary); font-weight: 600; }
 
@@ -1140,7 +1147,7 @@
     <div class="app-shell {{ $laci ? 'nav-laci' : 'nav-bawah' }}">
         <aside class="sidebar" id="app-sidebar" aria-label="Menu utama">
             <div class="sidebar-brand">
-                <img src="{{ asset('images/logo-jbtb.jpg') }}" alt="Logo JBTB" class="logo">
+                <span class="symbol-mark" role="img" aria-label="SiCasti"></span>
                 <span>JBTB Casting</span>
                 <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-controls="app-sidebar" aria-pressed="false" aria-label="Ringkas sidebar" title="Ringkas sidebar"><i class="ti ti-layout-sidebar-left-collapse"></i></button>
             </div>

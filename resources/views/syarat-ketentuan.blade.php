@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
     @include('partials.theme-style')
+    @include('partials.brand-tokens')
     <style>
         body { font-family: 'Inter', sans-serif; }
         .tos-header {
@@ -20,7 +21,15 @@
             display: flex; justify-content: space-between; align-items: center; gap: 16px;
         }
         .tos-brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; color: var(--text-primary); text-decoration: none; }
-        .tos-brand img { border-radius: 6px; object-fit: cover; }
+        .tos-brand .symbol-mark {
+            width: 28px; height: 28px; flex-shrink: 0; display: block;
+            -webkit-mask-image: url('{{ asset('images/brand/symbol-white.png') }}');
+            mask-image: url('{{ asset('images/brand/symbol-white.png') }}');
+            -webkit-mask-size: contain; mask-size: contain;
+            -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+            -webkit-mask-position: center; mask-position: center;
+            background-color: currentColor;
+        }
         .tos-btn-icon {
             display: inline-flex; align-items: center; justify-content: center;
             min-width: 40px; min-height: 40px; border-radius: 999px;
@@ -53,7 +62,7 @@
     <header class="tos-header">
         <div class="tos-header-inner">
             <a href="{{ route('home') }}" class="tos-brand">
-                <img src="{{ asset('images/logo-jbtb.jpg') }}" alt="Logo JBTB" width="28" height="28">
+                <span class="symbol-mark" role="img" aria-label="SiCasti"></span>
                 <span>JBTB Casting</span>
             </a>
             <div style="display: flex; align-items: center; gap: 8px;">

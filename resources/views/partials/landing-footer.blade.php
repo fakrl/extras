@@ -11,7 +11,15 @@
     .lp-footer { border-top: 1px solid var(--hp-line); padding: 56px 5% 28px; background: var(--bg, var(--hp-bg)); }
     .lp-footer-cols { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 32px; }
     .lp-footer-brand { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 700; color: var(--hp-fg); text-decoration: none; }
-    .lp-footer-brand img { width: 26px; height: 26px; border-radius: 6px; object-fit: contain; }
+    .lp-footer-brand .symbol-mark {
+        width: 26px; height: 26px; display: block; flex-shrink: 0;
+        -webkit-mask-image: url('{{ asset('images/brand/symbol-white.png') }}');
+        mask-image: url('{{ asset('images/brand/symbol-white.png') }}');
+        -webkit-mask-size: contain; mask-size: contain;
+        -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+        -webkit-mask-position: center; mask-position: center;
+        background-color: currentColor;
+    }
     .lp-footer-desc { margin: 12px 0 0; font-size: 13px; line-height: 1.6; color: var(--hp-muted); max-width: 32em; }
     .lp-footer-label { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--hp-muted); margin: 0 0 14px; }
     .lp-footer-links { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
@@ -34,7 +42,7 @@
     <div class="lp-footer-cols">
         <div>
             <a href="{{ route('home') }}" class="lp-footer-brand">
-                <img src="{{ asset(config('brand.logo')) }}" alt="" width="26" height="26">
+                <span class="symbol-mark" role="img" aria-label="SiCasti"></span>
                 {{ config('brand.name') }}
             </a>
             <p class="lp-footer-desc">{{ config('brand.tagline') }}</p>

@@ -6,9 +6,10 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="color-scheme" content="dark light">
     <link rel="manifest" href="/manifest.webmanifest">
-    <meta name="theme-color" content="#15803D" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#0f9a4c" media="(prefers-color-scheme: dark)">
-    <link rel="apple-touch-icon" href="{{ asset('images/brand/icon-192.png') }}">
+    <meta name="theme-color" content="#0F6B73" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#131110" media="(prefers-color-scheme: dark)">
+    <link rel="apple-touch-icon" href="{{ asset('images/brand/apple-touch-icon-180.png') }}">
+    <link rel="icon" sizes="32x32" href="{{ asset('images/brand/favicon-32.png') }}" type="image/png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>@yield('title', config('brand.name'))</title>
@@ -17,6 +18,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.48.0/dist/tabler-icons.min.css">
     <script>try { document.documentElement.setAttribute('data-theme', localStorage.getItem('jbtb-theme-v2') || 'light'); } catch (e) {}</script>
     @include('partials.theme-style')
+    @include('partials.brand-tokens')
     <style>
         body {
             display: flex;

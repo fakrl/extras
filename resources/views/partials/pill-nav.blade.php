@@ -17,7 +17,15 @@
         box-shadow: 0 8px 30px rgba(0, 0, 0, 0.14);
     }
     .pill-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; color: var(--hp-fg); text-decoration: none; white-space: nowrap; }
-    .pill-logo { width: 28px; height: 28px; border-radius: 8px; display: block; flex-shrink: 0; }
+    .pill-logo {
+        width: 28px; height: 28px; display: block; flex-shrink: 0;
+        -webkit-mask-image: url('{{ asset('images/brand/symbol-white.png') }}');
+        mask-image: url('{{ asset('images/brand/symbol-white.png') }}');
+        -webkit-mask-size: contain; mask-size: contain;
+        -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+        -webkit-mask-position: center; mask-position: center;
+        background-color: currentColor;
+    }
     .pill-links { list-style: none; display: flex; gap: 2px; margin: 0; padding: 0; }
     .pill-links a { display: flex; align-items: center; min-height: 40px; padding: 0 12px; border-radius: 999px; font-size: 13px; color: var(--hp-muted); text-decoration: none; white-space: nowrap; }
     .pill-links a:hover, .pill-links a.is-active { color: var(--hp-fg); background: var(--hp-card); }
@@ -40,7 +48,7 @@
 <nav class="pill-nav" aria-label="Menu utama">
     <div class="pill-nav-inner">
         <a href="{{ route('home') }}" class="pill-brand">
-            <img src="{{ asset(config('brand.logo')) }}" alt="Logo {{ config('brand.name') }}" class="pill-logo">
+            <span class="pill-logo" role="img" aria-label="SiCasti"></span>
             <span>{{ config('brand.name') }}</span>
         </a>
         <ul class="pill-links">

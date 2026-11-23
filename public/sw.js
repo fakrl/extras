@@ -1,12 +1,11 @@
-const CACHE = 'jbtb-static-v1';
+const CACHE = 'jbtb-static-v2';
 
 const PRECACHE_URLS = [
     '/manifest.webmanifest',
     '/favicon.ico',
-    '/images/logo-jbtb.jpg',
-    '/images/icons/icon-192.png',
-    '/images/icons/icon-512.png',
-    '/images/icons/icon-512-maskable.png',
+    '/images/brand/icon-192.png',
+    '/images/brand/icon-512.png',
+    '/images/brand/icon-512-maskable.png',
 ];
 
 const NEVER_CACHE_PREFIXES = ['/media', '/pembayaran', '/kontrak', '/invoice'];
@@ -17,7 +16,7 @@ const OFFLINE_HTML = `<!doctype html>
 <html lang="id"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Offline - JBTB Casting</title>
-<style>body{font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:24px;text-align:center;background:#F6FBF3;color:#171D17}</style>
+<style>body{font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:24px;text-align:center;background:#F7F4EE;color:#1A1714}</style>
 </head><body><p>Kamu sedang offline. Coba lagi setelah tersambung internet.</p></body></html>`;
 
 self.addEventListener('install', (event) => {
