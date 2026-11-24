@@ -155,6 +155,7 @@
         .cast-filter summary::-webkit-details-marker { display: none; }
         .cast-filter[open] summary { border-color: var(--primary); color: var(--primary); }
         .cast-filter-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 20; display: flex; flex-direction: column; gap: 2px; padding: 6px; border-radius: 14px; border: 1px solid var(--border); background: var(--card); box-shadow: var(--md-shadow-ambient, 0 8px 24px rgba(0,0,0,.12)); min-width: 180px; max-height: 280px; overflow-y: auto; }
+        .cast-filter-group-label { display: block; padding: 8px 12px 2px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted-fg); }
         .cast-chip { display: block; padding: 8px 12px; border-radius: 8px; border: none; background: none; color: var(--fg); font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; }
         .cast-chip:hover { background: var(--accent-soft); }
         .cast-chip.is-active { background: var(--primary); color: var(--on-primary); }
@@ -448,6 +449,7 @@
                         </div>
                     @endforeach
                 </div>
+                <div class="lowongan-empty" id="lp-filter-empty" style="display: none;">Tidak ada lowongan yang butuh mendadak saat ini.</div>
                 @if ($adaLebih)
                     <div style="text-align: center; margin-top: 24px;">
                         @guest
@@ -473,6 +475,13 @@
             </div>
         </div>
         @include('partials.cast-fragment')
+        @if ($castAdaLebih)
+            <div style="text-align: center; margin-top: 24px;">
+                @guest
+                    <a href="{{ route('register') }}" class="btn-outline">Daftar untuk melihat lebih banyak talent</a>
+                @endguest
+            </div>
+        @endif
     </section>
     @endif
 
@@ -579,6 +588,7 @@
                                 <a href="{{ route('register') }}" class="btn-brand" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
                                     Daftar jadi extras <i class="ti ti-arrow-right"></i>
                                 </a>
+                                <p style="margin: 10px 0 0; font-size: 12.5px; color: rgba(244, 243, 238, 0.72);">Data KTP dan rekening disimpan terenkripsi, tidak terlihat oleh Client.</p>
                             @else
                                 <a href="#lowongan" class="btn-brand" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
                                     Lihat lowongan casting <i class="ti ti-arrow-right"></i>
@@ -598,9 +608,11 @@
                             </p>
                         </div>
                         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                            <a href="{{ route('login') }}" class="btn-brand" style="background: var(--accent); color: var(--accent-on); display: inline-flex; align-items: center; gap: 8px; text-decoration: none; border-color: var(--accent);">
-                                <i class="ti ti-user-check"></i> Masuk portal client
-                            </a>
+                            @guest
+                                <a href="{{ route('login') }}" class="btn-brand" style="background: var(--accent); color: var(--accent-on); display: inline-flex; align-items: center; gap: 8px; text-decoration: none; border-color: var(--accent);">
+                                    <i class="ti ti-user-check"></i> Masuk
+                                </a>
+                            @endguest
                             <a href="#kontak" class="btn-outline" style="color: #F4F3EE; border-color: rgba(255,255,255,0.25); text-decoration: none;">
                                 Hubungi agensi
                             </a>
@@ -776,19 +788,20 @@
         }
 
         var filterPills = document.querySelectorAll('.lp-filter-pill');
+        var filterEmpty = document.getElementById('lp-filter-empty');
         if (filterPills.length > 0) {
             filterPills.forEach(function (btn) {
                 btn.addEventListener('click', function () {
                     filterPills.forEach(function (b) { b.classList.remove('is-active'); });
                     btn.classList.add('is-active');
                     var filter = btn.getAttribute('data-filter');
+                    var tampil = 0;
                     document.querySelectorAll('.lp-job-card').forEach(function (card) {
-                        if (filter === 'all') {
-                            card.style.display = '';
-                        } else if (filter === 'urgent') {
-                            card.style.display = card.getAttribute('data-urgent') === '1' ? '' : 'none';
-                        }
+                        var cocok = filter === 'all' || (filter === 'urgent' && card.getAttribute('data-urgent') === '1');
+                        card.style.display = cocok ? '' : 'none';
+                        if (cocok) tampil++;
                     });
+                    if (filterEmpty) filterEmpty.style.display = tampil === 0 ? '' : 'none';
                 });
             });
         }

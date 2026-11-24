@@ -60,9 +60,10 @@ class HomeController extends Controller
     private function dataCast(Request $request): array
     {
         $grupPublik = array_values(array_diff(array_keys(ExtrasCategory::GRUP), ExtrasCategory::GRUP_PRIVAT));
+        $totalPool = ExtrasProfile::tampilDiBeranda()->count();
 
-        if (ExtrasProfile::tampilDiBeranda()->count() < 4) {
-            return ['castTampil' => false, 'castExtras' => collect(), 'castChips' => collect(), 'castKategoriAktif' => null];
+        if ($totalPool < 4) {
+            return ['castTampil' => false, 'castExtras' => collect(), 'castChips' => collect(), 'castKategoriAktif' => null, 'castAdaLebih' => false];
         }
 
         $kategori = $request->query('kategori');
@@ -90,6 +91,7 @@ class HomeController extends Controller
             'castExtras' => $castExtras,
             'castChips' => $castChips,
             'castKategoriAktif' => $kategoriAktif,
+            'castAdaLebih' => $totalPool > self::CAST_TAMPIL,
         ];
     }
 

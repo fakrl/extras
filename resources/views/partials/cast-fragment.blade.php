@@ -6,10 +6,13 @@
                 <a href="{{ route('home') }}#cast" class="cast-chip {{ $castKategoriAktif ? '' : 'is-active' }}"
                     @if (! $castKategoriAktif) aria-current="true" @endif
                     data-cast-chip data-kategori="">Semua</a>
-                @foreach ($castChips as $chip)
-                    <a href="{{ route('home', ['kategori' => $chip->nama]) }}#cast" class="cast-chip {{ $castKategoriAktif === $chip->nama ? 'is-active' : '' }}"
-                        @if ($castKategoriAktif === $chip->nama) aria-current="true" @endif
-                        data-cast-chip data-kategori="{{ $chip->nama }}">{{ $chip->nama }}</a>
+                @foreach ($castChips->groupBy('grup') as $grup => $chipsGrup)
+                    <span class="cast-filter-group-label">{{ $grup }}</span>
+                    @foreach ($chipsGrup as $chip)
+                        <a href="{{ route('home', ['kategori' => $chip->nama]) }}#cast" class="cast-chip {{ $castKategoriAktif === $chip->nama ? 'is-active' : '' }}"
+                            @if ($castKategoriAktif === $chip->nama) aria-current="true" @endif
+                            data-cast-chip data-kategori="{{ $chip->nama }}">{{ $chip->nama }}</a>
+                    @endforeach
                 @endforeach
             </div>
         </details>
