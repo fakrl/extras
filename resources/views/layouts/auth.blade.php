@@ -39,8 +39,13 @@
             display: flex; align-items: center; gap: 10px; margin-bottom: 24px;
         }
         .auth-brand .logo {
-            width: 32px; height: 32px; border-radius: 8px;
-            object-fit: contain; flex-shrink: 0; display: block;
+            width: 32px; height: 32px; flex-shrink: 0; display: block;
+            -webkit-mask-image: url('{{ asset(config('brand.logo')) }}');
+            mask-image: url('{{ asset(config('brand.logo')) }}');
+            -webkit-mask-size: contain; mask-size: contain;
+            -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+            -webkit-mask-position: center; mask-position: center;
+            background-color: currentColor;
         }
         .auth-brand span { font-weight: 600; font-size: 15px; }
         h1.auth-title { font-size: 19px; font-weight: 600; margin: 0 0 4px; }
@@ -90,7 +95,7 @@
 <body>
     <main class="auth-card">
         <a href="{{ route('home') }}" class="auth-brand" style="text-decoration: none; color: inherit;" aria-label="{{ config('brand.name') }}, ke beranda">
-            <img src="{{ asset(config('brand.logo')) }}" alt="Logo {{ config('brand.name') }}" class="logo">
+            <span class="logo" role="img" aria-label="Logo {{ config('brand.name') }}"></span>
             <span>{{ config('brand.name') }}</span>
         </a>
         @if (session('status'))

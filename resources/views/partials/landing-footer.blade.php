@@ -13,8 +13,8 @@
     .lp-footer-brand { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 700; color: var(--hp-fg); text-decoration: none; }
     .lp-footer-brand .symbol-mark {
         width: 26px; height: 26px; display: block; flex-shrink: 0;
-        -webkit-mask-image: url('{{ asset('images/brand/symbol-white.png') }}');
-        mask-image: url('{{ asset('images/brand/symbol-white.png') }}');
+        -webkit-mask-image: url('{{ asset('images/brand/symbol.svg') }}');
+        mask-image: url('{{ asset('images/brand/symbol.svg') }}');
         -webkit-mask-size: contain; mask-size: contain;
         -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
         -webkit-mask-position: center; mask-position: center;

@@ -46,8 +46,8 @@
         }
         .sidebar-brand .symbol-mark {
             width: 30px; height: 30px; flex-shrink: 0; display: block;
-            -webkit-mask-image: url('{{ asset('images/brand/symbol-white.png') }}');
-            mask-image: url('{{ asset('images/brand/symbol-white.png') }}');
+            -webkit-mask-image: url('{{ asset('images/brand/symbol.svg') }}');
+            mask-image: url('{{ asset('images/brand/symbol.svg') }}');
             -webkit-mask-size: contain; mask-size: contain;
             -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
             -webkit-mask-position: center; mask-position: center;

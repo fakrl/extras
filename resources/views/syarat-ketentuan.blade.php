@@ -23,8 +23,8 @@
         .tos-brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; color: var(--text-primary); text-decoration: none; }
         .tos-brand .symbol-mark {
             width: 28px; height: 28px; flex-shrink: 0; display: block;
-            -webkit-mask-image: url('{{ asset('images/brand/symbol-white.png') }}');
-            mask-image: url('{{ asset('images/brand/symbol-white.png') }}');
+            -webkit-mask-image: url('{{ asset('images/brand/symbol.svg') }}');
+            mask-image: url('{{ asset('images/brand/symbol.svg') }}');
             -webkit-mask-size: contain; mask-size: contain;
             -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
             -webkit-mask-position: center; mask-position: center;
