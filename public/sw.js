@@ -1,10 +1,11 @@
-const CACHE = 'jbtb-static-v2';
+const CACHE = 'jbtb-static-v3';
 
 const PRECACHE_URLS = [
     '/manifest.webmanifest',
     '/favicon.ico',
     '/images/brand/icon-192.png',
     '/images/brand/icon-512.png',
+    '/images/brand/icon-192-maskable.png',
     '/images/brand/icon-512-maskable.png',
 ];
 
