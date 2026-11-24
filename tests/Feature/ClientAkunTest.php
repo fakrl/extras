@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Http\Controllers\SuperAdmin\AdminManagementController;
 use App\Models\User;
+use App\Support\Kredensial;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -112,7 +112,7 @@ class ClientAkunTest extends TestCase
     public function test_password_sementara_tanpa_karakter_mirip(): void
     {
         foreach (range(1, 50) as $_) {
-            $this->assertMatchesRegularExpression('/^[a-km-np-zA-HJ-NP-Z2-9]{10}$/', AdminManagementController::passwordSementara());
+            $this->assertMatchesRegularExpression('/^[a-km-np-zA-HJ-NP-Z2-9]{10}$/', Kredensial::passwordSementara());
         }
     }
 }

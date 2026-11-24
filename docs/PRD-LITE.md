@@ -35,6 +35,7 @@ Ganti proses rekrutmen dan pembayaran Extras/figuran PT. JBTB Casting Creative G
 11. **Notifikasi** — in-app (lonceng) utama; WhatsApp via `whatsapp-web.js` self-hosted sebagai pelengkap (queue); pengingat terjadwal (H-3, input jadwal, H-1, akun mangkrak).
 12. **Dashboard per role, Manajemen Akun SA, Log Aktivitas, Monitoring per role, Landing publik terkurasi, Export Excel/PDF.**
 13. **UI mobile** — Extras bottom-nav 3 menu; role lain hamburger + drawer; sidebar desktop bisa diciutkan; audit overflow 360/390px lulus.
+14. **Tambah akun Extras manual** — Admin/SA bikin akun Extras tanpa NIK/KTP (field minimal: nama, username, nomor WA wajib, email opsional), kredensial sekali-tampil seperti alur Client. Extras (mandiri maupun manual) wajib setuju Kebijakan Privasi & S&K sebelum pakai dashboard (gerbang consent, timestamp `privasi_disetujui_at`).
 
 ## Di Luar Scope (future work, dicatat di Bab 3 §3.1.5)
 
