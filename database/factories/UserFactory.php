@@ -30,6 +30,10 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            // DA.2: fixture default = sudah onboarding penuh (konsisten dengan wajib_ganti_password
+            // default false di DB), supaya test existing (actingAs extras) tidak keblokir
+            // CekPersetujuanPrivasi tanpa perlu override eksplisit di tiap test.
+            'privasi_disetujui_at' => now(),
         ];
     }
 

@@ -68,6 +68,11 @@
     </dialog>
 @endif
 
+<div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+    <button type="button" class="btn btn-sm btn-brand" onclick="document.getElementById('extras-baru-dialog').showModal()"><i class="ti ti-plus"></i> Tambah Extras</button>
+</div>
+@include('partials.extras-baru-modal')
+
 <form method="GET" action="{{ route('admin.akun.extras') }}" class="xtoolbar" id="live-form" data-live>
     <x-cari-chips :filter="$extrasFilter">
         <input type="search" name="q" value="{{ $f['q'] }}" class="xtoolbar-cari" placeholder="Cari nama, username, email, WA…" aria-label="Cari Extras">
