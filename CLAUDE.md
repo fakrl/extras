@@ -11,6 +11,8 @@ Setiap sesi coding **wajib** pakai dua skill ini:
 
 Keduanya aktif otomatis lewat hook `SessionStart` & `UserPromptSubmit`. Kalau belum aktif, panggil manual di awal sesi.
 
+Tiap tugas desain/UI **wajib** pakai skill yang sesuai dari yang sudah terpasang (`frontend-design`, `impeccable`, `web-design-guidelines`, `ui-ux-pro-max`). Kalau ada skill pihak ketiga yang lebih cocok untuk satu bagian dan belum terpasang, install dulu sebelum mengerjakan bagian itu — baca `SKILL.md`-nya dulu, jangan install buta.
+
 ## Konvensi Singkat
 
 - Dev server: **wajib port 9999** (`php artisan serve --port=9999`), dilarang pakai port 8000 (dicadangkan untuk project lain).
