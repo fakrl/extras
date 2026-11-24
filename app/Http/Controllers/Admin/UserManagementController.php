@@ -6,10 +6,14 @@ use App\Exports\ExtrasRecapExport;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\ExtrasCategory;
+use App\Models\ExtrasProfile;
 use App\Models\User;
+use App\Rules\NomorWa;
 use App\Support\FilterAkun;
+use App\Support\Kredensial;
 use App\Support\PerHalaman;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -31,6 +35,47 @@ class UserManagementController extends Controller
         $mangkrakCount = $mangkrakDaftar->count();
 
         return view('admin.akun.extras', compact('extras', 'f', 'daftar', 'perPilihan', 'tagGroups', 'mangkrakCount', 'mangkrakDaftar') + ['tagRapikan' => ExtrasCategory::perluDirapikan()->withCount('extrasProfiles')->orderBy('nama')->get()]);
+    }
+
+    /**
+     * DA.1: Admin & Super Admin (sa_mode aktif, lihat gerbang route) bikin akun Extras manual
+     * tanpa lewat registrasi mandiri. NIK/KTP/rekening/foto/kategori sengaja tidak diminta di sini,
+     * tetap lewat alur lengkapi-ktp existing saat extras lolos & mau TTD kontrak.
+     * DA.4: nomor_wa dobel cuma peringatan non-blokir (flash info), bukan validasi gagal.
+     */
+    public function storeExtras(Request $request): RedirectResponse|JsonResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'alpha_dash', 'max:50', 'unique:users,username'],
+            'nomor_wa' => ['required', 'string', 'max:20', new NomorWa],
+            'email' => ['nullable', 'email', 'unique:users,email'],
+        ]);
+
+        $password = Kredensial::passwordSementara();
+        $user = User::create($data + [
+            'password' => $password,
+            'wajib_ganti_password' => true,
+            'role' => User::ROLE_EXTRAS,
+            'status' => 'aktif',
+        ]);
+
+        ExtrasProfile::create(['user_id' => $user->id]);
+
+        ActivityLog::record('CREATE_USER', "{$request->user()->label()} {$request->user()->name} membuat akun Extras {$user->name} (@{$user->username}).", $user);
+
+        $dobel = User::whereKeyNot($user->id)->whereNotNull('nomor_wa')->where('nomor_wa', $user->nomor_wa)->first();
+        $peringatan = $dobel ? "Nomor WA ini juga terdaftar untuk akun {$dobel->name} (@{$dobel->username}). Ini cuma peringatan, bukan pemblokiran." : null;
+
+        if ($request->wantsJson()) {
+            return response()->json(['id' => $user->id, 'name' => $user->name, 'kredensial' => Kredensial::buat($user, $password), 'peringatan' => $peringatan]);
+        }
+
+        $redirect = back()->with('status', "Akun Extras {$user->name} berhasil dibuat.")
+            ->with('kredensial', Kredensial::buat($user, $password))
+            ->with('extras_baru_id', $user->id);
+
+        return $peringatan ? $redirect->with('info', $peringatan) : $redirect;
     }
 
     /** RF-52: ekspor sesuai filter yang aktif di Kelola Akun ▸ Extras. */

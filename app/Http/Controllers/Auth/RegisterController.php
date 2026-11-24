@@ -46,6 +46,7 @@ class RegisterController extends Controller
             'password' => Hash::make($data['password']),
             'role' => 'extras',
             'status' => 'aktif',
+            'privasi_disetujui_at' => now(),
         ]);
 
         // RF-06: profil dibuat kosong dulu, extras lengkapi rate card/foto/dst

@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\WorkHistoryController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\Auth\PrivasiConsentController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Client\DashboardController as ClientDashboardController;
 use App\Http\Controllers\Client\JadwalController as ClientJadwalController;
@@ -132,6 +133,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
     Route::get('/notifications/{id}/baca', [NotificationController::class, 'baca'])->name('notifications.baca');
     Route::get('/tag/cari', [TagController::class, 'cari'])->name('tag.cari');
+
+    // DA.2: halaman persetujuan privasi untuk Extras yang belum pernah setuju.
+    Route::get('/setujui-privasi', [PrivasiConsentController::class, 'show'])->name('privasi.consent');
+    Route::post('/setujui-privasi', [PrivasiConsentController::class, 'store'])->name('privasi.consent.store');
 });
 
 // ==================== EXTRAS ====================
@@ -189,6 +194,8 @@ Route::middleware(['auth', 'role:admin,korlap,super_admin'])
         Route::middleware('role:admin,super_admin')->group(function () {
             Route::get('/akun/extras', [UserManagementController::class, 'extras'])->name('admin.akun.extras');
             Route::get('/akun/extras/export', [UserManagementController::class, 'export'])->name('admin.akun.extras.export');
+            // DA.1: Admin & SA (sa_mode aktif, gerbang CheckRole non-GET) bikin akun Extras manual.
+            Route::post('/akun/extras', [UserManagementController::class, 'storeExtras'])->name('admin.akun.extras.store');
             Route::get('/akun/client', [AkunClientController::class, 'index'])->name('admin.akun.client');
             Route::get('/users', [UserManagementController::class, 'keExtras'])->name('admin.users.index');
             Route::get('/recap', [UserManagementController::class, 'keExtras'])->name('admin.recap.index');

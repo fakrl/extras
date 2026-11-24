@@ -10,6 +10,7 @@ use App\Models\ExtrasProfile;
 use App\Models\User;
 use App\Rules\NomorWa;
 use App\Support\FilterAkun;
+use App\Support\Kredensial;
 use App\Support\PerHalaman;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -204,7 +205,7 @@ class AdminManagementController extends Controller
             'nomor_wa' => ['nullable', 'string', 'max:20', new NomorWa],
         ]);
 
-        $password = self::passwordSementara();
+        $password = Kredensial::passwordSementara();
         $user = User::create($data + [
             'password' => $password,
             'wajib_ganti_password' => true,
@@ -218,12 +219,12 @@ class AdminManagementController extends Controller
             return response()->json([
                 'id' => $user->id,
                 'name' => $user->name.($user->username ? ' (@'.$user->username.')' : ''),
-                'kredensial' => $this->kredensial($user, $password),
+                'kredensial' => Kredensial::buat($user, $password),
             ]);
         }
 
         return back()->with('status', "Akun Client {$user->name} berhasil dibuat.")
-            ->with('kredensial', $this->kredensial($user, $password))
+            ->with('kredensial', Kredensial::buat($user, $password))
             ->with('client_baru_id', $user->id);
     }
 
@@ -246,7 +247,7 @@ class AdminManagementController extends Controller
             'nomor_wa' => ['nullable', 'string', 'max:20', new NomorWa],
         ]);
 
-        $password = self::passwordSementara();
+        $password = Kredensial::passwordSementara();
         $user = User::create([
             'name' => $data['name'],
             'username' => $data['username'] ?? null,
@@ -263,17 +264,17 @@ class AdminManagementController extends Controller
 
         // CV.4: dipanggil via fetch() dari form mini "+ Admin/Korlap baru" di dialog Setujui/Tetapkan PIC.
         if ($request->wantsJson()) {
-            return response()->json(['id' => $user->id, 'name' => $user->name, 'kredensial' => $this->kredensial($user, $password)]);
+            return response()->json(['id' => $user->id, 'name' => $user->name, 'kredensial' => Kredensial::buat($user, $password)]);
         }
 
         if ($request->filled('_redirect_back') || $request->has('_form')) {
             return back()->with('status', "Akun Admin {$user->name} berhasil ditambahkan.")
-                ->with('kredensial', $this->kredensial($user, $password))
+                ->with('kredensial', Kredensial::buat($user, $password))
                 ->with('admin_baru_id', $user->id);
         }
 
         return redirect()->route('super-admin.akun.index')->with('status', 'Akun Admin berhasil ditambahkan.')
-            ->with('kredensial', $this->kredensial($user, $password));
+            ->with('kredensial', Kredensial::buat($user, $password));
     }
 
     /**
@@ -371,31 +372,13 @@ class AdminManagementController extends Controller
     {
         $this->guardTarget($user);
 
-        $newPassword = self::passwordSementara();
+        $newPassword = Kredensial::passwordSementara();
         $user->update(['password' => $newPassword, 'wajib_ganti_password' => true]);
 
         ActivityLog::record('RESET_USER_PASSWORD', "Super Admin mereset password {$user->name}.", $user);
 
         return back()->with('status', "Password {$user->name} berhasil direset.")
-            ->with('kredensial', $this->kredensial($user, $newPassword));
-    }
-
-    public static function passwordSementara(int $panjang = 10): string
-    {
-        $huruf = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-
-        return collect(range(1, $panjang))->map(fn () => $huruf[random_int(0, strlen($huruf) - 1)])->implode('');
-    }
-
-    private function kredensial(User $user, string $password): array
-    {
-        return [
-            'nama' => $user->name,
-            'username' => $user->username ?: $user->email,
-            'password' => $password,
-            'url' => route('login'),
-            'nomor_wa' => $user->nomor_wa,
-        ];
+            ->with('kredensial', Kredensial::buat($user, $newPassword));
     }
 
     private function guardTarget(User $user): void

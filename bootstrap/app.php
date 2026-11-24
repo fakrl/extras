@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\CekAkunAktif;
+use App\Http\Middleware\CekPersetujuanPrivasi;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\ViewAs;
@@ -23,6 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(SecurityHeaders::class);
         $middleware->appendToGroup('web', CekAkunAktif::class);
         $middleware->appendToGroup('web', WajibGantiPassword::class);
+        // DA.2: setelah WajibGantiPassword (ganti password dulu, baru consent privasi).
+        $middleware->appendToGroup('web', CekPersetujuanPrivasi::class);
         // BD.6: setelah WajibGantiPassword (cek pakai SA asli), sebelum CheckRole route (role dicek pakai akun target).
         $middleware->appendToGroup('web', ViewAs::class);
 

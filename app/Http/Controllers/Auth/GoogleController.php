@@ -96,6 +96,7 @@ class GoogleController extends Controller
             'password' => null,
             'role' => User::ROLE_EXTRAS,
             'status' => 'aktif',
+            'privasi_disetujui_at' => now(),
         ]);
         $user->forceFill(['google_id' => $g['id'], 'email_verified_at' => now()])->save();
         ExtrasProfile::create(['user_id' => $user->id]);
