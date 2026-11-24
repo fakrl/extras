@@ -146,10 +146,12 @@
     </div>
     <div class="akun-head-btn">
         <button type="button" class="btn btn-sm btn-tonal" onclick="document.getElementById('client-baru-dialog').showModal()"><i class="ti ti-plus"></i> Tambah Client</button>
+        <button type="button" class="btn btn-sm btn-tonal" onclick="document.getElementById('extras-baru-dialog').showModal()"><i class="ti ti-plus"></i> Tambah Extras</button>
         <button type="button" class="btn btn-sm btn-brand" onclick="document.getElementById('add-admin-dialog').showModal()"><i class="ti ti-plus"></i> Tambah Staf (Admin/Korlap)</button>
     </div>
 </div>
 @include('partials.client-baru-modal')
+@include('partials.extras-baru-modal')
 
 @php
     $tagNama = $tagGroups->flatten()->pluck('nama', 'id');
