@@ -19,6 +19,14 @@ class WhatsAppService
 {
     public function kirim(string $nomorWa, string $pesan): bool
     {
+        // DB.2: staging InfinityFree tidak punya Node whatsapp-web.js. Default
+        // tetap aktif (tidak mengubah perilaku produksi) kecuali WHATSAPP_ENABLED=false.
+        if (! config('services.whatsapp.enabled', true)) {
+            Log::info('WhatsAppService::kirim dilewati (WHATSAPP_ENABLED=false)', ['nomor' => $nomorWa]);
+
+            return true;
+        }
+
         try {
             return $this->kirimLangsung($nomorWa, $pesan)->successful();
         } catch (\Throwable $e) {

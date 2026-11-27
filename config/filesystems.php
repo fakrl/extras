@@ -45,6 +45,11 @@ return [
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
+            // DB.2: InfinityFree men-disable symlink(). STAGING_NO_SYMLINK=true
+            // memakai fitur bawaan Laravel (route /storage/{path} yang baca
+            // langsung dari disk) jadi storage:link tidak pernah perlu dijalankan.
+            // Default false = perilaku produksi tidak berubah (tetap via symlink).
+            'serve' => (bool) env('STAGING_NO_SYMLINK', false),
         ],
 
         's3' => [

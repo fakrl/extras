@@ -363,7 +363,7 @@ class ProfileController extends Controller
     public function uploadFoto(Request $request): RedirectResponse
     {
         $request->validate([
-            'foto' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:5120'], // maks 5MB
+            'foto' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:'.config('app.staging.photo_max_kb')],
         ]);
 
         $request->user()->extrasProfile->simpanFoto($request->file('foto'));
@@ -376,6 +376,8 @@ class ProfileController extends Controller
      */
     public function uploadVideo(Request $request): RedirectResponse
     {
+        abort_if(! config('app.staging.video_upload_enabled'), 403, 'Upload video dinonaktifkan di staging.');
+
         $request->validate([
             'video' => ['required', 'mimes:mp4,mov,webm', 'max:51200'], // maks 50MB
         ]);
@@ -393,7 +395,7 @@ class ProfileController extends Controller
     public function uploadFotoTambahan(Request $request, int $slot): RedirectResponse
     {
         $request->validate([
-            'foto' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:5120'], // maks 5MB
+            'foto' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:'.config('app.staging.photo_max_kb')],
         ]);
 
         $request->user()->extrasProfile->simpanFotoTambahan($slot, $request->file('foto'));
@@ -404,7 +406,7 @@ class ProfileController extends Controller
     public function uploadFotoJson(Request $request): JsonResponse
     {
         $request->validate([
-            'foto' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
+            'foto' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:'.config('app.staging.photo_max_kb')],
         ]);
 
         $profile = $request->user()->extrasProfile;
@@ -417,6 +419,8 @@ class ProfileController extends Controller
 
     public function uploadVideoJson(Request $request): JsonResponse
     {
+        abort_if(! config('app.staging.video_upload_enabled'), 403, 'Upload video dinonaktifkan di staging.');
+
         $request->validate([
             'video' => ['required', 'mimes:mp4,mov,webm', 'max:51200'],
         ]);
@@ -432,7 +436,7 @@ class ProfileController extends Controller
     public function uploadFotoTambahanJson(Request $request, int $slot): JsonResponse
     {
         $request->validate([
-            'foto' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
+            'foto' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:'.config('app.staging.photo_max_kb')],
         ]);
 
         $profile = $request->user()->extrasProfile;

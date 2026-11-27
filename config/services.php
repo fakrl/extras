@@ -41,6 +41,9 @@ return [
     'whatsapp' => [
         'url' => env('WHATSAPP_SERVICE_URL', 'http://127.0.0.1:3001'),
         'token' => env('WHATSAPP_SERVICE_TOKEN'),
+        // DB.2: matikan pengiriman WA (staging InfinityFree, tidak ada Node
+        // service). Default tetap aktif, tidak mengubah perilaku produksi.
+        'enabled' => (bool) env('WHATSAPP_ENABLED', true),
     ],
 
     // BO.2: login Google (Socialite). client_id kosong = fitur mati (tombol hilang, route 404).

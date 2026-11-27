@@ -90,6 +90,13 @@ return [
         'email' => env('JBTB_EMAIL'),
     ],
 
+    // DB.2: batas upload staging InfinityFree (shared hosting gratis, storage
+    // kecil). Default = nilai produksi saat ini, tidak berubah kecuali di-set.
+    'staging' => [
+        'photo_max_kb' => (int) env('STAGING_PHOTO_MAX_KB', 5120),
+        'video_upload_enabled' => (bool) env('STAGING_VIDEO_UPLOAD_ENABLED', true),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Encryption Key

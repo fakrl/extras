@@ -23,7 +23,7 @@ class AttendanceSelfieController extends Controller
         }
 
         $request->validate([
-            'foto' => ['required', 'image', 'max:5120'],
+            'foto' => ['required', 'image', 'max:'.config('app.staging.photo_max_kb')],
         ]);
 
         $shootingDateId = $application->castingProject->shootingDates()->whereDate('tanggal', today())->value('id');
