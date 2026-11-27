@@ -1,0 +1,66 @@
+name: Deploy Staging (InfinityFree)
+
+# DB.1: staging gratis InfinityFree, BUKAN CI/CD penuh. Manual saja
+# (workflow_dispatch), tidak pernah jalan otomatis tiap push.
+on:
+  workflow_dispatch:
+    inputs:
+      layout:
+        description: "Layout bundle: sibling (default, app core di root akun) atau fallback (app core di htdocs/app-core/)"
+        required: false
+        default: "sibling"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, pdo_mysql, gd, zip, intl
+          coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build bundle staging
+        run: STAGING_LAYOUT=${{ inputs.layout }} bash scripts/build-staging.sh dist/staging
+
+      - name: Deploy htdocs/
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: dist/staging/htdocs/
+          server-dir: htdocs/
+          exclude: |
+            **/.env
+            **/.git*
+            **/node_modules/**
+            **/storage/logs/**
+
+      # Layout sibling: app core (app, bootstrap, config, ...) ikut di root
+      # akun, SATU TINGKAT DI ATAS htdocs/ -- lihat docs/STAGING-DEPLOY.md.
+      - name: Deploy app core (layout sibling)
+        if: ${{ inputs.layout != 'fallback' }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: dist/staging/
+          server-dir: ./
+          exclude: |
+            htdocs/**
+            **/.env
+            **/.git*
+            **/node_modules/**
+            **/storage/logs/**
+            **/tests/**
