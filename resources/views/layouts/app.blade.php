@@ -1145,6 +1145,7 @@
 @php($isCompact = in_array($navRole, ['admin', 'super_admin'], true))
 @php($appDock = in_array($navRole, ['extras', 'korlap'], true) ? config('app-dock.'.$navRole) : null)
 <body @if($isCompact) data-density="compact" @endif @if($navRole === 'korlap') data-role="korlap" @endif @if($appDock) data-dock="1" @endif>
+    @include('partials.staging-banner')
     <div class="app-shell {{ $laci ? 'nav-laci' : 'nav-bawah' }}">
         <aside class="sidebar" id="app-sidebar" aria-label="Menu utama">
             <div class="sidebar-brand">

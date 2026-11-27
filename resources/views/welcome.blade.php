@@ -276,6 +276,7 @@
     @include('partials.landing-sections-style')
 </head>
 <body id="atas">
+    @include('partials.staging-banner')
     @include('partials.pill-nav', ['page' => 'home'])
 
     <button type="button" class="theme-toggle-btn theme-toggle-float" id="theme-toggle" aria-label="Ganti tema" aria-pressed="false">

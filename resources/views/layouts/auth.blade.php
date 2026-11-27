@@ -94,6 +94,7 @@
     </style>
 </head>
 <body>
+    @include('partials.staging-banner')
     <main class="auth-card">
         <a href="{{ route('home') }}" class="auth-brand" style="text-decoration: none; color: inherit;" aria-label="{{ config('brand.name') }}, ke beranda">
             <span class="logo" role="img" aria-label="Logo {{ config('brand.name') }}"></span>
