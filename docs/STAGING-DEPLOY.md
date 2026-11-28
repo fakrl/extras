@@ -64,17 +64,25 @@ Server InfinityFree **tidak menerima koneksi MySQL dari luar** (tidak bisa `php 
 Dikerjakan di database **lokal terpisah** (`sicasti_staging_dump`, BUKAN DB dev `jbtb` sehari-hari), supaya tidak mencampur data kerja dengan data demo:
 
 1. `CREATE DATABASE sicasti_staging_dump` kosong di MySQL lokal.
-2. `DB_DATABASE=sicasti_staging_dump php artisan migrate --force` (override lewat env proses, `.env` asli tidak pernah diubah).
-3. `DB_DATABASE=sicasti_staging_dump php artisan db:seed --class=DemoLengkapSeeder --force` — seeder dummy resmi (`docs/AKUN-DEMO.md` = sumber kebenaran akun & datanya, file itu sendiri gitignored).
+2. Migrate + seed dengan **`APP_KEY` dan `NIK_HASH_KEY` yang SAMA PERSIS** dengan yang akan dipakai di `.env` server (override lewat env proses, bukan file — `.env` lokal asli tidak pernah diubah):
+   ```
+   DB_DATABASE=sicasti_staging_dump APP_KEY=<key staging> NIK_HASH_KEY=<key staging> \
+     php artisan migrate --force
+   DB_DATABASE=sicasti_staging_dump APP_KEY=<key staging> NIK_HASH_KEY=<key staging> \
+     php artisan db:seed --class=DemoLengkapSeeder --force
+   ```
+   **PENTING — alasan wajib pakai key yang sama:** `ExtrasProfile.nik`/`nama_asli`/`rekening` adalah cast `encrypted` (pakai `APP_KEY`), dan `nik_hash` adalah HMAC pakai `NIK_HASH_KEY` (`config/app.php:123`, lihat `SECURITY-CHECKLIST.md` poin 5). Kalau dump dibuat dengan key lokal lalu diimpor ke server yang `.env`-nya pakai key staging berbeda, ketiga kolom itu **tidak bisa didekripsi** (`DecryptException` saat dibuka di server) dan validasi duplikat NIK (RF-04) ikut rusak karena `nik_hash` dihitung dengan key yang beda. Seeder dummy resmi: `docs/AKUN-DEMO.md` (gitignored).
+3. Verifikasi SEBELUM dump final: baca beberapa baris `ExtrasProfile` pakai key staging yang sama, pastikan nol `DecryptException` dan `nik_hash` cocok dengan `hash_hmac('sha256', $nik_digits, $NIK_HASH_KEY)` hasil dekripsi. (Dilakukan 28 Nov 2026: 5 sampel, semua cocok.)
 4. Dump kompatibel phpMyAdmin:
    ```
    mysqldump -u root --single-transaction --no-tablespaces --default-character-set=utf8mb4 \
      --skip-add-locks --skip-comments --routines=false --triggers=false --no-create-db \
      sicasti_staging_dump > sicasti-staging-dump.sql
    ```
-   Tanpa `CREATE DATABASE`/`USE` (nama DB di server InfinityFree beda, dibuat manual dulu di phpMyAdmin). Hasil: 32 `CREATE TABLE`, ~180 KB — jauh di bawah limit mana pun, tidak perlu dipecah/di-gzip.
+   Tanpa `CREATE DATABASE`/`USE` (nama DB di server InfinityFree beda, dibuat manual dulu di phpMyAdmin). Hasil: 32 `CREATE TABLE`, ~180 KB — jauh di bawah limit mana pun, tidak perlu dipecah/di-gzip. Tabel `sessions`/`cache`/`cache_locks`/`jobs`/`job_batches`/`failed_jobs` dicek kosong (0 baris) sebelum dump — tidak ada data sesi/cache lokal yang ikut.
 5. Database lokal sementara **dihapus** setelah dump diverifikasi ada `CREATE TABLE` utuh untuk semua tabel migrasi + `INSERT` seeder.
 6. Impor di server: phpMyAdmin → database staging (dibuat manual sesuai nama di panel) → tab Import → upload file dump.
+7. **Lingkup APP_KEY/NIK_HASH_KEY lainnya** (dicek 28 Nov 2026): cuma `ExtrasProfile` yang punya cast `encrypted`/HMAC di seluruh `app/Models/` — tidak ada model lain, tidak ada pemakaian `Crypt::`/`encrypt()`/`decrypt()` manual di `app/`. `Hash::make()` di seeder (password login) pakai bcrypt, independen dari `APP_KEY`, aman dipindah key apa pun.
 
 **Catatan isi data demo** (relevan buat keputusan privasi/identitas sebelum dipakai publik):
 - Seeder pakai **nama selebriti asli** sebagai `nama_asli` extras (mis. "Tom Holland", "Zendaya", "Jackie Chan") — ini SENGAJA (lihat `docs/AKUN-DEMO.md`), dipasangkan dengan NIK dummy (`3276...`) dan nomor rekening dummy, BUKAN data orang sungguhan yang di-scrape.
