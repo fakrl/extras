@@ -59,6 +59,28 @@ Server InfinityFree **tidak menerima koneksi MySQL dari luar** (tidak bisa `php 
 3. Buka phpMyAdmin di panel InfinityFree → buat database → Import → upload `staging-dump.sql`.
 4. Tidak ada route/endpoint web yang menjalankan migrate di server mana pun — ini dilarang keras (celah keamanan serius, unauthenticated remote code execution kalau sampai lupa diproteksi).
 
+### 3.1 Dump & impor (dikerjakan 28 Nov 2026, hasil untuk Fakrul)
+
+Dikerjakan di database **lokal terpisah** (`sicasti_staging_dump`, BUKAN DB dev `jbtb` sehari-hari), supaya tidak mencampur data kerja dengan data demo:
+
+1. `CREATE DATABASE sicasti_staging_dump` kosong di MySQL lokal.
+2. `DB_DATABASE=sicasti_staging_dump php artisan migrate --force` (override lewat env proses, `.env` asli tidak pernah diubah).
+3. `DB_DATABASE=sicasti_staging_dump php artisan db:seed --class=DemoLengkapSeeder --force` — seeder dummy resmi (`docs/AKUN-DEMO.md` = sumber kebenaran akun & datanya, file itu sendiri gitignored).
+4. Dump kompatibel phpMyAdmin:
+   ```
+   mysqldump -u root --single-transaction --no-tablespaces --default-character-set=utf8mb4 \
+     --skip-add-locks --skip-comments --routines=false --triggers=false --no-create-db \
+     sicasti_staging_dump > sicasti-staging-dump.sql
+   ```
+   Tanpa `CREATE DATABASE`/`USE` (nama DB di server InfinityFree beda, dibuat manual dulu di phpMyAdmin). Hasil: 32 `CREATE TABLE`, ~180 KB — jauh di bawah limit mana pun, tidak perlu dipecah/di-gzip.
+5. Database lokal sementara **dihapus** setelah dump diverifikasi ada `CREATE TABLE` utuh untuk semua tabel migrasi + `INSERT` seeder.
+6. Impor di server: phpMyAdmin → database staging (dibuat manual sesuai nama di panel) → tab Import → upload file dump.
+
+**Catatan isi data demo** (relevan buat keputusan privasi/identitas sebelum dipakai publik):
+- Seeder pakai **nama selebriti asli** sebagai `nama_asli` extras (mis. "Tom Holland", "Zendaya", "Jackie Chan") — ini SENGAJA (lihat `docs/AKUN-DEMO.md`), dipasangkan dengan NIK dummy (`3276...`) dan nomor rekening dummy, BUKAN data orang sungguhan yang di-scrape.
+- **Tidak ada foto orang sungguhan.** `fotoDemo()` ambil foto stok generik dari `pravatar.cc` (bukan foto figur yang namanya dipakai) kalau ada koneksi internet, fallback ke avatar SVG inisial kalau offline — dua-duanya tidak terkait dengan selebriti yang namanya dipinjam.
+- Akun login demo (password semua **`password`**, lihat `docs/AKUN-DEMO.md` lengkap): `owner_jbtb` (Super Admin), `admin_rina`/`admin_yoga`/`admin_lestari`/`admin_hendra` (Admin, `admin_hendra` nonaktif), `korlap_bambang`/`korlap_dedi` (Korlap), `client_andini`/`client_rudy`/`client_maya` (Client), + 24 akun Extras (username nama karakter, mis. `spiderman`, `goyounjung`).
+
 ## 4. Yang diterima apa adanya (batasan hosting, bukan bug)
 
 - **Tidak ada cron**: 5 jadwal di `routes/console.php` tidak pernah jalan di InfinityFree. Tidak dibuatkan endpoint web pemicu (itu sendiri celah keamanan).
