@@ -20,7 +20,7 @@ Selain `tests/`, `.github/`, `storage/` (sudah ada sebelumnya), skrip sekarang j
 
 Hasil lokal (29 Nov 2026): **9.163 → 8.712 file** (−451), **87 MB → 68 MB**. Diverifikasi dari bundle trimmed: `composer dump-autoload`, `php artisan about`, `php artisan route:list` (201 route) jalan bersih tanpa error, pakai `.env` dummy terpisah (SQLite in-memory, `STAGING_NO_SYMLINK=false` — lihat §1.2 soal kenapa bukan `true`).
 
-### 1.2 BUG DITEMUKAN (belum diperbaiki) — `STAGING_NO_SYMLINK=true` crash total
+### 1.2 BUG DITEMUKAN & DIPERBAIKI (29 Nov 2026) — `STAGING_NO_SYMLINK=true` crash total
 
 Saat verifikasi trim di atas, `STAGING_NO_SYMLINK=true` (nilai yang justru direkomendasikan §2 buat staging beneran) bikin **`composer dump-autoload`/setiap request HTTP crash total**:
 
@@ -30,7 +30,15 @@ The [public] disk conflicts with the [local] disk at [/storage]. Each served dis
 
 Penyebab: disk `local` di `config/filesystems.php` sudah `'serve' => true` **tanpa syarat** (tanpa `'url'` eksplisit → default URI `/storage`), sementara disk `public` juga diset `'url' => APP_URL.'/storage'`. Kalau `STAGING_NO_SYMLINK=true` membuat disk `public` ikut `'serve' => true`, dua disk berebut URI `/storage` yang sama → `FilesystemServiceProvider::serveFiles()` lempar exception saat boot (bukan cuma warning, request apa pun langsung 500).
 
-**Belum diperbaiki di sini** — ini bug di konfigurasi DB.2 yang sudah ada sebelumnya (bukan hasil kerja trim ini), butuh keputusan Fakrul dulu sebelum disentuh (opsi: beri disk `local` `'url'` eksplisit yang beda, atau cek ulang kenapa `local` perlu `serve=>true` sama sekali). **Jangan deploy ke staging dengan `STAGING_NO_SYMLINK=true` sampai ini dibereskan** — kalau dipaksa, situs 500 total.
+**Fix**: disk `local` sekarang `'serve' => ! env('STAGING_NO_SYMLINK', false)` — mati PERSIS pas disk `public` ikut serve (satu-satunya skenario bentrok), tetap `true` tanpa env (perilaku produksi/dev tidak berubah). Aman dimatikan karena nol kode app yang pernah memanggil `Storage::disk('local')->url()`/`temporaryUrl()` (digrep) — semua akses ke disk `local` lewat controller `->response()`/`->download()` langsung, bukan via route `/storage/{path}` ini.
+
+Dibuktikan (test otomatis `tests/Feature/StagingStorageServeTest.php`, 4 test/11 assertion, semua lulus, plus reproduksi manual lewat `php artisan serve --port=9999`):
+- Tanpa env: disk `local` tetap satu-satunya yang serve di `/storage` (`storage.local`), disk `public` tidak — identik perilaku lama.
+- `STAGING_NO_SYMLINK=true`: `route:list` nol URI ganda, cuma `storage.public` terdaftar, `storage.local` tidak ada sama sekali.
+- File di disk `public` (poster) terlayani 200 lewat `/storage/{path}` persis seperti sebelumnya, `Storage::url($poster_path)` tetap menghasilkan `/storage/{path}` yang benar-benar bisa diakses.
+- File di `storage/app/private` (disk `local`) **tidak terjangkau** lewat `/storage/{path}` (bukan 200, bukan bocor isi file) karena rutenya memang tidak terdaftar di skenario ini.
+
+**Jangan deploy ke staging dengan `STAGING_NO_SYMLINK=true` versi config lama** (sebelum commit ini) — situs akan 500 total.
 
 ## 2. Nilai `.env` staging yang dipakai
 
