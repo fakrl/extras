@@ -99,7 +99,7 @@ Dikerjakan di database **lokal terpisah** (`sicasti_staging_dump`, BUKAN DB dev 
 
 ## 5. Utang teknis (dicatat, bukan dibereskan di sini)
 
-- `vite.config.js` + `resources/css/app.css` + `resources/js/app.js` ada, tapi **tidak ada satu pun `@vite(...)` di Blade manapun** (grep seluruh `resources/views`: 0 hit) — `public/build` dari `npm run build` saat ini tidak dipakai runtime sama sekali. Skrip build tetap menjalankan `npm run build` sesuai spec DB.1, hasilnya ikut ke `htdocs/build/` tapi mubazir sampai ada yang benar-benar pasang `@vite`. Bukan scope Bagian DB untuk membereskan — cuma dicatat biar tidak dikira lupa.
+- `vite.config.js` + `resources/css/app.css` + `resources/js/app.js` ada, tapi **tidak ada satu pun `@vite(...)` di Blade manapun** (grep seluruh `resources/views`: 0 hit) — `public/build` tidak pernah dipakai runtime sama sekali. **28 Nov 2026**: langkah `npm ci && npm run build` di `scripts/build-staging.sh` DIHAPUS (bukan cuma dicatat) — selain hasilnya mubazir, repo ini tidak punya `package-lock.json` jadi `npm ci` gagal keras dan bikin run deploy pertama gagal total. Build sekarang cuma `composer install --no-dev`. Kalau nanti ada yang benar-benar pasang `@vite` di Blade, tambahkan lagi langkah npm build di skrip — jangan lupa commit `package-lock.json` juga.
 
 ## 6. Checklist smoke test manual (DB.4 — dijalankan Antigravity di situs live, bukan di sini)
 

@@ -38,14 +38,6 @@ rm -rf "$OUT/tests" "$OUT/.github" "$OUT/storage"
 echo "==> composer install --no-dev (di bundle, bukan repo kerja)"
 (cd "$OUT" && composer install --no-interaction --no-dev --optimize-autoloader)
 
-# ponytail debt: TIDAK ADA @vite di Blade manapun (grep: 0 hit) & public/build
-# tidak pernah dipakai runtime. npm build tetap dijalankan sesuai DB.1 spec,
-# tapi hasilnya memang mubazir sampai ada yang benar-benar pasang @vite.
-# Lihat docs/STAGING-DEPLOY.md "Utang Teknis".
-echo "==> npm build (lihat catatan utang teknis Tailwind/Vite di atas)"
-(cd "$OUT" && npm ci && npm run build)
-rm -rf "$OUT/node_modules"
-
 echo "==> storage/ skeleton kosong (staging = data dummy, bukan isi dev lokal)"
 mkdir -p "$OUT"/storage/app/public \
     "$OUT"/storage/app/private \

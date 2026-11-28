@@ -24,11 +24,6 @@ jobs:
           extensions: mbstring, pdo_mysql, gd, zip, intl
           coverage: none
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
       - name: Build bundle staging
         run: STAGING_LAYOUT=${{ inputs.layout }} bash scripts/build-staging.sh dist/staging
 
