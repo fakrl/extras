@@ -35,8 +35,16 @@ git -C "$ROOT" archive HEAD | tar -x -C "$OUT"
 echo "==> Buang yang tidak boleh ikut ke server"
 rm -rf "$OUT/tests" "$OUT/.github" "$OUT/storage"
 
+echo "==> Buang yang tidak dibutuhkan runtime (hemat jumlah file/inode InfinityFree)"
+rm -rf "$OUT/whatsapp-service" "$OUT/ct-screenshots" "$OUT/docs" "$OUT/README.md" \
+    "$OUT/.claude" "$OUT/.impeccable" "$OUT/AGENTS.md" "$OUT/skills-lock.json"
+
 echo "==> composer install --no-dev (di bundle, bukan repo kerja)"
 (cd "$OUT" && composer install --no-interaction --no-dev --optimize-autoloader)
+
+echo "==> Trim vendor/: buang tests/docs/examples/.github & file non-runtime (README/LICENSE/CHANGELOG/phpunit.xml/.gitattributes/.gitignore)"
+find "$OUT/vendor" -depth -type d \( -iname tests -o -iname docs -o -iname doc -o -iname examples -o -iname .github \) -exec rm -rf {} +
+find "$OUT/vendor" -type f \( -iname '*.md' -o -iname 'phpunit.xml*' -o -iname '.gitattributes' -o -iname '.gitignore' -o -iname 'CHANGELOG*' -o -iname 'LICENSE*' \) -delete
 
 echo "==> storage/ skeleton kosong (staging = data dummy, bukan isi dev lokal)"
 mkdir -p "$OUT"/storage/app/public \

@@ -12,6 +12,26 @@
    - **Belum diverifikasi langsung di File Manager InfinityFree** apakah upload di luar `htdocs/` (ke root akun) benar-benar diizinkan/web-aman — DB.0 cuma mengonfirmasi root berisi `htdocs/`, `.htaccess`, `.override`, marker "DO NOT UPLOAD FILES HERE". Marker itu bisa dibaca dua arah (jangan upload *web files* di sini vs jangan upload apa pun di sini). **Fakrul: cek ini dulu di panel/File Manager sebelum deploy pertama** — kalau ragu/ditolak, pakai `layout=fallback`.
 4. `.env` staging **dibuat manual di File Manager server**, tidak pernah lewat git/bundle/Action. `APP_KEY` staging **harus beda** dari produksi (`php artisan key:generate --show` lokal, tempel manual).
 
+### 1.1 Trim bundle (29 Nov 2026 — hemat jumlah file/inode InfinityFree)
+
+Selain `tests/`, `.github/`, `storage/` (sudah ada sebelumnya), skrip sekarang juga buang:
+- Top-level non-runtime: `whatsapp-service/`, `ct-screenshots/`, `docs/`, `README.md`, `.claude/`, `.impeccable/`, `AGENTS.md`, `skills-lock.json`.
+- Di `vendor/`: direktori `tests`/`Tests`/`docs`/`doc`/`examples`/`.github` di tiap paket + file `*.md`/`phpunit.xml*`/`.gitattributes`/`.gitignore`/`CHANGELOG*`/`LICENSE*`. Tidak ada yang dibutuhkan saat runtime (composer autoload tidak pernah load file-file ini).
+
+Hasil lokal (29 Nov 2026): **9.163 → 8.712 file** (−451), **87 MB → 68 MB**. Diverifikasi dari bundle trimmed: `composer dump-autoload`, `php artisan about`, `php artisan route:list` (201 route) jalan bersih tanpa error, pakai `.env` dummy terpisah (SQLite in-memory, `STAGING_NO_SYMLINK=false` — lihat §1.2 soal kenapa bukan `true`).
+
+### 1.2 BUG DITEMUKAN (belum diperbaiki) — `STAGING_NO_SYMLINK=true` crash total
+
+Saat verifikasi trim di atas, `STAGING_NO_SYMLINK=true` (nilai yang justru direkomendasikan §2 buat staging beneran) bikin **`composer dump-autoload`/setiap request HTTP crash total**:
+
+```
+The [public] disk conflicts with the [local] disk at [/storage]. Each served disk must have a unique URL.
+```
+
+Penyebab: disk `local` di `config/filesystems.php` sudah `'serve' => true` **tanpa syarat** (tanpa `'url'` eksplisit → default URI `/storage`), sementara disk `public` juga diset `'url' => APP_URL.'/storage'`. Kalau `STAGING_NO_SYMLINK=true` membuat disk `public` ikut `'serve' => true`, dua disk berebut URI `/storage` yang sama → `FilesystemServiceProvider::serveFiles()` lempar exception saat boot (bukan cuma warning, request apa pun langsung 500).
+
+**Belum diperbaiki di sini** — ini bug di konfigurasi DB.2 yang sudah ada sebelumnya (bukan hasil kerja trim ini), butuh keputusan Fakrul dulu sebelum disentuh (opsi: beri disk `local` `'url'` eksplisit yang beda, atau cek ulang kenapa `local` perlu `serve=>true` sama sekali). **Jangan deploy ke staging dengan `STAGING_NO_SYMLINK=true` sampai ini dibereskan** — kalau dipaksa, situs 500 total.
+
 ## 2. Nilai `.env` staging yang dipakai
 
 ```
